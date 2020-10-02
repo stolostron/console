@@ -1,0 +1,62 @@
+query managedClusters {
+    managedClusters {
+        metadata {
+            name
+            namespace
+            labels
+        }
+        spec {
+            hubAcceptsClient
+            leaseDurationSeconds
+        }
+        status {
+            allocatable {
+                memory
+                cpu
+            }
+            capacity {
+                memory
+                cpu
+            }
+            conditions {
+                lastTransitionTime
+                reason
+                status
+                type
+                message
+            }
+            version {
+                kubernetes
+            }
+        }
+        info {
+            metadata {
+                uid
+                name
+                namespace
+                labels
+            }
+            status {
+                nodeList {
+                    name
+                    capacity {
+                        memory
+                        cpu
+                    }
+                    conditions {
+                        type
+                        status
+                    }
+                }
+                conditions {
+                    lastTransitionTime
+                    reason
+                    status
+                    type
+                    message
+                }
+            }
+        }
+        displayStatus
+    }
+}

@@ -1,0 +1,10 @@
+query clusterImageSets($labelSelector: String) {
+    clusterImageSets(labelSelector: $labelSelector) {
+        metadata {
+            uid
+            name
+            namespace
+            labels
+        }
+    }
+}

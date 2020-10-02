@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "module": "commonjs",
+        "allowJs": false,
+        "sourceMap": true,
+        "declaration": true,
+        "alwaysStrict": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "outDir": "./built",
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": ["ES2019"],
+        "skipLibCheck": true
+    },
+    "include": ["src/**/*.ts", "src/services/notes.old"]
+}

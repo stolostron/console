@@ -1,0 +1,10 @@
+query namespaces($labelSelector: String) {
+    namespaces(labelSelector: $labelSelector) {
+        metadata {
+            uid
+            name
+            namespace
+            labels
+        }
+    }
+}

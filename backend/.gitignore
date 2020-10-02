@@ -1,0 +1,8 @@
+/certs/
+/configs/
+/coverage/
+/built/
+/node_modules/
+.env
+/mocks/
+/public/

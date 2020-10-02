@@ -1,0 +1,4 @@
+{
+    "extends": "../tsconfig.json",
+    "include": ["**/*.ts", "entities/cluster-image-set.spects"]
+}

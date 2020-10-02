@@ -1,0 +1,28 @@
+{
+    "name": "console",
+    "version": "0.0.1",
+    "license": "SEE LICENSE IN LICENSE",
+    "scripts": {
+        "postinstall": "concurrently npm:frontend-ci npm:backend-ci -c blue,cyan",
+        "frontend-ci": "cd frontend && npm ci",
+        "backend-ci": "cd backend && npm ci",
+        "test": "concurrently npm:frontend-test npm:backend-test -c blue,cyan",
+        "frontend-test": "cd frontend && npm test",
+        "backend-test": "cd backend && npm test",
+        "build": "docker build --pull --tag console .",
+        "start": "concurrently npm:frontend npm:_backend npm:_codegen -n 'Frontend, Backend, CodeGen' -c green,cyan,blue",
+        "_backend": "cd backend && npm start",
+        "frontend": "cd frontend && npm start",
+        "_codegen": "cd frontend && npm run generate:watch",
+        "clean": "concurrently npm:frontend-clean npm:backend-clean -c blue,cyan",
+        "frontend-clean": "cd frontend && npm run clean",
+        "backend-clean": "cd backend && npm run clean",
+        "update": "npm run frontend-update && npm run backend-update",
+        "frontend-update": "cd frontend && npm run update",
+        "backend-update": "cd backend && npm run update",
+        "docker:run": "docker run --rm --env-file backend/.env console"
+    },
+    "dependencies": {
+        "concurrently": "^5.3.0"
+    }
+}
