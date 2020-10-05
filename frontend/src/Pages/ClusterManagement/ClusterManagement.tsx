@@ -1,7 +1,7 @@
+import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Nav, NavItem, NavList, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React from 'react'
 import { BrowserRouter as Router, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { AcmPageHeader } from '../../components/AcmPage'
 import { BaremetalAssetsPage } from './BareMetalAssets/BaremetalAssets'
 import { ClusterDetailsPage } from './Clusters/ClusterDetails'
 import { ClustersPage } from './Clusters/Clusters'

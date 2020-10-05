@@ -1,7 +1,7 @@
+import { AcmHeader, NavItemE } from '@open-cluster-management/ui-components'
 import '@patternfly/react-core/dist/styles/base.css'
 import React from 'react'
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom'
-import { AcmHeader, NavItemE } from './components/AcmHeader'
 import { ClusterManagement } from './Pages/ClusterManagement/ClusterManagement'
 
 function App() {

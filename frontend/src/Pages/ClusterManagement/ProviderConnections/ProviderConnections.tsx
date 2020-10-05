@@ -1,14 +1,14 @@
+import { AcmPageCard, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import { ICell, sortable } from '@patternfly/react-table'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmPageCard } from '../../../components/AcmPage'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { compareStrings, AcmTable } from '../../../components/AcmTable'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
+import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import {
     ProviderConnection,
     Secret,
@@ -16,7 +16,6 @@ import {
     useProviderConnectionsQuery,
 } from '../../../sdk'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
-import { getProviderByKey, ProviderID } from '../../../lib/providers'
 
 export function ProviderConnectionsPage() {
     return (

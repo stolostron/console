@@ -1,12 +1,16 @@
+import {
+    AcmExpandable,
+    AcmForm,
+    AcmLabelsInput,
+    AcmPage,
+    AcmPageCard,
+    AcmPageHeader,
+    AcmSelect,
+    AcmTextInput,
+} from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Form, FormGroup, TextInput } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmExpandable } from '../../../components/AcmExpandable'
-import { AcmForm } from '../../../components/AcmForm'
-import { AcmLabelsInput } from '../../../components/AcmLabelsInput'
-import { AcmPage, AcmPageCard, AcmPageHeader } from '../../../components/AcmPage'
-import { AcmSelect } from '../../../components/AcmSelect'
-import { AcmTextInput } from '../../../components/AcmTextInput'
 import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'

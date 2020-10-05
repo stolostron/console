@@ -1,11 +1,15 @@
+import {
+    AcmForm,
+    AcmLabelsInput,
+    AcmPage,
+    AcmPageCard,
+    AcmPageHeader,
+    AcmSelect,
+    AcmTextInput,
+} from '@open-cluster-management/ui-components'
 import { ActionGroup, Button } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmForm } from '../../../components/AcmForm'
-import { AcmLabelsInput } from '../../../components/AcmLabelsInput'
-import { AcmPage, AcmPageCard, AcmPageHeader } from '../../../components/AcmPage'
-import { AcmSelect } from '../../../components/AcmSelect'
-import { AcmTextInput } from '../../../components/AcmTextInput'
 import { NavigationPath } from '../ClusterManagement'
 
 export function ImportClusterPage() {

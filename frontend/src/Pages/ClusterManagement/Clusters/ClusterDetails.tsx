@@ -1,7 +1,6 @@
+import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React from 'react'
-import { AcmPageHeader } from '../../../components/AcmPage'
-
 export function ClusterDetailsPage() {
     return (
         <Page>

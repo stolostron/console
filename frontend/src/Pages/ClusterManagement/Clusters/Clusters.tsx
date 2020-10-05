@@ -1,3 +1,10 @@
+import {
+    AcmPageCard,
+    compareStrings,
+    compareNumbers,
+    AcmLabels,
+    AcmTable,
+} from '@open-cluster-management/ui-components'
 import { Button, Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
@@ -5,9 +12,6 @@ import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-
 import { ICell, sortable } from '@patternfly/react-table'
 import React, { Fragment } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmLabels } from '../../../components/AcmLabels'
-import { AcmPageCard } from '../../../components/AcmPage'
-import { AcmTable, compareNumbers, compareStrings } from '../../../components/AcmTable'
 import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
