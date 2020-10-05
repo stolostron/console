@@ -90,3 +90,14 @@ npm run build
 ```
 
 There is an optimized dockerfile at the root that build the backend, frontend, and merges them into a final image.
+
+### Authentication
+
+Frontend has a cookie that contains the user's token.
+
+If a request comes to the backend without a cookie, or a request comes in with a token that kubernetes responds with a 401, then the backend will respond to the frontend with a 302 redirect to /login.
+
+The backend /login path uses Oauth with the kubernetes cluster. It redirects to the clusters authorization_endpoint and gets a token using the clusters token_endpoint. Successful OAuth finally redirects to /login/callback on the backend which creates a response with the set cookie header of the user token and redirects back to the frontend.
+
+
+// TODO
