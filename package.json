@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "scripts": {
-        "postinstall": "concurrently npm:frontend-ci npm:backend-ci -c blue,cyan",
+        "postinstall": "concurrently npm:frontend-ci npm:backend-ci -c blue,cyan && npm run codegen-build",
         "frontend-ci": "cd frontend && npm ci",
         "backend-ci": "cd backend && npm ci",
         "test": "concurrently npm:frontend-test npm:backend-test -c blue,cyan",
@@ -11,7 +11,7 @@
         "backend-test": "cd backend && npm test",
         "build": "concurrently npm:backend-build && concurrently npm:codegen-build && concurrently npm:frontend-build",
         "backend-build": "cd backend && npm run build",
-        "codegen-build": "cd backend && npm run generate",
+        "codegen-build": "cd backend && npm run generate && cd ../frontend && npm run generate",
         "frontend-build": "cd frontend && npm run build",
         "start": "concurrently npm:frontend npm:_backend npm:_codegen -n 'Frontend, Backend, CodeGen' -c green,cyan,blue",
         "_backend": "cd backend && npm start",
