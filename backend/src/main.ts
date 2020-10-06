@@ -4,19 +4,21 @@ config()
 
 import { logger } from './lib/logger'
 
-if (!process.env.CLUSTER_API_TOKEN) throw new Error('CLUSTER_API_TOKEN required')
+if (!process.env.GENERATE) {
+    if (!process.env.CLUSTER_API_TOKEN) throw new Error('CLUSTER_API_TOKEN required')
 
-if (!process.env.CLUSTER_API_URL) throw new Error('CLUSTER_API_URL required')
-logger.debug({ msg: 'environment', CLUSTER_API_URL: process.env.CLUSTER_API_URL })
+    if (!process.env.CLUSTER_API_URL) throw new Error('CLUSTER_API_URL required')
+    logger.debug({ msg: 'environment', CLUSTER_API_URL: process.env.CLUSTER_API_URL })
 
-if (!process.env.OAUTH2_REDIRECT_URL) throw new Error('OAUTH2_REDIRECT_URL required')
-logger.debug({ msg: 'environment', OAUTH2_REDIRECT_URL: process.env.OAUTH2_REDIRECT_URL })
+    if (!process.env.OAUTH2_REDIRECT_URL) throw new Error('OAUTH2_REDIRECT_URL required')
+    logger.debug({ msg: 'environment', OAUTH2_REDIRECT_URL: process.env.OAUTH2_REDIRECT_URL })
 
-if (!process.env.BACKEND_URL) throw new Error('BACKEND_URL required')
-logger.debug({ msg: 'environment', BACKEND_URL: process.env.BACKEND_URL })
+    if (!process.env.BACKEND_URL) throw new Error('BACKEND_URL required')
+    logger.debug({ msg: 'environment', BACKEND_URL: process.env.BACKEND_URL })
 
-if (!process.env.FRONTEND_URL) throw new Error('FRONTEND_URL required')
-logger.debug({ msg: 'environment', FRONTEND_URL: process.env.FRONTEND_URL })
+    if (!process.env.FRONTEND_URL) throw new Error('FRONTEND_URL required')
+    logger.debug({ msg: 'environment', FRONTEND_URL: process.env.FRONTEND_URL })
+}
 
 import { cpus, totalmem } from 'os'
 

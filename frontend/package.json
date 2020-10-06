@@ -33,7 +33,7 @@
     },
     "scripts": {
         "start": "npm run clean && npm run generate && react-scripts start",
-        "build": "npm run clean && react-scripts build",
+        "build": "npm run clean && npm run generate && react-scripts build",
         "clean": "rm -rf build coverage",
         "test": "npm run clean && npm run generate && react-scripts test --watchAll=false --coverage",
         "test:watch": "npm run generate && react-scripts test",

@@ -19,6 +19,4 @@
 /.gitignore
 /Dockerfile
 /my-app.code-workspace
-/package.json
-/package-lock.json
 /*.md

@@ -10,7 +10,6 @@ import fastifyHelmet from 'fastify-helmet'
 import { fastifyOauth2, OAuth2Namespace } from 'fastify-oauth2'
 import fastifyStatic from 'fastify-static'
 import { readFile } from 'fs'
-import { PubSub } from 'graphql-subscriptions'
 import { STATUS_CODES } from 'http'
 import * as https from 'https'
 import { join } from 'path'
@@ -20,10 +19,10 @@ import { URL } from 'url'
 import { promisify } from 'util'
 import { ClusterDeploymentResolver } from './entities/cluster-deployment'
 import { ClusterImageSetResolver } from './entities/cluster-image-set'
-import { ManagedClusterResolver } from './entities/managed-cluster'
-import { ProviderConnectionsResolver } from './entities/provider-connection'
-import { NamespaceResolver } from './entities/namespace'
 import { MetadataResolver } from './entities/common/metadata'
+import { ManagedClusterResolver } from './entities/managed-cluster'
+import { NamespaceResolver } from './entities/namespace'
+import { ProviderConnectionsResolver } from './entities/provider-connection'
 import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
@@ -148,80 +147,85 @@ export async function startServer(): Promise<FastifyInstance> {
         done()
     })
 
-    // GET .well-known/oauth-authorization-server from the CLUSTER API for oauth
-    const response = await Axios.get<{ authorization_endpoint: string; token_endpoint: string }>(
-        `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
-        {
-            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-            headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
-            },
-            responseType: 'json',
-        }
-    )
-    const authorizeUrl = new URL(response.data.authorization_endpoint)
-    const tokenUrl = new URL(response.data.token_endpoint)
-    const validStates = new Set()
-    await fastify.register(fastifyOauth2, {
-        name: 'openshift',
-        scope: ['user:full'],
-        credentials: {
-            client: {
-                id: process.env.OAUTH2_CLIENT_ID,
-                secret: process.env.OAUTH2_CLIENT_SECRET,
-            },
-            auth: {
-                authorizeHost: `${authorizeUrl.protocol}//${authorizeUrl.hostname}`,
-                authorizePath: authorizeUrl.pathname,
-                tokenHost: `${tokenUrl.protocol}//${tokenUrl.hostname}`,
-                tokenPath: tokenUrl.pathname,
-            },
-        },
-        // register a url to start the redirect flow
-        startRedirectPath: '/login',
-        // oauth redirect here after the user login
-        callbackUri: process.env.OAUTH2_REDIRECT_URL,
-        generateStateFunction: (request: FastifyRequest) => {
-            const query = request.query as { code: string; state: string }
-            const state = query.state
-            validStates.add(state)
-            return state
-        },
-        checkStateFunction: (returnedState: string, callback: (error?: Error) => void) => {
-            if (validStates.has(returnedState)) {
-                callback()
-                return
+    if (!process.env.GENERATE) {
+        // GET .well-known/oauth-authorization-server from the CLUSTER API for oauth
+        const response = await Axios.get<{ authorization_endpoint: string; token_endpoint: string }>(
+            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
+            {
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
+                },
+                responseType: 'json',
             }
-            callback(new Error('Invalid state'))
-        },
-    })
+        )
+        const authorizeUrl = new URL(response.data.authorization_endpoint)
+        const tokenUrl = new URL(response.data.token_endpoint)
+        const validStates = new Set()
+        await fastify.register(fastifyOauth2, {
+            name: 'openshift',
+            scope: ['user:full'],
+            credentials: {
+                client: {
+                    id: process.env.OAUTH2_CLIENT_ID,
+                    secret: process.env.OAUTH2_CLIENT_SECRET,
+                },
+                auth: {
+                    authorizeHost: `${authorizeUrl.protocol}//${authorizeUrl.hostname}`,
+                    authorizePath: authorizeUrl.pathname,
+                    tokenHost: `${tokenUrl.protocol}//${tokenUrl.hostname}`,
+                    tokenPath: tokenUrl.pathname,
+                },
+            },
+            // register a url to start the redirect flow
+            startRedirectPath: '/login',
+            // oauth redirect here after the user login
+            callbackUri: process.env.OAUTH2_REDIRECT_URL,
+            generateStateFunction: (request: FastifyRequest) => {
+                const query = request.query as { code: string; state: string }
+                const state = query.state
+                validStates.add(state)
+                return state
+            },
+            checkStateFunction: (returnedState: string, callback: (error?: Error) => void) => {
+                if (validStates.has(returnedState)) {
+                    callback()
+                    return
+                }
+                callback(new Error('Invalid state'))
+            },
+        })
 
-    fastify.get('/login/callback', async function (request, reply) {
-        const query = request.query as { code: string; state: string }
-        validStates.add(query.state)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const openshift = ((this as unknown) as any).openshift as OAuth2Namespace
-        const token = await openshift.getAccessTokenFromAuthorizationCodeFlow(request)
-        return reply
-            .setCookie('acm-access-token-cookie', `${token.access_token}`, {
-                path: '/',
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: token.expires_in,
-            })
-            .redirect(`${process.env.FRONTEND_URL}`)
-    })
+        fastify.get('/login/callback', async function (request, reply) {
+            const query = request.query as { code: string; state: string }
+            validStates.add(query.state)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const openshift = ((this as unknown) as any).openshift as OAuth2Namespace
+            const token = await openshift.getAccessTokenFromAuthorizationCodeFlow(request)
+            return reply
+                .setCookie('acm-access-token-cookie', `${token.access_token}`, {
+                    path: '/',
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: token.expires_in,
+                })
+                .redirect(`${process.env.FRONTEND_URL}`)
+        })
 
-    fastify.delete('/login', async function (request, reply) {
-        const token = request.cookies['acm-access-token-cookie']
-        if (token) {
-            await Axios.delete(`${process.env.CLUSTER_API_URL}/apis/oauth.openshift.io/v1/oauthaccesstokens/${token}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            return reply.code(200).send()
-        }
-    })
+        fastify.delete('/login', async function (request, reply) {
+            const token = request.cookies['acm-access-token-cookie']
+            if (token) {
+                await Axios.delete(
+                    `${process.env.CLUSTER_API_URL}/apis/oauth.openshift.io/v1/oauthaccesstokens/${token}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                )
+                return reply.code(200).send()
+            }
+        })
+    }
 
     await fastify.register(fastifyCompress)
 
@@ -295,6 +299,9 @@ export async function startServer(): Promise<FastifyInstance> {
             process.env.PORT ? Number(process.env.PORT) : undefined,
             '0.0.0.0',
             (err: Error, address: string) => {
+                if (process.env.GENERATE) {
+                    void fastify.close()
+                }
                 if (err) {
                     logger.error(err)
                     // eslint-disable-next-line no-process-exit

@@ -5,5 +5,5 @@
 /node_modules/
 /mocks/
 /public/
-/.env
-/schema.gql
+.env
+schema.gql

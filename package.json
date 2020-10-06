@@ -9,7 +9,10 @@
         "test": "concurrently npm:frontend-test npm:backend-test -c blue,cyan",
         "frontend-test": "cd frontend && npm test",
         "backend-test": "cd backend && npm test",
-        "build": "docker build --pull --tag console .",
+        "build": "concurrently npm:backend-build && concurrently npm:codegen-build && concurrently npm:frontend-build",
+        "backend-build": "cd backend && npm run build",
+        "codegen-build": "cd backend && npm run generate",
+        "frontend-build": "cd frontend && npm run build",
         "start": "concurrently npm:frontend npm:_backend npm:_codegen -n 'Frontend, Backend, CodeGen' -c green,cyan,blue",
         "_backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
@@ -20,6 +23,7 @@
         "update": "npm run frontend-update && npm run backend-update",
         "frontend-update": "cd frontend && npm run update",
         "backend-update": "cd backend && npm run update",
+        "docker:build": "docker build --pull --tag console .",
         "docker:run": "docker run --rm --env-file backend/.env console"
     },
     "dependencies": {
