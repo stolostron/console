@@ -1,6 +1,5 @@
-import { AcmPageCard, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { AcmPageCard, AcmTable, compareStrings, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import { ICell, sortable } from '@patternfly/react-table'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
@@ -60,41 +59,34 @@ function getProvider(labels: string[]) {
 }
 
 export function ProviderConnectionsTable(props: { providerConnections: ProviderConnection[]; refetch: () => {} }) {
-    const columns: ICell[] = [
-        { title: 'Name', transforms: [sortable] },
-        { title: 'Provider', transforms: [sortable] },
-        { title: 'Namespace', transforms: [sortable] },
+    const columns: IAcmTableColumn<ProviderConnection>[] = [
+        {
+            header: 'Name',
+            sort: 'metadata.name',
+            search: 'metadata.name',
+            cell: 'metadata.name',
+        },
+        {
+            header: 'Provider',
+            sort: (a: ProviderConnection, b: ProviderConnection) => {
+                return compareStrings(getProvider(a.metadata.labels), getProvider(b.metadata.labels))
+            },
+            cell: (item: ProviderConnection) => {
+                return getProvider(item.metadata.labels)
+            },
+        },
+        {
+            header: 'Namespace',
+            sort: 'metadata.namespace',
+            search: 'metadata.namespace',
+            cell: 'metadata.namespace',
+        },
     ]
-    function sortFn(providerConnections: ProviderConnection[], column: number) {
-        switch (column) {
-            case 1:
-                return providerConnections.sort((a, b) =>
-                    a.metadata.name < b.metadata.name ? -1 : a.metadata.name > b.metadata.name ? 1 : 0
-                )
-            case 2:
-                return providerConnections.sort((a, b) =>
-                    compareStrings(getProvider(a.metadata.labels), getProvider(b.metadata.labels))
-                )
-            case 3:
-                return providerConnections.sort((a, b) => compareStrings(a.metadata.namespace, b.metadata.namespace))
-        }
-        return providerConnections.sort((a, b) =>
-            a.metadata.name < b.metadata.name ? -1 : a.metadata.name > b.metadata.name ? 1 : 0
-        )
-    }
     function keyFn(secret: Secret) {
         return secret.metadata.uid
     }
-    function cellsFn(secret: Secret) {
-        return [
-            <div>{secret.metadata.name}</div>,
-            <div>{getProvider(secret.metadata.labels)}</div>,
-            <div>{secret.metadata.namespace}</div>,
-        ]
-    }
 
     const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
-
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const history = useHistory()
 
@@ -110,11 +102,8 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
             <AcmTable<ProviderConnection>
                 plural="connections"
                 items={props.providerConnections}
-                searchKeys={['metadata.name']}
                 columns={columns}
-                sortFn={sortFn}
                 keyFn={keyFn}
-                cellsFn={cellsFn}
                 tableActions={[
                     {
                         id: 'addConnenction',

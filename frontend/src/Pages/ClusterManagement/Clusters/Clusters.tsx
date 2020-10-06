@@ -1,15 +1,8 @@
-import {
-    AcmPageCard,
-    compareStrings,
-    compareNumbers,
-    AcmLabels,
-    AcmTable,
-} from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmPageCard, AcmTable, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import { Button, Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
-import { ICell, sortable } from '@patternfly/react-table'
 import React, { Fragment } from 'react'
 import { useHistory } from 'react-router-dom'
 import { EmptyPage } from '../../../components/EmptyPage'
@@ -45,34 +38,36 @@ export function ClustersPageContent() {
 }
 
 export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
-    const columns: ICell[] = [
-        { title: 'Name', transforms: [sortable] },
-        { title: 'Status', transforms: [sortable] },
-        { title: 'Distribution', transforms: [sortable] },
-        { title: 'Labels' },
-        { title: 'Nodes', transforms: [sortable] },
+    const columns: IAcmTableColumn<ManagedCluster>[] = [
+        {
+            header: 'Name',
+            sort: 'metadata.name',
+            search: 'metadata.name',
+            cell: 'metadata.name',
+        },
+        {
+            header: 'Status',
+            sort: 'displayStatus',
+            search: 'displayStatus',
+            cell: 'displayStatus',
+        },
+        {
+            header: 'Distribution',
+            sort: 'status.version.kubernetes',
+            search: 'status.version.kubernetes',
+            cell: 'status.version.kubernetes',
+        },
+        {
+            header: 'Labels',
+            search: 'metadata.labels',
+            cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
+        },
+        {
+            header: 'Nodes',
+            sort: 'info.status.nodeList.length',
+            cell: 'info.status.nodeList.length',
+        },
     ]
-    function sortFn(managedClusters: ManagedCluster[], column: number) {
-        switch (column) {
-            case 1:
-                managedClusters = managedClusters.sort((a, b) => compareStrings(a.metadata.name, b.metadata.name))
-                break
-            case 2:
-                managedClusters = managedClusters.sort((a, b) => compareStrings(a.displayStatus, b.displayStatus))
-                break
-            case 3:
-                managedClusters = managedClusters.sort((a, b) =>
-                    compareStrings(a?.status?.version?.kubernetes, b?.status?.version?.kubernetes)
-                )
-                break
-            case 5:
-                managedClusters = managedClusters.sort((a, b) =>
-                    compareNumbers(a?.info?.status?.nodeList?.length, b?.info?.status?.nodeList?.length)
-                )
-                break
-        }
-        return managedClusters
-    }
     function keyFn(secret: ManagedCluster) {
         return secret.metadata.uid
     }
@@ -117,11 +112,8 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
         <AcmTable<ManagedCluster>
             plural="clusters"
             items={props.managedClusters}
-            searchKeys={['metadata.name', 'metadata.labels', 'displayStatus']}
             columns={columns}
-            sortFn={sortFn}
             keyFn={keyFn}
-            cellsFn={cellsFn}
             tableActions={[
                 {
                     id: 'createCluster',
