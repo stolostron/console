@@ -12,21 +12,21 @@ describe(`graphql query namespaces`, function () {
             .get('/api/v1/namespaces')
             .reply(200, { items: [namespace] })
 
-        await expect(
-            request.post(`graphql`, {
-                query: /* GraphQL */ `
-                    query {
-                        namespaces {
-                            metadata {
-                                name
-                            }
+        const result = await request.post(`graphql`, {
+            query: /* GraphQL */ `
+                query {
+                    namespaces {
+                        metadata {
+                            name
                         }
                     }
-                `,
-            })
-        ).resolves.toMatchObject({
-            status: 200,
-            data: { data: { namespaces: [{ metadata: { name: 'name' } }] } },
+                }
+            `,
+        })
+
+        expect(result.status).toEqual(200)
+        expect(result.data).toMatchObject({
+            data: { namespaces: [namespace] },
         })
     })
 })

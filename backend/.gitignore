@@ -3,6 +3,7 @@
 /coverage/
 /built/
 /node_modules/
-.env
 /mocks/
 /public/
+/.env
+/schema.gql
