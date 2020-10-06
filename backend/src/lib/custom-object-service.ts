@@ -4,7 +4,7 @@ import { getCustomObjectsApi } from './kube-api'
 import { logError, logger } from './logger'
 
 export class CustomObjectService<T extends Resource> {
-    constructor(public options: { plural: string; group: string; version: string }) {}
+    constructor(public readonly options: { plural: string; group: string; version: string }) {}
     async query(token: string, fieldSelector?: string, labelSelector?: string): Promise<T[]> {
         const customObjectsApi = getCustomObjectsApi(token)
         // eslint-disable-next-line @typescript-eslint/ban-types
