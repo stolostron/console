@@ -9,21 +9,21 @@ describe(`graphql query clusterimagesetss`, function () {
             .get('/apis/hive.openshift.io/v1/clusterimagesets')
             .reply(200, { items: [{ metadata: { name: 'name' } }] })
 
-        await expect(
-            request.post(`graphql`, {
-                query: /* GraphQL */ `
-                    query {
-                        clusterImageSets {
-                            metadata {
-                                name
-                            }
+        const result = await request.post(`graphql`, {
+            query: /* GraphQL */ `
+                query {
+                    clusterImageSets {
+                        metadata {
+                            name
                         }
                     }
-                `,
-            })
-        ).resolves.toMatchObject({
-            status: 200,
-            data: { data: { clusterImageSets: [{ metadata: { name: 'name' } }] } },
+                }
+            `,
+        })
+
+        expect(result.status).toEqual(200)
+        expect(result.data).toMatchObject({
+            data: { clusterImageSets: [{ metadata: { name: 'name' } }] },
         })
     })
 })
