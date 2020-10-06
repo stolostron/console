@@ -27,6 +27,7 @@ import { MetadataResolver } from './entities/common/metadata'
 import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
+import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
 
 function noop(): void {
     /* Do Nothing */
@@ -238,6 +239,7 @@ export async function startServer(): Promise<FastifyInstance> {
             NamespaceResolver,
             ClusterDeploymentResolver,
             ProviderConnectionsResolver,
+            ClusterManagementAddOnResolver,
         ],
         emitSchemaFile: true,
     })

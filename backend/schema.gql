@@ -40,6 +40,28 @@ type ClusterImageSet {
   metadata: Metadata!
 }
 
+type ClusterManagementAddOn {
+  apiVersion: String!
+  kind: String!
+  metadata: Metadata!
+  spec: ClusterManagementAddOnSpec!
+}
+
+type ClusterManagementAddOnConfigutation {
+  crdName: String!
+  crName: String!
+}
+
+type ClusterManagementAddOnMeta {
+  decription: String!
+  displayName: String!
+}
+
+type ClusterManagementAddOnSpec {
+  addOnConfiguration: ClusterManagementAddOnConfigutation!
+  addOnMeta: ClusterManagementAddOnMeta!
+}
+
 type Condition {
   lastTransitionTime: String
   message: String
@@ -180,6 +202,7 @@ input ProviderConnectionInput {
 type Query {
   clusterDeployments(fieldSelector: String, labelSelector: String): [ClusterDeployment!]!
   clusterImageSets(fieldSelector: String, labelSelector: String): [ClusterImageSet!]!
+  clusterManagementAddOns(fieldSelector: String, labelSelector: String): [ClusterManagementAddOn!]!
   managedClusters(fieldSelector: String, labelSelector: String): [ManagedCluster!]!
   namespaces(fieldSelector: String, labelSelector: String): [Namespace!]!
   providerConnections: [ProviderConnection!]!
