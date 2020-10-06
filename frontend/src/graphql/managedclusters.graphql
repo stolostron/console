@@ -1,6 +1,7 @@
 query managedClusters {
     managedClusters {
         metadata {
+            uid
             name
             namespace
             labels

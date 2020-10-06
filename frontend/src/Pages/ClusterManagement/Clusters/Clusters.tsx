@@ -49,7 +49,26 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
             header: 'Status',
             sort: 'displayStatus',
             search: 'displayStatus',
-            cell: 'displayStatus',
+            cell: (managedCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="2">
+                    {managedCluster.displayStatus === 'Ready' ? (
+                        <CheckIcon color="green" key="ready-icon" />
+                    ) : (
+                        <Fragment key="ready-icon"></Fragment>
+                    )}
+                    {managedCluster.displayStatus === 'Pending import' ? (
+                        <MinusCircleIcon color="grey" key="pending-icon" />
+                    ) : (
+                        <Fragment key="pending-icon"></Fragment>
+                    )}
+                    {managedCluster.displayStatus === 'Offline' ? (
+                        <ExclamationIcon color="red" key="offline-icon" />
+                    ) : (
+                        <Fragment key="offline-icon"></Fragment>
+                    )}
+                    <span key="status">&nbsp; {managedCluster.displayStatus}</span>
+                </span>
+            ),
         },
         {
             header: 'Distribution',
@@ -70,42 +89,6 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
     ]
     function keyFn(secret: ManagedCluster) {
         return secret.metadata.uid
-    }
-    function cellsFn(managedCluster: ManagedCluster) {
-        return [
-            <Button key="column-1" variant="link" isInline>
-                {managedCluster?.metadata?.name}
-            </Button>,
-            <Fragment key="column-2">
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    {managedCluster.displayStatus === 'Ready' ? (
-                        <CheckIcon color="green" key="ready-icon" />
-                    ) : (
-                        <Fragment key="ready-icon"></Fragment>
-                    )}
-                    {managedCluster.displayStatus === 'Pending import' ? (
-                        <MinusCircleIcon color="grey" key="pending-icon" />
-                    ) : (
-                        <Fragment key="pending-icon"></Fragment>
-                    )}
-                    {managedCluster.displayStatus === 'Offline' ? (
-                        <ExclamationIcon color="red" key="offline-icon" />
-                    ) : (
-                        <Fragment key="offline-icon"></Fragment>
-                    )}
-                    <span key="status">&nbsp; {managedCluster.displayStatus}</span>
-                </span>
-            </Fragment>,
-            <Fragment key="column-3">
-                {managedCluster?.status?.version?.kubernetes ? managedCluster?.status?.version?.kubernetes : '-'}
-            </Fragment>,
-            <Fragment key="column-4">
-                <AcmLabels labels={managedCluster?.metadata?.labels} />
-            </Fragment>,
-            <Fragment key="column-5">
-                {managedCluster?.info?.status?.nodeList?.length ? managedCluster?.info?.status?.nodeList?.length : '-'}
-            </Fragment>,
-        ]
     }
     const history = useHistory()
     return (

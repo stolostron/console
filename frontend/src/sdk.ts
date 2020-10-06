@@ -271,7 +271,7 @@ export type ManagedClustersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ManagedClustersQuery = { managedClusters: Array<(
     Pick<ManagedCluster, 'displayStatus'>
-    & { metadata: Pick<Metadata, 'name' | 'namespace' | 'labels'>, spec: Pick<ManagedClusterSpec, 'hubAcceptsClient' | 'leaseDurationSeconds'>, status?: Maybe<{ allocatable?: Maybe<Pick<Capacity, 'memory' | 'cpu'>>, capacity?: Maybe<Pick<Capacity, 'memory' | 'cpu'>>, conditions: Array<Pick<Condition, 'lastTransitionTime' | 'reason' | 'status' | 'type' | 'message'>>, version: Pick<ManagedClusterVersion, 'kubernetes'> }>, info?: Maybe<{ metadata: Pick<Metadata, 'uid' | 'name' | 'namespace' | 'labels'>, status?: Maybe<{ nodeList?: Maybe<Array<(
+    & { metadata: Pick<Metadata, 'uid' | 'name' | 'namespace' | 'labels'>, spec: Pick<ManagedClusterSpec, 'hubAcceptsClient' | 'leaseDurationSeconds'>, status?: Maybe<{ allocatable?: Maybe<Pick<Capacity, 'memory' | 'cpu'>>, capacity?: Maybe<Pick<Capacity, 'memory' | 'cpu'>>, conditions: Array<Pick<Condition, 'lastTransitionTime' | 'reason' | 'status' | 'type' | 'message'>>, version: Pick<ManagedClusterVersion, 'kubernetes'> }>, info?: Maybe<{ metadata: Pick<Metadata, 'uid' | 'name' | 'namespace' | 'labels'>, status?: Maybe<{ nodeList?: Maybe<Array<(
           Pick<Node, 'name'>
           & { capacity: Pick<Capacity, 'memory' | 'cpu'>, conditions: Array<Pick<Condition, 'type' | 'status'>> }
         )>>, conditions: Array<Pick<Condition, 'lastTransitionTime' | 'reason' | 'status' | 'type' | 'message'>> }> }> }
@@ -377,6 +377,7 @@ export const ManagedClustersDocument = gql`
     query managedClusters {
   managedClusters {
     metadata {
+      uid
       name
       namespace
       labels
