@@ -2,7 +2,7 @@
     "name": "console-e2e",
     "version": "0.0.1",
     "scripts": {
-        "prestart": "./setup.sh",
+        "prestart": "../backend/setup.sh",
         "start": "npm test",
         "test": "jest --verbose",
         "test:update": "npm test -- -u",
