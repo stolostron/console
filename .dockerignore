@@ -1,7 +1,7 @@
 /backend/.vscode/
 /backend/certs/
 /backend/coverage/
-/backend/lib/
+/backend/build/
 /backend/node_modules/
 /backend/test/
 /backend/.dockerignore
@@ -9,8 +9,10 @@
 /backend/.Dockerfile
 /backend/*.md
 
+/frontend/.vscode/
 /frontend/build/
 /frontend/node_modules/
+/frontend/coverage/
 /frontend/*.md
 
 /.git/
@@ -18,5 +20,11 @@
 /.dockerignore
 /.gitignore
 /Dockerfile
-/my-app.code-workspace
+/console.code-workspace
 /*.md
+
+/docs/
+/chart/
+/e2e/
+/cypress/
+/cli/

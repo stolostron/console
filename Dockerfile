@@ -9,7 +9,7 @@ RUN cd frontend && npm ci
 COPY ./ ./
 RUN npm run build
 RUN rm -rf backend/node_modules
-RUN cd backend && npm ci --only=production  --no-optional
+RUN cd backend && npm ci --only=production --no-optional
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
@@ -17,7 +17,7 @@ RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=builder /opt/app-root/src/backend/node_modules ./node_modules
-COPY --from=builder /opt/app-root/src/backend/built ./
+COPY --from=builder /opt/app-root/src/backend/build ./
 COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
 CMD ["node", "main.js"]

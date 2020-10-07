@@ -32,8 +32,8 @@
         "prettier": "^2.1.2"
     },
     "scripts": {
-        "start": "npm run clean && npm run generate && react-scripts start",
-        "build": "npm run clean && npm run generate && react-scripts build",
+        "start": "npm run clean && npm run generate && REACT_APP_BACKEND=http://localhost:4000 react-scripts start",
+        "build": "npm run clean && npm run generate && REACT_APP_BACKEND=http://localhost:3000 react-scripts build",
         "clean": "rm -rf build coverage",
         "test": "npm run clean && npm run generate && react-scripts test --watchAll=false --coverage",
         "test:watch": "npm run generate && react-scripts test",

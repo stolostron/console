@@ -1,7 +1,7 @@
 /certs/
 /configs/
 /coverage/
-/built/
+/build/
 /node_modules/
 /mocks/
 /public/

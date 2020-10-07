@@ -23,7 +23,7 @@ export function ErrorPage(props: ErrorPageProps) {
     if (error.networkError?.name === 'ServerParseError') {
         const serverParseError = error.networkError as ServerParseError
         if (serverParseError.statusCode === 401) {
-            window.location.href = 'http://localhost:4000/login'
+            window.location.href = `${process.env.REACT_APP_BACKEND}/login`
             return <></>
         }
     }

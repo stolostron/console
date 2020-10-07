@@ -11,7 +11,7 @@
         "noFallthroughCasesInSwitch": true,
         "moduleResolution": "node",
         "noImplicitAny": true,
-        "outDir": "./built",
+        "outDir": "./build",
         "noImplicitUseStrict": true,
         "removeComments": true,
         "emitDecoratorMetadata": true,

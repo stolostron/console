@@ -7,8 +7,8 @@
         "test:update": "npm test -- -u",
         "lint": "eslint src test --ext .ts --max-warnings=0",
         "lint:fix": "eslint src test --ext .ts --fix",
-        "check": "prettier --check **/*.ts **/*.json !coverage/** !built/** !**/package-lock.json",
-        "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !built/** !**/package-lock.json",
+        "check": "prettier --check **/*.ts **/*.json !coverage/** !**/package-lock.json",
+        "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !**/package-lock.json",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check"
     },
     "dependencies": {
