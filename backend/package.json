@@ -15,10 +15,6 @@
         "start": "PORT=4000 NODE_ENV=development LOG_LEVEL=trace ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts | pino-zen --ignore instance,time",
         "generate": "GENERATE=true LOG_LEVEL=silent ts-node src/main.ts",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check",
-        "docker:build": "docker build --pull --tag backend .",
-        "docker:run": "npm run docker:build && docker run --rm -t --name backend -p 4000:4000 -e PORT=4000 backend",
-        "docker:start": "npm run docker:build && docker run -d --name backend -p 4000:4000 -e PORT=4000 backend",
-        "docker:stop": "docker rm -f backend || true",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
     "dependencies": {

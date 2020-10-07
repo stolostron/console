@@ -20,7 +20,7 @@
         "backend:build": "cd backend && npm run build",
         "frontend:build": "cd frontend && npm run build",
         "docker:build": "docker build --pull --tag console .",
-        "docker:run": "docker run --rm --env-file backend/.env -p 3000:3000 -e PORT=3000 console"
+        "docker:run": "npm run docker:build && docker run --rm --env-file backend/.env -p 3000:3000 -e PORT=3000 console"
     },
     "dependencies": {
         "concurrently": "^5.3.0"
