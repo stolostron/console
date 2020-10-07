@@ -179,7 +179,31 @@ export const clusterDeploymentsService = new ClusterDeploymentsService({
 })
 
 @ObjectType()
-export class ClusterDeploymentNodePoolInput {}
+export class ClusterDeploymentNodePoolInput {
+    @Field() // AWS, GCP, AZR
+    poolName: string
+
+    @Field((type) => [String]) // AWS, AZR
+    zones: string[]
+
+    @Field() // AWS, GCP, AZR
+    instanceType: string
+
+    @Field() // AWS, GCP, AZR, VMW
+    nodeCount: number
+
+    @Field() // AWS, AZR, VMW
+    rootStorage: number
+
+    @Field() // VMW
+    coresPerSocket: number
+
+    @Field() // VMW
+    cpus: number
+
+    @Field() // VMW
+    memory: number
+}
 
 @InputType()
 export class ClusterDeploymentInput {
@@ -231,8 +255,8 @@ export class ClusterDeploymentInput {
     @Field()
     ingressVip: string
 
-    // @Field((type) => [ClusterDeploymentNodePoolInput])
-    // nodePools: ClusterDeploymentNodePoolInput[]
+    @Field((type) => [ClusterDeploymentNodePoolInput])
+    nodePools: ClusterDeploymentNodePoolInput[]
 
     @Field((type) => [String])
     labels: string[]

@@ -174,7 +174,7 @@ export function CreateClusterPageContent(props: {
                     label="Base DNS domain"
                     value={clusterDeploymentInput.baseDomain}
                     onChange={(baseDomain) => updateClusterDeploymentInput({ baseDomain })}
-                    placeholder={'Enter a name for the cluster'}
+                    placeholder={'Enter the base domain for the cluster'}
                     hidden={!clusterDeploymentInput.clusterName}
                     required
                 />
@@ -232,16 +232,7 @@ export function CreateClusterPageContent(props: {
 
                 <AcmExpandable label="Labels" hidden={!clusterDeploymentInput.baseDomain}>
                     <Form>
-                        <FormGroup label="Environment Label" isRequired fieldId="simple-form-name">
-                            <TextInput
-                                isRequired
-                                type="text"
-                                id="simple-form-name"
-                                name="simple-form-name"
-                                aria-describedby="simple-form-name-helper"
-                                placeholder={'Enter a name for the cluster'}
-                            />
-                        </FormGroup>
+                        {/* <AcmTextInput id="environmentLabelInput" label="Environment Label" /> */}
 
                         <AcmLabelsInput
                             id="additionalLabels"
