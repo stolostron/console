@@ -2,6 +2,7 @@
     "name": "console-e2e",
     "version": "0.0.1",
     "scripts": {
+        "prestart": "./setup.sh",
         "start": "npm test",
         "test": "jest --verbose",
         "test:update": "npm test -- -u",
@@ -12,11 +13,13 @@
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check"
     },
     "dependencies": {
+        "@types/dotenv": "^8.2.0",
         "@types/jest": "^26.x.x",
         "@types/node": "^14.x.x",
         "@typescript-eslint/eslint-plugin": "^4.3.0",
         "@typescript-eslint/parser": "^4.3.0",
         "axios": "^0.20.0",
+        "dotenv": "^8.2.0",
         "eslint": "^7.10.0",
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
@@ -78,8 +81,7 @@
             "ecmaVersion": 2018,
             "sourceType": "module",
             "project": [
-                "./tsconfig.json",
-                "./test/tsconfig.json"
+                "./tsconfig.json"
             ]
         },
         "extends": [
