@@ -28,6 +28,7 @@ import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
 import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
+import * as path from 'path'
 
 function noop(): void {
     /* Do Nothing */
@@ -281,7 +282,11 @@ export async function startServer(): Promise<FastifyInstance> {
     })
 
     fastify.setNotFoundHandler((request, response) => {
-        void response.code(200).sendFile('index.html', join(__dirname, '../public'))
+        if (!request.url.startsWith('/graphql') && !path.extname(request.url)) {
+            void response.code(200).sendFile('index.html', join(__dirname, 'public'))
+        } else {
+            void response.code(404).send()
+        }
     })
     await fastify.register(fastifyStatic, {
         root: join(__dirname, 'public'),
