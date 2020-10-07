@@ -1,0 +1,10 @@
+query bareMetalAssets($labelSelector: String) {
+    bareMetalAssets(labelSelector: $labelSelector) {
+        metadata {
+            uid
+            name
+            namespace
+            labels
+        }
+    }
+}

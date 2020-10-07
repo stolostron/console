@@ -2,7 +2,7 @@ import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Nav, NavItem, NavList, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React from 'react'
 import { BrowserRouter as Router, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { BaremetalAssetsPage } from './BareMetalAssets/BaremetalAssets'
+import { BareMetalAssetsPage } from './BareMetalAssets/BaremetalAssets'
 import { ClusterDetailsPage } from './Clusters/ClusterDetails'
 import { ClustersPage } from './Clusters/Clusters'
 import { CreateClusterPage } from './Clusters/CreateCluster'
@@ -83,7 +83,7 @@ export function ClusterManagement() {
                     </Route>
 
                     <Route path={NavigationPath.baremetalAssets} exact>
-                        <BaremetalAssetsPage />
+                        <BareMetalAssetsPage />
                     </Route>
 
                     <Route path={NavigationPath.clusterManagement} exact>
