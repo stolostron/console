@@ -1,28 +1,24 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/nodejs-12 as backend
+FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/nodejs-12 as builder
 USER root
-COPY backend/package.json backend/package-lock.json ./
-RUN npm ci --no-optional
-COPY ./backend ./
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY backend/package.json backend/package-lock.json ./backend/
+RUN cd backend && npm ci
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+RUN cd frontend && npm ci
+COPY ./ ./
 RUN npm run build
-RUN rm -rf node_modules
-RUN npm ci --only=production  --no-optional
-
-FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/nodejs-12 as frontend
-USER root
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --no-optional
-COPY ./frontend ./
-RUN npm run build
+RUN rm -rf backend/node_modules
+RUN cd backend && npm ci --only=production  --no-optional
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=backend /opt/app-root/src/node_modules ./node_modules
-COPY --from=backend /opt/app-root/src/built ./
-COPY --from=frontend /opt/app-root/src/build ./public
-RUN chown -R 1001 /app
+COPY --from=builder /opt/app-root/src/backend/node_modules ./node_modules
+COPY --from=builder /opt/app-root/src/backend/built ./
+COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
 CMD ["node", "main.js"]
 
