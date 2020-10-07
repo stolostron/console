@@ -11,9 +11,12 @@
         },
         {
             "path": "chart"
+        },
+        {
+            "path": "e2e"
         }
     ],
     "settings": {
-        "jest.disabledWorkspaceFolders": ["docs", "chart"]
+        "jest.disabledWorkspaceFolders": ["docs", "chart", "e2e"]
     }
 }
