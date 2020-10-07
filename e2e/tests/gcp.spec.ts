@@ -5,7 +5,7 @@ import { ProviderConnection } from '../../backend/src/entities/provider-connecti
 
 setup()
 
-describe(`aws provider`, function () {
+describe(`gcp provider`, function () {
     it(`provider connection should not exist before create`, async function () {
         const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`graphql`, {
             query: /* GraphQL */ `
@@ -22,7 +22,7 @@ describe(`aws provider`, function () {
         const providerConnections = result.data.data.providerConnections
         expect(
             providerConnections.find(
-                (providerConnection) => providerConnection.metadata.name === 'aws-e2e-test-connection'
+                (providerConnection) => providerConnection.metadata.name === 'gcp-e2e-test-connection'
             )
         ).toBeFalsy()
     })
@@ -33,9 +33,9 @@ describe(`aws provider`, function () {
                 mutation {
                     createProviderConnection(
                         input: {
-                            name: "aws-e2e-test-connection"
+                            name: "gcp-e2e-test-connection"
                             namespace: "default"
-                            providerID: "aws"
+                            providerID: "gcp"
                             data: {
                                 awsAccessKeyID: "string"
                                 awsSecretAccessKeyID: "string"
@@ -67,7 +67,7 @@ describe(`aws provider`, function () {
         const providerConnections = result.data.data.providerConnections
         expect(
             providerConnections.find(
-                (providerConnection) => providerConnection.metadata.name === 'aws-e2e-test-connection'
+                (providerConnection) => providerConnection.metadata.name === 'gcp-e2e-test-connection'
             )
         ).toBeTruthy()
     })
@@ -87,7 +87,7 @@ describe(`aws provider`, function () {
     //     expect(result.status).toEqual(200)
     //     const managedClusters = result.data.data.managedClusters
     //     expect(
-    //         managedClusters.find((managedCluster) => managedCluster.metadata.name === 'aws-e2e-test-cluster')
+    //         managedClusters.find((managedCluster) => managedCluster.metadata.name === 'gcp-e2e-test-cluster')
     //     ).toBeFalsy()
     // })
 
@@ -111,7 +111,7 @@ describe(`aws provider`, function () {
         const result = await request.post(`graphql`, {
             query: /* GraphQL */ `
                 mutation {
-                    deleteProviderConnection(name: "aws-e2e-test-connection", namespace: "default")
+                    deleteProviderConnection(name: "gcp-e2e-test-connection", namespace: "default")
                 }
             `,
         })
@@ -134,7 +134,7 @@ describe(`aws provider`, function () {
         const providerConnections = result.data.data.providerConnections
         expect(
             providerConnections.find(
-                (providerConnection) => providerConnection.metadata.name === 'aws-e2e-test-connection'
+                (providerConnection) => providerConnection.metadata.name === 'gcp-e2e-test-connection'
             )
         ).toBeFalsy()
     })

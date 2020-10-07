@@ -12,7 +12,7 @@ class ProviderConnectionService extends SecretsService<ProviderConnection> {
         const result = await super.query(token, fieldSelector, labelSelector)
         return result.map((providerConnection) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any
-            const metadata = ((providerConnection.data as unknown) as any).metadata as string
+            const metadata = (providerConnection as any)?.data?.metadata as string
             if (metadata) {
                 try {
                     const yaml = Buffer.from(metadata, 'base64').toString('ascii')
