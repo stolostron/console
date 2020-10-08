@@ -8,6 +8,7 @@
 /backend/.gitignore
 /backend/.Dockerfile
 /backend/*.md
+/backend/.env
 
 /frontend/.vscode/
 /frontend/build/

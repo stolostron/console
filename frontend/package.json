@@ -4,7 +4,7 @@
     "private": true,
     "dependencies": {
         "@apollo/client": "^3.2.2",
-        "@open-cluster-management/ui-components": "^0.1.9",
+        "@open-cluster-management/ui-components": "^0.1.10",
         "@patternfly/react-core": "^4.50.2",
         "@patternfly/react-table": "^4.16.20",
         "@types/react": "^16.9.50",

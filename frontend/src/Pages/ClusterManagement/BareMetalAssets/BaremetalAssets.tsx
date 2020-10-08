@@ -1,6 +1,6 @@
 import { AcmEmptyPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
-import React from 'react'
+import { Page, ToggleGroup } from '@patternfly/react-core'
+import React, { useState } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
@@ -32,7 +32,7 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
     return (
         <AcmPageCard>
             <AcmTable<BareMetalAsset>
-                plural="brae metal assets"
+                plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
                     {

@@ -1,5 +1,5 @@
 import { AcmLabels, AcmPageCard, AcmTable, IAcmTableColumn } from '@open-cluster-management/ui-components'
-import { Button, Page } from '@patternfly/react-core'
+import { Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
