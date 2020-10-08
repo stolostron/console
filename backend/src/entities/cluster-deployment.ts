@@ -178,7 +178,7 @@ export const clusterDeploymentsService = new ClusterDeploymentsService({
     plural: 'clusterdeployments',
 })
 
-@ObjectType()
+@InputType()
 export class ClusterDeploymentNodePoolInput {
     @Field() // AWS, GCP, AZR
     poolName: string
