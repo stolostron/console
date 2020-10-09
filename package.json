@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "scripts": {
-        "postinstall": "concurrently npm:frontend:ci npm:backend:ci -n 'frontend:ci, backend:ci' -c blue,cyan && npm run generate",
+        "postinstall": "concurrently npm:frontend:ci npm:backend:ci -n 'frontend:ci, backend:ci' -c blue,cyan",
         "frontend:ci": "cd frontend && npm ci",
         "backend:ci": "cd backend && npm ci",
         "generate": "concurrently npm:backend:generate -c cyan && concurrently npm:frontend:generate -c blue",

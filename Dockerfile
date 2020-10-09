@@ -3,10 +3,11 @@ USER root
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY backend/package.json backend/package-lock.json ./backend/
-RUN cd backend && npm ci
 COPY frontend/package.json frontend/package-lock.json ./frontend/
-RUN cd frontend && npm ci
+RUN npm run postinstall
 COPY ./ ./
+RUN npm run generate
+RUN npm test
 RUN npm run build
 RUN rm -rf backend/node_modules
 RUN cd backend && npm ci --only=production --no-optional
