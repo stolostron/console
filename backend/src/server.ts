@@ -1,17 +1,19 @@
 /* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpError } from '@kubernetes/client-node'
 import Axios from 'axios'
 import { fastify as Fastify, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCompress from 'fastify-compress'
 import fastifyCookie from 'fastify-cookie'
 import fastifyCors from 'fastify-cors'
-import fastifyGQL from 'fastify-gql'
-import fastifyHelmet from 'fastify-helmet'
 import { fastifyOauth2, OAuth2Namespace } from 'fastify-oauth2'
 import fastifyStatic from 'fastify-static'
 import { readFile } from 'fs'
+import { GraphQLError } from 'graphql'
 import { STATUS_CODES } from 'http'
 import * as https from 'https'
+import fastifyGQL from 'mercurius'
+import * as path from 'path'
 import { join } from 'path'
 import 'reflect-metadata'
 import { buildSchema } from 'type-graphql'
@@ -20,6 +22,7 @@ import { promisify } from 'util'
 import { BareMetalAssetResolver } from './entities/bare-metal-asset'
 import { ClusterDeploymentResolver } from './entities/cluster-deployment'
 import { ClusterImageSetResolver } from './entities/cluster-image-set'
+import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
 import { MetadataResolver } from './entities/common/metadata'
 import { ManagedClusterResolver } from './entities/managed-cluster'
 import { NamespaceResolver } from './entities/namespace'
@@ -27,8 +30,6 @@ import { ProviderConnectionsResolver } from './entities/provider-connection'
 import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
-import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
-import * as path from 'path'
 
 function noop(): void {
     /* Do Nothing */
@@ -71,21 +72,7 @@ export async function startServer(): Promise<FastifyInstance> {
     fastify.addHook('onRequest', (request, reply, done) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         ;(request as any).start = process.hrtime()
-
-        if (request.url === '/graphql') {
-            const token = request.cookies['acm-access-token-cookie']
-            if (!token) {
-                void reply.code(401).send()
-            } else {
-                // logger.warn({ msg: 'token', token })
-                // setTimeout(() => {
-                //     done()
-                // }, 5 * 1000)
-                done()
-            }
-        } else {
-            done()
-        }
+        done()
     })
 
     fastify.addHook('onResponse', (request, reply, done) => {
@@ -234,8 +221,6 @@ export async function startServer(): Promise<FastifyInstance> {
 
     // await fastify.register(fastifyHelmet)
 
-    // await fastify.register(fastifyEtag)
-
     const schema = await buildSchema({
         resolvers: [
             ManagedClusterResolver,
@@ -262,14 +247,19 @@ export async function startServer(): Promise<FastifyInstance> {
         errorFormatter: (err, ctx) => {
             if (Array.isArray(err.errors)) {
                 for (const error of err.errors) {
-                    if (error instanceof Error) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-                        const originalError = (error as any).originalError
-                        if (originalError) {
-                            logError(error.name, originalError)
-                        } else {
-                            logError(error.name, error)
+                    if (error instanceof GraphQLError) {
+                        if (error.originalError instanceof HttpError) {
+                            switch (error.originalError.statusCode) {
+                                case 401:
+                                case 403:
+                                    return {
+                                        statusCode: 401,
+                                        response: {},
+                                    }
+                            }
                         }
+                    } else if (error instanceof Error) {
+                        logError(error.name, error)
                     } else if (typeof error === 'string') {
                         logger.error({ msg: 'error', error })
                     } else {

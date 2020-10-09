@@ -1,4 +1,4 @@
-import React from 'react'
+import { ApolloError } from '@apollo/client'
 import {
     Card,
     CardBody,
@@ -11,22 +11,21 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import { ApolloError } from '@apollo/client'
-import { ServerParseError } from '@apollo/client'
+import React from 'react'
 
 export interface ErrorPageProps {
     error: ApolloError
 }
 
 export function ErrorPage(props: ErrorPageProps) {
-    const { error } = props
-    if (error.networkError?.name === 'ServerParseError') {
-        const serverParseError = error.networkError as ServerParseError
-        if (serverParseError.statusCode === 401) {
-            window.location.href = `${process.env.REACT_APP_BACKEND}/login`
-            return <></>
-        }
-    }
+    // const { error } = props
+    // if (error.networkError?.name === 'ServerParseError') {
+    //     const serverParseError = error.networkError as ServerParseError
+    //     if (serverParseError.statusCode === 401) {
+    //         window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+    //         return <></>
+    //     }
+    // }
     return (
         <PageSection>
             <Card>
@@ -37,7 +36,7 @@ export function ErrorPage(props: ErrorPageProps) {
                         <Title size="lg" headingLevel="h4">
                             Error
                         </Title>
-                        <EmptyStateBody>{JSON.stringify(error)}</EmptyStateBody>
+                        <EmptyStateBody>TODO</EmptyStateBody>
                     </EmptyState>
                 </CardBody>
                 <CardFooter></CardFooter>

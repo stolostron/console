@@ -1,33 +1,30 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
+import { ApolloClient, from, HttpLink, InMemoryCache, ServerError } from '@apollo/client'
+import { onError } from '@apollo/client/link/error'
+import { RetryLink } from '@apollo/client/link/retry'
 
-const httpLink = new HttpLink({
-    uri: `${process.env.REACT_APP_BACKEND}/graphql`,
-    credentials: 'include',
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+    if (networkError) {
+        if (networkError?.name === 'ServerError') {
+            const serverError = networkError as ServerError
+            switch (serverError.statusCode) {
+                case 401:
+                    window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+                    break
+            }
+        }
+    }
 })
 
-// const wsLink = new WebSocketLink({
-//     uri: `ws://localhost:4000/graphql`,
-//     options: {
-//         reconnect: true,
-//     },
-// })
-
-// // The split function takes three parameters:
-// //
-// // * A function that's called for each operation to execute
-// // * The Link to use for an operation if the function returns a "truthy" value
-// // * The Link to use for an operation if the function returns a "falsy" value
-// const splitLink = split(
-//     ({ query }) => {
-//         const definition = getMainDefinition(query)
-//         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
-//     },
-//     wsLink,
-//     httpLink
-// )
+const link = from([
+    new RetryLink(),
+    errorLink,
+    new HttpLink({
+        uri: `${process.env.REACT_APP_BACKEND}/graphql`,
+        credentials: 'include',
+    }),
+])
 
 export const client = new ApolloClient({
-    link: httpLink,
+    link,
     cache: new InMemoryCache(),
-    credentials: 'include',
 })

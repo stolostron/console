@@ -27,7 +27,7 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const { loading, error, data } = useManagedClustersQuery({ client, pollInterval: 30 * 1000 })
+    const { loading, error, data } = useManagedClustersQuery({ client, pollInterval: 10 * 1000 })
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {
