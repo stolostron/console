@@ -1,7 +1,9 @@
 import {
+    AcmEmptyPage,
     AcmExpandable,
     AcmForm,
     AcmLabelsInput,
+    AcmLoadingPage,
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
@@ -11,9 +13,7 @@ import {
 import { ActionGroup, Button, Form, FormGroup, TextInput } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
 import { providers } from '../../../lib/providers'
 import {
@@ -41,7 +41,7 @@ export function CreateClusterPageData() {
     const [createClusterDeployment] = useCreateClusterDeploymentMutation({ client })
 
     if (providerConnectionsQuery.loading || clusterImageSetsQuery.loading) {
-        return <LoadingPage />
+        return <AcmLoadingPage />
     } else if (providerConnectionsQuery.error) {
         return <ErrorPage error={providerConnectionsQuery.error} />
     } else if (clusterImageSetsQuery.error) {
@@ -51,7 +51,7 @@ export function CreateClusterPageData() {
         providerConnectionsQuery.data?.providerConnections.length === 0
     ) {
         return (
-            <EmptyPage
+            <AcmEmptyPage
                 title="No provider connections found."
                 message="No provider connections found."
                 action="Create connection"
@@ -61,7 +61,7 @@ export function CreateClusterPageData() {
         !clusterImageSetsQuery.data?.clusterImageSets ||
         clusterImageSetsQuery.data?.clusterImageSets.length === 0
     ) {
-        return <EmptyPage title="No image sets found." message="No image sets clusters found." />
+        return <AcmEmptyPage title="No image sets found." message="No image sets clusters found." />
     }
 
     return (

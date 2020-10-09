@@ -1,13 +1,18 @@
-import { AcmLabels, AcmPageCard, AcmTable, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import {
+    AcmEmptyPage,
+    AcmLabels,
+    AcmLoadingPage,
+    AcmPageCard,
+    AcmTable,
+    IAcmTableColumn,
+} from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import React, { Fragment } from 'react'
 import { useHistory } from 'react-router-dom'
-import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
 import { ManagedCluster, useManagedClustersQuery } from '../../../sdk'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
@@ -24,11 +29,11 @@ export function ClustersPage() {
 export function ClustersPageContent() {
     const { loading, error, data } = useManagedClustersQuery({ client, pollInterval: 30 * 1000 })
     if (loading) {
-        return <LoadingPage />
+        return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (!data?.managedClusters || data.managedClusters.length === 0) {
-        return <EmptyPage title="No clusters found." message="No managed clusters found." action="Create cluster" />
+        return <AcmEmptyPage title="No clusters found." message="No managed clusters found." action="Create cluster" />
     }
     return (
         <AcmPageCard>

@@ -1,8 +1,7 @@
-import { AcmEmptyPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
+import { AcmEmptyPage, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
 import { Page, ToggleGroup } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
 import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
@@ -19,7 +18,7 @@ export function BareMetalAssetsPage() {
 export function BareMetalAssets() {
     const { data, loading, error } = useBareMetalAssetsQuery({ client })
     if (loading) {
-        return <LoadingPage />
+        return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (!data?.bareMetalAssets || data.bareMetalAssets.length === 0) {

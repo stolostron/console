@@ -1,11 +1,16 @@
-import { AcmPageCard, AcmTable, compareStrings, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import {
+    AcmEmptyPage,
+    AcmLoadingPage,
+    AcmPageCard,
+    AcmTable,
+    compareStrings,
+    IAcmTableColumn,
+} from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import {
@@ -31,12 +36,12 @@ export function ProviderConnectionsPageContent() {
         pollInterval: 10 * 1000,
     })
     if (loading) {
-        return <LoadingPage />
+        return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (!data?.providerConnections || data.providerConnections.length === 0) {
         return (
-            <EmptyPage
+            <AcmEmptyPage
                 title="No provider connections found."
                 message="Your cluster does not contain any provider connections."
                 action="Create connection"

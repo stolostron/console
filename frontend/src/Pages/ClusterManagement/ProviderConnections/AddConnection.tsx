@@ -1,10 +1,15 @@
-import { AcmPageCard, AcmPageHeader, AcmSelect, AcmTextInput } from '@open-cluster-management/ui-components'
+import {
+    AcmEmptyPage,
+    AcmLoadingPage,
+    AcmPageCard,
+    AcmPageHeader,
+    AcmSelect,
+    AcmTextInput,
+} from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Form, Page } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { EmptyPage } from '../../../components/EmptyPage'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { client } from '../../../lib/apollo-client'
 import { ProviderID, providers } from '../../../lib/providers'
 import {
@@ -31,11 +36,11 @@ export function AddConnectionPageData() {
     // const [createProviderConnectionMutation, { data, loading, error }] = useCreateProviderConnectionMutation({ client })
 
     if (namespacesQuery.loading) {
-        return <LoadingPage />
+        return <AcmLoadingPage />
     } else if (namespacesQuery.error) {
         return <ErrorPage error={namespacesQuery.error} />
     } else if (!namespacesQuery.data?.namespaces || namespacesQuery.data.namespaces.length === 0) {
-        return <EmptyPage title="No namespaces found." message="No namespaces found." />
+        return <AcmEmptyPage title="No namespaces found." message="No namespaces found." />
     }
 
     return (
