@@ -1,7 +1,7 @@
 import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Nav, NavItem, NavList, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React from 'react'
-import { BrowserRouter as Router, Redirect, Route, Switch, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { BareMetalAssetsPage } from './BareMetalAssets/BaremetalAssets'
 import { ClusterDetailsPage } from './Clusters/ClusterDetails'
 import { ClustersPage } from './Clusters/Clusters'
@@ -37,19 +37,13 @@ export function ClusterManagementNavigation() {
             <Nav variant="tertiary" style={{ paddingLeft: '12px' }}>
                 <NavList>
                     <NavItem isActive={l.pathname.endsWith(NavigationPath.clusters)} to={NavigationPath.clusters}>
-                        Clusters
+                        <Link to={NavigationPath.clusters}>Clusters</Link>
                     </NavItem>
-                    <NavItem
-                        isActive={l.pathname.endsWith(NavigationPath.providerConnections)}
-                        to={NavigationPath.providerConnections}
-                    >
-                        Provider Connections
+                    <NavItem isActive={l.pathname.endsWith(NavigationPath.providerConnections)}>
+                        <Link to={NavigationPath.providerConnections}>Provider Connections</Link>
                     </NavItem>
-                    <NavItem
-                        isActive={l.pathname.endsWith(NavigationPath.baremetalAssets)}
-                        to={NavigationPath.baremetalAssets}
-                    >
-                        Bare-metal Assets
+                    <NavItem isActive={l.pathname.endsWith(NavigationPath.baremetalAssets)}>
+                        <Link to={NavigationPath.baremetalAssets}>Bare-metal Assets</Link>
                     </NavItem>
                 </NavList>
             </Nav>
