@@ -10,7 +10,7 @@ import { Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
@@ -27,7 +27,16 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const { loading, error, data } = useManagedClustersQuery({ client, pollInterval: 10 * 1000 })
+    const { loading, error, data, refetch, startPolling, stopPolling } = useManagedClustersQuery({
+        client,
+    })
+    useEffect(() => {
+        refetch()
+        startPolling(10 * 1000)
+        return () => {
+            stopPolling()
+        }
+    }, [refetch, startPolling, stopPolling])
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {

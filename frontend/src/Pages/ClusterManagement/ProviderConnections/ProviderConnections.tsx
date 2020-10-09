@@ -7,7 +7,7 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -31,10 +31,16 @@ export function ProviderConnectionsPage() {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, refetch } = useProviderConnectionsQuery({
+    const { loading, error, data, refetch, stopPolling, startPolling } = useProviderConnectionsQuery({
         client,
-        pollInterval: 10 * 1000,
     })
+    useEffect(() => {
+        refetch()
+        startPolling(10 * 1000)
+        return () => {
+            stopPolling()
+        }
+    }, [refetch, startPolling, stopPolling])
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {

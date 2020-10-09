@@ -9,7 +9,6 @@ function App() {
         <AcmHeader activeItem={NavItemE.clusterManagement}>
             <Router>
                 <Switch>
-                    <Route path="/home">TODO</Route>
                     <Route path="/cluster-management">
                         <ClusterManagement />
                     </Route>

@@ -1,6 +1,6 @@
 import { AcmEmptyPage, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
-import { Page, ToggleGroup } from '@patternfly/react-core'
-import React, { useState } from 'react'
+import { Page } from '@patternfly/react-core'
+import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
 import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
@@ -16,7 +16,16 @@ export function BareMetalAssetsPage() {
 }
 
 export function BareMetalAssets() {
-    const { data, loading, error } = useBareMetalAssetsQuery({ client })
+    const { data, loading, error, startPolling, stopPolling, refetch } = useBareMetalAssetsQuery({
+        client,
+    })
+    useEffect(() => {
+        refetch()
+        startPolling(10 * 1000)
+        return () => {
+            stopPolling()
+        }
+    }, [refetch, startPolling, stopPolling])
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {

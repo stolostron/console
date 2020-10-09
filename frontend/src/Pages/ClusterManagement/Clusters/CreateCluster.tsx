@@ -1,6 +1,6 @@
 import {
     AcmEmptyPage,
-    AcmExpandable,
+    AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
     AcmLoadingPage,
@@ -179,7 +179,7 @@ export function CreateClusterPageContent(props: {
                     required
                 />
 
-                <AcmExpandable
+                <AcmExpandableSection
                     label="Node Pools"
                     hidden={
                         !clusterDeploymentInput.baseDomain ||
@@ -190,9 +190,9 @@ export function CreateClusterPageContent(props: {
                     <FormGroup label="Region" isRequired fieldId="simple-form-name">
                         <TextInput isRequired id="simple-form-name" name="simple-form-name" />
                     </FormGroup>
-                </AcmExpandable>
+                </AcmExpandableSection>
 
-                <AcmExpandable label="Networking" hidden={!clusterDeploymentInput.baseDomain}>
+                <AcmExpandableSection label="Networking" hidden={!clusterDeploymentInput.baseDomain}>
                     <Form>
                         <FormGroup label="Network type" isRequired fieldId="simple-form-name">
                             <TextInput isRequired id="simple-form-name" name="simple-form-name" />
@@ -228,9 +228,9 @@ export function CreateClusterPageContent(props: {
                             <TextInput type="text" id="simple-form-name" name="simple-form-name" />
                         </FormGroup>
                     </Form>
-                </AcmExpandable>
+                </AcmExpandableSection>
 
-                <AcmExpandable label="Labels" hidden={!clusterDeploymentInput.baseDomain}>
+                <AcmExpandableSection label="Labels" hidden={!clusterDeploymentInput.baseDomain}>
                     <Form>
                         {/* <AcmTextInput id="environmentLabelInput" label="Environment Label" /> */}
 
@@ -243,7 +243,7 @@ export function CreateClusterPageContent(props: {
                             }}
                         />
                     </Form>
-                </AcmExpandable>
+                </AcmExpandableSection>
 
                 <ActionGroup>
                     <Button
