@@ -1,7 +1,9 @@
-import { Arg, Ctx, Field, ObjectType, Query, Resolver } from 'type-graphql'
+import { Arg, Ctx, Field, FieldResolver, ObjectType, Query, Resolver, Root } from 'type-graphql'
 import { CustomObjectService } from '../lib/custom-object-service'
 import { IUserContext } from '../lib/user-context'
 import { Resource } from './common/resource'
+import { ManagedClusterAddOn, managedClusterAddOnService } from './managed-cluster-addon'
+import { ManagedCluster, managedClusterService } from './managed-cluster'
 
 export const clusterManagementAddOnService = new CustomObjectService<ClusterManagementAddOn>({
     group: 'addon.open-cluster-management.io',
@@ -21,7 +23,7 @@ export class ClusterManagementAddOnConfigutation {
 @ObjectType()
 export class ClusterManagementAddOnMeta {
     @Field()
-    decription: string
+    description: string
 
     @Field()
     displayName: string
@@ -40,6 +42,9 @@ export class ClusterManagementAddOnSpec {
 export class ClusterManagementAddOn extends Resource {
     @Field()
     spec: ClusterManagementAddOnSpec
+
+    // @Field((type) => ManagedClusterAddOn, { nullable: true})
+    // managedClusterAddon: ManagedClusterAddOn
 }
 
 @Resolver(/* istanbul ignore next */ (of) => ClusterManagementAddOn)
@@ -47,9 +52,50 @@ export class ClusterManagementAddOnResolver {
     @Query((returns) => [ClusterManagementAddOn])
     clusterManagementAddOns(
         @Ctx() userContext: IUserContext,
-        @Arg('fieldSelector', { nullable: true }) fieldSelector?: string,
-        @Arg('labelSelector', { nullable: true }) labelSelector?: string
+        
     ): Promise<ClusterManagementAddOn[]> {
-        return clusterManagementAddOnService.query(userContext.token, fieldSelector, labelSelector)
+        return clusterManagementAddOnService.query(userContext.token)
     }
+
+    //@Query((returns) => ManagedClusterAddOn)
+    // @FieldResolver()
+    // managedClusterAddon(
+    //     @Root() clusterManagementAddOn: ClusterManagementAddOn,
+    //     @Root() managedCluster: ManagedCluster,
+    //     @Ctx() userContext: IUserContext,
+    // ): Promise<ManagedClusterAddOn> {
+    //     return managedClusterAddOnService.get(
+    //         userContext.token,
+    //         clusterManagementAddOn.metadata.name,
+    //         managedCluster.metadata.name,
+    //     )
+        
+
+    //       // return managedClusterInfoService.get(
+    //     //     userContext.token,
+    //     //     managedCluster.metadata.name,
+    //     //     managedCluster.metadata.name
+    //     // )
+     //}
+
+
+    // managedClusterAddon(
+    //     @Root() clusterManagementAddOn: ClusterManagementAddOn, 
+    //     @Ctx() userContext: IUserContext,
+    //     @Arg('namespace', { nullable: true }) namespace?: string
+    // ): Promise<ManagedClusterAddOn[]> {
+    //     namespace="leena-ocp"
+    //     if (namespace) {
+    //         return managedClusterAddOnService.query(
+    //             userContext.token,
+    //             `metadata.name=${clusterManagementAddOn.metadata.name},metadata.namespace=${namespace},`
+    //         )
+    //     } else {
+    //         return managedClusterAddOnService.query(
+    //             userContext.token,
+    //             `metadata.name=${clusterManagementAddOn.metadata.name}`
+    //         )
+    //     }
+    // }
 }
+

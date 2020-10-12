@@ -1,0 +1,20 @@
+query clusterManagementAddOns {
+    clusterManagementAddOns {
+        metadata {
+            uid
+            name
+            namespace
+            labels
+        }
+        spec {
+            addOnConfiguration {
+                crName
+                crdName
+            }
+            addOnMeta {
+                description
+                displayName
+            }
+        }
+    }
+}

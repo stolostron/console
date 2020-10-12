@@ -1,0 +1,11 @@
+query managedClusterAddOns {
+    managedClusterAddOns {
+        metadata {
+            uid
+            name
+            namespace
+            labels
+        }
+        displayAddOnStatus
+    }
+}

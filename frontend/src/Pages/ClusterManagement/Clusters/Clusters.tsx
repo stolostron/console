@@ -10,8 +10,8 @@ import { Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
-import React, { Fragment, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import React, { Component, Fragment, useEffect } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
 import { ManagedCluster, useManagedClustersQuery } from '../../../sdk'
@@ -57,7 +57,9 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
             header: 'Name',
             sort: 'metadata.name',
             search: 'metadata.name',
-            cell: 'metadata.name',
+            cell: (managedCluster) => (
+                <Link to={NavigationPath.clusterDetails.replace(":id", managedCluster.metadata.name)}>{managedCluster.metadata.name}</Link>
+            ),
         },
         {
             header: 'Status',

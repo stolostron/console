@@ -14,7 +14,7 @@ describe(`graphql query clusterManagementAddOns`, function () {
         const clusterManagementAddOn: Partial<ClusterManagementAddOn> = {
             spec: {
                 addOnConfiguration: { crName: 'crName', crdName: 'crdName' },
-                addOnMeta: { decription: 'decription', displayName: 'displayName' },
+                addOnMeta: { description: 'description', displayName: 'displayName' },
             } as ClusterManagementAddOnSpec,
         }
 
@@ -37,8 +37,13 @@ describe(`graphql query clusterManagementAddOns`, function () {
                                 crdName
                             }
                             addOnMeta {
-                                decription
+                                description
                                 displayName
+                            }
+                        }
+                        managedclusteraddon {
+                            metadata {
+                                name
                             }
                         }
                     }
