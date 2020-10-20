@@ -8,17 +8,17 @@ i18n
   .use(LanguageDetector)
   .use(HttpApi)
   .init({
-    keySeparator: false,
+    keySeparator: false, // this repo will use single level json
 
     interpolation: {
-      escapeValue: false,
+      escapeValue: false, // react handles this already
     },
 
     defaultNS: 'common', // the default file for strings when using useTranslation, etc
 
     supportedLngs: ['en', 'fr'], // only languages from this array will attempt to be loaded
     nonExplicitSupportedLngs: true, // allows for example en-US/en-UK to be supported when en is supported
-    fallbackLng: ['en'] // if language is not supported, or string is missing fallback to English
+    fallbackLng: ['en'] // if language is not supported or string is missing, fallback to English
   })
 
   export default i18n
