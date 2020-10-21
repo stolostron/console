@@ -6,6 +6,7 @@ COPY backend/package.json backend/package-lock.json ./backend/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN npm run postinstall
 COPY ./ ./
+RUN ls -l; ls -l frontend; ls -l backend;
 RUN npm run generate
 RUN npm test
 RUN npm run build
