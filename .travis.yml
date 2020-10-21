@@ -26,6 +26,7 @@ jobs:
       name: "Run unit tests"
       script:
         - npm ci
+        - npm run generate
         - npm test
 
     - stage: build
