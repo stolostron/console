@@ -88,7 +88,14 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
             header: 'Distribution',
             sort: 'status.version.kubernetes',
             search: 'status.version.kubernetes',
-            cell: 'status.version.kubernetes',
+            cell: managedCluster => {
+                const { ocp } = managedCluster?.info?.status?.distributionInfo ?? {}
+                if (ocp) {
+                    return `OpenShift ${ocp.version}`
+                } else {
+                    return 'status.version.kubernetes'
+                }
+            },
         },
         {
             header: 'Labels',

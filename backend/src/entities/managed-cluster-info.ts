@@ -23,12 +23,33 @@ export class Node {
 }
 
 @ObjectType()
+export class OCPInfo {
+    @Field((type) => [String])
+    availableUpdates: string[]
+
+    @Field()
+    desiredVersion: string
+
+    @Field()
+    version: string
+}
+
+@ObjectType()
+export class DistributionInfo {
+    @Field({ nullable: true })
+    ocp: OCPInfo
+}
+
+@ObjectType()
 export class ManagedClusterInfoStatus {
     @Field((type) => [Condition])
     conditions: Condition[]
 
     @Field((type) => [Node], { nullable: true })
     nodeList: Node[]
+
+    @Field((type) => DistributionInfo, { nullable: true })
+    distributionInfo: DistributionInfo
 }
 
 @ObjectType()

@@ -56,6 +56,13 @@ query managedClusters {
                     type
                     message
                 }
+                distributionInfo {
+                    ocp {
+                        availableUpdates
+                        desiredVersion
+                        version
+                    }
+                }
             }
         }
         displayStatus
