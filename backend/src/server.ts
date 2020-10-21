@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpError } from '@kubernetes/client-node'
-import Axios from 'axios'
+import Axios, { Method } from 'axios'
 import { fastify as Fastify, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCompress from 'fastify-compress'
 import fastifyCookie from 'fastify-cookie'
@@ -58,6 +58,25 @@ export async function startServer(): Promise<FastifyInstance> {
 
     fastify.get('/readinessProbe', async (req, res) => {
         await res.code(200).send()
+    })
+
+    fastify.get('/proxy/*', async (req, res) => {
+        try {
+            const token = req.cookies['acm-access-token-cookie']
+            const result = await Axios.request({
+                url: process.env.CLUSTER_API_URL + req.url.substr(6),
+                method: req.method as Method,
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                responseType: 'json',
+            })
+            await res.code(result.status).send(result.data)
+        } catch (err) {
+            console.log(err)
+            throw err
+        }
     })
 
     if (process.env.NODE_ENV !== 'production') {
