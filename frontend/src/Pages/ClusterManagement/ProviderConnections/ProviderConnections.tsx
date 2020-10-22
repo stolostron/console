@@ -9,6 +9,7 @@ import {
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
@@ -31,6 +32,7 @@ export function ProviderConnectionsPage() {
 }
 
 export function ProviderConnectionsPageContent() {
+    const { t } = useTranslation(['connection'])
     const { loading, error, data, refetch, stopPolling, startPolling } = useProviderConnectionsQuery({
         client,
     })
@@ -48,9 +50,9 @@ export function ProviderConnectionsPageContent() {
     } else if (!data?.providerConnections || data.providerConnections.length === 0) {
         return (
             <AcmEmptyPage
-                title="No provider connections found."
-                message="Your cluster does not contain any provider connections."
-                action="Create connection"
+                title={t('empty.title')}
+                message={t('empty.subtitle')}
+                action={t('add')}
             />
         )
     }
@@ -70,15 +72,16 @@ function getProvider(labels: string[]) {
 }
 
 export function ProviderConnectionsTable(props: { providerConnections: ProviderConnection[]; refetch: () => {} }) {
+    const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
         {
-            header: 'Name',
+            header: t('table.header.name'),
             sort: 'metadata.name',
             search: 'metadata.name',
             cell: 'metadata.name',
         },
         {
-            header: 'Provider',
+            header: t('table.header.provider'),
             sort: (a: ProviderConnection, b: ProviderConnection) => {
                 return compareStrings(getProvider(a.metadata.labels), getProvider(b.metadata.labels))
             },
@@ -87,7 +90,7 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
             },
         },
         {
-            header: 'Namespace',
+            header: t('table.header.namespace'),
             sort: 'metadata.namespace',
             search: 'metadata.namespace',
             cell: 'metadata.namespace',
@@ -118,21 +121,21 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
                 tableActions={[
                     {
                         id: 'addConnenction',
-                        title: 'Add connection',
+                        title: t('add'),
                         click: () => {
                             history.push(NavigationPath.addConnection)
                         },
                     },
                 ]}
-                bulkActions={[{ id: 'deleteConnenction', title: 'Delete connections', click: (items: Secret[]) => {} }]}
+                bulkActions={[{ id: 'deleteConnection', title: t('common:delete'), click: (items: Secret[]) => {} }]}
                 rowActions={[
-                    { id: 'editConnenction', title: 'Edit connection', click: (item: Secret) => {} },
+                    { id: 'editConnection', title: t('edit'), click: (item: Secret) => {} },
                     {
-                        id: 'deleteConnenction',
-                        title: 'Delete connection',
+                        id: 'deleteConnection',
+                        title: t('delete'),
                         click: (secret: Secret) => {
                             setConfirm({
-                                title: 'Delete provider connection',
+                                title: t('modal.delete.title'),
                                 message: `You are about to delete ${secret.metadata.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: () => {
