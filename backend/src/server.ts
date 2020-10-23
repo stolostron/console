@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpError } from '@kubernetes/client-node'
-import Axios, { Method } from 'axios'
+import Axios, { AxiosResponse, Method } from 'axios'
 import { fastify as Fastify, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCompress from 'fastify-compress'
 import fastifyCookie from 'fastify-cookie'
@@ -60,19 +60,85 @@ export async function startServer(): Promise<FastifyInstance> {
         await res.code(200).send()
     })
 
-    fastify.get('/proxy/*', async (req, res) => {
-        try {
-            const token = req.cookies['acm-access-token-cookie']
-            const result = await Axios.request({
-                url: process.env.CLUSTER_API_URL + req.url.substr(6),
-                method: req.method as Method,
+    async function kubeRequest<T>(token: string, method: string, url: string): Promise<AxiosResponse<T>> {
+        let response: AxiosResponse<T>
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            response = await Axios.request<T>({
+                url,
+                method: method as Method,
                 httpsAgent: new https.Agent({ rejectUnauthorized: false }),
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
                 responseType: 'json',
+                validateStatus: () => true,
             })
-            await res.code(result.status).send(result.data)
+            if (response.status === 200) {
+                break
+            }
+            switch (response.status) {
+                case 429:
+                    await new Promise((resolve) => setTimeout(resolve, 100))
+            }
+        }
+        return response
+    }
+
+    async function proxy(req: FastifyRequest, res: FastifyReply) {
+        try {
+            const token = req.cookies['acm-access-token-cookie']
+            if (!token) return res.code(401).send()
+
+            let url = req.url.substr(6)
+            let query = ''
+            if (url.includes('?')) {
+                query = url.substr(url.indexOf('?'))
+                url = url.substr(0, url.indexOf('?'))
+            }
+
+            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + url + query
+            )
+            return res.code(200).send(result.data.items)
+        } catch (err) {
+            console.log(err)
+            throw err
+        }
+    }
+
+    fastify.all('/proxy/*', proxy)
+
+    fastify.get('/namespaced/*', async (req, res) => {
+        try {
+            const token = req.cookies['acm-access-token-cookie']
+            if (!token) return res.code(401).send()
+
+            let url = req.url.substr(11)
+            let query = ''
+            if (url.includes('?')) {
+                query = url.substr(url.indexOf('?'))
+                url = url.substr(0, url.indexOf('?'))
+            }
+
+            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects'
+            )
+            const promises = result.data.items.map((project) => {
+                const parts = url.split('/')
+                const plural = parts[parts.length - 1]
+                const path = parts.slice(0, parts.length - 1).join('/')
+                const finalUrl =
+                    process.env.CLUSTER_API_URL + path + '/namespaces/' + project.metadata.name + '/' + plural + query
+                return kubeRequest<{ items: { metadata: { name: string } }[] }>(token, req.method, finalUrl)
+            })
+
+            const results = await Promise.all(promises)
+            return res.code(200).send(results.map((r) => r.data.items).flat())
         } catch (err) {
             console.log(err)
             throw err
@@ -82,7 +148,7 @@ export async function startServer(): Promise<FastifyInstance> {
     if (process.env.NODE_ENV !== 'production') {
         await fastify.register(fastifyCors, {
             origin: true,
-            methods: ['GET', 'PUT', 'POST'],
+            methods: ['GET', 'PUT', 'POST', 'DELETE'],
             credentials: true,
         })
     }

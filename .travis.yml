@@ -1,0 +1,51 @@
+language: node_js
+
+node_js:
+  - 12
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+    - /^release-[0-9]+\..*$/
+
+stages:
+  - unit-test
+  - build
+  - release-ff
+  - publish
+
+before_script:
+  - make init
+
+jobs:
+  include:
+    - stage: unit-test
+      name: "Run unit tests"
+      script:
+        - npm ci
+        - npm run generate
+        - npm test
+
+    - stage: build
+      name: "build image"
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        - make
+        - make component/build
+        - if [ "$DOCKER_PASS" != "" ]; then make component/push ; else echo "No DOCKER_PASS. Skipping image push."; fi
+    
+    - stage: release-ff
+      name: "Push commits to current release branch"
+      if: type = push AND branch =~ /^master$/
+      script:
+        - make release-ff
+
+    - stage: publish
+      name: "Publish Image"
+      if: type = push AND branch =~ /^release-[0-9]+\..*$/
+      script:
+        - make jq/install 
+        - make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}
