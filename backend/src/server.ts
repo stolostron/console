@@ -366,7 +366,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
     await fastify.register(fastifyStatic, {
         root: join(__dirname, 'public'),
-        // prefix: '/public/', // optional: default '/'
+        prefix: '/cluster-management/', // optional: default '/'
     })
 
     fastify.addHook('onClose', (instance, done: () => void) => {
