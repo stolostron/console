@@ -7,7 +7,7 @@ setup()
 
 describe(`gcp provider`, function () {
     it(`provider connection should not exist before create`, async function () {
-        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`graphql`, {
+        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     providerConnections {
@@ -28,7 +28,7 @@ describe(`gcp provider`, function () {
     })
 
     it(`provider connection should create`, async function () {
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 mutation {
                     createProviderConnection(
@@ -52,7 +52,7 @@ describe(`gcp provider`, function () {
     })
 
     it(`provider connection should exist after create`, async function () {
-        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`graphql`, {
+        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     providerConnections {
@@ -73,7 +73,7 @@ describe(`gcp provider`, function () {
     })
 
     // it(`managed cluster should not already exist`, async function () {
-    //     const result = await request.post<{ data: { managedClusters: ManagedCluster[] } }>(`graphql`, {
+    //     const result = await request.post<{ data: { managedClusters: ManagedCluster[] } }>(`cluster-management/graphql`, {
     //         query: /* GraphQL */ `
     //             query {
     //                 managedClusters {
@@ -108,7 +108,7 @@ describe(`gcp provider`, function () {
     // })
 
     it(`provider connection should delete`, async function () {
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 mutation {
                     deleteProviderConnection(name: "gcp-e2e-test-connection", namespace: "default")
@@ -119,7 +119,7 @@ describe(`gcp provider`, function () {
     })
 
     it(`provider connection should not exist after delete`, async function () {
-        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`graphql`, {
+        const result = await request.post<{ data: { providerConnections: ProviderConnection[] } }>(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     providerConnections {

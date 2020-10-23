@@ -19,7 +19,7 @@ const link = from([
     new RetryLink(),
     errorLink,
     new HttpLink({
-        uri: `${process.env.REACT_APP_BACKEND}/graphql`,
+        uri: `${process.env.REACT_APP_BACKEND}/cluster-management/graphql`,
         credentials: 'include',
     }),
 ])
