@@ -11,14 +11,8 @@ import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { client } from '../../../lib/apollo-client'
+import { ProviderConnections, ProviderConnection, providerConnections } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import {
-    ProviderConnection,
-    Secret,
-    useDeleteProviderConnectionMutation,
-    useProviderConnectionsQuery,
-} from '../../../sdk'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ProviderConnectionsPage() {
@@ -31,21 +25,19 @@ export function ProviderConnectionsPage() {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, refetch, stopPolling, startPolling } = useProviderConnectionsQuery({
-        client,
-    })
+    const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
+
+    useEffect(refresh, [refresh])
     useEffect(() => {
-        refetch()
-        startPolling(10 * 1000)
-        return () => {
-            stopPolling()
-        }
-    }, [refetch, startPolling, stopPolling])
+        startPolling(5 * 1000)
+        return stopPolling
+    }, [startPolling, stopPolling, refresh])
+
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data?.providerConnections || data.providerConnections.length === 0) {
+    } else if (!data || data.length === 0) {
         return (
             <AcmEmptyPage
                 title="No provider connections found."
@@ -54,22 +46,29 @@ export function ProviderConnectionsPageContent() {
             />
         )
     }
+
+    // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
+
     return (
         <ProviderConnectionsTable
-            providerConnections={data.providerConnections as ProviderConnection[]}
-            refetch={refetch}
-        ></ProviderConnectionsTable>
+            providerConnections={data}
+            refresh={refresh}
+            deleteConnection={providerConnections.delete}
+        />
     )
 }
 
-function getProvider(labels: string[]) {
-    const label = labels.find((label) => label.startsWith('cluster.open-cluster-management.io/provider='))
-    let providerID = label ? label.substr('cluster.open-cluster-management.io/provider='.length) : ''
-    const provider = getProviderByKey(providerID as ProviderID)
+function getProvider(labels: Record<string, string> | undefined) {
+    const label = labels?.['cluster.open-cluster-management.io/provider']
+    const provider = getProviderByKey(label as ProviderID)
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections: ProviderConnection[]; refetch: () => {} }) {
+export function ProviderConnectionsTable(props: {
+    providerConnections: ProviderConnection[]
+    refresh: () => void
+    deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
+}) {
     const columns: IAcmTableColumn<ProviderConnection>[] = [
         {
             header: 'Name',
@@ -80,10 +79,10 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
         {
             header: 'Provider',
             sort: (a: ProviderConnection, b: ProviderConnection) => {
-                return compareStrings(getProvider(a.metadata.labels), getProvider(b.metadata.labels))
+                return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
             },
             cell: (item: ProviderConnection) => {
-                return getProvider(item.metadata.labels)
+                return getProvider(item.metadata?.labels)
             },
         },
         {
@@ -93,11 +92,11 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
             cell: 'metadata.namespace',
         },
     ]
-    function keyFn(secret: Secret) {
-        return secret.metadata.uid
+    function keyFn(providerConnection: ProviderConnection) {
+        return providerConnection.metadata?.uid as string
     }
 
-    const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
+    // const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const history = useHistory()
 
@@ -124,26 +123,32 @@ export function ProviderConnectionsTable(props: { providerConnections: ProviderC
                         },
                     },
                 ]}
-                bulkActions={[{ id: 'deleteConnenction', title: 'Delete connections', click: (items: Secret[]) => {} }]}
+                bulkActions={[
+                    {
+                        id: 'deleteConnenction',
+                        title: 'Delete connections',
+                        click: (items: ProviderConnection[]) => {},
+                    },
+                ]}
                 rowActions={[
-                    { id: 'editConnenction', title: 'Edit connection', click: (item: Secret) => {} },
+                    { id: 'editConnenction', title: 'Edit connection', click: (item: ProviderConnection) => {} },
                     {
                         id: 'deleteConnenction',
                         title: 'Delete connection',
-                        click: (secret: Secret) => {
+                        click: (providerConnection: ProviderConnection) => {
                             setConfirm({
                                 title: 'Delete provider connection',
-                                message: `You are about to delete ${secret.metadata.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
+                                message: `You are about to delete ${providerConnection.metadata?.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: () => {
-                                    deleteProviderConnection({
-                                        variables: {
-                                            name: secret.metadata.name,
-                                            namespace: secret.metadata.namespace as string,
-                                        },
-                                    }).then(() => {
-                                        props.refetch()
-                                    })
+                                    props
+                                        .deleteConnection(
+                                            providerConnection.metadata?.name,
+                                            providerConnection.metadata?.namespace
+                                        )
+                                        .then(() => {
+                                            props.refresh()
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {

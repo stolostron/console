@@ -2,6 +2,7 @@ import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Nav, NavItem, NavList, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React from 'react'
 import { BrowserRouter as Router, Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BareMetalAssetsPage } from './BareMetalAssets/BaremetalAssets'
 import { ClusterDetailsPage } from './Clusters/ClusterDetails'
 import { ClustersPage } from './Clusters/Clusters'
@@ -22,9 +23,10 @@ export enum NavigationPath {
 }
 
 export function ClusterManagementPageHeader() {
+    const { t } = useTranslation()
     return (
         <React.Fragment>
-            <AcmPageHeader title="Cluster Management" />
+            <AcmPageHeader title={t('page.header.cluster-management')} />
             <ClusterManagementNavigation />
         </React.Fragment>
     )
