@@ -1,7 +1,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, resourceMethods, GetWrapper } from './Resource'
 
-interface Project extends IResource {
+export interface Project extends IResource {
     apiVersion: 'project.openshift.io/v1'
     kind: 'Project'
     metadata: V1ObjectMeta
