@@ -8,6 +8,11 @@ i18n
   .use(LanguageDetector)
   .use(HttpApi)
   .init({
+    backend: {
+      // for all available options read the backend's repository readme file
+      loadPath: '/cluster-management/locales/{{lng}}/{{ns}}.json'
+    },
+
     keySeparator: false, // this repo will use single level json
 
     interpolation: {

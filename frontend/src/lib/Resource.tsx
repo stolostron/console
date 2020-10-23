@@ -74,7 +74,7 @@ async function restRequest<T>(method: Method, url: string, data?: unknown): Prom
 }
 
 export function resourceMethods<Resource extends IResource>(options: { path: string; plural: string }) {
-    const root = `${process.env.REACT_APP_BACKEND}/proxy${options.path}`
+    const root = `${process.env.REACT_APP_BACKEND}/cluster-management/proxy${options.path}`
     return {
         create: function createResource(resource: Resource) {
             let url = root
@@ -90,7 +90,7 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
             return restRequest<Resource>('DELETE', url)
         },
         list: function listClusterResources(labels?: string[]) {
-            let url = `${process.env.REACT_APP_BACKEND}/namespaced${options.path}`
+            let url = `${process.env.REACT_APP_BACKEND}/cluster-management/namespaced${options.path}`
             url += `/${options.plural}`
             if (labels) url += '?labelSelector=' + labels.join(',')
             return restRequest<Resource[]>('GET', url)

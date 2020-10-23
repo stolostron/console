@@ -14,7 +14,7 @@ echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./.env
 OAUTH2_CLIENT_SECRET=multicloudingresssecret
 echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./.env
 
-OAUTH2_REDIRECT_URL=http://localhost:4000/login/callback
+OAUTH2_REDIRECT_URL=http://localhost:4000/cluster-management/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./.env
 
 NODE_TLS_REJECT_UNAUTHORIZED=0

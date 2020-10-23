@@ -109,14 +109,14 @@ export async function startServer(): Promise<FastifyInstance> {
         }
     }
 
-    fastify.all('/proxy/*', proxy)
+    fastify.all('/cluster-management/proxy/*', proxy)
 
-    fastify.get('/namespaced/*', async (req, res) => {
+    fastify.get('/cluster-management/namespaced/*', async (req, res) => {
         try {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
 
-            let url = req.url.substr(11)
+            let url = req.url.substr('/cluster-management/namespaced'.length)
             let query = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
@@ -254,7 +254,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 },
             },
             // register a url to start the redirect flow
-            startRedirectPath: '/login',
+            startRedirectPath: '/cluster-deployment/login',
             // oauth redirect here after the user login
             callbackUri: process.env.OAUTH2_REDIRECT_URL,
             generateStateFunction: (request: FastifyRequest) => {
@@ -272,7 +272,7 @@ export async function startServer(): Promise<FastifyInstance> {
             },
         })
 
-        fastify.get('/login/callback', async function (request, reply) {
+        fastify.get('/cluster-deployment/login/callback', async function (request, reply) {
             const query = request.query as { code: string; state: string }
             validStates.add(query.state)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -288,7 +288,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 .redirect(`${process.env.FRONTEND_URL}`)
         })
 
-        fastify.delete('/login', async function (request, reply) {
+        fastify.delete('/cluster-deployment/login', async function (request, reply) {
             const token = request.cookies['acm-access-token-cookie']
             if (token) {
                 await Axios.delete(
@@ -358,7 +358,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
 
     fastify.setNotFoundHandler((request, response) => {
-        if (!request.url.startsWith('/graphql') && !path.extname(request.url)) {
+        if (!request.url.startsWith('/cluster-management/graphql') && !path.extname(request.url)) {
             void response.code(200).sendFile('index.html', join(__dirname, 'public'))
         } else {
             void response.code(404).send()
