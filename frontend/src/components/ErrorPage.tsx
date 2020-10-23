@@ -14,7 +14,7 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/js/icons/exc
 import React from 'react'
 
 export interface ErrorPageProps {
-    error: ApolloError
+    error: Error
 }
 
 export function ErrorPage(props: ErrorPageProps) {
@@ -36,7 +36,7 @@ export function ErrorPage(props: ErrorPageProps) {
                         <Title size="lg" headingLevel="h4">
                             Error
                         </Title>
-                        <EmptyStateBody>TODO</EmptyStateBody>
+                        <EmptyStateBody>{props.error.message}</EmptyStateBody>
                     </EmptyState>
                 </CardBody>
                 <CardFooter></CardFooter>
