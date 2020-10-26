@@ -8,43 +8,42 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import { client } from '../../../lib/apollo-client'
-import { ClusterManagementAddons, clusterManagementAddOns, ClusterManagementAddOn} from '../../../lib/ClusterManagementAddOn'
-import { ManagedClusterAddOns } from '../../../lib/ManagedClusterAddOn'
+import { ClusterManagementAddons, ClusterManagementAddOn} from '../../../lib/ClusterManagementAddOn'
+import { ManagedClusterAddOn, ManagedClusterAddOns as GetManagedClusterAddOns} from '../../../lib/ManagedClusterAddOn'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ManagedClusterAddOn } from '../../../sdk'
+import { RouteComponentProps } from 'react-router-dom'
 
-export function ClusterDetailsPage() {
+type ClusterDetailsParams =  { id: string };
+export function ClusterDetailsPage({match}: RouteComponentProps<ClusterDetailsParams>) {
     return (
         <Page>
             <AcmPageHeader title="Cluster Details" />
-            <ClustersDeatilsPageContent />
+            <ClustersDeatilsPageContent namespace={match.params.id} name={match.params.id}/>
         </Page>
     )
 }
 
-export function ClustersDeatilsPageContent() {
+export function ClustersDeatilsPageContent(props: {
+    name: string;
+    namespace: string;
+}) {
     const { loading, error, data, startPolling, stopPolling, refresh } = ClusterManagementAddons()
-//    const ManagedClusterAddOnsQuery = useManagedClusterAddOnsQuery({ 
-//         client,
-//         // variables: {
-//         //     namespace: "leena-ocp"
-//         //  },
-//     })
-const managedClusterAddon = ManagedClusterAddOns()
+
+    const MCARes = GetManagedClusterAddOns(props.namespace)
 
     useEffect(refresh, [refresh])
     useEffect(() => {
         startPolling(5 * 1000)
+        MCARes.startPolling(5*1000)
         return stopPolling
     }, [startPolling, stopPolling, refresh])
 
-    if (loading) {
+    if (loading || MCARes.loading) {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data || data.length === 0 || !managedClusterAddon.data) {
+    } else if (!data || data.length === 0 || !MCARes.data || MCARes.data.length==0) {
         return (
             <AcmEmptyPage
                 title="No addons found."
@@ -57,9 +56,8 @@ const managedClusterAddon = ManagedClusterAddOns()
         <AcmPageCard>
             <ClusterDetailsTable 
             clusterManagementAddOns={data} 
-            managedClusterAddOns={managedClusterAddon.data}
+            managedClusterAddOns={MCARes.data}
             refresh={refresh}
-            //managedClusterAddOns={ManagedClusterAddOnsQuery.data?.managedClusterAddOns as ManagedClusterAddOn[]}
             />
         </AcmPageCard>
     )
@@ -68,7 +66,7 @@ const managedClusterAddon = ManagedClusterAddOns()
 export function ClusterDetailsTable(props: {
     clusterManagementAddOns: ClusterManagementAddOn[]
     refresh: () => void
-    managedClusterAddOns: ManagedClusterAddOn[]
+    managedClusterAddOns: ManagedClusterAddOn[] | undefined
    // deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
 }) {
     const columns: IAcmTableColumn<ClusterManagementAddOn>[] = [
