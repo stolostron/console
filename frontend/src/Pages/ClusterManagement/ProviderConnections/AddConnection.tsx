@@ -56,7 +56,33 @@ export function AddConnectionPageContent(props: {
 }) {
     const history = useHistory()
 
-    const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({})
+    const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({
+        metadata: {},
+        stringData: {
+            awsAccessKeyID: undefined,
+            awsSecretAccessKeyID: undefined,
+            baseDomainResourceGroupName: undefined,
+            clientId: undefined,
+            clientsecret: undefined,
+            subscriptionid: undefined,
+            tenantid: undefined,
+            gcProjectID: undefined,
+            gcServiceAccountKey: undefined,
+            username: undefined,
+            password: undefined,
+            vcenter: undefined,
+            cacertificate: undefined,
+            vmClusterName: undefined,
+            datacenter: undefined,
+            datastore: undefined,
+            libvirtURI: undefined,
+            baseDomain: '',
+            pullSecret: '',
+            sshPrivatekey: '',
+            sshPublickey: '',
+            isOcp: undefined,
+        },
+    })
     function updateProviderConnection(update: (providerConnection: Partial<ProviderConnection>) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -172,6 +198,7 @@ export function AddConnectionPageContent(props: {
                     placeholder="Enter your AWS Secret Access Key ID"
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AWS}
                     required
+                    secret
                 />
 
                 <AcmTextInput
@@ -402,7 +429,6 @@ export function AddConnectionPageContent(props: {
                         })
                     }}
                     placeholder={'Enter the base DNS domain'}
-                    hidden={!providerConfigured()}
                     required
                 />
 
@@ -417,7 +443,6 @@ export function AddConnectionPageContent(props: {
                         })
                     }}
                     placeholder={'Enter Red Hat Openshift Pull Secret'}
-                    hidden={!providerConnection.stringData?.baseDomain}
                     required
                     secret
                 />
@@ -429,11 +454,10 @@ export function AddConnectionPageContent(props: {
                     onChange={(sshPrivatekey) => {
                         updateProviderConnection((sshPrivatekey) => {
                             if (providerConnection.stringData)
-                                providerConnection.stringData.pullSecret = sshPrivatekey as string
+                                providerConnection.stringData.sshPrivatekey = sshPrivatekey as string
                         })
                     }}
                     placeholder={'Enter SSH Private Key'}
-                    hidden={!providerConnection.stringData?.pullSecret}
                     required
                     secret
                 />
@@ -445,11 +469,10 @@ export function AddConnectionPageContent(props: {
                     onChange={(sshPublickey) => {
                         updateProviderConnection((sshPublickey) => {
                             if (providerConnection.stringData)
-                                providerConnection.stringData.pullSecret = sshPublickey as string
+                                providerConnection.stringData.sshPublickey = sshPublickey as string
                         })
                     }}
                     placeholder={'Enter SSH Public Key'}
-                    hidden={!providerConnection.stringData?.sshPrivatekey}
                     required
                     secret
                 />
@@ -460,7 +483,6 @@ export function AddConnectionPageContent(props: {
                         isDisabled={
                             !providerConnection.metadata?.name ||
                             !providerConnection.metadata?.namespace ||
-                            !getProviderConnectionProviderID(providerConnection) ||
                             !providerConfigured() ||
                             !providerConnection.stringData?.baseDomain ||
                             !providerConnection.stringData?.pullSecret ||
