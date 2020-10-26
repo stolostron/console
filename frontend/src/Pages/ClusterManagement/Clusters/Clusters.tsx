@@ -52,6 +52,7 @@ export function ClustersPageContent() {
 }
 
 export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
+
     const columns: IAcmTableColumn<ManagedCluster>[] = [
         {
             header: 'Name',

@@ -1,8 +1,8 @@
-import { AcmEmptyPage, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
+import { AcmEmptyPage, AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset } from '../../../lib/BareMetalAsset'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
@@ -46,12 +46,13 @@ function SetBMAStatusMessage(props: { bareMetalAssets: BareMetalAsset[] }) {
         bma.status.conditions.forEach((item) => {
         if (KNOWN_STATUSES.includes(item.type)) {
             bma.status.statusMessage = GetStatusMessage(item.type)
-            console.log('statusMessage: ', bma.status.statusMessage)
         }})
     })
 }
 
 export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
+    
+    let labelstring = ''
     //console.log(`bma.props: ${JSON.stringify(props.bareMetalAssets)}`)
     SetBMAStatusMessage(props)
     return (
@@ -88,8 +89,17 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                     },
                     {
                         header: 'Labels',
-                        cell: '',
-                        search: '',
+                        cell: (bareMetalAssets) => {
+                            const labels = []
+                            labelstring = ''
+                            const labelDict = bareMetalAssets.metadata.labels
+                            for (let key in labelDict){
+                                labels.push(key + '=' +labelDict[key])
+                                labelstring = labelstring.concat(key + '=' + labelDict[key] + ' ')
+                            }
+                            console.log('labelstring:', labelstring)
+                            return <AcmLabels labels={labels}/>
+                        },
                     },
                 ]}
                 // TODO: find out if ! is appropriate for this situation.
