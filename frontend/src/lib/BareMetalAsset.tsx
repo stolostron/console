@@ -1,10 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import * as YAML from 'yamljs'
-import { ProviderID } from './providers'
 import { GetWrapper, resourceMethods } from './Resource'
-import { Metadata, Scalars } from '../sdk'
-
-//const start = new Date(Date.now());
 
 export interface BareMetalAsset {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1'
@@ -15,6 +10,17 @@ export interface BareMetalAsset {
             address: string
             credentialsName: string
         }
+    }
+    status: {
+        conditions: Array<{
+            lastTransitionTime: Date
+            message: string
+            reason: string
+            status: string
+            type: string
+        }>
+        // filled by ui
+        statusMessage: string
     }
     
 }

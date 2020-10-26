@@ -2,8 +2,6 @@ import { AcmEmptyPage, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-clust
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { client } from '../../../lib/apollo-client'
-//import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
 import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset } from '../../../lib/BareMetalAsset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
@@ -28,15 +26,34 @@ export function BareMetalAssets() {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (data?.length === 0 || !data ) {
+    } else if (data?.length === 0 || !data) {
         return <AcmEmptyPage title="No bare metal assets found" message="No bare metal assets found" />
-    } 
-    console.log(`data: ${JSON.stringify(data)}`)
+    }
 
-    return <BareMetalAssetsTable bareMetalAssets={ data }></BareMetalAssetsTable>
+    return <BareMetalAssetsTable bareMetalAssets={data}></BareMetalAssetsTable>
+}
+
+function SetBMAStatusMessage(props: { bareMetalAssets: BareMetalAsset[] }) {
+    const KNOWN_STATUSES = [
+        'CredentialsFound',
+        'AssetSyncStarted',
+        'ClusterDeploymentFound',
+        'AssetSyncCompleted',
+        'Ready',
+    ]
+
+    props.bareMetalAssets.forEach(bma => {
+        bma.status.conditions.forEach((item) => {
+        if (KNOWN_STATUSES.includes(item.type)) {
+            bma.status.statusMessage = GetStatusMessage(item.type)
+            console.log('statusMessage: ', bma.status.statusMessage)
+        }})
+    })
 }
 
 export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
+    //console.log(`bma.props: ${JSON.stringify(props.bareMetalAssets)}`)
+    SetBMAStatusMessage(props)
     return (
         <AcmPageCard>
             <AcmTable<BareMetalAsset>
@@ -54,6 +71,26 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                         cell: 'metadata.namespace',
                         search: 'metadata.namespace',
                     },
+                    {
+                        header: 'Cluster',
+                        cell: 'metal3.io/cluster-deployment-name',
+                        search: 'metal3.io/cluster-deployment-name',
+                    },
+                    {
+                        header: 'Role',
+                        cell: 'metadata.labels.metal3.io/role',
+                        search: 'metadata.labels.metal3.io/role',
+                    },
+                    {
+                        header: 'Status',
+                        cell: 'status.statusMessage',
+                        search: 'status.statusMessage',
+                    },
+                    {
+                        header: 'Labels',
+                        cell: '',
+                        search: '',
+                    },
                 ]}
                 // TODO: find out if ! is appropriate for this situation.
                 keyFn={(item: BareMetalAsset) => item.metadata?.uid!}
@@ -63,4 +100,21 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
             />
         </AcmPageCard>
     )
+}
+
+function GetStatusMessage(status: string) {
+    switch (status) {
+        case 'CredentialsFound':
+            return 'No credentials'
+        case 'AssetSyncStarted':
+            return 'Asset syncing'
+        case 'ClusterDeploymentFound':
+            return 'No cluster deployment'
+        case 'AssetSyncCompleted':
+            return 'Asset sync failed'
+        case 'Ready':
+            return 'Ready'
+        default:
+            return ''
+    }
 }
