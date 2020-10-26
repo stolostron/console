@@ -13,5 +13,5 @@ export const projects = resourceMethods<Project>({
 })
 
 export function Projects() {
-    return GetWrapper<Project[]>(projects.list)
+    return GetWrapper<Project[]>(projects.listCluster)
 }

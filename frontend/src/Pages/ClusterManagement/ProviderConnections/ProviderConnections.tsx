@@ -27,7 +27,6 @@ export function ProviderConnectionsPage() {
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
 
-    useEffect(refresh, [refresh])
     useEffect(() => {
         startPolling(5 * 1000)
         return stopPolling

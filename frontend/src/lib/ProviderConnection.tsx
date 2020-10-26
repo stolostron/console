@@ -74,12 +74,15 @@ export function ProviderConnections() {
     return GetWrapper<ProviderConnection[]>(providerConnections.list)
 }
 
-export function getProviderConnectionProviderID(providerConnection: ProviderConnection) {
+export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
     const label = providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider']
     return label as ProviderID
 }
 
-export function setProviderConnectionProviderID(providerConnection: ProviderConnection, providerID: ProviderID) {
+export function setProviderConnectionProviderID(
+    providerConnection: Partial<ProviderConnection>,
+    providerID: ProviderID
+) {
     if (!providerConnection.metadata) {
         providerConnection.metadata = {}
     }

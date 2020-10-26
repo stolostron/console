@@ -230,7 +230,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 httpsAgent: new https.Agent({ rejectUnauthorized: false }),
                 headers: {
                     Accept: 'application/json',
-                    Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
+                    // Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
                 },
                 responseType: 'json',
             }

@@ -30,6 +30,8 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         [restFunc]
     )
 
+    useEffect(refresh, [])
+
     useEffect(() => {
         if (polling > 0) {
             const interval = setInterval(refresh, polling)
@@ -107,4 +109,22 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
             return restRequest<Resource[]>('GET', url)
         },
     }
+}
+
+export function getResourceName(resource: Partial<IResource>) {
+    return resource.metadata?.name
+}
+
+export function setResourceName(resource: Partial<IResource>, name: string) {
+    if (!resource.metadata) resource.metadata = {}
+    return (resource.metadata.name = name)
+}
+
+export function getResourceNamespace(resource: Partial<IResource>) {
+    return resource.metadata?.namespace
+}
+
+export function setResourceNamespace(resource: Partial<IResource>, namespace: string) {
+    if (!resource.metadata) resource.metadata = {}
+    return (resource.metadata.namespace = namespace)
 }
