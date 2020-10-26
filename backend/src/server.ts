@@ -235,7 +235,9 @@ export async function startServer(): Promise<FastifyInstance> {
                 responseType: 'json',
             }
         )
+        
         const authorizeUrl = new URL(response.data.authorization_endpoint)
+        console.log('url',authorizeUrl)
         const tokenUrl = new URL(response.data.token_endpoint)
         const validStates = new Set()
         await fastify.register(fastifyOauth2, {
@@ -254,7 +256,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 },
             },
             // register a url to start the redirect flow
-            startRedirectPath: '/cluster-deployment/login',
+            startRedirectPath: '/cluster-management/login',
             // oauth redirect here after the user login
             callbackUri: process.env.OAUTH2_REDIRECT_URL,
             generateStateFunction: (request: FastifyRequest) => {
@@ -272,7 +274,7 @@ export async function startServer(): Promise<FastifyInstance> {
             },
         })
 
-        fastify.get('/cluster-deployment/login/callback', async function (request, reply) {
+        fastify.get('/cluster-management/login/callback', async function (request, reply) {
             const query = request.query as { code: string; state: string }
             validStates.add(query.state)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -288,7 +290,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 .redirect(`${process.env.FRONTEND_URL}`)
         })
 
-        fastify.delete('/cluster-deployment/login', async function (request, reply) {
+        fastify.delete('/cluster-management/login', async function (request, reply) {
             const token = request.cookies['acm-access-token-cookie']
             if (token) {
                 await Axios.delete(

@@ -51,7 +51,7 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         const code: string = (error as any)?.statusCode
         switch (code) {
             case '401':
-                window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+                window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
         }
     }, [error])
 
