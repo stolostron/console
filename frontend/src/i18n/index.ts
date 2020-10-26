@@ -9,7 +9,6 @@ i18n
   .use(HttpApi)
   .init({
     backend: {
-      // for all available options read the backend's repository readme file
       loadPath: '/cluster-management/locales/{{lng}}/{{ns}}.json'
     },
 
