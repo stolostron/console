@@ -91,6 +91,8 @@ export async function startServer(): Promise<FastifyInstance> {
                     case 'ETIMEDOUT':
                         retries--
                         break
+                    default:
+                        throw err
                 }
             }
         }
@@ -135,12 +137,28 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+            const clusteredRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + url + query
+            )
+
+            const projectsRequestPromise = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects'
             )
-            const promises = result.data.items.map((project) => {
+
+            try {
+                const clusteredRequest = await clusteredRequestPromise
+                return res.code(200).send(clusteredRequest.data.items)
+            } catch {
+                // DO NOTHING
+            }
+
+            const projectsRequest = await projectsRequestPromise
+
+            const promises = projectsRequest.data.items.map((project) => {
                 const parts = url.split('/')
                 const plural = parts[parts.length - 1]
                 const path = parts.slice(0, parts.length - 1).join('/')
