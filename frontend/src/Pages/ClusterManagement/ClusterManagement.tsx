@@ -67,9 +67,7 @@ export function ClusterManagement() {
                     <Route path={NavigationPath.importCluster} exact>
                         <ImportClusterPage />
                     </Route>
-                    <Route path={NavigationPath.clusterDetails}>
-                        <ClusterDetailsPage />
-                    </Route>
+                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
 
                     <Route path={NavigationPath.providerConnections} exact>
                         <ProviderConnectionsPage />

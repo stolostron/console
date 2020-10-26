@@ -31,6 +31,7 @@ export const managedClusterAddOns = resourceMethods<ManagedClusterAddOn>({
     plural: 'managedclusteraddons',
 })
 
-export function ManagedClusterAddOns() {
-    return GetWrapper<ManagedClusterAddOn[]>(managedClusterAddOns.list)
+export function ManagedClusterAddOns(namespace: string) {
+    const restFunc = ()=>{ return managedClusterAddOns.listNamespace(namespace)}
+    return GetWrapper<ManagedClusterAddOn[]>(restFunc)
 }
