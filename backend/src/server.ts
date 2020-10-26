@@ -63,23 +63,35 @@ export async function startServer(): Promise<FastifyInstance> {
     async function kubeRequest<T>(token: string, method: string, url: string): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
-        while (true) {
-            response = await Axios.request<T>({
-                url,
-                method: method as Method,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                responseType: 'json',
-                validateStatus: () => true,
-            })
-            if (response.status === 200) {
-                break
-            }
-            switch (response.status) {
-                case 429:
-                    await new Promise((resolve) => setTimeout(resolve, 100))
+        let retries = 4
+        while (retries) {
+            try {
+                response = await Axios.request<T>({
+                    url,
+                    method: method as Method,
+                    httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    responseType: 'json',
+                    validateStatus: () => true,
+                    // timeout - defaults to unlimited
+                })
+                if (response.status === 200) {
+                    break
+                }
+                switch (response.status) {
+                    case 429:
+                        await new Promise((resolve) => setTimeout(resolve, 100))
+                }
+            } catch (err) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const code = err.code as string
+                switch (code) {
+                    case 'ETIMEDOUT':
+                        retries--
+                        break
+                }
             }
         }
         return response
