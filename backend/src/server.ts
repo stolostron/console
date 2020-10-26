@@ -237,7 +237,6 @@ export async function startServer(): Promise<FastifyInstance> {
         )
         
         const authorizeUrl = new URL(response.data.authorization_endpoint)
-        console.log('url',authorizeUrl)
         const tokenUrl = new URL(response.data.token_endpoint)
         const validStates = new Set()
         await fastify.register(fastifyOauth2, {
