@@ -56,7 +56,6 @@ providerConnections.list = async (labels?: string[]) => {
                 providerConnection.stringData = YAML.parse(yaml)
             } catch {}
         }
-        console.log(providerConnection)
     }
     return result
 }
