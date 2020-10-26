@@ -16,7 +16,6 @@ import { RouteComponentProps } from 'react-router-dom'
 
 type ClusterDetailsParams =  { id: string };
 export function ClusterDetailsPage({match}: RouteComponentProps<ClusterDetailsParams>) {
-    console.log('id',match.params)
     return (
         <Page>
             <AcmPageHeader title="Cluster Details" />
@@ -32,7 +31,6 @@ export function ClustersDeatilsPageContent(props: {
     const { loading, error, data, startPolling, stopPolling, refresh } = ClusterManagementAddons()
 
     const MCARes = GetManagedClusterAddOns(props.namespace)
-    console.log('ns',props.namespace)
 
     useEffect(refresh, [refresh])
     useEffect(() => {
