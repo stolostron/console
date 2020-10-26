@@ -82,7 +82,8 @@ export async function startServer(): Promise<FastifyInstance> {
                 case 429:
                     await new Promise((resolve) => setTimeout(resolve, 100))
             }
-        }
+            //console.log("responce: ", url)
+        } 
         return response
     }
 

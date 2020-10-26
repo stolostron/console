@@ -6,6 +6,5 @@ query managedClusterAddOns {
             namespace
             labels
         }
-        displayAddOnStatus
     }
 }
