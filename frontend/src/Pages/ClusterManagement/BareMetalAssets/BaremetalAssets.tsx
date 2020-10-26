@@ -3,7 +3,8 @@ import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
-import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
+//import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset } from '../../../lib/BareMetalAsset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
@@ -16,24 +17,23 @@ export function BareMetalAssetsPage() {
 }
 
 export function BareMetalAssets() {
-    const { data, loading, error, startPolling, stopPolling, refetch } = useBareMetalAssetsQuery({
-        client,
-    })
+    const { data, loading, error, startPolling, stopPolling, refresh } = GetBareMetalAsset()
+    useEffect(refresh, [refresh])
     useEffect(() => {
-        refetch()
-        startPolling(10 * 1000)
-        return () => {
-            stopPolling()
-        }
-    }, [refetch, startPolling, stopPolling])
+        startPolling(5 * 1000)
+        return stopPolling
+    }, [startPolling, stopPolling, refresh])
+
     if (loading) {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data?.bareMetalAssets || data.bareMetalAssets.length === 0) {
+    } else if (data?.length === 0 || !data ) {
         return <AcmEmptyPage title="No bare metal assets found" message="No bare metal assets found" />
-    }
-    return <BareMetalAssetsTable bareMetalAssets={data.bareMetalAssets as BareMetalAsset[]}></BareMetalAssetsTable>
+    } 
+    console.log(`data: ${JSON.stringify(data)}`)
+
+    return <BareMetalAssetsTable bareMetalAssets={ data }></BareMetalAssetsTable>
 }
 
 export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
@@ -50,12 +50,13 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                         search: 'metadata.name',
                     },
                     {
-                        header: 'namespace',
+                        header: 'Namespace',
                         cell: 'metadata.namespace',
                         search: 'metadata.namespace',
                     },
                 ]}
-                keyFn={(item) => item.metadata.uid}
+                // TODO: find out if ! is appropriate for this situation.
+                keyFn={(item: BareMetalAsset) => item.metadata?.uid!}
                 tableActions={[]}
                 rowActions={[]}
                 bulkActions={[]}
