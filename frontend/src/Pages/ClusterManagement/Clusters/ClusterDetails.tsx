@@ -8,11 +8,12 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import { ClusterManagementAddons, ClusterManagementAddOn} from '../../../lib/ClusterManagementAddOn'
+import { ClusterManagementAddons, ClusterManagementAddOn, clusterManagementAddOns} from '../../../lib/ClusterManagementAddOn'
 import { ManagedClusterAddOn, ManagedClusterAddOns as GetManagedClusterAddOns} from '../../../lib/ManagedClusterAddOn'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { RouteComponentProps } from 'react-router-dom'
+import { createMappedTypeNode } from 'typescript'
 
 type ClusterDetailsParams =  { id: string };
 export function ClusterDetailsPage({match}: RouteComponentProps<ClusterDetailsParams>) {
@@ -31,7 +32,6 @@ export function ClustersDeatilsPageContent(props: {
     const { loading, error, data, startPolling, stopPolling, refresh } = ClusterManagementAddons()
 
     const MCARes = GetManagedClusterAddOns(props.namespace)
-
     useEffect(refresh, [refresh])
     useEffect(() => {
         startPolling(5 * 1000)
@@ -76,12 +76,50 @@ export function ClusterDetailsTable(props: {
             search: 'metadata.name',
             cell: 'metadata.name',
         },
-       
+        {
+            header: 'Status',
+            sort: 'metadata.name',
+            search: 'metadata.name',
+           // cell: cma => props.managedClusterAddOns?.filter(mca => mca.metadata.name === cma.metadata.name),
+           cell: props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))?.status.conditions.length.toString(),
+        },
+
     ]
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
         return clusterManagementAddOn.metadata?.uid as string
     }
+    
 
+function getStatus(){
+    let displayStatus
+    const mcaStatus = props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))
+    if (mcaStatus?.status?.conditions === undefined) {
+        displayStatus = 'Unknown'
+    }
+    const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
+        (condition) => condition.type === 'Degraded'
+    )
+    if (managedClusterAddOnConditionDegraded?.status === 'True') {
+        displayStatus = 'Degraded'
+    } 
+    const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
+        (condition) => condition.type === 'Progressing'
+    )
+    if (managedClusterAddOnConditionProgressing?.status === 'True') {
+        displayStatus = 'Progressing'
+    }
+    const  managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
+        (condition) => condition.type === 'Available'
+    )   
+    if (managedClusterAddOnConditionAvailable?.status === 'True') {
+        displayStatus =  'Available'
+    }
+    if ((managedClusterAddOnConditionAvailable?.status === 'False') && (managedClusterAddOnConditionProgressing?.status === 'False') && (managedClusterAddOnConditionDegraded?.status === 'False')) {
+        displayStatus = 'Progressing'
+    }
+    console.log("result: ",displayStatus)
+    return displayStatus
+}
     // const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
     //const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
    // const history = useHistory()
@@ -94,7 +132,13 @@ export function ClusterDetailsTable(props: {
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[
-            
+                    {
+                        id: 'addConnenction',
+                        title: 'Add connection',
+                        click: () => {
+                            getStatus()
+                        },
+                    },
                 ]}
                 bulkActions={[
                    
