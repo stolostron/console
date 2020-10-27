@@ -83,7 +83,8 @@ export async function startServer(): Promise<FastifyInstance> {
                 }
                 switch (response.status) {
                     case 429:
-                        return await new Promise((resolve) => setTimeout(resolve, 100))
+                        await new Promise((resolve) => setTimeout(resolve, 100))
+                        break
                     default:
                         if (response.status < 200 || response.status >= 300) {
                             throw response // to catch block
