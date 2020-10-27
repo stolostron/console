@@ -60,11 +60,16 @@ export async function startServer(): Promise<FastifyInstance> {
         await res.code(200).send()
     })
 
-    async function kubeRequest<T>(token: string, method: string, url: string, data?: JSON): Promise<AxiosResponse<T>> {
+    async function kubeRequest<T>(
+        token: string,
+        method: string,
+        url: string,
+        data?: unknown
+    ): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
-        let retries = 4
-        while (retries) {
+        let tries = method === 'GET' ? 3 : 1
+        while (tries-- > 0) {
             try {
                 response = await Axios.request<T>({
                     url,
@@ -75,15 +80,19 @@ export async function startServer(): Promise<FastifyInstance> {
                     },
                     responseType: 'json',
                     validateStatus: () => true,
-                    data
+                    data,
                     // timeout - defaults to unlimited
                 })
-                if (response.status === 200) {
-                    break
-                }
                 switch (response.status) {
+                    case 200: // OK
+                    case 201: // Created
+                    case 204: // No Content
+                    case 304: // Not Modified
+                        return response
                     case 429:
-                        await new Promise((resolve) => setTimeout(resolve, 100))
+                        if (tries > 0) {
+                            await new Promise((resolve) => setTimeout(resolve, 100))
+                        }
                         break
                     default:
                         if (response.status < 200 || response.status >= 300) {
@@ -92,13 +101,13 @@ export async function startServer(): Promise<FastifyInstance> {
                 }
             } catch (err) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const code = err.code ?? err.status as string | number
+                const code = err.code as string
                 switch (code) {
                     case 'ETIMEDOUT':
-                        retries--
+                        logger.warn({ msg: 'ETIMEDOUT', method, url })
                         break
                     default:
-                        retries = 0
+                        throw err
                 }
             }
         }
@@ -110,7 +119,7 @@ export async function startServer(): Promise<FastifyInstance> {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
 
-            let url = req.url.substr(6)
+            let url = req.url.substr('/cluster-management/proxy'.length)
             let query = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
@@ -121,12 +130,14 @@ export async function startServer(): Promise<FastifyInstance> {
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + url + query,
-                req.body as JSON
+                req.body
             )
-            return res.code(result.status).send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
+            return res
+                .code(result.status)
+                .send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
         } catch (err) {
-            console.log(err)
-            throw err
+            logError('proxy error', err, { method: req.method, url: req.url })
+            void res.code(500).send()
         }
     }
 
@@ -150,7 +161,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 process.env.CLUSTER_API_URL + url + query
             )
 
-            const projectsRequestPromise = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+            const projectsRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects'
@@ -177,8 +188,8 @@ export async function startServer(): Promise<FastifyInstance> {
             const results = await Promise.all(promises)
             return res.code(200).send(results.map((r) => r.data.items).flat())
         } catch (err) {
-            console.log(err)
-            throw err
+            logError('namespaced error', err, { method: req.method, url: req.url })
+            void res.code(500).send()
         }
     })
 
@@ -272,7 +283,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 responseType: 'json',
             }
         )
-        
+
         const authorizeUrl = new URL(response.data.authorization_endpoint)
         const tokenUrl = new URL(response.data.token_endpoint)
         const validStates = new Set()
