@@ -69,7 +69,6 @@ export interface IResourceList<Resource extends IResource> {
 }
 
 async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
-    console.log(method, url)
     return await Axios.request<T>({ method, url, data, responseType, withCredentials, validateStatus: () => true })
 }
 
