@@ -86,19 +86,17 @@ export async function startServer(): Promise<FastifyInstance> {
                         return await new Promise((resolve) => setTimeout(resolve, 100))
                     default:
                         if (response.status < 200 || response.status >= 300) {
-                            throw { code: response.status, message: response.data }
+                            throw response // to catch block
                         }
                 }
             } catch (err) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const code = err.code as string | number
+                const code = err.code ?? err.status as string | number
                 switch (code) {
                     case 'ETIMEDOUT':
                         retries--
                         break
                     default:
-                        response.status = err.code
-                        response.statusText = err?.message?.message
                         retries = 0
                 }
             }
@@ -118,13 +116,13 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+            const result = await kubeRequest<{ items: { metadata: { name: string } }[]; message: string }>(
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + url + query,
                 req.body as JSON
             )
-            return res.code(result.status).send(result.data.items ?? { error: { code: result.status, message: result.statusText } })
+            return res.code(result.status).send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
         } catch (err) {
             console.log(err)
             throw err
