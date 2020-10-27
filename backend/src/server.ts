@@ -123,14 +123,14 @@ export async function startServer(): Promise<FastifyInstance> {
         }
     }
 
-    fastify.all('/proxy/*', proxy)
+    fastify.all('/cluster-management/proxy/*', proxy)
 
-    fastify.get('/namespaced/*', async (req, res) => {
+    fastify.get('/cluster-management/namespaced/*', async (req, res) => {
         try {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
 
-            let url = req.url.substr(11)
+            let url = req.url.substr('/cluster-management/namespaced'.length)
             let query = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
@@ -265,6 +265,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 responseType: 'json',
             }
         )
+        
         const authorizeUrl = new URL(response.data.authorization_endpoint)
         const tokenUrl = new URL(response.data.token_endpoint)
         const validStates = new Set()
@@ -284,7 +285,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 },
             },
             // register a url to start the redirect flow
-            startRedirectPath: '/login',
+            startRedirectPath: '/cluster-management/login',
             // oauth redirect here after the user login
             callbackUri: process.env.OAUTH2_REDIRECT_URL,
             generateStateFunction: (request: FastifyRequest) => {
@@ -302,7 +303,7 @@ export async function startServer(): Promise<FastifyInstance> {
             },
         })
 
-        fastify.get('/login/callback', async function (request, reply) {
+        fastify.get('/cluster-management/login/callback', async function (request, reply) {
             const query = request.query as { code: string; state: string }
             validStates.add(query.state)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -318,7 +319,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 .redirect(`${process.env.FRONTEND_URL}`)
         })
 
-        fastify.delete('/login', async function (request, reply) {
+        fastify.delete('/cluster-management/login', async function (request, reply) {
             const token = request.cookies['acm-access-token-cookie']
             if (token) {
                 await Axios.delete(
@@ -351,6 +352,7 @@ export async function startServer(): Promise<FastifyInstance> {
         emitSchemaFile: !['production', 'test'].includes(process.env.NODE_ENV),
     })
     await fastify.register(fastifyGQL, {
+        path: '/cluster-management/graphql',
         graphiql: 'playground',
         schema,
         jit: 1,
@@ -387,7 +389,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
 
     fastify.setNotFoundHandler((request, response) => {
-        if (!request.url.startsWith('/graphql') && !path.extname(request.url)) {
+        if (!request.url.startsWith('/cluster-management/graphql') && !path.extname(request.url)) {
             void response.code(200).sendFile('index.html', join(__dirname, 'public'))
         } else {
             void response.code(404).send()
@@ -395,7 +397,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
     await fastify.register(fastifyStatic, {
         root: join(__dirname, 'public'),
-        // prefix: '/public/', // optional: default '/'
+        prefix: '/cluster-management/', // optional: default '/'
     })
 
     fastify.addHook('onClose', (instance, done: () => void) => {

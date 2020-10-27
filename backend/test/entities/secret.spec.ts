@@ -10,7 +10,7 @@ describe(`graphql query secrets`, function () {
         nock(process.env.CLUSTER_API_URL).get('/api/v1/secrets').reply(200, {
             items: kubeSecrets,
         })
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     secrets {
@@ -30,7 +30,7 @@ describe(`graphql query secrets`, function () {
 describe(`graphql mutation deleteSecret`, function () {
     it(`should delete the secret`, async function () {
         nock(process.env.CLUSTER_API_URL).delete('/api/v1/namespaces/namespace/secrets/name').reply(200)
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 mutation {
                     deleteSecret(name: "name", namespace: "namespace")

@@ -34,7 +34,7 @@ describe(`graphql query managedClusters`, function () {
 
             .reply(200, { metadata })
 
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     managedClusters {
