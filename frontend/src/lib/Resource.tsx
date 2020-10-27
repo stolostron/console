@@ -81,7 +81,6 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
             let url = root
             if (resource.metadata?.namespace) url += `/namespaces/${resource.metadata.namespace}`
             url += `/${options.plural}`
-            console.log('root', root, 'url', url)
             return restRequest<Resource>('POST', url, resource)
         },
         delete: function deleteResource(name?: string, namespace?: string) {
