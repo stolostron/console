@@ -1,0 +1,15 @@
+{
+  "connections": "Provider connections",
+  "empty.title": "No provider connections found",
+  "empty.subtitle": "You don't have any provider connections, yet. Use the Create connection button to create the resource.",
+  "add": "Add connection",
+  "edit": "Edit connection",
+  "delete": "Delete connection",
+
+  "table.header.name": "Name",
+  "table.header.provider": "Provider",
+  "table.header.namespace": "Namespace",
+
+  "modal.delete.title": "Delete provider connection",
+  "modal.delete.content": "Deleting {{name}} is irreversible. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. Are you sure that you want to continue?"
+}
