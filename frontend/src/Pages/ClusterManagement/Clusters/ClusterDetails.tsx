@@ -76,13 +76,13 @@ export function ClusterDetailsTable(props: {
             search: 'metadata.name',
             cell: 'metadata.name',
         },
-        {
-            header: 'Status',
-            sort: 'metadata.name',
-            search: 'metadata.name',
-           // cell: cma => props.managedClusterAddOns?.filter(mca => mca.metadata.name === cma.metadata.name),
-           cell: props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))?.status.conditions.length.toString(),
-        },
+        // {
+        //     header: 'Status',
+        //     sort: 'metadata.name',
+        //     search: 'metadata.name',
+        //    // cell: cma => props.managedClusterAddOns?.filter(mca => mca.metadata.name === cma.metadata.name),
+        //    cell: props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))?.status.conditions.length.toString(),
+        // },
 
     ]
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
