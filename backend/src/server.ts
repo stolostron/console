@@ -60,7 +60,7 @@ export async function startServer(): Promise<FastifyInstance> {
         await res.code(200).send()
     })
 
-    async function kubeRequest<T>(token: string, method: string, url: string): Promise<AxiosResponse<T>> {
+    async function kubeRequest<T>(token: string, method: string, url: string, data?: JSON): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
         let retries = 4
@@ -75,6 +75,7 @@ export async function startServer(): Promise<FastifyInstance> {
                     },
                     responseType: 'json',
                     validateStatus: () => true,
+                    data
                     // timeout - defaults to unlimited
                 })
                 if (response.status === 200) {
@@ -82,17 +83,23 @@ export async function startServer(): Promise<FastifyInstance> {
                 }
                 switch (response.status) {
                     case 429:
-                        await new Promise((resolve) => setTimeout(resolve, 100))
+                        return await new Promise((resolve) => setTimeout(resolve, 100))
+                    default:
+                        if (response.status < 200 || response.status >= 300) {
+                            throw { code: response.status, message: response.data }
+                        }
                 }
             } catch (err) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                const code = err.code as string
+                const code = err.code as string | number
                 switch (code) {
                     case 'ETIMEDOUT':
                         retries--
                         break
                     default:
-                        throw err
+                        response.status = err.code
+                        response.statusText = err?.message?.message
+                        retries = 0
                 }
             }
         }
@@ -114,9 +121,10 @@ export async function startServer(): Promise<FastifyInstance> {
             const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
                 token,
                 req.method,
-                process.env.CLUSTER_API_URL + url + query
+                process.env.CLUSTER_API_URL + url + query,
+                req.body as JSON
             )
-            return res.code(200).send(result.data.items)
+            return res.code(result.status).send(result.data.items ?? { error: { code: result.status, message: result.statusText } })
         } catch (err) {
             console.log(err)
             throw err

@@ -68,9 +68,10 @@ export interface IResourceList<Resource extends IResource> {
     items: Resource[]
 }
 
-async function restRequest<T>(method: Method, url: string, data?: unknown): Promise<AxiosResponse<T>> {
-    const result = await Axios.request<T>({ method, url, data, responseType, withCredentials })
-    return result
+async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
+    return await Axios.request<T>({ method, url, data, responseType, withCredentials })
+        .then(res => res.data)
+        .catch(err => err.response.data)
 }
 
 export function resourceMethods<Resource extends IResource>(options: { path: string; plural: string }) {
@@ -79,7 +80,8 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
         create: function createResource(resource: Resource) {
             let url = root
             if (resource.metadata?.namespace) url += `/namespaces/${resource.metadata.namespace}`
-            url += +`/${options.plural}`
+            url += `/${options.plural}`
+            console.log('root', root, 'url', url)
             return restRequest<Resource>('POST', url, resource)
         },
         delete: function deleteResource(name?: string, namespace?: string) {
