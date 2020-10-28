@@ -29,7 +29,7 @@ export function ImportClusterPageContent() {
     const [clusterName, setClusterName] = useState<string | undefined>()
     const [cloudLabel, setCloudLabel] = useState<string | undefined>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<string[]>([])
+    const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
     const onSubmit = async () => {
         const projectResponse = await createProject(clusterName)
         const kacResponse = await createKlusterletAddonConfig({
@@ -69,8 +69,9 @@ export function ImportClusterPageContent() {
                 <AcmLabelsInput
                     id="additionalLabels"
                     label="Additional labels"
+                    buttonLabel="Add label"
                     value={additionalLabels}
-                    onChange={setAdditionaLabels}
+                    onChange={(label) => setAdditionaLabels(label)}
                 />
                 <ActionGroup>
                     <Button variant="primary" isDisabled={!clusterName} onClick={onSubmit}>
