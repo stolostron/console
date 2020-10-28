@@ -19,10 +19,7 @@ export interface BareMetalAsset {
             status: string
             type: string
         }>
-        // filled by ui
-        statusMessage: string
     }
-    
 }
 
 export const bareMetalAssets = resourceMethods<BareMetalAsset>({ path: '/apis/inventory.open-cluster-management.io/v1alpha1', plural: 'baremetalassets' })
@@ -30,21 +27,7 @@ export const bareMetalAssets = resourceMethods<BareMetalAsset>({ path: '/apis/in
 const originalList = bareMetalAssets.list
 
 bareMetalAssets.list = async (labels?: string[]) => {
-    // if (!labels) {
-    //     labels = ['cluster.open-cluster-management.io/cloudconnection=']
-    // } else if (!labels.includes('cluster.open-cluster-management.io/cloudconnection=')) {
-    //     labels.push('cluster.open-cluster-management.io/cloudconnection=')
-    // }
     const result = await originalList(labels)
-    // for (const bareMetalAsset of result.data) {
-    //     if (bareMetalAsset?.metadata) {
-    //         try {
-    //             const yaml = Buffer.from(bareMetalAsset?.metadata, 'base64').toString('ascii')
-    //             bareMetalAsset.stringData = YAML.parse(yaml)
-    //         } catch {}
-    //     }
-    //     console.log(bareMetalAsset)
-    // }
     return result
 }
 
@@ -59,18 +42,55 @@ export function BareMetalAssets() {
     return GetWrapper<BareMetalAsset[]>(bareMetalAssets.list)
 }
 
-// export function getBareMetalAssetProviderID(bareMetalAsset: BareMetalAsset) {
-//     const label = bareMetalAsset.metadata?.labels?.['cluster.open-cluster-management.io/provider']
-//     return label as ProviderID
-// }
 
-// export function setBareMetalAssetProviderID(bareMetalAsset: BareMetalAsset, providerID: ProviderID) {
-//     if (!bareMetalAsset.metadata) {
-//         bareMetalAsset.metadata = {}
-//     }
-//     if (!bareMetalAsset.metadata.labels) {
-//         bareMetalAsset.metadata.labels = {}
-//     }
-//     bareMetalAsset.metadata.labels['cluster.open-cluster-management.io/provider'] = providerID
-//     bareMetalAsset.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = ''
-// }
+export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
+    const KNOWN_STATUSES = [
+        'CredentialsFound',
+        'AssetSyncStarted',
+        'ClusterDeploymentFound',
+        'AssetSyncCompleted',
+        'Ready',
+    ]
+    GetLabels(bareMetalAssets)
+
+    let mostCurrentStatusTime = bareMetalAssets.status.conditions[0].lastTransitionTime
+    let mostCurrentStatus = bareMetalAssets.status.conditions[0].type
+   for (let conditions of bareMetalAssets.status.conditions){
+        if(conditions.lastTransitionTime > mostCurrentStatusTime){
+            mostCurrentStatusTime = conditions.lastTransitionTime
+            mostCurrentStatus = conditions.type
+        }
+        // if status time is equivalent, take the status at that was added last
+        else if (conditions.lastTransitionTime === mostCurrentStatusTime){
+            mostCurrentStatusTime = conditions.lastTransitionTime
+            mostCurrentStatus = conditions.type
+        }
+   }
+
+    return GetStatusMessage(mostCurrentStatus)
+}
+function GetStatusMessage(status: string) {
+    switch (status) {
+        case 'CredentialsFound':
+            return 'No credentials'
+        case 'AssetSyncStarted':
+            return 'Asset syncing'
+        case 'ClusterDeploymentFound':
+            return 'No cluster deployment'
+        case 'AssetSyncCompleted':
+            return 'Asset sync failed'
+        case 'Ready':
+            return 'Ready'
+        default:
+            return ''
+    }
+}
+
+export function GetLabels(bareMetalAssets: BareMetalAsset){
+    const labels = []
+    const labelDict = bareMetalAssets.metadata.labels
+    for (let key in labelDict){
+        labels.push(key + '=' +labelDict[key])
+    }
+    return labels
+}

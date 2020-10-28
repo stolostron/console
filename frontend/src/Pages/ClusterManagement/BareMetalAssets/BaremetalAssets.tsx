@@ -2,7 +2,7 @@ import { AcmEmptyPage, AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable } from '
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels } from '../../../lib/BareMetalAsset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
@@ -33,28 +33,7 @@ export function BareMetalAssets() {
     return <BareMetalAssetsTable bareMetalAssets={data}></BareMetalAssetsTable>
 }
 
-function SetBMAStatusMessage(props: { bareMetalAssets: BareMetalAsset[] }) {
-    const KNOWN_STATUSES = [
-        'CredentialsFound',
-        'AssetSyncStarted',
-        'ClusterDeploymentFound',
-        'AssetSyncCompleted',
-        'Ready',
-    ]
-
-    props.bareMetalAssets.forEach(bma => {
-        bma.status.conditions.forEach((item) => {
-        if (KNOWN_STATUSES.includes(item.type)) {
-            bma.status.statusMessage = GetStatusMessage(item.type)
-        }})
-    })
-}
-
 export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
-    
-    let labelstring = ''
-    //console.log(`bma.props: ${JSON.stringify(props.bareMetalAssets)}`)
-    SetBMAStatusMessage(props)
     return (
         <AcmPageCard>
             <AcmTable<BareMetalAsset>
@@ -84,29 +63,36 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                     },
                     {
                         header: 'Status',
-                        cell: 'status.statusMessage',
-                        search: 'status.statusMessage',
+                        cell: (bareMetalAssets) => { 
+                            return BMAStatusMessage(bareMetalAssets)
+                        },
                     },
                     {
                         header: 'Labels',
                         cell: (bareMetalAssets) => {
-                            const labels = []
-                            labelstring = ''
-                            const labelDict = bareMetalAssets.metadata.labels
-                            for (let key in labelDict){
-                                labels.push(key + '=' +labelDict[key])
-                                labelstring = labelstring.concat(key + '=' + labelDict[key] + ' ')
-                            }
-                            console.log('labelstring:', labelstring)
+                            const labels = GetLabels(bareMetalAssets)
                             return <AcmLabels labels={labels}/>
                         },
                     },
                 ]}
                 // TODO: find out if ! is appropriate for this situation.
                 keyFn={(item: BareMetalAsset) => item.metadata?.uid!}
-                tableActions={[]}
-                rowActions={[]}
-                bulkActions={[]}
+                tableActions={[
+                    {
+                        id: 'createAsset',
+                        title: 'Create Asset',
+                        click: () => {},
+                    },
+                ]}
+                bulkActions={[
+                    { id: 'destroyBareMetalAsset', title: 'Destroy', click: (items) => {} },
+                    { id: 'createBareMetalAssetCluster', title: 'Create Cluster', click: (items) => {} },
+                ]}
+                rowActions={[
+                    { id: 'editLabels', title: 'Edit labels', click: (item) => {} },
+                    { id: 'editAsset', title: 'Edit Asset', click: (item) => {} },
+                    { id: 'deleteAsset', title: 'Delete Asset', click: (item) => {} },
+                ]}
             />
         </AcmPageCard>
     )
