@@ -1,12 +1,16 @@
 import {
     AcmEmptyPage,
-    AcmLabels,
     AcmLoadingPage,
     AcmPageCard,
     AcmPageHeader,
     AcmTable,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
+import {
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+} from '@open-cluster-management/ui-components/lib/AcmSecondaryNav/AcmSecondaryNav'
+
 import { Page } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
@@ -14,24 +18,69 @@ import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-ic
 import UnknownIcon from '@patternfly/react-icons/dist/js/icons/unknown-icon'
 
 //import from '@patternfly/icons/in-progress'
-import { ClusterManagementAddons, ClusterManagementAddOn, clusterManagementAddOns} from '../../../lib/ClusterManagementAddOn'
+import { ClusterManagementAddons, ClusterManagementAddOn} from '../../../lib/ClusterManagementAddOn'
 import { ManagedClusterAddOn, ManagedClusterAddOns as GetManagedClusterAddOns} from '../../../lib/ManagedClusterAddOn'
 import React, { ReactNode, useEffect, Fragment } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { RouteComponentProps } from 'react-router-dom'
-import { createMappedTypeNode } from 'typescript'
+import { RouteComponentProps, Link, useLocation, Route, BrowserRouter as Router,Switch,useRouteMatch } from 'react-router-dom'
+import {NodePoolsPageContent} from './ClusterDetailsPages/NodesPools'
 
 type ClusterDetailsParams =  { id: string };
 export function ClusterDetailsPage({match}: RouteComponentProps<ClusterDetailsParams>) {
     return (
         <Page>
             <AcmPageHeader title="Cluster Details" />
+            <ClusterDetailsNavigation namespace={match.params.id} name={match.params.id}/>
             <ClustersDeatilsPageContent namespace={match.params.id} name={match.params.id}/>
         </Page>
     )
 }
 
+export function ClusterDetailsNavigation(props: {
+    name: string;
+    namespace: string;
+}) {
+    let l = useLocation()
+    return (
+        <AcmSecondaryNav>
+            <AcmSecondaryNavItem isActive={l.pathname.endsWith(`/clusters/details/${props.name}`)}>
+                <Link to={`/cluster-management/clusters/details/${props.name}`}> Overview </Link>
+            </AcmSecondaryNavItem>
+            <AcmSecondaryNavItem isActive={l.pathname.endsWith(`/clusters/details/${props.name}/nodespools`)}>
+                <Link to={`/cluster-management/clusters/details/${props.name}/nodespools`}> Nodes </Link>
+            </AcmSecondaryNavItem>
+            <AcmSecondaryNavItem isActive={l.pathname.endsWith(`/clusters/details/${props.name}/settings`)}>
+                <Link to={`/cluster-management/clusters/details/${props.name}/settings`}> Cluster Settings </Link>
+            </AcmSecondaryNavItem>
+        </AcmSecondaryNav>
+    )
+    
+}
+
 export function ClustersDeatilsPageContent(props: {
+    name: string;
+    namespace: string;
+}) {
+    let match = useRouteMatch();
+    console.log('match',match)
+    return(
+        <React.Fragment>
+                <Switch>
+                    <Route path={`${match.path}`} exact>
+                        <AcmEmptyPage title="No cluster found." message="Your cluster does not exist." />
+                    </Route>
+                    <Route path={`${match.path}/nodespools`} >
+                        <NodePoolsPageContent name={props.name} namespace={props.namespace} />
+                    </Route>
+                    <Route path={`${match.path}/settings`} >
+                        <ClustersSettingsPageContent name={props.name} namespace={props.namespace} />
+                    </Route>
+                </Switch>
+        </React.Fragment>
+    )
+}
+
+export function ClustersSettingsPageContent(props: {
     name: string;
     namespace: string;
 }) {
@@ -60,7 +109,7 @@ export function ClustersDeatilsPageContent(props: {
 
     return (
         <AcmPageCard>
-            <ClusterDetailsTable 
+            <ClusterSettingsTable 
             clusterManagementAddOns={data} 
             managedClusterAddOns={MCARes.data}
             refresh={refresh}
@@ -69,7 +118,7 @@ export function ClustersDeatilsPageContent(props: {
     )
 }
 
-export function ClusterDetailsTable(props: {
+export function ClusterSettingsTable(props: {
     clusterManagementAddOns: ClusterManagementAddOn[]
     refresh: () => void
     managedClusterAddOns: ManagedClusterAddOn[] | undefined
