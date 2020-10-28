@@ -24,7 +24,6 @@ test('clusters details page', () => {
                     description: '',
                 },
             },
-            displayAddonStatus: 'Disabled',
         },
     ]
     const { getByText } = render(<ClusterDetailsTable clusterManagementAddOns={clusterManagementAddons} />)

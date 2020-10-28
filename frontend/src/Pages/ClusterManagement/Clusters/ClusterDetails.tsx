@@ -8,9 +8,15 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
+import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
+import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-icon'
+import UnknownIcon from '@patternfly/react-icons/dist/js/icons/unknown-icon'
+
+//import from '@patternfly/icons/in-progress'
 import { ClusterManagementAddons, ClusterManagementAddOn, clusterManagementAddOns} from '../../../lib/ClusterManagementAddOn'
 import { ManagedClusterAddOn, ManagedClusterAddOns as GetManagedClusterAddOns} from '../../../lib/ManagedClusterAddOn'
-import React, { useEffect } from 'react'
+import React, { ReactNode, useEffect, Fragment } from 'react'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { RouteComponentProps } from 'react-router-dom'
 import { createMappedTypeNode } from 'typescript'
@@ -76,50 +82,102 @@ export function ClusterDetailsTable(props: {
             search: 'metadata.name',
             cell: 'metadata.name',
         },
-        // {
-        //     header: 'Status',
-        //     sort: 'metadata.name',
-        //     search: 'metadata.name',
-        //    // cell: cma => props.managedClusterAddOns?.filter(mca => mca.metadata.name === cma.metadata.name),
-        //    cell: props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))?.status.conditions.length.toString(),
-        // },
-
+        {
+            header: 'Status',
+            sort: 'metadata.name',
+            search: 'metadata.name',
+            cell: getDisplayStatus,
+        },
+        {
+            header: 'Message',
+            sort: 'metadata.name',
+            search: 'metadata.name',
+            cell: getDisplayMessage,
+        },
     ]
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
         return clusterManagementAddOn.metadata?.uid as string
     }
-    
-
-function getStatus(){
-    let displayStatus
-    const mcaStatus = props.managedClusterAddOns?.find(mca => props.clusterManagementAddOns.find(cma => mca.metadata.name === cma.metadata.name))
-    if (mcaStatus?.status?.conditions === undefined) {
-        displayStatus = 'Unknown'
-    }
-    const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
-        (condition) => condition.type === 'Degraded'
-    )
-    if (managedClusterAddOnConditionDegraded?.status === 'True') {
-        displayStatus = 'Degraded'
+    function getDisplayStatus(cma: ClusterManagementAddOn): ReactNode {
+        const mcaStatus = props.managedClusterAddOns?.find(mca => mca.metadata.name === cma.metadata.name)
+       
+        if (mcaStatus?.status?.conditions === undefined) {
+            return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                        <MinusCircleIcon color="grey" key="disabled-icon" />
+                        <span key="status">&nbsp; Disabled</span>
+                </span>
+        }
+        const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Degraded'
+        )
+        if (managedClusterAddOnConditionDegraded?.status === 'True') {
+            return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                        <MinusCircleIcon color="red" key="degraded-icon" />
+                    <span key="status">&nbsp; Degraded</span>
+                    </span>
+        } 
+        const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Progressing'
+        )
+        if (managedClusterAddOnConditionProgressing?.status === 'True') {
+            return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                    <InProgressIcon color="grey" />
+                    <span key="status">&nbsp; Progressing</span>
+                </span>
+        }
+        const  managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Available'
+        )   
+        if (managedClusterAddOnConditionAvailable?.status === 'True') {
+            return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                        <CheckIcon color="green" key="available-icon" />
+                        <span key="status">&nbsp; Available</span>
+                    </span>
+        }
+        if ((managedClusterAddOnConditionAvailable?.status === 'False') || (managedClusterAddOnConditionProgressing?.status === 'False') || (managedClusterAddOnConditionDegraded?.status === 'False')) {
+            return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                        <InProgressIcon color="grey" />
+                        <span key="status">&nbsp; Progressing</span>
+                    </span>
+        }
+        
+        return <span style={{ whiteSpace: 'nowrap' }} key="2">  
+                    <UnknownIcon color="grey" />
+                <span key="status">&nbsp; Unknown</span>
+                </span>
     } 
-    const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
-        (condition) => condition.type === 'Progressing'
-    )
-    if (managedClusterAddOnConditionProgressing?.status === 'True') {
-        displayStatus = 'Progressing'
-    }
-    const  managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
-        (condition) => condition.type === 'Available'
-    )   
-    if (managedClusterAddOnConditionAvailable?.status === 'True') {
-        displayStatus =  'Available'
-    }
-    if ((managedClusterAddOnConditionAvailable?.status === 'False') && (managedClusterAddOnConditionProgressing?.status === 'False') && (managedClusterAddOnConditionDegraded?.status === 'False')) {
-        displayStatus = 'Progressing'
-    }
-    console.log("result: ",displayStatus)
-    return displayStatus
-}
+
+    function getDisplayMessage(cma: ClusterManagementAddOn): ReactNode {
+        const mcaStatus = props.managedClusterAddOns?.find(mca => mca.metadata.name === cma.metadata.name)
+        console.log("mcaStatus: ", mcaStatus)
+        if (mcaStatus?.status?.conditions === undefined) {
+            return <span key="status">&nbsp; - </span>
+        }
+        const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Degraded'
+        )
+        if (managedClusterAddOnConditionDegraded?.status === 'True') {
+            return managedClusterAddOnConditionDegraded.message
+        } 
+        const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Progressing'
+        )
+        if (managedClusterAddOnConditionProgressing?.status === 'True') {
+            return managedClusterAddOnConditionProgressing.message
+        }
+        const  managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
+            (condition) => condition.type === 'Available'
+        )   
+        if (managedClusterAddOnConditionAvailable?.status === 'True') {
+            return managedClusterAddOnConditionAvailable.message
+        }
+        if ((managedClusterAddOnConditionAvailable?.status === 'False') || (managedClusterAddOnConditionProgressing?.status === 'False') || (managedClusterAddOnConditionDegraded?.status === 'False')) {
+            return ""
+        }
+        
+        return <span>Unknown</span>
+    } 
+
     // const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
     //const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
    // const history = useHistory()
@@ -132,13 +190,7 @@ function getStatus(){
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[
-                    {
-                        id: 'addConnenction',
-                        title: 'Add connection',
-                        click: () => {
-                            getStatus()
-                        },
-                    },
+                
                 ]}
                 bulkActions={[
                    
