@@ -12,6 +12,7 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../ClusterManagement'
 import { ManagedCluster, managedClusters } from '../../../lib/ManagedCluster'
+import { createKlusterletAddonConfig } from '../../../lib/KlusterletAddonConfig'
 import { createProject } from '../../../lib/Project'
 
 export function ImportClusterPage() {
@@ -30,8 +31,13 @@ export function ImportClusterPageContent() {
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<string[]>([])
     const onSubmit = async () => {
-        const response = await createProject(clusterName)
-        return response
+        const projectResponse = await createProject(clusterName)
+        const kacResponse = await createKlusterletAddonConfig({
+            clusterName,
+            clusterLabels: { cloud: cloudLabel ?? '', vendor: 'auto-detect' }
+        })
+        console.log('kacResponse', kacResponse)
+        return projectResponse
     }
     return (
         <AcmPageCard>
