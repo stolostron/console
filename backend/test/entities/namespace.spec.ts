@@ -12,7 +12,7 @@ describe(`graphql query namespaces`, function () {
             .get('/api/v1/namespaces')
             .reply(200, { items: [namespace] })
 
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     namespaces {

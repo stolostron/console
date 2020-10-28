@@ -61,26 +61,55 @@ export async function startServer(): Promise<FastifyInstance> {
         await res.code(200).send()
     })
 
-    async function kubeRequest<T>(token: string, method: string, url: string): Promise<AxiosResponse<T>> {
+    async function kubeRequest<T>(
+        token: string,
+        method: string,
+        url: string,
+        data?: unknown
+    ): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
-        while (true) {
-            response = await Axios.request<T>({
-                url,
-                method: method as Method,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                responseType: 'json',
-                validateStatus: () => true,
-            })
-            if (response.status === 200) {
-                break
-            }
-            switch (response.status) {
-                case 429:
-                    await new Promise((resolve) => setTimeout(resolve, 100))
+        let tries = method === 'GET' ? 3 : 1
+        while (tries-- > 0) {
+            try {
+                response = await Axios.request<T>({
+                    url,
+                    method: method as Method,
+                    httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    responseType: 'json',
+                    validateStatus: () => true,
+                    data,
+                    // timeout - defaults to unlimited
+                })
+                switch (response.status) {
+                    case 200: // OK
+                    case 201: // Created
+                    case 204: // No Content
+                    case 304: // Not Modified
+                        return response
+                    case 429:
+                        if (tries > 0) {
+                            await new Promise((resolve) => setTimeout(resolve, 100))
+                        }
+                        break
+                    default:
+                        if (response.status < 200 || response.status >= 300) {
+                            throw response // to catch block
+                        }
+                }
+            } catch (err) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                const code = err.code as string
+                switch (code) {
+                    case 'ETIMEDOUT':
+                        logger.warn({ msg: 'ETIMEDOUT', method, url })
+                        break
+                    default:
+                        throw err
+                }
             }
             //console.log("responce: ", url)
         } 
@@ -92,45 +121,64 @@ export async function startServer(): Promise<FastifyInstance> {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
 
-            let url = req.url.substr(6)
+            let url = req.url.substr('/cluster-management/proxy'.length)
             let query = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+            const result = await kubeRequest<{ items: { metadata: { name: string } }[]; message: string }>(
                 token,
                 req.method,
-                process.env.CLUSTER_API_URL + url + query
+                process.env.CLUSTER_API_URL + url + query,
+                req.body
             )
-            return res.code(200).send(result.data.items)
+            return res
+                .code(result.status)
+                .send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
         } catch (err) {
-            console.log(err)
-            throw err
+            logError('proxy error', err, { method: req.method, url: req.url })
+            void res.code(500).send()
         }
     }
 
-    fastify.all('/proxy/*', proxy)
+    fastify.all('/cluster-management/proxy/*', proxy)
 
-    fastify.get('/namespaced/*', async (req, res) => {
+    fastify.get('/cluster-management/namespaced/*', async (req, res) => {
         try {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
 
-            let url = req.url.substr(11)
+            let url = req.url.substr('/cluster-management/namespaced'.length)
             let query = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest<{ items: { metadata: { name: string } }[] }>(
+            const clusteredRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + url + query
+            )
+
+            const projectsRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects'
             )
-            const promises = result.data.items.map((project) => {
+
+            try {
+                const clusteredRequest = await clusteredRequestPromise
+                return res.code(200).send(clusteredRequest.data.items)
+            } catch {
+                // DO NOTHING
+            }
+
+            const projectsRequest = await projectsRequestPromise
+
+            const promises = projectsRequest.data.items.map((project) => {
                 const parts = url.split('/')
                 const plural = parts[parts.length - 1]
                 const path = parts.slice(0, parts.length - 1).join('/')
@@ -142,8 +190,8 @@ export async function startServer(): Promise<FastifyInstance> {
             const results = await Promise.all(promises)
             return res.code(200).send(results.map((r) => r.data.items).flat())
         } catch (err) {
-            console.log(err)
-            throw err
+            logError('namespaced error', err, { method: req.method, url: req.url })
+            void res.code(500).send()
         }
     })
 
@@ -232,11 +280,12 @@ export async function startServer(): Promise<FastifyInstance> {
                 httpsAgent: new https.Agent({ rejectUnauthorized: false }),
                 headers: {
                     Accept: 'application/json',
-                    Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
+                    // Authorization: `Bearer ${process.env.CLUSTER_API_TOKEN}`,
                 },
                 responseType: 'json',
             }
         )
+
         const authorizeUrl = new URL(response.data.authorization_endpoint)
         const tokenUrl = new URL(response.data.token_endpoint)
         const validStates = new Set()
@@ -256,7 +305,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 },
             },
             // register a url to start the redirect flow
-            startRedirectPath: '/login',
+            startRedirectPath: '/cluster-management/login',
             // oauth redirect here after the user login
             callbackUri: process.env.OAUTH2_REDIRECT_URL,
             generateStateFunction: (request: FastifyRequest) => {
@@ -274,7 +323,7 @@ export async function startServer(): Promise<FastifyInstance> {
             },
         })
 
-        fastify.get('/login/callback', async function (request, reply) {
+        fastify.get('/cluster-management/login/callback', async function (request, reply) {
             const query = request.query as { code: string; state: string }
             validStates.add(query.state)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -290,7 +339,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 .redirect(`${process.env.FRONTEND_URL}`)
         })
 
-        fastify.delete('/login', async function (request, reply) {
+        fastify.delete('/cluster-management/login', async function (request, reply) {
             const token = request.cookies['acm-access-token-cookie']
             if (token) {
                 await Axios.delete(
@@ -324,6 +373,7 @@ export async function startServer(): Promise<FastifyInstance> {
         emitSchemaFile: !['production', 'test'].includes(process.env.NODE_ENV),
     })
     await fastify.register(fastifyGQL, {
+        path: '/cluster-management/graphql',
         graphiql: 'playground',
         schema,
         jit: 1,
@@ -360,7 +410,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
 
     fastify.setNotFoundHandler((request, response) => {
-        if (!request.url.startsWith('/graphql') && !path.extname(request.url)) {
+        if (!request.url.startsWith('/cluster-management/graphql') && !path.extname(request.url)) {
             void response.code(200).sendFile('index.html', join(__dirname, 'public'))
         } else {
             void response.code(404).send()
@@ -368,7 +418,7 @@ export async function startServer(): Promise<FastifyInstance> {
     })
     await fastify.register(fastifyStatic, {
         root: join(__dirname, 'public'),
-        // prefix: '/public/', // optional: default '/'
+        prefix: '/cluster-management/', // optional: default '/'
     })
 
     fastify.addHook('onClose', (instance, done: () => void) => {

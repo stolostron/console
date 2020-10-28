@@ -27,7 +27,7 @@ describe(`graphql query clusterManagementAddOns`, function () {
             )
             .reply(200, { items: [clusterManagementAddOn] })
 
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     clusterManagementAddOns {

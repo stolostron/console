@@ -1,5 +1,5 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmLabels,
     AcmLoadingPage,
     AcmPageCard,
@@ -42,7 +42,7 @@ export function ClustersPageContent() {
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (!data?.managedClusters || data.managedClusters.length === 0) {
-        return <AcmEmptyPage title="No clusters found." message="No managed clusters found." action="Create cluster" />
+        return <AcmPageCard><AcmEmptyState title="No clusters found." message="No managed clusters found." action="Create cluster" /></AcmPageCard>
     }
     return (
         <AcmPageCard>

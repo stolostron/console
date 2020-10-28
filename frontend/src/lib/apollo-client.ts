@@ -8,7 +8,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
             const serverError = networkError as ServerError
             switch (serverError.statusCode) {
                 case 401:
-                    window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+                    window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
                     break
             }
         }
@@ -19,7 +19,7 @@ const link = from([
     new RetryLink(),
     errorLink,
     new HttpLink({
-        uri: `${process.env.REACT_APP_BACKEND}/graphql`,
+        uri: `${process.env.REACT_APP_BACKEND}/cluster-management/graphql`,
         credentials: 'include',
     }),
 ])

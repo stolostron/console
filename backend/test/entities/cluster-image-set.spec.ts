@@ -9,7 +9,7 @@ describe(`graphql query clusterimagesetss`, function () {
             .get('/apis/hive.openshift.io/v1/clusterimagesets')
             .reply(200, { items: [{ metadata: { name: 'name' } }] })
 
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     clusterImageSets {

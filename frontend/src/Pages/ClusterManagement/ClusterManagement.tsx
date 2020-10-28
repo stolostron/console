@@ -23,7 +23,7 @@ export enum NavigationPath {
 }
 
 export function ClusterManagementPageHeader() {
-    const { t } = useTranslation()
+    const { t } = useTranslation(['cluster'])
     return (
         <React.Fragment>
             <AcmPageHeader title={t('page.header.cluster-management')} />
@@ -33,19 +33,20 @@ export function ClusterManagementPageHeader() {
 }
 
 export function ClusterManagementNavigation() {
-    let l = useLocation()
+    const l = useLocation()
+    const { t } = useTranslation(['cluster', 'connection', 'bma'])
     return (
         <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
             <Nav variant="tertiary" style={{ paddingLeft: '12px' }}>
                 <NavList>
                     <NavItem isActive={l.pathname.endsWith(NavigationPath.clusters)} to={NavigationPath.clusters}>
-                        <Link to={NavigationPath.clusters}>Clusters</Link>
+                        <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
                     </NavItem>
                     <NavItem isActive={l.pathname.endsWith(NavigationPath.providerConnections)}>
-                        <Link to={NavigationPath.providerConnections}>Provider Connections</Link>
+                        <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
                     </NavItem>
                     <NavItem isActive={l.pathname.endsWith(NavigationPath.baremetalAssets)}>
-                        <Link to={NavigationPath.baremetalAssets}>Bare-metal Assets</Link>
+                        <Link to={NavigationPath.baremetalAssets}>{t('bma:bmas')}</Link>
                     </NavItem>
                 </NavList>
             </Nav>
