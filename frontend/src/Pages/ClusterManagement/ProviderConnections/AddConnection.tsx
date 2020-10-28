@@ -36,13 +36,13 @@ export function AddConnectionPageData() {
         return <AcmLoadingPage />
     } else if (projectsQuery.error) {
         return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
+    } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
         return <AcmPageCard><AcmEmptyState title="No namespaces found." message="No namespaces found." /></AcmPageCard>
     }
 
     return (
         <AddConnectionPageContent
-            projects={projectsQuery.data as Project[]}
+            projects={projectsQuery.data.items}
             createProviderConnection={(providerConnection: ProviderConnection) =>
                 providerConnections.create(providerConnection)
             }
