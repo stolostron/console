@@ -1,5 +1,5 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmLoadingPage,
     AcmPageCard,
     AcmPageHeader,
@@ -37,7 +37,7 @@ export function AddConnectionPageData() {
     } else if (projectsQuery.error) {
         return <ErrorPage error={projectsQuery.error} />
     } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
-        return <AcmEmptyPage title="No namespaces found." message="No namespaces found." />
+        return <AcmPageCard><AcmEmptyState title="No namespaces found." message="No namespaces found." /></AcmPageCard>
     }
 
     return (
@@ -188,6 +188,7 @@ export function AddConnectionPageContent(props: {
                 <AcmTextInput
                     id="awsSecretAccessKeyID"
                     label="AWS Secret Access Key ID"
+                    type="password"
                     value={providerConnection.stringData?.awsSecretAccessKeyID}
                     onChange={(awsSecretAccessKeyID) => {
                         updateProviderConnection((providerConnection) => {
@@ -198,7 +199,6 @@ export function AddConnectionPageContent(props: {
                     placeholder="Enter your AWS Secret Access Key ID"
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AWS}
                     required
-                    secret
                 />
 
                 <AcmTextInput
@@ -290,6 +290,7 @@ export function AddConnectionPageContent(props: {
                 <AcmTextInput
                     id="gcServiceAccountKey"
                     label="Google Cloud Platform service account JSON key"
+                    type="password"
                     value={providerConnection.stringData?.gcServiceAccountKey}
                     onChange={(gcServiceAccountKey) => {
                         updateProviderConnection((providerConnection) => {
@@ -300,7 +301,6 @@ export function AddConnectionPageContent(props: {
                     placeholder="Enter your Google Cloud Platform service account JSON key"
                     required
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
-                    secret
                 />
 
                 <AcmTextInput
@@ -348,6 +348,7 @@ export function AddConnectionPageContent(props: {
                 <AcmTextInput
                     id="cacertificate"
                     label="vCenter root CA certificate"
+                    type="password"
                     value={providerConnection.stringData?.cacertificate}
                     onChange={(cacertificate) => {
                         updateProviderConnection((providerConnection) => {
@@ -358,7 +359,6 @@ export function AddConnectionPageContent(props: {
                     placeholder="Enter your vCenter root CA certificate"
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                     required
-                    secret
                 />
 
                 <AcmTextInput
@@ -435,6 +435,7 @@ export function AddConnectionPageContent(props: {
                 <AcmTextInput
                     id="pullSecret"
                     label="Red Hat Openshift Pull Secret"
+                    type="password"
                     value={providerConnection.stringData?.pullSecret}
                     onChange={(pullSecret) => {
                         updateProviderConnection((pullSecret) => {
@@ -444,12 +445,12 @@ export function AddConnectionPageContent(props: {
                     }}
                     placeholder={'Enter Red Hat Openshift Pull Secret'}
                     required
-                    secret
                 />
 
                 <AcmTextInput
                     id="sshPrivateKey"
                     label="SSH Private Key"
+                    type="password"
                     value={providerConnection.stringData?.sshPrivatekey}
                     onChange={(sshPrivatekey) => {
                         updateProviderConnection((sshPrivatekey) => {
@@ -459,12 +460,12 @@ export function AddConnectionPageContent(props: {
                     }}
                     placeholder={'Enter SSH Private Key'}
                     required
-                    secret
                 />
 
                 <AcmTextInput
                     id="sshPublicKey"
                     label="SSH Public Key"
+                    type="password"
                     value={providerConnection.stringData?.sshPublickey}
                     onChange={(sshPublickey) => {
                         updateProviderConnection((sshPublickey) => {
@@ -474,7 +475,6 @@ export function AddConnectionPageContent(props: {
                     }}
                     placeholder={'Enter SSH Public Key'}
                     required
-                    secret
                 />
 
                 <ActionGroup>
