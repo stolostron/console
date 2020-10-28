@@ -1,5 +1,5 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
@@ -51,7 +51,7 @@ export function CreateClusterPageData() {
         providerConnectionsQuery.data?.providerConnections.length === 0
     ) {
         return (
-            <AcmEmptyPage
+            <AcmEmptyState
                 title="No provider connections found."
                 message="No provider connections found."
                 action="Create connection"
@@ -61,7 +61,7 @@ export function CreateClusterPageData() {
         !clusterImageSetsQuery.data?.clusterImageSets ||
         clusterImageSetsQuery.data?.clusterImageSets.length === 0
     ) {
-        return <AcmEmptyPage title="No image sets found." message="No image sets clusters found." />
+        return <AcmPageCard><AcmEmptyState title="No image sets found." message="No image sets clusters found." /></AcmPageCard>
     }
 
     return (
@@ -237,6 +237,7 @@ export function CreateClusterPageContent(props: {
                         <AcmLabelsInput
                             id="additionalLabels"
                             label="Additional Labels"
+                            buttonLabel="Add label"
                             value={clusterDeploymentInput.labels}
                             onChange={(labels) => {
                                 setClusterDeploymentInput({ ...clusterDeploymentInput, ...{ labels } })
