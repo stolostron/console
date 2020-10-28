@@ -8,11 +8,11 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnections, ProviderConnection, providerConnections } from '../../../lib/ProviderConnection'
+import { ProviderConnection, ProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
@@ -38,21 +38,15 @@ export function ProviderConnectionsPageContent() {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data || data.length === 0) {
-        return (
-            <AcmEmptyPage
-                title={t('empty.title')}
-                message={t('empty.subtitle')}
-                action={t('add')}
-            />
-        )
+    } else if (!data?.items || data.items.length === 0) {
+        return <AcmEmptyPage title={t('empty.title')} message={t('empty.subtitle')} action={t('add')} />
     }
 
     // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
 
     return (
         <ProviderConnectionsTable
-            providerConnections={data}
+            providerConnections={data.items}
             refresh={refresh}
             deleteConnection={providerConnections.delete}
         />

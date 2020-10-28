@@ -1,7 +1,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from './providers'
-import { GetWrapper, resourceMethods } from './Resource'
+import { GetWrapper, ResourceList, resourceMethods } from './Resource'
 
 export interface ProviderConnection {
     apiVersion: 'v1'
@@ -49,7 +49,7 @@ providerConnections.list = async (labels?: string[]) => {
         labels.push('cluster.open-cluster-management.io/cloudconnection=')
     }
     const result = await originalList(labels)
-    for (const providerConnection of result.data) {
+    for (const providerConnection of result.data.items) {
         if (providerConnection?.data?.metadata) {
             try {
                 const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
@@ -70,7 +70,7 @@ providerConnections.create = async (providerConnection: ProviderConnection) => {
 }
 
 export function ProviderConnections() {
-    return GetWrapper<ProviderConnection[]>(providerConnections.list)
+    return GetWrapper<ResourceList<ProviderConnection>>(providerConnections.list)
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
