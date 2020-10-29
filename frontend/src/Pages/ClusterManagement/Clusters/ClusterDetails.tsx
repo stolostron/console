@@ -1,5 +1,5 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmLoadingPage,
     AcmPageCard,
     AcmPageHeader,
@@ -66,7 +66,7 @@ export function ClustersDeatilsPageContent(props: {
         <React.Fragment>
                 <Switch>
                     <Route path={`${match.path}`} exact>
-                        <AcmEmptyPage title="No cluster found." message="Your cluster does not exist." />
+                        <AcmEmptyState title="No cluster found." message="Your cluster does not exist." />
                     </Route>
                     <Route path={`${match.path}/nodespools`} >
                         <NodePoolsPageContent name={props.name} namespace={props.namespace} />
@@ -98,7 +98,7 @@ export function ClustersSettingsPageContent(props: {
         return <ErrorPage error={error} />
     } else if (!data || data.length === 0 || !MCARes.data || MCARes.data.length==0) {
         return (
-            <AcmEmptyPage
+            <AcmEmptyState
                 title="No addons found."
                 message="Your cluster does not contain any addons."
             />
