@@ -1,8 +1,10 @@
 import { AcmEmptyPage, AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels } from '../../../lib/BareMetalAsset'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels, bareMetalAssets } from '../../../lib/BareMetalAsset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
@@ -30,12 +32,34 @@ export function BareMetalAssets() {
         return <AcmEmptyPage title="No bare metal assets found" message="No bare metal assets found" />
     }
 
-    return <BareMetalAssetsTable bareMetalAssets={data}></BareMetalAssetsTable>
+    return <BareMetalAssetsTable 
+                bareMetalAssets={data}
+                refresh={refresh}
+                deleteBareMetalAsset={bareMetalAssets.delete}
+            ></BareMetalAssetsTable>
 }
 
-export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
+export function BareMetalAssetsTable(props: { 
+    bareMetalAssets: BareMetalAsset[] 
+    refresh: () => void
+    deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>}) {
+
+    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
+    const history = useHistory()
+
+    function keyFn(bareMetalAsset: BareMetalAsset) {
+        return bareMetalAsset.metadata.uid as string
+    }
+
     return (
         <AcmPageCard>
+             <ConfirmModal
+                open={confirm.open}
+                confirm={confirm.confirm}
+                cancel={confirm.cancel}
+                title={confirm.title}
+                message={confirm.message}
+            ></ConfirmModal>
             <AcmTable<BareMetalAsset>
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
@@ -76,7 +100,7 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                     },
                 ]}
                 // TODO: find out if ! is appropriate for this situation.
-                keyFn={(item: BareMetalAsset) => item.metadata?.uid!}
+                keyFn={keyFn}
                 tableActions={[
                     {
                         id: 'createAsset',
@@ -85,13 +109,37 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                     },
                 ]}
                 bulkActions={[
-                    { id: 'destroyBareMetalAsset', title: 'Destroy', click: (items) => {} },
+                    { id: 'destroyBareMetalAsset', title: 'Destroy', click: (items) => {
+                        items.forEach(bma => {
+
+                        })
+                    } },
                     { id: 'createBareMetalAssetCluster', title: 'Create Cluster', click: (items) => {} },
                 ]}
                 rowActions={[
                     { id: 'editLabels', title: 'Edit labels', click: (item) => {} },
                     { id: 'editAsset', title: 'Edit Asset', click: (item) => {} },
-                    { id: 'deleteAsset', title: 'Delete Asset', click: (item) => {} },
+                    { id: 'deleteAsset', title: 'Delete Asset', click: (bareMetalAsset: BareMetalAsset) => {
+                        setConfirm({
+                            title: 'Delete bare metal asset',
+                            message: `You are about to delete ${bareMetalAsset.metadata?.name}. The bare metal asset will no longer be available. This action is irreversible.`,
+                            open: true,
+                            confirm: () => {
+                                props
+                                    .deleteBareMetalAsset(
+                                        bareMetalAsset.metadata?.name,
+                                        bareMetalAsset.metadata?.namespace
+                                    )
+                                    .then(() => {
+                                        props.refresh()
+                                    })
+                                setConfirm(ClosedConfirmModalProps)
+                            },
+                            cancel: () => {
+                                setConfirm(ClosedConfirmModalProps)
+                            },
+                        })
+                    } },
                 ]}
             />
         </AcmPageCard>
