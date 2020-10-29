@@ -10,10 +10,10 @@ import {
 import { ActionGroup, Button } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { NavigationPath } from '../ClusterManagement'
 import { createManagedCluster } from '../../../lib/ManagedCluster'
 import { createKlusterletAddonConfig } from '../../../lib/KlusterletAddonConfig'
 import { createProject } from '../../../lib/Project'
+import { NavigationPath } from '../ClusterManagement'
 
 export function ImportClusterPage() {
     return (

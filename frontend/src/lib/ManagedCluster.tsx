@@ -1,5 +1,5 @@
-import { V1ObjectMeta,  } from '@kubernetes/client-node'
-import { IResource, resourceMethods, GetWrapper } from './Resource'
+import { V1ObjectMeta } from '@kubernetes/client-node'
+import { IResource, resourceMethods, GetWrapper, ResourceList } from './Resource'
 
 export interface ClusterLabels {
     cloud: string
@@ -44,7 +44,7 @@ export const managedClusters = resourceMethods<ManagedCluster>({
 })
 
 export function ManagedClusters() {
-    return GetWrapper<ManagedCluster[]>(managedClusters.list)
+    return GetWrapper<ResourceList<ManagedCluster>>(managedClusters.list)
 }
 
 export const createManagedCluster = (data: { clusterName: string | undefined, clusterLabels: ClusterLabels }) => {
