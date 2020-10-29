@@ -134,7 +134,7 @@ export async function startServer(): Promise<FastifyInstance> {
             )
             return res
                 .code(result.status)
-                .send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
+                .send(result.data.items ?? result.data)
         } catch (err) {
             logError('proxy error', err, { method: req.method, url: req.url })
             void res.code(500).send()

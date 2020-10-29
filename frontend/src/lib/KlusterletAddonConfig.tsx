@@ -1,10 +1,6 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, resourceMethods, GetWrapper } from './Resource'
-
-export interface ClusterLabels {
-  cloud: string
-  vendor: string
-}
+import { ClusterLabels } from './ManagedCluster'
 
 export interface KlusterletAddonConfig extends IResource {
     apiVersion: 'agent.open-cluster-management.io/v1'

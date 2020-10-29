@@ -11,7 +11,7 @@ import { ActionGroup, Button } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../ClusterManagement'
-import { ManagedCluster, managedClusters } from '../../../lib/ManagedCluster'
+import { createManagedCluster } from '../../../lib/ManagedCluster'
 import { createKlusterletAddonConfig } from '../../../lib/KlusterletAddonConfig'
 import { createProject } from '../../../lib/Project'
 
@@ -26,17 +26,23 @@ export function ImportClusterPage() {
 
 export function ImportClusterPageContent() {
     const history = useHistory()
-    const [clusterName, setClusterName] = useState<string | undefined>()
-    const [cloudLabel, setCloudLabel] = useState<string | undefined>('auto-detect')
+    const [clusterName, setClusterName] = useState<string>('')
+    const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
     const onSubmit = async () => {
+        const clusterLabels = { cloud: cloudLabel ?? '', vendor: 'auto-detect', name: clusterName, environment: environmentLabel ?? '' }
         const projectResponse = await createProject(clusterName)
-        const kacResponse = await createKlusterletAddonConfig({
-            clusterName,
-            clusterLabels: { cloud: cloudLabel ?? '', vendor: 'auto-detect' }
-        })
-        console.log('kacResponse', kacResponse)
+        const response = await Promise.all([
+            createKlusterletAddonConfig({ clusterName, clusterLabels}),
+            createManagedCluster({ clusterName, clusterLabels })
+        ])
+        // const kacResponse = await createKlusterletAddonConfig({
+        //     clusterName,
+        //     clusterLabels
+        // })
+        const mcResponse = await createManagedCluster({ clusterName, clusterLabels })
+        console.log('RESPONSE', response)
         return projectResponse
     }
     return (
@@ -46,7 +52,7 @@ export function ImportClusterPageContent() {
                     id="clusterName"
                     label="Cluster name"
                     value={clusterName}
-                    onChange={setClusterName}
+                    onChange={(name) => setClusterName(name ?? '')}
                     placeholder="Enter a name for the cluster"
                     required
                 />
@@ -54,7 +60,7 @@ export function ImportClusterPageContent() {
                     id="cloudLabel"
                     label="Cloud"
                     value={cloudLabel}
-                    onChange={setCloudLabel}
+                    onChange={(label) => setCloudLabel(label ?? '')}
                     options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
                     placeholder="Select a cloud provider label for the cluster"
                 />
