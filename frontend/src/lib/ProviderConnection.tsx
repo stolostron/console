@@ -28,8 +28,7 @@ export interface ProviderConnection {
         datacenter?: string
         datastore?: string
         libvirtURI?: string
-
-        // sshKnownHosts
+        sshKnownHosts?: string
         baseDomain: string
         pullSecret: string
         sshPrivatekey: string
