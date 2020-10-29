@@ -62,7 +62,6 @@ export function ClustersDeatilsPageContent(props: {
     namespace: string;
 }) {
     let match = useRouteMatch();
-    console.log('match',match)
     return(
         <React.Fragment>
                 <Switch>
@@ -87,7 +86,6 @@ export function ClustersSettingsPageContent(props: {
     const { loading, error, data, startPolling, stopPolling, refresh } = ClusterManagementAddons()
 
     const MCARes = GetManagedClusterAddOns(props.namespace)
-    useEffect(refresh, [refresh])
     useEffect(() => {
         startPolling(5 * 1000)
         MCARes.startPolling(5*1000)
@@ -108,13 +106,11 @@ export function ClustersSettingsPageContent(props: {
     }
 
     return (
-        <AcmPageCard>
-            <ClusterSettingsTable 
-            clusterManagementAddOns={data} 
-            managedClusterAddOns={MCARes.data}
-            refresh={refresh}
-            />
-        </AcmPageCard>
+        <ClusterSettingsTable 
+        clusterManagementAddOns={data} 
+        managedClusterAddOns={MCARes.data}
+        refresh={refresh}
+        />
     )
 }
 

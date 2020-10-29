@@ -13,12 +13,11 @@ import { ErrorPage } from '../../../../components/ErrorPage'
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
     const { loading, error, data, startPolling, stopPolling, refresh } = ListManagedClusterInfos(props.namespace)
     useEffect(() => {
-        startPolling(5 * 1000)
+        startPolling(10 * 1000)
         return stopPolling
-    }, [startPolling, stopPolling, refresh])
+    }, [startPolling, stopPolling])
 
-    const mcis = data?.filter((m) => m.metadata.name == props.name)
-    console.log('mcis', mcis)
+    const mcis = data?.filter((m) => m.metadata.name === props.name)
 
     if (loading) {
         return <AcmLoadingPage />
@@ -34,21 +33,12 @@ export function NodePoolsPageContent(props: { name: string; namespace: string })
         return <AcmEmptyPage title="No nodes found." message={`Cluster ${props.name} does not contain any nodes.`} />
     }
 
-    return (
-        <AcmPageCard>
-            <NodesPoolsTable nodes={mcis[0].status.nodeList!} refresh={refresh} />
-        </AcmPageCard>
-    )
+    return <NodesPoolsTable nodes={mcis[0].status.nodeList!} refresh={refresh} />
 }
 
-export function NodesPoolsTable(props: {
-    nodes: NodeInfo[]
-    refresh: () => void
-    // deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
-}) {
+export function NodesPoolsTable(props: { nodes: NodeInfo[]; refresh: () => void }) {
     function getLabelCellFn(label: string) {
         const labelCellFn = (node: NodeInfo) => {
-            console.log(label, node.labels)
             return <span>{(node.labels && node.labels[label]) || ''}</span>
         }
         return labelCellFn
@@ -57,12 +47,12 @@ export function NodesPoolsTable(props: {
         const labelSortFn = (a: NodeInfo, b: NodeInfo): number => {
             const aValue = (a.labels && a.labels[label]) || ''
             const bValue = (b.labels && b.labels[label]) || ''
-            console.log('compare',a,b,label,bValue,aValue.localeCompare(bValue))
             return aValue.localeCompare(bValue)
         }
         return labelSortFn
     }
-    function rolesCellFn(node: NodeInfo): ReactNode {
+
+    function getRoles(node: NodeInfo): string[] {
         const roles: string[] = []
         const nodeRolePrefix = 'node-role.kubernetes.io/'
         const index = nodeRolePrefix.length
@@ -73,11 +63,29 @@ export function NodesPoolsTable(props: {
                 }
             })
         }
+        return roles
+    }
+    function rolesCellFn(node: NodeInfo): ReactNode {
+        const roles = getRoles(node)
         return <span>{roles.join(',')}</span>
     }
 
-    function capacityFn(node: NodeInfo): ReactNode {
-        return <span></span>
+    function rolesSortFn(a: NodeInfo, b: NodeInfo): number {
+        const roleA = getRoles(a).join(',')
+        const roleB = getRoles(b).join(',')
+        return roleA.localeCompare(roleB)
+    }
+
+    function capacityCellFn(node: NodeInfo): ReactNode {
+        if (!node.capacity) {
+            return <span></span>
+        }
+        const cpu = node.capacity!['cpu'] || ''
+        let memory = node.capacity!['memory'] || ''
+        if (memory.length > 0 && parseInt(memory, 10) > 0) {
+            memory = formatFileSize(parseInt(memory, 10))
+        }
+        return <span>{`${cpu}/${memory}`}</span>
     }
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
@@ -88,45 +96,37 @@ export function NodesPoolsTable(props: {
         },
         {
             header: 'Role',
-            sort: 'Role',
-            search: 'name',
+            sort: rolesSortFn,
             cell: rolesCellFn,
         },
         {
             header: 'Region',
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/region'),
-            search: 'failure-domain.beta.kubernetes.io/region',
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/region'),
         },
         {
             header: 'Zone',
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/zone'),
-            search: 'failure-domain.beta.kubernetes.io/zone',
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/zone'),
         },
         {
             header: 'Instance type',
             sort: getLabelSortFn('beta.kubernetes.io/instance-type'),
-            search: 'labels["beta.kubernetes.io/instance-type"]',
             cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
         },
         {
             header: 'Size - Core and memory',
-            cell: 'labels["beta.kubernetes.io/instance-type"]',
+            cell: capacityCellFn,
         },
     ]
     function keyFn(node: NodeInfo) {
         return node.name as string
     }
 
-    // const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
-    //const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    // const history = useHistory()
-
     return (
         <AcmPageCard>
             <AcmTable<NodeInfo>
-                plural="clustermanagementaddons"
+                plural="nodeinfos"
                 items={props.nodes}
                 columns={columns}
                 keyFn={keyFn}
@@ -136,4 +136,43 @@ export function NodesPoolsTable(props: {
             />
         </AcmPageCard>
     )
+}
+
+// formatFileSize converts a size (Ki) into a proper unit with 2 digit precision. (copied from console-ui)
+function formatFileSize(size: number): string {
+    size = size || 0
+
+    const decimals = 2
+
+    const threshold = 800 // Steps to next unit if exceeded
+    const multiplier = 1024
+    const units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi']
+
+    let factorize = 1,
+        unitIndex
+
+    for (unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        if (unitIndex > 0) {
+            factorize = Math.pow(multiplier, unitIndex)
+        }
+
+        if (size < multiplier * factorize && size < threshold * factorize) {
+            break
+        }
+    }
+
+    if (unitIndex >= units.length) {
+        unitIndex = units.length - 1
+    }
+
+    let fileSize = size / factorize
+
+    let res = fileSize.toFixed(decimals)
+
+    // This removes unnecessary 0 or . chars at the end of the string/decimals
+    if (res.indexOf('.') > -1) {
+        res = res.replace(/\.?0*$/, '')
+    }
+
+    return `${res}${units[unitIndex + 1]}`
 }
