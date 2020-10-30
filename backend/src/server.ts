@@ -22,10 +22,8 @@ import { promisify } from 'util'
 import { BareMetalAssetResolver } from './entities/bare-metal-asset'
 import { ClusterDeploymentResolver } from './entities/cluster-deployment'
 import { ClusterImageSetResolver } from './entities/cluster-image-set'
-import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
 import { MetadataResolver } from './entities/common/metadata'
 import { ManagedClusterResolver } from './entities/managed-cluster'
-import { ManagedClusterAddOnResolver } from './entities/managed-cluster-addon'
 import { NamespaceResolver } from './entities/namespace'
 import { ProviderConnectionsResolver } from './entities/provider-connection'
 import { SecretResolver } from './entities/secret'
@@ -367,8 +365,6 @@ export async function startServer(): Promise<FastifyInstance> {
             ClusterDeploymentResolver,
             ProviderConnectionsResolver,
             BareMetalAssetResolver,
-            ManagedClusterAddOnResolver,
-            ClusterManagementAddOnResolver,
         ],
         emitSchemaFile: !['production', 'test'].includes(process.env.NODE_ENV),
     })
