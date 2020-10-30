@@ -44,7 +44,11 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
     } else if (mca.error) {
         return <ErrorPage error={mca.error} />
     } else if (!cma.data || cma.data.length === 0 || !mca.data || mca.data.length === 0) {
-        return <AcmEmptyState title="No addons found." message="Your cluster does not contain any addons." />
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No addons found." message="Your cluster does not contain any addons." />
+            </AcmPageCard>
+        )
     }
 
     return <ClusterSettingsTable clusterManagementAddOns={cma.data} managedClusterAddOns={mca.data} refresh={refresh} />
@@ -72,7 +76,6 @@ export function ClusterSettingsTable(props: {
             cell: getDisplayMessage,
         },
     ]
-    let count=0
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
         return clusterManagementAddOn.metadata?.uid || (clusterManagementAddOn.metadata.name as string)
     }
@@ -126,7 +129,7 @@ export function ClusterSettingsTable(props: {
         ) {
             return (
                 <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <InProgressIcon color="grey" key="progressing-icon"/>
+                    <InProgressIcon color="grey" key="progressing-icon" />
                     <span key="status">&nbsp; Progressing</span>
                 </span>
             )
@@ -134,7 +137,7 @@ export function ClusterSettingsTable(props: {
 
         return (
             <span style={{ whiteSpace: 'nowrap' }} key="2">
-                <UnknownIcon color="grey" key="unknown-icon"/>
+                <UnknownIcon color="grey" key="unknown-icon" />
                 <span key="status">&nbsp; Unknown</span>
             </span>
         )
