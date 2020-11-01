@@ -39,6 +39,22 @@ export function BareMetalAssets() {
             ></BareMetalAssetsTable>
 }
 
+export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[], deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>, refresh: () => void) {
+    const promises: Array<Promise<any>> = []
+
+    bareMetalAssets.forEach( bareMetalAsset => {
+        promises.push(
+            deleteBareMetalAsset(
+            bareMetalAsset.metadata?.name,
+            bareMetalAsset.metadata?.namespace
+        ))
+   })
+   Promise.all(promises)        
+   .then(() => {
+       refresh()
+   })
+}
+
 export function BareMetalAssetsTable(props: { 
     bareMetalAssets: BareMetalAsset[] 
     refresh: () => void
@@ -109,10 +125,19 @@ export function BareMetalAssetsTable(props: {
                     },
                 ]}
                 bulkActions={[
-                    { id: 'destroyBareMetalAsset', title: 'Destroy', click: (items) => {
-                        items.forEach(bma => {
-
-                        })
+                    { id: 'destroyBareMetalAsset', title: 'Destroy', click: (bareMetalAssets: BareMetalAsset[]) => {
+                            setConfirm({
+                                title: 'Delete bare metal assets',
+                                message: `You are about to delete ${bareMetalAssets.length} bare metal assets. The bare metal assets will no longer be available. This action is irreversible.`,
+                                open: true,
+                                confirm: () => {   
+                                    deleteBareMetalAssets(bareMetalAssets, props.deleteBareMetalAsset, props.refresh)
+                                    setConfirm(ClosedConfirmModalProps)
+                                },
+                                cancel: () => {
+                                    setConfirm(ClosedConfirmModalProps)
+                                },
+                            })
                     } },
                     { id: 'createBareMetalAssetCluster', title: 'Create Cluster', click: (items) => {} },
                 ]}

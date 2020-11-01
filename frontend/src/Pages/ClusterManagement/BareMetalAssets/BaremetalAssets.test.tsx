@@ -1,31 +1,31 @@
 import { render } from '@testing-library/react'
 import React from 'react'
-import { BareMetalAsset } from '../../../sdk'
+import { BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
+import { resourceMethods } from '../../../lib/Resource'
 import { BareMetalAssetsTable } from './BaremetalAssets'
 
 test('bare metal assets page', () => {
-    const bareMetalAssets: BareMetalAsset[] = [
+    const bareMetalAssetList: BareMetalAsset[] = [
         {
-            apiVersion: '',
-            kind: '',
+            apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
+            kind: 'BareMetalAsset',
             metadata: {
-                creationTimestamp: '',
                 uid: '',
                 name: 'Cluster 0001',
                 namespace: 'default',
-                labels: ['test=123'],
             },
             spec: {
                 bmc: {
                     address: '',
                     credentialsName: '',
                 },
+                bootMac: ''
             },
         },
     ]
-    const { getByText } = render(<BareMetalAssetsTable bareMetalAssets={bareMetalAssets} />)
+    const { getByText } = render(<BareMetalAssetsTable bareMetalAssets={bareMetalAssetList} refresh={() => null} deleteBareMetalAsset={bareMetalAssets.delete} />)
     // expect(getByText('Create cluster')).toBeInTheDocument()
     // expect(getByText('Import cluster')).toBeInTheDocument()
-    expect(getByText(bareMetalAssets[0].metadata.name)).toBeInTheDocument()
-    expect(getByText(bareMetalAssets[0].metadata.namespace as string)).toBeInTheDocument()
+    expect(getByText(bareMetalAssetList[0].metadata.name!)).toBeInTheDocument()
+    expect(getByText(bareMetalAssetList[0].metadata.namespace as string)).toBeInTheDocument()
 })

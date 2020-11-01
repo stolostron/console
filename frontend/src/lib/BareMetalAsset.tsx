@@ -23,7 +23,10 @@ export interface BareMetalAsset {
     }
 }
 
-export const bareMetalAssets = resourceMethods<BareMetalAsset>({ path: '/apis/inventory.open-cluster-management.io/v1alpha1', plural: 'baremetalassets' })
+export const bareMetalAssets = resourceMethods<BareMetalAsset>({
+    path: '/apis/inventory.open-cluster-management.io/v1alpha1',
+    plural: 'baremetalassets',
+})
 // TODO: generate logic for listing BMA in edge cases, where fields are missing
 const originalList = bareMetalAssets.list
 
@@ -35,14 +38,12 @@ bareMetalAssets.list = async (labels?: string[]) => {
 const originalCreate = bareMetalAssets.create
 
 bareMetalAssets.create = async (bareMetalAsset: BareMetalAsset) => {
-
     return originalCreate(bareMetalAsset)
 }
 
 export function BareMetalAssets() {
     return GetWrapper<BareMetalAsset[]>(bareMetalAssets.list)
 }
-
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
     const KNOWN_STATUSES = [
@@ -53,22 +54,23 @@ export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
         'Ready',
     ]
     GetLabels(bareMetalAssets)
-
-    let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
-    let mostCurrentStatus = bareMetalAssets.status!.conditions[0].type
-   for (let conditions of bareMetalAssets.status!.conditions){
-        if(conditions.lastTransitionTime > mostCurrentStatusTime!){
-            mostCurrentStatusTime = conditions.lastTransitionTime
-            mostCurrentStatus = conditions.type
+    if (bareMetalAssets.status) {
+        let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
+        let mostCurrentStatus = bareMetalAssets.status!.conditions[0].type
+        for (let conditions of bareMetalAssets.status!.conditions) {
+            if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
+                mostCurrentStatusTime = conditions.lastTransitionTime
+                mostCurrentStatus = conditions.type
+            }
+            // if status time is equivalent, take the status at that was added last
+            else if (conditions.lastTransitionTime === mostCurrentStatusTime) {
+                mostCurrentStatusTime = conditions.lastTransitionTime
+                mostCurrentStatus = conditions.type
+            }
         }
-        // if status time is equivalent, take the status at that was added last
-        else if (conditions.lastTransitionTime === mostCurrentStatusTime){
-            mostCurrentStatusTime = conditions.lastTransitionTime
-            mostCurrentStatus = conditions.type
-        }
-   }
-
-    return GetStatusMessage(mostCurrentStatus)
+        return GetStatusMessage(mostCurrentStatus)
+    }
+    return ''
 }
 function GetStatusMessage(status: string) {
     switch (status) {
@@ -87,11 +89,11 @@ function GetStatusMessage(status: string) {
     }
 }
 
-export function GetLabels(bareMetalAssets: BareMetalAsset){
+export function GetLabels(bareMetalAssets: BareMetalAsset) {
     const labels = []
     const labelDict = bareMetalAssets.metadata.labels
-    for (let key in labelDict){
-        labels.push(key + '=' +labelDict[key])
+    for (let key in labelDict) {
+        labels.push(key + '=' + labelDict[key])
     }
     return labels
 }
