@@ -10,8 +10,9 @@ export interface BareMetalAsset {
             address: string
             credentialsName: string
         }
+        bootMac: string
     }
-    status: {
+    status?: {
         conditions: Array<{
             lastTransitionTime: Date
             message: string
@@ -53,10 +54,10 @@ export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
     ]
     GetLabels(bareMetalAssets)
 
-    let mostCurrentStatusTime = bareMetalAssets.status.conditions[0].lastTransitionTime
-    let mostCurrentStatus = bareMetalAssets.status.conditions[0].type
-   for (let conditions of bareMetalAssets.status.conditions){
-        if(conditions.lastTransitionTime > mostCurrentStatusTime){
+    let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
+    let mostCurrentStatus = bareMetalAssets.status!.conditions[0].type
+   for (let conditions of bareMetalAssets.status!.conditions){
+        if(conditions.lastTransitionTime > mostCurrentStatusTime!){
             mostCurrentStatusTime = conditions.lastTransitionTime
             mostCurrentStatus = conditions.type
         }
