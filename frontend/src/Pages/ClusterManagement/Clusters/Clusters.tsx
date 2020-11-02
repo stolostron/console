@@ -14,7 +14,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
-import { ManagedClusters, ManagedCluster } from '../../../lib/ManagedCluster'
+import { ManagedClusters, ManagedCluster, managedClusters } from '../../../lib/ManagedCluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ClustersPage() {
@@ -39,16 +39,32 @@ export function ClustersPageContent() {
     } else if (managedClustersQuery.error) {
         return <ErrorPage error={managedClustersQuery.error} />
     } else if (!managedClustersQuery.data?.items || managedClustersQuery.data.items.length === 0) {
-        return <AcmPageCard><AcmEmptyState title="No clusters found." message="No managed clusters found." action="Create cluster" /></AcmPageCard>
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title="No clusters found."
+                    message="No managed clusters found."
+                    action="Create cluster"
+                />
+            </AcmPageCard>
+        )
     }
     return (
         <AcmPageCard>
-            <ClustersTable managedClusters={managedClustersQuery.data.items} />
+            <ClustersTable
+                managedClusters={managedClustersQuery.data.items}
+                deleteCluster={managedClusters.delete}
+                refresh={managedClustersQuery.refresh}
+            />
         </AcmPageCard>
     )
 }
 
-export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
+export function ClustersTable(props: {
+    managedClusters: ManagedCluster[]
+    deleteCluster: (name: string, namespace: string) => void
+    refresh: () => void
+}) {
     const columns: IAcmTableColumn<ManagedCluster>[] = [
         {
             header: 'Name',
@@ -123,7 +139,14 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
                 },
             ]}
             bulkActions={[
-                { id: 'destroyCluster', title: 'Destroy', click: (items) => {} },
+                {
+                    id: 'destroyCluster',
+                    title: 'Destroy',
+                    click: (items) => {
+                        // TODO props.deleteCluster
+                        props.refresh()
+                    },
+                },
                 { id: 'detachCluster', title: 'Detach', click: (items) => {} },
                 { id: 'upgradeClusters', title: 'Upgrade', click: (items) => {} },
             ]}
@@ -134,6 +157,10 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
                 { id: 'searchCluster', title: 'Search cluster', click: (item) => {} },
                 { id: 'detachCluster', title: 'Detach cluster', click: (item) => {} },
             ]}
+            emptyState={{
+                title: 'TODO',
+                message: 'TODO',
+            }}
         />
     )
 }

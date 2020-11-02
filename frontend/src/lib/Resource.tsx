@@ -21,11 +21,20 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         function refresh() {
             void restFunc()
                 .then((response) => {
-                    setData(response.data)
-                    setError(undefined)
                     setLoading(false)
+                    switch (response.status) {
+                        case 401:
+                            window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
+                            setData(undefined)
+                            break
+                        default:
+                            setData(response.data)
+                            setError(undefined)
+                            break
+                    }
                 })
                 .catch((err: Error) => {
+                    console.log(typeof err)
                     setData(undefined)
                     setError(err)
                     setLoading(false)
@@ -52,6 +61,7 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     }
 
     useEffect(() => {
+        console.log(error)
         const code: string = (error as any)?.statusCode
         switch (code) {
             case '401':
