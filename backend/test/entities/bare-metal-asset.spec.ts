@@ -18,7 +18,7 @@ describe(`graphql query bareMetalAssets`, function () {
             )
             .reply(200, { items: [bareMetalAsset] })
 
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     bareMetalAssets {

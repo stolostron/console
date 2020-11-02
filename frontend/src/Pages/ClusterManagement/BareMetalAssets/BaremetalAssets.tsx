@@ -1,4 +1,4 @@
-import { AcmEmptyPage, AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
+import { AcmEmptyPage, AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable, AcmEmptyState } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -29,7 +29,7 @@ export function BareMetalAssets() {
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (data?.length === 0 || !data) {
-        return <AcmEmptyPage title="No bare metal assets found" message="No bare metal assets found" />
+        return <AcmPageCard><AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" /></AcmPageCard>
     }
 
     return <BareMetalAssetsTable 

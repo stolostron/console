@@ -1,24 +1,24 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmLoadingPage,
     AcmPageCard,
     AcmPageHeader,
     AcmSelect,
+    AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Form, Page } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { client } from '../../../lib/apollo-client'
-import { ProviderID, providers } from '../../../lib/providers'
+import { Project, Projects } from '../../../lib/Project'
 import {
-    Namespace,
-    ProviderConnectionDataInput,
-    ProviderConnectionInput,
-    useCreateProviderConnectionMutation,
-    useNamespacesQuery,
-} from '../../../sdk'
+    getProviderConnectionProviderID,
+    ProviderConnection,
+    providerConnections,
+    setProviderConnectionProviderID,
+} from '../../../lib/ProviderConnection'
+import { ProviderID, providers } from '../../../lib/providers'
 import { NavigationPath } from '../ClusterManagement'
 
 export function AddConnectionPage() {
@@ -31,72 +31,67 @@ export function AddConnectionPage() {
 }
 
 export function AddConnectionPageData() {
-    const namespacesQuery = useNamespacesQuery({ client, pollInterval: 30 * 1000 })
-    const [createProviderConnectionMutation] = useCreateProviderConnectionMutation({ client })
-    // const [createProviderConnectionMutation, { data, loading, error }] = useCreateProviderConnectionMutation({ client })
+    const projectsQuery = Projects()
 
-    if (namespacesQuery.loading) {
+    if (projectsQuery.loading) {
         return <AcmLoadingPage />
-    } else if (namespacesQuery.error) {
-        return <ErrorPage error={namespacesQuery.error} />
-    } else if (!namespacesQuery.data?.namespaces || namespacesQuery.data.namespaces.length === 0) {
-        return <AcmEmptyPage title="No namespaces found." message="No namespaces found." />
+    } else if (projectsQuery.error) {
+        return <ErrorPage error={projectsQuery.error} />
+    } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No namespaces found." message="No namespaces found." />
+            </AcmPageCard>
+        )
     }
 
     return (
         <AddConnectionPageContent
-            namespaces={namespacesQuery.data.namespaces as Namespace[]}
-            createProviderConnection={(input: ProviderConnectionInput) =>
-                createProviderConnectionMutation({ variables: { input } })
+            projects={projectsQuery.data.items}
+            createProviderConnection={(providerConnection: ProviderConnection) =>
+                providerConnections.create(providerConnection)
             }
         />
     )
 }
 
 export function AddConnectionPageContent(props: {
-    namespaces: Namespace[]
-    createProviderConnection: (input: ProviderConnectionInput) => void
+    projects: Project[]
+    createProviderConnection: (input: ProviderConnection) => void
 }) {
     const history = useHistory()
 
-    const [providerConnection, setProviderConnectionInput] = useState<Partial<ProviderConnectionInput>>({})
-    function updateProviderConnection(state: Partial<ProviderConnectionInput>) {
-        setProviderConnectionInput({ ...providerConnection, ...state })
-    }
-    function updateProviderConnectionData(state: Partial<ProviderConnectionDataInput>) {
-        updateProviderConnection({ data: { ...providerConnection.data, ...state } } as any)
-    }
-
-    function providerConfigured() {
-        switch (providerConnection.providerID) {
-            case ProviderID.AWS:
-                return providerConnection.data?.awsAccessKeyID && providerConnection.data?.awsSecretAccessKeyID
-            case ProviderID.AZR:
-                return (
-                    providerConnection.data?.baseDomainResourceGroupName &&
-                    providerConnection.data?.clientId &&
-                    providerConnection.data?.clientsecret &&
-                    providerConnection.data?.subscriptionid &&
-                    providerConnection.data?.tenantid
-                )
-            case ProviderID.GCP:
-                return providerConnection.data?.gcProjectID && providerConnection.data?.gcServiceAccountKey
-            case ProviderID.VMW:
-                return (
-                    providerConnection.data?.username &&
-                    providerConnection.data?.password &&
-                    providerConnection.data?.vcenter &&
-                    providerConnection.data?.cacertificate &&
-                    providerConnection.data?.vmClusterName &&
-                    providerConnection.data?.datacenter &&
-                    providerConnection.data?.datastore
-                )
-            case ProviderID.BMC:
-                return providerConnection.data?.libvirtURI
-            case undefined:
-                return false
-        }
-        return true
+    const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({
+        metadata: {},
+        stringData: {
+            awsAccessKeyID: undefined,
+            awsSecretAccessKeyID: undefined,
+            baseDomainResourceGroupName: undefined,
+            clientId: undefined,
+            clientsecret: undefined,
+            subscriptionid: undefined,
+            tenantid: undefined,
+            gcProjectID: undefined,
+            gcServiceAccountKey: undefined,
+            username: undefined,
+            password: undefined,
+            vcenter: undefined,
+            cacertificate: undefined,
+            vmClusterName: undefined,
+            datacenter: undefined,
+            datastore: undefined,
+            libvirtURI: undefined,
+            baseDomain: '',
+            pullSecret: '',
+            sshPrivatekey: '',
+            sshPublickey: '',
+            isOcp: undefined,
+        },
+    })
+    function updateProviderConnection(update: (providerConnection: Partial<ProviderConnection>) => void) {
+        const copy = { ...providerConnection }
+        update(copy)
+        setProviderConnection(copy)
     }
 
     return (
@@ -105,270 +100,376 @@ export function AddConnectionPageContent(props: {
                 <AcmTextInput
                     id="connectionName"
                     label="Connection Name"
-                    value={providerConnection.name}
-                    onChange={(name) => updateProviderConnection({ name })}
+                    value={providerConnection.metadata?.name}
+                    onChange={(name) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.metadata!.name = name
+                            return providerConnection
+                        })
+                    }}
                     placeholder={'Enter the name for the provider connection'}
-                    required
+                    isRequired
                 />
-
                 <AcmSelect
                     id="namespaceName"
                     label="Namespace"
-                    value={providerConnection.namespace}
-                    onChange={(namespace) => updateProviderConnection({ namespace })}
-                    options={props.namespaces.map((namespace) => namespace.metadata.name)}
+                    value={providerConnection.metadata?.namespace}
+                    onChange={(namespace) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.metadata!.namespace = namespace
+                        })
+                    }}
+                    options={props.projects.map((project) => project.metadata.name as string)}
                     placeholder="Select a namespace where to store the provider connection in the cluster"
                     required
                 />
-
                 <AcmSelect
                     id="providerName"
                     label="Provider"
-                    value={providerConnection.providerID}
-                    onChange={(providerID) => updateProviderConnection({ providerID })}
+                    value={getProviderConnectionProviderID(providerConnection)}
+                    onChange={(providerID) => {
+                        updateProviderConnection((providerConnection) => {
+                            setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
+                        })
+                    }}
                     options={providers.map((provider) => {
                         return { title: provider.name, value: provider.key }
                     })}
                     placeholder="Select a provider where you want to provision clusters"
                     required
                 />
-
                 <AcmTextInput
                     id="awsAccessKeyID"
                     label="AWS Access Key ID"
-                    value={providerConnection.data?.awsAccessKeyID}
-                    onChange={(awsAccessKeyID) => updateProviderConnectionData({ awsAccessKeyID })}
+                    value={providerConnection.stringData?.awsAccessKeyID}
+                    onChange={(awsAccessKeyID) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.awsAccessKeyID = awsAccessKeyID
+                        })
+                    }}
                     placeholder="Enter your AWS Access Key ID"
-                    hidden={providerConnection.providerID !== ProviderID.AWS}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AWS}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="awsSecretAccessKeyID"
                     label="AWS Secret Access Key ID"
-                    value={providerConnection.data?.awsSecretAccessKeyID}
-                    onChange={(awsSecretAccessKeyID) => updateProviderConnectionData({ awsSecretAccessKeyID })}
+                    type="password"
+                    value={providerConnection.stringData?.awsSecretAccessKeyID}
+                    onChange={(awsSecretAccessKeyID) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.awsSecretAccessKeyID = awsSecretAccessKeyID
+                        })
+                    }}
                     placeholder="Enter your AWS Secret Access Key ID"
-                    hidden={providerConnection.providerID !== ProviderID.AWS}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AWS}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="baseDomainResourceGroupName"
                     label="Base Domain Resource Group Name "
-                    value={providerConnection.data?.baseDomainResourceGroupName}
-                    onChange={(baseDomainResourceGroupName) =>
-                        updateProviderConnectionData({ baseDomainResourceGroupName })
-                    }
+                    value={providerConnection.stringData?.baseDomainResourceGroupName}
+                    onChange={(baseDomainResourceGroupName) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
+                        })
+                    }}
                     placeholder="Enter your Base Domain Resource Group Name "
-                    hidden={providerConnection.providerID !== ProviderID.AZR}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="clientId"
                     label="Client ID"
-                    value={providerConnection.data?.clientId}
-                    onChange={(clientId) => updateProviderConnectionData({ clientId })}
+                    value={providerConnection.stringData?.clientId}
+                    onChange={(clientId) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.clientId = clientId
+                        })
+                    }}
                     placeholder="Enter your Client ID"
-                    hidden={providerConnection.providerID !== ProviderID.AZR}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="clientsecret"
                     label="Client Secret"
-                    value={providerConnection.data?.clientsecret}
-                    onChange={(clientsecret) => updateProviderConnectionData({ clientsecret })}
+                    value={providerConnection.stringData?.clientsecret}
+                    onChange={(clientsecret) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.clientsecret = clientsecret
+                        })
+                    }}
                     placeholder="Enter your Client Secret"
-                    hidden={providerConnection.providerID !== ProviderID.AZR}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="subscriptionid"
                     label="Subscription ID"
-                    value={providerConnection.data?.subscriptionid}
-                    onChange={(subscriptionid) => updateProviderConnectionData({ subscriptionid })}
+                    value={providerConnection.stringData?.subscriptionid}
+                    onChange={(subscriptionid) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.subscriptionid = subscriptionid
+                        })
+                    }}
                     placeholder="Enter your Subscription ID"
-                    hidden={providerConnection.providerID !== ProviderID.AZR}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="tenantid"
                     label="Tenant ID"
-                    value={providerConnection.data?.tenantid}
-                    onChange={(tenantid) => updateProviderConnectionData({ tenantid })}
+                    value={providerConnection.stringData?.tenantid}
+                    onChange={(tenantid) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.tenantid = tenantid
+                        })
+                    }}
                     placeholder="Enter your Tenant ID"
-                    hidden={providerConnection.providerID !== ProviderID.AZR}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="gcProjectID"
                     label="Google Cloud Platform project ID"
-                    value={providerConnection.data?.gcProjectID}
-                    onChange={(gcProjectID) => updateProviderConnectionData({ gcProjectID })}
+                    value={providerConnection.stringData?.gcProjectID}
+                    onChange={(gcProjectID) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.gcProjectID = gcProjectID
+                        })
+                    }}
                     placeholder="Enter your Google Cloud Platform project ID"
-                    hidden={providerConnection.providerID !== ProviderID.GCP}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="gcServiceAccountKey"
                     label="Google Cloud Platform service account JSON key"
-                    value={providerConnection.data?.gcServiceAccountKey}
-                    onChange={(gcServiceAccountKey) => updateProviderConnectionData({ gcServiceAccountKey })}
+                    type="password"
+                    value={providerConnection.stringData?.gcServiceAccountKey}
+                    onChange={(gcServiceAccountKey) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.gcServiceAccountKey = gcServiceAccountKey
+                        })
+                    }}
                     placeholder="Enter your Google Cloud Platform service account JSON key"
-                    required
-                    hidden={providerConnection.providerID !== ProviderID.GCP}
-                    secret
+                    isRequired
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
                 />
-
                 <AcmTextInput
                     id="vcenter"
                     label="vCenter server"
-                    value={providerConnection.data?.vcenter}
-                    onChange={(vcenter) => updateProviderConnectionData({ vcenter })}
+                    value={providerConnection.stringData?.vcenter}
+                    onChange={(vcenter) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.vcenter = vcenter
+                        })
+                    }}
                     placeholder="Enter your vCenter server"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="username"
                     label="vCenter username"
-                    value={providerConnection.data?.username}
-                    onChange={(username) => updateProviderConnectionData({ username })}
+                    value={providerConnection.stringData?.username}
+                    onChange={(username) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.username = username
+                        })
+                    }}
                     placeholder="Enter your vCenter username"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="password"
                     label="vCenter password"
-                    value={providerConnection.data?.password}
-                    onChange={(password) => updateProviderConnectionData({ password })}
+                    value={providerConnection.stringData?.password}
+                    onChange={(password) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.password = password
+                        })
+                    }}
                     placeholder="Enter your vCenter password"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="cacertificate"
                     label="vCenter root CA certificate"
-                    value={providerConnection.data?.cacertificate}
-                    onChange={(cacertificate) => updateProviderConnectionData({ cacertificate })}
+                    type="password"
+                    value={providerConnection.stringData?.cacertificate}
+                    onChange={(cacertificate) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.cacertificate = cacertificate
+                        })
+                    }}
                     placeholder="Enter your vCenter root CA certificate"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
-                    secret
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="vmClusterName"
                     label="vSphere cluster name"
-                    value={providerConnection.data?.vmClusterName}
-                    onChange={(vmClusterName) => updateProviderConnectionData({ vmClusterName })}
+                    value={providerConnection.stringData?.vmClusterName}
+                    onChange={(vmClusterName) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.vmClusterName = vmClusterName
+                        })
+                    }}
                     placeholder="Enter your vSphere cluster name"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="datacenter"
                     label="vSphere datacenter"
-                    value={providerConnection.data?.datacenter}
-                    onChange={(datacenter) => updateProviderConnectionData({ datacenter })}
+                    value={providerConnection.stringData?.datacenter}
+                    onChange={(datacenter) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.datacenter = datacenter
+                        })
+                    }}
                     placeholder="Enter your vSphere datacenter"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="datastore"
                     label="vSphere default datastore"
-                    value={providerConnection.data?.datastore}
-                    onChange={(datastore) => updateProviderConnectionData({ datastore })}
+                    value={providerConnection.stringData?.datastore}
+                    onChange={(datastore) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.datastore = datastore
+                        })
+                    }}
                     placeholder="Enter your vSphere default datastore"
-                    hidden={providerConnection.providerID !== ProviderID.VMW}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="libvirtURI"
                     label="libvirt URI"
-                    value={providerConnection.data?.libvirtURI}
-                    onChange={(libvirtURI) => updateProviderConnectionData({ libvirtURI })}
+                    value={providerConnection.stringData?.libvirtURI}
+                    onChange={(libvirtURI) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.libvirtURI = libvirtURI
+                        })
+                    }}
                     placeholder="Enter your libvirt URI"
-                    hidden={providerConnection.providerID !== ProviderID.BMC}
-                    required
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                    isRequired
                 />
-
+                <AcmTextInput
+                    id="hosts"
+                    label="Known Hosts"
+                    value={providerConnection.stringData?.sshKnownHosts}
+                    onChange={(sshKnownHosts) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.sshKnownHosts = sshKnownHosts
+                        })
+                    }}
+                    placeholder="Enter your known hosts"
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                    isRequired
+                />
                 <AcmTextInput
                     id="baseDomain"
                     label="Base DNS domain"
-                    value={providerConnection.data?.baseDomain}
-                    onChange={(baseDomain) => updateProviderConnectionData({ baseDomain })}
+                    value={providerConnection.stringData?.baseDomain}
+                    onChange={(baseDomain) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.baseDomain = baseDomain as string
+                        })
+                    }}
                     placeholder={'Enter the base DNS domain'}
-                    hidden={!providerConfigured()}
-                    required
+                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="pullSecret"
                     label="Red Hat Openshift Pull Secret"
-                    value={providerConnection.data?.pullSecret}
-                    onChange={(pullSecret) => updateProviderConnectionData({ pullSecret })}
+                    type="password"
+                    value={providerConnection.stringData?.pullSecret}
+                    onChange={(pullSecret) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.pullSecret = pullSecret as string
+                        })
+                    }}
                     placeholder={'Enter Red Hat Openshift Pull Secret'}
-                    hidden={!providerConnection.data?.baseDomain}
-                    required
-                    secret
+                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="sshPrivateKey"
                     label="SSH Private Key"
-                    value={providerConnection.data?.sshPrivatekey}
-                    onChange={(sshPrivatekey) => updateProviderConnectionData({ sshPrivatekey })}
+                    type="password"
+                    value={providerConnection.stringData?.sshPrivatekey}
+                    onChange={(sshPrivatekey) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.sshPrivatekey = sshPrivatekey as string
+                        })
+                    }}
                     placeholder={'Enter SSH Private Key'}
-                    hidden={!providerConnection.data?.pullSecret}
-                    required
-                    secret
+                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    isRequired
                 />
-
                 <AcmTextInput
                     id="sshPublicKey"
                     label="SSH Public Key"
-                    value={providerConnection.data?.sshPublickey}
-                    onChange={(sshPublickey) => updateProviderConnectionData({ sshPublickey })}
+                    type="password"
+                    value={providerConnection.stringData?.sshPublickey}
+                    onChange={(sshPublickey) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.stringData!.sshPublickey = sshPublickey as string
+                        })
+                    }}
                     placeholder={'Enter SSH Public Key'}
-                    hidden={!providerConnection.data?.sshPrivatekey}
-                    required
-                    secret
+                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    isRequired
                 />
-
                 <ActionGroup>
-                    <Button
+                    <AcmSubmit
                         variant="primary"
-                        isDisabled={
-                            !providerConnection.name ||
-                            !providerConnection.namespace ||
-                            !providerConnection.providerID ||
-                            !providerConfigured() ||
-                            !providerConnection.data?.baseDomain ||
-                            !providerConnection.data?.pullSecret ||
-                            !providerConnection.data?.sshPrivatekey ||
-                            !providerConnection.data?.sshPublickey
-                        }
+                        isDisabled={!getProviderConnectionProviderID(providerConnection)}
                         onClick={() => {
-                            props.createProviderConnection(providerConnection as ProviderConnectionInput)
+                            const providerID = getProviderConnectionProviderID(providerConnection)
+                            if (providerID !== ProviderID.AWS) {
+                                delete providerConnection.stringData!.awsAccessKeyID
+                                delete providerConnection.stringData!.awsSecretAccessKeyID
+                            }
+                            if (providerID !== ProviderID.AZR) {
+                                delete providerConnection.stringData!.baseDomainResourceGroupName
+                                delete providerConnection.stringData!.clientId
+                                delete providerConnection.stringData!.clientsecret
+                                delete providerConnection.stringData!.subscriptionid
+                                delete providerConnection.stringData!.tenantid
+                            }
+                            if (providerID !== ProviderID.BMC) {
+                                delete providerConnection.stringData!.libvirtURI
+                                delete providerConnection.stringData!.sshKnownHosts
+                            }
+                            if (providerID !== ProviderID.GCP) {
+                                delete providerConnection.stringData!.gcProjectID
+                                delete providerConnection.stringData!.gcServiceAccountKey
+                            }
+                            if (providerID !== ProviderID.VMW) {
+                                delete providerConnection.stringData!.username
+                                delete providerConnection.stringData!.password
+                                delete providerConnection.stringData!.vcenter
+                                delete providerConnection.stringData!.cacertificate
+                                delete providerConnection.stringData!.vmClusterName
+                                delete providerConnection.stringData!.datacenter
+                                delete providerConnection.stringData!.datastore
+                            }
+                            delete providerConnection.data
+                            props.createProviderConnection(providerConnection as ProviderConnection)
                         }}
                     >
                         Add connection
-                    </Button>
+                    </AcmSubmit>
                     <Button
                         variant="link"
                         onClick={() => {

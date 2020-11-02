@@ -1,5 +1,5 @@
 import {
-    AcmEmptyPage,
+    AcmEmptyState,
     AcmLoadingPage,
     AcmPageCard,
     AcmTable,
@@ -8,10 +8,11 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnections, ProviderConnection, providerConnections } from '../../../lib/ProviderConnection'
+import { ProviderConnection, ProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
@@ -26,8 +27,8 @@ export function ProviderConnectionsPage() {
 
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
+    const { t } = useTranslation(['connection'])
 
-    useEffect(refresh, [refresh])
     useEffect(() => {
         startPolling(5 * 1000)
         return stopPolling
@@ -37,13 +38,13 @@ export function ProviderConnectionsPageContent() {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data || data.length === 0) {
+    } else if (!data?.items || data.items.length === 0) {
         return (
-            <AcmEmptyPage
-                title="No provider connections found."
-                message="Your cluster does not contain any provider connections."
-                action="Create connection"
-            />
+            <AcmPageCard><AcmEmptyState
+                title={t('empty.title')}
+                message={t('empty.subtitle')}
+                action={t('add')}
+            /></AcmPageCard>
         )
     }
 
@@ -51,7 +52,7 @@ export function ProviderConnectionsPageContent() {
 
     return (
         <ProviderConnectionsTable
-            providerConnections={data}
+            providerConnections={data.items}
             refresh={refresh}
             deleteConnection={providerConnections.delete}
         />
@@ -69,15 +70,16 @@ export function ProviderConnectionsTable(props: {
     refresh: () => void
     deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
 }) {
+    const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
         {
-            header: 'Name',
+            header: t('table.header.name'),
             sort: 'metadata.name',
             search: 'metadata.name',
             cell: 'metadata.name',
         },
         {
-            header: 'Provider',
+            header: t('table.header.provider'),
             sort: (a: ProviderConnection, b: ProviderConnection) => {
                 return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
             },
@@ -86,7 +88,7 @@ export function ProviderConnectionsTable(props: {
             },
         },
         {
-            header: 'Namespace',
+            header: t('table.header.namespace'),
             sort: 'metadata.namespace',
             search: 'metadata.namespace',
             cell: 'metadata.namespace',
@@ -117,7 +119,7 @@ export function ProviderConnectionsTable(props: {
                 tableActions={[
                     {
                         id: 'addConnenction',
-                        title: 'Add connection',
+                        title: t('add'),
                         click: () => {
                             history.push(NavigationPath.addConnection)
                         },
@@ -134,10 +136,10 @@ export function ProviderConnectionsTable(props: {
                     { id: 'editConnenction', title: 'Edit connection', click: (item: ProviderConnection) => {} },
                     {
                         id: 'deleteConnenction',
-                        title: 'Delete connection',
+                        title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
                             setConfirm({
-                                title: 'Delete provider connection',
+                                title: t('modal.delete.title'),
                                 message: `You are about to delete ${providerConnection.metadata?.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: () => {

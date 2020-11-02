@@ -14,7 +14,7 @@ describe(`graphql query providerConnections`, function () {
             .reply(200, {
                 items: providerConnections,
             })
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 query {
                     providerConnections {
@@ -52,7 +52,7 @@ describe(`graphql mutation createProviderConnections`, function () {
                 type: 'Opaque',
             })
             .reply(200)
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 mutation {
                     createProviderConnection(
@@ -80,7 +80,7 @@ describe(`graphql mutation createProviderConnections`, function () {
 describe(`graphql mutation deleteProviderConnection`, function () {
     it(`should delete the providerConnection`, async function () {
         nock(process.env.CLUSTER_API_URL).delete('/api/v1/namespaces/namespace/secrets/name').reply(200)
-        const result = await request.post(`graphql`, {
+        const result = await request.post(`cluster-management/graphql`, {
             query: /* GraphQL */ `
                 mutation {
                     deleteProviderConnection(name: "name", namespace: "namespace")

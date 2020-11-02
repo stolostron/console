@@ -10,6 +10,7 @@ import {
 import { ActionGroup, Button } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { createProject } from '../../../lib/Project'
 import { NavigationPath } from '../ClusterManagement'
 
 export function ImportClusterPage() {
@@ -26,14 +27,17 @@ export function ImportClusterPageContent() {
     const [clusterName, setClusterName] = useState<string | undefined>()
     const [cloudLabel, setCloudLabel] = useState<string | undefined>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<string[]>([])
-
+    const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
+    const onSubmit = async () => {
+        const response = await createProject(clusterName)
+        return response
+    }
     return (
         <AcmPageCard>
             <AcmForm>
                 <AcmTextInput
                     id="clusterName"
-                    label="Cluster Name"
+                    label="Cluster name"
                     value={clusterName}
                     onChange={setClusterName}
                     placeholder="Enter a name for the cluster"
@@ -41,28 +45,29 @@ export function ImportClusterPageContent() {
                 />
                 <AcmSelect
                     id="cloudLabel"
-                    label="Cloud Provider Label"
+                    label="Cloud"
                     value={cloudLabel}
                     onChange={setCloudLabel}
-                    options={['auto-detect', 'Amazon', 'Google', 'Microsoft']}
+                    options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
                     placeholder="Select a cloud provider label for the cluster"
                 />
                 <AcmSelect
                     id="environmentLabel"
-                    label="Environment Label"
+                    label="Environment"
                     value={environmentLabel}
                     onChange={setEnvironmentLabel}
-                    options={['dev', 'qa']}
+                    options={['dev', 'prod', 'qa']}
                     placeholder="Select an environment label for the cluster"
                 />
                 <AcmLabelsInput
                     id="additionalLabels"
-                    label="Additional Labels"
+                    label="Additional labels"
+                    buttonLabel="Add label"
                     value={additionalLabels}
-                    onChange={setAdditionaLabels}
+                    onChange={(label) => setAdditionaLabels(label)}
                 />
                 <ActionGroup>
-                    <Button variant="primary" isDisabled={!clusterName} onClick={() => {}}>
+                    <Button variant="primary" isDisabled={!clusterName} onClick={onSubmit}>
                         Generate command
                     </Button>
                     <Button

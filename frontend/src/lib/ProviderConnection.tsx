@@ -1,7 +1,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from './providers'
-import { GetWrapper, resourceMethods } from './Resource'
+import { GetWrapper, ResourceList, resourceMethods } from './Resource'
 
 export interface ProviderConnection {
     apiVersion: 'v1'
@@ -28,8 +28,7 @@ export interface ProviderConnection {
         datacenter?: string
         datastore?: string
         libvirtURI?: string
-
-        // sshKnownHosts
+        sshKnownHosts?: string
         baseDomain: string
         pullSecret: string
         sshPrivatekey: string
@@ -49,14 +48,13 @@ providerConnections.list = async (labels?: string[]) => {
         labels.push('cluster.open-cluster-management.io/cloudconnection=')
     }
     const result = await originalList(labels)
-    for (const providerConnection of result.data) {
+    for (const providerConnection of result.data.items) {
         if (providerConnection?.data?.metadata) {
             try {
                 const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
                 providerConnection.stringData = YAML.parse(yaml)
             } catch {}
         }
-        console.log(providerConnection)
     }
     return result
 }
@@ -71,15 +69,18 @@ providerConnections.create = async (providerConnection: ProviderConnection) => {
 }
 
 export function ProviderConnections() {
-    return GetWrapper<ProviderConnection[]>(providerConnections.list)
+    return GetWrapper<ResourceList<ProviderConnection>>(providerConnections.list)
 }
 
-export function getProviderConnectionProviderID(providerConnection: ProviderConnection) {
+export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
     const label = providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider']
     return label as ProviderID
 }
 
-export function setProviderConnectionProviderID(providerConnection: ProviderConnection, providerID: ProviderID) {
+export function setProviderConnectionProviderID(
+    providerConnection: Partial<ProviderConnection>,
+    providerID: ProviderID
+) {
     if (!providerConnection.metadata) {
         providerConnection.metadata = {}
     }
