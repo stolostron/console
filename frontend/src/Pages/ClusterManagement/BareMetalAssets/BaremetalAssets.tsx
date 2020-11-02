@@ -63,10 +63,7 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                 tableActions={[]}
                 rowActions={[]}
                 bulkActions={[]}
-                emptyState={{
-                    title: 'TODO',
-                    message: 'TODO',
-                }}
+                emptyState={<AcmEmptyState title="No bare metal assets found" />}
             />
         </AcmPageCard>
     )
