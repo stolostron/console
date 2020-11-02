@@ -61,7 +61,6 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     }
 
     useEffect(() => {
-        console.log(error)
         const code: string = (error as any)?.statusCode
         switch (code) {
             case '401':
