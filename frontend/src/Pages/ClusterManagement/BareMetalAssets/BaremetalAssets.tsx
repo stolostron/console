@@ -31,7 +31,11 @@ export function BareMetalAssets() {
     } else if (error) {
         return <ErrorPage error={error} />
     } else if (!data?.bareMetalAssets || data.bareMetalAssets.length === 0) {
-        return <AcmPageCard><AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" /></AcmPageCard>
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" />
+            </AcmPageCard>
+        )
     }
     return <BareMetalAssetsTable bareMetalAssets={data.bareMetalAssets as BareMetalAsset[]}></BareMetalAssetsTable>
 }
@@ -59,6 +63,10 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
                 tableActions={[]}
                 rowActions={[]}
                 bulkActions={[]}
+                emptyState={{
+                    title: 'TODO',
+                    message: 'TODO',
+                }}
             />
         </AcmPageCard>
     )
