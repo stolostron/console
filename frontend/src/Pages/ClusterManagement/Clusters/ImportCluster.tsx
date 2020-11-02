@@ -48,7 +48,7 @@ export function ImportClusterPageContent() {
                     label="Cloud"
                     value={cloudLabel}
                     onChange={setCloudLabel}
-                    options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
+                    // options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
                     placeholder="Select a cloud provider label for the cluster"
                 />
                 <AcmSelect
@@ -56,7 +56,7 @@ export function ImportClusterPageContent() {
                     label="Environment"
                     value={environmentLabel}
                     onChange={setEnvironmentLabel}
-                    options={['dev', 'prod', 'qa']}
+                    // options={['dev', 'prod', 'qa']}
                     placeholder="Select an environment label for the cluster"
                 />
                 <AcmLabelsInput

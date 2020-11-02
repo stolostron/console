@@ -132,6 +132,7 @@ export async function startServer(): Promise<FastifyInstance> {
             const result = await kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query, req.body)
             return res.code(result.status).send(result.data)
         } catch (err) {
+            console.error(err)
             logError('proxy error', err, { method: req.method, url: req.url })
             void res.code(500).send()
         }
@@ -312,8 +313,8 @@ export async function startServer(): Promise<FastifyInstance> {
         })
 
         fastify.get('/cluster-management/login/callback', async function (request, reply) {
-            // const query = request.query as { code: string; state: string }
-            // validStates.add(query.state)
+            const query = request.query as { code: string; state: string }
+            validStates.add(query.state)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const openshift = ((this as unknown) as any).openshift as OAuth2Namespace
             const token = await openshift.getAccessTokenFromAuthorizationCodeFlow(request)

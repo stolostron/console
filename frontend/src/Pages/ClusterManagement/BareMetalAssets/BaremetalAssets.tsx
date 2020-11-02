@@ -28,8 +28,12 @@ export function BareMetalAssets() {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (data?.length === 0 || !data) {
-        return <AcmPageCard><AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" /></AcmPageCard>
+    } else if (!data?.items|| data.bareMetalAssets.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" />
+            </AcmPageCard>
+        )
     }
 
     return <BareMetalAssetsTable 
@@ -166,6 +170,10 @@ export function BareMetalAssetsTable(props: {
                         })
                     } },
                 ]}
+                emptyState={{
+                    title: 'TODO',
+                    message: 'TODO',
+                }}
             />
         </AcmPageCard>
     )
