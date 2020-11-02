@@ -50,6 +50,7 @@ export function ProviderConnectionsPageContent() {
                             onClick={() => {
                                 history.push(NavigationPath.addConnection)
                             }}
+                            component="a"
                         >
                             {t('add')}
                         </Button>
