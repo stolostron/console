@@ -111,6 +111,11 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
             if (labels) url += '?labelSelector=' + labels.join(',')
             return restRequest<ResourceList<Resource>>('GET', url)
         },
+        getNamespaceResource: function getSingleNamespaceResource(namespace: string, name: string) {
+            let url = root
+            url += `/namespaces/${namespace}/${options.plural}/${name}`
+            return restRequest<ResourceList<Resource>>('GET', url)
+        }
     }
 }
 

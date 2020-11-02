@@ -1,4 +1,15 @@
 {
   "page.header.cluster-management": "Cluster Management",
-  "clusters": "Clusters"
+  "page.header.import-cluster": "Import an existing cluster",
+  "clusters": "Clusters",
+
+  "import.form.clusterName.label": "Cluster name",
+  "import.form.clusterName.placeholder": "Enter cluster name",
+  "import.form.cloud.label": "Cloud",
+  "import.form.environment.label": "Environment",
+  "import.form.environment.placeholder": "Select or enter cluster purpose",
+  "import.form.labels.label": "Additional labels",
+  "import.form.submit": "Generate command",
+  "import.command.generated": "Command generated",
+  "import.command.fake": "echo <The encoded CRD is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f - && sleep 2 && echo <The encoded YAML is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f -"
 }
