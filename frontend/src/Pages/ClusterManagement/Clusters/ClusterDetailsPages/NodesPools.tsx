@@ -30,7 +30,11 @@ export function NodePoolsPageContent(props: { name: string; namespace: string })
         !mcis[0].status.nodeList ||
         mcis[0].status.nodeList!.length === 0
     ) {
-        return <AcmEmptyState title="No nodes found." message={`Cluster ${props.name} does not contain any nodes.`} />
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No nodes found." message={`Cluster ${props.name} does not contain any nodes.`} />
+            </AcmPageCard>
+        )
     }
 
     return <NodesPoolsTable nodes={mcis[0].status.nodeList!} refresh={refresh} />
