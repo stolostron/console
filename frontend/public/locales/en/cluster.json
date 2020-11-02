@@ -3,6 +3,11 @@
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
 
+  "empty-state.cluster.title": "No clusters found",
+  "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the {0}Import an existing cluster{1} and {0}Create a cluster{1} buttons are disabled.",
+  "empty-state.node.title": "No nodes found",
+  "empty-state.node.subtitle": "This cluster doesn't have any nodes.",
+
   "import.form.clusterName.label": "Cluster name",
   "import.form.clusterName.placeholder": "Enter cluster name",
   "import.form.cloud.label": "Cloud",
