@@ -6,7 +6,7 @@ import {
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
+import { Button, Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -28,6 +28,7 @@ export function ProviderConnectionsPage() {
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
     const { t } = useTranslation(['connection'])
+    const history = useHistory()
 
     useEffect(() => {
         startPolling(5 * 1000)
@@ -41,7 +42,19 @@ export function ProviderConnectionsPageContent() {
     } else if (!data?.items || data.items.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title={t('empty.title')} message={t('empty.subtitle')} action={t('add')} />
+                <AcmEmptyState
+                    title={t('empty.title')}
+                    message={t('empty.subtitle')}
+                    action={
+                        <Button
+                            onClick={() => {
+                                history.push(NavigationPath.addConnection)
+                            }}
+                        >
+                            {t('add')}
+                        </Button>
+                    }
+                />
             </AcmPageCard>
         )
     }
@@ -82,6 +95,9 @@ export function ProviderConnectionsTable(props: {
                 return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
             },
             cell: (item: ProviderConnection) => {
+                return getProvider(item.metadata?.labels)
+            },
+            search: (item: ProviderConnection) => {
                 return getProvider(item.metadata?.labels)
             },
         },
@@ -158,10 +174,7 @@ export function ProviderConnectionsTable(props: {
                         },
                     },
                 ]}
-                emptyState={{
-                    title: 'TODO',
-                    message: 'TODO',
-                }}
+                emptyState={<AcmEmptyState title={t('empty.title')} />}
             />
         </AcmPageCard>
     )

@@ -44,7 +44,7 @@ export function ClustersPageContent() {
                 <AcmEmptyState
                     title="No clusters found."
                     message="No managed clusters found."
-                    action="Create cluster"
+                    // action="Create cluster"
                 />
             </AcmPageCard>
         )
@@ -78,7 +78,7 @@ export function ClustersTable(props: {
             search: 'displayStatus',
             cell: (managedCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    TODO
+                    -
                     {/* {managedCluster.displayStatus === 'Ready' ? (
                         <CheckIcon color="green" key="ready-icon" />
                     ) : (
@@ -108,12 +108,12 @@ export function ClustersTable(props: {
             header: 'Labels',
             search: 'metadata.labels',
             // cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
-            cell: (managedCluster) => <div>TODO</div>,
+            cell: (managedCluster) => <div>-</div>,
         },
         {
             header: 'Nodes',
             // sort: 'info.status.nodeList.length',
-            cell: (managedCluster) => <div>TODO</div>,
+            cell: (managedCluster) => <div>-</div>,
         },
     ]
     function keyFn(managedCluster: ManagedCluster) {
@@ -157,10 +157,7 @@ export function ClustersTable(props: {
                 { id: 'searchCluster', title: 'Search cluster', click: (item) => {} },
                 { id: 'detachCluster', title: 'Detach cluster', click: (item) => {} },
             ]}
-            emptyState={{
-                title: 'TODO',
-                message: 'TODO',
-            }}
+            emptyState={<AcmEmptyState title="No managed clusters found" />}
         />
     )
 }

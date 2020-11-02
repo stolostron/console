@@ -1,7 +1,7 @@
 {
     "connections": "Provider connections",
     "empty.title": "No provider connections found",
-    "empty.subtitle": "You don't have any provider connections, yet. Use the Create connection button to create the resource.",
+    "empty.subtitle": "You don't have any provider connections, yet. Use the add connection button to create the resource.",
     "add": "Add connection",
     "edit": "Edit connection",
     "delete": "Delete connection",
