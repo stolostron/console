@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { GetWrapper, resourceMethods } from './Resource'
+import { GetWrapper, resourceMethods, ResourceList } from './Resource'
 
 export interface BareMetalAsset {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1'
@@ -42,7 +42,7 @@ bareMetalAssets.create = async (bareMetalAsset: BareMetalAsset) => {
 }
 
 export function BareMetalAssets() {
-    return GetWrapper<BareMetalAsset[]>(bareMetalAssets.list)
+    return GetWrapper<ResourceList<BareMetalAsset>>(bareMetalAssets.list)
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
