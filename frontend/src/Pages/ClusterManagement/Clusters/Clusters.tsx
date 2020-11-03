@@ -66,7 +66,7 @@ export function ClustersTable(props: {
             sort: 'metadata.name',
             search: 'metadata.name',
             cell: (managedCluster) => (
-                <Link to={NavigationPath.clusterDetails.replace(":id", managedCluster.metadata.name)}>{managedCluster.metadata.name}</Link>
+                <Link to={NavigationPath.clusterDetails.replace(":id", managedCluster.metadata.name as string)}>{managedCluster.metadata.name}</Link>
             ),
         },
         {

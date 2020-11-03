@@ -17,7 +17,8 @@ export function NodePoolsPageContent(props: { name: string; namespace: string })
         return stopPolling
     }, [startPolling, stopPolling])
 
-    const mcis = data?.filter((m) => m.metadata.name === props.name)
+
+    const mcis = data?.items.filter((m) => m.metadata.name === props.name)
 
     if (loading) {
         return <AcmLoadingPage />

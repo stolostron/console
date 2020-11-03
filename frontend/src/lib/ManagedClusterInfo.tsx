@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, GetWrapper } from './Resource'
+import { IResource, ResourceList, resourceMethods, GetWrapper } from './Resource'
 export interface NodeInfo {
     name?: string
     labels?: {[key: string]: string}
@@ -72,6 +72,7 @@ export function ListManagedClusterInfos(namespace: string) {
     const restFunc = () => {
         return managedClusterInfos.listNamespace(namespace)
     }
-    return GetWrapper<ManagedClusterInfo[]>(restFunc)
+    //return GetWrapper<ManagedClusterInfo[]>(restFunc)
+    return GetWrapper<ResourceList<ManagedClusterInfo>>(restFunc)
 }
 

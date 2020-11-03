@@ -17,7 +17,7 @@ import {
     ManagedClusterAddOn,
     ManagedClusterAddOns as GetManagedClusterAddOns,
 } from '../../../../lib/ManagedClusterAddOn'
-import React, { ReactNode, useEffect } from 'react'
+import React, { Fragment, ReactNode, useEffect } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
 
 export function ClustersSettingsPageContent(props: { name: string; namespace: string }) {
@@ -43,7 +43,7 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         return <ErrorPage error={cma.error} />
     } else if (mca.error) {
         return <ErrorPage error={mca.error} />
-    } else if (!cma.data || cma.data.length === 0 || !mca.data || mca.data.length === 0) {
+    } else if (!cma.data?.items || cma.data.items.length === 0 || !mca.data?.items || mca.data.items.length === 0) {
         return (
             <AcmPageCard>
                 <AcmEmptyState title="No addons found." message="Your cluster does not contain any addons." />
@@ -51,7 +51,14 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         )
     }
 
-    return <ClusterSettingsTable clusterManagementAddOns={cma.data} managedClusterAddOns={mca.data} refresh={refresh} />
+   // return <ClusterSettingsTable clusterManagementAddOns={cma.data} managedClusterAddOns={mca.data} refresh={refresh} />
+   return (
+    <ClusterSettingsTable
+        clusterManagementAddOns={cma.data.items}
+        managedClusterAddOns={mca.data.items}
+        refresh={refresh}
+    />
+)
 }
 
 export function ClusterSettingsTable(props: {
@@ -69,7 +76,35 @@ export function ClusterSettingsTable(props: {
         },
         {
             header: 'Status',
-            cell: getDisplayStatus,
+            cell: (item: ClusterManagementAddOn) => {
+                const status = getDisplayStatus(item)
+               return <span style={{ whiteSpace: 'nowrap' }} key="2">
+                    {(status === 'Available') ? (
+                        <CheckIcon color="green" key="available-icon" />
+                    ) : (
+                        <Fragment key="ready-icon"></Fragment>
+                    )}
+                    {(status === 'Disabled') ? (
+                        <MinusCircleIcon color="grey" key="disabled-icon" />
+                    ) : (
+                        <Fragment key="offline-icon"></Fragment>
+                    )}
+                    {(status === 'Progressing') ? (
+                        <InProgressIcon color="grey" key="progressing-icon"/>
+                    ) : (
+                        <Fragment key="progressing-icon"></Fragment>
+                    )}
+                    {(status === 'Degraded') ? (
+                        <MinusCircleIcon color="red" key="degraded-icon" />
+                    ) : (
+                        <Fragment key="pending-icon"></Fragment>
+                    )}
+                    <span key="status">&nbsp; {status}</span>
+                </span>
+            },
+            search: (item: ClusterManagementAddOn) => {
+                return getDisplayStatus(item)
+            },
         },
         {
             header: 'Message',
@@ -80,68 +115,40 @@ export function ClusterSettingsTable(props: {
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
         return clusterManagementAddOn.metadata?.uid || (clusterManagementAddOn.metadata.name as string)
     }
-    function getDisplayStatus(cma: ClusterManagementAddOn): ReactNode {
+   
+
+    function getDisplayStatus(cma: ClusterManagementAddOn): string {
         const mcaStatus = props.managedClusterAddOns?.find((mca) => mca.metadata.name === cma.metadata.name)
         if (mcaStatus?.status?.conditions === undefined) {
-            return (
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <MinusCircleIcon color="grey" key="disabled-icon" />
-                    <span key="status">&nbsp; Disabled</span>
-                </span>
-            )
+            return "Disabled"
         }
         const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Degraded'
         )
         if (managedClusterAddOnConditionDegraded?.status === 'True') {
-            return (
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <MinusCircleIcon color="red" key="degraded-icon" />
-                    <span key="status">&nbsp; Degraded</span>
-                </span>
-            )
+            return "Degraded"
         }
         const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Progressing'
         )
         if (managedClusterAddOnConditionProgressing?.status === 'True') {
-            return (
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <InProgressIcon color="grey" key="progressing-icon" />
-                    <span key="status">&nbsp; Progressing</span>
-                </span>
-            )
+            return "Progressing"
         }
         const managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Available'
         )
         if (managedClusterAddOnConditionAvailable?.status === 'True') {
-            return (
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <CheckIcon color="green" key="available-icon" />
-                    <span key="status">&nbsp; Available</span>
-                </span>
-            )
+            return "Available"
         }
         if (
             managedClusterAddOnConditionAvailable?.status === 'False' ||
             managedClusterAddOnConditionProgressing?.status === 'False' ||
             managedClusterAddOnConditionDegraded?.status === 'False'
         ) {
-            return (
-                <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    <InProgressIcon color="grey" key="progressing-icon"/>
-                    <span key="status">&nbsp; Progressing</span>
-                </span>
-            )
+            return "Progressing"
         }
 
-        return (
-            <span style={{ whiteSpace: 'nowrap' }} key="2">
-                <UnknownIcon color="grey" key="unknown-icon"/>
-                <span key="status">&nbsp; Unknown</span>
-            </span>
-        )
+        return "Unknown"
     }
 
     function getDisplayMessage(cma: ClusterManagementAddOn): ReactNode {

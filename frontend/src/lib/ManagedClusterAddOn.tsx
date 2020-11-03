@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, GetWrapper } from './Resource'
+import { IResource, ResourceList, resourceMethods, GetWrapper } from './Resource'
 
 export interface ManagedClusterAddOn extends IResource {
     apiVersion: string
@@ -33,6 +33,7 @@ export const managedClusterAddOns = resourceMethods<ManagedClusterAddOn>({
 
 export function ManagedClusterAddOns(namespace: string) {
     const restFunc = ()=>{ return managedClusterAddOns.listNamespace(namespace)}
-    return GetWrapper<ManagedClusterAddOn[]>(restFunc)
+    //return GetWrapper<ManagedClusterAddOn[]>(restFunc)
+    return GetWrapper<ResourceList<ManagedClusterAddOn>>(restFunc)
 }
 
