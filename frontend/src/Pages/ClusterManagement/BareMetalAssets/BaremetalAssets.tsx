@@ -1,7 +1,6 @@
 import { AcmEmptyState, AcmLoadingPage, AcmPageCard, AcmTable } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
 import { BareMetalAsset, useBareMetalAssetsQuery } from '../../../sdk'
@@ -38,7 +37,6 @@ export function BareMetalAssets() {
 }
 
 export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] }) {
-    const { t } = useTranslation(['cluster'])
     return (
         <AcmPageCard>
             <AcmTable<BareMetalAsset>

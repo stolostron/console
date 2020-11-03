@@ -1,21 +1,21 @@
 import {
     AcmEmptyState,
-    AcmLabels,
     AcmLoadingPage,
     AcmPageCard,
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
-import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
-import React, { Fragment, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../../components/ErrorPage'
+<<<<<<< HEAD
 import { client } from '../../../lib/apollo-client'
 import { ManagedClusters, ManagedCluster } from '../../../lib/ManagedCluster'
+=======
+import { ManagedCluster, ManagedClusters, managedClusters } from '../../../lib/ManagedCluster'
+>>>>>>> e2e6d52989360e29977403ee0194bc59f6d55ec0
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ClustersPage() {
@@ -40,7 +40,19 @@ export function ClustersPageContent() {
     } else if (managedClustersQuery.error) {
         return <ErrorPage error={managedClustersQuery.error} />
     } else if (!managedClustersQuery.data?.items || managedClustersQuery.data.items.length === 0) {
+<<<<<<< HEAD
         return <AcmPageCard><AcmEmptyState title="No clusters found." message="No managed clusters found." action="Create cluster" /></AcmPageCard>
+=======
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title="No clusters found."
+                    message="No managed clusters found."
+                    // action="Create cluster"
+                />
+            </AcmPageCard>
+        )
+>>>>>>> e2e6d52989360e29977403ee0194bc59f6d55ec0
     }
     return (
         <AcmPageCard>
@@ -64,7 +76,7 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
             search: 'displayStatus',
             cell: (managedCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="2">
-                    TODO
+                    -
                     {/* {managedCluster.displayStatus === 'Ready' ? (
                         <CheckIcon color="green" key="ready-icon" />
                     ) : (
@@ -94,12 +106,12 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
             header: 'Labels',
             search: 'metadata.labels',
             // cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
-            cell: (managedCluster) => <div>TODO</div>,
+            cell: (managedCluster) => <div>-</div>,
         },
         {
             header: 'Nodes',
             // sort: 'info.status.nodeList.length',
-            cell: (managedCluster) => <div>TODO</div>,
+            cell: (managedCluster) => <div>-</div>,
         },
     ]
     function keyFn(managedCluster: ManagedCluster) {
@@ -126,17 +138,34 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
                 },
             ]}
             bulkActions={[
+<<<<<<< HEAD
                 { id: 'destroyCluster', title: 'Destroy', click: (items) => {} },
                 { id: 'detachCluster', title: 'Detach', click: (items) => {} },
                 { id: 'upgradeClusters', title: 'Upgrade', click: (items) => {} },
+=======
+                {
+                    id: 'destroyCluster',
+                    title: 'Destroy',
+                    click: (managedClusters) => {
+                        // TODO props.deleteCluster
+                        props.refresh()
+                    },
+                },
+                { id: 'detachCluster', title: 'Detach', click: (managedClusters) => {} },
+                { id: 'upgradeClusters', title: 'Upgrade', click: (managedClusters) => {} },
+>>>>>>> e2e6d52989360e29977403ee0194bc59f6d55ec0
             ]}
             rowActions={[
-                { id: 'editLabels', title: 'Edit labels', click: (item) => {} },
-                { id: 'launchToCluster', title: 'Launch to cluster', click: (item) => {} },
-                { id: 'upgradeCluster', title: 'Upgrade cluster', click: (item) => {} },
-                { id: 'searchCluster', title: 'Search cluster', click: (item) => {} },
-                { id: 'detachCluster', title: 'Detach cluster', click: (item) => {} },
+                { id: 'editLabels', title: 'Edit labels', click: (managedCluster) => {} },
+                { id: 'launchToCluster', title: 'Launch to cluster', click: (managedCluster) => {} },
+                { id: 'upgradeCluster', title: 'Upgrade cluster', click: (managedCluster) => {} },
+                { id: 'searchCluster', title: 'Search cluster', click: (managedCluster) => {} },
+                { id: 'detachCluster', title: 'Detach cluster', click: (managedCluster) => {} },
             ]}
+<<<<<<< HEAD
+=======
+            emptyState={<AcmEmptyState title="No managed clusters found" />}
+>>>>>>> e2e6d52989360e29977403ee0194bc59f6d55ec0
         />
     )
 }
