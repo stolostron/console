@@ -19,10 +19,8 @@ test('provider connections page', async () => {
     ])
 
     const { getByText } = render(
-        <MemoryRouter initialEntries={[`/`]}>
-            <Route path="/">
-                <ProviderConnectionsPage />
-            </Route>
+        <MemoryRouter>
+            <ProviderConnectionsPage />
         </MemoryRouter>
     )
 
