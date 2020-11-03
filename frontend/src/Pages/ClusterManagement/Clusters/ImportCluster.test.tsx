@@ -23,5 +23,9 @@ describe('ImportCluster', () => {
     test('renders', () => {
         const { getByTestId } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
+        expect(getByTestId('clusterName-label')).toBeInTheDocument()
+        expect(getByTestId('cloudLabel-label')).toBeInTheDocument()
+        expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
+        expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
 })
