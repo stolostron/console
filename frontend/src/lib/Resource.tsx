@@ -1,11 +1,15 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import Axios, { AxiosResponse, Method, AxiosError } from 'axios'
+import Axios, { AxiosResponse, Method } from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 const responseType = 'json'
 const withCredentials = true
+
+export interface ResourceList<T> {
+    items: T[]
+}
 
 export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     const [data, setData] = useState<T>()
@@ -17,11 +21,20 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         function refresh() {
             void restFunc()
                 .then((response) => {
-                    setData(response.data)
-                    setError(undefined)
                     setLoading(false)
+                    switch (response.status) {
+                        case 401:
+                            window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
+                            setData(undefined)
+                            break
+                        default:
+                            setData(response.data)
+                            setError(undefined)
+                            break
+                    }
                 })
                 .catch((err: Error) => {
+                    console.log(typeof err)
                     setData(undefined)
                     setError(err)
                     setLoading(false)
@@ -92,20 +105,20 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
             let url = `${process.env.REACT_APP_BACKEND}/cluster-management/namespaced${options.path}`
             url += `/${options.plural}`
             if (labels) url += '?labelSelector=' + labels.join(',')
-            return restRequest<Resource[]>('GET', url)
+            return restRequest<ResourceList<Resource>>('GET', url)
         },
         listCluster: function listClusterResources(labels?: string[]) {
             let url = root
             url += `/${options.plural}`
             if (labels) url += '?labelSelector=' + labels.join(',')
-            return restRequest<Resource[]>('GET', url)
+            return restRequest<ResourceList<Resource>>('GET', url)
         },
         listNamespace: function listNamespaceResources(namespace: string, labels?: string[]) {
             let url = root
             url += `/namespaces/${namespace}`
             url += `/${options.plural}`
             if (labels) url += '?labelSelector=' + labels.join(',')
-            return restRequest<Resource[]>('GET', url)
+            return restRequest<ResourceList<Resource>>('GET', url)
         },
     }
 }

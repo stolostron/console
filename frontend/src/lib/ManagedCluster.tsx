@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, GetWrapper } from './Resource'
+import { IResource, resourceMethods, GetWrapper, ResourceList } from './Resource'
 
 export interface ManagedCluster extends IResource {
     apiVersion: string
@@ -37,5 +37,5 @@ export const managedClusters = resourceMethods<ManagedCluster>({
 })
 
 export function ManagedClusters() {
-    return GetWrapper<ManagedCluster[]>(managedClusters.list)
+    return GetWrapper<ResourceList<ManagedCluster>>(managedClusters.list)
 }

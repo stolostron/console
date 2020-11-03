@@ -1,16 +1,16 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from './providers'
-import { GetWrapper, resourceMethods } from './Resource'
+import { GetWrapper, ResourceList, resourceMethods } from './Resource'
 
-export interface ProviderConnection {
+export interface ProviderConnection extends V1Secret {
     apiVersion: 'v1'
     kind: 'Secret'
     metadata?: V1ObjectMeta
     data?: {
         metadata: string
     }
-    stringData?: {
+    spec?: {
         awsAccessKeyID?: string
         awsSecretAccessKeyID?: string
         baseDomainResourceGroupName?: string
@@ -28,8 +28,13 @@ export interface ProviderConnection {
         datacenter?: string
         datastore?: string
         libvirtURI?: string
+        sshKnownHosts?: string
 
-        // sshKnownHosts
+        // Image Registry Mirror
+        // Bootstrap OS Image
+        // Cluster OS Image
+        // Additional Trust Bundle
+
         baseDomain: string
         pullSecret: string
         sshPrivatekey: string
@@ -49,11 +54,11 @@ providerConnections.list = async (labels?: string[]) => {
         labels.push('cluster.open-cluster-management.io/cloudconnection=')
     }
     const result = await originalList(labels)
-    for (const providerConnection of result.data) {
+    for (const providerConnection of result.data.items) {
         if (providerConnection?.data?.metadata) {
             try {
                 const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
-                providerConnection.stringData = YAML.parse(yaml)
+                providerConnection.spec = YAML.parse(yaml)
             } catch {}
         }
     }
@@ -63,14 +68,15 @@ providerConnections.list = async (labels?: string[]) => {
 const originalCreate = providerConnections.create
 
 providerConnections.create = async (providerConnection: ProviderConnection) => {
-    if (providerConnection.stringData) {
-        delete providerConnection.data
-    }
-    return originalCreate(providerConnection)
+    const copy = { ...providerConnection }
+    delete copy.data
+    copy.stringData = { metadata: YAML.stringify(copy.spec) }
+    delete copy.spec
+    return originalCreate(copy)
 }
 
 export function ProviderConnections() {
-    return GetWrapper<ProviderConnection[]>(providerConnections.list)
+    return GetWrapper<ResourceList<ProviderConnection>>(providerConnections.list)
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {

@@ -13,7 +13,8 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "react"
+        "jsx": "react",
+        "noFallthroughCasesInSwitch": true // react-scripts 4.0.0 needs this
     },
     "include": ["src"]
 }

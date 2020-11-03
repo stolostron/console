@@ -1,5 +1,5 @@
 import { V1Secret } from '@kubernetes/client-node'
-import { resourceMethods, GetWrapper } from './Resource'
+import { resourceMethods, GetWrapper, ResourceList } from './Resource'
 
 export const secrets = resourceMethods<V1Secret>({
     path: '/api/v1',
@@ -7,5 +7,5 @@ export const secrets = resourceMethods<V1Secret>({
 })
 
 export function Secrets() {
-    return GetWrapper<V1Secret[]>(secrets.list)
+    return GetWrapper<ResourceList<V1Secret>>(secrets.list)
 }

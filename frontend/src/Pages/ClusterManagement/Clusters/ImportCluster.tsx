@@ -10,9 +10,8 @@ import {
 import { ActionGroup, Button } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { NavigationPath } from '../ClusterManagement'
-import { ManagedCluster, managedClusters } from '../../../lib/ManagedCluster'
 import { createProject } from '../../../lib/Project'
+import { NavigationPath } from '../ClusterManagement'
 
 export function ImportClusterPage() {
     return (
@@ -49,7 +48,7 @@ export function ImportClusterPageContent() {
                     label="Cloud"
                     value={cloudLabel}
                     onChange={setCloudLabel}
-                    options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
+                    // options={['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal']}
                     placeholder="Select a cloud provider label for the cluster"
                 />
                 <AcmSelect
@@ -57,7 +56,7 @@ export function ImportClusterPageContent() {
                     label="Environment"
                     value={environmentLabel}
                     onChange={setEnvironmentLabel}
-                    options={['dev', 'prod', 'qa']}
+                    // options={['dev', 'prod', 'qa']}
                     placeholder="Select an environment label for the cluster"
                 />
                 <AcmLabelsInput

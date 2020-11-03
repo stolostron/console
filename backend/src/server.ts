@@ -59,7 +59,7 @@ export async function startServer(): Promise<FastifyInstance> {
         await res.code(200).send()
     })
 
-    async function kubeRequest<T>(
+    async function kubeRequest<T = unknown>(
         token: string,
         method: string,
         url: string,
@@ -105,6 +105,9 @@ export async function startServer(): Promise<FastifyInstance> {
                     case 'ETIMEDOUT':
                         logger.warn({ msg: 'ETIMEDOUT', method, url })
                         break
+                    case 'ECONNRESET':
+                        logger.warn({ msg: 'ECONNRESET', method, url })
+                        break
                     default:
                         throw err
                 }
@@ -126,16 +129,10 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest<{ items: { metadata: { name: string } }[]; message: string }>(
-                token,
-                req.method,
-                process.env.CLUSTER_API_URL + url + query,
-                req.body
-            )
-            return res
-                .code(result.status)
-                .send(result.data.items ?? { error: { code: result.status, message: result.data.message } })
+            const result = await kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query, req.body)
+            return res.code(result.status).send(result.data)
         } catch (err) {
+            console.error(err)
             logError('proxy error', err, { method: req.method, url: req.url })
             void res.code(500).send()
         }
@@ -155,27 +152,20 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const clusteredRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
-                token,
-                req.method,
-                process.env.CLUSTER_API_URL + url + query
-            )
+            const clusteredRequestPromise = kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query)
 
-            const projectsRequestPromise = kubeRequest<{ items: { metadata: { name: string } }[] }>(
-                token,
-                req.method,
-                process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects'
-            )
+            const projectsRequestPromise = kubeRequest<{
+                items: { metadata: { name: string } }[]
+            }>(token, req.method, process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects')
 
             try {
                 const clusteredRequest = await clusteredRequestPromise
-                return res.code(200).send(clusteredRequest.data.items)
+                return res.code(200).send(clusteredRequest.data)
             } catch {
-                // DO NOTHING
+                // DO NOTHING - WILL QUERY BY PROJECTS
             }
 
             const projectsRequest = await projectsRequestPromise
-
             const promises = projectsRequest.data.items.map((project) => {
                 const parts = url.split('/')
                 const plural = parts[parts.length - 1]
@@ -186,7 +176,7 @@ export async function startServer(): Promise<FastifyInstance> {
             })
 
             const results = await Promise.all(promises)
-            return res.code(200).send(results.map((r) => r.data.items).flat())
+            return res.code(200).send({ items: results.map((r) => r.data.items).flat() })
         } catch (err) {
             logError('namespaced error', err, { method: req.method, url: req.url })
             void res.code(500).send()
@@ -314,6 +304,7 @@ export async function startServer(): Promise<FastifyInstance> {
             },
             checkStateFunction: (returnedState: string, callback: (error?: Error) => void) => {
                 if (validStates.has(returnedState)) {
+                    validStates.delete(returnedState)
                     callback()
                     return
                 }
