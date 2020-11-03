@@ -61,7 +61,11 @@ export function CreateClusterPageData() {
         !clusterImageSetsQuery.data?.clusterImageSets ||
         clusterImageSetsQuery.data?.clusterImageSets.length === 0
     ) {
-        return <AcmPageCard><AcmEmptyState title="No image sets found." message="No image sets clusters found." /></AcmPageCard>
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title="No image sets found." message="No image sets clusters found." />
+            </AcmPageCard>
+        )
     }
 
     return (
@@ -132,7 +136,7 @@ export function CreateClusterPageContent(props: {
                     label="Provider"
                     value={clusterDeploymentInput.providerName}
                     onChange={(providerName) => updateClusterDeploymentInput({ providerName })}
-                    options={providers.map((provider) => provider.name)}
+                    // options={providers.map((provider) => provider.name)}
                     placeholder="Select a provider on which to provision the cluster"
                     required
                 />
@@ -142,7 +146,7 @@ export function CreateClusterPageContent(props: {
                     label="Provider Connection"
                     value={clusterDeploymentInput.providerConnectionName}
                     onChange={(providerConnectionName) => updateClusterDeploymentInput({ providerConnectionName })}
-                    options={props.providerConnections.map((secret) => secret.metadata.name)}
+                    // options={props.providerConnections.map((secret) => secret.metadata.name)}
                     placeholder="Select a provider connection"
                     hidden={!clusterDeploymentInput.providerName}
                     required
@@ -153,7 +157,7 @@ export function CreateClusterPageContent(props: {
                     label="Release"
                     value={clusterDeploymentInput.clusterImageSetName}
                     onChange={(clusterImageSetName) => updateClusterDeploymentInput({ clusterImageSetName })}
-                    options={props.clusterImageSets.map((clusterImageSet) => clusterImageSet.metadata.name)}
+                    // options={props.clusterImageSets.map((clusterImageSet) => clusterImageSet.metadata.name)}
                     placeholder="Select a release"
                     required
                     hidden={!clusterDeploymentInput.providerConnectionName}

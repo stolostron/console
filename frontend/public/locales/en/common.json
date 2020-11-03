@@ -1,4 +1,8 @@
 {
   "cancel": "Cancel",
-  "delete": "Delete"
+  "delete": "Delete",
+  "clipboardCopy": "Copy to clipboard",
+  "copied": "Copied",
+
+  "request.failed": "Request failed"
 }

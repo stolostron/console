@@ -12,6 +12,7 @@ import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icon
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import React, { Fragment, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
 import { ManagedClusters, ManagedCluster } from '../../../lib/ManagedCluster'
@@ -49,6 +50,7 @@ export function ClustersPageContent() {
 }
 
 export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
+    const { t } = useTranslation(['cluster'])
     const columns: IAcmTableColumn<ManagedCluster>[] = [
         {
             header: 'Name',
@@ -106,6 +108,7 @@ export function ClustersTable(props: { managedClusters: ManagedCluster[] }) {
     const history = useHistory()
     return (
         <AcmTable<ManagedCluster>
+            emptyState={{ title: '', message: '' }}
             plural="clusters"
             items={props.managedClusters}
             columns={columns}

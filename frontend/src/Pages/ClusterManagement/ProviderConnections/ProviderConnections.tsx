@@ -40,11 +40,9 @@ export function ProviderConnectionsPageContent() {
         return <ErrorPage error={error} />
     } else if (!data?.items || data.items.length === 0) {
         return (
-            <AcmPageCard><AcmEmptyState
-                title={t('empty.title')}
-                message={t('empty.subtitle')}
-                action={t('add')}
-            /></AcmPageCard>
+            <AcmPageCard>
+                <AcmEmptyState title={t('empty.title')} message={t('empty.subtitle')} action={t('add')} />
+            </AcmPageCard>
         )
     }
 
@@ -112,6 +110,7 @@ export function ProviderConnectionsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<ProviderConnection>
+                emptyState={{ title: '', message: '' }}
                 plural="connections"
                 items={props.providerConnections}
                 columns={columns}

@@ -21,11 +21,20 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         function refresh() {
             void restFunc()
                 .then((response) => {
-                    setData(response.data)
-                    setError(undefined)
                     setLoading(false)
+                    switch (response.status) {
+                        case 401:
+                            window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
+                            setData(undefined)
+                            break
+                        default:
+                            setData(response.data)
+                            setError(undefined)
+                            break
+                    }
                 })
                 .catch((err: Error) => {
+                    console.log(typeof err)
                     setData(undefined)
                     setError(err)
                     setLoading(false)
@@ -72,7 +81,7 @@ export interface IResourceList<Resource extends IResource> {
     items: Resource[]
 }
 
-async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
+export async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
     return await Axios.request<T>({ method, url, data, responseType, withCredentials, validateStatus: () => true })
 }
 
@@ -114,9 +123,16 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
         getNamespaceResource: function getSingleNamespaceResource(namespace: string, name: string) {
             let url = root
             url += `/namespaces/${namespace}/${options.plural}/${name}`
-            return restRequest<ResourceList<Resource>>('GET', url)
+            return restRequest<Resource>('GET', url)
         }
     }
+}
+
+export function deleteCreatedResources(resources: AxiosResponse[]) {
+    return Promise.all(resources.map(resource => {
+        const url = `${resource.config.url}/${resource.data.details.name}`
+        return restRequest<IResource>('DELETE', url)
+    }))
 }
 
 export function getResourceName(resource: Partial<IResource>) {
