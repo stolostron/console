@@ -115,7 +115,6 @@ export function BareMetalAssetsTable(props: {
                         },
                     },
                 ]}
-                // TODO: find out if ! is appropriate for this situation.
                 keyFn={keyFn}
                 tableActions={[
                     {
