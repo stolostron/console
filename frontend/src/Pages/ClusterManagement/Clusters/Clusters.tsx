@@ -8,7 +8,6 @@ import {
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ManagedCluster, ManagedClusters, managedClusters } from '../../../lib/ManagedCluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'

@@ -3,7 +3,7 @@ jest.mock('../../../lib/ManagedCluster', () => ({ createManagedCluster: jest.fn(
 jest.mock('../../../lib/KlusterletAddonConfig', () => ({ createKlusterletAddonConfig: jest.fn() }))
 
 import React from 'react'
-import {Route, MemoryRouter} from 'react-router-dom'
+import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import { ImportClusterPage } from './ImportCluster'
 import { createManagedCluster } from '../../../lib/ManagedCluster'
