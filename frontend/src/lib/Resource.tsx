@@ -43,7 +43,7 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         [restFunc]
     )
 
-    useEffect(refresh, [])
+    useEffect(refresh, [refresh])
 
     useEffect(() => {
         if (polling > 0) {
@@ -88,6 +88,8 @@ async function restRequest<T>(method: Method, url: string, data?: object): Promi
 export function resourceMethods<Resource extends IResource>(options: { path: string; plural: string }) {
     const root = `${process.env.REACT_APP_BACKEND}/cluster-management/proxy${options.path}`
     return {
+        apiPath: options.path,
+        plural: options.plural,
         create: function createResource(resource: Resource) {
             let url = root
             if (resource.metadata?.namespace) url += `/namespaces/${resource.metadata.namespace}`
