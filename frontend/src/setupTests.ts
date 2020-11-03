@@ -8,3 +8,7 @@ import { configure } from '@testing-library/dom'
 configure({
     testIdAttribute: 'id',
 })
+
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({t: key => key})
+}))

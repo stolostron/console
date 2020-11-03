@@ -40,7 +40,7 @@ export function BareMetalAssetsTable(props: { bareMetalAssets: BareMetalAsset[] 
     return (
         <AcmPageCard>
             <AcmTable<BareMetalAsset>
-                emptyState={{ title: '', message: '' }}
+                emptyState={<AcmEmptyState title="No bare metal assets found" />}
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
