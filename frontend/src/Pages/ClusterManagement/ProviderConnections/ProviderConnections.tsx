@@ -6,7 +6,7 @@ import {
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Button, Page } from '@patternfly/react-core'
+import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -33,7 +33,7 @@ export function ProviderConnectionsPageContent() {
     useEffect(() => {
         startPolling(5 * 1000)
         return stopPolling
-    }, [startPolling, stopPolling, refresh])
+    }, [startPolling, stopPolling])
 
     if (loading) {
         return <AcmLoadingPage />
@@ -118,7 +118,7 @@ export function ProviderConnectionsTable(props: {
     const history = useHistory()
 
     return (
-        <AcmPageCard>
+        <PageSection variant={PageSectionVariants.light}>
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -133,7 +133,7 @@ export function ProviderConnectionsTable(props: {
                 keyFn={keyFn}
                 tableActions={[
                     {
-                        id: 'addConnenction',
+                        id: 'addConnection',
                         title: t('add'),
                         click: () => {
                             history.push(NavigationPath.addConnection)
@@ -142,15 +142,15 @@ export function ProviderConnectionsTable(props: {
                 ]}
                 bulkActions={[
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: 'Delete connections',
                         click: (items: ProviderConnection[]) => {},
                     },
                 ]}
                 rowActions={[
-                    { id: 'editConnenction', title: 'Edit connection', click: (item: ProviderConnection) => {} },
+                    { id: 'editConnection', title: 'Edit connection', click: (item: ProviderConnection) => {} },
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
                             setConfirm({
@@ -177,6 +177,6 @@ export function ProviderConnectionsTable(props: {
                 ]}
                 emptyState={<AcmEmptyState title={t('empty.title')} />}
             />
-        </AcmPageCard>
+        </PageSection>
     )
 }
