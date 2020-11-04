@@ -10,6 +10,7 @@ import { CreateClusterPage } from './Clusters/CreateCluster'
 import { ImportClusterPage } from './Clusters/ImportCluster'
 import { AddConnectionPage } from './ProviderConnections/AddConnection'
 import { ProviderConnectionsPage } from './ProviderConnections/ProviderConnections'
+import { CreateBareMetalAssetPage } from './BareMetalAssets/CreateBareMetalAsset'
 
 export enum NavigationPath {
     clusterManagement = '/cluster-management',
@@ -20,6 +21,7 @@ export enum NavigationPath {
     providerConnections = '/cluster-management/provider-connections',
     addConnection = '/cluster-management/provider-connections/add',
     baremetalAssets = '/cluster-management/baremetal-assets',
+    createBaremetalAssets = '/cluster-management/baremetal-assets/create',
 }
 
 export function ClusterManagementPageHeader() {
@@ -81,6 +83,10 @@ export function ClusterManagement() {
 
                     <Route path={NavigationPath.baremetalAssets} exact>
                         <BareMetalAssetsPage />
+                    </Route>
+
+                    <Route path={NavigationPath.createBaremetalAssets} exact>
+                        <CreateBareMetalAssetPage/>
                     </Route>
 
                     <Route path={NavigationPath.clusterManagement} exact>

@@ -1,4 +1,4 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { GetWrapper, resourceMethods, ResourceList } from './Resource'
 
 export interface BareMetalAsset {
@@ -12,7 +12,7 @@ export interface BareMetalAsset {
         }
         bootMac: string
     }
-    status?: {
+    status: {
         conditions: Array<{
             lastTransitionTime: Date
             message: string
@@ -97,3 +97,32 @@ export function GetLabels(bareMetalAssets: BareMetalAsset) {
     }
     return labels
 }
+// TODO - should this be moved to or combined with ./Secrets.tsx ?
+export interface BMASecret extends V1Secret {
+    apiVersion?: 'v1',
+    kind?: 'secret',
+    metadata?: V1ObjectMeta
+    data: {
+        password: string,
+        username: string,
+    }
+}
+
+export const bmaSecrets = resourceMethods<BMASecret>({ path: '/api/v1', plural: 'secrets' })
+
+const originalSecretCreate = bmaSecrets.create
+
+bmaSecrets.create = async (bmaSecrets: BMASecret) => {
+    return originalSecretCreate(bmaSecrets)
+}
+
+export function MakeId(length: number) {
+    let result           = ''
+    const characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result
+ }
+
