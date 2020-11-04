@@ -8,7 +8,8 @@ import {
     AcmSelect,
     AcmTextInput,
     AcmAlert,
-    AcmAlertGroup
+    AcmAlertGroup,
+    AcmSpinnerBackdrop
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant } from '@patternfly/react-core'
 import React, { useState } from 'react'
@@ -42,6 +43,7 @@ export function ImportClusterPageContent() {
     const [loading, setLoading] = useState<boolean>(false)
 
     const onSubmit = async () => {
+        setLoading(true)
         const clusterLabels = { cloud: cloudLabel ?? '', vendor: 'auto-detect', name: clusterName, environment: environmentLabel ?? '' }
         const projectResponse = await createProject(clusterName)
         let errors = []
@@ -66,7 +68,7 @@ export function ImportClusterPageContent() {
 
     return (
         <AcmPageCard>
-            {loading && <div>Loading</div>}
+            {loading && <AcmSpinnerBackdrop />}
             <AcmForm id="import-cluster-form">
                 {errors.length > 0 && (
                     <AcmAlertGroup>

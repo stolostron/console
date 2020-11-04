@@ -6,7 +6,7 @@ import {
     AcmPageCard,
     AcmPageHeader,
     AcmCodeSnippet,
-    AcmLoadingPage,
+    AcmSpinnerBackdrop,
     AcmAlert
 } from '@open-cluster-management/ui-components'
 import { Title, AlertVariant } from '@patternfly/react-core'
@@ -47,7 +47,7 @@ export function ImportCommandPageContent(props: {
     }, [])
 
     if (loading) {
-        return <AcmLoadingPage />
+        return <AcmSpinnerBackdrop />
     } else if (error) {
         return <AcmAlert variant={AlertVariant.danger} title={t('common:request.failed')} subtitle={`${error.data.code}: ${error.data.message}`} />
     }
