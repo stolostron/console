@@ -34,8 +34,8 @@ test('provider connections page delete provider connection', async () => {
         </MemoryRouter>
     )
     await waitFor(() => expect(getByText(mockProviderConnection.metadata!.name!)).toBeInTheDocument())
-    userEvent.click(getAllByLabelText('Actions')[0])
-    userEvent.click(getByText('delete'))
-    userEvent.click(getByText('Confirm'))
-    await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
+    userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+    userEvent.click(getByText('delete')) // click the delete action
+    userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+    await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
 })
