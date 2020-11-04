@@ -23,6 +23,5 @@ export const clusterManagementAddOns = resourceMethods<ClusterManagementAddOn>({
 })
 
 export function ClusterManagementAddons() {
-   // return GetWrapper<<ResourceList<ClusterManagementAddOn[]>>(clusterManagementAddOns.listCluster)
     return GetWrapper<ResourceList<ClusterManagementAddOn>>(clusterManagementAddOns.listCluster)
 }

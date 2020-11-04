@@ -72,7 +72,6 @@ export function ListManagedClusterInfos(namespace: string) {
     const restFunc = () => {
         return managedClusterInfos.listNamespace(namespace)
     }
-    //return GetWrapper<ManagedClusterInfo[]>(restFunc)
     return GetWrapper<ResourceList<ManagedClusterInfo>>(restFunc)
 }
 

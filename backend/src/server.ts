@@ -112,7 +112,6 @@ export async function startServer(): Promise<FastifyInstance> {
                         throw err
                 }
             }
-            //console.log("responce: ", url)
         } 
         return response
     }
