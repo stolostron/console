@@ -27,7 +27,7 @@ test('provider connections page renders table with provider connections', async 
 
 test('provider connections page delete provider connection', async () => {
     nockList(providerConnections, mockProviderConnections, ['cluster.open-cluster-management.io/cloudconnection='])
-    const deleteScope = nockDelete(providerConnections, mockProviderConnection)
+    const deleteNock = nockDelete(providerConnections, mockProviderConnection)
     const { getByText, getAllByLabelText } = render(
         <MemoryRouter>
             <ProviderConnectionsPage />
@@ -37,5 +37,5 @@ test('provider connections page delete provider connection', async () => {
     userEvent.click(getAllByLabelText('Actions')[0])
     userEvent.click(getByText('delete'))
     userEvent.click(getByText('Confirm'))
-    await waitFor(() => expect(deleteScope.isDone()).toBeTruthy())
+    await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 })
