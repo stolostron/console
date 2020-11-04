@@ -29,6 +29,34 @@ export function nockList<Resource>(
     )
 }
 
+export function nockClusterList<Resource>(
+    resourceMethods: IResourceMethods<Resource>,
+    resources: Resource[],
+    labels?: string[]
+) {
+    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        `/cluster-management/proxy${resourceMethods.apiPath}/${resourceMethods.plural}`
+    )
+
+    if (labels) {
+        networkMock = networkMock.query({
+            labelSelector: encodeURIComponent(labels.join(',')),
+        })
+    }
+
+    return networkMock.reply(
+        200,
+        {
+            items: resources,
+        },
+        {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        }
+    )
+}
+
 export function nockDelete(resourceMethods: IResourceMethods<any>, resource: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(
