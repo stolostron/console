@@ -43,7 +43,7 @@ export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
         [restFunc]
     )
 
-    useEffect(refresh, [])
+    useEffect(refresh, [refresh])
 
     useEffect(() => {
         if (polling > 0) {
@@ -85,9 +85,24 @@ async function restRequest<T>(method: Method, url: string, data?: object): Promi
     return await Axios.request<T>({ method, url, data, responseType, withCredentials, validateStatus: () => true })
 }
 
-export function resourceMethods<Resource extends IResource>(options: { path: string; plural: string }) {
+export interface IResourceMethods<Resource> {
+    apiPath: string
+    plural: string
+    create: (resource: Resource) => Promise<AxiosResponse<Resource>>
+    delete: (name?: string, namespace?: string) => Promise<AxiosResponse<Resource>>
+    list: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
+    listCluster: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
+    listNamespace: (namespace: string, labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
+}
+
+export function resourceMethods<Resource extends IResource>(options: {
+    path: string
+    plural: string
+}): IResourceMethods<Resource> {
     const root = `${process.env.REACT_APP_BACKEND}/cluster-management/proxy${options.path}`
     return {
+        apiPath: options.path,
+        plural: options.plural,
         create: function createResource(resource: Resource) {
             let url = root
             if (resource.metadata?.namespace) url += `/namespaces/${resource.metadata.namespace}`

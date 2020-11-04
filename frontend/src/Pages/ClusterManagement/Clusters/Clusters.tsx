@@ -1,5 +1,6 @@
 import {
     AcmEmptyState,
+    AcmLabels,
     AcmLoadingPage,
     AcmPageCard,
     AcmTable,
@@ -104,8 +105,7 @@ export function ClustersTable(props: {
         {
             header: 'Labels',
             search: 'metadata.labels',
-            // cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
-            cell: (managedCluster) => <div>-</div>,
+            cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
         },
         {
             header: 'Nodes',
