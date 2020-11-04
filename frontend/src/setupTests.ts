@@ -4,6 +4,11 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect'
 import nock from 'nock'
+import { configure } from '@testing-library/dom'
+
+configure({
+    testIdAttribute: 'id',
+})
 
 process.env.REACT_APP_BACKEND = 'http://www.example.com:80'
 

@@ -133,7 +133,7 @@ export function ProviderConnectionsTable(props: {
                 keyFn={keyFn}
                 tableActions={[
                     {
-                        id: 'addConnenction',
+                        id: 'addConnection',
                         title: t('add'),
                         click: () => {
                             history.push(NavigationPath.addConnection)
@@ -142,15 +142,15 @@ export function ProviderConnectionsTable(props: {
                 ]}
                 bulkActions={[
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: 'Delete connections',
                         click: (items: ProviderConnection[]) => {},
                     },
                 ]}
                 rowActions={[
-                    { id: 'editConnenction', title: 'Edit connection', click: (item: ProviderConnection) => {} },
+                    { id: 'editConnection', title: 'Edit connection', click: (item: ProviderConnection) => {} },
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
                             setConfirm({
