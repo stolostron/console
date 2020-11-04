@@ -17,6 +17,38 @@ import { BareMetalAsset, bareMetalAssets, BMASecret, bmaSecrets, MakeId } from '
 import { Project, Projects } from '../../../lib/Project'
 import { NavigationPath } from '../ClusterManagement'
 
+const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
+const VALID_BMC_ADDR_REGEXP = new RegExp(
+    '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3})|' + // OR ip (v4) address
+        '(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])))' + // OR ip (v6) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$',
+    'i'
+)
+
+const addDefaultProtocol = (addr: string) => {
+    if (addr && addr.length && !addr.includes('://')) {
+        addr = 'ipmi://' + addr
+    }
+    return addr
+}
+
+function validateField(value: string, field: string) {
+    switch (field) {
+        case 'address':
+            if (!VALID_BMC_ADDR_REGEXP.test(addDefaultProtocol(value))) {
+                return 'Invalid format of BMC address'
+            }
+        case 'bootMac':
+            if (!VALID_BOOT_MAC_REGEXP.test(value)) {
+                return 'Invalid format of MAC address'
+            }
+    }
+}
+
 export function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma'])
     return (
@@ -45,9 +77,7 @@ export function CreateBareMetalAssetPageData() {
     return (
         <CreateBareMetalAssetPageContent
             projects={projectsQuery.data.items}
-            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) =>
-                bareMetalAssets.create(bareMetalAsset)
-            }
+            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => bareMetalAssets.create(bareMetalAsset)}
         />
     )
 }
@@ -69,10 +99,10 @@ export function CreateBareMetalAssetPageContent(props: {
         spec: {
             bmc: {
                 address: '',
-                credentialsName: '',
+                credentialsName: ''
             },
-            bootMac: '',
-        }
+            bootMac: ''
+        },
     })
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
         const copy = { ...bareMetalAsset }
@@ -103,7 +133,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     value={bareMetalAsset.metadata?.name}
                     onChange={(name) => {
                         updateBMASecret((bmaSecrets) => {
-                            secretName = name+'-bmc-secret-'+MakeId(5)
+                            secretName = name + '-bmc-secret-' + MakeId(5)
                             bmaSecrets.metadata!.name = secretName
                             return bareMetalAsset
                         })
@@ -112,11 +142,10 @@ export function CreateBareMetalAssetPageContent(props: {
                             bareMetalAsset.spec!.bmc.credentialsName = secretName
                             return bareMetalAsset
                         })
-
                     }}
                     isRequired
-                >
-                </AcmTextInput>
+                    validation={(value) => validateField(value, 'name')}
+                ></AcmTextInput>
                 <AcmSelect
                     id="namespaceName"
                     label={t('createBareMetalAsset.namespaceName.label')}
@@ -150,6 +179,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    validation={(value) => validateField(value, 'name')}
                 />
                 <AcmTextInput
                     id="username"
@@ -162,6 +192,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    validation={(value) => validateField(value, 'username')}
                 />
                 <AcmTextInput
                     id="password"
@@ -175,6 +206,8 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    validation={(value) => validateField(value, 'password')}
+                    type='password'
                 />
                 <AcmTextInput
                     id="bootMac"
@@ -186,6 +219,8 @@ export function CreateBareMetalAssetPageContent(props: {
                             bareMetalAsset.spec!.bootMac = bootMac
                         })
                     }}
+                    isRequired
+                    validation={(value) => validateField(value, 'bootMac')}
                 />
 
                 <ActionGroup>
@@ -193,20 +228,22 @@ export function CreateBareMetalAssetPageContent(props: {
                         id="submit"
                         variant="primary"
                         onClick={() => {
-
                             if (bmaSecret.data?.username) {
-                                bmaSecret.data.username = Buffer.from(bmaSecret.data.username, 'ascii').toString('base64')
+                                bmaSecret.data.username = Buffer.from(bmaSecret.data.username, 'ascii').toString(
+                                    'base64'
+                                )
                             }
                             if (bmaSecret.data?.password) {
-                                bmaSecret.data.password = Buffer.from(bmaSecret.data.password, 'ascii').toString('base64')
+                                bmaSecret.data.password = Buffer.from(bmaSecret.data.password, 'ascii').toString(
+                                    'base64'
+                                )
                             }
-                            
+
                             bmaSecrets.create(bmaSecret as BMASecret)
                             props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).then(() => {
                                 history.push(NavigationPath.baremetalAssets)
                             })
-                        }
-                    }
+                        }}
                     >
                         Add connection
                     </AcmSubmit>
