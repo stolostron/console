@@ -130,8 +130,11 @@ export function resourceMethods<Resource extends IResource>(options: { path: str
 
 export function deleteCreatedResources(resources: AxiosResponse[]) {
     return Promise.all(resources.map(resource => {
-        const url = `${resource.config.url}/${resource.data.details.name}`
-        return restRequest<IResource>('DELETE', url)
+        /* istanbul ignore else */
+        if (resource.status !== 409) {
+            const url = `${resource.config.url}/${resource.data.details.name}`
+            return restRequest<IResource>('DELETE', url)
+        }
     }))
 }
 

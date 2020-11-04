@@ -3,6 +3,7 @@
   "delete": "Delete",
   "clipboardCopy": "Copy to clipboard",
   "copied": "Copied",
+  "label.add": "Add label",
 
   "request.failed": "Request failed"
 }

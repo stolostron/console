@@ -29,7 +29,7 @@ export function ImportCommandPageContent(props: {
 }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [importCommand, setImportCommand] = useState<string>('')
-    const [error, setError] = useState<any>()
+    const [error, setError] = useState<AxiosResponse | undefined>()
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
