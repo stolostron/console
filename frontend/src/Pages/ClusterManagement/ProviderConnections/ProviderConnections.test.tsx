@@ -14,28 +14,37 @@ const mockProviderConnection: ProviderConnection = {
 
 const mockProviderConnections = [mockProviderConnection]
 
-test('provider connections page renders table with provider connections', async () => {
-    nockList(providerConnections, mockProviderConnections, ['cluster.open-cluster-management.io/cloudconnection='])
-    const { getByText } = render(
-        <MemoryRouter>
-            <ProviderConnectionsPage />
-        </MemoryRouter>
-    )
-    await waitFor(() => expect(getByText(mockProviderConnection.metadata!.name!)).toBeInTheDocument())
-    expect(getByText(mockProviderConnection.metadata!.namespace!)).toBeInTheDocument()
-})
+describe('provider connections page', () => {
+    test('should render the table with provider connections', async () => {
+        nockList(providerConnections, mockProviderConnections, ['cluster.open-cluster-management.io/cloudconnection='])
+        const { getByText } = render(
+            <MemoryRouter>
+                <ProviderConnectionsPage />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(getByText(mockProviderConnection.metadata!.name!)).toBeInTheDocument())
+        expect(getByText(mockProviderConnection.metadata!.namespace!)).toBeInTheDocument()
+    })
 
-test('provider connections page delete provider connection', async () => {
-    nockList(providerConnections, mockProviderConnections, ['cluster.open-cluster-management.io/cloudconnection='])
-    const deleteNock = nockDelete(providerConnections, mockProviderConnection)
-    const { getByText, getAllByLabelText } = render(
-        <MemoryRouter>
-            <ProviderConnectionsPage />
-        </MemoryRouter>
-    )
-    await waitFor(() => expect(getByText(mockProviderConnection.metadata!.name!)).toBeInTheDocument())
-    userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-    userEvent.click(getByText('delete')) // click the delete action
-    userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
-    await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
+    test('should be able to delete a provider connection', async () => {
+        const listNock = nockList(providerConnections, mockProviderConnections, [
+            'cluster.open-cluster-management.io/cloudconnection=',
+        ])
+        const deleteNock = nockDelete(providerConnections, mockProviderConnection)
+        const refreshNock = nockList(providerConnections, mockProviderConnections, [
+            'cluster.open-cluster-management.io/cloudconnection=',
+        ])
+        const { getByText, getAllByLabelText } = render(
+            <MemoryRouter>
+                <ProviderConnectionsPage />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
+        await waitFor(() => expect(getByText(mockProviderConnection.metadata!.name!)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        userEvent.click(getByText('delete')) // click the delete action
+        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
+        await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
+    })
 })
