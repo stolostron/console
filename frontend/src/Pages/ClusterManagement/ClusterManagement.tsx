@@ -8,6 +8,7 @@ import { ClusterDetailsPage } from './Clusters/ClusterDetails'
 import { ClustersPage } from './Clusters/Clusters'
 import { CreateClusterPage } from './Clusters/CreateCluster'
 import { ImportClusterPage } from './Clusters/ImportCluster'
+import { ImportCommandPage } from './Clusters/ImportCommand'
 import { AddConnectionPage } from './ProviderConnections/AddConnection'
 import { ProviderConnectionsPage } from './ProviderConnections/ProviderConnections'
 
@@ -16,6 +17,7 @@ export enum NavigationPath {
     clusters = '/cluster-management/clusters',
     createCluster = '/cluster-management/clusters/create',
     importCluster = '/cluster-management/clusters/import',
+    importCommand = '/cluster-management/clusters/import/:clusterName',
     clusterDetails = '/cluster-management/clusters/details/:id',
     providerConnections = '/cluster-management/provider-connections',
     addConnection = '/cluster-management/provider-connections/add',
@@ -69,7 +71,9 @@ export function ClusterManagement() {
                         <ImportClusterPage />
                     </Route>
                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-
+                    <Route path={NavigationPath.importCommand} exact>
+                        <ImportCommandPage />
+                    </Route>
                     <Route path={NavigationPath.providerConnections} exact>
                         <ProviderConnectionsPage />
                     </Route>

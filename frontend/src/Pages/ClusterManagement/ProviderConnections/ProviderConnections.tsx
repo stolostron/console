@@ -127,6 +127,7 @@ export function ProviderConnectionsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<ProviderConnection>
+                emptyState={<AcmEmptyState title={t('empty.title')} />}
                 plural="connections"
                 items={props.providerConnections}
                 columns={columns}
@@ -175,7 +176,6 @@ export function ProviderConnectionsTable(props: {
                         },
                     },
                 ]}
-                emptyState={<AcmEmptyState title={t('empty.title')} />}
             />
         </PageSection>
     )
