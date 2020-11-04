@@ -6,7 +6,7 @@ import {
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
+import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -28,11 +28,12 @@ export function ProviderConnectionsPage() {
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
     const { t } = useTranslation(['connection'])
+    const history = useHistory()
 
     useEffect(() => {
         startPolling(5 * 1000)
         return stopPolling
-    }, [startPolling, stopPolling, refresh])
+    }, [startPolling, stopPolling])
 
     if (loading) {
         return <AcmLoadingPage />
@@ -41,7 +42,20 @@ export function ProviderConnectionsPageContent() {
     } else if (!data?.items || data.items.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title={t('empty.title')} message={t('empty.subtitle')} action={t('add')} />
+                <AcmEmptyState
+                    title={t('empty.title')}
+                    message={t('empty.subtitle')}
+                    action={
+                        <Button
+                            onClick={() => {
+                                history.push(NavigationPath.addConnection)
+                            }}
+                            component="a"
+                        >
+                            {t('add')}
+                        </Button>
+                    }
+                />
             </AcmPageCard>
         )
     }
@@ -84,6 +98,9 @@ export function ProviderConnectionsTable(props: {
             cell: (item: ProviderConnection) => {
                 return getProvider(item.metadata?.labels)
             },
+            search: (item: ProviderConnection) => {
+                return getProvider(item.metadata?.labels)
+            },
         },
         {
             header: t('table.header.namespace'),
@@ -101,7 +118,7 @@ export function ProviderConnectionsTable(props: {
     const history = useHistory()
 
     return (
-        <AcmPageCard>
+        <PageSection variant={PageSectionVariants.light}>
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -116,7 +133,7 @@ export function ProviderConnectionsTable(props: {
                 keyFn={keyFn}
                 tableActions={[
                     {
-                        id: 'addConnenction',
+                        id: 'addConnection',
                         title: t('add'),
                         click: () => {
                             history.push(NavigationPath.addConnection)
@@ -125,15 +142,15 @@ export function ProviderConnectionsTable(props: {
                 ]}
                 bulkActions={[
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: 'Delete connections',
                         click: (items: ProviderConnection[]) => {},
                     },
                 ]}
                 rowActions={[
-                    { id: 'editConnenction', title: 'Edit connection', click: (item: ProviderConnection) => {} },
+                    { id: 'editConnection', title: 'Edit connection', click: (item: ProviderConnection) => {} },
                     {
-                        id: 'deleteConnenction',
+                        id: 'deleteConnection',
                         title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
                             setConfirm({
@@ -158,11 +175,8 @@ export function ProviderConnectionsTable(props: {
                         },
                     },
                 ]}
-                emptyState={{
-                    title: 'TODO',
-                    message: 'TODO',
-                }}
+                emptyState={<AcmEmptyState title={t('empty.title')} />}
             />
-        </AcmPageCard>
+        </PageSection>
     )
 }
