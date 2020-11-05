@@ -19,7 +19,7 @@ export interface KlusterletAddonConfig extends IResource {
     }
 }
 
-export const klusterletAddonConfigMethodss = resourceMethods<KlusterletAddonConfig>({
+export const klusterletAddonConfigMethods = resourceMethods<KlusterletAddonConfig>({
     path: '/apis/agent.open-cluster-management.io/v1',
     plural: 'klusterletaddonconfigs',
 })
@@ -29,7 +29,7 @@ export const createKlusterletAddonConfig = (data: {
     clusterLabels: ClusterLabels
 }) => {
     if (!data.clusterName) throw new Error('Cluster name not set')
-    return klusterletAddonConfigMethodss.create({
+    return klusterletAddonConfigMethods.create({
         apiVersion: 'agent.open-cluster-management.io/v1',
         kind: 'KlusterletAddonConfig',
         metadata: { name: data.clusterName, namespace: data.clusterName },
