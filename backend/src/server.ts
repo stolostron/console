@@ -23,7 +23,6 @@ import { BareMetalAssetResolver } from './entities/bare-metal-asset'
 import { DiscoveredClusterResolver } from './entities/discovered-cluster'
 import { ClusterDeploymentResolver } from './entities/cluster-deployment'
 import { ClusterImageSetResolver } from './entities/cluster-image-set'
-import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
 import { MetadataResolver } from './entities/common/metadata'
 import { ManagedClusterResolver } from './entities/managed-cluster'
 import { NamespaceResolver } from './entities/namespace'
@@ -85,20 +84,13 @@ export async function startServer(): Promise<FastifyInstance> {
                     // timeout - defaults to unlimited
                 })
                 switch (response.status) {
-                    case 200: // OK
-                    case 201: // Created
-                    case 204: // No Content
-                    case 304: // Not Modified
-                        return response
                     case 429:
                         if (tries > 0) {
                             await new Promise((resolve) => setTimeout(resolve, 100))
                         }
                         break
                     default:
-                        if (response.status < 200 || response.status >= 300) {
-                            throw response // to catch block
-                        }
+                        return response
                 }
             } catch (err) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -114,7 +106,7 @@ export async function startServer(): Promise<FastifyInstance> {
                         throw err
                 }
             }
-        }
+        } 
         return response
     }
 
@@ -135,7 +127,7 @@ export async function startServer(): Promise<FastifyInstance> {
         } catch (err) {
             console.error(err)
             logError('proxy error', err, { method: req.method, url: req.url })
-            void res.code(500).send()
+            void res.code(err.status).send(err)
         }
     }
 
@@ -356,7 +348,6 @@ export async function startServer(): Promise<FastifyInstance> {
             NamespaceResolver,
             ClusterDeploymentResolver,
             ProviderConnectionsResolver,
-            ClusterManagementAddOnResolver,
             BareMetalAssetResolver,
             DiscoveredClusterResolver
         ],

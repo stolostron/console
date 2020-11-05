@@ -1,10 +1,11 @@
 import {
     AcmEmptyState,
+    AcmLabels,
     AcmPageCard,
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { ManagedCluster, ManagedClusters, managedClusters } from '../../../lib/ManagedCluster'
 import { DiscoveredCluster, DiscoveredClusters } from '../../../lib/DiscoveredCluster'
 import { Page, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
@@ -20,7 +21,9 @@ const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
         header: 'Name',
         sort: 'metadata.name',
         search: 'metadata.name',
-        cell: 'metadata.name',
+        cell: (managedCluster) => (
+            <Link to={NavigationPath.clusterDetails.replace(":id", managedCluster.metadata.name as string)}>{managedCluster.metadata.name}</Link>
+        ),
     },
     {
         header: 'Status',
@@ -57,8 +60,7 @@ const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
     {
         header: 'Labels',
         search: 'metadata.labels',
-        // cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
-        cell: (managedCluster) => <div>-</div>,
+        cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
     },
     {
         header: 'Nodes',
@@ -107,7 +109,9 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
         header: 'Distribution Version',
         sort: 'info.openshiftVersion',
-        cell: 'info.openshiftVersion',
+        cell: (discoveredCluster) => (
+            <span key="openShiftVersion">&nbsp; {"OpenShift ".concat(discoveredCluster.info.openshiftVersion)}</span>
+        ),
     },
     {
         header: 'Infrastructure Provider',

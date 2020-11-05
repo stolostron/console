@@ -24,7 +24,7 @@ export interface DiscoveredCluster extends IResource {
 }
 
 export const discoveredClusters = resourceMethods<DiscoveredCluster>({
-    path: '/apis/operator.open-cluster-management.io/v1',
+    path: '/apis/discovery.open-cluster-management.io/v1',
     plural: 'discoveredclusters',
 })
 

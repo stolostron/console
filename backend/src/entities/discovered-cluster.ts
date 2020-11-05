@@ -9,49 +9,49 @@ import { Metadata } from './common/metadata'
 
 export const discoveredClusterService = new CustomObjectService<DiscoveredCluster>({
     plural: 'discoveredclusters',
-    group: 'operator.open-cluster-management.io',
+    group: 'discovery.open-cluster-management.io',
     version: 'v1',
 })
 
 @ObjectType()
 export class DiscoveredClusterInfo {
-    @Field()
+    @Field({ nullable: true })
     activity_timestamp: string
 
-    @Field()
+    @Field({ nullable: true })
     apiUrl: string
 
-    @Field()
+    @Field({ nullable: true })
     cloudProvider: string
 
-    @Field()
+    @Field({ nullable: true })
     console: string
 
-    @Field()
+    @Field({ nullable: true })
     healthState: string
 
-    @Field()
+    @Field({ nullable: true })
     managed: boolean
 
-    @Field()
+    @Field({ nullable: true })
     name: string
 
-    @Field()
+    @Field({ nullable: true })
     openshiftVersion: string
 
-    @Field()
+    @Field({ nullable: true })
     product: string
 
-    @Field()
+    @Field({ nullable: true })
     region: string
 
-    @Field()
+    @Field({ nullable: true })
     state: string
 
-    @Field()
+    @Field({ nullable: true })
     status: string
 
-    @Field()
+    @Field({ nullable: true })
     support_level: string
 
     @Field({ nullable: true })
@@ -70,7 +70,7 @@ export class DiscoveredCluster extends Resource {
 @Resolver((of) => DiscoveredCluster)
 export class DiscoveredClusterResolver {
     @Query((returns) => [DiscoveredCluster])
-    async discoveredCluster(
+    async discoveredClusters(
         @Ctx() userContext: IUserContext,
         @Arg('fieldSelector', { nullable: true }) fieldSelector?: string,
         @Arg('labelSelector', { nullable: true }) labelSelector?: string

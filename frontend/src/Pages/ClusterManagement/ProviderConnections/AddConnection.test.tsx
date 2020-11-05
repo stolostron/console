@@ -1,27 +1,23 @@
 import React from 'react'
-import { render } from '@testing-library/react'
-import { Project } from '../../../lib/Project'
-import { AddConnectionPageContent } from './AddConnection'
-import { configure } from '@testing-library/dom'
-// import userEvent from '@testing-library/user-event'
+import { render, waitFor } from '@testing-library/react'
+import { Project, projects } from '../../../lib/Project'
+import { AddConnectionPage } from './AddConnection'
+import { nockClusterList } from '../../../lib/nock-util'
 
-configure({ testIdAttribute: 'id' })
-test('clusters page', () => {
-    const projects: Project[] = [
-        {
-            apiVersion: 'project.openshift.io/v1',
-            kind: 'Project',
-            metadata: {
-                name: 'default',
-            },
+const mockProjects: Project[] = [
+    {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'Project',
+        metadata: {
+            name: 'default',
         },
-    ]
-    const mockFn = jest.fn()
-    const { getByTestId, getByText } = render(
-        <AddConnectionPageContent projects={projects} createProviderConnection={mockFn} />
-    )
-    // userEvent.type(getByTestId('connectionName'), 'test-connection')
-    // getByText('Submit').click()
+    },
+]
 
-    // expect(mockFn).toBeCalled()
+describe('add connection page', () => {
+    test('should load and get projects', async () => {
+        const projectsNock = nockClusterList(projects, mockProjects)
+        render(<AddConnectionPage />)
+        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+    })
 })
