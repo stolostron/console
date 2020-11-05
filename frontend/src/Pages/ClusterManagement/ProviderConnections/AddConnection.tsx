@@ -14,7 +14,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { Project, Projects } from '../../../lib/Project'
+import { Project, useProjects } from '../../../lib/Project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
@@ -70,7 +70,7 @@ export function AddConnectionPage() {
 }
 
 export function AddConnectionPageData() {
-    const projectsQuery = Projects()
+    const projectsQuery = useProjects()
 
     if (projectsQuery.loading) {
         return <AcmLoadingPage />

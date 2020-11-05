@@ -3,9 +3,9 @@ import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ImportClusterPage } from './ImportCluster'
-import { Project, ProjectRequest, projectRequests } from '../../../lib/Project'
-import { ManagedCluster, managedClusters } from '../../../lib/ManagedCluster'
-import { KlusterletAddonConfig, klusterletAddonConfigs } from '../../../lib/KlusterletAddonConfig'
+import { Project, ProjectRequest, projectRequestMethods } from '../../../lib/Project'
+import { ManagedCluster, managedClusterMethods } from '../../../lib/ManagedCluster'
+import { KlusterletAddonConfig, klusterletAddonConfigMethodss } from '../../../lib/KlusterletAddonConfig'
 import { nockCreate } from '../../../lib/nock-util'
 import * as nock from 'nock'
 
@@ -102,9 +102,9 @@ describe('ImportCluster', () => {
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
     test('can create resources', async () => {
-        const projectNock = nockCreate(projectRequests, mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(managedClusters, mockManagedCluster, mockManagedClusterResponse)
-        const kacNock = nockCreate(klusterletAddonConfigs, mockKAC, mockKACResponse)
+        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(klusterletAddonConfigMethodss, mockKAC, mockKACResponse)
 
         const { getByTestId } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')

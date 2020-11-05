@@ -6,13 +6,13 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { useHistory, Link } from 'react-router-dom'
-import { ManagedCluster, ManagedClusters, managedClusters } from '../../../lib/ManagedCluster'
 import { DiscoveredCluster, DiscoveredClusters } from '../../../lib/DiscoveredCluster'
 import { Page, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import React, { Fragment, useEffect, useState} from 'react'
+import { ManagedCluster, useManagedClusters, managedClusterMethods } from '../../../lib/ManagedCluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 let moment = require('moment');
 
@@ -186,7 +186,7 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = ManagedClusters()
+    const managedClustersQuery = useManagedClusters()
     const discoveredClustersQuery = DiscoveredClusters()
 
     useEffect(() => {
@@ -209,9 +209,9 @@ export function ClustersPageContent() {
     return (
         <AcmPageCard>
             <ClustersTable
-                managedClusters={managedClustersQuery.data?.items || [] as ManagedCluster[]}
-                discoveredClusters={discoveredClustersQuery.data?.items || [] as DiscoveredCluster[]}
-                deleteCluster={managedClusters.delete}
+                discoveredClusters={discoveredClustersQuery.data.items}
+                managedClusters={managedClustersQuery.data?.items}
+                deleteCluster={managedClusterMethods.delete}
                 refresh={managedClustersQuery.refresh}
             />
         </AcmPageCard>
@@ -219,12 +219,11 @@ export function ClustersPageContent() {
 }
 
 export function ClustersTable(props: {
-    managedClusters: ManagedCluster[]
-    discoveredClusters: DiscoveredCluster[]
+    managedClusters?: ManagedCluster[]
+    discoveredClusters?: DiscoveredCluster[]
     deleteCluster: (name: string, namespace: string) => void
     refresh: () => void
 }) {
-
     const [view, setView] = useState<string>('first')
 
     function mckeyFn(cluster: ManagedCluster) {
@@ -232,13 +231,14 @@ export function ClustersTable(props: {
     }
     function dckeyFn(cluster: DiscoveredCluster) {
         return cluster.metadata.uid!
+
     }
     const history = useHistory()
     if (view === 'first') {
         return (
             <AcmTable<ManagedCluster>
                 plural="clusters"
-                items={props.managedClusters}
+                items={props.managedClusters ?? []}
                 columns={managedClusterCols}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
@@ -286,7 +286,7 @@ export function ClustersTable(props: {
         return (
             <AcmTable<DiscoveredCluster>
                 plural="discoveredclusters"
-                items={props.discoveredClusters}
+                items={props.discoveredClusters  ?? []}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
                 key="discoveredClustersTable"

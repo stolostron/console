@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnection, ProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
+import { ProviderConnection, useProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
@@ -26,7 +26,7 @@ export function ProviderConnectionsPage() {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, startPolling, stopPolling, refresh } = ProviderConnections()
+    const { loading, error, data, startPolling, stopPolling, refresh } = useProviderConnections()
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 

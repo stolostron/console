@@ -9,16 +9,16 @@ import {
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-icon'
-import { ClusterManagementAddons, ClusterManagementAddOn } from '../../../../lib/ClusterManagementAddOn'
+import { useClusterManagementAddons, ClusterManagementAddOn } from '../../../../lib/ClusterManagementAddOn'
 import {
     ManagedClusterAddOn,
-    ManagedClusterAddOns as GetManagedClusterAddOns,
+    useManagedClusterAddOns as GetManagedClusterAddOns,
 } from '../../../../lib/ManagedClusterAddOn'
 import React, { ReactNode, useEffect } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
 
 export function ClustersSettingsPageContent(props: { name: string; namespace: string }) {
-    const cma = ClusterManagementAddons()
+    const cma = useClusterManagementAddons()
     const mca = GetManagedClusterAddOns(props.namespace)
     const refresh = () => {
         cma.refresh()
