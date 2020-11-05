@@ -210,7 +210,7 @@ export function ClustersPageContent() {
         <AcmPageCard>
             <ClustersTable
                 managedClusters={managedClustersQuery.data?.items || [] as ManagedCluster[]}
-                discoveredCluster={discoveredClustersQuery.data?.items || [] as DiscoveredCluster[]}
+                discoveredClusters={discoveredClustersQuery.data?.items || [] as DiscoveredCluster[]}
                 deleteCluster={managedClusters.delete}
                 refresh={managedClustersQuery.refresh}
             />
@@ -220,10 +220,11 @@ export function ClustersPageContent() {
 
 export function ClustersTable(props: {
     managedClusters: ManagedCluster[]
-    discoveredCluster: DiscoveredCluster[]
+    discoveredClusters: DiscoveredCluster[]
     deleteCluster: (name: string, namespace: string) => void
     refresh: () => void
 }) {
+
     const [view, setView] = useState<string>('first')
 
     function mckeyFn(cluster: ManagedCluster) {
@@ -285,7 +286,7 @@ export function ClustersTable(props: {
         return (
             <AcmTable<DiscoveredCluster>
                 plural="discoveredclusters"
-                items={props.discoveredCluster}
+                items={props.discoveredClusters}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
                 key="discoveredClustersTable"
