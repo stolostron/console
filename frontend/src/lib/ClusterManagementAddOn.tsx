@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, ResourceList,resourceMethods, GetWrapper } from './Resource'
+import { IResource, ResourceList, resourceMethods, useQueryWrapper } from './Resource'
 
 export interface ClusterManagementAddOn extends IResource {
     apiVersion: string
@@ -17,11 +17,11 @@ export interface ClusterManagementAddOn extends IResource {
     }
 }
 
-export const clusterManagementAddOns = resourceMethods<ClusterManagementAddOn>({
+export const clusterManagementAddOnMethods = resourceMethods<ClusterManagementAddOn>({
     path: '/apis/addon.open-cluster-management.io/v1alpha1',
     plural: 'clustermanagementaddons',
 })
 
-export function ClusterManagementAddons() {
-    return GetWrapper<ResourceList<ClusterManagementAddOn>>(clusterManagementAddOns.listCluster)
+export function useClusterManagementAddons() {
+    return useQueryWrapper<ResourceList<ClusterManagementAddOn>>(clusterManagementAddOnMethods.listCluster)
 }

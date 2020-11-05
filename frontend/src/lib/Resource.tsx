@@ -11,7 +11,7 @@ export interface ResourceList<T> {
     items: T[]
 }
 
-export function GetWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
+export function useQueryWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     const [data, setData] = useState<T>()
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
@@ -77,11 +77,7 @@ export interface IResource {
     metadata?: V1ObjectMeta
 }
 
-export interface IResourceList<Resource extends IResource> {
-    items: Resource[]
-}
-
-export async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
+async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
     return await Axios.request<T>({ method, url, data, responseType, withCredentials, validateStatus: () => true })
 }
 
@@ -140,18 +136,21 @@ export function resourceMethods<Resource extends IResource>(options: {
             let url = root
             url += `/namespaces/${namespace}/${options.plural}/${name}`
             return restRequest<Resource>('GET', url)
-        }
+        },
     }
 }
 
 export function deleteCreatedResources(resources: AxiosResponse[]) {
-    return Promise.all(resources.map(resource => {
-        /* istanbul ignore else */
-        if (resource.status !== 409) {
-            const url = `${resource.config.url}/${resource.data.details.name}`
-            return restRequest<IResource>('DELETE', url)
-        }
-    }))
+    return Promise.all(
+        resources.map((resource) => {
+            /* istanbul ignore else */
+            if (resource.status !== 409) {
+                const url = `${resource.config.url}/${resource.data.details.name}`
+                return restRequest<IResource>('DELETE', url)
+            }
+            return undefined
+        })
+    )
 }
 
 export function getResourceName(resource: Partial<IResource>) {

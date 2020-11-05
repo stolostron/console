@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { Project, projects } from '../../../lib/Project'
+import { Project, projectMethods } from '../../../lib/Project'
 import { AddConnectionPage } from './AddConnection'
 import { nockClusterList } from '../../../lib/nock-util'
 
@@ -16,7 +16,7 @@ const mockProjects: Project[] = [
 
 describe('add connection page', () => {
     test('should load and get projects', async () => {
-        const projectsNock = nockClusterList(projects, mockProjects)
+        const projectsNock = nockClusterList(projectMethods, mockProjects)
         render(<AddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
     })

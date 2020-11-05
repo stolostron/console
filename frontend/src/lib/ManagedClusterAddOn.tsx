@@ -1,6 +1,6 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { useCallback } from 'react'
-import { IResource, ResourceList, resourceMethods, GetWrapper } from './Resource'
+import { IResource, ResourceList, resourceMethods, useQueryWrapper } from './Resource'
 
 export interface ManagedClusterAddOn extends IResource {
     apiVersion: string
@@ -26,14 +26,14 @@ export interface ManagedClusterAddOn extends IResource {
     }
 }
 
-export const managedClusterAddOns = resourceMethods<ManagedClusterAddOn>({
+export const managedClusterAddOnMethods = resourceMethods<ManagedClusterAddOn>({
     path: '/apis/addon.open-cluster-management.io/v1alpha1',
     plural: 'managedclusteraddons',
 })
 
-export function ManagedClusterAddOns(namespace: string) {
+export function useManagedClusterAddOns(namespace: string) {
     const restFunc = useCallback(() => {
-        return managedClusterAddOns.listNamespace(namespace)
+        return managedClusterAddOnMethods.listNamespace(namespace)
     }, [namespace])
-    return GetWrapper<ResourceList<ManagedClusterAddOn>>(restFunc)
+    return useQueryWrapper<ResourceList<ManagedClusterAddOn>>(restFunc)
 }
