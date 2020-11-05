@@ -15,7 +15,6 @@ import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { client } from '../../../lib/apollo-client'
-import { providers } from '../../../lib/providers'
 import {
     ClusterDeploymentInput,
     ClusterImageSet,

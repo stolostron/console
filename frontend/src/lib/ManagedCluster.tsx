@@ -1,12 +1,12 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, GetWrapper, ResourceList } from './Resource'
+import { IResource, resourceMethods, QueryWrapper, ResourceList } from './Resource'
 
 export interface ClusterLabels {
     cloud: string
     vendor: string
     name: string
     [key: string]: string
-  }
+}
 
 export interface ManagedCluster extends IResource {
     apiVersion: 'cluster.open-cluster-management.io/v1'
@@ -38,22 +38,22 @@ export interface ManagedCluster extends IResource {
     }
 }
 
-export const managedClusters = resourceMethods<ManagedCluster>({
+export const managedClusterMethods = resourceMethods<ManagedCluster>({
     path: '/apis/cluster.open-cluster-management.io/v1',
     plural: 'managedclusters',
 })
 
-export function ManagedClusters() {
-    return GetWrapper<ResourceList<ManagedCluster>>(managedClusters.list)
+export function QueryManagedClusters() {
+    return QueryWrapper<ResourceList<ManagedCluster>>(managedClusterMethods.list)
 }
 
-export const createManagedCluster = (data: { clusterName: string | undefined, clusterLabels: ClusterLabels }) => {
-    return managedClusters.create({
+export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: ClusterLabels }) => {
+    return managedClusterMethods.create({
         apiVersion: 'cluster.open-cluster-management.io/v1',
         kind: 'ManagedCluster',
         metadata: { name: data.clusterName, labels: data.clusterLabels },
         spec: {
-            hubAcceptsClient: true
-        }
+            hubAcceptsClient: true,
+        },
     })
 }

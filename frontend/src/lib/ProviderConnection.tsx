@@ -1,7 +1,7 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from './providers'
-import { GetWrapper, ResourceList, resourceMethods } from './Resource'
+import { QueryWrapper, ResourceList, resourceMethods } from './Resource'
 
 export interface ProviderConnection extends V1Secret {
     apiVersion: 'v1'
@@ -75,8 +75,8 @@ providerConnections.create = async (providerConnection: ProviderConnection) => {
     return originalCreate(copy)
 }
 
-export function ProviderConnections() {
-    return GetWrapper<ResourceList<ProviderConnection>>(providerConnections.list)
+export function QueryProviderConnections() {
+    return QueryWrapper<ResourceList<ProviderConnection>>(providerConnections.list)
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
