@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
 import { BareMetalAssetsPage } from './BaremetalAssets'
 import { nockDelete, nockList } from '../../../lib/nock-util'
-import nock from 'nock'
 
 function MakeBMA(name: string) {
     const bma: BareMetalAsset = {
