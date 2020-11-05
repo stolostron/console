@@ -6,12 +6,12 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 
-import { QueryManagedClusterInfos, NodeInfo } from '../../../../lib/ManagedClusterInfo'
+import { useManagedClusterInfos, NodeInfo } from '../../../../lib/ManagedClusterInfo'
 import React, { useEffect, ReactNode } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { loading, error, data, startPolling, stopPolling, refresh } = QueryManagedClusterInfos(props.namespace)
+    const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)
     useEffect(() => {
         startPolling(10 * 1000)
         return stopPolling

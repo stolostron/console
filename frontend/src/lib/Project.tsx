@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, QueryWrapper, ResourceList } from './Resource'
+import { IResource, resourceMethods, useQueryWrapper, ResourceList } from './Resource'
 
 export interface Project extends IResource {
     apiVersion: 'project.openshift.io/v1'
@@ -21,8 +21,8 @@ export const projectRequestMethods = resourceMethods<ProjectRequest>({
     plural: 'projectrequests',
 })
 
-export function QueryProjects() {
-    return QueryWrapper<ResourceList<Project>>(projectMethods.listCluster)
+export function useProjects() {
+    return useQueryWrapper<ResourceList<Project>>(projectMethods.listCluster)
 }
 
 export const createProject = (name: string | undefined) => {

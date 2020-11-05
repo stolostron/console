@@ -11,7 +11,7 @@ export interface ResourceList<T> {
     items: T[]
 }
 
-export function QueryWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
+export function useQueryWrapper<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     const [data, setData] = useState<T>()
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)

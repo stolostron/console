@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, QueryWrapper, ResourceList } from './Resource'
+import { IResource, resourceMethods, useQueryWrapper, ResourceList } from './Resource'
 
 export interface ClusterLabels {
     cloud: string
@@ -43,8 +43,8 @@ export const managedClusterMethods = resourceMethods<ManagedCluster>({
     plural: 'managedclusters',
 })
 
-export function QueryManagedClusters() {
-    return QueryWrapper<ResourceList<ManagedCluster>>(managedClusterMethods.list)
+export function useManagedClusters() {
+    return useQueryWrapper<ResourceList<ManagedCluster>>(managedClusterMethods.list)
 }
 
 export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: ClusterLabels }) => {

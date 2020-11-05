@@ -10,7 +10,7 @@ import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { useHistory, Link } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ManagedCluster, QueryManagedClusters, managedClusterMethods } from '../../../lib/ManagedCluster'
+import { ManagedCluster, useManagedClusters, managedClusterMethods } from '../../../lib/ManagedCluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ClustersPage() {
@@ -23,7 +23,7 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = QueryManagedClusters()
+    const managedClustersQuery = useManagedClusters()
 
     useEffect(() => {
         managedClustersQuery.startPolling(10 * 1000)
