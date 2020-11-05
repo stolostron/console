@@ -52,7 +52,6 @@ const mockProjectResponse: Project = {
             'openshift.io/sa.scc.supplemental-groups': '1000630000/10000',
             'openshift.io/sa.scc.uid-range': '1000630000/10000',
         },
-
     },
 }
 const mockManagedClusterResponse: ManagedCluster = {
@@ -103,9 +102,9 @@ describe('ImportCluster', () => {
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
     test('can create resources', async () => {
-        const projectNock = nockCreate(projectRequests, mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(managedClusters, mockManagedCluster, mockManagedClusterResponse)
-        const kacNock = nockCreate(klusterletAddonConfigs, mockKAC, mockKACResponse)
+        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(klusterletAddonConfigMethodss, mockKAC, mockKACResponse)
 
         const { getByTestId } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
