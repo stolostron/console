@@ -2,6 +2,7 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { ClustersTable } from './Clusters'
 import { ManagedCluster } from '../../../sdk'
+import { BrowserRouter as Router } from 'react-router-dom'
 
 test('clusters page', () => {
     const managedClusters: ManagedCluster[] = [
@@ -21,7 +22,7 @@ test('clusters page', () => {
             },
         },
     ]
-    const { getByText } = render(<ClustersTable managedClusters={managedClusters} />)
+    const { getByText } = render(<Router><ClustersTable managedClusters={managedClusters} /></Router>)
     expect(getByText('Create cluster')).toBeInTheDocument()
     expect(getByText('Import cluster')).toBeInTheDocument()
     expect(getByText(managedClusters[0].metadata.name)).toBeInTheDocument()
