@@ -57,19 +57,24 @@ export function nockClusterList<Resource>(
     )
 }
 
-export function nockCreate(resourceMethods: IResourceMethods<any>, resource: IResource, response: IResource) {
+export function nockCreate(
+    resourceMethods: IResourceMethods<any>,
+    resource: IResource,
+    response: IResource,
+    statusCode = 201
+) {
     const isNamespaceScoped = !!resource.metadata?.namespace
-    const url = `/cluster-management/proxy${resourceMethods.apiPath}${isNamespaceScoped ? `/namespaces/${resource.metadata?.namespace}`: ''}/${resourceMethods.plural}`
-    
-    return nock(process.env.REACT_APP_BACKEND as string)
+    const url = `/cluster-management/proxy${resourceMethods.apiPath}${
+        isNamespaceScoped ? `/namespaces/${resource.metadata?.namespace}` : ''
+    }/${resourceMethods.plural}`
+
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .post(url, JSON.stringify(resource))
-        .reply(201, response,
-            {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Credentials': 'true',
-            }
-        )
+        .reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
 }
 
 export function nockDelete(resourceMethods: IResourceMethods<any>, resource: IResource) {
