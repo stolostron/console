@@ -1,9 +1,10 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
+import { useCallback } from 'react'
 import { IResource, ResourceList, resourceMethods, GetWrapper } from './Resource'
 export interface NodeInfo {
     name?: string
-    labels?: {[key: string]: string}
-    capacity?: {[key: string]: string}
+    labels?: { [key: string]: string }
+    capacity?: { [key: string]: string }
     conditions?: {
         status: string
         type: string
@@ -69,9 +70,8 @@ export const managedClusterInfos = resourceMethods<ManagedClusterInfo>({
 })
 
 export function ListManagedClusterInfos(namespace: string) {
-    const restFunc = () => {
+    const restFunc = useCallback(() => {
         return managedClusterInfos.listNamespace(namespace)
-    }
+    }, [namespace])
     return GetWrapper<ResourceList<ManagedClusterInfo>>(restFunc)
 }
-

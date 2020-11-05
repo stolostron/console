@@ -1,12 +1,12 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
+import { useCallback } from 'react'
 import { IResource, ResourceList, resourceMethods, GetWrapper } from './Resource'
 
 export interface ManagedClusterAddOn extends IResource {
     apiVersion: string
     kind: 'ManagedClusterAddOn'
     metadata: V1ObjectMeta
-    spec: {
-    }
+    spec: {}
     status: {
         conditions: {
             lastTransitionTime: string
@@ -32,7 +32,8 @@ export const managedClusterAddOns = resourceMethods<ManagedClusterAddOn>({
 })
 
 export function ManagedClusterAddOns(namespace: string) {
-    const restFunc = ()=>{ return managedClusterAddOns.listNamespace(namespace)}
+    const restFunc = useCallback(() => {
+        return managedClusterAddOns.listNamespace(namespace)
+    }, [namespace])
     return GetWrapper<ResourceList<ManagedClusterAddOn>>(restFunc)
 }
-
