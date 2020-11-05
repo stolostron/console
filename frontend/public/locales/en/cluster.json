@@ -1,4 +1,20 @@
 {
   "page.header.cluster-management": "Cluster Management",
-  "clusters": "Clusters"
+  "page.header.import-cluster": "Import an existing cluster",
+  "clusters": "Clusters",
+
+  "empty-state.cluster.title": "No clusters found",
+  "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the Import an existing cluster and Create a cluster buttons are disabled.",
+  "empty-state.node.title": "No nodes found",
+  "empty-state.node.subtitle": "This cluster doesn't have any nodes.",
+
+  "import.form.clusterName.label": "Cluster name",
+  "import.form.clusterName.placeholder": "Enter cluster name",
+  "import.form.cloud.label": "Cloud",
+  "import.form.environment.label": "Environment",
+  "import.form.environment.placeholder": "Select or enter cluster purpose",
+  "import.form.labels.label": "Additional labels",
+  "import.form.submit": "Generate command",
+  "import.command.generated": "Command generated",
+  "import.command.fake": "echo <The encoded CRD is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f - && sleep 2 && echo <The encoded YAML is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f -"
 }
