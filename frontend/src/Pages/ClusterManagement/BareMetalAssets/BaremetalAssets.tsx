@@ -77,6 +77,7 @@ export function BareMetalAssetsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<BareMetalAsset>
+                emptyState={<AcmEmptyState title="No bare metal assets found" />}
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
