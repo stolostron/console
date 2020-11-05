@@ -26,8 +26,7 @@ const VALID_BMC_ADDR_REGEXP = new RegExp(
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$',
-    'i'
-)
+    'i')
 
 const addDefaultProtocol = (addr: string) => {
     if (addr && addr.length && !addr.includes('://')) {
@@ -169,17 +168,17 @@ export function CreateBareMetalAssetPageContent(props: {
                     ))}
                 </AcmSelect>
                 <AcmTextInput
-                    id="baseDomainResourceGroupName"
+                    id="baseboardManagementControllerAddress"
                     label={t('createBareMetalAsset.address.label')}
                     placeholder={t('createBareMetalAsset.address.placeholder')}
-                    value={bareMetalAsset.spec?.bmc.address}
+                    value={bareMetalAsset.spec!.bmc.address}
                     onChange={(address) => {
                         updateBareMetalAsset((bareMetalAsset) => {
                             bareMetalAsset.spec!.bmc.address = address
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'name')}
+                    validation={(value) => validateField(value, 'address')}
                 />
                 <AcmTextInput
                     id="username"
@@ -192,7 +191,6 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'username')}
                 />
                 <AcmTextInput
                     id="password"
@@ -206,7 +204,6 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'password')}
                     type='password'
                 />
                 <AcmTextInput
