@@ -44,7 +44,6 @@ const mockProjectResponse: Project = {
         selfLink: '/apis/project.openshift.io/v1/projectrequests/foobar',
         uid: 'f628792b-79d2-4c41-a07a-c7f1afac5e8a',
         resourceVersion: '16251055',
-        creationTimestamp: '2020-11-04T15:26:07Z',
         annotations: {
             'openshift.io/description': '',
             'openshift.io/display-name': '',
@@ -53,79 +52,15 @@ const mockProjectResponse: Project = {
             'openshift.io/sa.scc.supplemental-groups': '1000630000/10000',
             'openshift.io/sa.scc.uid-range': '1000630000/10000',
         },
-        managedFields: [
-            {
-                manager: 'cluster-policy-controller',
-                operation: 'Update',
-                apiVersion: 'v1',
-                time: '2020-11-04T15:26:07Z',
-                fieldsType: 'FieldsV1',
-                fieldsV1: {
-                    'f:metadata': {
-                        'f:annotations': {
-                            'f:openshift.io/sa.scc.mcs': {},
-                            'f:openshift.io/sa.scc.supplemental-groups': {},
-                            'f:openshift.io/sa.scc.uid-range': {},
-                        },
-                    },
-                },
-            },
-            {
-                manager: 'openshift-apiserver',
-                operation: 'Update',
-                apiVersion: 'v1',
-                time: '2020-11-04T15:26:07Z',
-                fieldsType: 'FieldsV1',
-                fieldsV1: {
-                    'f:metadata': {
-                        'f:annotations': {
-                            '.': {},
-                            'f:openshift.io/description': {},
-                            'f:openshift.io/display-name': {},
-                            'f:openshift.io/requester': {},
-                        },
-                    },
-                    'f:status': { 'f:phase': {} },
-                },
-            },
-            {
-                manager: 'openshift-controller-manager',
-                operation: 'Update',
-                apiVersion: 'v1',
-                time: '2020-11-04T15:26:07Z',
-                fieldsType: 'FieldsV1',
-                fieldsV1: { 'f:spec': { 'f:finalizers': {} } },
-            },
-        ],
+
     },
-    spec: { finalizers: ['kubernetes'] },
-    status: { phase: 'Active' },
 }
 const mockManagedClusterResponse: ManagedCluster = {
     apiVersion: 'cluster.open-cluster-management.io/v1',
     kind: 'ManagedCluster',
     metadata: {
-        creationTimestamp: '2020-11-04T15:26:08Z',
-        generation: 1,
         labels: { cloud: 'auto-detect', environment: '', name: 'foobar', vendor: 'auto-detect' },
-        managedFields: [
-            {
-                apiVersion: 'cluster.open-cluster-management.io/v1',
-                fieldsType: 'FieldsV1',
-                fieldsV1: {
-                    'f:metadata': {
-                        'f:labels': { '.': {}, 'f:cloud': {}, 'f:environment': {}, 'f:name': {}, 'f:vendor': {} },
-                    },
-                    'f:spec': { '.': {}, 'f:hubAcceptsClient': {} },
-                },
-                manager: 'axios',
-                operation: 'Update',
-                time: '2020-11-04T15:26:07Z',
-            },
-        ],
         name: 'foobar',
-        resourceVersion: '16251075',
-        selfLink: '/apis/cluster.open-cluster-management.io/v1/managedclusters/foobar',
         uid: 'e60ef618-324b-49d4-8a28-48839c546565',
     },
     spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
@@ -134,41 +69,8 @@ const mockKACResponse: KlusterletAddonConfig = {
     apiVersion: 'agent.open-cluster-management.io/v1',
     kind: 'KlusterletAddonConfig',
     metadata: {
-        creationTimestamp: '2020-11-04T15:26:08Z',
-        generation: 1,
-        managedFields: [
-            {
-                apiVersion: 'agent.open-cluster-management.io/v1',
-                fieldsType: 'FieldsV1',
-                fieldsV1: {
-                    'f:spec': {
-                        '.': {},
-                        'f:applicationManager': { '.': {}, 'f:enabled': {} },
-                        'f:certPolicyController': { '.': {}, 'f:enabled': {} },
-                        'f:clusterLabels': {
-                            '.': {},
-                            'f:cloud': {},
-                            'f:environment': {},
-                            'f:name': {},
-                            'f:vendor': {},
-                        },
-                        'f:clusterName': {},
-                        'f:clusterNamespace': {},
-                        'f:iamPolicyController': { '.': {}, 'f:enabled': {} },
-                        'f:policyController': { '.': {}, 'f:enabled': {} },
-                        'f:searchCollector': { '.': {}, 'f:enabled': {} },
-                        'f:version': {},
-                    },
-                },
-                manager: 'axios',
-                operation: 'Update',
-                time: '2020-11-04T15:26:08Z',
-            },
-        ],
         name: 'foobar',
         namespace: 'foobar',
-        resourceVersion: '16251082',
-        selfLink: '/apis/agent.open-cluster-management.io/v1/namespaces/foobar/klusterletaddonconfigs/foobar',
         uid: 'fba00095-386b-4d68-b2da-97003bc6a987',
     },
     spec: {
@@ -187,10 +89,8 @@ const mockKACResponse: KlusterletAddonConfig = {
 describe('ImportCluster', () => {
     const Component = () => {
         return (
-            <MemoryRouter initialEntries={['/cluster-management/clusters/import']}>
-                <Route path="/cluster-management/clusters/import">
-                    <ImportClusterPage />
-                </Route>
+            <MemoryRouter>
+                <ImportClusterPage />
             </MemoryRouter>
         )
     }
@@ -202,17 +102,17 @@ describe('ImportCluster', () => {
         expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
-    // test('can create resources', async () => {
-    //     const projectNock = nockCreate(projectRequests, mockProject, mockProjectResponse)
-    //     const managedClusterNock = nockCreate(managedClusters, mockManagedCluster, mockManagedClusterResponse)
-    //     const kacNock = nockCreate(klusterletAddonConfigs, mockKAC, mockKACResponse)
+    test('can create resources', async () => {
+        const projectNock = nockCreate(projectRequests, mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(managedClusters, mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(klusterletAddonConfigs, mockKAC, mockKACResponse)
 
-    //     const { getByTestId } = render(<Component />)
-    //     userEvent.type(getByTestId('clusterName-label'), 'foobar')
-    //     userEvent.click(getByTestId('submit'))
+        const { getByTestId } = render(<Component />)
+        userEvent.type(getByTestId('clusterName'), 'foobar')
+        userEvent.click(getByTestId('submit'))
 
-    //     await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-    //     await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-    //     await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
-    // })
+        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+    })
 })
