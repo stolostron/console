@@ -31,13 +31,13 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
             cma.stopPolling()
             mca.stopPolling()
         }
-        return stopPollingFn()
+        return stopPollingFn
     }, [cma.startPolling, cma.stopPolling, mca.startPolling, mca.stopPolling, cma, mca])
 
     if (cma.loading || mca.loading) {
         return <AcmLoadingPage />
     } else if (cma.error) {
-        return <ErrorPage error={cma.error}/>
+        return <ErrorPage error={cma.error} />
     } else if (mca.error) {
         return <ErrorPage error={mca.error} />
     } else if (!cma.data?.items || cma.data.items.length === 0 || !mca.data?.items || mca.data.items.length === 0) {
@@ -48,7 +48,7 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         )
     }
 
-   return (
+    return (
         <ClusterSettingsTable
             clusterManagementAddOns={cma.data.items}
             managedClusterAddOns={mca.data.items}
@@ -74,13 +74,15 @@ export function ClusterSettingsTable(props: {
             header: 'Status',
             cell: (item: ClusterManagementAddOn) => {
                 const status = getDisplayStatus(item)
-                return <span style={{ whiteSpace: 'nowrap' }} key="2">
-                        {(status === 'Available') && <CheckIcon color="green" key="available-icon" />}
-                        {(status === 'Disabled') && <MinusCircleIcon color="grey" key="disabled-icon" />}
-                        {(status === 'Progressing') && <InProgressIcon color="grey" key="progressing-icon"/>}
-                        {(status === 'Degraded') && <MinusCircleIcon color="red" key="degraded-icon" />}
-                    <span key="status">&nbsp; {status}</span>
-                </span>
+                return (
+                    <span style={{ whiteSpace: 'nowrap' }} key="2">
+                        {status === 'Available' && <CheckIcon color="green" key="available-icon" />}
+                        {status === 'Disabled' && <MinusCircleIcon color="grey" key="disabled-icon" />}
+                        {status === 'Progressing' && <InProgressIcon color="grey" key="progressing-icon" />}
+                        {status === 'Degraded' && <MinusCircleIcon color="red" key="degraded-icon" />}
+                        <span key="status">&nbsp; {status}</span>
+                    </span>
+                )
             },
             search: (item: ClusterManagementAddOn) => {
                 return getDisplayStatus(item)
@@ -91,44 +93,43 @@ export function ClusterSettingsTable(props: {
             cell: getDisplayMessage,
         },
     ]
-    
+
     function keyFn(clusterManagementAddOn: ClusterManagementAddOn) {
         return clusterManagementAddOn.metadata?.uid || (clusterManagementAddOn.metadata.name as string)
     }
-   
 
     function getDisplayStatus(cma: ClusterManagementAddOn): string {
         const mcaStatus = props.managedClusterAddOns?.find((mca) => mca.metadata.name === cma.metadata.name)
         if (mcaStatus?.status?.conditions === undefined) {
-            return "Disabled"
+            return 'Disabled'
         }
         const managedClusterAddOnConditionDegraded = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Degraded'
         )
         if (managedClusterAddOnConditionDegraded?.status === 'True') {
-            return "Degraded"
+            return 'Degraded'
         }
         const managedClusterAddOnConditionProgressing = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Progressing'
         )
         if (managedClusterAddOnConditionProgressing?.status === 'True') {
-            return "Progressing"
+            return 'Progressing'
         }
         const managedClusterAddOnConditionAvailable = mcaStatus?.status.conditions.find(
             (condition) => condition.type === 'Available'
         )
         if (managedClusterAddOnConditionAvailable?.status === 'True') {
-            return "Available"
+            return 'Available'
         }
         if (
             managedClusterAddOnConditionAvailable?.status === 'False' ||
             managedClusterAddOnConditionProgressing?.status === 'False' ||
             managedClusterAddOnConditionDegraded?.status === 'False'
         ) {
-            return "Progressing"
+            return 'Progressing'
         }
 
-        return "Unknown"
+        return 'Unknown'
     }
 
     function getDisplayMessage(cma: ClusterManagementAddOn): ReactNode {
