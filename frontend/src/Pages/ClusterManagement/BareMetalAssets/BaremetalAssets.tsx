@@ -166,7 +166,6 @@ export function BareMetalAssetsTable(props: {
                         })
                     } },
                 ]}
-                emptyState={<AcmEmptyState message= '' title="No bare metal assets found" />}
             />
         </AcmPageCard>
     )
