@@ -20,6 +20,7 @@ import { buildSchema } from 'type-graphql'
 import { URL } from 'url'
 import { promisify } from 'util'
 import { BareMetalAssetResolver } from './entities/bare-metal-asset'
+import { DiscoveredClusterResolver } from './entities/discovered-cluster'
 import { ClusterDeploymentResolver } from './entities/cluster-deployment'
 import { ClusterImageSetResolver } from './entities/cluster-image-set'
 import { ClusterManagementAddOnResolver } from './entities/cluster-management-addon'
@@ -357,6 +358,7 @@ export async function startServer(): Promise<FastifyInstance> {
             ProviderConnectionsResolver,
             ClusterManagementAddOnResolver,
             BareMetalAssetResolver,
+            DiscoveredClusterResolver
         ],
         emitSchemaFile: !['production', 'test'].includes(process.env.NODE_ENV),
     })

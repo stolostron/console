@@ -16,6 +16,30 @@ export class Metadata {
 
     @Field((type) => [String])
     labels: string[]
+
+    @Field(type => [OwnerReferences], {nullable: true})
+    ownerReferences?: OwnerReferences[];
+}
+
+@ObjectType()
+export class OwnerReferences  {
+    @Field()
+    apiVersion: string
+
+    @Field()
+    blockOwnerDeletion: boolean
+
+    @Field()
+    controller: boolean
+
+    @Field()
+    kind: string
+
+    @Field()
+    name: string
+
+    @Field()
+    uid: string
 }
 
 @Resolver((of) => Metadata)
