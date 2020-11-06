@@ -1,8 +1,8 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { ClusterSettingsTable } from './ClusterSettings'
-import { ClusterManagementAddOn } from '../../../../lib/useClusterManagementAddOn'
-import { ManagedClusterAddOn } from '../../../../lib/useManagedClusterAddOn'
+import { ClusterManagementAddOn } from '../../../../library/resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../../../../library/resources/managed-cluster-add-on'
 
 test('clusters details page', () => {
     const clusterManagementAddOns: ClusterManagementAddOn[] = [
