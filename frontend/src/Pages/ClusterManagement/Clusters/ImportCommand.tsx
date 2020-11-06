@@ -10,7 +10,7 @@ import {
     AcmAlert,
 } from '@open-cluster-management/ui-components'
 import { Title, AlertVariant } from '@patternfly/react-core'
-import { secretMethods } from '../../../lib/Secret'
+import { secretMethods } from '../../../library/resources/secret'
 import { AxiosResponse } from 'axios'
 
 export function ImportCommandPage() {
@@ -77,7 +77,7 @@ async function pollImportYamlSecret(clusterName: string) {
     let importYamlSecret: AxiosResponse
 
     const poll = async (resolve: any, reject: any) => {
-        importYamlSecret = await secretMethods.getNamespaceResource(clusterName, `${clusterName}-import`)
+        importYamlSecret = await secretMethods.get(clusterName, `${clusterName}-import`)
         if ((!importYamlSecret || importYamlSecret.status === 404) && count < 10) {
             count += 1
             setTimeout(poll, 500, resolve, reject)

@@ -6,9 +6,10 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 
-import { useManagedClusterInfos, NodeInfo } from '../../../../lib/ManagedClusterInfo'
+import { NodeInfo } from '../../../../library/resources/managed-cluster-info'
 import React, { useEffect, ReactNode } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useManagedClusterInfos } from '../../../../lib/useManagedClusterInfo'
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
     const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)

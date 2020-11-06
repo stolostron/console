@@ -5,21 +5,19 @@ import {
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-icon'
-import { useClusterManagementAddons, ClusterManagementAddOn } from '../../../../lib/ClusterManagementAddOn'
-import {
-    ManagedClusterAddOn,
-    useManagedClusterAddOns as GetManagedClusterAddOns,
-} from '../../../../lib/ManagedClusterAddOn'
+import { useClusterManagementAddons } from '../../../../lib/useClusterManagementAddOn'
+import { useManagedClusterAddOns } from '../../../../lib/useManagedClusterAddOn'
 import React, { ReactNode, useEffect } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { ManagedClusterAddOn } from '../../../../library/resources/managed-cluster-add-on'
+import { ClusterManagementAddOn } from '../../../../library/resources/cluster-management-add-on'
 
 export function ClustersSettingsPageContent(props: { name: string; namespace: string }) {
     const cma = useClusterManagementAddons()
-    const mca = GetManagedClusterAddOns(props.namespace)
+    const mca = useManagedClusterAddOns(props.namespace)
     const refresh = () => {
         cma.refresh()
         mca.refresh()

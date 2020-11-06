@@ -2,9 +2,9 @@ import React from 'react'
 import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor, act } from '@testing-library/react'
 import { ImportCommandPage } from './ImportCommand'
-import { secretMethods } from '../../../lib/Secret'
+import { secretMethods } from '../../../library/resources/secret'
 
-jest.mock('../../../lib/Secret', () => ({ secretMethods: { getNamespaceResource: jest.fn() } }))
+jest.mock('../../../library/resources/secret', () => ({ secretMethods: { get: jest.fn() } }))
 
 describe('ImportCommand', () => {
     jest.setTimeout(15000)
@@ -19,7 +19,7 @@ describe('ImportCommand', () => {
     }
 
     test('renders import command', async () => {
-        secretMethods.getNamespaceResource.mockResolvedValueOnce({
+        secretMethods.get.mockResolvedValueOnce({
             data: {
                 kind: 'Secret',
                 apiVersion: 'v1',
@@ -95,7 +95,7 @@ describe('ImportCommand', () => {
         expect(getByTestId('import-command')).toBeInTheDocument()
     })
     test('renders loading state', async () => {
-        secretMethods.getNamespaceResource.mockResolvedValueOnce({
+        secretMethods.get.mockResolvedValueOnce({
             data: {
                 kind: 'Secret',
                 apiVersion: 'v1',
@@ -171,7 +171,7 @@ describe('ImportCommand', () => {
         await act(() => new Promise((resolve) => setTimeout(() => resolve(), 0)))
     })
     test('renders error state', async () => {
-        secretMethods.getNamespaceResource.mockResolvedValue({
+        secretMethods.get.mockResolvedValue({
             data: {
                 kind: 'Status',
                 apiVersion: 'v1',

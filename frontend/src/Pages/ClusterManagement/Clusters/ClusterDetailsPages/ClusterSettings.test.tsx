@@ -1,8 +1,8 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { ClusterSettingsTable } from './ClusterSettings'
-import { ClusterManagementAddOn} from '../../../../lib/ClusterManagementAddOn'
-import { ManagedClusterAddOn} from '../../../../lib/ManagedClusterAddOn'
+import { ClusterManagementAddOn } from '../../../../library/resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../../../../library/resources/managed-cluster-add-on'
 
 test('clusters details page', () => {
     const clusterManagementAddOns: ClusterManagementAddOn[] = [
@@ -12,7 +12,7 @@ test('clusters details page', () => {
             metadata: {
                 uid: '',
                 name: 'application-manager',
-                labels: {'test':'123'},
+                labels: { test: '123' },
             },
             spec: {
                 addOnConfiguration: {
@@ -20,7 +20,7 @@ test('clusters details page', () => {
                     crdName: 'klusterletaddonconfig',
                 },
                 addOnMeta: {
-                    displayName: "Application Manager",
+                    displayName: 'Application Manager',
                     description: '',
                 },
             },
@@ -33,18 +33,19 @@ test('clusters details page', () => {
             metadata: {
                 uid: '',
                 name: 'application-manager',
-                namespace: 'test-cluster'
+                namespace: 'test-cluster',
             },
-            spec: {
-            },
+            spec: {},
             status: {
-                conditions: [{
-                    lastTransitionTime: '',
-                    message: 'progressing',
-                    reason: 'progressing',
-                    status: 'true',
-                    type: 'progressing',
-                }],
+                conditions: [
+                    {
+                        lastTransitionTime: '',
+                        message: 'progressing',
+                        reason: 'progressing',
+                        status: 'true',
+                        type: 'progressing',
+                    },
+                ],
                 addOnMeta: {
                     displayName: 'application-manager',
                     description: 'application-manager description',
@@ -52,10 +53,16 @@ test('clusters details page', () => {
                 addOnConfiguration: {
                     crdName: 'klusterletaddonconfig',
                     crName: 'test-cluster',
-                }
-            }
+                },
+            },
         },
     ]
-    const { getByText } = render(<ClusterSettingsTable clusterManagementAddOns={clusterManagementAddOns} managedClusterAddOns={managedClusterAddOns} refresh={()=>{}}/>)
+    const { getByText } = render(
+        <ClusterSettingsTable
+            clusterManagementAddOns={clusterManagementAddOns}
+            managedClusterAddOns={managedClusterAddOns}
+            refresh={() => {}}
+        />
+    )
     expect(getByText(managedClusterAddOns[0].metadata.name!)).toBeInTheDocument()
 })

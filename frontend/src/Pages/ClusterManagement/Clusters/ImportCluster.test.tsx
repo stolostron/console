@@ -1,27 +1,46 @@
-import React from 'react'
-import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ImportClusterPage } from './ImportCluster'
-import { Project, ProjectRequest, projectRequestMethods } from '../../../lib/Project'
-import { ManagedCluster, managedClusterMethods } from '../../../lib/ManagedCluster'
-import { KlusterletAddonConfig, klusterletAddonConfigMethodss } from '../../../lib/KlusterletAddonConfig'
+import React from 'react'
+import { MemoryRouter } from 'react-router-dom'
+import {
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+} from '../../../library/resources/klusterlet-add-on-config'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+} from '../../../library/resources/managed-cluster'
 import { nockCreate } from '../../../lib/nock-util'
-import * as nock from 'nock'
+import {
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+} from '../../../library/resources/project'
+import { ImportClusterPage } from './ImportCluster'
 
-const mockProject: ProjectRequest = { metadata: { name: 'foobar' } }
+const mockProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: 'foobar' },
+}
+
 const mockManagedCluster: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
     metadata: {
         name: 'foobar',
         labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', environment: '' },
     },
     spec: { hubAcceptsClient: true },
 }
-const mockKAC: KlusterletAddonConfig = {
-    apiVersion: 'agent.open-cluster-management.io/v1',
-    kind: 'KlusterletAddonConfig',
+const mockKlusterletAddonConfig: KlusterletAddonConfig = {
+    apiVersion: KlusterletAddonConfigApiVersion,
+    kind: KlusterletAddonConfigKind,
     metadata: { name: 'foobar', namespace: 'foobar' },
     spec: {
         clusterName: 'foobar',
@@ -37,8 +56,8 @@ const mockKAC: KlusterletAddonConfig = {
 }
 
 const mockProjectResponse: Project = {
-    kind: 'Project',
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
     metadata: {
         name: 'foobar',
         selfLink: '/apis/project.openshift.io/v1/projectrequests/foobar',
@@ -64,7 +83,7 @@ const mockManagedClusterResponse: ManagedCluster = {
     },
     spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
 }
-const mockKACResponse: KlusterletAddonConfig = {
+const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     apiVersion: 'agent.open-cluster-management.io/v1',
     kind: 'KlusterletAddonConfig',
     metadata: {
@@ -102,9 +121,9 @@ describe('ImportCluster', () => {
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
     test('can create resources', async () => {
-        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterResponse)
-        const kacNock = nockCreate(klusterletAddonConfigMethodss, mockKAC, mockKACResponse)
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const klusterletAddonConfigNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
 
         const { getByTestId } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
@@ -112,6 +131,6 @@ describe('ImportCluster', () => {
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(klusterletAddonConfigNock.isDone()).toBeTruthy())
     })
 })
