@@ -38,22 +38,24 @@ export function ImportClusterPageContent() {
     const [clusterName, setClusterName] = useState<string>('')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
+    const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [errors, setErrors] = useState<AxiosResponse[]>([])
     const [loading, setLoading] = useState<boolean>(false)
 
     const onSubmit = async () => {
         setLoading(true)
-        const clusterLabels = { cloud: cloudLabel ?? '', vendor: 'auto-detect', name: clusterName, environment: environmentLabel ?? '' }
+        /* istanbul ignore next */
+        const clusterLabels = { cloud: cloudLabel ?? '', vendor: 'auto-detect', name: clusterName, environment: environmentLabel ?? '', ...additionalLabels }
         const projectResponse = await createProject(clusterName)
         let errors = []
         if (projectResponse.status === 201 || projectResponse.status === 409) {
-            const response = await Promise.all([
+            const responses = await Promise.all([
                 createKlusterletAddonConfig({ clusterName, clusterLabels}),
                 createManagedCluster({ clusterName, clusterLabels })
             ])
-            errors = response.filter(res => (res.status < 200 || res.status >= 300)) ?? []
-            errors.length > 0 && await deleteCreatedResources(response)
+            /* istanbul ignore next */
+            errors = responses.filter(res => (res.status < 200 || res.status >= 300)) ?? []
+            errors.length > 0 && await deleteCreatedResources(responses)
         } else {
             errors.push(projectResponse)
         }
@@ -81,7 +83,7 @@ export function ImportClusterPageContent() {
                     id="clusterName"
                     label={t('import.form.clusterName.label')}
                     value={clusterName}
-                    onChange={(name) => setClusterName(name ?? '')}
+                    onChange={(name = '') => setClusterName(name)}
                     placeholder={t('import.form.clusterName.placeholder')}
                     required
                 />
@@ -90,7 +92,7 @@ export function ImportClusterPageContent() {
                     toggleId="cloudLabel-button"
                     label={t('import.form.cloud.label')}
                     value={cloudLabel}
-                    onChange={(label) => setCloudLabel(label ?? '')}
+                    onChange={(label = '') => setCloudLabel(label)}
                 >
                     {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(key => <SelectOption key={key} value={key}>{key}</SelectOption>)}
                 </AcmSelect>

@@ -6,7 +6,7 @@ import { ImportClusterPage } from './ImportCluster'
 import { Project, ProjectRequest, projectRequestMethods } from '../../../lib/Project'
 import { ManagedCluster, managedClusterMethods } from '../../../lib/ManagedCluster'
 import { KlusterletAddonConfig, klusterletAddonConfigMethods } from '../../../lib/KlusterletAddonConfig'
-import { nockCreate } from '../../../lib/nock-util'
+import { nockCreate, nockDelete } from '../../../lib/nock-util'
 
 const mockProject: ProjectRequest = { metadata: { name: 'foobar' } }
 const mockManagedCluster: ManagedCluster = {
@@ -14,7 +14,7 @@ const mockManagedCluster: ManagedCluster = {
     kind: 'ManagedCluster',
     metadata: {
         name: 'foobar',
-        labels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev' },
+        labels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
     },
     spec: { hubAcceptsClient: true },
 }
@@ -25,7 +25,7 @@ const mockKAC: KlusterletAddonConfig = {
     spec: {
         clusterName: 'foobar',
         clusterNamespace: 'foobar',
-        clusterLabels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev' },
+        clusterLabels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
         applicationManager: { enabled: true },
         policyController: { enabled: true },
         searchCollector: { enabled: true },
@@ -57,7 +57,7 @@ const mockManagedClusterResponse: ManagedCluster = {
     apiVersion: 'cluster.open-cluster-management.io/v1',
     kind: 'ManagedCluster',
     metadata: {
-        labels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect' },
+        labels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         name: 'foobar',
         uid: 'e60ef618-324b-49d4-8a28-48839c546565',
     },
@@ -74,7 +74,7 @@ const mockKACResponse: KlusterletAddonConfig = {
     spec: {
         applicationManager: { enabled: true },
         certPolicyController: { enabled: true },
-        clusterLabels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect' },
+        clusterLabels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         clusterName: 'foobar',
         clusterNamespace: 'foobar',
         iamPolicyController: { enabled: true },
@@ -110,17 +110,17 @@ describe('ImportCluster', () => {
         const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(klusterletAddonConfigMethods, mockKAC, mockKACResponse)
 
-        const { getByTestId, getByText, getByRole } = render(<Component />)
+        const { getByTestId, getByText, queryByRole } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('cloudLabel-button'))
         userEvent.click(getByText('AWS'))
         userEvent.click(getByTestId('environmentLabel-button'))
         userEvent.click(getByText('dev'))
-        // userEvent.click(getByTestId('additionalLabels-button'))
-        // userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+        userEvent.click(getByTestId('additionalLabels-button'))
+        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
 
-        await waitFor(() => expect(getByRole('progressbar')).toBeInTheDocument())
+        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
@@ -133,14 +133,16 @@ describe('ImportCluster', () => {
 
         const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectErrorResponse, 401)
 
-        const { getByTestId, getByText, getByRole } = render(<Component />)
+        const { getByTestId, getByText, queryByRole } = render(<Component />)
 
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('submit'))
 
-        await waitFor(() => expect(getByRole('progressbar')).toBeInTheDocument())
+        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+
+        await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
 
         await waitFor(() => expect(getByText('401: invalid token')).toBeInTheDocument())
     })
@@ -159,6 +161,8 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('AWS'))
         userEvent.click(getByTestId('environmentLabel-button'))
         userEvent.click(getByText('dev'))
+        userEvent.click(getByTestId('additionalLabels-button'))
+        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
 
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())

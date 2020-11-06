@@ -6,7 +6,7 @@
     "dependencies": {
         "@apollo/client": "^3.2.5",
         "@kubernetes/client-node": "^0.12.3",
-        "@open-cluster-management/ui-components": "^0.1.43",
+        "@open-cluster-management/ui-components": "^0.1.48",
         "@patternfly/react-core": "^4.75.2",
         "@patternfly/react-table": "^4.19.5",
         "@types/react": "^16.9.55",
