@@ -6,8 +6,12 @@ import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
-} from '../../../lib/useKlusterletAddonConfig'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../lib/useManagedCluster'
+} from '../../../library/resources/klusterlet-add-on-config'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+} from '../../../library/resources/managed-cluster'
 import { nockCreate } from '../../../lib/nock-util'
 import {
     Project,

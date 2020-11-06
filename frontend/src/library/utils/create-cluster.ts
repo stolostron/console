@@ -6,8 +6,8 @@ import { providerConnectionMethods, ProviderConnection } from '../../lib/useProv
 import { ClusterDeployment } from '../resources/cluster-deployment'
 import { SecretApiVersion, SecretKind, secretMethods } from '../../lib/useSecret'
 import { clusterDeploymentMethods } from '../resources/cluster-deployment'
-import { createManagedCluster } from '../../lib/useManagedCluster'
-import { createKlusterletAddonConfig } from '../../lib/useKlusterletAddonConfig'
+import { createManagedCluster } from '../resources/managed-cluster'
+import { createKlusterletAddonConfig } from '../resources/klusterlet-add-on-config'
 import { ClusterCurator } from '../resources/cluster-curator'
 
 export async function getProviderConnection(curator: ClusterCurator) {
