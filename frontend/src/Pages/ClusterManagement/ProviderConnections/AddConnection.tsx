@@ -14,13 +14,13 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { Project, useProjects } from '../../../lib/Project'
+import { Project, useProjects } from '../../../lib/useProject'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
     providerConnectionMethods,
     setProviderConnectionProviderID,
-} from '../../../lib/ProviderConnection'
+} from '../../../lib/useProviderConnection'
 import { ProviderID, providers } from '../../../lib/providers'
 import { NavigationPath } from '../ClusterManagement'
 

@@ -243,8 +243,6 @@ export function getResourcePath(options: {
         path = join(path, 'namespaces', namespace)
     }
 
-    console.log('PATH', path)
-
     return path
 }
 

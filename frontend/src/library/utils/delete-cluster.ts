@@ -1,4 +1,4 @@
-import { managedClusterMethods } from '../../lib/ManagedCluster'
+import { managedClusterMethods } from '../../lib/useManagedCluster'
 import { clusterDeploymentMethods } from '../resources/cluster-deployment'
 
 export async function deleteCluster(clusterName: string) {

@@ -10,7 +10,7 @@ import {
     AcmAlert,
 } from '@open-cluster-management/ui-components'
 import { Title, AlertVariant } from '@patternfly/react-core'
-import { secretMethods } from '../../../lib/Secret'
+import { secretMethods } from '../../../lib/useSecret'
 import { AxiosResponse } from 'axios'
 
 export function ImportCommandPage() {

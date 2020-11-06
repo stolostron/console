@@ -1,13 +1,13 @@
 import { V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { InstallConfig } from '../resources/install-config'
-import { ProjectRequestApiVersion, ProjectRequestKind, projectRequestMethods } from '../../lib/Project'
-import { providerConnectionMethods, ProviderConnection } from '../../lib/ProviderConnection'
+import { ProjectRequestApiVersion, ProjectRequestKind, projectRequestMethods } from '../../lib/useProject'
+import { providerConnectionMethods, ProviderConnection } from '../../lib/useProviderConnection'
 import { ClusterDeployment } from '../resources/cluster-deployment'
-import { SecretApiVersion, SecretKind, secretMethods } from '../../lib/Secret'
+import { SecretApiVersion, SecretKind, secretMethods } from '../../lib/useSecret'
 import { clusterDeploymentMethods } from '../resources/cluster-deployment'
-import { createManagedCluster } from '../../lib/ManagedCluster'
-import { createKlusterletAddonConfig } from '../../lib/KlusterletAddonConfig'
+import { createManagedCluster } from '../../lib/useManagedCluster'
+import { createKlusterletAddonConfig } from '../../lib/useKlusterletAddonConfig'
 import { ClusterCurator } from '../resources/cluster-curator'
 
 export async function getProviderConnection(curator: ClusterCurator) {

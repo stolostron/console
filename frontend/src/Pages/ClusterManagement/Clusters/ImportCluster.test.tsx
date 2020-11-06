@@ -6,8 +6,8 @@ import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
-} from '../../../lib/KlusterletAddonConfig'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../lib/ManagedCluster'
+} from '../../../lib/useKlusterletAddonConfig'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../lib/useManagedCluster'
 import { nockCreate } from '../../../lib/nock-util'
 import {
     Project,
@@ -16,7 +16,7 @@ import {
     ProjectRequest,
     ProjectRequestApiVersion,
     ProjectRequestKind,
-} from '../../../lib/Project'
+} from '../../../lib/useProject'
 import { ImportClusterPage } from './ImportCluster'
 
 const mockProject: ProjectRequest = {

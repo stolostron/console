@@ -34,7 +34,6 @@ export function nockClusterList<Resource extends IResource>(
     resources: Resource[],
     labels?: string[]
 ) {
-    console.log('NOCK', join('/cluster-management/proxy', getResourcePath(resourceMethods)))
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join('/cluster-management/proxy', getResourcePath(resourceMethods))
     )

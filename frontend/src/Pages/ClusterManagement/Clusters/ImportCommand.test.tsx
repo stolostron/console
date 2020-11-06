@@ -2,9 +2,9 @@ import React from 'react'
 import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor, act } from '@testing-library/react'
 import { ImportCommandPage } from './ImportCommand'
-import { secretMethods } from '../../../lib/Secret'
+import { secretMethods } from '../../../lib/useSecret'
 
-jest.mock('../../../lib/Secret', () => ({ secretMethods: { get: jest.fn() } }))
+jest.mock('../../../lib/useSecret', () => ({ secretMethods: { get: jest.fn() } }))
 
 describe('ImportCommand', () => {
     jest.setTimeout(15000)
