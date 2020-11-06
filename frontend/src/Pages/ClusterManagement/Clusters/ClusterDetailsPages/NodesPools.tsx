@@ -6,7 +6,7 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 
-import { useManagedClusterInfos, NodeInfo } from '../../../../lib/useManagedClusterInfo'
+import { useManagedClusterInfos, NodeInfo } from '../../../../library/resources/managed-cluster-info'
 import React, { useEffect, ReactNode } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
 

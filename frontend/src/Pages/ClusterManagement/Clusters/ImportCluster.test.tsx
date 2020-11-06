@@ -20,7 +20,7 @@ import {
     ProjectRequest,
     ProjectRequestApiVersion,
     ProjectRequestKind,
-} from '../../../lib/useProject'
+} from '../../../library/resources/project'
 import { ImportClusterPage } from './ImportCluster'
 
 const mockProject: ProjectRequest = {

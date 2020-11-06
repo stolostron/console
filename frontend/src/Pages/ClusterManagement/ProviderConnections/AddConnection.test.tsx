@@ -1,7 +1,7 @@
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
 import { nockClusterList } from '../../../lib/nock-util'
-import { Project, projectMethods } from '../../../lib/useProject'
+import { Project, projectMethods } from '../../../library/resources/project'
 import { AddConnectionPage } from './AddConnection'
 
 const mockProjects: Project[] = [

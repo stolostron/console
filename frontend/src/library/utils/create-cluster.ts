@@ -1,7 +1,7 @@
 import { V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { InstallConfig } from '../resources/install-config'
-import { ProjectRequestApiVersion, ProjectRequestKind, projectRequestMethods } from '../../lib/useProject'
+import { ProjectRequestApiVersion, ProjectRequestKind, projectRequestMethods } from '../resources/project'
 import { providerConnectionMethods, ProviderConnection } from '../../lib/useProviderConnection'
 import { ClusterDeployment } from '../resources/cluster-deployment'
 import { SecretApiVersion, SecretKind, secretMethods } from '../../lib/useSecret'

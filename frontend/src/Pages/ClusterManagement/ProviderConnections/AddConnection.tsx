@@ -14,7 +14,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { Project, useProjects } from '../../../lib/useProject'
+import { Project, useProjects } from '../../../library/resources/project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
