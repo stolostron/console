@@ -20,7 +20,7 @@ import {
     ProviderConnection,
     providerConnectionMethods,
     setProviderConnectionProviderID,
-} from '../../../lib/useProviderConnection'
+} from '../../../library/resources/provider-connection'
 import { ProviderID, providers } from '../../../lib/providers'
 import { NavigationPath } from '../ClusterManagement'
 

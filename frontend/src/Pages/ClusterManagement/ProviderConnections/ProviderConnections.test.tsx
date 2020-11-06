@@ -8,7 +8,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     providerConnectionMethods,
-} from '../../../lib/useProviderConnection'
+} from '../../../library/resources/provider-connection'
 import { ProviderConnectionsPage } from './ProviderConnections'
 
 const mockProviderConnection: ProviderConnection = {

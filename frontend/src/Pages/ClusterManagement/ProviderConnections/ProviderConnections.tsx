@@ -16,7 +16,7 @@ import {
     ProviderConnection,
     useProviderConnections,
     providerConnectionMethods,
-} from '../../../lib/useProviderConnection'
+} from '../../../library/resources/provider-connection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 

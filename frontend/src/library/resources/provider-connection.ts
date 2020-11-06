@@ -1,9 +1,9 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
-import { ResourceList } from '../library/resources/resource'
-import { resourceMethods } from '../library/utils/resource-methods'
-import { ProviderID } from './providers'
-import { useQuery } from './useQuery'
+import { ResourceList } from './resource'
+import { resourceMethods } from '../utils/resource-methods'
+import { ProviderID } from '../../lib/providers'
+import { useQuery } from '../../lib/useQuery'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
