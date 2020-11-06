@@ -7,7 +7,7 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
@@ -67,11 +67,13 @@ export function ProviderConnectionsPageContent() {
     // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
 
     return (
-        <ProviderConnectionsTable
-            providerConnections={data.items}
-            refresh={refresh}
-            deleteConnection={providerConnectionMethods.delete}
-        />
+        <AcmPageCard>
+            <ProviderConnectionsTable
+                providerConnections={data.items}
+                refresh={refresh}
+                deleteConnection={providerConnectionMethods.delete}
+            />
+        </AcmPageCard>
     )
 }
 
@@ -122,7 +124,7 @@ export function ProviderConnectionsTable(props: {
     const history = useHistory()
 
     return (
-        <PageSection variant={PageSectionVariants.light}>
+        <Fragment>
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -181,6 +183,6 @@ export function ProviderConnectionsTable(props: {
                     },
                 ]}
             />
-        </PageSection>
+        </Fragment>
     )
 }

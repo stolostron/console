@@ -38,7 +38,7 @@ export function ImportClusterPageContent() {
     const [clusterName, setClusterName] = useState<string>('')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
+    const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [errors, setErrors] = useState<AxiosResponse[]>([])
     const [loading, setLoading] = useState<boolean>(false)
 
