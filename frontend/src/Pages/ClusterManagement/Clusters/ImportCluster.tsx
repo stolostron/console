@@ -83,7 +83,7 @@ export function ImportClusterPageContent() {
                     id="clusterName"
                     label={t('import.form.clusterName.label')}
                     value={clusterName}
-                    onChange={(name = '') => setClusterName(name)}
+                    onChange={(name) => setClusterName(name)}
                     placeholder={t('import.form.clusterName.placeholder')}
                     required
                 />
@@ -92,7 +92,7 @@ export function ImportClusterPageContent() {
                     toggleId="cloudLabel-button"
                     label={t('import.form.cloud.label')}
                     value={cloudLabel}
-                    onChange={(label = '') => setCloudLabel(label)}
+                    onChange={(label) => setCloudLabel(label as string)}
                 >
                     {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(key => <SelectOption key={key} value={key}>{key}</SelectOption>)}
                 </AcmSelect>
