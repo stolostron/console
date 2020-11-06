@@ -6,7 +6,7 @@ import { ImportClusterPage } from './ImportCluster'
 import { Project, ProjectRequest, projectRequestMethods } from '../../../lib/Project'
 import { ManagedCluster, managedClusterMethods } from '../../../lib/ManagedCluster'
 import { KlusterletAddonConfig, klusterletAddonConfigMethods } from '../../../lib/KlusterletAddonConfig'
-import { nockCreate, nockDelete } from '../../../lib/nock-util'
+import { nockCreate } from '../../../lib/nock-util'
 
 const mockProject: ProjectRequest = { metadata: { name: 'foobar' } }
 const mockManagedCluster: ManagedCluster = {
