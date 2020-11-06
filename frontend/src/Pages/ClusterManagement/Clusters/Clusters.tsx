@@ -6,7 +6,7 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { useHistory, Link } from 'react-router-dom'
-import { DiscoveredCluster, DiscoveredClusters } from '../../../lib/DiscoveredCluster'
+import { DiscoveredCluster, useDiscoveredClusters, discoveredClusterMethods} from '../../../lib/DiscoveredCluster'
 import { Page, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
@@ -76,27 +76,27 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         search: 'info.name',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-                <a href={discoveredCluster.info.console} key="dcConsoleURL"><span key="dcNamelink">&nbsp; {discoveredCluster.info.name}</span></a>
+                <a href={discoveredCluster.info.console} key="dcConsoleURL"><span key="dcNamelink">{discoveredCluster.info.name}</span></a>
             </span>
         )
     },
     {
         header: 'Status',
-        sort: 'info.status',
-        search: 'info.status',
+        sort: 'info.state',
+        search: 'info.state',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                {discoveredCluster.info.status === 'Active' ? (
+                {discoveredCluster.info.state === 'ready' ? (
                     <CheckIcon color="green" key="ready-icon" />
                 ) : (
                     <Fragment key="ready-icon"></Fragment>
                 )}
-                {discoveredCluster.info.status !== 'Active' ? (
+                {discoveredCluster.info.state !== 'ready' ? (
                     <ExclamationIcon color="red" key="offline-icon" />
                 ) : (
                     <Fragment key="offline-icon"></Fragment>
                 )}
-                <span key="dcStatus">&nbsp; {discoveredCluster.info.status}</span>
+                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.info.state)}</span>
             </span>
         ),
     },
@@ -187,7 +187,7 @@ export function ClustersPage() {
 
 export function ClustersPageContent() {
     const managedClustersQuery = useManagedClusters()
-    const discoveredClustersQuery = DiscoveredClusters()
+    const discoveredClustersQuery = useDiscoveredClusters()
 
     useEffect(() => {
         managedClustersQuery.startPolling(10 * 1000)
@@ -209,7 +209,7 @@ export function ClustersPageContent() {
     return (
         <AcmPageCard>
             <ClustersTable
-                discoveredClusters={discoveredClustersQuery.data.items}
+                discoveredClusters={discoveredClustersQuery.data?.items}
                 managedClusters={managedClustersQuery.data?.items}
                 deleteCluster={managedClusterMethods.delete}
                 refresh={managedClustersQuery.refresh}
@@ -292,8 +292,13 @@ export function ClustersTable(props: {
                 key="discoveredClustersTable"
                 tableActions={[
                     {
-                        id: 'editDiscoveryConfigBtn',
-                        title: 'Edit filters for discovered clusters',
+                        id: 'editClusterDiscvoveryBtn',
+                        title: 'Edit cluster discovery',
+                        click: () => {}, // TODO: Make this button work
+                    },
+                    {
+                        id: 'disableClusterDiscvoveryBtn',
+                        title: 'Disable cluster discovery',
                         click: () => {}, // TODO: Make this button work
                     },
                 ]}
@@ -312,3 +317,8 @@ export function ClustersTable(props: {
         )
     }
 }
+
+function capitalizeFirstLetter(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  
