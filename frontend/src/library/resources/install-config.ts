@@ -30,7 +30,7 @@ export interface InstallConfig {
     metadata: {
         name: string
     }
-    baseDomain: string
+    baseDomain?: string
     controlPlane?: ControlPlane // oVirt, vsphere empty
     compute?: ControlPlane[] // oVirt, vsphere empty
     networking: {

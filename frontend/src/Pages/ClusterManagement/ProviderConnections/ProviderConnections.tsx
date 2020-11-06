@@ -80,7 +80,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 export function ProviderConnectionsTable(props: {
     providerConnections: ProviderConnection[]
     refresh: () => void
-    deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
+    deleteConnection: (name: string, namespace?: string) => Promise<unknown>
 }) {
     const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
@@ -161,7 +161,7 @@ export function ProviderConnectionsTable(props: {
                                 confirm: () => {
                                     props
                                         .deleteConnection(
-                                            providerConnection.metadata?.name,
+                                            providerConnection.metadata.name!,
                                             providerConnection.metadata?.namespace
                                         )
                                         .then(() => {

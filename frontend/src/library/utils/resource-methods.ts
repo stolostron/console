@@ -1,25 +1,12 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
 import Axios, { AxiosResponse, Method } from 'axios'
+import { join } from 'path'
+import { IResource, ResourceList } from '../resources/resource'
 
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 const token = process.env.CLUSTER_API_TOKEN
-const proxyPath =
-    process.env.BACKEND_PROXY_PATH === undefined ? '/cluster-management/proxy' : process.env.BACKEND_PROXY_PATH
-const namespacedPath =
-    process.env.BACKEND_NAMESPACED_PATH === undefined
-        ? '/cluster-management/namespaced'
-        : process.env.BACKEND_NAMESPACED_PATH
-
-export interface ResourceList<T> {
-    items: T[]
-}
-
-export interface IResource {
-    apiVersion?: string
-    kind?: string
-    metadata?: V1ObjectMeta
-}
+const proxyPath = process.env.BACKEND_PROXY_PATH ?? '/cluster-management/proxy'
+const namespacedPath = process.env.BACKEND_NAMESPACED_PATH ?? '/cluster-management/namespaced'
 
 export async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
     return await Axios.request<T>({
@@ -32,25 +19,24 @@ export async function restRequest<T>(method: Method, url: string, data?: object)
     })
 }
 
-export interface IResourceMethods<Resource> {
-    apiPath: string
-    plural: string
+export interface IResourceMethods<Resource extends IResource> {
+    apiVersion: string
+    kind: string
     create: (resource: Resource) => Promise<AxiosResponse<Resource>>
     delete: (name: string, namespace?: string) => Promise<AxiosResponse>
     get: (name: string, namespace?: string) => Promise<AxiosResponse<Resource>>
     list: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
     listCluster: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
     listNamespace: (namespace: string, labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
-    getNamespaceResource: (namespace: string, name: string) => Promise<AxiosResponse<Resource>>
 }
 
 export function resourceMethods<Resource extends IResource>(options: {
-    path: string
-    plural: string
+    apiVersion: string
+    kind: string
 }): IResourceMethods<Resource> {
     return {
-        apiPath: options.path,
-        plural: options.plural,
+        apiVersion: options.apiVersion,
+        kind: options.kind,
         create: (resource: Resource) => {
             return createResource<Resource>({
                 resource,
@@ -63,8 +49,9 @@ export function resourceMethods<Resource extends IResource>(options: {
             return deleteResource({
                 name,
                 namespace,
+                kind: options.kind,
                 apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
-                apiPath: options.path + '/' + options.plural,
+                apiVersion: options.apiVersion,
                 withCredentials: true,
                 token,
             })
@@ -73,8 +60,9 @@ export function resourceMethods<Resource extends IResource>(options: {
             return getResource<Resource>({
                 name,
                 namespace,
+                kind: options.kind,
                 apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
-                apiPath: options.path + '/' + options.plural,
+                apiVersion: options.apiVersion,
                 withCredentials: true,
                 token,
             })
@@ -82,7 +70,8 @@ export function resourceMethods<Resource extends IResource>(options: {
         list: (labels?: string[]) => {
             return listResources<Resource>({
                 apiUrl: `${process.env.REACT_APP_BACKEND}${namespacedPath}`,
-                apiPath: options.path + '/' + options.plural,
+                apiVersion: options.apiVersion,
+                kind: options.kind,
                 labels,
                 withCredentials: true,
                 token,
@@ -91,7 +80,8 @@ export function resourceMethods<Resource extends IResource>(options: {
         listCluster: (labels?: string[]) => {
             return listResources<Resource>({
                 apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
-                apiPath: options.path + '/' + options.plural,
+                apiVersion: options.apiVersion,
+                kind: options.kind,
                 labels,
                 withCredentials: true,
                 token,
@@ -100,20 +90,10 @@ export function resourceMethods<Resource extends IResource>(options: {
         listNamespace: (namespace: string, labels?: string[]) => {
             return listResources<Resource>({
                 apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
-                apiPath: options.path + '/' + options.plural,
+                apiVersion: options.apiVersion,
+                kind: options.kind,
                 namespace,
                 labels,
-                withCredentials: true,
-                token,
-            })
-        },
-        // TODO REMOVE
-        getNamespaceResource: function getSingleNamespaceResource(namespace: string, name: string) {
-            return getResource<Resource>({
-                name,
-                namespace,
-                apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
-                apiPath: options.path + '/' + options.plural,
                 withCredentials: true,
                 token,
             })
@@ -151,95 +131,56 @@ export function setResourceNamespace(resource: Partial<IResource>, namespace: st
     return (resource.metadata.namespace = namespace)
 }
 
-export function namespacedApiPath(apiPath: string, namespace: string) {
-    let path = apiPath
-    if (path.endsWith('/')) path = path.substr(0, path.length - 1)
-    const parts = path.split('/')
-    return [...parts.slice(0, parts.length - 1), 'namespaces', namespace, parts[parts.length - 1]].join('/')
-}
-
 export function createResource<Resource extends IResource>(options: {
-    resource: Resource
     apiUrl: string
+    resource: Resource
     withCredentials?: boolean
     token?: string
 }) {
-    // apiPath: options.path + '/' + options.plural,
-
-    let apiPath = options.resource.apiVersion
-    if (apiPath?.includes('/')) {
-        apiPath = '/apis' + apiPath
-    } else {
-        apiPath = '/api' + apiPath
-    }
-
-    let url = options.apiUrl
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    if (options.resource.metadata?.namespace) {
-        url += namespacedApiPath(apiPath, options.resource.metadata?.namespace)
-    } else {
-        url += apiPath
-    }
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
+    const { apiUrl, resource, withCredentials, token } = options
+    let url = apiUrl + getResourcePath(resource)
     return Axios.request<Resource>({
         method: 'POST',
         url,
-        data: options.resource,
+        data: resource,
         responseType: 'json',
-        withCredentials: options.withCredentials,
+        withCredentials: withCredentials,
         validateStatus: () => true,
-        headers: options.token ? { Authentication: `Bearer ${options.token}` } : undefined,
+        headers: token ? { Authentication: `Bearer ${token}` } : undefined,
     })
 }
 
 export function deleteResource(options: {
+    apiUrl: string
+    apiVersion: string
+    kind: string
     name: string
     namespace?: string
-    apiUrl: string
-    apiPath: string
     withCredentials?: boolean
     token?: string
 }) {
-    let url = options.apiUrl
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    if (options.namespace) {
-        url += namespacedApiPath(options.apiPath, options.namespace)
-    } else {
-        url += options.apiPath
-    }
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    url += '/' + options.name
-
+    const { apiUrl, apiVersion, kind, name, namespace, withCredentials, token } = options
+    let url = apiUrl + getResourceNamePath({ apiVersion, kind, metadata: { name, namespace } })
     return Axios.request({
         method: 'DELETE',
         url,
-        withCredentials: options.withCredentials,
+        withCredentials: withCredentials,
         validateStatus: () => true,
-        headers: options.token ? { Authentication: `Bearer ${options.token}` } : undefined,
+        headers: token ? { Authentication: `Bearer ${token}` } : undefined,
     })
 }
 
-export function listResources<Resource = unknown>(options: {
+export function listResources<Resource extends IResource>(options: {
     apiUrl: string
-    apiPath: string
+    apiVersion: string
+    kind: string
     namespace?: string
     withCredentials?: boolean
     token?: string
     labels?: string[] // TODO support Record<string,string>
 }) {
-    let url = options.apiUrl
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    if (options.namespace) {
-        url += namespacedApiPath(options.apiPath, options.namespace)
-    } else {
-        url += options.apiPath
-    }
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
+    const { apiUrl, apiVersion, kind, namespace, withCredentials, token } = options
+    let url = apiUrl + getResourcePath({ apiVersion, kind, metadata: { namespace } })
 
     if (options.labels) {
         url += '?labelSelector=' + options.labels.join(',')
@@ -249,40 +190,76 @@ export function listResources<Resource = unknown>(options: {
         method: 'GET',
         url,
         responseType: 'json',
-        withCredentials: options.withCredentials,
+        withCredentials: withCredentials,
         validateStatus: () => true,
-        headers: options.token ? { Authentication: `Bearer ${options.token}` } : undefined,
+        headers: token ? { Authentication: `Bearer ${token}` } : undefined,
     })
 }
 
 export function getResource<Resource = unknown>(options: {
     apiUrl: string
-    apiPath: string
+    apiVersion: string
+    kind: string
     name: string
     namespace?: string
     withCredentials?: boolean
     token?: string
 }) {
-    let url = options.apiUrl
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    if (options.namespace) {
-        url += namespacedApiPath(options.apiPath, options.namespace)
-    } else {
-        url += options.apiPath
-    }
-    if (url.endsWith('/')) url = url.substr(0, url.length - 1)
-
-    if (options.name) {
-        url += '/' + options.name
-    }
-
+    const { apiUrl, apiVersion, name, namespace, withCredentials, token } = options
+    const url = apiUrl + getResourceNamePath({ apiVersion, metadata: { name, namespace } })
     return Axios.request<Resource>({
         method: 'GET',
         url,
         responseType: 'json',
-        withCredentials: options.withCredentials,
+        withCredentials: withCredentials,
         validateStatus: () => true,
-        headers: options.token ? { Authentication: `Bearer ${options.token}` } : undefined,
+        headers: token ? { Authentication: `Bearer ${token}` } : undefined,
     })
+}
+
+export function getResourcePath(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { namespace?: string }
+}): string {
+    const { apiVersion } = options
+
+    let path: string
+    if (apiVersion?.includes('/')) {
+        path = join('/apis', apiVersion)
+    } else {
+        path = join('/api', apiVersion)
+    }
+
+    if (options.plural !== undefined) {
+        path = join(path, options.plural)
+    } else if (options.kind !== undefined) {
+        path = join(path, options.kind.toLowerCase() + 's')
+    }
+
+    const namespace = options.metadata?.namespace
+    if (namespace !== undefined) {
+        path = join(path, 'namespaces', namespace)
+    }
+
+    console.log('PATH', path)
+
+    return path
+}
+
+export function getResourceNamePath(options: {
+    apiVersion: string
+    kind?: string
+    plural?: string
+    metadata?: { name?: string; namespace?: string }
+}): string {
+    let path = getResourcePath(options)
+
+    const name = options.metadata?.name
+    if (name !== undefined) {
+        path = join(path, name)
+    }
+
+    return path
 }

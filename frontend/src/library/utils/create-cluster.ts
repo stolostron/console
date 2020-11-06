@@ -1,60 +1,38 @@
 import { V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { InstallConfig } from '../resources/install-config'
-import { projectRequestMethods } from '../../lib/Project'
+import { ProjectRequestApiVersion, ProjectRequestKind, projectRequestMethods } from '../../lib/Project'
 import { providerConnectionMethods, ProviderConnection } from '../../lib/ProviderConnection'
-import { secretMethods } from '../../lib/Secret'
+import { ClusterDeployment } from '../resources/cluster-deployment'
+import { SecretApiVersion, SecretKind, secretMethods } from '../../lib/Secret'
 import { clusterDeploymentMethods } from '../resources/cluster-deployment'
 import { createManagedCluster } from '../../lib/ManagedCluster'
 import { createKlusterletAddonConfig } from '../../lib/KlusterletAddonConfig'
+import { ClusterCurator } from '../resources/cluster-curator'
 
-interface ICreateClusterOptions {
-    clusterName: string
-    providerConnectionName: string
-    providerConnectionNamespace: string
-    baseDomain: string
-    clusterImageSetName: string
-    region: string
-    networking: {
-        clusterCidr: string
-        machineCidr: string
-        networkType: string
-        serviceCidr: string
-        hostPrefix: string
-    }
-    controlPlane: {
-        zones: string
-        instanceType: string
-        storage: number
-    }
-    workerPools: {
-        name: string
-        zones: string[]
-        instanceType: string
-        nodeCount: number
-        storage: number
-    }[]
-}
-
-export async function getProviderConnection(options: ICreateClusterOptions) {
-    let providerConnectionResult = await providerConnectionMethods.getNamespaceResource(
-        options.providerConnectionName,
-        options.providerConnectionNamespace
+export async function getProviderConnection(curator: ClusterCurator) {
+    let providerConnectionResult = await providerConnectionMethods.get(
+        curator.spec.job.providerConnection.name,
+        curator.spec.job.providerConnection.name
     )
     const providerConnection = providerConnectionResult.data
     return providerConnection
 }
 
-export async function createClusterNamespace(options: ICreateClusterOptions) {
+export async function createClusterNamespace(curator: ClusterCurator) {
     let projectResult = await projectRequestMethods.create({
-        metadata: { name: options.clusterName },
+        apiVersion: ProjectRequestApiVersion,
+        kind: ProjectRequestKind,
+        metadata: { name: curator.metadata.namespace },
     })
     return projectResult.data
 }
 
-export async function createClusterPullSecret(options: ICreateClusterOptions, providerConnection: ProviderConnection) {
+export async function createClusterPullSecret(curator: ClusterCurator, providerConnection: ProviderConnection) {
     const pullSecretResult = await secretMethods.create({
-        metadata: { name: `${options.clusterName}-pull-secret`, namespace: options.clusterName },
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: { name: `${curator.metadata.name}-pull-secret`, namespace: curator.metadata.namespace },
         stringData: { '.dockerconfigjson': providerConnection.spec!.pullSecret },
         type: 'kubernetes.io/dockerconfigjson',
     })
@@ -62,65 +40,75 @@ export async function createClusterPullSecret(options: ICreateClusterOptions, pr
     return pullSecret
 }
 
-export function createClusterInstallConfig(options: ICreateClusterOptions, providerConnection: ProviderConnection) {
+export function createClusterInstallConfig(curator: ClusterCurator, providerConnection: ProviderConnection) {
+    const job = curator.spec.job
     const installConfig: InstallConfig = {
         apiVersion: 'v1',
-        metadata: { name: options.clusterName },
-        baseDomain: options.baseDomain,
+        metadata: { name: curator.metadata.name },
+        platform: {},
         networking: {
             clusterNetwork: [
                 {
-                    cidr: options.networking.clusterCidr,
-                    hostPrefix: Number(options.networking.hostPrefix),
+                    cidr: job.networking?.clusterCidr ?? '10.128.0.0/14',
+                    hostPrefix: job.networking?.hostPrefix ?? 23,
                 },
             ],
-            machineCIDR: options.networking.machineCidr,
-            networkType: options.networking.networkType,
-            serviceNetwork: [options.networking.serviceCidr],
-        },
-        platform: {
-            aws: {
-                region: options.region,
-            },
+            machineCIDR: job.networking?.machineCidr ?? '10.0.0.0/16',
+            networkType: job.networking?.networkType ?? 'OvnKubernetes',
+            serviceNetwork: [job.networking?.serviceCidr ?? '172.30.0.0/16'],
         },
         pullSecret: '',
         sshKey: providerConnection.spec!.sshPublickey,
-        controlPlane: {
+    }
+
+    if (job.aws) {
+        installConfig.baseDomain = job.aws?.baseDomain
+        installConfig.platform.aws = {
+            region: job.aws.region,
+        }
+        installConfig.controlPlane = {
             hyperthreading: 'Enabled',
             name: 'master',
             replicas: 3,
             platform: {
                 aws: {
-                    type: options.controlPlane.instanceType,
+                    type: job.aws.controlPlane.instanceType,
                     rootVolume: {
-                        size: options.controlPlane.storage,
-                        iops: 4000,
+                        size: job.aws.controlPlane.storage ?? 100,
+                        iops: job.aws.controlPlane.iops ?? 4000,
                         type: 'io1',
                     },
                 },
             },
-        },
-        compute: options.workerPools.map((workerPool) => {
+        }
+        installConfig.compute = job.aws.workerPools.map((workerPool) => {
             return {
                 hyperthreading: 'Enabled',
                 name: workerPool.name,
                 replicas: workerPool.nodeCount,
                 platform: {
                     aws: {
-                        rootVolume: { iops: 2000, size: workerPool.storage, type: 'io1' },
+                        rootVolume: {
+                            iops: 2000,
+                            size: workerPool.storage,
+                            type: 'io1',
+                        },
                         type: workerPool.instanceType,
                         zones: workerPool.zones,
                     },
                 },
             }
-        }),
+        })
     }
+
     return installConfig
 }
 
-export async function createClusterInstallConfigSecret(options: ICreateClusterOptions, installConfig: InstallConfig) {
+export async function createClusterInstallConfigSecret(options: ClusterCurator, installConfig: InstallConfig) {
     const installConfigSecretResult = await secretMethods.create({
-        metadata: { name: `${options.clusterName}-install-config`, namespace: options.clusterName },
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: { name: `${options.metadata.name}-install-config`, namespace: options.metadata.namespace },
         stringData: { 'install-config.yaml': YAML.stringify(installConfig) },
     })
     const installConfigSecret = installConfigSecretResult.data
@@ -128,11 +116,13 @@ export async function createClusterInstallConfigSecret(options: ICreateClusterOp
 }
 
 export async function createClusterSshPrivateKeySecret(
-    options: ICreateClusterOptions,
+    options: ClusterCurator,
     providerConnection: ProviderConnection
 ) {
     const sshPrivateKeySecretResult = await secretMethods.create({
-        metadata: { name: `${options.clusterName}-ssh-private-key`, namespace: options.clusterName },
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: { name: `${options.metadata.name}-ssh-private-key`, namespace: options.metadata.namespace },
         stringData: { 'ssh-privatekey': providerConnection.spec!.sshPrivatekey },
     })
     const sshPrivateKeySecret = sshPrivateKeySecretResult.data
@@ -140,11 +130,13 @@ export async function createClusterSshPrivateKeySecret(
 }
 
 export async function createClusterProviderCredentialsSecret(
-    options: ICreateClusterOptions,
+    options: ClusterCurator,
     providerConnection: ProviderConnection
 ) {
     const providerCredentialsSecretResult = await secretMethods.create({
-        metadata: { name: `${options.clusterName}-aws-creds`, namespace: options.clusterName },
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: { name: `${options.metadata.name}-aws-creds`, namespace: options.metadata.namespace },
         stringData: {
             aws_access_key_id: providerConnection.spec!.awsAccessKeyID!,
             aws_secret_access_key: providerConnection.spec!.awsSecretAccessKeyID!,
@@ -155,74 +147,80 @@ export async function createClusterProviderCredentialsSecret(
 }
 
 export async function createClusterDeployment(
-    options: ICreateClusterOptions,
+    options: ClusterCurator,
     pullSecret: V1Secret,
     installConfigSecret: V1Secret,
     sshPrivateKeySecret: V1Secret,
     providerCredentialsSecret: V1Secret
 ) {
-    const clusterDeployentResult = await clusterDeploymentMethods.create({
+    const clusterDeployment: ClusterDeployment = {
         apiVersion: 'hive.openshift.io/v1',
         kind: 'ClusterDeployment',
         metadata: {
-            name: options.clusterName,
-            namespace: options.clusterName,
+            name: options.metadata.name,
+            namespace: options.metadata.namespace,
             labels: {
                 vendor: 'OpenShift',
                 cloud: 'Amazon',
-                region: options.region,
             },
         },
         spec: {
-            baseDomain: options.baseDomain,
-            clusterName: options.clusterName,
+            clusterName: options.metadata.name,
             installed: false,
-            platform: {
-                aws: {
-                    credentialsSecretRef: { name: providerCredentialsSecret.metadata!.name! },
-                    region: options.region,
-                },
-            },
             provisioning: {
                 installConfigSecretRef: { name: installConfigSecret.metadata!.name! },
                 sshPrivateKeySecretRef: { name: sshPrivateKeySecret.metadata!.name! },
-                imageSetRef: { name: options.clusterImageSetName },
+                imageSetRef: { name: options.spec.job.imageSetName },
             },
             pullSecretRef: { name: pullSecret.metadata!.name! },
         },
-    })
+    }
+
+    if (options.spec.job.aws) {
+        clusterDeployment.metadata.labels!.cloud = 'Amazon'
+        clusterDeployment.metadata.labels!.region = options.spec.job.aws.region
+        clusterDeployment.spec.baseDomain = options.spec.job.aws.baseDomain
+        clusterDeployment.spec.platform = {
+            aws: {
+                credentialsSecretRef: { name: providerCredentialsSecret.metadata!.name! },
+                region: options.spec.job.aws.region,
+            },
+        }
+    }
+
+    const clusterDeployentResult = await clusterDeploymentMethods.create(clusterDeployment)
     return clusterDeployentResult.data
 }
 
-export async function createClusterManagedCluster(options: ICreateClusterOptions) {
+export async function createClusterManagedCluster(options: ClusterCurator) {
     return createManagedCluster({
-        clusterName: options.clusterName,
+        clusterName: options.metadata.name,
         clusterLabels: {
             cloud: 'Amazon',
             vendor: 'OpenShift',
-            name: options.clusterName,
+            name: options.metadata.name,
         },
     })
 }
 
-export async function createClusterKlusterletAddonConfig(options: ICreateClusterOptions) {
+export async function createClusterKlusterletAddonConfig(options: ClusterCurator) {
     return createKlusterletAddonConfig({
-        clusterName: options.clusterName,
+        clusterName: options.metadata.name,
         clusterLabels: {
             cloud: 'Amazon',
             vendor: 'OpenShift',
-            name: options.clusterName,
+            name: options.metadata.name,
         },
     })
 }
 
-export async function createCluster(options: ICreateClusterOptions) {
+export async function createCluster(options: ClusterCurator) {
     let providerConnection: ProviderConnection
     try {
         providerConnection = await getProviderConnection(options)
     } catch (err) {
         throw new Error(
-            `create cluster error - get provider connection error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - get provider connection error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -230,7 +228,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         await createClusterNamespace(options)
     } catch (err) {
         throw new Error(
-            `create cluster error - create namespace error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create namespace error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -239,7 +237,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         pullSecret = await createClusterPullSecret(options, providerConnection)
     } catch (err) {
         throw new Error(
-            `create cluster error - create pull secret error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create pull secret error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -248,7 +246,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         installConfig = createClusterInstallConfig(options, providerConnection)
     } catch (err) {
         throw new Error(
-            `create cluster error - create install config error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create install config error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -257,7 +255,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         installConfigSecret = await createClusterInstallConfigSecret(options, installConfig)
     } catch (err) {
         throw new Error(
-            `create cluster error - create install config secret error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create install config secret error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -266,7 +264,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         sshPrivateKeySecret = await createClusterSshPrivateKeySecret(options, providerConnection)
     } catch (err) {
         throw new Error(
-            `create cluster error - create ssh private key secret error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create ssh private key secret error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -275,7 +273,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         providerCredentialsSecret = await createClusterProviderCredentialsSecret(options, providerConnection)
     } catch (err) {
         throw new Error(
-            `create cluster error - create provider credentials secret error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create provider credentials secret error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -289,7 +287,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         )
     } catch (err) {
         throw new Error(
-            `create cluster error - create cluster deployment error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create cluster deployment error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -297,7 +295,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         await createClusterManagedCluster(options)
     } catch (err) {
         throw new Error(
-            `create cluster error - create managed cluster error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create managed cluster error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 
@@ -305,7 +303,7 @@ export async function createCluster(options: ICreateClusterOptions) {
         await createClusterKlusterletAddonConfig(options)
     } catch (err) {
         throw new Error(
-            `create cluster error - create klusterlet addon config error  clusterName=${options.clusterName}  error=${err.message}`
+            `create cluster error - create klusterlet addon config error  clusterName=${options.metadata.name}  error=${err.message}`
         )
     }
 }

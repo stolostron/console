@@ -3,6 +3,14 @@ import { render, waitFor } from '@testing-library/react'
 import { Project, projectMethods } from '../../../lib/Project'
 import { AddConnectionPage } from './AddConnection'
 import { nockClusterList } from '../../../lib/nock-util'
+import { getResourceNamePath, getResourcePath } from '../../../library/utils/resource-methods'
+import { secretMethods } from '../../../lib/Secret'
+import { join } from 'path'
+import {
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    clusterDeploymentMethods,
+} from '../../../library/resources/cluster-deployment'
 
 const mockProjects: Project[] = [
     {

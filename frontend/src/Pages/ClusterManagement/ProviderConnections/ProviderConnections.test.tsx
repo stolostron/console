@@ -3,12 +3,17 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { nockDelete, nockList } from '../../../lib/nock-util'
-import { ProviderConnection, providerConnectionMethods } from '../../../lib/ProviderConnection'
+import {
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    providerConnectionMethods,
+} from '../../../lib/ProviderConnection'
 import { ProviderConnectionsPage } from './ProviderConnections'
 
 const mockProviderConnection: ProviderConnection = {
-    apiVersion: 'v1',
-    kind: 'Secret',
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
     metadata: { name: 'provider-connection-name', namespace: 'provider-connection-namespace' },
 }
 
@@ -32,7 +37,7 @@ describe('provider connections page', () => {
         const listNock = nockList(providerConnectionMethods, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
-        const deleteNock = nockDelete(providerConnectionMethods, mockProviderConnection)
+        const deleteNock = nockDelete(mockProviderConnection)
         const refreshNock = nockList(providerConnectionMethods, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])

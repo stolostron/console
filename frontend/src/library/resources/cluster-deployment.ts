@@ -1,13 +1,19 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../../lib/Resource'
+import { resourceMethods } from '../utils/resource-methods'
+
+export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
+export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
+
+export const ClusterDeploymentKind = 'ClusterDeployment'
+export type ClusterDeploymentKindType = 'ClusterDeployment'
 
 export interface ClusterDeployment {
-    apiVersion: string
-    kind: 'ClusterDeployment'
+    apiVersion: ClusterDeploymentApiVersionType
+    kind: ClusterDeploymentKindType
     metadata: V1ObjectMeta
     spec: {
         clusterName: string
-        baseDomain: string
+        baseDomain?: string
         installed: boolean
         clusterMetadata?: {
             adminKubeconfigSecretRef: {
@@ -91,6 +97,6 @@ export interface ClusterDeployment {
 }
 
 export const clusterDeploymentMethods = resourceMethods<ClusterDeployment>({
-    path: '/apis/hive.openshift.io/v1',
-    plural: 'clusterdeployments',
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
 })

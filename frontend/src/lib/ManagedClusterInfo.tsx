@@ -1,6 +1,15 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { useCallback } from 'react'
-import { IResource, ResourceList, resourceMethods, useQueryWrapper } from './Resource'
+import { IResource, ResourceList } from '../library/resources/resource'
+import { resourceMethods } from '../library/utils/resource-methods'
+import { useQuery } from './useQuery'
+
+export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
+export type ManagedClusterInfoApiVersionType = 'internal.open-cluster-management.io/v1beta1'
+
+export const ManagedClusterInfoKind = 'ManagedClusterInfo'
+export type ManagedClusterInfoKindType = 'ManagedClusterInfo'
+
 export interface NodeInfo {
     name?: string
     labels?: { [key: string]: string }
@@ -10,9 +19,10 @@ export interface NodeInfo {
         type: string
     }[]
 }
+
 export interface ManagedClusterInfo extends IResource {
-    apiVersion: string
-    kind: 'ManagedClusterInfo'
+    apiVersion: ManagedClusterInfoApiVersionType
+    kind: ManagedClusterInfoKindType
     metadata: V1ObjectMeta
     spec: {
         loggingCA?: string
@@ -65,13 +75,13 @@ export interface ManagedClusterInfo extends IResource {
 }
 
 export const managedClusterInfoMethods = resourceMethods<ManagedClusterInfo>({
-    path: '/apis/internal.open-cluster-management.io/v1beta1',
-    plural: 'managedclusterinfos',
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
 })
 
 export function useManagedClusterInfos(namespace: string) {
     const restFunc = useCallback(() => {
         return managedClusterInfoMethods.listNamespace(namespace)
     }, [namespace])
-    return useQueryWrapper<ResourceList<ManagedClusterInfo>>(restFunc)
+    return useQuery<ResourceList<ManagedClusterInfo>>(restFunc)
 }

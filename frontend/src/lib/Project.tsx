@@ -1,31 +1,51 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, resourceMethods, useQueryWrapper, ResourceList } from './Resource'
+import { IResource, ResourceList } from '../library/resources/resource'
+import { resourceMethods } from '../library/utils/resource-methods'
+import { useQuery } from './useQuery'
+
+export const ProjectApiVersion = 'project.openshift.io/v1'
+export type ProjectApiVersionType = 'project.openshift.io/v1'
+
+export const ProjectKind = 'Project'
+export type ProjectKindType = 'Project'
 
 export interface Project extends IResource {
-    apiVersion: 'project.openshift.io/v1'
+    apiVersion: ProjectApiVersionType
     kind: 'Project'
     metadata: V1ObjectMeta
 }
 
+export const ProjectRequestApiVersion = 'project.openshift.io/v1'
+export type ProjectRequestApiVersionType = 'project.openshift.io/v1'
+
+export const ProjectRequestKind = 'ProjectRequest'
+export type ProjectRequestKindType = 'ProjectRequest'
+
 export interface ProjectRequest extends IResource {
+    apiVersion: ProjectRequestApiVersionType
+    kind: ProjectRequestKindType
     metadata: V1ObjectMeta
 }
 
 export const projectMethods = resourceMethods<Project>({
-    path: '/apis/project.openshift.io/v1',
-    plural: 'projects',
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
 })
 
 export const projectRequestMethods = resourceMethods<ProjectRequest>({
-    path: '/apis/project.openshift.io/v1',
-    plural: 'projectrequests',
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
 })
 
 export function useProjects() {
-    return useQueryWrapper<ResourceList<Project>>(projectMethods.listCluster)
+    return useQuery<ResourceList<Project>>(projectMethods.listCluster)
 }
 
 export const createProject = (name: string | undefined) => {
     if (!name) throw new Error('Project name is undefined')
-    return projectRequestMethods.create({ metadata: { name } })
+    return projectRequestMethods.create({
+        apiVersion: ProjectRequestApiVersion,
+        kind: ProjectRequestKind,
+        metadata: { name },
+    })
 }

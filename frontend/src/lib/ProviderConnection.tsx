@@ -1,12 +1,20 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
+import { ResourceList } from '../library/resources/resource'
+import { resourceMethods } from '../library/utils/resource-methods'
 import { ProviderID } from './providers'
-import { useQueryWrapper, ResourceList, resourceMethods } from './Resource'
+import { useQuery } from './useQuery'
+
+export const ProviderConnectionApiVersion = 'v1'
+export type ProviderConnectionApiVersionType = 'v1'
+
+export const ProviderConnectionKind = 'Secret'
+export type ProviderConnectionKindType = 'Secret'
 
 export interface ProviderConnection extends V1Secret {
-    apiVersion: 'v1'
-    kind: 'Secret'
-    metadata?: V1ObjectMeta
+    apiVersion: ProviderConnectionApiVersionType
+    kind: ProviderConnectionKindType
+    metadata: V1ObjectMeta
     data?: {
         metadata: string
     }
@@ -43,7 +51,10 @@ export interface ProviderConnection extends V1Secret {
     }
 }
 
-export const providerConnectionMethods = resourceMethods<ProviderConnection>({ path: '/api/v1', plural: 'secrets' })
+export const providerConnectionMethods = resourceMethods<ProviderConnection>({
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+})
 
 const originalList = providerConnectionMethods.list
 
@@ -76,7 +87,7 @@ providerConnectionMethods.create = async (providerConnection: ProviderConnection
 }
 
 export function useProviderConnections() {
-    return useQueryWrapper<ResourceList<ProviderConnection>>(providerConnectionMethods.list)
+    return useQuery<ResourceList<ProviderConnection>>(providerConnectionMethods.list)
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
