@@ -12,7 +12,11 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnection, useProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
+import {
+    ProviderConnection,
+    useProviderConnections,
+    providerConnectionMethods,
+} from '../../../library/resources/provider-connection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
@@ -66,7 +70,7 @@ export function ProviderConnectionsPageContent() {
         <ProviderConnectionsTable
             providerConnections={data.items}
             refresh={refresh}
-            deleteConnection={providerConnections.delete}
+            deleteConnection={providerConnectionMethods.delete}
         />
     )
 }
@@ -80,7 +84,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 export function ProviderConnectionsTable(props: {
     providerConnections: ProviderConnection[]
     refresh: () => void
-    deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
+    deleteConnection: (name: string, namespace?: string) => Promise<unknown>
 }) {
     const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
@@ -161,7 +165,7 @@ export function ProviderConnectionsTable(props: {
                                 confirm: () => {
                                     props
                                         .deleteConnection(
-                                            providerConnection.metadata?.name,
+                                            providerConnection.metadata.name!,
                                             providerConnection.metadata?.namespace
                                         )
                                         .then(() => {

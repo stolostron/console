@@ -1,26 +1,46 @@
-import React from 'react'
-import { Route, MemoryRouter } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ImportClusterPage } from './ImportCluster'
-import { Project, ProjectRequest, projectRequestMethods } from '../../../lib/Project'
-import { ManagedCluster, managedClusterMethods } from '../../../lib/ManagedCluster'
-import { KlusterletAddonConfig, klusterletAddonConfigMethods } from '../../../lib/KlusterletAddonConfig'
+import React from 'react'
+import { MemoryRouter, Route } from 'react-router-dom'
+import {
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind
+} from '../../../library/resources/klusterlet-add-on-config'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind
+} from '../../../library/resources/managed-cluster'
 import { nockCreate } from '../../../lib/nock-util'
+import {
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind
+} from '../../../library/resources/project'
+import { ImportClusterPage } from './ImportCluster'
 
-const mockProject: ProjectRequest = { metadata: { name: 'foobar' } }
+const mockProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: 'foobar' },
+}
+
 const mockManagedCluster: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
     metadata: {
         name: 'foobar',
         labels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
     },
     spec: { hubAcceptsClient: true },
 }
-const mockKAC: KlusterletAddonConfig = {
-    apiVersion: 'agent.open-cluster-management.io/v1',
-    kind: 'KlusterletAddonConfig',
+const mockKlusterletAddonConfig: KlusterletAddonConfig = {
+    apiVersion: KlusterletAddonConfigApiVersion,
+    kind: KlusterletAddonConfigKind,
     metadata: { name: 'foobar', namespace: 'foobar' },
     spec: {
         clusterName: 'foobar',
@@ -36,8 +56,8 @@ const mockKAC: KlusterletAddonConfig = {
 }
 
 const mockProjectResponse: Project = {
-    kind: 'Project',
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
     metadata: {
         name: 'foobar',
         selfLink: '/apis/project.openshift.io/v1/projectrequests/foobar',
@@ -63,7 +83,7 @@ const mockManagedClusterResponse: ManagedCluster = {
     },
     spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
 }
-const mockKACResponse: KlusterletAddonConfig = {
+const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     apiVersion: 'agent.open-cluster-management.io/v1',
     kind: 'KlusterletAddonConfig',
     metadata: {
@@ -106,9 +126,9 @@ describe('ImportCluster', () => {
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
     })
     test('can create resources', async () => {
-        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterResponse)
-        const kacNock = nockCreate(klusterletAddonConfigMethods, mockKAC, mockKACResponse)
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
 
         const { getByTestId, getByText, queryByRole } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
@@ -131,7 +151,7 @@ describe('ImportCluster', () => {
     test('handles project creation error', async () => {
         const mockProjectErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"invalid token","reason":"Unauthorized","details":{"name":"test","group":"project.openshift.io","kind":"project"},"code":401}
 
-        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectErrorResponse, 401)
+        const projectNock = nockCreate(mockProject, mockProjectErrorResponse, 401)
 
         const { getByTestId, getByText, queryByRole } = render(<Component />)
 
@@ -150,9 +170,9 @@ describe('ImportCluster', () => {
         const mockManagedClusterErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"managedclusters.cluster.open-cluster-management.io \"foobar\" already exists","reason":"AlreadyExists","details":{"name":"foobar","group":"cluster.open-cluster-management.io","kind":"managedclusters"},"code":409}
         const mockKACErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"klusterletaddonconfigs.agent.open-cluster-management.io \"foobar\" already exists","reason":"AlreadyExists","details":{"name":"foobar","group":"agent.open-cluster-management.io","kind":"klusterletaddonconfigs"},"code":409}
 
-        const projectNock = nockCreate(projectRequestMethods, mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(managedClusterMethods, mockManagedCluster, mockManagedClusterErrorResponse, 409)
-        const kacNock = nockCreate(klusterletAddonConfigMethods, mockKAC, mockKACErrorResponse, 409)
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterErrorResponse, 409)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKACErrorResponse, 409)
 
         const { getByTestId, getByText, queryByRole } = render(<Component />)
 

@@ -10,7 +10,8 @@ import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { useHistory, Link } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ManagedCluster, useManagedClusters, managedClusterMethods } from '../../../lib/ManagedCluster'
+import { useManagedClusters } from '../../../lib/useManagedCluster'
+import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ClustersPage() {

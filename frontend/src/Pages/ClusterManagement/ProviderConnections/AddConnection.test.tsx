@@ -1,8 +1,8 @@
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { Project, projectMethods } from '../../../lib/Project'
-import { AddConnectionPage } from './AddConnection'
+import React from 'react'
 import { nockClusterList } from '../../../lib/nock-util'
+import { Project, projectMethods } from '../../../library/resources/project'
+import { AddConnectionPage } from './AddConnection'
 
 const mockProjects: Project[] = [
     {

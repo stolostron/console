@@ -9,18 +9,18 @@ import {
     AcmTextInput,
     AcmAlert,
     AcmAlertGroup,
-    AcmSpinnerBackdrop
+    AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { createManagedCluster } from '../../../lib/ManagedCluster'
-import { createKlusterletAddonConfig } from '../../../lib/KlusterletAddonConfig'
-import { createProject } from '../../../lib/Project'
-import { deleteCreatedResources } from '../../../lib/Resource'
+import { createManagedCluster } from '../../../library/resources/managed-cluster'
+import { createKlusterletAddonConfig } from '../../../library/resources/klusterlet-add-on-config'
+import { createProject } from '../../../library/resources/project'
 import { NavigationPath } from '../ClusterManagement'
 import { AxiosResponse } from 'axios'
+import { deleteCreatedResources } from '../../../library/utils/resource-methods'
 
 export function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -45,17 +45,23 @@ export function ImportClusterPageContent() {
     const onSubmit = async () => {
         setLoading(true)
         /* istanbul ignore next */
-        const clusterLabels = { cloud: cloudLabel ?? '', vendor: 'auto-detect', name: clusterName, environment: environmentLabel ?? '', ...additionalLabels }
+        const clusterLabels = {
+            cloud: cloudLabel ?? '',
+            vendor: 'auto-detect',
+            name: clusterName,
+            environment: environmentLabel ?? '',
+            ...additionalLabels
+        }
         const projectResponse = await createProject(clusterName)
         let errors = []
         if (projectResponse.status === 201 || projectResponse.status === 409) {
-            const responses = await Promise.all([
-                createKlusterletAddonConfig({ clusterName, clusterLabels}),
-                createManagedCluster({ clusterName, clusterLabels })
+            const response = await Promise.all([
+                createKlusterletAddonConfig({ clusterName, clusterLabels }),
+                createManagedCluster({ clusterName, clusterLabels }),
             ])
             /* istanbul ignore next */
-            errors = responses.filter(res => (res.status < 200 || res.status >= 300)) ?? []
-            errors.length > 0 && await deleteCreatedResources(responses)
+            errors = response.filter((res) => res.status < 200 || res.status >= 300) ?? []
+            errors.length > 0 && (await deleteCreatedResources(response))
         } else {
             errors.push(projectResponse)
         }
@@ -74,9 +80,14 @@ export function ImportClusterPageContent() {
             <AcmForm id="import-cluster-form">
                 {errors.length > 0 && (
                     <AcmAlertGroup>
-                        {errors.map((error: AxiosResponse) =>
-                            <AcmAlert variant={AlertVariant.danger} title={t('common:request.failed')} subtitle={`${error.data.code}: ${error.data.message}`} key={error.data.message} />
-                        )}
+                        {errors.map((error: AxiosResponse) => (
+                            <AcmAlert
+                                variant={AlertVariant.danger}
+                                title={t('common:request.failed')}
+                                subtitle={`${error.data.code}: ${error.data.message}`}
+                                key={error.data.message}
+                            />
+                        ))}
                     </AcmAlertGroup>
                 )}
                 <AcmTextInput
@@ -94,7 +105,11 @@ export function ImportClusterPageContent() {
                     value={cloudLabel}
                     onChange={(label) => setCloudLabel(label as string)}
                 >
-                    {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(key => <SelectOption key={key} value={key}>{key}</SelectOption>)}
+                    {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
+                        <SelectOption key={key} value={key}>
+                            {key}
+                        </SelectOption>
+                    ))}
                 </AcmSelect>
                 <AcmSelect
                     id="environmentLabel"
@@ -104,7 +119,11 @@ export function ImportClusterPageContent() {
                     onChange={setEnvironmentLabel}
                     placeholder={t('import.form.environment.placeholder')}
                 >
-                    {['dev', 'prod', 'qa'].map(key => <SelectOption key={key} value={key}>{key}</SelectOption>)}
+                    {['dev', 'prod', 'qa'].map((key) => (
+                        <SelectOption key={key} value={key}>
+                            {key}
+                        </SelectOption>
+                    ))}
                 </AcmSelect>
                 <AcmLabelsInput
                     id="additionalLabels"
@@ -117,12 +136,7 @@ export function ImportClusterPageContent() {
                     <Button id="submit" variant="primary" isDisabled={!clusterName} onClick={onSubmit}>
                         {t('import.form.submit')}
                     </Button>
-                    <Button
-                        id="cancel"
-                        component="a"
-                        variant="link"
-                        href={NavigationPath.clusters}
-                    >
+                    <Button id="cancel" component="a" variant="link" href={NavigationPath.clusters}>
                         {t('common:cancel')}
                     </Button>
                 </ActionGroup>

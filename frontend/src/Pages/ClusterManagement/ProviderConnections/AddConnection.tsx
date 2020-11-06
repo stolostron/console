@@ -14,13 +14,13 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { Project, useProjects } from '../../../lib/Project'
+import { Project, useProjects } from '../../../library/resources/project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
-    providerConnections,
+    providerConnectionMethods,
     setProviderConnectionProviderID,
-} from '../../../lib/ProviderConnection'
+} from '../../../library/resources/provider-connection'
 import { ProviderID, providers } from '../../../lib/providers'
 import { NavigationPath } from '../ClusterManagement'
 
@@ -88,7 +88,7 @@ export function AddConnectionPageData() {
         <AddConnectionPageContent
             projects={projectsQuery.data.items}
             createProviderConnection={(providerConnection: ProviderConnection) =>
-                providerConnections.create(providerConnection)
+                providerConnectionMethods.create(providerConnection)
             }
         />
     )
