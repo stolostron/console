@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnection, useProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
+import { ProviderConnection, useProviderConnections, providerConnectionMethods } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
@@ -66,7 +66,7 @@ export function ProviderConnectionsPageContent() {
         <ProviderConnectionsTable
             providerConnections={data.items}
             refresh={refresh}
-            deleteConnection={providerConnections.delete}
+            deleteConnection={providerConnectionMethods.delete}
         />
     )
 }

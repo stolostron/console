@@ -18,7 +18,7 @@ import { Project, useProjects } from '../../../lib/Project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
-    providerConnections,
+    providerConnectionMethods,
     setProviderConnectionProviderID,
 } from '../../../lib/ProviderConnection'
 import { ProviderID, providers } from '../../../lib/providers'
@@ -88,7 +88,7 @@ export function AddConnectionPageData() {
         <AddConnectionPageContent
             projects={projectsQuery.data.items}
             createProviderConnection={(providerConnection: ProviderConnection) =>
-                providerConnections.create(providerConnection)
+                providerConnectionMethods.create(providerConnection)
             }
         />
     )
