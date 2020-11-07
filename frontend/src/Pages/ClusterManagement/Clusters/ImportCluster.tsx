@@ -38,17 +38,19 @@ export function ImportClusterPageContent() {
     const [clusterName, setClusterName] = useState<string>('')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
-    const [additionalLabels, setAdditionaLabels] = useState<string[] | undefined>([])
+    const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [errors, setErrors] = useState<AxiosResponse[]>([])
     const [loading, setLoading] = useState<boolean>(false)
 
     const onSubmit = async () => {
         setLoading(true)
+        /* istanbul ignore next */
         const clusterLabels = {
             cloud: cloudLabel ?? '',
             vendor: 'auto-detect',
             name: clusterName,
             environment: environmentLabel ?? '',
+            ...additionalLabels
         }
         const projectResponse = await createProject(clusterName)
         let errors = []
@@ -57,6 +59,7 @@ export function ImportClusterPageContent() {
                 createKlusterletAddonConfig({ clusterName, clusterLabels }),
                 createManagedCluster({ clusterName, clusterLabels }),
             ])
+            /* istanbul ignore next */
             errors = response.filter((res) => res.status < 200 || res.status >= 300) ?? []
             errors.length > 0 && (await deleteCreatedResources(response))
         } else {
@@ -91,7 +94,7 @@ export function ImportClusterPageContent() {
                     id="clusterName"
                     label={t('import.form.clusterName.label')}
                     value={clusterName}
-                    onChange={(name) => setClusterName(name ?? '')}
+                    onChange={(name) => setClusterName(name)}
                     placeholder={t('import.form.clusterName.placeholder')}
                     required
                 />
@@ -100,7 +103,7 @@ export function ImportClusterPageContent() {
                     toggleId="cloudLabel-button"
                     label={t('import.form.cloud.label')}
                     value={cloudLabel}
-                    onChange={(label) => setCloudLabel(label ?? '')}
+                    onChange={(label) => setCloudLabel(label as string)}
                 >
                     {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
                         <SelectOption key={key} value={key}>

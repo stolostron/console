@@ -26,7 +26,7 @@ export interface KlusterletAddonConfig extends IResource {
     }
 }
 
-export const klusterletAddonConfigMethodss = resourceMethods<KlusterletAddonConfig>({
+export const klusterletAddonConfigMethods = resourceMethods<KlusterletAddonConfig>({
     apiVersion: KlusterletAddonConfigApiVersion,
     kind: KlusterletAddonConfigKind,
 })
@@ -36,7 +36,7 @@ export const createKlusterletAddonConfig = (data: {
     clusterLabels: ClusterLabels
 }) => {
     if (!data.clusterName) throw new Error('Cluster name not set')
-    return klusterletAddonConfigMethodss.create({
+    return klusterletAddonConfigMethods.create({
         apiVersion: KlusterletAddonConfigApiVersion,
         kind: KlusterletAddonConfigKind,
         metadata: { name: data.clusterName, namespace: data.clusterName },

@@ -55,7 +55,7 @@ export function nockClusterList<Resource extends IResource>(
     )
 }
 
-export function nockCreate(resource: IResource, response: IResource, statusCode = 201) {
+export function nockCreate(resource: IResource, response: IResource, statusCode: number = 201) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .post('/cluster-management/proxy' + getResourcePath(resource), JSON.stringify(resource))
         .reply(statusCode, response, {
