@@ -1,5 +1,26 @@
 import nock from 'nock'
 import { IResource, IResourceMethods } from './Resource'
+import { Project } from './Project'
+
+export function nockListProjects(
+    projects:Array<Project>
+) {
+    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        '/cluster-management/proxy/apis/project.openshift.io/v1/projects'
+    )
+
+    return networkMock.reply(
+        200,
+        {
+            items: projects,
+        },
+        {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        }
+    )
+}
 
 export function nockList<Resource>(
     resourceMethods: IResourceMethods<Resource>,

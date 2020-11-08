@@ -41,24 +41,39 @@ function validateField(value: string, field: string) {
             if (!VALID_BMC_ADDR_REGEXP.test(addDefaultProtocol(value))) {
                 return 'Invalid format of BMC address'
             }
+            break
         case 'bootMac':
             if (!VALID_BOOT_MAC_REGEXP.test(value)) {
                 return 'Invalid format of MAC address'
             }
+            break
     }
 }
 
-export function CreateBareMetalAssetPage() {
+export function CreateBareMetalAssetPage(props: {
+    bmaSecretID?: string
+}) {
     const { t } = useTranslation(['bma'])
     return (
         <Page>
             <AcmPageHeader title={t('createBareMetalAsset.title')} />
-            <CreateBareMetalAssetPageData />
+            <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID}/>
         </Page>
     )
 }
 
-export function CreateBareMetalAssetPageData() {
+export function CreateBareMetalAssetPageData(props: {
+    bmaSecretID?: string
+}) {
+
+    const testProject:Project = {
+        apiVersion:'project.openshift.io/v1',
+        kind:'Project',
+        metadata:{
+            name:'test'
+        }
+    }
+
     const projectsQuery = Projects()
 
     if (projectsQuery.loading) {
@@ -67,9 +82,11 @@ export function CreateBareMetalAssetPageData() {
         return <ErrorPage error={projectsQuery.error} />
     } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
         return (
-            <AcmPageCard>
-                <AcmEmptyState title="No namespaces found." message="No namespaces found." />
-            </AcmPageCard>
+           <CreateBareMetalAssetPageContent
+            projects={[testProject]}
+            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => bareMetalAssets.create(bareMetalAsset)}
+            bmaSecretID={props.bmaSecretID}
+            />
         )
     }
 
@@ -77,12 +94,14 @@ export function CreateBareMetalAssetPageData() {
         <CreateBareMetalAssetPageContent
             projects={projectsQuery.data.items}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => bareMetalAssets.create(bareMetalAsset)}
+            bmaSecretID={props.bmaSecretID}
         />
     )
 }
 
 export function CreateBareMetalAssetPageContent(props: {
     projects: Project[]
+    bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => Promise<unknown>
 }) {
     const { t } = useTranslation(['bma'])
@@ -132,7 +151,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     value={bareMetalAsset.metadata?.name}
                     onChange={(name) => {
                         updateBMASecret((bmaSecrets) => {
-                            secretName = name + '-bmc-secret-' + MakeId(5)
+                            secretName = name + '-bmc-secret-'+MakeId(props.bmaSecretID)
                             bmaSecrets.metadata!.name = secretName
                             return bareMetalAsset
                         })
@@ -147,6 +166,7 @@ export function CreateBareMetalAssetPageContent(props: {
                 ></AcmTextInput>
                 <AcmSelect
                     id="namespaceName"
+                    toggleId="namespaceName-button"
                     label={t('createBareMetalAsset.namespaceName.label')}
                     placeholder={t('createBareMetalAsset.namespaceName.placeholder')}
                     value={bareMetalAsset.metadata?.namespace}
