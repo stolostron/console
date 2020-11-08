@@ -12,7 +12,7 @@ export interface BareMetalAsset {
         }
         bootMac: string
     }
-    status: {
+    status?: {
         conditions: Array<{
             lastTransitionTime: Date
             message: string
@@ -116,13 +116,18 @@ bmaSecrets.create = async (bmaSecrets: BMASecret) => {
     return originalSecretCreate(bmaSecrets)
 }
 
-export function MakeId(length: number) {
+export function MakeId(customID?: string) {
+    if(customID){
+        return customID
+    }
+
     let result           = ''
     const characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length
-    for ( var i = 0; i < length; i++ ) {
+    for ( var i = 0; i < 5; i++ ) {
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result
+
  }
 
