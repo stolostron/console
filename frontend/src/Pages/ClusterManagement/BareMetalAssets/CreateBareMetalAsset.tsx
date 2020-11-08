@@ -66,14 +66,6 @@ export function CreateBareMetalAssetPageData(props: {
     bmaSecretID?: string
 }) {
 
-    const testProject:Project = {
-        apiVersion:'project.openshift.io/v1',
-        kind:'Project',
-        metadata:{
-            name:'test'
-        }
-    }
-
     const projectsQuery = Projects()
 
     if (projectsQuery.loading) {
@@ -82,11 +74,9 @@ export function CreateBareMetalAssetPageData(props: {
         return <ErrorPage error={projectsQuery.error} />
     } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
         return (
-           <CreateBareMetalAssetPageContent
-            projects={[testProject]}
-            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => bareMetalAssets.create(bareMetalAsset)}
-            bmaSecretID={props.bmaSecretID}
-            />
+            <AcmPageCard>
+                <AcmEmptyState title="No namespaces found." message="No namespaces found." />
+            </AcmPageCard>
         )
     }
 
