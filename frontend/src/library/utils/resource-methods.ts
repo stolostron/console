@@ -25,7 +25,7 @@ export interface IResourceMethods<Resource extends IResource> {
     kind: string
     create: (resource: Resource) => Promise<AxiosResponse<Resource>>
     delete: (name: string, namespace?: string) => Promise<AxiosResponse>
-    get: (name: string, namespace?: string) => Promise<AxiosResponse<Resource>>
+    get: (metadata: { name: string; namespace?: string }) => Promise<AxiosResponse<Resource>>
     list: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
     listCluster: (labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
     listNamespace: (namespace: string, labels?: string[]) => Promise<AxiosResponse<ResourceList<Resource>>>
@@ -57,10 +57,10 @@ export function resourceMethods<Resource extends IResource>(options: {
                 token,
             })
         },
-        get: (name: string, namespace?: string) => {
+        get: (metadata: { name: string; namespace?: string }) => {
             return getResource<Resource>({
-                name,
-                namespace,
+                name: metadata.name,
+                namespace: metadata.namespace,
                 kind: options.kind,
                 apiUrl: `${process.env.REACT_APP_BACKEND}${proxyPath}`,
                 apiVersion: options.apiVersion,
