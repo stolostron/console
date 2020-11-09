@@ -209,8 +209,8 @@ export function getResource<Resource = unknown>(options: {
     withCredentials?: boolean
     token?: string
 }) {
-    const { apiUrl, apiVersion, name, namespace, withCredentials, token } = options
-    const url = apiUrl + getResourceNamePath({ apiVersion, metadata: { name, namespace } })
+    const { apiUrl, apiVersion, kind, name, namespace, withCredentials, token } = options
+    const url = apiUrl + getResourceNamePath({ apiVersion, kind, metadata: { name, namespace } })
     return Axios.request<Resource>({
         method: 'GET',
         url,
