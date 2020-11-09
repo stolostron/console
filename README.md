@@ -20,4 +20,4 @@ Red Hat - Advanced Cluster Management for Kubernetes - Cluster Lifecycle UI Cons
 1.  Clone this repository
 2.  From the root directory, run `npm ci`
 3.  From the root directory, run `npm start`
-4.  In your browser, go to `http://localhost:3000/cluster-management`
+4.  In your browser, go to `http://localhost:3000/cluster-management` test
