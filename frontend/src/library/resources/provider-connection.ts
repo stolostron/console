@@ -1,9 +1,7 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
-import { ResourceList } from './resource'
-import { resourceMethods } from '../utils/resource-methods'
 import { ProviderID } from '../../lib/providers'
-import { useQuery } from '../../lib/useQuery'
+import { resourceMethods } from '../utils/resource-methods'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -84,10 +82,6 @@ providerConnectionMethods.create = async (providerConnection: ProviderConnection
     copy.stringData = { metadata: YAML.stringify(copy.spec) }
     delete copy.spec
     return originalCreate(copy)
-}
-
-export function useProviderConnections() {
-    return useQuery<ResourceList<ProviderConnection>>(providerConnectionMethods.list)
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {

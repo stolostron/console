@@ -1,12 +1,13 @@
 import Axios, { AxiosResponse, Method } from 'axios'
+import * as https from 'https'
 import { join } from 'path'
 import { IResource, ResourceList } from '../resources/resource'
 
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
 const token = process.env.CLUSTER_API_TOKEN
-const proxyPath = process.env.BACKEND_PROXY_PATH ?? '/cluster-management/proxy'
-const namespacedPath = process.env.BACKEND_NAMESPACED_PATH ?? '/cluster-management/namespaced'
+const proxyPath = process.env.CLUSTER_API_URL ?? '/cluster-management/proxy'
+const namespacedPath = '/cluster-management/namespaced'
 
 export async function restRequest<T>(method: Method, url: string, data?: object): Promise<AxiosResponse<T>> {
     return await Axios.request<T>({
@@ -147,6 +148,7 @@ export function createResource<Resource extends IResource>(options: {
         withCredentials: withCredentials,
         validateStatus: () => true,
         headers: token ? { Authentication: `Bearer ${token}` } : undefined,
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     })
 }
 
@@ -167,6 +169,7 @@ export function deleteResource(options: {
         withCredentials: withCredentials,
         validateStatus: () => true,
         headers: token ? { Authentication: `Bearer ${token}` } : undefined,
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     })
 }
 
@@ -193,6 +196,7 @@ export function listResources<Resource extends IResource>(options: {
         withCredentials: withCredentials,
         validateStatus: () => true,
         headers: token ? { Authentication: `Bearer ${token}` } : undefined,
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     })
 }
 
@@ -214,6 +218,7 @@ export function getResource<Resource = unknown>(options: {
         withCredentials: withCredentials,
         validateStatus: () => true,
         headers: token ? { Authentication: `Bearer ${token}` } : undefined,
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     })
 }
 

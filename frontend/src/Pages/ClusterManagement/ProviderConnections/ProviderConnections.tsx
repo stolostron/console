@@ -4,7 +4,7 @@ import {
     AcmPageCard,
     AcmTable,
     compareStrings,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
 import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
@@ -12,12 +12,9 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import {
-    ProviderConnection,
-    useProviderConnections,
-    providerConnectionMethods,
-} from '../../../library/resources/provider-connection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { useProviderConnections } from '../../../lib/useProviderConnection'
+import { ProviderConnection, providerConnectionMethods } from '../../../library/resources/provider-connection'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ProviderConnectionsPage() {

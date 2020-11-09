@@ -14,14 +14,15 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { Project, useProjects } from '../../../library/resources/project'
+import { ProviderID, providers } from '../../../lib/providers'
+import { useProjects } from '../../../lib/useProject'
+import { Project } from '../../../library/resources/project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
     providerConnectionMethods,
     setProviderConnectionProviderID,
 } from '../../../library/resources/provider-connection'
-import { ProviderID, providers } from '../../../lib/providers'
 import { NavigationPath } from '../ClusterManagement'
 
 const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
