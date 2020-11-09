@@ -1,12 +1,12 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { ClustersPage } from './Clusters'
-import { DiscoveredCluster, discoveredClusterMethods } from '../../../lib/DiscoveredCluster'
+import { DiscoveredCluster, discoveredClusterMethods } from '../../../library/resources/discovered-cluster'
+import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
 import {  nockList } from '../../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 
 
-import { ManagedCluster,  managedClusterMethods } from '../../../lib/ManagedCluster'
 import { BrowserRouter as Router } from 'react-router-dom'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
@@ -15,50 +15,59 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         kind: 'DiscoveredCluster',
         metadata: {
              name: 'test-cluster-01', 
-             namespace: 'discovered-cluster-namespace',
-             ownerReferences: [{
-                apiVersion: 'discovery.open-cluster-management.io/v1',
-                kind: 'discoveryconfig',
-                name: 'discoveryconfig',
-                uid: 'abcd-efgh-ijkl-mnop',
-             }],
         },
-        info: {
+        spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
             apiUrl: "https://api.test-cluster-01.dev01.red-chesterfield.com:6443",
             cloudProvider: "aws",
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             healthState: 'healthy',
-            managed: false,
             name: 'test-cluster-01',
             openshiftVersion: '4.5.5',
             product: 'ocp',
+            providerConnections: [
+                {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    name: 'ocm-api-token',
+                    namespace: 'open-cluster-management',
+                    resourceVersion: '2673462626',
+                    uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
+                },
+            ],
             region: 'us-east-1',
             state: 'ready',
-            status: 'online',
-            support_level: 'eval',
+            subscription: {
+                creator_id: 'abc123',
+                managed: false,
+                status: 'Active',
+                support_level: 'None'
+            }
         },
     },
     {
         apiVersion: 'discovery.open-cluster-management.io/v1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-02', namespace: 'discovered-cluster-namespace' },
-        info: {
+        spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
             apiUrl: "https://api.test-cluster-02.dev01.red-chesterfield.com:6443",
             cloudProvider: "gcp",
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             healthState: 'healthy',
-            managed: false,
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
             product: 'ocp',
             region: 'us-east-1',
             state: 'ready',
-            status: 'online',
-            support_level: 'eval',
+            subscription: {
+                status: 'Stale',
+                managed: true,
+                support_level: 'eval',
+                creator_id: 'abc123'
+            }
         },
     },
 ]
@@ -104,16 +113,16 @@ test('Clusters Page', async () => {
     // Wait for discovery related resources to appear
     await waitFor(() => expect(getByText("Edit cluster discovery")).toBeInTheDocument())
     await waitFor(() => expect(getByText("Disable cluster discovery")).toBeInTheDocument())
-    await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.ownerReferences![0].name!)).toBeInTheDocument())
+    await waitFor(() => expect(getByText(mockDiscoveredClusters[0].spec.providerConnections![0].name!)).toBeInTheDocument())
 
     // Ensure data for each discoveredcluster appears in table
     mockDiscoveredClusters.forEach((dc) => {
         expect(getByText(dc.metadata.name!)).toBeInTheDocument()
-        expect(getByText("OpenShift " + dc.info.openshiftVersion)).toBeInTheDocument()
-        if (dc.info.cloudProvider === "aws") {
+        expect(getByText("OpenShift " + dc.spec.openshiftVersion)).toBeInTheDocument()
+        if (dc.spec.cloudProvider === "aws") {
             expect(getByText("Amazon Web Services")).toBeInTheDocument()
         } else {
-            expect(getByText(dc.info.cloudProvider)).toBeInTheDocument()
+            expect(getByText(dc.spec.cloudProvider)).toBeInTheDocument()
         }
     })
 
