@@ -130,6 +130,38 @@ export async function startServer(): Promise<FastifyInstance> {
         }
     }
 
+    const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+
+    fastify.register(require('fastify-reply-from'), {
+        base: acmUrl
+    })
+
+    fastify.all('/multicloud/header/*', (req, res) => {
+        req.headers.authorization = `Bearer ${req.cookies['acm-access-token-cookie']}`
+        req.headers.Authorization = `Bearer ${req.cookies['acm-access-token-cookie']}`
+        console.log('url', req.raw.url)
+        res.from(req.raw.url)
+    })
+
+    fastify.all('/cluster-management/header', async (req, res) => {
+        let headerResponse: AxiosResponse
+        try {
+            headerResponse = await Axios.request({
+                url: `${acmUrl}/multicloud/header/api/v1/header`,
+                method: 'GET',
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                headers: {
+                    Authorization: `Bearer ${req.cookies['acm-access-token-cookie']}`,
+                },
+                responseType: 'json',
+                validateStatus: () => true
+            })
+        } catch(err) {
+            return res.code(500).send(err)
+        }
+        return res.code(headerResponse.status).send(headerResponse?.data)
+    })
+
     fastify.all('/cluster-management/proxy/*', proxy)
 
     fastify.get('/cluster-management/namespaced/*', async (req, res) => {
