@@ -4,15 +4,13 @@ import { IResource } from '../library/resources/resource'
 import { IResourceMethods, getResourcePath, getResourceNamePath } from '../library/utils/resource-methods'
 
 export function nockGet<Resource extends IResource>(response: Resource) {
-    let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        join('/cluster-management/proxy', getResourceNamePath(response))
-    )
-
-    return nockScope.reply(200, response, {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Credentials': 'true',
-    })
+    nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .get(join('/cluster-management/proxy', getResourceNamePath(response)))
+        .reply(200, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
 }
 
 export function nockList<Resource extends IResource>(
