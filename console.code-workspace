@@ -10,13 +10,10 @@
             "path": "backend"
         },
         {
-            "path": "chart"
-        },
-        {
             "path": "e2e"
         }
     ],
     "settings": {
-        "jest.disabledWorkspaceFolders": ["docs", "chart", "e2e"]
+        "jest.disabledWorkspaceFolders": ["docs", "e2e"]
     }
 }
