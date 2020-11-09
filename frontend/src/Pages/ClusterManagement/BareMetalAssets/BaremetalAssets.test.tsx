@@ -3,14 +3,13 @@ import { V1Namespace, V1Secret } from '@kubernetes/client-node'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
-import { BareMetalAssetsPage, BareMetalAssetsTable } from './BaremetalAssets'
+import { BareMetalAssetsPage } from './BaremetalAssets'
 import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
 import { nockCreate, nockList, nockListProjects, nockDelete } from '../../../lib/nock-util'
 import { resourceMethods } from '../../../lib/Resource'
 import { Project } from '../../../lib/Project'
-import nock from 'nock'
 import { secrets } from '../../../lib/Secret'
+import { BareMetalAsset, bareMetalAssets } from '../../../library/resources/bare-metal-asset'
 
 const testProject: Project = {
     apiVersion: 'project.openshift.io/v1',
@@ -19,6 +18,7 @@ const testProject: Project = {
         name: 'test-bare-metal-asset-new-namespace',
     },
 }
+
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
     kind: 'BareMetalAsset',
@@ -125,8 +125,8 @@ describe('bare metal asset page', () => {
 
     test('can delete asset from overflow menu', async () => {
         const listNock = nockList(bareMetalAssets, mockBareMetalAssets)
-        const deleteNock = nockDelete(bareMetalAssets, mockBareMetalAssets[0])
-
+        const deleteNock = nockDelete(mockBareMetalAssets[0])
+        
         const { getByText, getAllByText, getAllByLabelText, queryByText, container } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
@@ -147,8 +147,8 @@ describe('bare metal asset page', () => {
 
     test('can delete assset(s) from batch action menu', async () => {
         const listNock = nockList(bareMetalAssets, mockBareMetalAssets)
-        const deleteNock = nockDelete(bareMetalAssets, mockBareMetalAssets[0])
-
+        const deleteNock = nockDelete(mockBareMetalAssets[0])
+        
         const { getByText, getAllByText, getByLabelText, getAllByLabelText, queryByText, container } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />

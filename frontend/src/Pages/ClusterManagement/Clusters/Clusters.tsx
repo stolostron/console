@@ -8,9 +8,10 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ManagedCluster, ManagedClusters, managedClusters } from '../../../lib/ManagedCluster'
+import { useManagedClusters } from '../../../lib/useManagedCluster'
+import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ClustersPage() {
@@ -23,7 +24,7 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = ManagedClusters()
+    const managedClustersQuery = useManagedClusters()
 
     useEffect(() => {
         managedClustersQuery.startPolling(10 * 1000)
@@ -49,7 +50,7 @@ export function ClustersPageContent() {
         <AcmPageCard>
             <ClustersTable
                 managedClusters={managedClustersQuery.data.items}
-                deleteCluster={managedClusters.delete}
+                deleteCluster={managedClusterMethods.delete}
                 refresh={managedClustersQuery.refresh}
             />
         </AcmPageCard>
@@ -66,7 +67,11 @@ export function ClustersTable(props: {
             header: 'Name',
             sort: 'metadata.name',
             search: 'metadata.name',
-            cell: 'metadata.name',
+            cell: (managedCluster) => (
+                <Link to={NavigationPath.clusterDetails.replace(':id', managedCluster.metadata.name as string)}>
+                    {managedCluster.metadata.name}
+                </Link>
+            ),
         },
         {
             header: 'Status',

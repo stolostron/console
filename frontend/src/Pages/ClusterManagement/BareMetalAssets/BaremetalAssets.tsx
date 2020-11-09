@@ -4,14 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import {
-    BareMetalAssets as GetBareMetalAsset,
-    BareMetalAsset,
-    BMAStatusMessage,
-    GetLabels,
-    bareMetalAssets,
-} from '../../../lib/BareMetalAsset'
-import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels, bareMetalAssets } from '../../../library/resources/bare-metal-asset'
+import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
     return (
@@ -51,26 +45,27 @@ export function BareMetalAssets() {
     )
 }
 
-export function deleteBareMetalAssets(
-    bareMetalAssets: BareMetalAsset[],
-    deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>,
-    refresh: () => void
-) {
+export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[], deleteBareMetalAsset: (name: string, namespace?: string) => Promise<unknown>, refresh: () => void) {
     const promises: Array<Promise<any>> = []
 
-    bareMetalAssets.forEach((bareMetalAsset) => {
-        promises.push(deleteBareMetalAsset(bareMetalAsset.metadata?.name, bareMetalAsset.metadata?.namespace))
-    })
-    Promise.all(promises).then(() => {
-        refresh()
-    })
+    bareMetalAssets.forEach( bareMetalAsset => {
+        promises.push(
+            deleteBareMetalAsset(
+            bareMetalAsset.metadata.name!,
+            bareMetalAsset.metadata?.namespace
+        ))
+   })
+   Promise.all(promises)        
+   .then(() => {
+       refresh()
+   })
 }
 
 export function BareMetalAssetsTable(props: {
     bareMetalAssets: BareMetalAsset[]
     refresh: () => void
-    deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>
-}) {
+    deleteBareMetalAsset: (name: string, namespace?: string) => Promise<unknown>}) {
+
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const history = useHistory()
 
@@ -161,31 +156,27 @@ export function BareMetalAssetsTable(props: {
                 rowActions={[
                     { id: 'editLabels', title: 'Edit labels', click: (item) => {} },
                     { id: 'editAsset', title: 'Edit Asset', click: (item) => {} },
-                    {
-                        id: 'deleteAsset',
-                        title: 'Delete Asset',
-                        click: (bareMetalAsset: BareMetalAsset) => {
-                            setConfirm({
-                                title: 'Delete bare metal asset',
-                                message: `You are about to delete ${bareMetalAsset.metadata?.name}. The bare metal asset will no longer be available. This action is irreversible.`,
-                                open: true,
-                                confirm: () => {
-                                    props
-                                        .deleteBareMetalAsset(
-                                            bareMetalAsset.metadata?.name,
-                                            bareMetalAsset.metadata?.namespace
-                                        )
-                                        .then(() => {
-                                            props.refresh()
-                                        })
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                            })
-                        },
-                    },
+                    { id: 'deleteAsset', title: 'Delete Asset', click: (bareMetalAsset: BareMetalAsset) => {
+                        setConfirm({
+                            title: 'Delete bare metal asset',
+                            message: `You are about to delete ${bareMetalAsset.metadata?.name}. The bare metal asset will no longer be available. This action is irreversible.`,
+                            open: true,
+                            confirm: () => {
+                                props
+                                    .deleteBareMetalAsset(
+                                        bareMetalAsset.metadata.name!,
+                                        bareMetalAsset.metadata?.namespace
+                                    )
+                                    .then(() => {
+                                        props.refresh()
+                                    })
+                                setConfirm(ClosedConfirmModalProps)
+                            },
+                            cancel: () => {
+                                setConfirm(ClosedConfirmModalProps)
+                            },
+                        })
+                    } },
                 ]}
             />
         </AcmPageCard>

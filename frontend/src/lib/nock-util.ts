@@ -1,4 +1,7 @@
 import nock from 'nock'
+import { join } from 'path'
+import { IResource } from '../library/resources/resource'
+import { IResourceMethods, getResourcePath, getResourceNamePath } from '../library/utils/resource-methods'
 import { IResource, IResourceMethods } from './Resource'
 import { Project } from './Project'
 
@@ -22,13 +25,39 @@ export function nockListProjects(
     )
 }
 
-export function nockList<Resource>(
+export function nockList<Resource extends IResource>(
+    resourceMethods: IResourceMethods<Resource>,
+    resources: Resource[],
+    labels?: string[]
+) {
+    let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        join('/cluster-management/namespaced', getResourcePath(resourceMethods))
+    )
+
+    if (labels) {
+        nockScope = nockScope.query({
+            labelSelector: encodeURIComponent(labels.join(',')),
+        })
+    }
+
+    return nockScope.reply(
+        200,
+        { items: resources },
+        {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        }
+    )
+}
+
+export function nockClusterList<Resource extends IResource>(
     resourceMethods: IResourceMethods<Resource>,
     resources: Resource[],
     labels?: string[]
 ) {
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        `/cluster-management/namespaced${resourceMethods.apiPath}/${resourceMethods.plural}`
+        join('/cluster-management/proxy', getResourcePath(resourceMethods))
     )
 
     if (labels) {
@@ -39,9 +68,7 @@ export function nockList<Resource>(
 
     return networkMock.reply(
         200,
-        {
-            items: resources,
-        },
+        { items: resources },
         {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -50,67 +77,26 @@ export function nockList<Resource>(
     )
 }
 
-export function nockClusterList<Resource>(
-    resourceMethods: IResourceMethods<Resource>,
-    resources: Resource[],
-    labels?: string[]
-) {
-    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        `/cluster-management/proxy${resourceMethods.apiPath}/${resourceMethods.plural}`
-    )
-
-    if (labels) {
-        networkMock = networkMock.query({
-            labelSelector: encodeURIComponent(labels.join(',')),
-        })
-    }
-
-    return networkMock.reply(
-        200,
-        {
-            items: resources,
-        },
-        {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        }
-    )
-}
-
-export function nockCreate(resourceMethods: IResourceMethods<any>, resource: IResource, response: IResource) {
-    const isNamespaceScoped = !!resource.metadata?.namespace
-    const url = `/cluster-management/proxy${resourceMethods.apiPath}${isNamespaceScoped ? `/namespaces/${resource.metadata?.namespace}`: ''}/${resourceMethods.plural}`
-    
-    return nock(process.env.REACT_APP_BACKEND as string)
-        .post(url, JSON.stringify(resource))
-        .reply(201, response,
-            {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Credentials': 'true',
-            }
-        )
-}
-
-export function nockDelete(resourceMethods: IResourceMethods<any>, resource: IResource) {
+export function nockCreate(resource: IResource, response: IResource, statusCode: number = 201) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .options(
-            `/cluster-management/proxy${resourceMethods.apiPath}/namespaces/${resource.metadata!.namespace}/${
-                resourceMethods.plural
-            }/${resource.metadata!.name}`
-        )
+        .post('/cluster-management/proxy' + getResourcePath(resource), JSON.stringify(resource))
+        .reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
+export function nockDelete(resource: IResource) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options('/cluster-management/proxy' + getResourceNamePath(resource))
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .delete(
-            `/cluster-management/proxy${resourceMethods.apiPath}/namespaces/${resource.metadata!.namespace}/${
-                resourceMethods.plural
-            }/${resource.metadata!.name}`
-        )
+        .delete('/cluster-management/proxy' + getResourceNamePath(resource))
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
