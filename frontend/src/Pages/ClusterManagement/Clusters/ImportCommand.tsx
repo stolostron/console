@@ -77,7 +77,7 @@ async function pollImportYamlSecret(clusterName: string) {
     let importYamlSecret: AxiosResponse
 
     const poll = async (resolve: any, reject: any) => {
-        importYamlSecret = await secretMethods.get(clusterName, `${clusterName}-import`)
+        importYamlSecret = await secretMethods.get({ name: clusterName, namespace: `${clusterName}-import` })
         if ((!importYamlSecret || importYamlSecret.status === 404) && count < 10) {
             count += 1
             setTimeout(poll, 500, resolve, reject)

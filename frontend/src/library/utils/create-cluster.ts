@@ -15,10 +15,10 @@ import { ProviderConnection, providerConnectionMethods } from '../resources/prov
 import { SecretApiVersion, SecretKind, secretMethods } from '../resources/secret'
 
 export async function getProviderConnection(curator: ClusterCurator) {
-    let providerConnectionResult = await providerConnectionMethods.get(
-        curator.spec.job.values.providerConnection,
-        curator.metadata.name
-    )
+    let providerConnectionResult = await providerConnectionMethods.get({
+        name: curator.spec.job.values.providerConnection,
+        namespace: curator.metadata.name,
+    })
     const providerConnection = providerConnectionResult.data
     return providerConnection
 }
