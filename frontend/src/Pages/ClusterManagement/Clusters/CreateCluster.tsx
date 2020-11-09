@@ -237,7 +237,7 @@ export function CreateClusterPageContent(props: {
                     <Form>
                         {/* <AcmTextInput id="environmentLabelInput" label="Environment Label" /> */}
 
-                        <AcmLabelsInput
+                        {/* <AcmLabelsInput
                             id="additionalLabels"
                             label="Additional Labels"
                             buttonLabel="Add label"
@@ -245,7 +245,7 @@ export function CreateClusterPageContent(props: {
                             onChange={(labels) => {
                                 setClusterDeploymentInput({ ...clusterDeploymentInput, ...{ labels } })
                             }}
-                        />
+                        /> */}
                     </Form>
                 </AcmExpandableSection>
 

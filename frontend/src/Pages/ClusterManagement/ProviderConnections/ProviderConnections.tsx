@@ -4,16 +4,17 @@ import {
     AcmPageCard,
     AcmTable,
     compareStrings,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
 import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderConnection, useProviderConnections, providerConnections } from '../../../lib/ProviderConnection'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { useProviderConnections } from '../../../lib/useProviderConnection'
+import { ProviderConnection, providerConnectionMethods } from '../../../library/resources/provider-connection'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ProviderConnectionsPage() {
@@ -63,11 +64,13 @@ export function ProviderConnectionsPageContent() {
     // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
 
     return (
-        <ProviderConnectionsTable
-            providerConnections={data.items}
-            refresh={refresh}
-            deleteConnection={providerConnections.delete}
-        />
+        <AcmPageCard>
+            <ProviderConnectionsTable
+                providerConnections={data.items}
+                refresh={refresh}
+                deleteConnection={providerConnectionMethods.delete}
+            />
+        </AcmPageCard>
     )
 }
 
@@ -80,7 +83,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 export function ProviderConnectionsTable(props: {
     providerConnections: ProviderConnection[]
     refresh: () => void
-    deleteConnection: (name?: string, namespace?: string) => Promise<unknown>
+    deleteConnection: (name: string, namespace?: string) => Promise<unknown>
 }) {
     const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
@@ -118,7 +121,7 @@ export function ProviderConnectionsTable(props: {
     const history = useHistory()
 
     return (
-        <PageSection variant={PageSectionVariants.light}>
+        <Fragment>
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -161,7 +164,7 @@ export function ProviderConnectionsTable(props: {
                                 confirm: () => {
                                     props
                                         .deleteConnection(
-                                            providerConnection.metadata?.name,
+                                            providerConnection.metadata.name!,
                                             providerConnection.metadata?.namespace
                                         )
                                         .then(() => {
@@ -177,6 +180,6 @@ export function ProviderConnectionsTable(props: {
                     },
                 ]}
             />
-        </PageSection>
+        </Fragment>
     )
 }

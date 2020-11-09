@@ -6,13 +6,15 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { useHistory, Link } from 'react-router-dom'
-import { DiscoveredCluster, useDiscoveredClusters, discoveredClusterMethods} from '../../../lib/DiscoveredCluster'
+import { useDiscoveredClusters} from '../../../lib/useDiscoveredCluster'
 import { Page, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import React, { Fragment, useEffect, useState} from 'react'
-import { ManagedCluster, useManagedClusters, managedClusterMethods } from '../../../lib/ManagedCluster'
+import { useManagedClusters } from '../../../lib/useManagedCluster'
+import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
+import { DiscoveredCluster} from '../../../library/resources/discovered-cluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 let moment = require('moment');
 
@@ -72,89 +74,94 @@ const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
         header: 'Name',
-        sort: 'info.name',
-        search: 'info.name',
+        sort: 'spec.name',
+        search: 'spec.name',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-                <a href={discoveredCluster.info.console} key="dcConsoleURL"><span key="dcNamelink">{discoveredCluster.info.name}</span></a>
+                <a href={discoveredCluster.spec.console} key="dcConsoleURL"><span key="dcNamelink">{discoveredCluster.spec.name}</span></a>
             </span>
         )
     },
     {
         header: 'Status',
-        sort: 'info.state',
-        search: 'info.state',
+        sort: 'spec.subscription.status',
+        search: 'spec.subscription.status',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                {discoveredCluster.info.state === 'ready' ? (
+                {discoveredCluster.spec.subscription.status === 'Active' ? (
                     <CheckIcon color="green" key="ready-icon" />
                 ) : (
                     <Fragment key="ready-icon"></Fragment>
                 )}
-                {discoveredCluster.info.state !== 'ready' ? (
+                {discoveredCluster.spec.subscription.status !== 'Active' ? (
                     <ExclamationIcon color="red" key="offline-icon" />
                 ) : (
                     <Fragment key="offline-icon"></Fragment>
                 )}
-                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.info.state)}</span>
+                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.spec.subscription.status)}</span>
             </span>
         ),
     },
     {
         header: 'Connected From',
         cell: (discoveredCluster) => (
-            <span key="connectedFrom">&nbsp; {discoveredCluster.metadata.ownerReferences?.[0].name ?? "N/A"}</span>
+            <span key="connectedFrom">&nbsp; {discoveredCluster.spec.providerConnections === undefined ? 
+                [
+                    "N/A"
+                ] 
+                : discoveredCluster.spec.providerConnections![0].name ?? "N/A"
+            }</span>
         ),
     },
     {
         header: 'Distribution Version',
-        sort: 'info.openshiftVersion',
+        sort: 'spec.openshiftVersion',
         cell: (discoveredCluster) => (
-            <span key="openShiftVersion">&nbsp; {"OpenShift ".concat(discoveredCluster.info.openshiftVersion)}</span>
+            <span key="openShiftVersion">&nbsp; {"OpenShift ".concat(discoveredCluster.spec.openshiftVersion)}</span>
         ),
     },
     {
         header: 'Infrastructure Provider',
-        sort: 'info.cloudProvider',
+        sort: 'spec.cloudProvider',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcCloudProviderParent">
-                {discoveredCluster.info.cloudProvider === 'aws' ? 
+                {discoveredCluster.spec.cloudProvider === 'aws' ? 
                     [
                         <AWSIcon key="aws-icon"/>,
                         <span key="dcCloudProvider"> Amazon Web Services</span>
                     ] 
                     : 
-                    discoveredCluster.info.cloudProvider
+                    discoveredCluster.spec.cloudProvider
                 }
             </span>
         ),
     },
     {
         header: 'Last Active',
-        sort: 'info.activity_timestamp',
+        sort: 'spec.activity_timestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-                {discoveredCluster.info.activity_timestamp === undefined ? 
+                {discoveredCluster.spec.activity_timestamp === undefined ? 
                     [
                         "N/A"
                     ] 
                     : 
-                        moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.info.activity_timestamp).getTime())).humanize()
+                        moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.activity_timestamp).getTime())).humanize()
                 }
             </span>
         )
     },
     {
         header: 'Created',
-        sort: 'info.creation_timestamp',
+        sort: 'spec.creation_timestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-                {discoveredCluster.info.creation_timestamp === undefined ? 
+                {discoveredCluster.spec.creation_timestamp === undefined ? 
                     [
                         "N/A"
                     ] 
                     : 
-                    moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.info.creation_timestamp).getTime())).humanize()
+                    moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.creation_timestamp).getTime())).humanize()
                 }
             </span>
         )
@@ -164,7 +171,7 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         sort: 'metadata.creationTimestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-                {discoveredCluster.info.creation_timestamp === undefined ? 
+                {discoveredCluster.spec.creation_timestamp === undefined ? 
                     [
                         "N/A"
                     ] 

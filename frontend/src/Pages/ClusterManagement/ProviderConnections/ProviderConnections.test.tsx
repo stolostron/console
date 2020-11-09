@@ -3,12 +3,17 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { nockDelete, nockList } from '../../../lib/nock-util'
-import { ProviderConnection, providerConnections } from '../../../lib/ProviderConnection'
+import {
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    providerConnectionMethods,
+} from '../../../library/resources/provider-connection'
 import { ProviderConnectionsPage } from './ProviderConnections'
 
 const mockProviderConnection: ProviderConnection = {
-    apiVersion: 'v1',
-    kind: 'Secret',
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
     metadata: { name: 'provider-connection-name', namespace: 'provider-connection-namespace' },
 }
 
@@ -16,7 +21,9 @@ const mockProviderConnections = [mockProviderConnection]
 
 describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
-        nockList(providerConnections, mockProviderConnections, ['cluster.open-cluster-management.io/cloudconnection='])
+        nockList(providerConnectionMethods, mockProviderConnections, [
+            'cluster.open-cluster-management.io/cloudconnection=',
+        ])
         const { getByText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
@@ -27,11 +34,11 @@ describe('provider connections page', () => {
     })
 
     test('should be able to delete a provider connection', async () => {
-        const listNock = nockList(providerConnections, mockProviderConnections, [
+        const listNock = nockList(providerConnectionMethods, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
-        const deleteNock = nockDelete(providerConnections, mockProviderConnection)
-        const refreshNock = nockList(providerConnections, mockProviderConnections, [
+        const deleteNock = nockDelete(mockProviderConnection)
+        const refreshNock = nockList(providerConnectionMethods, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const { getByText, getAllByLabelText } = render(
