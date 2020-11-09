@@ -209,8 +209,8 @@ export function getResource<Resource = unknown>(options: {
     withCredentials?: boolean
     token?: string
 }) {
-    const { apiUrl, apiVersion, name, namespace, withCredentials, token } = options
-    const url = apiUrl + getResourceNamePath({ apiVersion, metadata: { name, namespace } })
+    const { apiUrl, apiVersion, kind, name, namespace, withCredentials, token } = options
+    const url = apiUrl + getResourceNamePath({ apiVersion, kind, metadata: { name, namespace } })
     return Axios.request<Resource>({
         method: 'GET',
         url,
@@ -237,15 +237,15 @@ export function getResourcePath(options: {
         path = join('/api', apiVersion)
     }
 
+    const namespace = options.metadata?.namespace
+    if (namespace !== undefined) {
+        path = join(path, 'namespaces', namespace)
+    }
+
     if (options.plural !== undefined) {
         path = join(path, options.plural)
     } else if (options.kind !== undefined) {
         path = join(path, options.kind.toLowerCase() + 's')
-    }
-
-    const namespace = options.metadata?.namespace
-    if (namespace !== undefined) {
-        path = join(path, 'namespaces', namespace)
     }
 
     return path
