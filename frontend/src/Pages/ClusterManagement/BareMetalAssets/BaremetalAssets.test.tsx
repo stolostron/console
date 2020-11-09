@@ -2,32 +2,28 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { BareMetalAsset, bareMetalAssets } from '../../../lib/BareMetalAsset'
+import { BareMetalAsset, bareMetalAssets } from '../../../library/resources/bare-metal-asset'
 import { BareMetalAssetsPage } from './BaremetalAssets'
 import { nockDelete, nockList } from '../../../lib/nock-util'
 
-function MakeBMA(name: string) {
-    const bma: BareMetalAsset = {
-        apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
-        kind: 'BareMetalAsset',
-        metadata: {
-            name: name,
-            namespace: name + '-namespace',
+const bareMetalAsset: BareMetalAsset = {
+    apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
+    kind: 'BareMetalAsset',
+    metadata: {
+        name: 'test-bare-metal-asset-001',
+        namespace: 'test-bare-metal-asset-namespace',
+    },
+    spec: {
+        bmc: {
+            address: 'example.com:80',
+            credentialsName: 'secret-test-bare-metal-asset',
         },
-        spec: {
-            bmc: {
-                address: 'example.com',
-                credentialsName: 'secret-test-bare-metal-assset',
-            },
-            bootMac: '00:90:7F:12:DE:7F',
-        },
-    }
-    return bma
+        bootMac: '00:90:7F:12:DE:7F',
+    },
 }
 
-const mockBareMetalAssets = [
-    MakeBMA('test-bare-metal-asset-1')
-]
+
+const mockBareMetalAssets = [bareMetalAsset]
 
 describe('bare metal asset page', () => {
 
@@ -53,7 +49,7 @@ describe('bare metal asset page', () => {
 
     test('can delete asset from overflow menu', async () => {
         const listNock = nockList(bareMetalAssets, mockBareMetalAssets)
-        const deleteNock = nockDelete(bareMetalAssets, mockBareMetalAssets[0])
+        const deleteNock = nockDelete(mockBareMetalAssets[0])
         
         const { getByText, getAllByText, getAllByLabelText, queryByText, container } = render(
             <MemoryRouter>
@@ -66,7 +62,7 @@ describe('bare metal asset page', () => {
         expect(getByText(mockBareMetalAssets[0].metadata.name!)).toBeInTheDocument()
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('Delete Asset')) // click the delete action
-        expect(getByText('Confirm')).toBeInTheDocument
+        expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
         console.log('checking container: ',container.innerHTML.toString())
@@ -75,7 +71,7 @@ describe('bare metal asset page', () => {
 
     test('can delete assset(s) from batch action menu', async () => {
         const listNock = nockList(bareMetalAssets, mockBareMetalAssets)
-        const deleteNock = nockDelete(bareMetalAssets, mockBareMetalAssets[0])
+        const deleteNock = nockDelete(mockBareMetalAssets[0])
         
         const { getByText, getAllByText, getByLabelText, getAllByLabelText, queryByText, container } = render(
             <MemoryRouter>
@@ -89,7 +85,7 @@ describe('bare metal asset page', () => {
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
         userEvent.click(getByText('Destroy')) // click the delete action
-        expect(getByText('Confirm')).toBeInTheDocument
+        expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
         console.log('checking container: ',container.innerHTML.toString())

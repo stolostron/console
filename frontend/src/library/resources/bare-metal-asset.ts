@@ -1,9 +1,18 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { GetWrapper, resourceMethods, ResourceList } from './Resource'
+import { ResourceList } from './resource'
+import { resourceMethods } from '../utils/resource-methods'
+//import { ProviderID } from '../../lib/providers'
+import { useQuery } from '../../lib/useQuery'
+
+export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
+export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
+
+export const BareMetalAssetKind = 'BareMetalAsset'
+export type BareMetalAssetKindType = 'BareMetalAsset'
 
 export interface BareMetalAsset {
-    apiVersion: 'inventory.open-cluster-management.io/v1alpha1'
-    kind: 'BareMetalAsset'
+    apiVersion: BareMetalAssetApiVersionType
+    kind: BareMetalAssetKindType
     metadata: V1ObjectMeta
     spec: {
         bmc: {
@@ -24,8 +33,8 @@ export interface BareMetalAsset {
 }
 
 export const bareMetalAssets = resourceMethods<BareMetalAsset>({
-    path: '/apis/inventory.open-cluster-management.io/v1alpha1',
-    plural: 'baremetalassets',
+    apiVersion: BareMetalAssetApiVersion,
+    kind: BareMetalAssetKind
 })
 // TODO: generate logic for listing BMA in edge cases, where fields are missing
 const originalList = bareMetalAssets.list
@@ -42,7 +51,7 @@ bareMetalAssets.create = async (bareMetalAsset: BareMetalAsset) => {
 }
 
 export function BareMetalAssets() {
-    return GetWrapper<ResourceList<BareMetalAsset>>(bareMetalAssets.list)
+    return useQuery<ResourceList<BareMetalAsset>>(bareMetalAssets.list)
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {

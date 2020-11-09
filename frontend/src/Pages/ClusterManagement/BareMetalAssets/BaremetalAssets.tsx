@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels, bareMetalAssets } from '../../../lib/BareMetalAsset'
+import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels, bareMetalAssets } from '../../../library/resources/bare-metal-asset'
 import { ClusterManagementPageHeader } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
@@ -39,13 +39,13 @@ export function BareMetalAssets() {
             ></BareMetalAssetsTable>
 }
 
-export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[], deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>, refresh: () => void) {
+export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[], deleteBareMetalAsset: (name: string, namespace?: string) => Promise<unknown>, refresh: () => void) {
     const promises: Array<Promise<any>> = []
 
     bareMetalAssets.forEach( bareMetalAsset => {
         promises.push(
             deleteBareMetalAsset(
-            bareMetalAsset.metadata?.name,
+            bareMetalAsset.metadata.name!,
             bareMetalAsset.metadata?.namespace
         ))
    })
@@ -58,7 +58,7 @@ export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[], deleteB
 export function BareMetalAssetsTable(props: { 
     bareMetalAssets: BareMetalAsset[] 
     refresh: () => void
-    deleteBareMetalAsset: (name?: string, namespace?: string) => Promise<unknown>}) {
+    deleteBareMetalAsset: (name: string, namespace?: string) => Promise<unknown>}) {
 
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const history = useHistory()
@@ -152,7 +152,7 @@ export function BareMetalAssetsTable(props: {
                             confirm: () => {
                                 props
                                     .deleteBareMetalAsset(
-                                        bareMetalAsset.metadata?.name,
+                                        bareMetalAsset.metadata.name!,
                                         bareMetalAsset.metadata?.namespace
                                     )
                                     .then(() => {
