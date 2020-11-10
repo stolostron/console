@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 // CONSOLE-HEADER
 import Axios, { AxiosResponse } from 'axios'
 
@@ -5,7 +7,23 @@ declare global {
     interface Window {
       __PRELOADED_STATE__: object
     }
-  }
+}
+
+type FilePath = {
+    path: string
+}
+
+type HeaderAssets = {
+    headerHtml: string,
+    files: {
+        dll: FilePath
+        js: FilePath
+        css: FilePath
+        nls: FilePath
+    }
+    props: object
+    state: object
+}
 
 export const fetchHeader = async () => {
     let headerResponse: AxiosResponse
@@ -18,7 +36,7 @@ export const fetchHeader = async () => {
         })
 
         if (headerResponse.status === 200) {
-            const { headerHtml, files, props, state } = headerResponse.data
+            const { headerHtml, files, props, state } = headerResponse.data as HeaderAssets
 
             const head = document.querySelector('head')
             const body = document.querySelector('body')

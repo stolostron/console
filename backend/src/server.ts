@@ -30,6 +30,14 @@ import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
 
+// CONSOLE-HEADER
+import fastifyReplyFrom from 'fastify-reply-from'
+declare module 'fastify-reply-from' {
+    export interface From {
+        from: (path: string) => void
+    }
+}
+
 function noop(): void {
     /* Do Nothing */
 }
@@ -131,9 +139,10 @@ export async function startServer(): Promise<FastifyInstance> {
     }
 
     // CONSOLE-HEADER
+    /* istanbul ignore next */
     if (process.env.NODE_ENV === 'development') {
         const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
-        fastify.register(require('fastify-reply-from'), {
+        fastify.register(fastifyReplyFrom, {
             base: acmUrl
         })
     
