@@ -101,18 +101,18 @@ test('Clusters Page', async () => {
     expect(getByText("cluster:clusters")).toBeInTheDocument()
     expect(getByText("connection:connections")).toBeInTheDocument()
     expect(getByText("bma:bmas")).toBeInTheDocument()
-    expect(getByText('Create cluster')).toBeInTheDocument()
-    expect(getByText('Import cluster')).toBeInTheDocument()
+    expect(getByText('clusters.managed.createCluster')).toBeInTheDocument()
+    expect(getByText('clusters.managed.importCluster')).toBeInTheDocument()
     
     // Expect ManagedCluster appears
     await waitFor(() => expect(getByText(mockManagedClusters[0].metadata.name!)).toBeInTheDocument())
     
     // Click on Discovered ToggleGroupItem
-    userEvent.click(getByText('Discovered'))
+    userEvent.click(getByText('clusters.discovered'))
 
     // Wait for discovery related resources to appear
-    await waitFor(() => expect(getByText("Edit cluster discovery")).toBeInTheDocument())
-    await waitFor(() => expect(getByText("Disable cluster discovery")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.edit")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.disable")).toBeInTheDocument())
     await waitFor(() => expect(getByText(mockDiscoveredClusters[0].spec.providerConnections![0].name!)).toBeInTheDocument())
 
     // Ensure data for each discoveredcluster appears in table
@@ -141,10 +141,10 @@ test('No Discovered Clusters', async() => {
     await waitFor(() => expect(getByText(mockManagedClusters[0].metadata.name!)).toBeInTheDocument())
     
     // Click on Discovered ToggleGroupItem
-    userEvent.click(getByText('Discovered'))
+    userEvent.click(getByText('clusters.discovered'))
 
-    await waitFor(() => expect(getByText("Edit cluster discovery")).toBeInTheDocument())
-    await waitFor(() => expect(getByText("Disable cluster discovery")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.edit")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.disable")).toBeInTheDocument())
 
     await waitFor(() => expect(getByText("clusters.discovery.emptyStateHeader")).toBeInTheDocument())
     await waitFor(() => expect(getByText("clusters.discovery.emptyStateMsg")).toBeInTheDocument())
