@@ -13,8 +13,8 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAsset, bareMetalAssets, BMASecret, bmaSecrets, MakeId } from '../../../lib/BareMetalAsset'
-import { Project, Projects } from '../../../lib/Project'
+import { BareMetalAsset, bareMetalAssets, BMASecret, bmaSecrets, MakeId } from '../../../library/resources/bare-metal-asset'
+import { Project, useProjects } from '../../../library/resources/project'
 import { NavigationPath } from '../ClusterManagement'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
@@ -66,7 +66,7 @@ export function CreateBareMetalAssetPageData(props: {
     bmaSecretID?: string
 }) {
 
-    const projectsQuery = Projects()
+    const projectsQuery = useProjects()
 
     if (projectsQuery.loading) {
         return <AcmLoadingPage />
@@ -245,7 +245,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     'base64'
                                 )
                             }
-
+                            console.log('checking baremetal asset apiVersion: ', bareMetalAsset.apiVersion)
                             bmaSecrets.create(bmaSecret as BMASecret)
                             props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).then(() => {
                                 history.push(NavigationPath.baremetalAssets)

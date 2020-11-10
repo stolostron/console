@@ -117,7 +117,7 @@ export interface BMASecret extends V1Secret {
     }
 }
 
-export const bmaSecrets = resourceMethods<BMASecret>({ path: '/api/v1', plural: 'secrets' })
+export const bmaSecrets = resourceMethods<BMASecret>({ apiVersion: 'v1', kind: 'Secret' })
 
 const originalSecretCreate = bmaSecrets.create
 

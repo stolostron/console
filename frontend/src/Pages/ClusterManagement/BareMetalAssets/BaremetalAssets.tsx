@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { BareMetalAssets as GetBareMetalAsset, BareMetalAsset, BMAStatusMessage, GetLabels, bareMetalAssets } from '../../../library/resources/bare-metal-asset'
-import { ClusterManagementPageHeader } from '../ClusterManagement'
+import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function BareMetalAssetsPage() {
     return (

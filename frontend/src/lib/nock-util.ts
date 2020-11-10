@@ -2,8 +2,7 @@ import nock from 'nock'
 import { join } from 'path'
 import { IResource } from '../library/resources/resource'
 import { IResourceMethods, getResourcePath, getResourceNamePath } from '../library/utils/resource-methods'
-import { IResource, IResourceMethods } from './Resource'
-import { Project } from './Project'
+import { Project } from '../library/resources/project'
 
 export function nockListProjects(
     projects:Array<Project>
@@ -33,7 +32,7 @@ export function nockList<Resource extends IResource>(
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join('/cluster-management/namespaced', getResourcePath(resourceMethods))
     )
-
+        console.log('checking url: ', process.env.REACT_APP_BACKEND, getResourcePath(resourceMethods))
     if (labels) {
         nockScope = nockScope.query({
             labelSelector: encodeURIComponent(labels.join(',')),
