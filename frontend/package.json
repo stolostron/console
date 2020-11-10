@@ -19,6 +19,7 @@
         "i18next": "^19.8.3",
         "i18next-browser-languagedetector": "^6.0.1",
         "i18next-http-backend": "^1.0.21",
+        "moment": "^2.29.1",
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
         "react-i18next": "^11.7.3",
@@ -50,8 +51,8 @@
         "test:watch": "npm run generate && react-scripts test",
         "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
         "lint:fix": "eslint src --ext .ts,.tsx --fix",
-        "check": "prettier --check src/**/*.tsx **/*.json",
-        "check:fix": "prettier --write src/**/*.tsx **/*.json",
+        "check": "prettier --check src/**/*.tsx src/**/*.ts",
+        "check:fix": "prettier --write src/**/*.tsx src/**/*.ts",
         "generate": "graphql-codegen --config src/graphql/codegen.yml",
         "generate:watch": "graphql-codegen -w -s --config src/graphql/codegen.yml",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check"
