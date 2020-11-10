@@ -106,6 +106,7 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     },
     {
         header: 'Connected From',
+        tooltip: "TODO",
         cell: (discoveredCluster) => (
             <span key="connectedFrom">&nbsp; {discoveredCluster.spec.providerConnections === undefined ? 
                 [
@@ -227,7 +228,7 @@ export function ClustersTable(props: {
     refresh: () => void
 }) {
     const { t } = useTranslation(['cluster'])
-    const [view, setView] = useState<string>('first')
+    const [view, setView] = useState<string>('managedToggleBtn')
 
     function mckeyFn(cluster: ManagedCluster) {
         return cluster.metadata.uid!
@@ -237,7 +238,7 @@ export function ClustersTable(props: {
 
     }
     const history = useHistory()
-    if (view === 'first') {
+    if (view === 'managedToggleBtn') {
         return (
             <AcmTable<ManagedCluster>
                 plural="clusters"
@@ -248,39 +249,39 @@ export function ClustersTable(props: {
                 tableActions={[
                     {
                         id: 'createCluster',
-                        title: 'Create cluster',
+                        title: t('clusters.managed.createCluster'),
                         click: () => history.push(NavigationPath.createCluster),
                     },
                     {
                         id: 'importCluster',
-                        title: 'Import cluster',
+                        title: t('clusters.managed.importCluster'),
                         click: () => history.push(NavigationPath.importCluster),
                     },
                 ]}
                 bulkActions={[
                     {
                         id: 'destroyCluster',
-                        title: 'Destroy',
+                        title: t('clusters.managed.destroy'),
                         click: (managedClusters) => {
                             // TODO props.deleteCluster
                             props.refresh()
                         },
                     },
-                    { id: 'detachCluster', title: 'Detach', click: (managedClusters) => {} },
-                    { id: 'upgradeClusters', title: 'Upgrade', click: (managedClusters) => {} },
+                    { id: 'detachCluster', title: t('clusters.managed.detachSelected'), click: (managedClusters) => {} },
+                    { id: 'upgradeClusters', title: t('clusters.managed.upgradeSelected'), click: (managedClusters) => {} },
                 ]}
                 rowActions={[
-                    { id: 'editLabels', title: 'Edit labels', click: (managedCluster) => {} },
-                    { id: 'launchToCluster', title: 'Launch to cluster', click: (managedCluster) => {} },
-                    { id: 'upgradeCluster', title: 'Upgrade cluster', click: (managedCluster) => {} },
-                    { id: 'searchCluster', title: 'Search cluster', click: (managedCluster) => {} },
-                    { id: 'detachCluster', title: 'Detach cluster', click: (managedCluster) => {} },
+                    { id: 'editLabels', title: t('clusters.managed.editLabels'), click: (managedCluster) => {} },
+                    { id: 'launchToCluster', title: t('clusters.managed.launch'), click: (managedCluster) => {} },
+                    { id: 'upgradeCluster', title: t('clusters.managed.upgrade'), click: (managedCluster) => {} },
+                    { id: 'searchCluster', title: t('clusters.managed.search'), click: (managedCluster) => {} },
+                    { id: 'detachCluster', title: t('clusters.managed.detached'), click: (managedCluster) => {} },
                 ]}
-                emptyState={<AcmEmptyState title="No managed clusters found" key="mcEmptyState"/>}
+                emptyState={<AcmEmptyState title={t("clusters.managed.emptyStateHeader")} key="mcEmptyState"/>}
                 extraToolbarControls={
                     <ToggleGroup>
-                        <ToggleGroupItem isSelected={true} text="Managed" buttonId="first" onChange={(selected, event) => setView(event.currentTarget.id)}/>
-                        <ToggleGroupItem isSelected={false} text="Discovered" buttonId="second" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem isSelected={true} text={t('clusters.managed')} buttonId="managedToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem isSelected={false} text={t('clusters.discovered')} buttonId="discoveredToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
                     </ToggleGroup>
                 }
             />
@@ -296,24 +297,24 @@ export function ClustersTable(props: {
                 tableActions={[
                     {
                         id: 'editClusterDiscvoveryBtn',
-                        title: 'Edit cluster discovery',
+                        title: t('clusters.discovery.edit'),
                         click: () => {}, // TODO: Make this button work
                     },
                     {
                         id: 'disableClusterDiscvoveryBtn',
-                        title: 'Disable cluster discovery',
+                        title: t('clusters.discovery.disable'),
                         click: () => {}, // TODO: Make this button work
                     },
                 ]}
                 bulkActions={[]}
                 rowActions={[
-                    { id: 'importCluster', title: 'Import Cluster', click: (item) => {}, },
+                    { id: 'importCluster', title: t('clusters.discovery.import'), click: (item) => {}, },
                 ]}
                 emptyState={<AcmEmptyState action={<AcmButton>{t('clusters.discovery.enablediscoverybtn')}</AcmButton>} title={t('clusters.discovery.emptyStateHeader')} message={t('clusters.discovery.emptyStateMsg')} key="dcEmptyState"/>}
                 extraToolbarControls={
                     <ToggleGroup>
-                        <ToggleGroupItem isSelected={false} text="Managed" buttonId="first" onChange={(selected, event) => setView(event.currentTarget.id)}/>
-                        <ToggleGroupItem isSelected={true} text="Discovered" buttonId="second" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem isSelected={false} text={t('clusters.managed')} buttonId="managedToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem isSelected={true} text={t('clusters.discovered')} buttonId="discoveredToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
                     </ToggleGroup>
                 }
             />

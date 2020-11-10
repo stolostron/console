@@ -23,11 +23,6 @@
         "docker:run": "npm run docker:build && docker run --rm --env-file backend/.env -p 3000:3000 -e PORT=3000 console"
     },
     "dependencies": {
-        "@types/jest": "^26.0.15",
-        "concurrently": "^5.3.0",
-        "moment": "^2.29.1"
-    },
-    "devDependencies": {
-        "jest": "^26.6.0"
+        "concurrently": "^5.3.0"
     }
 }

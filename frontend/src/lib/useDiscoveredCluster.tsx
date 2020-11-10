@@ -2,7 +2,6 @@ import { DiscoveredCluster, discoveredClusterMethods } from '../library/resource
 import { ResourceList } from '../library/resources/resource'
 import { useQuery } from './useQuery'
 
-
 export function useDiscoveredClusters() {
     return useQuery<ResourceList<DiscoveredCluster>>(discoveredClusterMethods.list)
 }
