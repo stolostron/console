@@ -7,7 +7,7 @@ declare global {
     }
   }
 
-const fetchHeader = async () => {
+export const fetchHeader = async () => {
     let headerResponse: AxiosResponse
     try {
         headerResponse = await Axios.request({
@@ -57,8 +57,10 @@ const fetchHeader = async () => {
             head?.appendChild(link)
         }
     } catch(err) {
+        headerResponse = err
         console.error(err)
     }
+    return headerResponse
 }
 
 fetchHeader()

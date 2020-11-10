@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
-import './acm-header'
+import './lib/acm-header'
 
 ReactDOM.render(
     <React.StrictMode>
