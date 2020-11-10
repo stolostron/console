@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "homepage": "/cluster-management/",
+    "proxy": "http://localhost:4000",
     "dependencies": {
         "@apollo/client": "^3.2.5",
         "@kubernetes/client-node": "^0.13.0",
