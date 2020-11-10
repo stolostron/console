@@ -4,6 +4,7 @@ import {
     AcmPageCard,
     AcmTable,
     IAcmTableColumn,
+    AcmButton
 } from '@open-cluster-management/ui-components'
 import { useHistory, Link } from 'react-router-dom'
 import { useDiscoveredClusters} from '../../../lib/useDiscoveredCluster'
@@ -16,6 +17,7 @@ import { useManagedClusters } from '../../../lib/useManagedCluster'
 import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
 import { DiscoveredCluster} from '../../../library/resources/discovered-cluster'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
+import { useTranslation } from 'react-i18next'
 let moment = require('moment');
 
 const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
@@ -206,13 +208,6 @@ export function ClustersPageContent() {
         return discoveredClustersQuery.stopPolling
     }, [discoveredClustersQuery])
 
-    // if (managedClustersQuery.loading || discoveredClustersQuery.loading) {
-    //     return <AcmLoadingPage />
-    // } else if (managedClustersQuery.error) {
-    //     return <ErrorPage error={managedClustersQuery.error} />
-    // } else if (discoveredClustersQuery.error) {
-    //     return <ErrorPage error={discoveredClustersQuery.error} />
-    // } 
     return (
         <AcmPageCard>
             <ClustersTable
@@ -231,6 +226,7 @@ export function ClustersTable(props: {
     deleteCluster: (name: string, namespace: string) => void
     refresh: () => void
 }) {
+    const { t } = useTranslation(['cluster'])
     const [view, setView] = useState<string>('first')
 
     function mckeyFn(cluster: ManagedCluster) {
@@ -313,7 +309,7 @@ export function ClustersTable(props: {
                 rowActions={[
                     { id: 'importCluster', title: 'Import Cluster', click: (item) => {}, },
                 ]}
-                emptyState={<AcmEmptyState title="No discovered clusters found" key="dcEmptyState"/>}
+                emptyState={<AcmEmptyState action={<AcmButton>{t('clusters.discovery.enablediscoverybtn')}</AcmButton>} title={t('clusters.discovery.emptyStateHeader')} message={t('clusters.discovery.emptyStateMsg')} key="dcEmptyState"/>}
                 extraToolbarControls={
                     <ToggleGroup>
                         <ToggleGroupItem isSelected={false} text="Managed" buttonId="first" onChange={(selected, event) => setView(event.currentTarget.id)}/>

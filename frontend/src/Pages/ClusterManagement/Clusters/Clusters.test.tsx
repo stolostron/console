@@ -125,5 +125,28 @@ test('Clusters Page', async () => {
             expect(getByText(dc.spec.cloudProvider)).toBeInTheDocument()
         }
     })
+})
 
+test('No Discovered Clusters', async() => {
+    nockList(managedClusterMethods, mockManagedClusters) 
+    nockList(discoveredClusterMethods, [] as DiscoveredCluster[])
+
+    // Render ClustersPage
+    const { getByText } = render(
+        <Router>
+            <ClustersPage />
+        </Router>
+    )
+
+    await waitFor(() => expect(getByText(mockManagedClusters[0].metadata.name!)).toBeInTheDocument())
+    
+    // Click on Discovered ToggleGroupItem
+    userEvent.click(getByText('Discovered'))
+
+    await waitFor(() => expect(getByText("Edit cluster discovery")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("Disable cluster discovery")).toBeInTheDocument())
+
+    await waitFor(() => expect(getByText("clusters.discovery.emptyStateHeader")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.emptyStateMsg")).toBeInTheDocument())
+    await waitFor(() => expect(getByText("clusters.discovery.enablediscoverybtn")).toBeInTheDocument())
 })

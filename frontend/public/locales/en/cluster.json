@@ -2,6 +2,9 @@
   "page.header.cluster-management": "Cluster Management",
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
+  "clusters.discovery.enablediscoverybtn": "Enable cluster discovery",
+  "clusters.discovery.emptyStateHeader": "No clusters are discovered, yet",
+  "clusters.discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
 
   "empty-state.cluster.title": "No clusters found",
   "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the Import an existing cluster and Create a cluster buttons are disabled.",
