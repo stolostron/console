@@ -227,6 +227,9 @@ export function ClustersTable(props: {
     deleteCluster: (name: string, namespace: string) => void
     refresh: () => void
 }) {
+    sessionStorage.removeItem('DiscoveredClusterName')
+    sessionStorage.removeItem("DiscoveredClusterConsoleURL")
+
     const { t } = useTranslation(['cluster'])
     const [view, setView] = useState<string>('managedToggleBtn')
 
@@ -308,7 +311,15 @@ export function ClustersTable(props: {
                 ]}
                 bulkActions={[]}
                 rowActions={[
-                    { id: 'importCluster', title: t('discovery.import'), click: (item) => {}, },
+                    {
+                        id: 'importCluster',
+                        title: t('discovery.import'),
+                        click: (item) => {
+                            sessionStorage.setItem("DiscoveredClusterName", item.spec.name)
+                            sessionStorage.setItem("DiscoveredClusterConsoleURL", item.spec.console)
+                            history.push(NavigationPath.importCluster)
+                        },
+                    },
                 ]}
                 emptyState={<AcmEmptyState action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>} title={t('discovery.emptyStateHeader')} message={t('discovery.emptyStateMsg')} key="dcEmptyState"/>}
                 extraToolbarControls={

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
     AcmPage,
@@ -8,10 +8,14 @@ import {
     AcmCodeSnippet,
     AcmSpinnerBackdrop,
     AcmAlert,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import { Title, AlertVariant } from '@patternfly/react-core'
+import { Title, AlertVariant, Tabs, Tab, TabTitleText, Card, CardTitle, CardBody, CardFooter, Button } from '@patternfly/react-core'
 import { secretMethods } from '../../../library/resources/secret'
 import { AxiosResponse } from 'axios'
+import { NavigationPath } from '../ClusterManagement'
+
 
 export function ImportCommandPage() {
     const { clusterName } = useParams() as { clusterName: string }
@@ -29,6 +33,8 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
     const [importCommand, setImportCommand] = useState<string>('')
     const [error, setError] = useState<AxiosResponse | undefined>()
     const [loading, setLoading] = useState<boolean>(true)
+    const [active, setActive] = useState('first')
+    const [clusterConsoleURL] = useState<string>(sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? '')
 
     useEffect(() => {
         ;(async () => {
@@ -60,14 +66,35 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
 
     return (
         <AcmPageCard>
-            <Title headingLevel="h2">{t('import.command.generated')}</Title>
-            <AcmCodeSnippet
-                id="import-command"
-                fakeCommand={t('import.command.fake')}
-                command={importCommand}
-                copyTooltipText={t('clipboardCopy')}
-                copySuccessText={t('copied')}
-            />
+            <Tabs activeKey={active}>
+                <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
+                    <Card>
+                        <CardTitle>{t('import.command.generated')}</CardTitle>
+                        <CardBody>
+                            <AcmCodeSnippet
+                            id="import-command"
+                            fakeCommand={t('import.command.fake')}
+                            command={importCommand}
+                            copyTooltipText={t('clipboardCopy')}
+                            copySuccessText={t('copied')}
+                            />
+                        </CardBody>
+                        <CardTitle>{t('import.command.configurecluster')}</CardTitle>
+                        <CardBody>
+                            {t('import.command.configureclusterdescription')}
+                        </CardBody>
+                        <CardFooter>
+                            <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
+                        </CardFooter>
+                    </Card>
+                </Tab>
+            </Tabs>
+            <Card>
+                <CardBody>
+                    <Link to={NavigationPath.clusterDetails.replace(":id", props.clusterName as string)}><Button variant="primary">{t('import.footer.viewcluster')}</Button></Link>{' '}
+                    <Link to={NavigationPath.clusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link>
+                </CardBody>
+            </Card>
         </AcmPageCard>
     )
 }
