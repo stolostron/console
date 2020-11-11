@@ -7,18 +7,16 @@ import './i18n/'
 
 function App() {
     return (
-        <AcmHeader activeItem={NavItemE.clusterManagement}>
-            <Router>
-                <Switch>
-                    <Route path="/cluster-management">
-                        <ClusterManagement />
-                    </Route>
-                    <Route path="/">
-                        <Redirect to="/cluster-management" />
-                    </Route>
-                </Switch>
-            </Router>
-        </AcmHeader>
+        <Router>
+            <Switch>
+                <Route path="/cluster-management">
+                    <ClusterManagement />
+                </Route>
+                <Route path="/">
+                    <Redirect to="/cluster-management" />
+                </Route>
+            </Switch>
+        </Router>
     )
 }
 

@@ -30,6 +30,14 @@ import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
 import { IUserContext } from './lib/user-context'
 
+// CONSOLE-HEADER
+import fastifyReplyFrom from 'fastify-reply-from'
+declare module 'fastify-reply-from' {
+    export interface From {
+        from: (path: string) => void
+    }
+}
+
 function noop(): void {
     /* Do Nothing */
 }
@@ -128,6 +136,39 @@ export async function startServer(): Promise<FastifyInstance> {
             logError('proxy error', err, { method: req.method, url: req.url })
             void res.code(500).send(err)
         }
+    }
+
+    // CONSOLE-HEADER
+    /* istanbul ignore next */
+    if (process.env.NODE_ENV === 'development') {
+        const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+        fastify.register(fastifyReplyFrom, {
+            base: acmUrl
+        })
+    
+        fastify.all('/multicloud/header/*', (req, res) => {
+            req.headers.authorization = `Bearer ${req.cookies['acm-access-token-cookie']}`
+            res.from(req.raw.url)
+        })
+    
+        fastify.all('/cluster-management/header', async (req, res) => {
+            let headerResponse: AxiosResponse
+            try {
+                headerResponse = await Axios.request({
+                    url: `${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${process.env.NODE_ENV === 'development'}`,
+                    method: 'GET',
+                    httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+                    headers: {
+                        Authorization: `Bearer ${req.cookies['acm-access-token-cookie']}`,
+                    },
+                    responseType: 'json',
+                    validateStatus: () => true
+                })
+            } catch(err) {
+                return res.code(500).send(err)
+            }
+            return res.code(headerResponse.status).send(headerResponse?.data)
+        })
     }
 
     fastify.all('/cluster-management/proxy/*', proxy)
