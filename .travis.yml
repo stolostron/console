@@ -13,6 +13,8 @@ jobs:
     include:
         - stage: build test push
           script:
+              - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
+              - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/ubi-minimal
               - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
               - make component/build
               - if [ "$DOCKER_PASS" != "" ]; then make component/push ; else echo "No DOCKER_PASS. Skipping image push."; fi
