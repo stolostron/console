@@ -12,8 +12,7 @@ import {
     AcmExpandableSection,
     AcmHeader,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant, Card, CardTitle, CardBody, Tile, CardFooter, Label } from '@patternfly/react-core'
-import CodeIcon from '@patternfly/react-icons/dist/js/icons/code-icon'
+import { ActionGroup, Button, SelectOption, AlertVariant, Label } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
@@ -154,8 +153,6 @@ export function ImportClusterPageContent() {
                         value={additionalLabels}
                         onChange={(label) => setAdditionaLabels(label)}
                     />
-                    
-
                     <ActionGroup>
                         <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
                             {t('import.form.submit')}
@@ -172,16 +169,6 @@ export function ImportClusterPageContent() {
                     </ActionGroup>
                 </AcmForm>
             </AcmExpandableSection>
-            {/* <AcmExpandableSection label={t('import.importmode.header')} expanded={true}>
-                <Card>
-                    <CardTitle>{t('import.importmode.subheader')}</CardTitle>
-                    <CardBody>{t('import.importmode.body')}</CardBody>
-                    <CardFooter>
-                        <Tile id="importModeManual" title={t('import.importmode.footer')} icon={<CodeIcon />} isSelected></Tile>
-                    </CardFooter>
-                </Card>
-            </AcmExpandableSection> */}
-
             <br></br>
             { submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null }
         </AcmPageCard>

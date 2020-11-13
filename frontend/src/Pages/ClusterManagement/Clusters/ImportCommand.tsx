@@ -9,7 +9,7 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { Text, TextVariants, AlertVariant, Tabs, Tab, TabTitleText, Card, CardTitle, CardBody, CardFooter, Button } from '@patternfly/react-core'
-import { getSecret, Secret } from '../../../library/resources/secret'
+import {  getSecret, Secret } from '../../../library/resources/secret'
 import { AxiosResponse } from 'axios'
 import { NavigationPath } from '../ClusterManagement'
 
