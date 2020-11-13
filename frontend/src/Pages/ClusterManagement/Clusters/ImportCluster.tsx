@@ -1,26 +1,27 @@
-import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmForm,
     AcmLabelsInput,
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
     AcmSelect,
-    AcmTextInput,
-    AcmAlert,
-    AcmAlertGroup,
     AcmSpinnerBackdrop,
+    AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant } from '@patternfly/react-core'
+import { ActionGroup, AlertVariant, Button, SelectOption } from '@patternfly/react-core'
+import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { createManagedCluster } from '../../../library/resources/managed-cluster'
+import { useHistory } from 'react-router-dom'
 import { createKlusterletAddonConfig } from '../../../library/resources/klusterlet-add-on-config'
+import { createManagedCluster } from '../../../library/resources/managed-cluster'
 import { createProject } from '../../../library/resources/project'
+import { IResource } from '../../../library/resources/resource'
+import { deleteResources } from '../../../library/utils/delete-resources'
+import { ResourceError, ResourceErrorCode } from '../../../library/utils/resource-request'
 import { NavigationPath } from '../ClusterManagement'
-import { AxiosResponse } from 'axios'
-import { deleteCreatedResources } from '../../../library/utils/resource-methods'
 
 export function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -39,7 +40,7 @@ export function ImportClusterPageContent() {
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
-    const [errors, setErrors] = useState<AxiosResponse[]>([])
+    const [error, setError] = useState<string>()
     const [loading, setLoading] = useState<boolean>(false)
 
     const onSubmit = async () => {
@@ -50,27 +51,36 @@ export function ImportClusterPageContent() {
             vendor: 'auto-detect',
             name: clusterName,
             environment: environmentLabel ?? '',
-            ...additionalLabels
+            ...additionalLabels,
         }
-        const projectResponse = await createProject(clusterName)
-        let errors = []
-        if (projectResponse.status === 201 || projectResponse.status === 409) {
-            const response = await Promise.all([
-                createKlusterletAddonConfig({ clusterName, clusterLabels }),
-                createManagedCluster({ clusterName, clusterLabels }),
-            ])
-            /* istanbul ignore next */
-            errors = response.filter((res) => res.status < 200 || res.status >= 300) ?? []
-            errors.length > 0 && (await deleteCreatedResources(response))
-        } else {
-            errors.push(projectResponse)
-        }
-
-        if (errors.length > 0) {
-            setErrors(errors)
-            setLoading(false)
-        } else {
+        const createdResources: IResource[] = []
+        setError(undefined)
+        try {
+            try {
+                createdResources.push(await createProject(clusterName).promise)
+            } catch (err) {
+                const resourceError = err as ResourceError
+                if (resourceError.code !== ResourceErrorCode.Conflict) {
+                    throw err
+                }
+            }
+            createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
+            createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
             history.push(`/cluster-management/clusters/import/${clusterName}`)
+        } catch (err) {
+            if (err instanceof Error) {
+                if (err.name === 'ResourceError') {
+                    const resourceError = err as ResourceError
+                    setError(resourceError.message)
+                } else {
+                    setError(err.message)
+                }
+            } else {
+                setError('Unknown error occurred.')
+            }
+            await Promise.allSettled(deleteResources(createdResources))
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -78,16 +88,14 @@ export function ImportClusterPageContent() {
         <AcmPageCard>
             {loading && <AcmSpinnerBackdrop />}
             <AcmForm id="import-cluster-form">
-                {errors.length > 0 && (
+                {error && (
                     <AcmAlertGroup>
-                        {errors.map((error: AxiosResponse) => (
-                            <AcmAlert
-                                variant={AlertVariant.danger}
-                                title={t('common:request.failed')}
-                                subtitle={`${error.data.code}: ${error.data.message}`}
-                                key={error.data.message}
-                            />
-                        ))}
+                        <AcmAlert
+                            variant={AlertVariant.danger}
+                            title={t('common:request.failed')}
+                            subtitle={error}
+                            key={error}
+                        />
                     </AcmAlertGroup>
                 )}
                 <AcmTextInput

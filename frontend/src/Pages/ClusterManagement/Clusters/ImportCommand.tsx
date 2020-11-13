@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import {
+    AcmAlert,
+    AcmCodeSnippet,
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
-    AcmCodeSnippet,
     AcmSpinnerBackdrop,
-    AcmAlert,
 } from '@open-cluster-management/ui-components'
-import { Title, AlertVariant } from '@patternfly/react-core'
-import { secretMethods } from '../../../library/resources/secret'
-import { AxiosResponse } from 'axios'
+import { AlertVariant, Title } from '@patternfly/react-core'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
+import { getSecret, Secret } from '../../../library/resources/secret'
+import { ResourceError } from '../../../library/utils/resource-request'
 
 export function ImportCommandPage() {
     const { clusterName } = useParams() as { clusterName: string }
@@ -27,35 +27,31 @@ export function ImportCommandPage() {
 export function ImportCommandPageContent(props: { clusterName: string }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [importCommand, setImportCommand] = useState<string>('')
-    const [error, setError] = useState<AxiosResponse | undefined>()
+    const [error, setError] = useState<string>()
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
-        ;(async () => {
-            const secret = (await pollImportYamlSecret(props.clusterName)) as AxiosResponse
-            if (secret.status === 200) {
-                const klusterletCRD = secret.data.data['crds.yaml']
-                const importYaml = secret.data.data['import.yaml']
+        pollImportYamlSecret(props.clusterName)
+            .then((secret) => {
+                const klusterletCRD = secret.data?.['crds.yaml']
+                const importYaml = secret.data?.['import.yaml']
                 setImportCommand(
                     `echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`
                 )
-            } else {
-                setError(secret)
-            }
-            setLoading(false)
-        })()
+            })
+            .catch((err) => {
+                const resourceError = err as ResourceError
+                setError(resourceError.message)
+            })
+            .finally(() => {
+                setLoading(false)
+            })
     }, [props.clusterName])
 
     if (loading) {
         return <AcmSpinnerBackdrop />
     } else if (error) {
-        return (
-            <AcmAlert
-                variant={AlertVariant.danger}
-                title={t('common:request.failed')}
-                subtitle={`${error.data.code}: ${error.data.message}`}
-            />
-        )
+        return <AcmAlert variant={AlertVariant.danger} title={t('common:request.failed')} subtitle={error} />
     }
 
     return (
@@ -72,18 +68,18 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
     )
 }
 
-async function pollImportYamlSecret(clusterName: string) {
-    let count = 0
-    let importYamlSecret: AxiosResponse
-
+async function pollImportYamlSecret(clusterName: string): Promise<Secret> {
+    let retries = 10
     const poll = async (resolve: any, reject: any) => {
-        importYamlSecret = await secretMethods.get({ namespace: clusterName, name: `${clusterName}-import` })
-        if ((!importYamlSecret || importYamlSecret.status === 404) && count < 10) {
-            count += 1
-            setTimeout(poll, 500, resolve, reject)
-        } else {
-            return resolve(importYamlSecret)
-        }
+        getSecret({ namespace: clusterName, name: `${clusterName}-import` })
+            .promise.then((secret) => resolve(secret))
+            .catch((err) => {
+                if (retries-- > 0) {
+                    setTimeout(poll, 500, resolve, reject)
+                } else {
+                    reject(err)
+                }
+            })
     }
     return new Promise(poll)
 }

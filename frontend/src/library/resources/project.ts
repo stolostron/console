@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { createResource, listClusterResources, listResources } from '../utils/resource-request'
 import { IResource } from './resource'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
@@ -26,21 +26,18 @@ export interface ProjectRequest extends IResource {
     metadata: V1ObjectMeta
 }
 
-export const projectMethods = resourceMethods<Project>({
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
-})
-
-export const projectRequestMethods = resourceMethods<ProjectRequest>({
-    apiVersion: ProjectRequestApiVersion,
-    kind: ProjectRequestKind,
-})
-
 export const createProject = (name: string | undefined) => {
     if (!name) throw new Error('Project name is undefined')
-    return projectRequestMethods.create({
+    return createResource<ProjectRequest, Project>({
         apiVersion: ProjectRequestApiVersion,
         kind: ProjectRequestKind,
         metadata: { name },
+    })
+}
+
+export function listProjects() {
+    return listClusterResources<Project>({
+        apiVersion: ProjectApiVersion,
+        kind: ProjectKind,
     })
 }

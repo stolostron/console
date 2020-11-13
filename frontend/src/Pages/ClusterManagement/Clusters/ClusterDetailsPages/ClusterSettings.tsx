@@ -8,15 +8,24 @@ import {
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-icon'
-import { useClusterManagementAddons } from '../../../../lib/useClusterManagementAddOn'
-import { useManagedClusterAddOns } from '../../../../lib/useManagedClusterAddOn'
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode, useCallback, useEffect } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { ManagedClusterAddOn } from '../../../../library/resources/managed-cluster-add-on'
-import { ClusterManagementAddOn } from '../../../../library/resources/cluster-management-add-on'
+import { ManagedClusterAddOn, listManagedClusterAddOns } from '../../../../library/resources/managed-cluster-add-on'
+import {
+    ClusterManagementAddOn,
+    listClusterManagementAddOns,
+} from '../../../../library/resources/cluster-management-add-on'
+import { useQuery } from '../../../../lib/useQuery'
+
+export function useManagedClusterAddOns(namespace: string) {
+    const callback = useCallback(() => {
+        return listManagedClusterAddOns(namespace)
+    }, [namespace])
+    return useQuery(callback)
+}
 
 export function ClustersSettingsPageContent(props: { name: string; namespace: string }) {
-    const cma = useClusterManagementAddons()
+    const cma = useQuery(listClusterManagementAddOns)
     const mca = useManagedClusterAddOns(props.namespace)
     const refresh = () => {
         cma.refresh()
@@ -38,7 +47,7 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         return <ErrorPage error={cma.error} />
     } else if (mca.error) {
         return <ErrorPage error={mca.error} />
-    } else if (!cma.data?.items || cma.data.items.length === 0 || !mca.data?.items || mca.data.items.length === 0) {
+    } else if (!cma.data || cma.data.length === 0 || !mca.data || mca.data.length === 0) {
         return (
             <AcmPageCard>
                 <AcmEmptyState title="No add-ons found." message="Your cluster does not contain any addons." />
@@ -46,13 +55,7 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         )
     }
 
-    return (
-        <ClusterSettingsTable
-            clusterManagementAddOns={cma.data.items}
-            managedClusterAddOns={mca.data.items}
-            refresh={refresh}
-        />
-    )
+    return <ClusterSettingsTable clusterManagementAddOns={cma.data} managedClusterAddOns={mca.data} refresh={refresh} />
 }
 
 export function ClusterSettingsTable(props: {

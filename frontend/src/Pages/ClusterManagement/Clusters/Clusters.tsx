@@ -1,24 +1,24 @@
 import {
+    AcmButton,
     AcmEmptyState,
     AcmLabels,
     AcmPageCard,
     AcmTable,
     IAcmTableColumn,
-    AcmButton
 } from '@open-cluster-management/ui-components'
-import { useHistory, Link } from 'react-router-dom'
-import { useDiscoveredClusters} from '../../../lib/useDiscoveredCluster'
 import { Page, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
+import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import React, { Fragment, useEffect, useState} from 'react'
-import { useManagedClusters } from '../../../lib/useManagedCluster'
-import { ManagedCluster, managedClusterMethods } from '../../../library/resources/managed-cluster'
-import { DiscoveredCluster} from '../../../library/resources/discovered-cluster'
-import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-let moment = require('moment');
+import { Link, useHistory } from 'react-router-dom'
+import { useQuery } from '../../../lib/useQuery'
+import { DiscoveredCluster, listDiscoveredClusters } from '../../../library/resources/discovered-cluster'
+import { listManagedClusters, ManagedCluster } from '../../../library/resources/managed-cluster'
+import { deleteResource } from '../../../library/utils/resource-request'
+import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
+let moment = require('moment')
 
 const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
     {
@@ -26,7 +26,9 @@ const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
         sort: 'metadata.name',
         search: 'metadata.name',
         cell: (managedCluster) => (
-            <Link to={NavigationPath.clusterDetails.replace(":id", managedCluster.metadata.name as string)}>{managedCluster.metadata.name}</Link>
+            <Link to={NavigationPath.clusterDetails.replace(':id', managedCluster.metadata.name as string)}>
+                {managedCluster.metadata.name}
+            </Link>
         ),
     },
     {
@@ -80,9 +82,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         search: 'spec.name',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-                <a href={discoveredCluster.spec.console} key="dcConsoleURL"><span key="dcNamelink">{discoveredCluster.spec.name}</span></a>
+                <a href={discoveredCluster.spec.console} key="dcConsoleURL">
+                    <span key="dcNamelink">{discoveredCluster.spec.name}</span>
+                </a>
             </span>
-        )
+        ),
     },
     {
         header: 'Status',
@@ -106,21 +110,21 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     },
     {
         header: 'Connected From',
-        tooltip: "TODO",
+        tooltip: 'TODO',
         cell: (discoveredCluster) => (
-            <span key="connectedFrom">&nbsp; {discoveredCluster.spec.providerConnections === undefined ? 
-                [
-                    "N/A"
-                ] 
-                : discoveredCluster.spec.providerConnections![0].name ?? "N/A"
-            }</span>
+            <span key="connectedFrom">
+                &nbsp;{' '}
+                {discoveredCluster.spec.providerConnections === undefined
+                    ? ['N/A']
+                    : discoveredCluster.spec.providerConnections![0].name ?? 'N/A'}
+            </span>
         ),
     },
     {
         header: 'Distribution Version',
         sort: 'spec.openshiftVersion',
         cell: (discoveredCluster) => (
-            <span key="openShiftVersion">&nbsp; {"OpenShift ".concat(discoveredCluster.spec.openshiftVersion)}</span>
+            <span key="openShiftVersion">&nbsp; {'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}</span>
         ),
     },
     {
@@ -128,14 +132,9 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         sort: 'spec.cloudProvider',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcCloudProviderParent">
-                {discoveredCluster.spec.cloudProvider === 'aws' ? 
-                    [
-                        <AWSIcon key="aws-icon"/>,
-                        <span key="dcCloudProvider"> Amazon Web Services</span>
-                    ] 
-                    : 
-                    discoveredCluster.spec.cloudProvider
-                }
+                {discoveredCluster.spec.cloudProvider === 'aws'
+                    ? [<AWSIcon key="aws-icon" />, <span key="dcCloudProvider"> Amazon Web Services</span>]
+                    : discoveredCluster.spec.cloudProvider}
             </span>
         ),
     },
@@ -144,45 +143,52 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         sort: 'spec.activity_timestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-                {discoveredCluster.spec.activity_timestamp === undefined ? 
-                    [
-                        "N/A"
-                    ] 
-                    : 
-                        moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.activity_timestamp).getTime())).humanize()
-                }
+                {discoveredCluster.spec.activity_timestamp === undefined
+                    ? ['N/A']
+                    : moment
+                          .duration(
+                              Math.abs(
+                                  new Date().getTime() - new Date(discoveredCluster.spec.activity_timestamp).getTime()
+                              )
+                          )
+                          .humanize()}
             </span>
-        )
+        ),
     },
     {
         header: 'Created',
         sort: 'spec.creation_timestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-                {discoveredCluster.spec.creation_timestamp === undefined ? 
-                    [
-                        "N/A"
-                    ] 
-                    : 
-                    moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.creation_timestamp).getTime())).humanize()
-                }
+                {discoveredCluster.spec.creation_timestamp === undefined
+                    ? ['N/A']
+                    : moment
+                          .duration(
+                              Math.abs(
+                                  new Date().getTime() - new Date(discoveredCluster.spec.creation_timestamp).getTime()
+                              )
+                          )
+                          .humanize()}
             </span>
-        )
+        ),
     },
     {
         header: 'Discovered',
         sort: 'metadata.creationTimestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-                {discoveredCluster.spec.creation_timestamp === undefined ? 
-                    [
-                        "N/A"
-                    ] 
-                    : 
-                    moment.duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.metadata.creationTimestamp ?? "").getTime())).humanize()
-                }
+                {discoveredCluster.spec.creation_timestamp === undefined
+                    ? ['N/A']
+                    : moment
+                          .duration(
+                              Math.abs(
+                                  new Date().getTime() -
+                                      new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime()
+                              )
+                          )
+                          .humanize()}
             </span>
-        )
+        ),
     },
 ]
 
@@ -196,8 +202,8 @@ export function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = useManagedClusters()
-    const discoveredClustersQuery = useDiscoveredClusters()
+    const managedClustersQuery = useQuery(listManagedClusters)
+    const discoveredClustersQuery = useQuery(listDiscoveredClusters)
 
     useEffect(() => {
         managedClustersQuery.startPolling(10 * 1000)
@@ -212,9 +218,9 @@ export function ClustersPageContent() {
     return (
         <AcmPageCard>
             <ClustersTable
-                discoveredClusters={discoveredClustersQuery.data?.items}
-                managedClusters={managedClustersQuery.data?.items}
-                deleteCluster={managedClusterMethods.delete}
+                discoveredClusters={discoveredClustersQuery.data}
+                managedClusters={managedClustersQuery.data}
+                deleteCluster={deleteResource}
                 refresh={managedClustersQuery.refresh}
             />
         </AcmPageCard>
@@ -224,7 +230,7 @@ export function ClustersPageContent() {
 export function ClustersTable(props: {
     managedClusters?: ManagedCluster[]
     discoveredClusters?: DiscoveredCluster[]
-    deleteCluster: (name: string, namespace: string) => void
+    deleteCluster: (managedCluster: ManagedCluster) => void
     refresh: () => void
 }) {
     const { t } = useTranslation(['cluster'])
@@ -235,7 +241,6 @@ export function ClustersTable(props: {
     }
     function dckeyFn(cluster: DiscoveredCluster) {
         return cluster.metadata.uid!
-
     }
     const history = useHistory()
     if (view === 'managedToggleBtn') {
@@ -277,11 +282,21 @@ export function ClustersTable(props: {
                     { id: 'searchCluster', title: t('managed.search'), click: (managedCluster) => {} },
                     { id: 'detachCluster', title: t('managed.detached'), click: (managedCluster) => {} },
                 ]}
-                emptyState={<AcmEmptyState title={t("managed.emptyStateHeader")} key="mcEmptyState"/>}
+                emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
                 extraToolbarControls={
                     <ToggleGroup>
-                        <ToggleGroupItem isSelected={true} text={t('managed')} buttonId="managedToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
-                        <ToggleGroupItem isSelected={false} text={t('discovered')} buttonId="discoveredToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem
+                            isSelected={true}
+                            text={t('managed')}
+                            buttonId="managedToggleBtn"
+                            onChange={(selected, event) => setView(event.currentTarget.id)}
+                        />
+                        <ToggleGroupItem
+                            isSelected={false}
+                            text={t('discovered')}
+                            buttonId="discoveredToggleBtn"
+                            onChange={(selected, event) => setView(event.currentTarget.id)}
+                        />
                     </ToggleGroup>
                 }
             />
@@ -290,7 +305,7 @@ export function ClustersTable(props: {
         return (
             <AcmTable<DiscoveredCluster>
                 plural="discoveredclusters"
-                items={props.discoveredClusters  ?? []}
+                items={props.discoveredClusters ?? []}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
                 key="discoveredClustersTable"
@@ -307,14 +322,29 @@ export function ClustersTable(props: {
                     },
                 ]}
                 bulkActions={[]}
-                rowActions={[
-                    { id: 'importCluster', title: t('discovery.import'), click: (item) => {}, },
-                ]}
-                emptyState={<AcmEmptyState action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>} title={t('discovery.emptyStateHeader')} message={t('discovery.emptyStateMsg')} key="dcEmptyState"/>}
+                rowActions={[{ id: 'importCluster', title: t('discovery.import'), click: (item) => {} }]}
+                emptyState={
+                    <AcmEmptyState
+                        action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
+                        title={t('discovery.emptyStateHeader')}
+                        message={t('discovery.emptyStateMsg')}
+                        key="dcEmptyState"
+                    />
+                }
                 extraToolbarControls={
                     <ToggleGroup>
-                        <ToggleGroupItem isSelected={false} text={t('managed')} buttonId="managedToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
-                        <ToggleGroupItem isSelected={true} text={t('discovered')} buttonId="discoveredToggleBtn" onChange={(selected, event) => setView(event.currentTarget.id)}/>
+                        <ToggleGroupItem
+                            isSelected={false}
+                            text={t('managed')}
+                            buttonId="managedToggleBtn"
+                            onChange={(selected, event) => setView(event.currentTarget.id)}
+                        />
+                        <ToggleGroupItem
+                            isSelected={true}
+                            text={t('discovered')}
+                            buttonId="discoveredToggleBtn"
+                            onChange={(selected, event) => setView(event.currentTarget.id)}
+                        />
                     </ToggleGroup>
                 }
             />
@@ -323,6 +353,5 @@ export function ClustersTable(props: {
 }
 
 function capitalizeFirstLetter(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-  
+    return str.charAt(0).toUpperCase() + str.slice(1)
+}

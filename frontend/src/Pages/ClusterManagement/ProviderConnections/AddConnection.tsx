@@ -15,14 +15,14 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
-import { useProjects } from '../../../lib/useProject'
-import { Project } from '../../../library/resources/project'
+import { useQuery } from '../../../lib/useQuery'
+import { listProjects, Project } from '../../../library/resources/project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
-    providerConnectionMethods,
     setProviderConnectionProviderID,
 } from '../../../library/resources/provider-connection'
+import { createResource, IRequestResult } from '../../../library/utils/resource-request'
 import { NavigationPath } from '../ClusterManagement'
 
 const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
@@ -71,13 +71,13 @@ export function AddConnectionPage() {
 }
 
 export function AddConnectionPageData() {
-    const projectsQuery = useProjects()
+    const projectsQuery = useQuery(listProjects)
 
     if (projectsQuery.loading) {
         return <AcmLoadingPage />
     } else if (projectsQuery.error) {
         return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
+    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
         return (
             <AcmPageCard>
                 <AcmEmptyState title="No namespaces found." message="No namespaces found." />
@@ -85,19 +85,12 @@ export function AddConnectionPageData() {
         )
     }
 
-    return (
-        <AddConnectionPageContent
-            projects={projectsQuery.data.items}
-            createProviderConnection={(providerConnection: ProviderConnection) =>
-                providerConnectionMethods.create(providerConnection)
-            }
-        />
-    )
+    return <AddConnectionPageContent projects={projectsQuery.data} createProviderConnection={createResource} />
 }
 
 export function AddConnectionPageContent(props: {
     projects: Project[]
-    createProviderConnection: (input: ProviderConnection) => Promise<unknown>
+    createProviderConnection: (input: ProviderConnection) => IRequestResult
 }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
@@ -516,9 +509,14 @@ export function AddConnectionPageContent(props: {
                                 delete providerConnection.spec!.datastore
                             }
                             delete providerConnection.data
-                            props.createProviderConnection(providerConnection as ProviderConnection).then(() => {
-                                history.push(NavigationPath.providerConnections)
-                            })
+                            props
+                                .createProviderConnection(providerConnection as ProviderConnection)
+                                .promise.then(() => {
+                                    history.push(NavigationPath.providerConnections)
+                                })
+                                .catch((err) => {
+                                    // TODO
+                                })
                         }}
                     >
                         Add connection

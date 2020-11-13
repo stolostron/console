@@ -1,34 +1,32 @@
-import { AxiosResponse } from 'axios'
 import { useCallback, useEffect, useState } from 'react'
+import { IResource } from '../library/resources/resource'
+import { IRequestResult } from '../library/utils/resource-request'
 
-export function useQuery<T>(restFunc: () => Promise<AxiosResponse<T>>) {
-    const [data, setData] = useState<T>()
+export function useQuery<T extends IResource>(restFunc: () => IRequestResult<T[]>) {
+    const [data, setData] = useState<T[]>()
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
     const [polling, setPolling] = useState(0)
 
     const refresh = useCallback(
         function refresh() {
-            void restFunc()
-                .then((response) => {
+            const result = restFunc()
+            result.promise
+                .then((data) => {
                     setLoading(false)
-                    switch (response.status) {
-                        case 401:
-                            window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
-                            setData(undefined)
-                            break
-                        default:
-                            setData(response.data)
-                            setError(undefined)
-                            break
-                    }
+                    setData(data)
+                    setError(undefined)
                 })
                 .catch((err: Error) => {
-                    console.log(typeof err)
-                    setData(undefined)
-                    setError(err)
-                    setLoading(false)
+                    // TODO check for
+                    if (err.name === 'AbortError') {
+                    } else {
+                        setLoading(false)
+                        setData(undefined)
+                        setError(err)
+                    }
                 })
+            // return result.abort
         },
         [restFunc]
     )
@@ -49,14 +47,6 @@ export function useQuery<T>(restFunc: () => Promise<AxiosResponse<T>>) {
     function stopPolling() {
         setPolling(0)
     }
-
-    useEffect(() => {
-        const code: string = (error as any)?.statusCode
-        switch (code) {
-            case '401':
-                window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
-        }
-    }, [error])
 
     return { error, loading, data, startPolling, stopPolling, refresh }
 }

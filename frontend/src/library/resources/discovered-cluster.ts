@@ -1,6 +1,6 @@
 import { IResource } from './resource'
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { listResources } from '../utils/resource-request'
 
 export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1'
 export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1'
@@ -41,7 +41,9 @@ export interface DiscoveredCluster extends IResource {
     }
 }
 
-export const discoveredClusterMethods = resourceMethods<DiscoveredCluster>({
-    apiVersion: DiscoveredClusterApiVersion,
-    kind: DiscoveredClusterKind,
-}) 
+export function listDiscoveredClusters() {
+    return listResources<DiscoveredCluster>({
+        apiVersion: DiscoveredClusterApiVersion,
+        kind: DiscoveredClusterKind,
+    })
+}
