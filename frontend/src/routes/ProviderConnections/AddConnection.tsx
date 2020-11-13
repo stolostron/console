@@ -22,6 +22,8 @@ import {
     getProviderConnectionProviderID,
     ProviderConnection,
     setProviderConnectionProviderID,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
 } from '../../resources/provider-connection'
 import { NavigationPath } from '../ClusterManagement/ClusterManagement'
 
@@ -96,6 +98,8 @@ export function AddConnectionPageContent(props: {
     const history = useHistory()
 
     const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({
+        apiVersion: ProviderConnectionApiVersion,
+        kind: ProviderConnectionKind,
         metadata: {},
         spec: {
             awsAccessKeyID: undefined,
