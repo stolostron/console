@@ -1,8 +1,8 @@
 import nock from 'nock'
 import { join } from 'path'
-import { getResourceApiPath, getResourceNameApiPath, IResource } from '../library/resources/resource'
-import { StatusApiVersion, StatusKind } from '../library/resources/status'
-import { apiNamespacedUrl, apiProxyUrl } from '../library/utils/resource-request'
+import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
+import { StatusApiVersion, StatusKind } from '../resources/status'
+import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 
 export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })

@@ -1,37 +1,22 @@
 /* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HttpError } from '@kubernetes/client-node'
 import Axios, { AxiosResponse, Method } from 'axios'
 import { fastify as Fastify, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCompress from 'fastify-compress'
 import fastifyCookie from 'fastify-cookie'
 import fastifyCors from 'fastify-cors'
 import { fastifyOauth2, OAuth2Namespace } from 'fastify-oauth2'
+import fastifyReplyFrom from 'fastify-reply-from'
 import fastifyStatic from 'fastify-static'
 import { readFile } from 'fs'
-import { GraphQLError } from 'graphql'
 import { STATUS_CODES } from 'http'
 import * as https from 'https'
-import fastifyGQL from 'mercurius'
 import * as path from 'path'
 import { join } from 'path'
-import 'reflect-metadata'
-import { buildSchema } from 'type-graphql'
 import { URL } from 'url'
 import { promisify } from 'util'
-import { BareMetalAssetResolver } from './entities/bare-metal-asset'
-import { ClusterDeploymentResolver } from './entities/cluster-deployment'
-import { ClusterImageSetResolver } from './entities/cluster-image-set'
-import { MetadataResolver } from './entities/common/metadata'
-import { ManagedClusterResolver } from './entities/managed-cluster'
-import { NamespaceResolver } from './entities/namespace'
-import { ProviderConnectionsResolver } from './entities/provider-connection'
-import { SecretResolver } from './entities/secret'
 import { logError, logger } from './lib/logger'
-import { IUserContext } from './lib/user-context'
 
-// CONSOLE-HEADER
-import fastifyReplyFrom from 'fastify-reply-from'
 declare module 'fastify-reply-from' {
     export interface From {
         from: (path: string) => void
@@ -376,60 +361,8 @@ export async function startServer(): Promise<FastifyInstance> {
 
     await fastify.register(fastifyCompress)
 
-    // await fastify.register(fastifyHelmet)
-
-    const schema = await buildSchema({
-        resolvers: [
-            ManagedClusterResolver,
-            MetadataResolver,
-            SecretResolver,
-            ClusterImageSetResolver,
-            NamespaceResolver,
-            ClusterDeploymentResolver,
-            ProviderConnectionsResolver,
-            BareMetalAssetResolver,
-        ],
-        emitSchemaFile: !['production', 'test'].includes(process.env.NODE_ENV),
-    })
-    await fastify.register(fastifyGQL, {
-        path: '/cluster-management/graphql',
-        graphiql: 'playground',
-        schema,
-        jit: 1,
-        context: (request: FastifyRequest, reply: FastifyReply) => {
-            const token = request.cookies['acm-access-token-cookie']
-            const userContext: IUserContext = { token }
-            return Promise.resolve(userContext)
-        },
-        errorFormatter: (err, ctx) => {
-            if (Array.isArray(err.errors)) {
-                for (const error of err.errors) {
-                    if (error instanceof GraphQLError) {
-                        if (error.originalError instanceof HttpError) {
-                            switch (error.originalError.statusCode) {
-                                case 401:
-                                case 403:
-                                    return {
-                                        statusCode: 401,
-                                        response: {},
-                                    }
-                            }
-                        }
-                    } else if (error instanceof Error) {
-                        logError(error.name, error)
-                    } else if (typeof error === 'string') {
-                        logger.error({ msg: 'error', error })
-                    } else {
-                        logger.error(error)
-                    }
-                }
-            }
-            return fastifyGQL.defaultErrorFormatter(err, ctx)
-        },
-    })
-
     fastify.setNotFoundHandler((request, response) => {
-        if (!request.url.startsWith('/cluster-management/graphql') && !path.extname(request.url)) {
+        if (!path.extname(request.url)) {
             void response.code(200).sendFile('index.html', join(__dirname, 'public'))
         } else {
             void response.code(404).send()
