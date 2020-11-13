@@ -1,27 +1,31 @@
 import { getByText, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { Route, MemoryRouter, BrowserRouter } from 'react-router-dom'
+import { MemoryRouter, Route } from 'react-router-dom'
+import { mockBadRequestStatus, nockCreate, nockList, nockGet } from '../../../lib/nock-util'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind
+    KlusterletAddonConfigKind,
 } from '../../../library/resources/klusterlet-add-on-config'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, managedClusterMethods } from '../../../library/resources/managed-cluster'
-import { nockCreate, nockGet, nockList } from '../../../lib/nock-util'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+} from '../../../library/resources/managed-cluster'
 import {
     Project,
     ProjectApiVersion,
     ProjectKind,
     ProjectRequest,
     ProjectRequestApiVersion,
-    ProjectRequestKind
+    ProjectRequestKind,
 } from '../../../library/resources/project'
 import { ImportClusterPage } from './ImportCluster'
 import { ClustersPage } from './Clusters'
 import * as nock from 'nock'
 import { Secret } from '../../../library/resources/secret'
-import { DiscoveredCluster, discoveredClusterMethods, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../library/resources/discovered-cluster'
+import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../library/resources/discovered-cluster'
 import { ManagedClusterAddOnApiVersion } from '../../../library/resources/managed-cluster-add-on'
 
 const mockProject: ProjectRequest = {
@@ -195,6 +199,7 @@ describe('ImportCluster', () => {
             </MemoryRouter>
         )
     }
+
     test('renders', () => {
         const { getByTestId } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
@@ -205,11 +210,11 @@ describe('ImportCluster', () => {
         // expect(getByTestId('importModeManual')).toBeInTheDocument()
         expect(getByTestId('submit')).toBeInTheDocument()
     })
+
     test('can create resources', async () => {
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
-
         const { getByTestId, getByText, queryByRole } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('cloudLabel-button'))
@@ -223,41 +228,27 @@ describe('ImportCluster', () => {
         nockGet(mockSecretResponse)
 
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
-
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
     })
+
     test('handles project creation error', async () => {
-        const mockProjectErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"invalid token","reason":"Unauthorized","details":{"name":"test","group":"project.openshift.io","kind":"project"},"code":401}
-
-        const projectNock = nockCreate(mockProject, mockProjectErrorResponse, 401)
-
+        const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByTestId, getByText, queryByRole } = render(<Component />)
-
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('submit'))
-
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-
         await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
-
-        await waitFor(() => expect(getByText('401: invalid token')).toBeInTheDocument())
+        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
     })
+
     test('handles resource creation errors', async () => {
-        const mockManagedClusterErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"managedclusters.cluster.open-cluster-management.io \"foobar\" already exists","reason":"AlreadyExists","details":{"name":"foobar","group":"cluster.open-cluster-management.io","kind":"managedclusters"},"code":409}
-        const mockKACErrorResponse = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"klusterletaddonconfigs.agent.open-cluster-management.io \"foobar\" already exists","reason":"AlreadyExists","details":{"name":"foobar","group":"agent.open-cluster-management.io","kind":"klusterletaddonconfigs"},"code":409}
-
         const projectNock = nockCreate(mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterErrorResponse, 409)
-        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKACErrorResponse, 409)
-
+        const managedClusterNock = nockCreate(mockManagedCluster, mockBadRequestStatus)
         const { getByTestId, getByText, queryByRole } = render(<Component />)
-
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('cloudLabel-button'))
         userEvent.click(getByText('AWS'))
@@ -266,17 +257,11 @@ describe('ImportCluster', () => {
         userEvent.click(getByTestId('additionalLabels-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
-
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
-
         await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
-
-        await waitFor(() => expect(getByText('409: klusterletaddonconfigs.agent.open-cluster-management.io "foobar" already exists')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('409: managedclusters.cluster.open-cluster-management.io "foobar" already exists')).toBeInTheDocument())
+        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
     })
 })
 
@@ -300,8 +285,8 @@ describe('Import Discovered Cluster', () => {
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
 
         // Serve Managed and Discovered Clusters
-        nockList(managedClusterMethods, [] as ManagedCluster[]) 
-        nockList(discoveredClusterMethods, mockDiscoveredClusters)
+        nockList({ apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind }, [] as ManagedCluster[])
+        nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
 
         const { getByTestId, getByText, getAllByLabelText, queryByRole } = render(<Component />) // Render component
 

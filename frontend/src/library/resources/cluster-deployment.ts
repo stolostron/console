@@ -1,5 +1,4 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
@@ -95,8 +94,3 @@ export interface ClusterDeployment {
         webConsoleURL: string
     }
 }
-
-export const clusterDeploymentMethods = resourceMethods<ClusterDeployment>({
-    apiVersion: ClusterDeploymentApiVersion,
-    kind: ClusterDeploymentKind,
-})

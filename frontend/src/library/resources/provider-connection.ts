@@ -1,7 +1,7 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from '../../lib/providers'
-import { resourceMethods } from '../utils/resource-methods'
+import { createResource, listResources } from '../utils/resource-request'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -49,41 +49,6 @@ export interface ProviderConnection extends V1Secret {
     }
 }
 
-export const providerConnectionMethods = resourceMethods<ProviderConnection>({
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
-})
-
-const originalList = providerConnectionMethods.list
-
-providerConnectionMethods.list = async (labels?: string[]) => {
-    if (!labels) {
-        labels = ['cluster.open-cluster-management.io/cloudconnection=']
-    } else if (!labels.includes('cluster.open-cluster-management.io/cloudconnection=')) {
-        labels.push('cluster.open-cluster-management.io/cloudconnection=')
-    }
-    const result = await originalList(labels)
-    for (const providerConnection of result.data.items) {
-        if (providerConnection?.data?.metadata) {
-            try {
-                const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
-                providerConnection.spec = YAML.parse(yaml)
-            } catch {}
-        }
-    }
-    return result
-}
-
-const originalCreate = providerConnectionMethods.create
-
-providerConnectionMethods.create = async (providerConnection: ProviderConnection) => {
-    const copy = { ...providerConnection }
-    delete copy.data
-    copy.stringData = { metadata: YAML.stringify(copy.spec) }
-    delete copy.spec
-    return originalCreate(copy)
-}
-
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
     const label = providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider']
     return label as ProviderID
@@ -101,4 +66,37 @@ export function setProviderConnectionProviderID(
     }
     providerConnection.metadata.labels['cluster.open-cluster-management.io/provider'] = providerID
     providerConnection.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = ''
+}
+
+export function listProviderConnections() {
+    const result = listResources<ProviderConnection>(
+        {
+            apiVersion: ProviderConnectionApiVersion,
+            kind: ProviderConnectionKind,
+        },
+        undefined,
+        ['cluster.open-cluster-management.io/cloudconnection=']
+    )
+    return {
+        promise: result.promise.then((providerConnections) => {
+            for (const providerConnection of providerConnections) {
+                if (providerConnection?.data?.metadata) {
+                    try {
+                        const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
+                        providerConnection.spec = YAML.parse(yaml)
+                    } catch {}
+                }
+            }
+            return providerConnections
+        }),
+        abort: result.abort,
+    }
+}
+
+export function createProviderConnection(providerConnection: ProviderConnection) {
+    const copy = { ...providerConnection }
+    delete copy.data
+    copy.stringData = { metadata: YAML.stringify(copy.spec) }
+    delete copy.spec
+    return createResource<ProviderConnection>(copy)
 }

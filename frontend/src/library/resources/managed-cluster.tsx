@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { createResource, listResources } from '../utils/resource-request'
 import { IResource } from './resource'
 
 export const ManagedClusterApiVersion = 'cluster.open-cluster-management.io/v1'
@@ -45,18 +45,18 @@ export interface ManagedCluster extends IResource {
     }
 }
 
-export const managedClusterMethods = resourceMethods<ManagedCluster>({
-    apiVersion: ManagedClusterApiVersion,
-    kind: ManagedClusterKind,
-})
-
 export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: ClusterLabels }) => {
-    return managedClusterMethods.create({
+    return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
         metadata: { name: data.clusterName, labels: data.clusterLabels },
-        spec: {
-            hubAcceptsClient: true,
-        },
+        spec: { hubAcceptsClient: true },
+    })
+}
+
+export function listManagedClusters() {
+    return listResources<ManagedCluster>({
+        apiVersion: ManagedClusterApiVersion,
+        kind: ManagedClusterKind,
     })
 }

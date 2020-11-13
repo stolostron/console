@@ -1,30 +1,31 @@
-import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmForm,
     AcmLabelsInput,
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
     AcmSelect,
-    AcmTextInput,
-    AcmAlert,
-    AcmAlertGroup,
     AcmSpinnerBackdrop,
+    AcmTextInput,
     AcmExpandableSection,
     AcmHeader,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant, Card, CardTitle, CardBody, Tile, CardFooter, Label } from '@patternfly/react-core'
 import CodeIcon from '@patternfly/react-icons/dist/js/icons/code-icon'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { createManagedCluster } from '../../../library/resources/managed-cluster'
+import { useHistory } from 'react-router-dom'
 import { createKlusterletAddonConfig } from '../../../library/resources/klusterlet-add-on-config'
+import { createManagedCluster } from '../../../library/resources/managed-cluster'
 import { createProject } from '../../../library/resources/project'
+import { IResource } from '../../../library/resources/resource'
+import { deleteResources } from '../../../library/utils/delete-resources'
+import { ResourceError, ResourceErrorCode } from '../../../library/utils/resource-request'
 import { NavigationPath } from '../ClusterManagement'
-import { AxiosResponse } from 'axios'
-import { deleteCreatedResources } from '../../../library/utils/resource-methods'
 import { ImportCommandPageContent } from '../Clusters/ImportCommand'
 
 
@@ -45,7 +46,7 @@ export function ImportClusterPageContent() {
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
-    const [errors, setErrors] = useState<AxiosResponse[]>([])
+    const [error, setError] = useState<string>()
     const [loading, setLoading] = useState<boolean>(false)
     const [submitted, submitForm] = useState<boolean>(false)
 
@@ -58,28 +59,37 @@ export function ImportClusterPageContent() {
             vendor: 'auto-detect',
             name: clusterName,
             environment: environmentLabel ?? '',
-            ...additionalLabels
+            ...additionalLabels,
         }
-        const projectResponse = await createProject(clusterName)
-        let errors = []
-        if (projectResponse.status === 201 || projectResponse.status === 409) {
-            const response = await Promise.all([
-                createKlusterletAddonConfig({ clusterName, clusterLabels }),
-                createManagedCluster({ clusterName, clusterLabels }),
-            ])
-            /* istanbul ignore next */
-            errors = response.filter((res) => res.status < 200 || res.status >= 300) ?? []
-            errors.length > 0 && (await deleteCreatedResources(response))
-        } else {
-            errors.push(projectResponse)
-        }
-
-        if (errors.length > 0) {
-            setErrors(errors)
-            setLoading(false)
-        } else {
+        const createdResources: IResource[] = []
+        setError(undefined)
+        try {
+            try {
+                createdResources.push(await createProject(clusterName).promise)
+            } catch (err) {
+                const resourceError = err as ResourceError
+                if (resourceError.code !== ResourceErrorCode.Conflict) {
+                    throw err
+                }
+            }
+            createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
+            createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
             setLoading(false)
             submitForm(true)
+        } catch (err) {
+            if (err instanceof Error) {
+                if (err.name === 'ResourceError') {
+                    const resourceError = err as ResourceError
+                    setError(resourceError.message)
+                } else {
+                    setError(err.message)
+                }
+            } else {
+                setError('Unknown error occurred.')
+            }
+            await Promise.allSettled(deleteResources(createdResources))
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -87,19 +97,18 @@ export function ImportClusterPageContent() {
         <AcmPageCard>
             {loading && <AcmSpinnerBackdrop />}
             <AcmExpandableSection label={t('import.form.header')} expanded={true}>
-                <AcmForm id="import-cluster-form">
-                    {errors.length > 0 && (
+                 <AcmForm id="import-cluster-form">
+                    {error && (
                         <AcmAlertGroup>
-                            {errors.map((error: AxiosResponse) => (
-                                <AcmAlert
-                                    variant={AlertVariant.danger}
-                                    title={t('common:request.failed')}
-                                    subtitle={`${error.data.code}: ${error.data.message}`}
-                                    key={error.data.message}
-                                />
-                            ))}
+                            <AcmAlert
+                                variant={AlertVariant.danger}
+                                title={t('common:request.failed')}
+                                subtitle={error}
+                                key={error}
+                            />
                         </AcmAlertGroup>
                     )}
+
                     <AcmTextInput
                         id="clusterName"
                         label={t('import.form.clusterName.label')}
@@ -112,9 +121,9 @@ export function ImportClusterPageContent() {
                     <AcmSelect
                         id="cloudLabel"
                         toggleId="cloudLabel-button"
+                        isDisabled={submitted}
                         label={t('import.form.cloud.label')}
                         value={cloudLabel}
-                        isDisabled={submitted}
                         onChange={(label) => setCloudLabel(label as string)}
                     >
                         {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
@@ -145,6 +154,8 @@ export function ImportClusterPageContent() {
                         value={additionalLabels}
                         onChange={(label) => setAdditionaLabels(label)}
                     />
+                    
+
                     <ActionGroup>
                         <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
                             {t('import.form.submit')}

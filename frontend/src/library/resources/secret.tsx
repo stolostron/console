@@ -1,5 +1,5 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { getResource } from '../utils/resource-request'
 import { IResource } from './resource'
 
 export const SecretApiVersion = 'v1'
@@ -14,7 +14,6 @@ export interface Secret extends V1Secret, IResource {
     metadata: V1ObjectMeta
 }
 
-export const secretMethods = resourceMethods<Secret>({
-    apiVersion: SecretApiVersion,
-    kind: SecretKind,
-})
+export function getSecret(metadata: { name: string; namespace: string }) {
+    return getResource<Secret>({ apiVersion: SecretApiVersion, kind: SecretKind, metadata })
+}
