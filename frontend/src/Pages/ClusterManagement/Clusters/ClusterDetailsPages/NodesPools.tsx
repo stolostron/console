@@ -19,7 +19,6 @@ export function useManagedClusterInfos(namespace: string) {
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
     const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)
-    console.log(data)
     useEffect(() => {
         startPolling(10 * 1000)
         return stopPolling
