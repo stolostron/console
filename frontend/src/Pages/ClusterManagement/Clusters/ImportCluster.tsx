@@ -86,90 +86,91 @@ export function ImportClusterPageContent() {
     return (
         <AcmPageCard>
             {loading && <AcmSpinnerBackdrop />}
-            <AcmForm id="import-cluster-form">
-                    <AcmExpandableSection label={t('import.form.header')} expanded={true}>
-                        <Card>
-                            <CardBody>
-                            {errors.length > 0 && (
-                                <AcmAlertGroup>
-                                    {errors.map((error: AxiosResponse) => (
-                                        <AcmAlert
-                                            variant={AlertVariant.danger}
-                                            title={t('common:request.failed')}
-                                            subtitle={`${error.data.code}: ${error.data.message}`}
-                                            key={error.data.message}
-                                        />
-                                    ))}
-                                </AcmAlertGroup>
-                            )}
-                                <AcmTextInput
-                                    id="clusterName"
-                                    label={t('import.form.clusterName.label')}
-                                    value={clusterName}
-                                    onChange={(name) => setClusterName(name)}
-                                    placeholder={t('import.form.clusterName.placeholder')}
-                                    required
+            <AcmExpandableSection label={t('import.form.header')} expanded={true}>
+                <AcmForm id="import-cluster-form">
+                    {errors.length > 0 && (
+                        <AcmAlertGroup>
+                            {errors.map((error: AxiosResponse) => (
+                                <AcmAlert
+                                    variant={AlertVariant.danger}
+                                    title={t('common:request.failed')}
+                                    subtitle={`${error.data.code}: ${error.data.message}`}
+                                    key={error.data.message}
                                 />
-                                <AcmSelect
-                                    id="cloudLabel"
-                                    toggleId="cloudLabel-button"
-                                    label={t('import.form.cloud.label')}
-                                    value={cloudLabel}
-                                    onChange={(label) => setCloudLabel(label as string)}
-                                >
-                                    {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
-                                        <SelectOption key={key} value={key}>
-                                            {key}
-                                        </SelectOption>
-                                    ))}
-                                </AcmSelect>
-                                <AcmSelect
-                                    id="environmentLabel"
-                                    toggleId="environmentLabel-button"
-                                    label={t('import.form.environment.label')}
-                                    value={environmentLabel}
-                                    onChange={setEnvironmentLabel}
-                                    placeholder={t('import.form.environment.placeholder')}
-                                >
-                                    {['dev', 'prod', 'qa'].map((key) => (
-                                        <SelectOption key={key} value={key}>
-                                            {key}
-                                        </SelectOption>
-                                    ))}
-                                </AcmSelect>
-                                <AcmLabelsInput
-                                    id="additionalLabels"
-                                    label={t('import.form.labels.label')}
-                                    buttonLabel={t('common:label.add')}
-                                    value={additionalLabels}
-                                    onChange={(label) => setAdditionaLabels(label)}
-                                />
-                            </CardBody>
-                        </Card>
-                    </AcmExpandableSection>
-                    <AcmExpandableSection label={t('import.importmode.header')} expanded={true}>
-                        <Card>
-                            <CardTitle>{t('import.importmode.subheader')}</CardTitle>
-                            <CardBody>{t('import.importmode.body')}</CardBody>
-                            <CardFooter>
-                                <Tile id="importModeManual" title={t('import.importmode.footer')} icon={<CodeIcon />} isSelected></Tile>
-                            </CardFooter>
-                        </Card>
-                    </AcmExpandableSection>
-                <ActionGroup>
-                <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
-                        {t('import.form.submit')}
-                    </Button>
-                    { submitted ? 
-                        <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>{t('import.importmode.importsaved')}</Label> : 
-                        <Button
-                            id="cancel"
-                            component="a"
-                            variant="link"
-                            href={NavigationPath.clusters}>{t('common:cancel')}            
-                        </Button>}
-                </ActionGroup>
-            </AcmForm>
+                            ))}
+                        </AcmAlertGroup>
+                    )}
+                    <AcmTextInput
+                        id="clusterName"
+                        label={t('import.form.clusterName.label')}
+                        value={clusterName}
+                        isDisabled={submitted}
+                        onChange={(name) => setClusterName(name)}
+                        placeholder={t('import.form.clusterName.placeholder')}
+                        required
+                    />
+                    <AcmSelect
+                        id="cloudLabel"
+                        toggleId="cloudLabel-button"
+                        label={t('import.form.cloud.label')}
+                        value={cloudLabel}
+                        isDisabled={submitted}
+                        onChange={(label) => setCloudLabel(label as string)}
+                    >
+                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
+                            <SelectOption key={key} value={key}>
+                                {key}
+                            </SelectOption>
+                        ))}
+                    </AcmSelect>
+                    <AcmSelect
+                        id="environmentLabel"
+                        toggleId="environmentLabel-button"
+                        label={t('import.form.environment.label')}
+                        value={environmentLabel}
+                        isDisabled={submitted}
+                        onChange={setEnvironmentLabel}
+                        placeholder={t('import.form.environment.placeholder')}
+                    >
+                        {['dev', 'prod', 'qa'].map((key) => (
+                            <SelectOption key={key} value={key}>
+                                {key}
+                            </SelectOption>
+                        ))}
+                    </AcmSelect>
+                    <AcmLabelsInput
+                        id="additionalLabels"
+                        label={t('import.form.labels.label')}
+                        buttonLabel={t('common:label.add')}
+                        value={additionalLabels}
+                        onChange={(label) => setAdditionaLabels(label)}
+                    />
+                    <ActionGroup>
+                        <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
+                            {t('import.form.submit')}
+                        </Button>
+                        { submitted ? 
+                            <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>{t('import.importmode.importsaved')}</Label> : 
+                            <Button
+                                id="cancel"
+                                component="a"
+                                variant="link"
+                                href={NavigationPath.clusters}>{t('common:cancel')}            
+                            </Button>
+                        }
+                    </ActionGroup>
+                </AcmForm>
+            </AcmExpandableSection>
+            {/* <AcmExpandableSection label={t('import.importmode.header')} expanded={true}>
+                <Card>
+                    <CardTitle>{t('import.importmode.subheader')}</CardTitle>
+                    <CardBody>{t('import.importmode.body')}</CardBody>
+                    <CardFooter>
+                        <Tile id="importModeManual" title={t('import.importmode.footer')} icon={<CodeIcon />} isSelected></Tile>
+                    </CardFooter>
+                </Card>
+            </AcmExpandableSection> */}
+
             <br></br>
             { submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null }
         </AcmPageCard>

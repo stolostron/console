@@ -202,7 +202,7 @@ describe('ImportCluster', () => {
         expect(getByTestId('cloudLabel-label')).toBeInTheDocument()
         expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
-        expect(getByTestId('importModeManual')).toBeInTheDocument()
+        // expect(getByTestId('importModeManual')).toBeInTheDocument()
         expect(getByTestId('submit')).toBeInTheDocument()
     })
     test('can create resources', async () => {

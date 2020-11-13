@@ -11,7 +11,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import { Title, AlertVariant, Tabs, Tab, TabTitleText, Card, CardTitle, CardBody, CardFooter, Button } from '@patternfly/react-core'
+import { Text, TextVariants, AlertVariant, Tabs, Tab, TabTitleText, Card, CardTitle, CardBody, CardFooter, Button } from '@patternfly/react-core'
 import { secretMethods } from '../../../library/resources/secret'
 import { AxiosResponse } from 'axios'
 import { NavigationPath } from '../ClusterManagement'
@@ -65,7 +65,7 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
     }
 
     return (
-        <AcmPageCard>
+        <Card>
             <Tabs activeKey={active}>
                 <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
                     <Card>
@@ -81,7 +81,11 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
                         </CardBody>
                         <CardTitle>{t('import.command.configurecluster')}</CardTitle>
                         <CardBody>
-                            {t('import.command.configureclusterdescription')}
+                        { !clusterConsoleURL ? 
+                            t('import.command.configureclusterdescription')
+                        : 
+                            t('import.command.configurediscoveredclusterdescription')
+                        }
                         </CardBody>
                         <CardFooter>
                             <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
@@ -95,7 +99,7 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
                     <Link to={NavigationPath.clusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link>
                 </CardBody>
             </Card>
-        </AcmPageCard>
+        </Card>
     )
 }
 
