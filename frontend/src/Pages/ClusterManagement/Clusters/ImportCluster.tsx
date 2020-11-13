@@ -88,7 +88,7 @@ export function ImportClusterPageContent() {
         <AcmPageCard>
             {loading && <AcmSpinnerBackdrop />}
             <AcmForm id="import-cluster-form">
-                {error ?? (
+                {error && (
                     <AcmAlertGroup>
                         <AcmAlert
                             variant={AlertVariant.danger}
