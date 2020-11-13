@@ -4,17 +4,18 @@ import {
     AcmPageCard,
     AcmTable,
     compareStrings,
-    IAcmTableColumn
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Button, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
+import { Button, Page } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { useProviderConnections } from '../../../lib/useProviderConnection'
-import { ProviderConnection, providerConnectionMethods } from '../../../library/resources/provider-connection'
+import { useQuery } from '../../../lib/useQuery'
+import { listProviderConnections, ProviderConnection } from '../../../library/resources/provider-connection'
+import { deleteResource, IRequestResult } from '../../../library/utils/resource-request'
 import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement'
 
 export function ProviderConnectionsPage() {
@@ -27,7 +28,7 @@ export function ProviderConnectionsPage() {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useProviderConnections()
+    const { loading, error, data, startPolling, stopPolling, refresh } = useQuery(listProviderConnections)
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
@@ -40,7 +41,7 @@ export function ProviderConnectionsPageContent() {
         return <AcmLoadingPage />
     } else if (error) {
         return <ErrorPage error={error} />
-    } else if (!data?.items || data.items.length === 0) {
+    } else if (!data || data.length === 0) {
         return (
             <AcmPageCard>
                 <AcmEmptyState
@@ -65,11 +66,7 @@ export function ProviderConnectionsPageContent() {
 
     return (
         <AcmPageCard>
-            <ProviderConnectionsTable
-                providerConnections={data.items}
-                refresh={refresh}
-                deleteConnection={providerConnectionMethods.delete}
-            />
+            <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
         </AcmPageCard>
     )
 }
@@ -83,7 +80,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 export function ProviderConnectionsTable(props: {
     providerConnections: ProviderConnection[]
     refresh: () => void
-    deleteConnection: (name: string, namespace?: string) => Promise<unknown>
+    deleteConnection: (providerConnection: ProviderConnection) => IRequestResult
 }) {
     const { t } = useTranslation(['connection', 'common'])
     const columns: IAcmTableColumn<ProviderConnection>[] = [
@@ -163,12 +160,12 @@ export function ProviderConnectionsTable(props: {
                                 open: true,
                                 confirm: () => {
                                     props
-                                        .deleteConnection(
-                                            providerConnection.metadata.name!,
-                                            providerConnection.metadata?.namespace
-                                        )
-                                        .then(() => {
+                                        .deleteConnection(providerConnection)
+                                        .promise.then(() => {
                                             props.refresh()
+                                        })
+                                        .catch((err) => {
+                                            // TODO
                                         })
                                     setConfirm(ClosedConfirmModalProps)
                                 },

@@ -1,7 +1,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource } from './resource'
-import { resourceMethods } from '../utils/resource-methods'
 import { ClusterLabels } from './managed-cluster'
+import { createResource } from '../utils/resource-request'
 
 export const KlusterletAddonConfigApiVersion = 'agent.open-cluster-management.io/v1'
 export type KlusterletAddonConfigApiVersionType = 'agent.open-cluster-management.io/v1'
@@ -26,17 +26,12 @@ export interface KlusterletAddonConfig extends IResource {
     }
 }
 
-export const klusterletAddonConfigMethods = resourceMethods<KlusterletAddonConfig>({
-    apiVersion: KlusterletAddonConfigApiVersion,
-    kind: KlusterletAddonConfigKind,
-})
-
 export const createKlusterletAddonConfig = (data: {
     clusterName: string | undefined
     clusterLabels: ClusterLabels
 }) => {
     if (!data.clusterName) throw new Error('Cluster name not set')
-    return klusterletAddonConfigMethods.create({
+    return createResource<KlusterletAddonConfig>({
         apiVersion: KlusterletAddonConfigApiVersion,
         kind: KlusterletAddonConfigKind,
         metadata: { name: data.clusterName, namespace: data.clusterName },

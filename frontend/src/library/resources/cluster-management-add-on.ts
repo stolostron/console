@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { listClusterResources } from '../utils/resource-request'
 import { IResource } from './resource'
 
 export const ClusterManagementAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
@@ -24,7 +24,9 @@ export interface ClusterManagementAddOn extends IResource {
     }
 }
 
-export const clusterManagementAddOnMethods = resourceMethods<ClusterManagementAddOn>({
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-})
+export function listClusterManagementAddOns() {
+    return listClusterResources<ClusterManagementAddOn>({
+        apiVersion: ClusterManagementAddOnApiVersion,
+        kind: ClusterManagementAddOnKind,
+    })
+}

@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { resourceMethods } from '../utils/resource-methods'
+import { listNamespacedResources } from '../utils/resource-request'
 import { IResource } from './resource'
 
 export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
@@ -72,7 +72,10 @@ export interface ManagedClusterInfo extends IResource {
     }
 }
 
-export const managedClusterInfoMethods = resourceMethods<ManagedClusterInfo>({
-    apiVersion: ManagedClusterInfoApiVersion,
-    kind: ManagedClusterInfoKind,
-})
+export function listManagedClusterInfos(namespace: string) {
+    return listNamespacedResources<ManagedClusterInfo>({
+        apiVersion: ManagedClusterInfoApiVersion,
+        kind: ManagedClusterInfoKind,
+        metadata: { namespace },
+    })
+}

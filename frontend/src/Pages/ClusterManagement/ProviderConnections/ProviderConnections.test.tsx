@@ -7,7 +7,6 @@ import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-    providerConnectionMethods,
 } from '../../../library/resources/provider-connection'
 import { ProviderConnectionsPage } from './ProviderConnections'
 
@@ -21,7 +20,7 @@ const mockProviderConnections = [mockProviderConnection]
 
 describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
-        nockList(providerConnectionMethods, mockProviderConnections, [
+        nockList(mockProviderConnection, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const { getByText } = render(
@@ -34,11 +33,11 @@ describe('provider connections page', () => {
     })
 
     test('should be able to delete a provider connection', async () => {
-        const listNock = nockList(providerConnectionMethods, mockProviderConnections, [
+        const listNock = nockList(mockProviderConnection, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const deleteNock = nockDelete(mockProviderConnection)
-        const refreshNock = nockList(providerConnectionMethods, mockProviderConnections, [
+        const refreshNock = nockList(mockProviderConnection, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const { getByText, getAllByLabelText } = render(

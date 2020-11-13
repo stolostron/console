@@ -5,20 +5,21 @@ import {
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-
-import { NodeInfo } from '../../../../library/resources/managed-cluster-info'
+import { listManagedClusterInfos, NodeInfo } from '../../../../library/resources/managed-cluster-info'
 import React, { useEffect, ReactNode } from 'react'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { useManagedClusterInfos } from '../../../../lib/useManagedClusterInfo'
+import { useQuery } from '../../../../lib/useQuery'
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)
+    const { loading, error, data, startPolling, stopPolling, refresh } = useQuery(() =>
+        listManagedClusterInfos(props.namespace)
+    )
     useEffect(() => {
         startPolling(10 * 1000)
         return stopPolling
     }, [startPolling, stopPolling])
 
-    const mcis = data?.items.filter((m) => m.metadata.name === props.name)
+    const mcis = data?.filter((m) => m.metadata.name === props.name)
 
     if (loading) {
         return <AcmLoadingPage />

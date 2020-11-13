@@ -5,9 +5,6 @@ echo > ./.env
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
 echo CLUSTER_API_URL=$CLUSTER_API_URL >> ./.env
 
-CLUSTER_API_TOKEN=`oc whoami -t`
-echo CLUSTER_API_TOKEN=$CLUSTER_API_TOKEN >> ./.env
-
 OAUTH2_CLIENT_ID=multicloudingress
 echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./.env
 
