@@ -8,12 +8,9 @@
         },
         {
             "path": "backend"
-        },
-        {
-            "path": "e2e"
         }
     ],
     "settings": {
-        "jest.disabledWorkspaceFolders": ["docs", "e2e"]
+        "jest.disabledWorkspaceFolders": ["docs"]
     }
 }
