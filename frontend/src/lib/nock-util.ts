@@ -4,11 +4,9 @@ import { getResourceApiPath, getResourceNameApiPath, IResource } from '../librar
 import { StatusApiVersion, StatusKind } from '../library/resources/status'
 import { apiNamespacedUrl, apiProxyUrl } from '../library/utils/resource-request'
 
-export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource, count?: number) {
+export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
-        .times(count ?? 1)
-        .optionally()
         .reply(200, resource ?? response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
