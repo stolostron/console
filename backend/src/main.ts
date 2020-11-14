@@ -5,8 +5,6 @@ config()
 import { logger } from './lib/logger'
 
 if (!process.env.GENERATE) {
-    // if (!process.env.CLUSTER_API_TOKEN) throw new Error('CLUSTER_API_TOKEN required')
-
     if (!process.env.CLUSTER_API_URL) throw new Error('CLUSTER_API_URL required')
     logger.debug({ msg: 'environment', CLUSTER_API_URL: process.env.CLUSTER_API_URL })
 

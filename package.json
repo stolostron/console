@@ -3,24 +3,19 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "scripts": {
-        "postinstall": "concurrently npm:frontend:ci npm:backend:ci -n 'frontend:ci, backend:ci' -c blue,cyan",
+        "setup": "./setup.sh",
+        "postinstall": "concurrently npm:*:ci",
         "frontend:ci": "cd frontend && npm ci",
         "backend:ci": "cd backend && npm ci",
-        "generate": "concurrently npm:backend:generate -c cyan && concurrently npm:frontend:generate -c blue",
-        "backend:generate": "cd backend && npm run generate",
-        "frontend:generate": "cd frontend && npm run generate",
-        "test": "concurrently npm:frontend:test npm:backend:test -n 'frontend:test, backend:test' -c blue,cyan",
+        "test": "concurrently npm:*:test",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
-        "start": "concurrently npm:frontend npm:backend npm:codegen -n 'frontend, backend, codegen' -c blue,cyan,green",
+        "start": "concurrently npm:frontend npm:backend -n 'frontend, backend' -c blue,cyan",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
-        "codegen": "cd frontend && npm run generate:watch",
-        "build": "npm run generate && concurrently npm:backend:build -c cyan && concurrently npm:frontend:build -c blue",
+        "build": "concurrently npm:*:build",
         "backend:build": "cd backend && npm run build",
-        "frontend:build": "cd frontend && npm run build",
-        "docker:build": "docker build --pull --tag console .",
-        "docker:run": "npm run docker:build && docker run --rm --env-file backend/.env -p 3000:3000 -e PORT=3000 console"
+        "frontend:build": "cd frontend && npm run build"
     },
     "dependencies": {
         "concurrently": "^5.3.0"

@@ -1,3 +1,0 @@
-mutation createClusterDeployment($input: ClusterDeploymentInput!) {
-    createClusterDeployment(input: $input)
-}
