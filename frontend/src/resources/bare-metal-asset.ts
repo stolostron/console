@@ -1,8 +1,5 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { ResourceList } from './resource'
-import { resourceMethods } from '../utils/resource-methods'
-//import { ProviderID } from '../../lib/providers'
-import { useQuery } from '../../lib/useQuery'
+import { listResources, createResource } from '../lib/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -30,28 +27,6 @@ export interface BareMetalAsset {
             type: string
         }>
     }
-}
-
-export const bareMetalAssets = resourceMethods<BareMetalAsset>({
-    apiVersion: BareMetalAssetApiVersion,
-    kind: BareMetalAssetKind
-})
-// TODO: generate logic for listing BMA in edge cases, where fields are missing
-const originalList = bareMetalAssets.list
-
-bareMetalAssets.list = async (labels?: string[]) => {
-    const result = await originalList(labels)
-    return result
-}
-
-const originalCreate = bareMetalAssets.create
-
-bareMetalAssets.create = async (bareMetalAsset: BareMetalAsset) => {
-    return originalCreate(bareMetalAsset)
-}
-
-export function BareMetalAssets() {
-    return useQuery<ResourceList<BareMetalAsset>>(bareMetalAssets.list)
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
@@ -109,20 +84,12 @@ export function GetLabels(bareMetalAssets: BareMetalAsset) {
 // TODO - should this be moved to or combined with ./Secrets.tsx ?
 export interface BMASecret extends V1Secret {
     apiVersion: 'v1',
-    kind: 'secret',
+    kind: 'Secret',
     metadata: V1ObjectMeta
     data: {
         password: string,
         username: string,
     }
-}
-
-export const bmaSecrets = resourceMethods<BMASecret>({ apiVersion: 'v1', kind: 'Secret' })
-
-const originalSecretCreate = bmaSecrets.create
-
-bmaSecrets.create = async (bmaSecrets: BMASecret) => {
-    return originalSecretCreate(bmaSecrets)
 }
 
 export function MakeId(customID?: string) {
@@ -138,3 +105,27 @@ export function MakeId(customID?: string) {
     }
     return result
  }
+
+ export function createBareMetalAsset(bareMetalAsset: BareMetalAsset) {
+    const copy = { ...bareMetalAsset }
+    return createResource<BareMetalAsset>(copy)
+}
+
+export function listBareMetalAssets() {
+    const result = listResources<BareMetalAsset>(
+        {
+            apiVersion: BareMetalAssetApiVersion,
+            kind: BareMetalAssetKind,
+        },
+    )
+    return {
+        promise: result.promise.then((bareMetalAssets) => {
+            for (const bareMetalAsset of bareMetalAssets) {
+                bareMetalAsset.apiVersion = BareMetalAssetApiVersion
+                bareMetalAsset.kind = BareMetalAssetKind
+            }
+            return bareMetalAssets
+        }),
+        abort: result.abort,
+    }
+}

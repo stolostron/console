@@ -12,11 +12,12 @@ import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ErrorPage } from '../../../components/ErrorPage'
-import { BareMetalAsset, bareMetalAssets, BMASecret, bmaSecrets, MakeId } from '../../../library/resources/bare-metal-asset'
-import { Project } from '../../../library/resources/project'
-import { useProjects } from '../../../lib/useProject'
-import { NavigationPath } from '../ClusterManagement'
+import { ErrorPage } from '../../components/ErrorPage'
+import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
+import { createResource, IRequestResult } from '../../../src/lib/resource-request'
+import { Project, listProjects } from '../../resources/project'
+import { NavigationPath } from '../ClusterManagement/ClusterManagement'
+import { useQuery } from '../../lib/useQuery'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
 const VALID_BMC_ADDR_REGEXP = new RegExp(
@@ -27,7 +28,8 @@ const VALID_BMC_ADDR_REGEXP = new RegExp(
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$',
-    'i')
+        'i'
+    )
 
 const addDefaultProtocol = (addr: string) => {
     if (addr && addr.length && !addr.includes('://')) {
@@ -51,40 +53,35 @@ function validateField(value: string, field: string) {
     }
 }
 
-export function CreateBareMetalAssetPage(props: {
-    bmaSecretID?: string
-}) {
+export function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
     return (
         <Page>
             <AcmPageHeader title={t('createBareMetalAsset.title')} />
-            <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID}/>
+            <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
         </Page>
     )
 }
 
-export function CreateBareMetalAssetPageData(props: {
-    bmaSecretID?: string
-}) {
-
-    const projectsQuery = useProjects()
+export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
+    const projectsQuery = useQuery(listProjects)
 
     if (projectsQuery.loading) {
         return <AcmLoadingPage />
     } else if (projectsQuery.error) {
         return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data?.items || projectsQuery.data.items.length === 0) {
+    } else if (!projectsQuery.data|| projectsQuery.data.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title="No namespaces found." message="No namespaces found." />
+                <AcmEmptyState title='No namespaces found.' message='No namespaces found.' />
             </AcmPageCard>
         )
     }
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={projectsQuery.data.items}
-            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => bareMetalAssets.create(bareMetalAsset)}
+            projects={projectsQuery.data}
+            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
         />
     )
@@ -93,7 +90,7 @@ export function CreateBareMetalAssetPageData(props: {
 export function CreateBareMetalAssetPageContent(props: {
     projects: Project[]
     bmaSecretID?: string
-    createBareMetalAsset: (input: BareMetalAsset) => Promise<unknown>
+    createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
 }) {
     const { t } = useTranslation(['bma'])
     const history = useHistory()
@@ -103,14 +100,14 @@ export function CreateBareMetalAssetPageContent(props: {
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
         metadata: {
             name: '',
-            namespace: ''
+            namespace: '',
         },
         spec: {
             bmc: {
                 address: '',
-                credentialsName: ''
+                credentialsName: '',
             },
-            bootMac: ''
+            bootMac: '',
         },
     })
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
@@ -123,8 +120,8 @@ export function CreateBareMetalAssetPageContent(props: {
         metadata: {},
         data: {
             password: '',
-            username: ''
-        }
+            username: '',
+        },
     })
     function updateBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
         const copy = { ...bmaSecret }
@@ -142,14 +139,14 @@ export function CreateBareMetalAssetPageContent(props: {
                     value={bareMetalAsset.metadata?.name}
                     onChange={(name) => {
                         updateBMASecret((bmaSecrets) => {
-                            secretName = name + '-bmc-secret-'+MakeId(props.bmaSecretID)
+                            secretName = name + '-bmc-secret-' + MakeId(props.bmaSecretID)
                             bmaSecrets.metadata!.name = secretName
-                            return bareMetalAsset
+                            bmaSecrets.kind = 'Secret'
+                            bmaSecrets.apiVersion = 'v1'
                         })
                         updateBareMetalAsset((bareMetalAsset) => {
                             bareMetalAsset.metadata!.name = name
                             bareMetalAsset.spec!.bmc.credentialsName = secretName
-                            return bareMetalAsset
                         })
                     }}
                     isRequired
@@ -167,7 +164,6 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                         updateBMASecret((bmaSecrets) => {
                             bmaSecrets.metadata!.namespace = namespace
-                            return bareMetalAsset
                         })
                     }}
                     isRequired
@@ -217,7 +213,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     type='password'
                 />
                 <AcmTextInput
-                    id="bootMac"
+                    id='bootMac'
                     label={t('createBareMetalAsset.bootMac.label')}
                     placeholder={t('createBareMetalAsset.bootMac.placeholder')}
                     value={bareMetalAsset.spec?.bootMac}
@@ -232,8 +228,8 @@ export function CreateBareMetalAssetPageContent(props: {
 
                 <ActionGroup>
                     <AcmSubmit
-                        id="submit"
-                        variant="primary"
+                        id='submit'
+                        variant='primary'
                         onClick={() => {
                             if (bmaSecret.data?.username) {
                                 bmaSecret.data.username = Buffer.from(bmaSecret.data.username, 'ascii').toString(
@@ -246,8 +242,8 @@ export function CreateBareMetalAssetPageContent(props: {
                                 )
                             }
                             console.log('checking baremetal asset secret: ', JSON.stringify(bmaSecret))
-                            bmaSecrets.create(bmaSecret as BMASecret).then(() => {
-                                props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).then(() => {
+                            createResource(bmaSecret as BMASecret).promise.then(() => {
+                                props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
                                     //history.push(NavigationPath.baremetalAssets)
                                 })
                             })
@@ -256,7 +252,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         Add connection
                     </AcmSubmit>
                     <Button
-                        variant="link"
+                        variant='link'
                         onClick={() => {
                             history.push(NavigationPath.baremetalAssets)
                         }}
