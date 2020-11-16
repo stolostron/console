@@ -33,7 +33,7 @@
   "bareMetalAsset.bulkAction.createCluster":"Create Cluster",
 
   "bareMetalAsset.modal.deleteMultiple.title":"Delete bare metal assets",
-  "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal assets. The bare metal assets will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
   "bareMetalAsset.modal.delete.title":"Delete bare metal asset",
   "bareMetalAsset.modal.delete.message":"You are about to delete {{assetName}}. The bare metal asset will no longer be available. This action is irreversible.",
   "bareMetalAsset.modal.edit.title":"Delete bare metal asset",

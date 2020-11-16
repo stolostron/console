@@ -38,8 +38,7 @@ const addDefaultProtocol = (addr: string) => {
     return addr
 }
 
-function ValidateField(value: string, field: string) {
-    const { t } = useTranslation(['bma'])
+function ValidateField(value: string, field: string, t:Function) {
     switch (field) {
         case 'address':
             if (!VALID_BMC_ADDR_REGEXP.test(addDefaultProtocol(value))) {
@@ -151,7 +150,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => ValidateField(value, 'name')}
+                    validation={(value) => ValidateField(value, 'name', t)}
                 ></AcmTextInput>
                 <AcmSelect
                     id="namespaceName"
@@ -186,7 +185,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => ValidateField(value, 'address')}
+                    validation={(value) => ValidateField(value, 'address', t)}
                 />
                 <AcmTextInput
                     id="username"
@@ -224,7 +223,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => ValidateField(value, 'bootMac')}
+                    validation={(value) => ValidateField(value, 'bootMac', t)}
                 />
 
                 <ActionGroup>
