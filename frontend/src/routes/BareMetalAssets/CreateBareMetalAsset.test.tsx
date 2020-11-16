@@ -61,9 +61,8 @@ describe('bare metal asset page', () => {
     test('can create asset', async () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
-        const listNockii = nockList(bareMetalAsset, mockNewBareMetalAssets)
 
-        const { getByText, getAllByText, getByTestId } = render(
+        const { getByText, getAllByText, getByTestId, container } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
                     path="/cluster-management/baremetal-assets/create"
@@ -90,10 +89,9 @@ describe('bare metal asset page', () => {
         // submitting new asset
         expect(getByText("createBareMetalAsset.button.create")).toBeInTheDocument()
         userEvent.click(getByText("createBareMetalAsset.button.create"))
-        await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
+
         expect(getByText("bareMetalAsset.bulkAction.createAsset")).toBeVisible()
-        await waitFor(() => expect(listNockii.isDone()).toBeTruthy()) // expect the list api call
+        console.log('checking conotainer: ', container.innerHTML)
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
-        await waitFor(() => expect(getByText('test-bare-metal-asset-002')).toBeInTheDocument())
     })
 })

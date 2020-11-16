@@ -20,12 +20,11 @@ export function BareMetalAssetsPage() {
 }
 
 export function BareMetalAssets() {
-    const { data, loading, error, startPolling, stopPolling, refresh } = useQuery(listBareMetalAssets)
-    useEffect(refresh, [refresh])
+    const { data, loading, error, startPolling, stopPolling } = useQuery(listBareMetalAssets)
     useEffect(() => {
         startPolling(5 * 1000)
         return stopPolling
-    }, [startPolling, stopPolling, refresh])
+    }, [startPolling, stopPolling])
     const { t } = useTranslation(['bma'])
 
     if (loading) {
@@ -43,15 +42,13 @@ export function BareMetalAssets() {
     return (
         <BareMetalAssetsTable
             bareMetalAssets={data}
-            refresh={refresh}
             deleteBareMetalAsset={deleteResource}
         ></BareMetalAssetsTable>
     )
 }
 // TODO: use deleteResources instead of deleteResource
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[],
-    deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult,
-    refresh: () => void) {
+    deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult) {
     const promises: Array<Promise<any>> = []
 
     bareMetalAssets.forEach( bareMetalAsset => {
@@ -59,14 +56,10 @@ export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[],
             deleteBareMetalAsset(bareMetalAsset).promise)
         })
    Promise.all(promises)        
-   .then(() => {
-       refresh()
-   })
 }
 
 export function BareMetalAssetsTable(props: {
     bareMetalAssets: BareMetalAsset[]
-    refresh: () => void
      deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult}) {
 
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
@@ -146,7 +139,7 @@ export function BareMetalAssetsTable(props: {
                                 message: t("bareMetalAsset.modal.deleteMultiple.message", {assetNum:bareMetalAssets.length}),
                                 open: true,
                                 confirm: () => {
-                                    deleteBareMetalAssets(bareMetalAssets, props.deleteBareMetalAsset, props.refresh)
+                                    deleteBareMetalAssets(bareMetalAssets, props.deleteBareMetalAsset)
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
@@ -168,10 +161,6 @@ export function BareMetalAssetsTable(props: {
                             confirm: () => {
                                 props
                                     .deleteBareMetalAsset(bareMetalAsset)
-                                    .promise
-                                    .then(() => {
-                                        props.refresh()
-                                    })
                                 setConfirm(ClosedConfirmModalProps)
                             },
                             cancel: () => {
