@@ -77,11 +77,7 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
                         </CardBody>
                         <CardTitle>{t('import.command.configurecluster')}</CardTitle>
                         <CardBody>
-                        { !clusterConsoleURL ? 
-                            t('import.command.configureclusterdescription')
-                        : 
-                            t('import.command.configurediscoveredclusterdescription')
-                        }
+                            {t('import.command.configureclusterdescription')}
                         </CardBody>
                         <CardFooter>
                             <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
