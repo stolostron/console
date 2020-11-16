@@ -2,6 +2,7 @@ import { AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable, AcmEmptyState } from 
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
 import { ErrorPage } from '../../components/ErrorPage'
 import { listBareMetalAssets, BareMetalAsset, BMAStatusMessage, GetLabels } from '../../../src/resources/bare-metal-asset'
@@ -25,6 +26,7 @@ export function BareMetalAssets() {
         startPolling(5 * 1000)
         return stopPolling
     }, [startPolling, stopPolling, refresh])
+    const { t } = useTranslation(['bma'])
 
     if (loading) {
         return <AcmLoadingPage />
@@ -33,7 +35,7 @@ export function BareMetalAssets() {
     } else if (!data || data.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title="No bare metal assets found" message="No bare metal assets found" />
+                <AcmEmptyState title={t("bareMetalAsset.emptyState.title")} message={t("bareMetalAsset.emptyState.title")} />
             </AcmPageCard>
         )
     }
@@ -69,6 +71,7 @@ export function BareMetalAssetsTable(props: {
 
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const history = useHistory()
+    const { t } = useTranslation(['bma'])
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
         return bareMetalAsset.metadata.uid as string
@@ -84,39 +87,39 @@ export function BareMetalAssetsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<BareMetalAsset>
-                emptyState={<AcmEmptyState title="No bare metal assets found" />}
+                emptyState={<AcmEmptyState title={t("bareMetalAsset.emptyState.title")} />}
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
                     {
-                        header: 'Name',
+                        header: t("bareMetalAsset.tableHeader.name"),
                         cell: 'metadata.name',
                         sort: 'metadata.name',
                         search: 'metadata.name',
                     },
                     {
-                        header: 'Namespace',
+                        header: t("bareMetalAsset.tableHeader.namespace"),
                         cell: 'metadata.namespace',
                         search: 'metadata.namespace',
                     },
                     {
-                        header: 'Cluster',
+                        header: t("bareMetalAsset.tableHeader.cluster"),
                         cell: 'metal3.io/cluster-deployment-name',
                         search: 'metal3.io/cluster-deployment-name',
                     },
                     {
-                        header: 'Role',
+                        header: t("bareMetalAsset.tableHeader.role"),
                         cell: 'metadata.labels.metal3.io/role',
                         search: 'metadata.labels.metal3.io/role',
                     },
                     {
-                        header: 'Status',
+                        header: t("bareMetalAsset.tableHeader.status"),
                         cell: (bareMetalAssets) => {
                             return BMAStatusMessage(bareMetalAssets)
                         },
                     },
                     {
-                        header: 'Labels',
+                        header: t("bareMetalAsset.tableHeader.labels"),
                         cell: (bareMetalAssets) => {
                             const labels = GetLabels(bareMetalAssets)
                             return <AcmLabels labels={labels} />
@@ -127,7 +130,7 @@ export function BareMetalAssetsTable(props: {
                 tableActions={[
                     {
                         id: 'createAsset',
-                        title: 'Create Asset',
+                        title: t("bareMetalAsset.bulkAction.createAsset"),
                         click: () => {
                             history.push(NavigationPath.createBaremetalAssets)
                         },
@@ -136,11 +139,11 @@ export function BareMetalAssetsTable(props: {
                 bulkActions={[
                     {
                         id: 'destroyBareMetalAsset',
-                        title: 'Destroy',
+                        title: t("bareMetalAsset.bulkAction.destroyAsset"),
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setConfirm({
-                                title: 'Delete bare metal assets',
-                                message: `You are about to delete ${bareMetalAssets.length} bare metal assets. The bare metal assets will no longer be available. This action is irreversible.`,
+                                title: t("bareMetalAsset.modal.deleteMultiple.title"),
+                                message: t("bareMetalAsset.modal.deleteMultiple.message", {assetNum:bareMetalAssets.length}),
                                 open: true,
                                 confirm: () => {
                                     deleteBareMetalAssets(bareMetalAssets, props.deleteBareMetalAsset, props.refresh)
@@ -152,15 +155,15 @@ export function BareMetalAssetsTable(props: {
                             })
                         },
                     },
-                    { id: 'createBareMetalAssetCluster', title: 'Create Cluster', click: (items) => {} },
+                    { id: 'createBareMetalAssetCluster', title: t("bareMetalAsset.bulkAction.createCluster"), click: (items) => {} },
                 ]}
                 rowActions={[
-                    { id: 'editLabels', title: 'Edit labels', click: (item) => {} },
-                    { id: 'editAsset', title: 'Edit Asset', click: (item) => {} },
-                    { id: 'deleteAsset', title: 'Delete Asset', click: (bareMetalAsset: BareMetalAsset) => {
+                    { id: 'editLabels', title: t("bareMetalAsset.rowAction.editLabels.title"), click: (item) => {} },
+                    { id: 'editAsset', title: t("bareMetalAsset.rowAction.editAsset.title"), click: (item) => {} },
+                    { id: 'deleteAsset', title: t("bareMetalAsset.rowAction.deleteAsset.title"), click: (bareMetalAsset: BareMetalAsset) => {
                         setConfirm({
-                            title: 'Delete bare metal asset',
-                            message: `You are about to delete ${bareMetalAsset.metadata?.name}. The bare metal asset will no longer be available. This action is irreversible.`,
+                            title: t( "bareMetalAsset.modal.delete.title"),
+                            message: t("bareMetalAsset.modal.delete.message", {assetName:bareMetalAsset.metadata?.name}),
                             open: true,
                             confirm: () => {
                                 props
@@ -183,17 +186,18 @@ export function BareMetalAssetsTable(props: {
 }
 
 function GetStatusMessage(status: string) {
+    const { t } = useTranslation(['bma'])
     switch (status) {
         case 'CredentialsFound':
-            return 'No credentials'
+            return t("bareMetalAsset.statusMessage.credentialsFound")
         case 'AssetSyncStarted':
-            return 'Asset syncing'
+            return t("bareMetalAsset.statusMessage.assetSyncStarted")
         case 'ClusterDeploymentFound':
-            return 'No cluster deployment'
+            return t("bareMetalAsset.statusMessage.clusterDeploymentFound")
         case 'AssetSyncCompleted':
-            return 'Asset sync failed'
+            return t("bareMetalAsset.statusMessage.assetSyncCompleted")
         case 'Ready':
-            return 'Ready'
+            return t("bareMetalAsset.statusMessage.ready")
         default:
             return ''
     }

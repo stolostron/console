@@ -38,16 +38,17 @@ const addDefaultProtocol = (addr: string) => {
     return addr
 }
 
-function validateField(value: string, field: string) {
+function ValidateField(value: string, field: string) {
+    const { t } = useTranslation(['bma'])
     switch (field) {
         case 'address':
             if (!VALID_BMC_ADDR_REGEXP.test(addDefaultProtocol(value))) {
-                return 'Invalid format of BMC address'
+                return t("createBareMetalAsset.form.invalidBmcAddress")
             }
             break
         case 'bootMac':
             if (!VALID_BOOT_MAC_REGEXP.test(value)) {
-                return 'Invalid format of MAC address'
+                return t("createBareMetalAsset.form.invalidMacAddress")
             }
             break
     }
@@ -65,7 +66,7 @@ export function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
 
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     const projectsQuery = useQuery(listProjects)
-
+    const { t } = useTranslation(['bma'])
     if (projectsQuery.loading) {
         return <AcmLoadingPage />
     } else if (projectsQuery.error) {
@@ -73,7 +74,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     } else if (!projectsQuery.data|| projectsQuery.data.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title='No namespaces found.' message='No namespaces found.' />
+                <AcmEmptyState title={t("createBareMetalAsset.emptyState.Namespaces.title")} message={t("createBareMetalAsset.emptyState.Namespaces.title")} />
             </AcmPageCard>
         )
     }
@@ -150,7 +151,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'name')}
+                    validation={(value) => ValidateField(value, 'name')}
                 ></AcmTextInput>
                 <AcmSelect
                     id="namespaceName"
@@ -185,7 +186,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'address')}
+                    validation={(value) => ValidateField(value, 'address')}
                 />
                 <AcmTextInput
                     id="username"
@@ -223,7 +224,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    validation={(value) => validateField(value, 'bootMac')}
+                    validation={(value) => ValidateField(value, 'bootMac')}
                 />
 
                 <ActionGroup>
@@ -241,7 +242,6 @@ export function CreateBareMetalAssetPageContent(props: {
                                     'base64'
                                 )
                             }
-                            console.log('checking baremetal asset secret: ', JSON.stringify(bmaSecret))
                             createResource(bmaSecret as BMASecret).promise.then(() => {
                                 props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
                                     history.push(NavigationPath.baremetalAssets)
@@ -249,7 +249,7 @@ export function CreateBareMetalAssetPageContent(props: {
                             })
                         }}
                     >
-                        Create
+                        {t('createBareMetalAsset.button.create')}
                     </AcmSubmit>
                     <Button
                         variant='link'
@@ -257,7 +257,7 @@ export function CreateBareMetalAssetPageContent(props: {
                             history.push(NavigationPath.baremetalAssets)
                         }}
                     >
-                        Cancel
+                        {t('createBareMetalAsset.button.cancel')}
                     </Button>
                 </ActionGroup>
             </AcmForm>

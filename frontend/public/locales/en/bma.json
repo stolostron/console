@@ -13,6 +13,39 @@
   "createBareMetalAsset.password.label":"Password",
   "createBareMetalAsset.password.placeholder":"Enter a password",
   "createBareMetalAsset.bootMac.label":"Boot NIC MAC Address",
-  "createBareMetalAsset.bootMac.placeholder":"Enter an address"
+  "createBareMetalAsset.bootMac.placeholder":"Enter an address",
+  "createBareMetalAsset.button.create":"Create",
+  "createBareMetalAsset.button.cancel":"Cancel",
+  "createBareMetalAsset.form.invalidBmcAddress":"Invalid format of BMC address",
+  "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
+  "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
+
+
+  "bareMetalAsset.emptyState.title":"No bare metal assets found",
+  "bareMetalAsset.tableHeader.name":"Name",
+  "bareMetalAsset.tableHeader.namespace":"Namespace",
+  "bareMetalAsset.tableHeader.cluster":"Cluster",
+  "bareMetalAsset.tableHeader.role":"Role",
+  "bareMetalAsset.tableHeader.status":"Status",
+  "bareMetalAsset.tableHeader.labels":"Labels",
+  "bareMetalAsset.bulkAction.createAsset":"Create Asset",
+  "bareMetalAsset.bulkAction.destroyAsset":"Destroy Asset",
+  "bareMetalAsset.bulkAction.createCluster":"Create Cluster",
+
+  "bareMetalAsset.modal.deleteMultiple.title":"Delete bare metal assets",
+  "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal assets. The bare metal assets will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.delete.title":"Delete bare metal asset",
+  "bareMetalAsset.modal.delete.message":"You are about to delete {{assetName}}. The bare metal asset will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.edit.title":"Delete bare metal asset",
+
+  "bareMetalAsset.rowAction.deleteAsset.title":"Delete Asset",
+  "bareMetalAsset.rowAction.editAsset.title":"Edit Asset",
+  "bareMetalAsset.rowAction.editLabels.title":"Edit Labels",
+
+  "bareMetalAsset.statusMessage.credentialsFound":"No credentials",
+  "bareMetalAsset.statusMessage.assetSyncStarted":"Asset syncing",
+  "bareMetalAsset.statusMessage.clusterDeploymentFound":"No cluster deployment",
+  "bareMetalAsset.statusMessage.assetSyncCompleted":"Asset sync failed",
+  "bareMetalAsset.statusMessage.ready":"Ready"
 
 }

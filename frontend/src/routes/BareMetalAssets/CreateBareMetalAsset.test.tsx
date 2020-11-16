@@ -2,6 +2,7 @@ import React from 'react'
 import { render, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { BareMetalAssetsPage } from './BaremetalAssets'
 import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
 import { nockList, nockListProjects } from '../../lib/nock-util'
@@ -52,6 +53,7 @@ const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
 const bmaProjects = [testProject]
 
 describe('bare metal asset page', () => {
+    const { t } = useTranslation(['bma'])
     beforeEach(() => {
         document.getElementsByTagName('html')[0].innerHTML = ''
     })
@@ -94,12 +96,12 @@ describe('bare metal asset page', () => {
         userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec.bootMac!)
 
         // submitting new asset
-        expect(getByText('Create')).toBeInTheDocument()
+        expect(getByText(t("createBareMetalAsset.button.create"))).toBeInTheDocument()
         act(() => {
-            userEvent.click(getByText('Create'))
+            userEvent.click(getByText(t("createBareMetalAsset.button.create")))
         })
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
-        expect(getByText('Create Asset')).toBeVisible()
+        expect(getByText(t("bareMetalAsset.bulkAction.createAsset"))).toBeVisible()
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
         await waitFor(() => expect(getByText('test-bare-metal-asset-002')).toBeInTheDocument())
