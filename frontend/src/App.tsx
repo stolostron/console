@@ -2,6 +2,7 @@ import '@patternfly/react-core/dist/styles/base.css'
 import React, { lazy } from 'react'
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom'
 import './lib/i18n'
+import { NavigationPath } from './NavigationPath'
 
 const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
 const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BaremetalAssets'))
@@ -10,22 +11,6 @@ const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
 const ImportCommandPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCommand/ImportCommand'))
 const AddConnectionPage = lazy(() => import('./routes/ProviderConnections/AddConnection/AddConnection'))
-
-export enum NavigationPath {
-    clusterManagement = '/cluster-management/cluster-management',
-    clusters = '/cluster-management/cluster-management/clusters',
-    discoveredClusters = '/cluster-management/cluster-management/discovered',
-    clusterDetails = '/cluster-management/cluster-management/clusters/:id',
-    clusterOverview = '/cluster-management/cluster-management/clusters/:id/overview',
-    clusterNodePools = '/cluster-management/cluster-management/clusters/:id/node-pools',
-    clusterSettings = '/cluster-management/cluster-management/clusters/:id/settings',
-    createCluster = '/cluster-management/cluster-management/create-cluster',
-    importCluster = '/cluster-management/cluster-management/import-cluster',
-    importCommand = '/cluster-management/cluster-management/import-cluster/:clusterName',
-    providerConnections = '/cluster-management/cluster-management/provider-connections',
-    addConnection = '/cluster-management/cluster-management/provider-connections/add-connection',
-    baremetalAssets = '/cluster-management/baremetal-assets',
-}
 
 function App() {
     return (

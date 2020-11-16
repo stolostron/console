@@ -6,9 +6,7 @@ import '@testing-library/jest-dom/extend-expect'
 import nock from 'nock'
 import { configure } from '@testing-library/dom'
 
-configure({
-    testIdAttribute: 'id',
-})
+configure({ testIdAttribute: 'id' })
 
 process.env.REACT_APP_BACKEND = 'http://www.example.com:80'
 
@@ -34,6 +32,7 @@ afterEach(setupAfterEach)
 afterAll(setupAfterAll)
 
 jest.mock('react-i18next', () => ({
+    initReactI18next: jest.fn(),
     useTranslation: () => ({
         t: (key: string) => key,
     }),

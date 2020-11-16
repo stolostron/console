@@ -13,7 +13,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import { NavigationPath } from '../../../App'
+import { NavigationPath } from '../../../NavigationPath'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { createResource, IRequestResult } from '../../../lib/resource-request'

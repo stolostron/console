@@ -5,13 +5,12 @@ import {
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { NavigationPath } from '../../../App'
 import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
+import { NavigationPath } from '../../../NavigationPath'
 import { listManagedClusters, ManagedCluster } from '../../../resources/managed-cluster'
 
 const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
@@ -70,11 +69,7 @@ const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
 ]
 
 export default function ClustersPage() {
-    return (
-        <Page>
-            <ClustersPageContent />
-        </Page>
-    )
+    return <ClustersPageContent />
 }
 
 export function ClustersPageContent() {

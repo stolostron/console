@@ -1,0 +1,15 @@
+export enum NavigationPath {
+    clusterManagement = '/cluster-management/cluster-management',
+    clusters = '/cluster-management/cluster-management/clusters',
+    discoveredClusters = '/cluster-management/cluster-management/discovered',
+    clusterDetails = '/cluster-management/cluster-management/clusters/:id',
+    clusterOverview = '/cluster-management/cluster-management/clusters/:id/overview',
+    clusterNodePools = '/cluster-management/cluster-management/clusters/:id/node-pools',
+    clusterSettings = '/cluster-management/cluster-management/clusters/:id/settings',
+    createCluster = '/cluster-management/cluster-management/create-cluster',
+    importCluster = '/cluster-management/cluster-management/import-cluster',
+    importCommand = '/cluster-management/cluster-management/import-cluster/:clusterName',
+    providerConnections = '/cluster-management/cluster-management/provider-connections',
+    addConnection = '/cluster-management/cluster-management/provider-connections/add-connection',
+    baremetalAssets = '/cluster-management/baremetal-assets',
+}

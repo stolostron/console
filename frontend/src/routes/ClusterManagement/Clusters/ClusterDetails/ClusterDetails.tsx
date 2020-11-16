@@ -8,7 +8,7 @@ import {
 import { Page } from '@patternfly/react-core'
 import React, { Fragment, Suspense } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
-import { NavigationPath } from '../../../../App'
+import { NavigationPath } from '../../../../NavigationPath'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 

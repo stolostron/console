@@ -3,7 +3,7 @@ import { Nav, NavItem, NavList, Page, PageSection, PageSectionVariants } from '@
 import React, { Fragment, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { NavigationPath } from '../../App'
+import { NavigationPath } from '../../NavigationPath'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
