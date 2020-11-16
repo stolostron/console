@@ -48,7 +48,7 @@ export function BareMetalAssets() {
         ></BareMetalAssetsTable>
     )
 }
-
+// TODO: use deleteResources instead of deleteResource
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[],
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult,
     refresh: () => void) {
@@ -115,7 +115,7 @@ export function BareMetalAssetsTable(props: {
                     {
                         header: t("bareMetalAsset.tableHeader.status"),
                         cell: (bareMetalAssets) => {
-                            return BMAStatusMessage(bareMetalAssets)
+                            return BMAStatusMessage(bareMetalAssets, t)
                         },
                     },
                     {
@@ -183,22 +183,4 @@ export function BareMetalAssetsTable(props: {
             />
         </AcmPageCard>
     )
-}
-
-function GetStatusMessage(status: string) {
-    const { t } = useTranslation(['bma'])
-    switch (status) {
-        case 'CredentialsFound':
-            return t("bareMetalAsset.statusMessage.credentialsFound")
-        case 'AssetSyncStarted':
-            return t("bareMetalAsset.statusMessage.assetSyncStarted")
-        case 'ClusterDeploymentFound':
-            return t("bareMetalAsset.statusMessage.clusterDeploymentFound")
-        case 'AssetSyncCompleted':
-            return t("bareMetalAsset.statusMessage.assetSyncCompleted")
-        case 'Ready':
-            return t("bareMetalAsset.statusMessage.ready")
-        default:
-            return ''
-    }
 }

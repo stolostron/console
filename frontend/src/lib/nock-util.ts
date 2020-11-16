@@ -3,27 +3,6 @@ import { join } from 'path'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
-import { Project } from '../resources/project'
-
-export function nockListProjects(
-    projects:Array<Project>
-) {
-    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        '/cluster-management/proxy/apis/project.openshift.io/v1/projects'
-    )
-
-    return networkMock.reply(
-        200,
-        {
-            items: projects,
-        },
-        {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        }
-    )
-}
 
 export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })

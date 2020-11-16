@@ -26,8 +26,8 @@ const bareMetalAsset: BareMetalAsset = {
 const mockBareMetalAssets = [bareMetalAsset]
 
 describe('bare metal asset page', () => {
-    const { t } = useTranslation(['bma'])
     beforeEach(() => {
+        // TODO: might not need this, check
         document.getElementsByTagName('html')[0].innerHTML = ''
     })
 
@@ -56,7 +56,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         userEvent.click(getByLabelText('Select all rows')) // Click the action button on the first table row
-        userEvent.click(getByText(t("bareMetalAsset.bulkAction.destroyAsset"))) // click the delete action
+        userEvent.click(getByText("bareMetalAsset.bulkAction.destroyAsset")) // click the delete action
         expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
@@ -77,7 +77,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText(t("bareMetalAsset.bulkAction.destroyAsset")))
+        userEvent.click(getByText("bareMetalAsset.bulkAction.destroyAsset"))
         expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm'))
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish

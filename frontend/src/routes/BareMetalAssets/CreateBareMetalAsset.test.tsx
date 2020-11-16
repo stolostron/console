@@ -5,7 +5,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BareMetalAssetsPage } from './BaremetalAssets'
 import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
-import { nockList, nockListProjects } from '../../lib/nock-util'
+import { nockList, nockClusterList } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 
@@ -53,13 +53,13 @@ const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
 const bmaProjects = [testProject]
 
 describe('bare metal asset page', () => {
-    const { t } = useTranslation(['bma'])
     beforeEach(() => {
+        // TODO: might not need this...
         document.getElementsByTagName('html')[0].innerHTML = ''
     })
 
     test('can create asset', async () => {
-        const listProjectNock = nockListProjects(bmaProjects)
+        const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const listNockii = nockList(bareMetalAsset, mockNewBareMetalAssets)
 
@@ -78,17 +78,9 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getByTestId('bareMetalAssetName'))) // expect asset name form to exist in doc
         
         // user input 
-        await act(() => new Promise((resolve) => setTimeout(() => resolve(), 100)))
-        act(() => {
-            userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)
-        })
-        act(() => {
-            userEvent.click(getByTestId('namespaceName-button'))
-        })
-        act(() => {
-            userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
-        })
-        await act(() => new Promise((resolve) => setTimeout(() => resolve(), 100)))
+        userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)
+        userEvent.click(getByTestId('namespaceName-button'))
+        userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
         await waitFor(() => expect(getByText(mockBareMetalAssets[0].metadata.namespace!)).toBeInTheDocument())
         userEvent.type(getByTestId('baseboardManagementControllerAddress'), mockNewBareMetalAssets[0].spec.bmc.address!)
         userEvent.type(getByTestId('username'), 'test')
@@ -96,12 +88,10 @@ describe('bare metal asset page', () => {
         userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec.bootMac!)
 
         // submitting new asset
-        expect(getByText(t("createBareMetalAsset.button.create"))).toBeInTheDocument()
-        act(() => {
-            userEvent.click(getByText(t("createBareMetalAsset.button.create")))
-        })
+        expect(getByText("createBareMetalAsset.button.create")).toBeInTheDocument()
+        userEvent.click(getByText("createBareMetalAsset.button.create"))
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
-        expect(getByText(t("bareMetalAsset.bulkAction.createAsset"))).toBeVisible()
+        expect(getByText("bareMetalAsset.bulkAction.createAsset")).toBeVisible()
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
         await waitFor(() => expect(getByText('test-bare-metal-asset-002')).toBeInTheDocument())

@@ -1,5 +1,6 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { listResources, createResource } from '../lib/resource-request'
+import { useTranslation } from 'react-i18next'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -29,7 +30,7 @@ export interface BareMetalAsset {
     }
 }
 
-export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
+export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation:Function) {
     const KNOWN_STATUSES = [
         'CredentialsFound',
         'AssetSyncStarted',
@@ -52,22 +53,23 @@ export function BMAStatusMessage(bareMetalAssets: BareMetalAsset) {
                 mostCurrentStatus = conditions.type
             }
         }
-        return GetStatusMessage(mostCurrentStatus)
+        return translation(GetStatusMessage(mostCurrentStatus))
     }
     return ''
 }
 function GetStatusMessage(status: string) {
     switch (status) {
+        // returns translation strings
         case 'CredentialsFound':
-            return 'No credentials'
+            return "bareMetalAsset.statusMessage.credentialsFound"
         case 'AssetSyncStarted':
-            return 'Asset syncing'
+            return "bareMetalAsset.statusMessage.assetSyncStarted"
         case 'ClusterDeploymentFound':
-            return 'No cluster deployment'
+            return "bareMetalAsset.statusMessage.clusterDeploymentFound"
         case 'AssetSyncCompleted':
-            return 'Asset sync failed'
+            return "bareMetalAsset.statusMessage.assetSyncCompleted"
         case 'Ready':
-            return 'Ready'
+            return "bareMetalAsset.statusMessage.ready"
         default:
             return ''
     }
@@ -106,11 +108,6 @@ export function MakeId(customID?: string) {
     return result
  }
 
- export function createBareMetalAsset(bareMetalAsset: BareMetalAsset) {
-    const copy = { ...bareMetalAsset }
-    return createResource<BareMetalAsset>(copy)
-}
-
 export function listBareMetalAssets() {
     const result = listResources<BareMetalAsset>(
         {
@@ -119,11 +116,8 @@ export function listBareMetalAssets() {
         },
     )
     return {
+        // TODO: check to see if you really need this
         promise: result.promise.then((bareMetalAssets) => {
-            for (const bareMetalAsset of bareMetalAssets) {
-                bareMetalAsset.apiVersion = BareMetalAssetApiVersion
-                bareMetalAsset.kind = BareMetalAssetKind
-            }
             return bareMetalAssets
         }),
         abort: result.abort,
