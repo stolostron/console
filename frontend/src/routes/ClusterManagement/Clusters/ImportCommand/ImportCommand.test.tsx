@@ -3,7 +3,7 @@ import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { nockGet } from '../../../../lib/nock-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-import { ImportCommandPage } from './ImportCommand'
+import ImportCommandPage from './ImportCommand'
 
 const mockSecret: Secret = {
     apiVersion: SecretApiVersion,

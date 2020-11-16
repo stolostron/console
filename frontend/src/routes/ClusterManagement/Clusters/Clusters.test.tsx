@@ -9,7 +9,7 @@ import {
     DiscoveredClusterKind,
 } from '../../../resources/discovered-cluster'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources/managed-cluster'
-import { ClustersPage } from './Clusters'
+import ClustersPage from './Clusters'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {

@@ -17,7 +17,7 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import { ImportClusterPage } from './ImportCluster'
+import ImportClusterPage from './ImportCluster'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,

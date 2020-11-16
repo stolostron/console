@@ -2,13 +2,13 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockDelete, nockList } from '../../lib/nock-util'
+import { nockDelete, nockList } from '../../../lib/nock-util'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-} from '../../resources/provider-connection'
-import { ProviderConnectionsPage } from './ProviderConnections'
+} from '../../../resources/provider-connection'
+import ProviderConnectionsPage from './ProviderConnections'
 
 const mockProviderConnection: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,

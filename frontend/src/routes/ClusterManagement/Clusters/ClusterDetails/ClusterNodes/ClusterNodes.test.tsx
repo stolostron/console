@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
-import { NodesPoolsTable } from './NodesPools'
+import { NodesPoolsTable } from './ClusterNodes'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 
 test('nodes table', () => {
