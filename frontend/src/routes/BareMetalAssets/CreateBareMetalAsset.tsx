@@ -16,7 +16,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
 import { createResource, IRequestResult } from '../../../src/lib/resource-request'
 import { Project, listProjects } from '../../resources/project'
-import { NavigationPath } from '../ClusterManagement/ClusterManagement'
+import { NavigationPath } from '../../NavigationPath'
 import { useQuery } from '../../lib/useQuery'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
@@ -53,7 +53,7 @@ function ValidateField(value: string, field: string, t:Function) {
     }
 }
 
-export function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
+export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
     return (
         <Page>
@@ -243,7 +243,7 @@ export function CreateBareMetalAssetPageContent(props: {
                             }
                             createResource(bmaSecret as BMASecret).promise.then(() => {
                                 props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
-                                    history.push(NavigationPath.baremetalAssets)
+                                    history.push(NavigationPath.bareMetalAssets)
                                 })
                             })
                         }}
@@ -253,7 +253,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     <Button
                         variant='link'
                         onClick={() => {
-                            history.push(NavigationPath.baremetalAssets)
+                            history.push(NavigationPath.bareMetalAssets)
                         }}
                     >
                         {t('createBareMetalAsset.button.cancel')}

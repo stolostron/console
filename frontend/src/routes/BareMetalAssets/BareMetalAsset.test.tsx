@@ -3,7 +3,7 @@ import { render, waitFor, screen, getByLabelText } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useTranslation } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
-import { BareMetalAssetsPage } from './BaremetalAssets'
+import BareMetalAssetsPage  from './BaremetalAssets'
 import { nockList, nockDelete } from '../../lib/nock-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 

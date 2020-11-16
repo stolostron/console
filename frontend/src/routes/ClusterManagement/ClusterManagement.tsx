@@ -8,6 +8,7 @@ import { NavigationPath } from '../../NavigationPath'
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
+const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BaremetalAssets'))
 
 export default function ClusterManagementPage() {
     const location = useLocation()
@@ -39,8 +40,8 @@ export default function ClusterManagementPage() {
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
                         <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         <Route exact path={NavigationPath.providerConnections} component={ProviderConnectionsPage} />
+                        <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                         <Route exact path={NavigationPath.clusterManagement}>
-                        <Route exact path={NavigationPath.bareMetalAssets}/>
                             <Redirect to={NavigationPath.clusters} />
                         </Route>
                     </Switch>

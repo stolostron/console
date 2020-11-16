@@ -3,8 +3,8 @@ import { render, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BareMetalAssetsPage } from './BaremetalAssets'
-import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
+import BareMetalAssetsPage from './BaremetalAssets'
+import CreateBareMetalAssetPage from './CreateBareMetalAsset'
 import { nockList, nockClusterList } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
@@ -91,7 +91,7 @@ describe('bare metal asset page', () => {
         userEvent.click(getByText("createBareMetalAsset.button.create"))
 
         expect(getByText("bareMetalAsset.bulkAction.createAsset")).toBeVisible()
-        console.log('checking conotainer: ', container.innerHTML)
+        console.log('checking container: ', container.innerHTML)
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
     })
 })
