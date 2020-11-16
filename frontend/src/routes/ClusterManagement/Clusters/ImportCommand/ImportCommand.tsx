@@ -13,7 +13,7 @@ import { useParams } from 'react-router-dom'
 import { ResourceError } from '../../../../lib/resource-request'
 import { getSecret, Secret } from '../../../../resources/secret'
 
-export function ImportCommandPage() {
+export default function ImportCommandPage() {
     const { clusterName } = useParams() as { clusterName: string }
     const { t } = useTranslation(['cluster'])
     return (

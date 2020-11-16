@@ -10,18 +10,17 @@ import { Button, Page } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
-import { ErrorPage } from '../../components/ErrorPage'
-import { getProviderByKey, ProviderID } from '../../lib/providers'
-import { deleteResource, IRequestResult } from '../../lib/resource-request'
-import { useQuery } from '../../lib/useQuery'
-import { listProviderConnections, ProviderConnection } from '../../resources/provider-connection'
-import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement/ClusterManagement'
+import { NavigationPath } from '../../../NavigationPath'
+import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { ErrorPage } from '../../../components/ErrorPage'
+import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { deleteResource, IRequestResult } from '../../../lib/resource-request'
+import { useQuery } from '../../../lib/useQuery'
+import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 
-export function ProviderConnectionsPage() {
+export default function ProviderConnectionsPage() {
     return (
         <Page>
-            <ClusterManagementPageHeader />
             <ProviderConnectionsPageContent />
         </Page>
     )
