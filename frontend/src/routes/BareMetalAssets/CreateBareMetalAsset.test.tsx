@@ -4,10 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { BareMetalAssetsPage } from './BaremetalAssets'
 import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
-import { nockList, nockListProjects, nockDelete } from '../../lib/nock-util'
+import { nockList, nockListProjects } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
-
 
 const testProject: Project = {
     apiVersion: 'project.openshift.io/v1',
@@ -44,7 +43,7 @@ const newBareMetalAsset: BareMetalAsset = {
             address: 'example.com:80',
             credentialsName: 'test-bare-metal-asset-002-bmc-secret-1234',
         },
-        bootMac: '00:90:7F:12:DE:7F'
+        bootMac: '00:90:7F:12:DE:7F',
     },
 }
 
@@ -57,28 +56,30 @@ describe('bare metal asset page', () => {
         document.getElementsByTagName('html')[0].innerHTML = ''
     })
 
-     test('can create asset', async () => {
+    test('can create asset', async () => {
         const listProjectNock = nockListProjects(bmaProjects)
-        let listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
-        let listNockii = nockList(bareMetalAsset, mockNewBareMetalAssets)
-        
-        
+        const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
+        const listNockii = nockList(bareMetalAsset, mockNewBareMetalAssets)
 
-        const { getByText, getAllByText, getByTestId, queryByText, getByLabelText, container } = render(
+        const { getByText, getAllByText, getByTestId } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
                     path="/cluster-management/baremetal-assets/create"
-                    render={() => <CreateBareMetalAssetPage bmaSecretID='1234'/>}
+                    render={() => <CreateBareMetalAssetPage bmaSecretID="1234" />}
                 ></Route>
-                <Route path="/cluster-management/baremetal-assets" render={() =><BareMetalAssetsPage />} />
+                <Route path="/cluster-management/baremetal-assets" render={() => <BareMetalAssetsPage />} />
             </MemoryRouter>
         )
 
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByTestId('bareMetalAssetName')))
+        await waitFor(() => expect(getByTestId('bareMetalAssetName'))) // expect asset name form to exist in doc
+        
+        // user input 
         await act(() => new Promise((resolve) => setTimeout(() => resolve(), 100)))
-        act(() => {userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)})
+        act(() => {
+            userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)
+        })
         act(() => {
             userEvent.click(getByTestId('namespaceName-button'))
         })
@@ -91,9 +92,11 @@ describe('bare metal asset page', () => {
         userEvent.type(getByTestId('username'), 'test')
         userEvent.type(getByTestId('password'), 'test')
         userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec.bootMac!)
-        expect(getByText('Add connection')).toBeInTheDocument()
+
+        // submitting new asset
+        expect(getByText('Create')).toBeInTheDocument()
         act(() => {
-            userEvent.click(getByText('Add connection'))
+            userEvent.click(getByText('Create'))
         })
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         expect(getByText('Create Asset')).toBeVisible()

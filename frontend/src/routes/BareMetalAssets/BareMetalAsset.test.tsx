@@ -51,37 +51,34 @@ describe('bare metal asset page', () => {
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0))
-        expect(getByText(mockBareMetalAssets[0].metadata.name!)).toBeInTheDocument()
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
+        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('Delete Asset')) // click the delete action
         expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
-        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
-        expect(queryByText('test-bare-metal-asset-1')).toBeNull()
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
+        expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })
 
     test('can delete asset(s) from batch action menu', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
 
-        const { getByText, getAllByText, getByLabelText, getAllByLabelText, queryByText, container } = render(
+        const { getByText, getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0))
-        expect(getByText(mockBareMetalAssets[0].metadata.name!)).toBeInTheDocument()
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
+        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText('Destroy')) // click the delete action
+        userEvent.click(getByText('Destroy'))
         expect(getByText('Confirm')).toBeInTheDocument()
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
-        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
-        expect(queryByText('test-bare-metal-asset-1')).toBeNull()
+        userEvent.click(getByText('Confirm'))
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
+        expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })
-
 })

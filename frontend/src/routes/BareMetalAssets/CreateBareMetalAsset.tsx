@@ -249,7 +249,7 @@ export function CreateBareMetalAssetPageContent(props: {
                             })
                         }}
                     >
-                        Add connection
+                        Create
                     </AcmSubmit>
                     <Button
                         variant='link'
