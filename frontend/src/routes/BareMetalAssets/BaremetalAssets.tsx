@@ -1,4 +1,4 @@
-import { AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable, AcmEmptyState } from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmLoadingPage, AcmPageCard, AcmTable, AcmEmptyState, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -8,12 +8,12 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { listBareMetalAssets, BareMetalAsset, BMAStatusMessage, GetLabels } from '../../../src/resources/bare-metal-asset'
 import { useQuery } from '../../lib/useQuery'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
-import { ClusterManagementPageHeader, NavigationPath } from '../ClusterManagement/ClusterManagement'
+import { NavigationPath } from '../../NavigationPath'
 
-export function BareMetalAssetsPage() {
+export default function BareMetalAssetsPage() {
     return (
         <Page>
-            <ClusterManagementPageHeader />
+            <AcmPageHeader title={'Bare-metal Assets'} />
             <BareMetalAssets />
         </Page>
     )
