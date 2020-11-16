@@ -13,7 +13,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '../../../lib/useQuery'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
-let moment = require('moment')
+import * as moment from 'moment'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
