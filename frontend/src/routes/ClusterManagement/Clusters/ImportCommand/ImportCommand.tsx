@@ -79,16 +79,22 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
                         <CardBody>
                             {t('import.command.configureclusterdescription')}
                         </CardBody>
-                        <CardFooter>
-                            <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
-                        </CardFooter>
+                        { clusterConsoleURL ?
+                            <CardFooter>
+                                <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
+                            </CardFooter> :
+                             null
+                        }
                     </Card>
                 </Tab>
             </Tabs>
             <Card>
                 <CardBody>
                     <Link to={NavigationPath.clusterDetails.replace(":id", props.clusterName as string)}><Button variant="primary">{t('import.footer.viewcluster')}</Button></Link>{' '}
-                    <Link to={NavigationPath.clusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link>
+                    { clusterConsoleURL ? 
+                        <Link to={NavigationPath.discoveredClusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link> :
+                        <Link to={NavigationPath.clusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link>
+                    }
                 </CardBody>
             </Card>
         </Card>
