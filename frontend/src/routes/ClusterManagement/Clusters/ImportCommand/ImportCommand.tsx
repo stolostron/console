@@ -10,7 +10,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Text, TextVariants, AlertVariant, Tabs, Tab, TabTitleText, Card, CardTitle, CardBody, CardFooter, Button } from '@patternfly/react-core'
 import { AxiosResponse } from 'axios'
-import { NavigationPath } from '../../ClusterManagement'
+import { NavigationPath } from '../../../../NavigationPath'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
