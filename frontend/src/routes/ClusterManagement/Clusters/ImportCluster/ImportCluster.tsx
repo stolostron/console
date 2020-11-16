@@ -12,12 +12,12 @@ import {
     AcmExpandableSection,
     AcmHeader,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant, Label } from '@patternfly/react-core'
+import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants, Card, CardBody } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResources } from '../../../../lib/delete-resources'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -48,6 +48,14 @@ export function ImportClusterPageContent() {
     const [error, setError] = useState<string>()
     const [loading, setLoading] = useState<boolean>(false)
     const [submitted, submitForm] = useState<boolean>(false)
+
+    const onReset = () => {
+        setClusterName('')
+        setCloudLabel('auto-detect')
+        setEnvironmentLabel(undefined)
+        setAdditionaLabels({})  
+        submitForm(false)     
+    }
 
 
     const onSubmit = async () => {
@@ -153,9 +161,10 @@ export function ImportClusterPageContent() {
                         value={additionalLabels}
                         onChange={(label) => setAdditionaLabels(label)}
                     />
+                    <Text component={TextVariants.small}>{t('import.description')}</Text>
                     <ActionGroup>
                         <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
-                            {t('import.form.submit')}
+                            { submitted ? t('import.form.submitted') : t('import.form.submit')}
                         </Button>
                         { submitted ? 
                             <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>{t('import.importmode.importsaved')}</Label> : 
@@ -167,10 +176,18 @@ export function ImportClusterPageContent() {
                             </Button>
                         }
                     </ActionGroup>
+                    { !loading && submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null }
+                    { !loading && submitted ? 
+                            <ActionGroup>
+                                <Link to={NavigationPath.clusterDetails.replace(":id", clusterName as string)}><Button variant="primary">{t('import.footer.viewcluster')}</Button></Link>{' '}
+                                { sessionStorage.getItem('DiscoveredClusterConsoleURL') ? 
+                                    <Link to={NavigationPath.discoveredClusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link> :
+                                    <Link to={NavigationPath.importCluster}><Button onClick={(onReset)} variant="secondary">{t('import.footer.importanother')}</Button></Link>
+                                }
+                            </ActionGroup>
+                        : null }
                 </AcmForm>
             </AcmExpandableSection>
-            <br></br>
-            { submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null }
         </AcmPageCard>
     )
 }

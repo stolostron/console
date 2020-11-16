@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router-dom'
 import { ResourceError } from '../../../../lib/resource-request'
 import { getSecret, Secret } from '../../../../resources/secret'
+import ImportClusterPageContent from '../ImportCluster/ImportCluster'
 
 export default function ImportCommandPage() {
     const { clusterName } = useParams() as { clusterName: string }
@@ -88,15 +89,6 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
                     </Card>
                 </Tab>
             </Tabs>
-            <Card>
-                <CardBody>
-                    <Link to={NavigationPath.clusterDetails.replace(":id", props.clusterName as string)}><Button variant="primary">{t('import.footer.viewcluster')}</Button></Link>{' '}
-                    { clusterConsoleURL ? 
-                        <Link to={NavigationPath.discoveredClusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link> :
-                        <Link to={NavigationPath.clusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link>
-                    }
-                </CardBody>
-            </Card>
         </Card>
     )
 }
