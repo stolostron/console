@@ -244,7 +244,7 @@ export function CreateBareMetalAssetPageContent(props: {
                             console.log('checking baremetal asset secret: ', JSON.stringify(bmaSecret))
                             createResource(bmaSecret as BMASecret).promise.then(() => {
                                 props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
-                                    //history.push(NavigationPath.baremetalAssets)
+                                    history.push(NavigationPath.baremetalAssets)
                                 })
                             })
                         }}
