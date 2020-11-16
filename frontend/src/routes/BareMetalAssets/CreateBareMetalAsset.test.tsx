@@ -1,5 +1,5 @@
+import React from 'react'
 import { render, waitFor, act } from '@testing-library/react'
-import { V1Namespace } from '@kubernetes/client-node'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { BareMetalAssetsPage } from './BaremetalAssets'
@@ -7,7 +7,7 @@ import { CreateBareMetalAssetPage } from './CreateBareMetalAsset'
 import { nockList, nockListProjects, nockDelete } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
-import { Secret } from '../../resources/secret'
+
 
 const testProject: Project = {
     apiVersion: 'project.openshift.io/v1',
@@ -50,68 +50,7 @@ const newBareMetalAsset: BareMetalAsset = {
 
 const mockBareMetalAssets = [bareMetalAsset]
 const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
-
-interface testNamespace extends V1Namespace {
-    apiVersion: 'v1'
-    kind: 'Namespace'
-    metadata: {
-        name: string
-    }
-}
-
-interface TestSecret extends Secret {
-    apiVersion: 'v1'
-    kind: 'Secret'
-    metadata: {
-        name: string
-        namespace: string
-    }
-}
-// const bmaSecret: TestSecret = {
-//     apiVersion: 'v1',
-//     kind: 'Secret',
-//     metadata: {
-//         name: 'test-bare-metal-asset-002-bmc-secret-1234',
-//         namespace: 'test-bare-metal-asset-new-namespace',
-//     },
-//     data:{
-//         password:Buffer.from('test', 'ascii').toString(
-//             'base64'
-//         ),
-//         username:Buffer.from('test', 'ascii').toString(
-//             'base64'
-//         ) 
-//     }
-// }
-
-const bmaSecret : Secret = ({
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-        name: 'test-bare-metal-asset-002-bmc-secret-1234',
-        namespace: 'test-bare-metal-asset-new-namespace',
-    },
-    data:{
-        password:Buffer.from('test', 'ascii').toString(
-            'base64'
-        ),
-        username:Buffer.from('test', 'ascii').toString(
-            'base64'
-        ) 
-    }
-})
-
-const bmaNamespace: testNamespace = {
-    apiVersion: 'v1',
-    kind: 'Namespace',
-    metadata: {
-        name: mockBareMetalAssets[0].metadata.namespace!,
-    },
-}
-
-const bmaNamespaces = [bmaNamespace]
 const bmaProjects = [testProject]
-const bmaSecrets = [bmaSecret]
 
 describe('bare metal asset page', () => {
     beforeEach(() => {
@@ -122,8 +61,6 @@ describe('bare metal asset page', () => {
         const listProjectNock = nockListProjects(bmaProjects)
         let listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         let listNockii = nockList(bareMetalAsset, mockNewBareMetalAssets)
-        //const createNockSecret = nockCreate(bmaSecret, bmaSecrets[0], 201)
-        //const createNock = nockCreate(mockNewBareMetalAssets[0], mockNewBareMetalAssets[0])
         
         
 
@@ -141,7 +78,6 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(getByTestId('bareMetalAssetName')))
         await act(() => new Promise((resolve) => setTimeout(() => resolve(), 100)))
-        console.log('checking container: ', container.innerHTML.toString())
         act(() => {userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)})
         act(() => {
             userEvent.click(getByTestId('namespaceName-button'))
@@ -160,11 +96,6 @@ describe('bare metal asset page', () => {
             userEvent.click(getByText('Add connection'))
         })
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
-        //await act(() => new Promise((resolve) => setTimeout(() => resolve(), 100)))
-        //await waitFor(() => expect(createNockSecret.isDone()).toBeTruthy())
-        //await waitFor(() => expect(createNock.isDone()).toBeTruthy()) // expect the delete api call
-        //act(() => { userEvent.click(getByText('Confirm')) }) // click confirm on the delete dialog
-        console.log('checking container: ', container.innerHTML.toString())
         expect(getByText('Create Asset')).toBeVisible()
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
