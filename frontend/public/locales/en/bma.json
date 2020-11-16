@@ -29,16 +29,16 @@
   "bareMetalAsset.tableHeader.status":"Status",
   "bareMetalAsset.tableHeader.labels":"Labels",
   "bareMetalAsset.bulkAction.createAsset":"Create Asset",
-  "bareMetalAsset.bulkAction.destroyAsset":"Destroy Asset",
+  "bareMetalAsset.bulkAction.destroyAsset":"Destroy Asset(s)",
   "bareMetalAsset.bulkAction.createCluster":"Create Cluster",
 
-  "bareMetalAsset.modal.deleteMultiple.title":"Delete bare metal assets",
-  "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
-  "bareMetalAsset.modal.delete.title":"Delete bare metal asset",
-  "bareMetalAsset.modal.delete.message":"You are about to delete {{assetName}}. The bare metal asset will no longer be available. This action is irreversible.",
-  "bareMetalAsset.modal.edit.title":"Delete bare metal asset",
+  "bareMetalAsset.modal.deleteMultiple.title":"Destroy bare metal assets",
+  "bareMetalAsset.modal.deleteMultiple.message":"You are about to Destroy {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.delete.title":"Destroy bare metal asset",
+  "bareMetalAsset.modal.delete.message":"You are about to Destroy {{assetName}}. The bare metal asset will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.edit.title":"Destroy bare metal asset",
 
-  "bareMetalAsset.rowAction.deleteAsset.title":"Delete Asset",
+  "bareMetalAsset.rowAction.deleteAsset.title":"Destroy Asset",
   "bareMetalAsset.rowAction.editAsset.title":"Edit Asset",
   "bareMetalAsset.rowAction.editLabels.title":"Edit Labels",
 

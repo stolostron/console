@@ -20,6 +20,7 @@ import {
 } from '../../../src/resources/bare-metal-asset'
 import { useQuery } from '../../lib/useQuery'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
+import { deleteResources } from '../../lib/delete-resources'
 import { NavigationPath } from '../../NavigationPath'
 
 export default function BareMetalAssetsPage() {
@@ -59,14 +60,10 @@ export function BareMetalAssets() {
 // TODO: use deleteResources instead of deleteResource
 export function deleteBareMetalAssets(
     bareMetalAssets: BareMetalAsset[],
-    deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
 ) {
     const promises: Array<Promise<any>> = []
 
-    bareMetalAssets.forEach((bareMetalAsset) => {
-        promises.push(deleteBareMetalAsset(bareMetalAsset).promise)
-    })
-    Promise.all(promises)
+    Promise.all(deleteResources(bareMetalAssets))
 }
 
 export function BareMetalAssetsTable(props: {
