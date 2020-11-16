@@ -17,12 +17,12 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import { ImportClusterPage } from './ImportCluster'
-import { ClustersPage } from '../Clusters'
+import DiscoveredClustersPage from "../../DiscoveredClusters/DiscoveredClusters"
 import * as nock from 'nock'
 import { Secret } from '../../../../resources/secret'
 import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
 import { ManagedClusterAddOnApiVersion } from '../../../../resources/managed-cluster-add-on'
+import ImportClusterPage from './ImportCluster'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -188,8 +188,8 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
 describe('ImportCluster', () => {
     const Component = () => {
         return (
-            <MemoryRouter initialEntries={['/cluster-management/clusters/import']}>
-                <Route path="/cluster-management/clusters/import">
+            <MemoryRouter initialEntries={['/cluster-management/cluster-management/import-cluster']}>
+                <Route path="/cluster-management/cluster-management/import-cluster">
                     <ImportClusterPage />
                 </Route>
             </MemoryRouter>
@@ -268,9 +268,9 @@ describe('Import Discovered Cluster', () => {
         return (
             <MemoryRouter>
                 <Route>
-                    <ClustersPage />
+                    <DiscoveredClustersPage />
                 </Route>
-                <Route path="/cluster-management/clusters/import">
+                <Route path="/cluster-management/cluster-management/import-cluster">
                     <ImportClusterPage />
                 </Route>
             </MemoryRouter>
@@ -278,17 +278,14 @@ describe('Import Discovered Cluster', () => {
     }
     test('create discovered cluster', async() => {
         // Allow for Project, ManagedCluster, and KAC to be created
-        const projectNock = nockCreate(mockProject, mockProject)
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
 
-        // Serve Managed and Discovered Clusters
-        nockList({ apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind }, [] as ManagedCluster[])
+        // Serve Discovered Clusters
         nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
 
         const { getByTestId, getByText, getAllByLabelText, queryByRole } = render(<Component />) // Render component
-
-        userEvent.click(getByText('discovered')) // Click on Discovered ToggleGroupItem
 
         await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
         

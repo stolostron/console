@@ -1,12 +1,11 @@
-import { AcmEmptyState, AcmPageCard } from '@open-cluster-management/ui-components'
+import { AcmEmptyState, AcmPageCard, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React from 'react'
-import { ClusterManagementPageHeader } from '../ClusterManagement/ClusterManagement'
 
-export function BareMetalAssetsPage() {
+export default function BareMetalAssetsPage() {
     return (
         <Page>
-            <ClusterManagementPageHeader />
+            <AcmPageHeader title={'Bare-metal Assets'} />
             <BareMetalAssets />
         </Page>
     )

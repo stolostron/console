@@ -1,3 +1,6 @@
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import {
     AcmEmptyState,
     AcmForm,
@@ -10,20 +13,17 @@ import {
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
-import { ErrorPage } from '../../components/ErrorPage'
-import { ProviderID, providers } from '../../lib/providers'
-import { createResource, IRequestResult } from '../../lib/resource-request'
-import { useQuery } from '../../lib/useQuery'
-import { listProjects, Project } from '../../resources/project'
+import { NavigationPath } from '../../../NavigationPath'
+import { ErrorPage } from '../../../components/ErrorPage'
+import { ProviderID, providers } from '../../../lib/providers'
+import { createResource, IRequestResult } from '../../../lib/resource-request'
+import { useQuery } from '../../../lib/useQuery'
+import { listProjects, Project } from '../../../resources/project'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
     setProviderConnectionProviderID,
-} from '../../resources/provider-connection'
-import { NavigationPath } from '../ClusterManagement/ClusterManagement'
+} from '../../../resources/provider-connection'
 
 const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
 function validateKubernetesDnsName(value: string, name: string) {
@@ -60,7 +60,7 @@ function validatePrivateSshKey(value: string) {
     return undefined
 }
 
-export function AddConnectionPage() {
+export default function AddConnectionPage() {
     const { t } = useTranslation(['connection'])
     return (
         <Page>

@@ -1,8 +1,8 @@
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
-import { nockClusterList } from '../../lib/nock-util'
-import { Project } from '../../resources/project'
-import { AddConnectionPage } from './AddConnection'
+import { nockClusterList } from '../../../lib/nock-util'
+import { Project } from '../../../resources/project'
+import AddConnectionPage from './AddConnection'
 
 const mockProject: Project = {
     apiVersion: 'project.openshift.io/v1',
