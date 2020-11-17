@@ -1,7 +1,6 @@
-import React, { ReactNode } from 'react'
-import { render, waitFor, screen, getByLabelText } from '@testing-library/react'
+import React from 'react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useTranslation } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
 import BareMetalAssetsPage  from './BaremetalAssets'
 import { nockList, nockDelete } from '../../lib/nock-util'
@@ -26,11 +25,6 @@ const bareMetalAsset: BareMetalAsset = {
 const mockBareMetalAssets = [bareMetalAsset]
 
 describe('bare metal asset page', () => {
-    beforeEach(() => {
-        // TODO: might not need this, check
-        document.getElementsByTagName('html')[0].innerHTML = ''
-    })
-
     test('bare metal assets page renders', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const { getAllByText, container } = render(

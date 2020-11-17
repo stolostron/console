@@ -83,7 +83,7 @@ export function GetLabels(bareMetalAssets: BareMetalAsset) {
     }
     return labels
 }
-// TODO - should this be moved to or combined with ./Secrets.tsx ?
+
 export interface BMASecret extends V1Secret {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -116,7 +116,6 @@ export function listBareMetalAssets() {
         },
     )
     return {
-        // TODO: check to see if you really need this
         promise: result.promise.then((bareMetalAssets) => {
             return bareMetalAssets
         }),

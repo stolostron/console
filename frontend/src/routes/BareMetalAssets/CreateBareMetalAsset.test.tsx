@@ -1,8 +1,7 @@
 import React from 'react'
-import { render, waitFor, act } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import BareMetalAssetsPage from './BaremetalAssets'
 import CreateBareMetalAssetPage from './CreateBareMetalAsset'
 import { nockList, nockClusterList } from '../../lib/nock-util'
@@ -53,11 +52,6 @@ const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
 const bmaProjects = [testProject]
 
 describe('bare metal asset page', () => {
-    beforeEach(() => {
-        // TODO: might not need this...
-        document.getElementsByTagName('html')[0].innerHTML = ''
-    })
-
     test('can create asset', async () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
