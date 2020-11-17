@@ -149,7 +149,7 @@ export function BareMetalAssetsTable(props: {
                                 }),
                                 open: true,
                                 confirm: () => {
-                                    deleteBareMetalAssets(bareMetalAssets, props.deleteBareMetalAsset)
+                                    deleteBareMetalAssets(bareMetalAssets)
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
