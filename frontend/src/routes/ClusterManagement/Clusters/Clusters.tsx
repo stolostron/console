@@ -95,6 +95,9 @@ export function ClustersTable(props: {
     deleteCluster: (managedCluster: ManagedCluster) => void
     refresh: () => void
 }) {
+    sessionStorage.removeItem('DiscoveredClusterName')
+    sessionStorage.removeItem("DiscoveredClusterConsoleURL")
+
     const { t } = useTranslation(['cluster'])
 
     function mckeyFn(cluster: ManagedCluster) {
