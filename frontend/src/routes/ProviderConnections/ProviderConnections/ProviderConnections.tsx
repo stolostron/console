@@ -1,73 +1,74 @@
 import {
     AcmEmptyState,
-    AcmLoadingPage,
     AcmPageCard,
     AcmTable,
+    AcmTableLoading,
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Button, Page } from '@patternfly/react-core'
+import { Button, Page, Spinner } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { NavigationPath } from '../../../NavigationPath'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { ErrorPage } from '../../../components/ErrorPage'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource, IRequestResult } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
+import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 
 export default function ProviderConnectionsPage() {
     return (
         <Page>
-            <ProviderConnectionsPageContent />
+            <AcmPageCard>
+                <ProviderConnectionsPageContent />
+            </AcmPageCard>
         </Page>
     )
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useQuery(listProviderConnections)
+    const { loading, error, data, startPolling, refresh } = useQuery(listProviderConnections)
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
-    useEffect(() => {
-        startPolling(5 * 1000)
-        return stopPolling
-    }, [startPolling, stopPolling])
+    useEffect(startPolling, [startPolling])
 
-    if (loading) {
-        return <AcmLoadingPage />
-    } else if (error) {
-        return <ErrorPage error={error} />
+    if (error) {
+        return <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
+    } else if (loading) {
+        return (
+            <div
+                style={{
+                    minHeight: '588px',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Spinner size="xl" />
+            </div>
+        )
     } else if (!data || data.length === 0) {
         return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('empty.title')}
-                    message={t('empty.subtitle')}
-                    action={
-                        <Button
-                            onClick={() => {
-                                history.push(NavigationPath.addConnection)
-                            }}
-                            component="a"
-                        >
-                            {t('add')}
-                        </Button>
-                    }
-                />
-            </AcmPageCard>
+            <AcmEmptyState
+                title={t('empty.title')}
+                message={t('empty.subtitle')}
+                action={
+                    <Button
+                        onClick={() => {
+                            history.push(NavigationPath.addConnection)
+                        }}
+                        component="a"
+                    >
+                        {t('add')}
+                    </Button>
+                }
+            />
         )
     }
-
-    // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
-
-    return (
-        <AcmPageCard>
-            <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
-        </AcmPageCard>
-    )
+    return <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
 }
 
 function getProvider(labels: Record<string, string> | undefined) {

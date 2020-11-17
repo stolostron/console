@@ -18,11 +18,8 @@ export function useManagedClusterInfos(namespace: string) {
 }
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)
-    useEffect(() => {
-        startPolling(10 * 1000)
-        return stopPolling
-    }, [startPolling, stopPolling])
+    const { loading, error, data, startPolling, refresh } = useManagedClusterInfos(props.namespace)
+    useEffect(startPolling, [startPolling])
 
     const mcis = data?.filter((m) => m.metadata.name === props.name)
 

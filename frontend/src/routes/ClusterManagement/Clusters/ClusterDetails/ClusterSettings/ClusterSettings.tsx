@@ -29,8 +29,8 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         mca.refresh()
     }
     useEffect(() => {
-        cma.startPolling(5 * 1000)
-        mca.startPolling(5 * 1000)
+        cma.startPolling()
+        mca.startPolling()
         const stopPollingFn = () => {
             cma.stopPolling()
             mca.stopPolling()

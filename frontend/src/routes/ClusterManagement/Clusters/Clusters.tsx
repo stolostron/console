@@ -3,6 +3,7 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
+    AcmTableLoading,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import React, { useEffect } from 'react'
@@ -73,19 +74,31 @@ export default function ClustersPage() {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = useQuery(listManagedClusters)
-    useEffect(() => {
-        managedClustersQuery.startPolling(10 * 1000)
-        return managedClustersQuery.stopPolling
-    }, [managedClustersQuery])
-
+    const { t } = useTranslation(['cluster'])
+    const { error, loading, data, startPolling, refresh } = useQuery(listManagedClusters)
+    useEffect(startPolling, [startPolling])
+    if (error) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
+            </AcmPageCard>
+        )
+    } else if (loading) {
+        return (
+            <AcmPageCard>
+                <AcmTableLoading />
+            </AcmPageCard>
+        )
+    } else if (!data || data.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title={t('managed.emptyStateHeader')} />
+            </AcmPageCard>
+        )
+    }
     return (
         <AcmPageCard>
-            <ClustersTable
-                managedClusters={managedClustersQuery.data}
-                deleteCluster={deleteResource}
-                refresh={managedClustersQuery.refresh}
-            />
+            <ClustersTable managedClusters={data} deleteCluster={deleteResource} refresh={refresh} />
         </AcmPageCard>
     )
 }

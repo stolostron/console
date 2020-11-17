@@ -3,6 +3,7 @@ import {
     AcmEmptyState,
     AcmPageCard,
     AcmTable,
+    AcmTableLoading,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
@@ -141,25 +142,42 @@ export default function DiscoveredClustersPage() {
 }
 
 export function DiscoveredClustersPageContent() {
-    const discoveredClustersQuery = useQuery(listDiscoveredClusters)
-    useEffect(() => {
-        discoveredClustersQuery.startPolling(10 * 1000)
-        return discoveredClustersQuery.stopPolling
-    }, [discoveredClustersQuery])
-
+    const { t } = useTranslation(['cluster'])
+    const { error, loading, data, startPolling } = useQuery(listDiscoveredClusters)
+    useEffect(startPolling, [startPolling])
+    if (error) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
+            </AcmPageCard>
+        )
+    } else if (loading) {
+        return (
+            <AcmPageCard>
+                <AcmTableLoading />
+            </AcmPageCard>
+        )
+    } else if (!data || data.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
+                    title={t('discovery.emptyStateHeader')}
+                    message={t('discovery.emptyStateMsg')}
+                    key="dcEmptyState"
+                />
+            </AcmPageCard>
+        )
+    }
     return (
         <AcmPageCard>
-            <DiscoveredClustersTable discoveredClusters={discoveredClustersQuery.data} />
+            <DiscoveredClustersTable discoveredClusters={data} />
         </AcmPageCard>
     )
 }
 
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
-
-    function dckeyFn(cluster: DiscoveredCluster) {
-        return cluster.metadata.uid!
-    }
 
     return (
         <AcmTable<DiscoveredCluster>
@@ -188,10 +206,15 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                     title={t('discovery.emptyStateHeader')}
                     message={t('discovery.emptyStateMsg')}
                     key="dcEmptyState"
+                    showIcon={false}
                 />
             }
         />
     )
+}
+
+function dckeyFn(cluster: DiscoveredCluster) {
+    return cluster.metadata.uid!
 }
 
 function capitalizeFirstLetter(str: string) {
