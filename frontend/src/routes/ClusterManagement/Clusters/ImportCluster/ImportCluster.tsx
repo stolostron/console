@@ -15,15 +15,15 @@ import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResources } from '../../../../lib/delete-resources'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-add-on-config'
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
-import { NavigationPath } from '../../ClusterManagement'
 
-export function ImportClusterPage() {
+export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmPage>

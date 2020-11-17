@@ -6,9 +6,7 @@ import '@testing-library/jest-dom/extend-expect'
 import nock from 'nock'
 import { configure } from '@testing-library/dom'
 
-configure({
-    testIdAttribute: 'id',
-})
+configure({ testIdAttribute: 'id' })
 
 process.env.REACT_APP_BACKEND = 'http://www.example.com:80'
 
@@ -38,11 +36,3 @@ jest.mock('react-i18next', () => ({
         t: (key: string) => key,
     }),
 }))
-
-// jest.mock('react-router-dom', () => ({
-//     // ...jest.requireActual('react-router-dom'),
-//     useHistory: () => {},
-//     useLocation: () => ({
-//         pathname: 'localhost:3000/example/path',
-//     }),
-// }))
