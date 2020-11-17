@@ -86,6 +86,8 @@ export function listProviderConnections() {
                         providerConnection.spec = YAML.parse(yaml)
                     } catch {}
                 }
+                providerConnection.apiVersion = ProviderConnectionApiVersion
+                providerConnection.kind = ProviderConnectionKind
             }
             return providerConnections
         }),

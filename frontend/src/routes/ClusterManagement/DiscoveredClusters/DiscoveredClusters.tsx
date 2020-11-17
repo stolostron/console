@@ -15,7 +15,7 @@ import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { Link, useHistory } from 'react-router-dom'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
-let moment = require('moment')
+import * as moment from 'moment'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {

@@ -23,6 +23,8 @@ import {
     getProviderConnectionProviderID,
     ProviderConnection,
     setProviderConnectionProviderID,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 
 const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
@@ -96,6 +98,8 @@ export function AddConnectionPageContent(props: {
     const history = useHistory()
 
     const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({
+        apiVersion: ProviderConnectionApiVersion,
+        kind: ProviderConnectionKind,
         metadata: {},
         spec: {
             awsAccessKeyID: undefined,
