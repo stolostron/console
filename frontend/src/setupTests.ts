@@ -32,16 +32,7 @@ afterEach(setupAfterEach)
 afterAll(setupAfterAll)
 
 jest.mock('react-i18next', () => ({
-    initReactI18next: jest.fn(),
     useTranslation: () => ({
         t: (key: string) => key,
     }),
 }))
-
-// jest.mock('react-router-dom', () => ({
-//     // ...jest.requireActual('react-router-dom'),
-//     useHistory: () => {},
-//     useLocation: () => ({
-//         pathname: 'localhost:3000/example/path',
-//     }),
-// }))
