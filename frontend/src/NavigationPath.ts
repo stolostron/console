@@ -1,10 +1,10 @@
 export enum NavigationPath {
     clusterManagement = '/cluster-management/cluster-management',
     clusters = '/cluster-management/cluster-management/clusters',
-    discoveredClusters = '/cluster-management/cluster-management/discovered',
+    discoveredClusters = '/cluster-management/cluster-management/discovered-clusters',
     clusterDetails = '/cluster-management/cluster-management/clusters/:id',
     clusterOverview = '/cluster-management/cluster-management/clusters/:id/overview',
-    clusterNodePools = '/cluster-management/cluster-management/clusters/:id/node-pools',
+    clusterNodes = '/cluster-management/cluster-management/clusters/:id/nodes',
     clusterSettings = '/cluster-management/cluster-management/clusters/:id/settings',
     createCluster = '/cluster-management/cluster-management/create-cluster',
     importCluster = '/cluster-management/cluster-management/import-cluster',
