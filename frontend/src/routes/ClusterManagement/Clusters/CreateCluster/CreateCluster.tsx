@@ -7,7 +7,7 @@ export default function CreateClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmPage>
-            <AcmPageHeader title="Create Cluster" breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
+            <AcmPageHeader title={t('managed.createCluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
         </AcmPage>
     )
 }
