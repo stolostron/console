@@ -24,7 +24,7 @@ import {
     ProviderConnection,
     setProviderConnectionProviderID,
     ProviderConnectionApiVersion,
-    ProviderConnectionKind,
+    ProviderConnectionKind
 } from '../../../resources/provider-connection'
 
 const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
