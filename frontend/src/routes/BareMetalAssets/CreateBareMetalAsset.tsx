@@ -118,7 +118,7 @@ export function CreateBareMetalAssetPageContent(props: {
 
     const [bmaSecret, setBMASecret] = useState<Partial<BMASecret>>({
         metadata: {},
-        data: {
+        stringData: {
             password: '',
             username: '',
         },
@@ -191,10 +191,10 @@ export function CreateBareMetalAssetPageContent(props: {
                     id="username"
                     label={t('createBareMetalAsset.username.label')}
                     placeholder={t('createBareMetalAsset.username.placeholder')}
-                    value={bmaSecret.data!.username}
+                    value={bmaSecret.stringData!.username}
                     onChange={(username) => {
                         updateBMASecret((bmaSecret) => {
-                            bmaSecret.data!.username = username
+                            bmaSecret.stringData!.username = username
                         })
                     }}
                     isRequired
@@ -203,10 +203,10 @@ export function CreateBareMetalAssetPageContent(props: {
                     id="password"
                     label={t('createBareMetalAsset.password.label')}
                     placeholder={t('createBareMetalAsset.password.placeholder')}
-                    value={bmaSecret.data!.password}
+                    value={bmaSecret.stringData!.password}
                     onChange={(password) => {
                         updateBMASecret((bmaSecret) => {
-                            bmaSecret.data!.password = password
+                            bmaSecret.stringData!.password = password
                         })
                     }}
                     isRequired
@@ -231,16 +231,6 @@ export function CreateBareMetalAssetPageContent(props: {
                         id='submit'
                         variant='primary'
                         onClick={() => {
-                            if (bmaSecret.data?.username) {
-                                bmaSecret.data.username = Buffer.from(bmaSecret.data.username, 'ascii').toString(
-                                    'base64'
-                                )
-                            }
-                            if (bmaSecret.data?.password) {
-                                bmaSecret.data.password = Buffer.from(bmaSecret.data.password, 'ascii').toString(
-                                    'base64'
-                                )
-                            }
                             createResource(bmaSecret as BMASecret).promise.then(() => {
                                 props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
                                     history.push(NavigationPath.bareMetalAssets)

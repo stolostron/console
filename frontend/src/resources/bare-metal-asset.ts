@@ -88,7 +88,7 @@ export interface BMASecret extends V1Secret {
     apiVersion: 'v1',
     kind: 'Secret',
     metadata: V1ObjectMeta
-    data: {
+    stringData: {
         password: string,
         username: string,
     }
