@@ -8,6 +8,7 @@ import { NavigationPath } from '../../NavigationPath'
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
+const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BaremetalAssets'))
 
 export const PageContext = React.createContext<{
     readonly actions: null | React.ReactNode
@@ -52,6 +53,9 @@ export default function ClusterManagementPage() {
                             <NavItem isActive={location.pathname.startsWith(NavigationPath.providerConnections)}>
                                 <Link to={NavigationPath.providerConnections}>{'Provider Connections'}</Link>
                             </NavItem>
+                            <NavItem isActive={location.pathname.startsWith(NavigationPath.bareMetalAssets)}>
+                                <Link to={NavigationPath.bareMetalAssets}>{'Bare Metal Assets'}</Link>
+                            </NavItem>
                         </NavList>
                     </Nav>
                 </PageSection>
@@ -60,6 +64,7 @@ export default function ClusterManagementPage() {
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
                         <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         <Route exact path={NavigationPath.providerConnections} component={ProviderConnectionsPage} />
+                        <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                         <Route exact path={NavigationPath.clusterManagement}>
                             <Redirect to={NavigationPath.clusters} />
                         </Route>

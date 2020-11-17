@@ -1,8 +1,8 @@
-import { render, waitFor } from '@testing-library/react'
+import { getByText, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { mockBadRequestStatus, nockCreate, nockDelete } from '../../../../lib/nock-util'
+import { mockBadRequestStatus, nockCreate, nockDelete, nockList, nockGet } from '../../../../lib/nock-util'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
@@ -17,12 +17,94 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
+import DiscoveredClustersPage from "../../DiscoveredClusters/DiscoveredClusters"
+import * as nock from 'nock'
+import { Secret } from '../../../../resources/secret'
+import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
+import { ManagedClusterAddOnApiVersion } from '../../../../resources/managed-cluster-add-on'
 import ImportClusterPage from './ImportCluster'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
     kind: ProjectRequestKind,
     metadata: { name: 'foobar' },
+}
+
+const mockDiscoveredClusters: DiscoveredCluster[] = [
+    {
+        apiVersion: DiscoveredClusterApiVersion,
+        kind: DiscoveredClusterKind,
+        metadata: {
+             name: 'foobar', 
+             namespace: 'foobar',
+        },
+        spec: {
+            activity_timestamp: '2020-07-30T19:09:43Z',
+            apiUrl: "https://api.foobar.dev01.red-chesterfield.com:6443",
+            cloudProvider: "aws",
+            console: 'https://console-openshift-console.apps.foobar.dev01.red-chesterfield.com',
+            creation_timestamp: '2020-07-30T19:09:43Z',
+            healthState: 'healthy',
+            name: 'foobar',
+            openshiftVersion: '4.5.5',
+            product: 'ocp',
+            providerConnections: [
+                {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    name: 'ocm-api-token',
+                    namespace: 'open-cluster-management',
+                    resourceVersion: '2673462626',
+                    uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
+                },
+            ],
+            region: 'us-east-1',
+            state: 'ready',
+            subscription: {
+                creator_id: 'abc123',
+                managed: false,
+                status: 'Active',
+                support_level: 'None'
+            }
+        },
+    },
+    {
+        apiVersion: DiscoveredClusterApiVersion,
+        kind: DiscoveredClusterKind,
+        metadata: { name: 'test-cluster-02', namespace: 'foobar' },
+        spec: {
+            activity_timestamp: '2020-07-30T19:09:43Z',
+            apiUrl: "https://api.test-cluster-02.dev01.red-chesterfield.com:6443",
+            cloudProvider: "gcp",
+            console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
+            creation_timestamp: '2020-07-30T19:09:43Z',
+            healthState: 'healthy',
+            name: 'test-cluster-02',
+            openshiftVersion: '4.6.1',
+            product: 'ocp',
+            region: 'us-east-1',
+            state: 'ready',
+            subscription: {
+                status: 'Stale',
+                managed: true,
+                support_level: 'eval',
+                creator_id: 'abc123'
+            }
+        },
+    },
+]
+
+const mockSecretResponse: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+        name: 'foobar-import',
+        namespace: 'foobar',
+    },
+    data: {
+        'crds.yaml': 'test',
+        'import.yaml': 'test',
+    }
 }
 
 const mockManagedCluster: ManagedCluster = {
@@ -72,8 +154,8 @@ const mockProjectResponse: Project = {
 }
 
 const mockManagedClusterResponse: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
     metadata: {
         labels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         name: 'foobar',
@@ -106,12 +188,9 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
 describe('ImportCluster', () => {
     const Component = () => {
         return (
-            <MemoryRouter initialEntries={['/cluster-management/clusters/import']}>
-                <Route path="/cluster-management/clusters/import">
+            <MemoryRouter initialEntries={['/cluster-management/cluster-management/import-cluster']}>
+                <Route path="/cluster-management/cluster-management/import-cluster">
                     <ImportClusterPage />
-                </Route>
-                <Route path="/cluster-management/clusters/import/:clusterName">
-                    <div id="import-command" />
                 </Route>
             </MemoryRouter>
         )
@@ -124,6 +203,8 @@ describe('ImportCluster', () => {
         expect(getByTestId('cloudLabel-label')).toBeInTheDocument()
         expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
+        // expect(getByTestId('importModeManual')).toBeInTheDocument()
+        expect(getByTestId('submit')).toBeInTheDocument()
     })
 
     test('can create resources', async () => {
@@ -139,6 +220,9 @@ describe('ImportCluster', () => {
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
+
+        nockGet(mockSecretResponse)
+
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
@@ -176,5 +260,60 @@ describe('ImportCluster', () => {
         await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
         await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
         await waitFor(() => expect(deleteProjectNock.isDone()).toBeTruthy())
+    })
+})
+
+describe('Import Discovered Cluster', () => {
+    const Component = () => {
+        return (
+            <MemoryRouter>
+                <Route>
+                    <DiscoveredClustersPage />
+                </Route>
+                <Route path="/cluster-management/cluster-management/import-cluster">
+                    <ImportClusterPage />
+                </Route>
+            </MemoryRouter>
+        )
+    }
+    test('create discovered cluster', async() => {
+        // Allow for Project, ManagedCluster, and KAC to be created
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+
+        // Serve Discovered Clusters
+        nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
+
+        const { getByTestId, getByText, getAllByLabelText, queryByRole } = render(<Component />) // Render component
+
+        await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
+        
+        userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+        userEvent.click(getByText('discovery.import')) // Click Import cluster
+        
+        await waitFor(() => expect(getByTestId('submit')).toBeInTheDocument()) // Wait for next page to render
+
+        // Add labels
+        userEvent.click(getByTestId('cloudLabel-button'))
+        userEvent.click(getByText('AWS'))
+        userEvent.click(getByTestId('environmentLabel-button'))
+        userEvent.click(getByText('dev'))
+        userEvent.click(getByTestId('label-input-button'))
+        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+
+        userEvent.click(getByTestId('submit')) // Submit form
+
+        nockGet(mockSecretResponse) // Allow for import secret to be read
+
+        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument()) // Load
+
+        // Ensure resources are created
+        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
+
+        // Ensure import command is visible
+        await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
     })
 })
