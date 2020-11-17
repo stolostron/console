@@ -66,7 +66,7 @@ export default function AddConnectionPage() {
     const { t } = useTranslation(['connection'])
     return (
         <Page>
-            <AcmPageHeader title={t('addConnection.title')} />
+            <AcmPageHeader title={t('addConnection.title')} breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]} />
             <AddConnectionPageData />
         </Page>
     )

@@ -1,6 +1,6 @@
 import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import { Nav, NavItem, NavList, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
-import React, { Fragment, lazy, Suspense } from 'react'
+import React, { Fragment, lazy, Suspense, useContext, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
@@ -10,13 +10,37 @@ const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/Discovere
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BaremetalAssets'))
 
+export const PageContext = React.createContext<{
+    readonly actions: null | React.ReactNode
+    setActions: (actions: null | React.ReactNode) => void
+}>({
+    actions: null,
+    setActions: () => {}
+})
+
+export const usePageContext = (showActions: boolean, Component: React.ElementType) => {
+    const { setActions } = useContext(PageContext)
+
+    useEffect(() => {
+        if (showActions) {
+            setActions(<Component />)
+        } else {
+            setActions(null)
+        }
+        return () => setActions(null)
+    }, [showActions, setActions, Component])
+
+    return Component
+}
+
 export default function ClusterManagementPage() {
+    const [actions, setActions] = useState<undefined | React.ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'connection', 'bma'])
     return (
-        <Fragment>
-            <Page>
-                <AcmPageHeader title={t('page.header.cluster-management')} />
+        <Page>
+            <PageContext.Provider value={{ actions, setActions }}>
+                <AcmPageHeader title={t('page.header.cluster-management')} actions={actions} />
                 <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
                     <Nav variant="tertiary" style={{ paddingLeft: '12px' }}>
                         <NavList>
@@ -46,7 +70,7 @@ export default function ClusterManagementPage() {
                         </Route>
                     </Switch>
                 </Suspense>
-            </Page>
-        </Fragment>
+            </PageContext.Provider>
+        </Page>
     )
 }

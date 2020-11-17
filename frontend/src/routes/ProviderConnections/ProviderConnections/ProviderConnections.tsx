@@ -2,11 +2,11 @@ import {
     AcmEmptyState,
     AcmPageCard,
     AcmTable,
-    AcmTableLoading,
+    AcmButton,
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Button, Page, Spinner } from '@patternfly/react-core'
+import { Page } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -16,6 +16,7 @@ import { deleteResource, IRequestResult } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
@@ -27,10 +28,21 @@ export default function ProviderConnectionsPage() {
     )
 }
 
+const AddConnectionBtn = () => {
+    const { t } = useTranslation(['connection'])
+    const { push } = useHistory()
+    return (
+        <AcmButton component="a" href="#" onClick={() => push(NavigationPath.addConnection)}>
+            {t('add')}
+        </AcmButton>
+    )
+}
+
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, refresh } = useQuery(listProviderConnections)
     const { t } = useTranslation(['connection'])
-    const history = useHistory()
+
+    usePageContext(!loading && !!data, AddConnectionBtn)
 
     useEffect(startPolling, [startPolling])
 
@@ -52,20 +64,9 @@ export function ProviderConnectionsPageContent() {
         )
     } else if (!data || data.length === 0) {
         return (
-            <AcmEmptyState
-                title={t('empty.title')}
-                message={t('empty.subtitle')}
-                action={
-                    <Button
-                        onClick={() => {
-                            history.push(NavigationPath.addConnection)
-                        }}
-                        component="a"
-                    >
-                        {t('add')}
-                    </Button>
-                }
-            />
+            <AcmPageCard>
+                <AcmEmptyState title={t('empty.title')} message={t('empty.subtitle')} action={<AddConnectionBtn />} />
+            </AcmPageCard>
         )
     }
     return <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
@@ -132,15 +133,7 @@ export function ProviderConnectionsTable(props: {
                 items={props.providerConnections}
                 columns={columns}
                 keyFn={keyFn}
-                tableActions={[
-                    {
-                        id: 'addConnection',
-                        title: t('add'),
-                        click: () => {
-                            history.push(NavigationPath.addConnection)
-                        },
-                    },
-                ]}
+                tableActions={[]}
                 bulkActions={[
                     {
                         id: 'deleteConnection',

@@ -32,7 +32,7 @@ export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmPage>
-            <AcmPageHeader title={t('page.header.import-cluster')} />
+            <AcmPageHeader title={t('page.header.import-cluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
             <ImportClusterPageContent />
         </AcmPage>
     )
