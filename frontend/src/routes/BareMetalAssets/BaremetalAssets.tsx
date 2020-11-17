@@ -24,9 +24,10 @@ import { deleteResources } from '../../lib/delete-resources'
 import { NavigationPath } from '../../NavigationPath'
 
 export default function BareMetalAssetsPage() {
+    const { t } = useTranslation(['bma'])
     return (
         <Page>
-            <AcmPageHeader title={'Bare-metal Assets'} />
+            <AcmPageHeader title={t('bmas')} />
             <BareMetalAssets />
         </Page>
     )

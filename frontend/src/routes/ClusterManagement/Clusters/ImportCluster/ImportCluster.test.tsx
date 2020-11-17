@@ -217,7 +217,7 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('AWS'))
         userEvent.click(getByTestId('environmentLabel-button'))
         userEvent.click(getByText('dev'))
-        userEvent.click(getByTestId('additionalLabels-button'))
+        userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
 
@@ -251,7 +251,7 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('AWS'))
         userEvent.click(getByTestId('environmentLabel-button'))
         userEvent.click(getByText('dev'))
-        userEvent.click(getByTestId('additionalLabels-button'))
+        userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByTestId('submit'))
         await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
@@ -299,7 +299,7 @@ describe('Import Discovered Cluster', () => {
         userEvent.click(getByText('AWS'))
         userEvent.click(getByTestId('environmentLabel-button'))
         userEvent.click(getByText('dev'))
-        userEvent.click(getByTestId('additionalLabels-button'))
+        userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
 
         userEvent.click(getByTestId('submit')) // Submit form

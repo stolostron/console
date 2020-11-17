@@ -8,15 +8,17 @@ import {
 import { Page } from '@patternfly/react-core'
 import React, { Fragment, Suspense } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
+    const { t } = useTranslation(['cluster'])
     return (
         <Page>
-            <AcmPageHeader title="Cluster Details" />
+            <AcmPageHeader title={match.params.id} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('cluster.details'), to: '' }]} />
             <AcmSecondaryNav>
                 <AcmSecondaryNavItem
                     isActive={location.pathname === NavigationPath.clusterOverview.replace(':id', match.params.id)}
