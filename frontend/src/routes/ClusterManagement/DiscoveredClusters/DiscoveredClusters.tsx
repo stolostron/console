@@ -13,8 +13,10 @@ import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icon
 import React, { Fragment, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '../../../lib/useQuery'
+import { NavigationPath } from '../../../NavigationPath'
+import { Link, useHistory } from 'react-router-dom'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
-let moment = require('moment')
+import * as moment from 'moment'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -142,33 +144,14 @@ export default function DiscoveredClustersPage() {
 }
 
 export function DiscoveredClustersPageContent() {
-    const { t } = useTranslation(['cluster'])
-    const { error, loading, data, startPolling } = useQuery(listDiscoveredClusters)
-    useEffect(startPolling, [startPolling])
-    if (error) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
-            </AcmPageCard>
-        )
-    } else if (loading) {
-        return (
-            <AcmPageCard>
-                <AcmTableLoading />
-            </AcmPageCard>
-        )
-    } else if (!data || data.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
-                    title={t('discovery.emptyStateHeader')}
-                    message={t('discovery.emptyStateMsg')}
-                    key="dcEmptyState"
-                />
-            </AcmPageCard>
-        )
-    }
+    const discoveredClustersQuery = useQuery(listDiscoveredClusters)
+    useEffect(() => {
+        discoveredClustersQuery.startPolling(10 * 1000)
+        return discoveredClustersQuery.stopPolling
+    }, [discoveredClustersQuery])
+
+    sessionStorage.removeItem('DiscoveredClusterName')
+    sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     return (
         <AcmPageCard>
             <DiscoveredClustersTable discoveredClusters={data} />
@@ -178,6 +161,11 @@ export function DiscoveredClustersPageContent() {
 
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
+
+    function dckeyFn(cluster: DiscoveredCluster) {
+        return cluster.metadata.uid!
+    }
+    const history = useHistory()
 
     return (
         <AcmTable<DiscoveredCluster>
@@ -199,7 +187,17 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                 },
             ]}
             bulkActions={[]}
-            rowActions={[{ id: 'importCluster', title: t('discovery.import'), click: (item) => {} }]}
+            rowActions={[
+                {
+                    id: 'importCluster',
+                    title: t('discovery.import'),
+                    click: (item) => {
+                        sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                        sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                        history.push(NavigationPath.importCluster)
+                    },
+                },
+            ]}
             emptyState={
                 <AcmEmptyState
                     action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}

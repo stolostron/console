@@ -24,9 +24,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>Overview</Link>
                 </AcmSecondaryNavItem>
                 <AcmSecondaryNavItem
-                    isActive={location.pathname === NavigationPath.clusterNodePools.replace(':id', match.params.id)}
+                    isActive={location.pathname === NavigationPath.clusterNodes.replace(':id', match.params.id)}
                 >
-                    <Link to={NavigationPath.clusterNodePools.replace(':id', match.params.id)}>Nodes</Link>
+                    <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>Nodes</Link>
                 </AcmSecondaryNavItem>
                 <AcmSecondaryNavItem
                     isActive={location.pathname === NavigationPath.clusterSettings.replace(':id', match.params.id)}
@@ -41,7 +41,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                             <AcmEmptyState title="No cluster found." message="Your cluster does not exist." />
                         </AcmPageCard>
                     </Route>
-                    <Route exact path={NavigationPath.clusterNodePools}>
+                    <Route exact path={NavigationPath.clusterNodes}>
                         <NodePoolsPageContent name={match.params.id} namespace={match.params.id} />
                     </Route>
                     <Route exact path={NavigationPath.clusterSettings}>
