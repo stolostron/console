@@ -11,7 +11,7 @@ before_script:
 
 jobs:
     include:
-        - stage: build test push
+        - stage: test lint check
           if: type != cron
           language: node_js
           node_js: "12"
@@ -22,7 +22,7 @@ jobs:
               - npm run check
               - npm test
 
-        - stage: build test push
+        - stage: build and push
           if: type != cron
           script:
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
