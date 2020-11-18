@@ -1,4 +1,5 @@
 import { render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { nockList } from '../../../lib/nock-util'
@@ -21,7 +22,5 @@ test('Clusters Page', async () => {
             <ClustersPage />
         </MemoryRouter>
     )
-    expect(getByText('managed.createCluster')).toBeInTheDocument()
-    expect(getByText('managed.importCluster')).toBeInTheDocument()
     await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 })

@@ -3,10 +3,11 @@ import {
     AcmLoadingPage,
     AcmPageCard,
     AcmTable,
+    AcmButton,
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Button, Page } from '@patternfly/react-core'
+import { Page } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -17,6 +18,7 @@ import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource, IRequestResult } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
@@ -26,10 +28,21 @@ export default function ProviderConnectionsPage() {
     )
 }
 
+const AddConnectionBtn = () => {
+    const { t } = useTranslation(['connection'])
+    const { push } = useHistory()
+    return (
+        <AcmButton component="a" href="#" onClick={() => push(NavigationPath.addConnection)}>
+            {t('add')}
+        </AcmButton>
+    )
+}
+
 export function ProviderConnectionsPageContent() {
     const { loading, error, data, startPolling, stopPolling, refresh } = useQuery(listProviderConnections)
     const { t } = useTranslation(['connection'])
-    const history = useHistory()
+
+    usePageContext(!loading && !!data, AddConnectionBtn)
 
     useEffect(() => {
         startPolling(5 * 1000)
@@ -46,16 +59,7 @@ export function ProviderConnectionsPageContent() {
                 <AcmEmptyState
                     title={t('empty.title')}
                     message={t('empty.subtitle')}
-                    action={
-                        <Button
-                            onClick={() => {
-                                history.push(NavigationPath.addConnection)
-                            }}
-                            component="a"
-                        >
-                            {t('add')}
-                        </Button>
-                    }
+                    action={<AddConnectionBtn />}
                 />
             </AcmPageCard>
         )
@@ -131,15 +135,7 @@ export function ProviderConnectionsTable(props: {
                 items={props.providerConnections}
                 columns={columns}
                 keyFn={keyFn}
-                tableActions={[
-                    {
-                        id: 'addConnection',
-                        title: t('add'),
-                        click: () => {
-                            history.push(NavigationPath.addConnection)
-                        },
-                    },
-                ]}
+                tableActions={[]}
                 bulkActions={[
                     {
                         id: 'deleteConnection',
