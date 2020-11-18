@@ -1,14 +1,12 @@
 import {
-    AcmEmptyState,
-    AcmLoadingPage,
     AcmPageCard,
     AcmTable,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
-import { listManagedClusterInfos, NodeInfo } from '../../../../../resources/managed-cluster-info'
-import React, { useEffect, ReactNode, useCallback } from 'react'
+import React, { ReactNode, useCallback, useEffect } from 'react'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../lib/useQuery'
+import { listManagedClusterInfos, NodeInfo } from '../../../../../resources/managed-cluster-info'
 
 export function useManagedClusterInfos(namespace: string) {
     const callback = useCallback(() => {
@@ -18,33 +16,14 @@ export function useManagedClusterInfos(namespace: string) {
 }
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useManagedClusterInfos(props.namespace)
-    useEffect(() => {
-        startPolling(10 * 1000)
-        return stopPolling
-    }, [startPolling, stopPolling])
+    const { error, data, startPolling, refresh } = useManagedClusterInfos(props.namespace)
+    useEffect(startPolling, [startPolling])
 
     const mcis = data?.filter((m) => m.metadata.name === props.name)
-
-    if (loading) {
-        return <AcmLoadingPage />
-    } else if (error) {
+    if (error) {
         return <ErrorPage error={error} />
-    } else if (
-        !data ||
-        !mcis ||
-        mcis.length === 0 ||
-        !mcis[0].status.nodeList ||
-        mcis[0].status.nodeList!.length === 0
-    ) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState title="No nodes found." message={`Cluster ${props.name} does not contain any nodes.`} />
-            </AcmPageCard>
-        )
     }
-
-    return <NodesPoolsTable nodes={mcis[0].status.nodeList!} refresh={refresh} />
+    return <NodesPoolsTable nodes={mcis?.[0]?.status.nodeList!} refresh={refresh} />
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[]; refresh: () => void }) {

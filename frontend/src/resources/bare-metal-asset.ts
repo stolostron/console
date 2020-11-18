@@ -1,6 +1,5 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { listResources, createResource } from '../lib/resource-request'
-import { useTranslation } from 'react-i18next'
+import { listResources } from '../lib/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -30,14 +29,14 @@ export interface BareMetalAsset {
     }
 }
 
-export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation:Function) {
-    const KNOWN_STATUSES = [
-        'CredentialsFound',
-        'AssetSyncStarted',
-        'ClusterDeploymentFound',
-        'AssetSyncCompleted',
-        'Ready',
-    ]
+export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation: Function) {
+    // const KNOWN_STATUSES = [
+    //     'CredentialsFound',
+    //     'AssetSyncStarted',
+    //     'ClusterDeploymentFound',
+    //     'AssetSyncCompleted',
+    //     'Ready',
+    // ]
     GetLabels(bareMetalAssets)
     if (bareMetalAssets.status) {
         let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
@@ -61,15 +60,15 @@ function GetStatusMessage(status: string) {
     switch (status) {
         // returns translation strings
         case 'CredentialsFound':
-            return "bareMetalAsset.statusMessage.credentialsFound"
+            return 'bareMetalAsset.statusMessage.credentialsFound'
         case 'AssetSyncStarted':
-            return "bareMetalAsset.statusMessage.assetSyncStarted"
+            return 'bareMetalAsset.statusMessage.assetSyncStarted'
         case 'ClusterDeploymentFound':
-            return "bareMetalAsset.statusMessage.clusterDeploymentFound"
+            return 'bareMetalAsset.statusMessage.clusterDeploymentFound'
         case 'AssetSyncCompleted':
-            return "bareMetalAsset.statusMessage.assetSyncCompleted"
+            return 'bareMetalAsset.statusMessage.assetSyncCompleted'
         case 'Ready':
-            return "bareMetalAsset.statusMessage.ready"
+            return 'bareMetalAsset.statusMessage.ready'
         default:
             return ''
     }
@@ -85,36 +84,34 @@ export function GetLabels(bareMetalAssets: BareMetalAsset) {
 }
 
 export interface BMASecret extends V1Secret {
-    apiVersion: 'v1',
-    kind: 'Secret',
+    apiVersion: 'v1'
+    kind: 'Secret'
     metadata: V1ObjectMeta
     stringData: {
-        password: string,
-        username: string,
+        password: string
+        username: string
     }
 }
 
 export function MakeId(customID?: string) {
-    if(customID){
+    if (customID) {
         return customID
     }
 
-    let result           = ''
-    const characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = ''
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
     const charactersLength = characters.length
-    for ( var i = 0; i < 5; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    for (var i = 0; i < 5; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength))
     }
     return result
- }
+}
 
 export function listBareMetalAssets() {
-    const result = listResources<BareMetalAsset>(
-        {
-            apiVersion: BareMetalAssetApiVersion,
-            kind: BareMetalAssetKind,
-        },
-    )
+    const result = listResources<BareMetalAsset>({
+        apiVersion: BareMetalAssetApiVersion,
+        kind: BareMetalAssetKind,
+    })
     return {
         promise: result.promise.then((bareMetalAssets) => {
             return bareMetalAssets
