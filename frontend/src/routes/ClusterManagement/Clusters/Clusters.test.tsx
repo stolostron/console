@@ -1,5 +1,4 @@
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { nockList } from '../../../lib/nock-util'

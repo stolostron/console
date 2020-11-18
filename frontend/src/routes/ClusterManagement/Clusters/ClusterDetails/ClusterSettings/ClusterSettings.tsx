@@ -1,18 +1,12 @@
-import {
-    AcmEmptyState,
-    AcmLoadingPage,
-    AcmPageCard,
-    AcmTable,
-    IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+import { AcmPageCard, AcmTable, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
-import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import InProgressIcon from '@patternfly/react-icons/dist/js/icons/in-progress-icon'
+import MinusCircleIcon from '@patternfly/react-icons/dist/js/icons/minus-circle-icon'
 import React, { ReactNode, useCallback, useEffect } from 'react'
 import { ErrorPage } from '../../../../../components/ErrorPage'
-import { ManagedClusterAddOn, listManagedClusterAddOns } from '../../../../../resources/managed-cluster-add-on'
-import { ClusterManagementAddOn, listClusterManagementAddOns } from '../../../../../resources/cluster-management-add-on'
 import { useQuery } from '../../../../../lib/useQuery'
+import { ClusterManagementAddOn, listClusterManagementAddOns } from '../../../../../resources/cluster-management-add-on'
+import { listManagedClusterAddOns, ManagedClusterAddOn } from '../../../../../resources/managed-cluster-add-on'
 
 export function useManagedClusterAddOns(namespace: string) {
     const callback = useCallback(() => {

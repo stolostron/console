@@ -56,7 +56,7 @@ describe('bare metal asset page', () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
 
-        const { getByText, getAllByText, getByTestId, container } = render(
+        const { getByText, getAllByText, getByTestId } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
                     path="/cluster-management/baremetal-assets/create"
