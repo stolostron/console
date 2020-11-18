@@ -57,6 +57,14 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource, options)
 }
 
+export function patchResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    const url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
+    return patchRequest<Resource, ResultType>(url, resource, options)
+}
+
 export function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: IRequestOptions
@@ -141,6 +149,17 @@ function postRequest<ResourceType, ResultType = ResourceType>(
 ): IRequestResult<ResultType> {
     return axiosRequest<ResultType>({
         ...{ url, method: 'POST', validateStatus: (status) => true, data },
+        ...options,
+    })
+}
+
+function patchRequest<ResourceType, ResultType = ResourceType>(
+    url: string,
+    data: ResourceType,
+    options?: IRequestOptions
+): IRequestResult<ResultType>{
+    return axiosRequest<ResultType>({
+        ...{ url, method: 'PATCH', validateStatus: (status) => true, data },
         ...options,
     })
 }

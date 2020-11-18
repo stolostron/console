@@ -166,7 +166,11 @@ export function BareMetalAssetsTable(props: {
                     },
                 ]}
                 rowActions={[
-                    { id: 'editLabels', title: t('bareMetalAsset.rowAction.editLabels.title'), click: (item) => {} },
+                    { id: 'editLabels', 
+                      title: t('bareMetalAsset.rowAction.editLabels.title'),
+                      click: (item) => {
+                        history.push(NavigationPath.createBareMetalAssets)
+                      } },
                     { id: 'editAsset', title: t('bareMetalAsset.rowAction.editAsset.title'), click: (item) => {} },
                     {
                         id: 'deleteAsset',

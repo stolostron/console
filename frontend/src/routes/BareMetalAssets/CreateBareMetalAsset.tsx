@@ -91,10 +91,17 @@ export function CreateBareMetalAssetPageContent(props: {
     projects: Project[]
     bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
+    editBareMetalAsset?: BareMetalAsset
 }) {
     const { t } = useTranslation(['bma'])
     const history = useHistory()
+    let isEdit = false
 
+    if(props.editBareMetalAsset){
+        isEdit = true
+    }
+
+    // ToDo: Prefill this when editing BMA
     const [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -150,6 +157,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    isDisabled={isEdit}
                     validation={(value) => ValidateField(value, 'name', t)}
                 ></AcmTextInput>
                 <AcmSelect
@@ -167,6 +175,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    isDisabled={isEdit}
                 >
                     {props.projects.map((project) => (
                         <SelectOption key={project.metadata.name} value={project.metadata.name}>
@@ -231,11 +240,16 @@ export function CreateBareMetalAssetPageContent(props: {
                         id='submit'
                         variant='primary'
                         onClick={() => {
-                            createResource(bmaSecret as BMASecret).promise.then(() => {
-                                props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
-                                    history.push(NavigationPath.bareMetalAssets)
+                            if(isEdit){
+                                
+                            }
+                            else{
+                                createResource(bmaSecret as BMASecret).promise.then(() => {
+                                    props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
+                                        history.push(NavigationPath.bareMetalAssets)
+                                    })
                                 })
-                            })
+                            }
                         }}
                     >
                         {t('createBareMetalAsset.button.create')}
