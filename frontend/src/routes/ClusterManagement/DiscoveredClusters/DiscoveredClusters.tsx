@@ -164,7 +164,6 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
-    console.log(error)
     if (error) {
         if (error instanceof ResourceError && error.code === 404) {
             return (

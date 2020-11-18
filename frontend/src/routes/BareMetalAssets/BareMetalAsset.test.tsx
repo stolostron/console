@@ -27,7 +27,7 @@ const mockBareMetalAssets = [bareMetalAsset]
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
-        const { getAllByText, container } = render(
+        const { getAllByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
@@ -41,7 +41,7 @@ describe('bare metal asset page', () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
 
-        const { getByText, getAllByText, getByLabelText, queryByText, container } = render(
+        const { getByText, getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
