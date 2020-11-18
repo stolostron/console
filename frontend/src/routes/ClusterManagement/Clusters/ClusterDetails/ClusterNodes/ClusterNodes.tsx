@@ -1,14 +1,12 @@
 import {
-    AcmEmptyState,
-    AcmLoadingPage,
     AcmPageCard,
     AcmTable,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
-import { listManagedClusterInfos, NodeInfo } from '../../../../../resources/managed-cluster-info'
-import React, { useEffect, ReactNode, useCallback } from 'react'
+import React, { ReactNode, useCallback, useEffect } from 'react'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../lib/useQuery'
+import { listManagedClusterInfos, NodeInfo } from '../../../../../resources/managed-cluster-info'
 
 export function useManagedClusterInfos(namespace: string) {
     const callback = useCallback(() => {
