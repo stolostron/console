@@ -7,7 +7,7 @@ branches:
         - /^release-[0-9]+\..*$/
 
 before_script:
-    - make init
+    - travis_retry timeout 2m make init
 
 jobs:
     include:
