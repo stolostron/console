@@ -58,7 +58,7 @@ export function BareMetalAssets() {
 
     return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource}></BareMetalAssetsTable>
 }
-// TODO: use deleteResources instead of deleteResource
+
 export function deleteBareMetalAssets(
     bareMetalAssets: BareMetalAsset[],
 ) {
