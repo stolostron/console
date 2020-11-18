@@ -2,7 +2,7 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
-import BareMetalAssetsPage from './BaremetalAssets'
+import BareMetalAssetsPage from './BareMetalAssetsPage'
 import CreateBareMetalAssetPage from './CreateBareMetalAsset'
 import { nockList, nockClusterList } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
@@ -69,8 +69,8 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(getByTestId('bareMetalAssetName'))) // expect asset name form to exist in doc
-        
-        // user input 
+
+        // user input
         userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)
         userEvent.click(getByTestId('namespaceName-button'))
         userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
@@ -81,10 +81,10 @@ describe('bare metal asset page', () => {
         userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec.bootMac!)
 
         // submitting new asset
-        expect(getByText("createBareMetalAsset.button.create")).toBeInTheDocument()
-        userEvent.click(getByText("createBareMetalAsset.button.create"))
+        expect(getByText('createBareMetalAsset.button.create')).toBeInTheDocument()
+        userEvent.click(getByText('createBareMetalAsset.button.create'))
 
-        expect(getByText("bareMetalAsset.bulkAction.createAsset")).toBeVisible()
+        expect(getByText('bareMetalAsset.bulkAction.createAsset')).toBeVisible()
         await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
     })
 })

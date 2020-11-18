@@ -1,6 +1,5 @@
 import {
     AcmEmptyState,
-    AcmLoadingPage,
     AcmPageCard,
     AcmTable,
     AcmButton,
@@ -11,19 +10,20 @@ import { Page } from '@patternfly/react-core'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { NavigationPath } from '../../../NavigationPath'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { ErrorPage } from '../../../components/ErrorPage'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource, IRequestResult } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
+import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
         <Page>
-            <ProviderConnectionsPageContent />
+            <AcmPageCard>
+                <ProviderConnectionsPageContent />
+            </AcmPageCard>
         </Page>
     )
 }
@@ -39,39 +39,11 @@ const AddConnectionBtn = () => {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, startPolling, stopPolling, refresh } = useQuery(listProviderConnections)
-    const { t } = useTranslation(['connection'])
-
-    usePageContext(!loading && !!data, AddConnectionBtn)
-
-    useEffect(() => {
-        startPolling(5 * 1000)
-        return stopPolling
-    }, [startPolling, stopPolling])
-
-    if (loading) {
-        return <AcmLoadingPage />
-    } else if (error) {
-        return <ErrorPage error={error} />
-    } else if (!data || data.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('empty.title')}
-                    message={t('empty.subtitle')}
-                    action={<AddConnectionBtn />}
-                />
-            </AcmPageCard>
-        )
-    }
-
-    // const { loading, error, data, startPolling, stopPolling, refresh } = DeleteProviderConnection()
-
-    return (
-        <AcmPageCard>
-            <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
-        </AcmPageCard>
-    )
+    const { error, data, startPolling, refresh } = useQuery(listProviderConnections)
+    useEffect(startPolling, [startPolling])
+    usePageContext(data !== undefined && !!data, AddConnectionBtn)
+    if (error) return <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
+    return <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
 }
 
 function getProvider(labels: Record<string, string> | undefined) {
@@ -81,7 +53,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 }
 
 export function ProviderConnectionsTable(props: {
-    providerConnections: ProviderConnection[]
+    providerConnections?: ProviderConnection[]
     refresh: () => void
     deleteConnection: (providerConnection: ProviderConnection) => IRequestResult
 }) {

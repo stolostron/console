@@ -2,7 +2,7 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import BareMetalAssetsPage  from './BaremetalAssets'
+import BareMetalAssetsPage from './BareMetalAssetsPage'
 import { nockList, nockDelete } from '../../lib/nock-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 
@@ -27,7 +27,7 @@ const mockBareMetalAssets = [bareMetalAsset]
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
-        const { getAllByText, container } = render(
+        const { getAllByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
@@ -41,16 +41,16 @@ describe('bare metal asset page', () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
 
-        const { getByText, getAllByText, getByLabelText, queryByText, container } = render(
+        const { getByText, getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
         )
-        
+
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         userEvent.click(getByLabelText('Select all rows')) // Click the action button on the first table row
-        userEvent.click(getByText("bareMetalAsset.bulkAction.destroyAsset")) // click the delete action
+        userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset')) // click the delete action
         expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
@@ -71,7 +71,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText("bareMetalAsset.bulkAction.destroyAsset"))
+        userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset'))
         expect(getByText('Confirm')).toBeInTheDocument()
         userEvent.click(getByText('Confirm'))
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
