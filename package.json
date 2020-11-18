@@ -10,12 +10,21 @@
         "test": "concurrently npm:*:test",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
+        "lint": "concurrently npm:*:lint",
+        "frontend:lint": "cd frontend && npm run lint",
+        "backend:lint": "cd backend && npm run lint",
+        "check": "concurrently npm:*:check",
+        "frontend:check": "cd frontend && npm run check",
+        "backend:check": "cd backend && npm run check",
         "start": "concurrently npm:frontend npm:backend -n 'frontend, backend' -c blue,cyan",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
         "build": "concurrently npm:*:build",
         "backend:build": "cd backend && npm run build",
-        "frontend:build": "cd frontend && npm run build"
+        "frontend:build": "cd frontend && npm run build",
+        "update": "npm run backend:update && npm run frontend:update",
+        "backend:update": "cd backend && npm run update",
+        "frontend:update": "cd frontend && npm run update"
     },
     "dependencies": {
         "concurrently": "^5.3.0"

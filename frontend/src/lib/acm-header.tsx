@@ -5,7 +5,7 @@ import Axios, { AxiosResponse } from 'axios'
 
 declare global {
     interface Window {
-      __PRELOADED_STATE__: object
+        __PRELOADED_STATE__: object
     }
 }
 
@@ -14,7 +14,7 @@ type FilePath = {
 }
 
 type HeaderAssets = {
-    headerHtml: string,
+    headerHtml: string
     files: {
         dll: FilePath
         js: FilePath
@@ -32,7 +32,7 @@ export const fetchHeader = async () => {
             url: '/cluster-management/header',
             method: 'GET',
             responseType: 'json',
-            withCredentials: true
+            withCredentials: true,
         })
 
         if (headerResponse.status === 200) {
@@ -40,19 +40,19 @@ export const fetchHeader = async () => {
 
             const head = document.querySelector('head')
             const body = document.querySelector('body')
-            
+
             const propScript = document.createElement('script')
             propScript.id = 'props'
-            propScript.type ='application/json'
+            propScript.type = 'application/json'
             propScript.innerHTML = JSON.stringify(props)
             body?.appendChild(propScript)
-    
+
             window.__PRELOADED_STATE__ = state
 
             const link = document.createElement('link')
             link.rel = 'stylesheet'
             link.href = files.css.path
-            link.onload = function() {
+            link.onload = function () {
                 const headerContainer = document.querySelector('#header')
                 if (headerContainer) {
                     headerContainer.innerHTML = headerHtml
@@ -63,7 +63,7 @@ export const fetchHeader = async () => {
                 vendorScript.onload = function () {
                     const nlsScript = document.createElement('script')
                     nlsScript.src = files.nls.path
-                    nlsScript.onload = function() {
+                    nlsScript.onload = function () {
                         const jsScript = document.createElement('script')
                         jsScript.src = files.js.path
                         body?.appendChild(jsScript)
@@ -74,7 +74,7 @@ export const fetchHeader = async () => {
             }
             head?.appendChild(link)
         }
-    } catch(err) {
+    } catch (err) {
         headerResponse = err
         console.error(err)
     }

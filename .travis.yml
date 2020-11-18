@@ -11,7 +11,18 @@ before_script:
 
 jobs:
     include:
-        - stage: build test push
+        - stage: test lint check
+          if: type != cron
+          language: node_js
+          node_js: "12"
+          install: npm ci
+          script:
+              - set -e
+              - npm run lint
+              - npm run check
+              - npm test
+
+        - stage: build and push
           if: type != cron
           script:
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
@@ -38,10 +49,12 @@ jobs:
               - git remote remove origin
               - git remote add origin https://${GITHUB_TOKEN}@github.com/@open-cluster-management/console.git > /dev/null 2>&1
               - git checkout master
+              - npm ci
               - npm run update
               - npm run build
               - git config --global user.email "travis@travis-ci.org"
               - git config --global user.name "Travis CI"
               - git add -u :/
+              - set +e
               - git commit -m "fix(deps) - upgrade dependencies"
-              - git push origin master
+              - if [ $? -eq 0 ]; then git push origin master; fi
