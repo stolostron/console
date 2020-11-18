@@ -19,7 +19,7 @@ export function nockList<Resource extends IResource>(
         apiVersion: string
         kind: string
     },
-    resources: Resource[],
+    resources: Resource[] | IResource,
     labels?: string[]
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
@@ -38,15 +38,23 @@ export function nockList<Resource extends IResource>(
         })
     }
 
-    return nockScope.reply(
-        200,
-        { items: resources },
-        {
+    if (Array.isArray(resources)) {
+        return nockScope.reply(
+            200,
+            { items: resources },
+            {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        )
+    } else {
+        return nockScope.reply(200, resources, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
-        }
-    )
+        })
+    }
 }
 
 export function nockClusterList<Resource extends IResource>(
@@ -83,7 +91,7 @@ export function nockCreate(resource: IResource, response: IResource, statusCode:
         })
 }
 
-export function nockDelete(resource: IResource) {
+export function nockDelete(resource: IResource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(apiProxyUrl + getResourceNameApiPath(resource))
         .optionally()
@@ -93,7 +101,7 @@ export function nockDelete(resource: IResource) {
             'Access-Control-Allow-Credentials': 'true',
         })
         .delete(apiProxyUrl + getResourceNameApiPath(resource))
-        .reply(204, undefined, {
+        .reply(response ? 200 : 204, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',

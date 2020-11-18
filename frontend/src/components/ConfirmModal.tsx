@@ -1,5 +1,6 @@
+import { AcmButton, AcmModal } from '@open-cluster-management/ui-components'
+import { ModalVariant } from '@patternfly/react-core'
 import React from 'react'
-import { Modal, Button, ModalVariant } from '@patternfly/react-core'
 
 export interface IConfirmModalProps {
     open: boolean
@@ -19,21 +20,21 @@ export const ClosedConfirmModalProps: IConfirmModalProps = {
 
 export function ConfirmModal(props: IConfirmModalProps) {
     return (
-        <Modal
+        <AcmModal
             variant={ModalVariant.medium}
             title={props.title}
             isOpen={props.open}
             onClose={() => props.cancel()}
             actions={[
-                <Button key="confirm" variant="primary" onClick={() => props.confirm()}>
+                <AcmButton key="confirm" variant="primary" onClick={() => props.confirm()}>
                     Confirm
-                </Button>,
-                <Button key="cancel" variant="link" onClick={() => props.cancel()}>
+                </AcmButton>,
+                <AcmButton key="cancel" variant="link" onClick={() => props.cancel()}>
                     Cancel
-                </Button>,
+                </AcmButton>,
             ]}
         >
             {props.message}
-        </Modal>
+        </AcmModal>
     )
 }
