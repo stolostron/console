@@ -7,11 +7,12 @@ branches:
         - /^release-[0-9]+\..*$/
 
 before_script:
-    - make init
+    - travis_retry timeout 2m make init
 
 jobs:
     include:
         - stage: build test push
+          if: type != cron
           script:
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/ubi-minimal
@@ -26,3 +27,21 @@ jobs:
         - stage: update release manifest
           if: type = push AND branch =~ /^release-[0-9]+\..*$/
           script: make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}
+
+        - stage: Automated Dependency Upgrade
+          if: type = cron AND branch = master
+          language: node_js
+          node_js: "12"
+          install: echo skip install
+          script:
+              - set -e
+              - git remote remove origin
+              - git remote add origin https://${GITHUB_TOKEN}@github.com/@open-cluster-management/console.git > /dev/null 2>&1
+              - git checkout master
+              - npm run update
+              - npm run build
+              - git config --global user.email "travis@travis-ci.org"
+              - git config --global user.name "Travis CI"
+              - git add -u :/
+              - git commit -m "fix(deps) - upgrade dependencies"
+              - git push origin master
