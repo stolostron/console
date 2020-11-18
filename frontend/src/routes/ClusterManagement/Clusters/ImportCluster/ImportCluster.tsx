@@ -1,6 +1,7 @@
 import {
     AcmAlert,
     AcmAlertGroup,
+    AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
     AcmPage,
@@ -9,30 +10,30 @@ import {
     AcmSelect,
     AcmSpinnerBackdrop,
     AcmTextInput,
-    AcmExpandableSection,
-    AcmHeader,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants, Card, CardBody } from '@patternfly/react-core'
+import { ActionGroup, AlertVariant, Button, Label, SelectOption, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, Link } from 'react-router-dom'
-import { NavigationPath } from '../../../../NavigationPath'
+import { Link } from 'react-router-dom'
 import { deleteResources } from '../../../../lib/delete-resources'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { NavigationPath } from '../../../../NavigationPath'
 import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-add-on-config'
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommandPageContent } from '../ImportCommand/ImportCommand'
 
-
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmPage>
-            <AcmPageHeader title={t('page.header.import-cluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
+            <AcmPageHeader
+                title={t('page.header.import-cluster')}
+                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
+            />
             <ImportClusterPageContent />
         </AcmPage>
     )
@@ -40,7 +41,6 @@ export default function ImportClusterPage() {
 
 export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
-    const history = useHistory()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
@@ -53,10 +53,9 @@ export function ImportClusterPageContent() {
         setClusterName('')
         setCloudLabel('auto-detect')
         setEnvironmentLabel(undefined)
-        setAdditionaLabels({})  
-        submitForm(false)     
+        setAdditionaLabels({})
+        submitForm(false)
     }
-
 
     const onSubmit = async () => {
         setLoading(true)
@@ -104,7 +103,7 @@ export function ImportClusterPageContent() {
         <AcmPageCard>
             {loading && <AcmSpinnerBackdrop />}
             <AcmExpandableSection label={t('import.form.header')} expanded={true}>
-                 <AcmForm id="import-cluster-form">
+                <AcmForm id="import-cluster-form">
                     {error && (
                         <AcmAlertGroup>
                             <AcmAlert
@@ -133,11 +132,13 @@ export function ImportClusterPageContent() {
                         value={cloudLabel}
                         onChange={(label) => setCloudLabel(label as string)}
                     >
-                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map((key) => (
-                            <SelectOption key={key} value={key}>
-                                {key}
-                            </SelectOption>
-                        ))}
+                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(
+                            (key) => (
+                                <SelectOption key={key} value={key}>
+                                    {key}
+                                </SelectOption>
+                            )
+                        )}
                     </AcmSelect>
                     <AcmSelect
                         id="environmentLabel"
@@ -163,29 +164,38 @@ export function ImportClusterPageContent() {
                     />
                     <Text component={TextVariants.small}>{t('import.description')}</Text>
                     <ActionGroup>
-                        <Button id="submit" variant="primary" isDisabled={(!clusterName || submitted)} onClick={(onSubmit)}>
-                            { submitted ? t('import.form.submitted') : t('import.form.submit')}
+                        <Button id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit}>
+                            {submitted ? t('import.form.submitted') : t('import.form.submit')}
                         </Button>
-                        { submitted ? 
-                            <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>{t('import.importmode.importsaved')}</Label> : 
-                            <Button
-                                id="cancel"
-                                component="a"
-                                variant="link"
-                                href={NavigationPath.clusters}>{t('common:cancel')}            
+                        {submitted ? (
+                            <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
+                                {t('import.importmode.importsaved')}
+                            </Label>
+                        ) : (
+                            <Button id="cancel" component="a" variant="link" href={NavigationPath.clusters}>
+                                {t('common:cancel')}
                             </Button>
-                        }
+                        )}
                     </ActionGroup>
-                    { !loading && submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null }
-                    { !loading && submitted ? 
-                            <ActionGroup>
-                                <Link to={NavigationPath.clusterDetails.replace(":id", clusterName as string)}><Button variant="primary">{t('import.footer.viewcluster')}</Button></Link>{' '}
-                                { sessionStorage.getItem('DiscoveredClusterConsoleURL') ? 
-                                    <Link to={NavigationPath.discoveredClusters}><Button variant="secondary">{t('import.footer.importanother')}</Button></Link> :
-                                    <Link to={NavigationPath.importCluster}><Button onClick={(onReset)} variant="secondary">{t('import.footer.importanother')}</Button></Link>
-                                }
-                            </ActionGroup>
-                        : null }
+                    {!loading && submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null}
+                    {!loading && submitted ? (
+                        <ActionGroup>
+                            <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
+                                <Button variant="primary">{t('import.footer.viewcluster')}</Button>
+                            </Link>{' '}
+                            {sessionStorage.getItem('DiscoveredClusterConsoleURL') ? (
+                                <Link to={NavigationPath.discoveredClusters}>
+                                    <Button variant="secondary">{t('import.footer.importanother')}</Button>
+                                </Link>
+                            ) : (
+                                <Link to={NavigationPath.importCluster}>
+                                    <Button onClick={onReset} variant="secondary">
+                                        {t('import.footer.importanother')}
+                                    </Button>
+                                </Link>
+                            )}
+                        </ActionGroup>
+                    ) : null}
                 </AcmForm>
             </AcmExpandableSection>
         </AcmPageCard>
