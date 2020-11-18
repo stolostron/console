@@ -1,8 +1,13 @@
-import { getByText, render, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockList, nockGet } from '../../../../lib/nock-util'
+import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
+import {
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+} from '../../../../resources/discovered-cluster'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
@@ -17,11 +22,8 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import DiscoveredClustersPage from "../../DiscoveredClusters/DiscoveredClusters"
-import * as nock from 'nock'
 import { Secret } from '../../../../resources/secret'
-import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
-import { ManagedClusterAddOnApiVersion } from '../../../../resources/managed-cluster-add-on'
+import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 
 const mockProject: ProjectRequest = {
@@ -35,13 +37,13 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         apiVersion: DiscoveredClusterApiVersion,
         kind: DiscoveredClusterKind,
         metadata: {
-             name: 'foobar', 
-             namespace: 'foobar',
+            name: 'foobar',
+            namespace: 'foobar',
         },
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
-            apiUrl: "https://api.foobar.dev01.red-chesterfield.com:6443",
-            cloudProvider: "aws",
+            apiUrl: 'https://api.foobar.dev01.red-chesterfield.com:6443',
+            cloudProvider: 'aws',
             console: 'https://console-openshift-console.apps.foobar.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             healthState: 'healthy',
@@ -64,8 +66,8 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
                 creator_id: 'abc123',
                 managed: false,
                 status: 'Active',
-                support_level: 'None'
-            }
+                support_level: 'None',
+            },
         },
     },
     {
@@ -74,8 +76,8 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-02', namespace: 'foobar' },
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
-            apiUrl: "https://api.test-cluster-02.dev01.red-chesterfield.com:6443",
-            cloudProvider: "gcp",
+            apiUrl: 'https://api.test-cluster-02.dev01.red-chesterfield.com:6443',
+            cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             healthState: 'healthy',
@@ -88,8 +90,8 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
                 status: 'Stale',
                 managed: true,
                 support_level: 'eval',
-                creator_id: 'abc123'
-            }
+                creator_id: 'abc123',
+            },
         },
     },
 ]
@@ -104,7 +106,7 @@ const mockSecretResponse: Secret = {
     data: {
         'crds.yaml': 'test',
         'import.yaml': 'test',
-    }
+    },
 }
 
 const mockManagedCluster: ManagedCluster = {
@@ -276,7 +278,7 @@ describe('Import Discovered Cluster', () => {
             </MemoryRouter>
         )
     }
-    test('create discovered cluster', async() => {
+    test('create discovered cluster', async () => {
         // Allow for Project, ManagedCluster, and KAC to be created
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
@@ -288,10 +290,10 @@ describe('Import Discovered Cluster', () => {
         const { getByTestId, getByText, getAllByLabelText, queryByRole } = render(<Component />) // Render component
 
         await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
-        
+
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
         userEvent.click(getByText('discovery.import')) // Click Import cluster
-        
+
         await waitFor(() => expect(getByTestId('submit')).toBeInTheDocument()) // Wait for next page to render
 
         // Add labels

@@ -6,7 +6,6 @@ COPY backend/package.json backend/package-lock.json ./backend/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN npm run postinstall
 COPY ./ ./
-RUN npm test
 RUN npm run build
 RUN rm -rf backend/node_modules
 RUN cd backend && npm ci --only=production --no-optional

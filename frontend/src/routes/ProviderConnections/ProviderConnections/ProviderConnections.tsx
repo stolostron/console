@@ -90,7 +90,6 @@ export function ProviderConnectionsTable(props: {
 
     // const [deleteProviderConnection] = useDeleteProviderConnectionMutation({ client })
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    const history = useHistory()
 
     return (
         <Fragment>
