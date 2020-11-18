@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { createResource, listResources } from '../lib/resource-request'
+import { createResource, listResources, getResource } from '../lib/resource-request'
 import { IResource } from './resource'
 
 export const ManagedClusterApiVersion = 'cluster.open-cluster-management.io/v1'
@@ -19,7 +19,7 @@ export interface ManagedCluster extends IResource {
     apiVersion: ManagedClusterApiVersionType
     kind: ManagedClusterKindType
     metadata: V1ObjectMeta
-    spec: {
+    spec?: {
         hubAcceptsClient: boolean
         leaseDurationSeconds?: number
     }
@@ -58,5 +58,13 @@ export function listManagedClusters() {
     return listResources<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
+    })
+}
+
+export function getManagedCluster(name: string) {
+    return getResource<ManagedCluster>({
+        apiVersion: ManagedClusterApiVersion,
+        kind: ManagedClusterKind,
+        metadata: { name }
     })
 }

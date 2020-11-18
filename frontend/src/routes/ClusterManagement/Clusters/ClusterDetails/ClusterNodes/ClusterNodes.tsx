@@ -34,7 +34,7 @@ export function NodePoolsPageContent(props: { name: string; namespace: string })
         !data ||
         !mcis ||
         mcis.length === 0 ||
-        !mcis[0].status.nodeList ||
+        !mcis[0].status?.nodeList ||
         mcis[0].status.nodeList!.length === 0
     ) {
         return (

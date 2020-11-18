@@ -206,7 +206,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                         }
                     } else if (typeof (err as any)?.code === 'number') {
                         if (ResourceErrorCodes.includes((err as any)?.code)) {
-                            throw new ResourceError(err.message, (err as any)?.code)
+                            return err as any
                         } else {
                             throw new ResourceError(
                                 `Unknown error. code: ${(err as any)?.code}`,
