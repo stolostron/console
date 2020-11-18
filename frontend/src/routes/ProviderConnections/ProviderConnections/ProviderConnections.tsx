@@ -39,36 +39,10 @@ const AddConnectionBtn = () => {
 }
 
 export function ProviderConnectionsPageContent() {
-    const { loading, error, data, startPolling, refresh } = useQuery(listProviderConnections)
-    const { t } = useTranslation(['connection'])
-
-    usePageContext(!loading && !!data, AddConnectionBtn)
-
+    const { error, data, startPolling, refresh } = useQuery(listProviderConnections)
     useEffect(startPolling, [startPolling])
-
-    if (error) {
-        return <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
-    } else if (loading) {
-        return (
-            <div
-                style={{
-                    minHeight: '588px',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Spinner size="xl" />
-            </div>
-        )
-    } else if (!data || data.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState title={t('empty.title')} message={t('empty.subtitle')} action={<AddConnectionBtn />} />
-            </AcmPageCard>
-        )
-    }
+    usePageContext(data !== undefined && !!data, AddConnectionBtn)
+    if (error) return <AcmEmptyState title={'Error'} message={error.message} showIcon={false} />
     return <ProviderConnectionsTable providerConnections={data} refresh={refresh} deleteConnection={deleteResource} />
 }
 
@@ -79,7 +53,7 @@ function getProvider(labels: Record<string, string> | undefined) {
 }
 
 export function ProviderConnectionsTable(props: {
-    providerConnections: ProviderConnection[]
+    providerConnections?: ProviderConnection[]
     refresh: () => void
     deleteConnection: (providerConnection: ProviderConnection) => IRequestResult
 }) {

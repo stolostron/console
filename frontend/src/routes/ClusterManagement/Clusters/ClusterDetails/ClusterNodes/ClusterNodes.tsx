@@ -18,30 +18,14 @@ export function useManagedClusterInfos(namespace: string) {
 }
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { loading, error, data, startPolling, refresh } = useManagedClusterInfos(props.namespace)
+    const { error, data, startPolling, refresh } = useManagedClusterInfos(props.namespace)
     useEffect(startPolling, [startPolling])
 
     const mcis = data?.filter((m) => m.metadata.name === props.name)
-
-    if (loading) {
-        return <AcmLoadingPage />
-    } else if (error) {
+    if (error) {
         return <ErrorPage error={error} />
-    } else if (
-        !data ||
-        !mcis ||
-        mcis.length === 0 ||
-        !mcis[0].status.nodeList ||
-        mcis[0].status.nodeList!.length === 0
-    ) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState title="No nodes found." message={`Cluster ${props.name} does not contain any nodes.`} />
-            </AcmPageCard>
-        )
     }
-
-    return <NodesPoolsTable nodes={mcis[0].status.nodeList!} refresh={refresh} />
+    return <NodesPoolsTable nodes={mcis?.[0]?.status.nodeList!} refresh={refresh} />
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[]; refresh: () => void }) {

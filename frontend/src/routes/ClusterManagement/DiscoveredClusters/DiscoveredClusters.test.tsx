@@ -100,8 +100,8 @@ test('No Discovered Clusters', async () => {
     const { getByText } = render(<DiscoveredClustersPage />)
     await waitFor(() => expect(listNock.isDone()).toBeTruthy())
 
-    await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
-    await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
+    // await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
+    // await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
 
     await waitFor(() => expect(getByText('discovery.emptyStateHeader')).toBeInTheDocument())
     await waitFor(() => expect(getByText('discovery.emptyStateMsg')).toBeInTheDocument())

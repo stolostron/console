@@ -3,7 +3,6 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
-    AcmTableLoading,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
@@ -116,14 +115,9 @@ const ClusterActions = () => {
 }
 
 export function ClustersPageContent() {
-    const managedClustersQuery = useQuery(listManagedClusters)
-    useEffect(() => {
-        managedClustersQuery.startPolling(10 * 1000)
-        return managedClustersQuery.stopPolling
-    }, [managedClustersQuery])
-
-    usePageContext(!!managedClustersQuery.data, ClusterActions)
-
+    const { data, startPolling, refresh } = useQuery(listManagedClusters)
+    useEffect(startPolling, [startPolling])
+    usePageContext(!!data, ClusterActions)
     return (
         <AcmPageCard>
             <ClustersTable managedClusters={data} deleteCluster={deleteResource} refresh={refresh} />
@@ -148,7 +142,7 @@ export function ClustersTable(props: {
     return (
         <AcmTable<ManagedCluster>
             plural="clusters"
-            items={props.managedClusters ?? []}
+            items={props.managedClusters}
             columns={managedClusterCols}
             keyFn={mckeyFn}
             key="managedClustersTable"

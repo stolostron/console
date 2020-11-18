@@ -178,7 +178,7 @@ export async function startServer(): Promise<FastifyInstance> {
 
             try {
                 const clusteredRequest = await clusteredRequestPromise
-                return res.code(200).send(clusteredRequest.data)
+                return res.code(clusteredRequest.status).send(clusteredRequest.data)
             } catch {
                 // DO NOTHING - WILL QUERY BY PROJECTS
             }
