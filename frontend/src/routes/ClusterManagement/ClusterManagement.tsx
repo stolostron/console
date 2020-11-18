@@ -8,7 +8,7 @@ import { NavigationPath } from '../../NavigationPath'
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
-const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssets'))
+const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
 export const PageContext = React.createContext<{
     readonly actions: null | React.ReactNode

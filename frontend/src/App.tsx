@@ -11,7 +11,7 @@ const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters
 const ImportCommandPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCommand/ImportCommand'))
 const AddConnectionPage = lazy(() => import('./routes/ProviderConnections/AddConnection/AddConnection'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
-const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssets'))
+const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
 
 function App() {
     return (

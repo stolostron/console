@@ -2,7 +2,7 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import BareMetalAssetsPage from './BareMetalAssets'
+import BareMetalAssetsPage from './BareMetalAssetsPage'
 import { nockList, nockDelete } from '../../lib/nock-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 
