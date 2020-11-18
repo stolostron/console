@@ -1,9 +1,11 @@
 {
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "clipboardCopy": "Copy to clipboard",
-  "copied": "Copied",
-  "label.add": "Add label",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "clipboardCopy": "Copy to clipboard",
+    "copied": "Copied",
+    "label.add": "Add label",
 
-  "request.failed": "Request failed"
+    "request.failed": "Request failed",
+
+    "rbac.unauthorized": "You are not authorized to complete this action. See your cluster administrator for role-based access control information."
 }

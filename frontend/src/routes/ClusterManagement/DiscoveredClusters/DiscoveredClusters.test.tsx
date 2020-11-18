@@ -70,12 +70,13 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
 ]
 
 test('DiscoveredClustersPage', async () => {
-    nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
-
-    // Render ClustersPage
+    const listNock = nockList(
+        { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
+        mockDiscoveredClusters
+    )
     const { getByText } = render(<DiscoveredClustersPage />)
+    await waitFor(() => expect(listNock.isDone()).toBeTruthy())
 
-    // Wait for discovery related resources to appear
     await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
     await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
     await waitFor(() =>
@@ -95,13 +96,12 @@ test('DiscoveredClustersPage', async () => {
 })
 
 test('No Discovered Clusters', async () => {
-    nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-
-    // Render ClustersPage
+    const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
     const { getByText } = render(<DiscoveredClustersPage />)
+    await waitFor(() => expect(listNock.isDone()).toBeTruthy())
 
-    await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
-    await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
+    // await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
+    // await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
 
     await waitFor(() => expect(getByText('discovery.emptyStateHeader')).toBeInTheDocument())
     await waitFor(() => expect(getByText('discovery.emptyStateMsg')).toBeInTheDocument())
