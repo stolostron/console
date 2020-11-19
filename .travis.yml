@@ -25,6 +25,7 @@ jobs:
         - stage: build and push
           if: type != cron
           script:
+              - set -e
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
               - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/ubi-minimal
               - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
