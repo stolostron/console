@@ -1,4 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
+import { getResource } from '../lib/resource-request'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
@@ -10,7 +11,7 @@ export interface ClusterDeployment {
     apiVersion: ClusterDeploymentApiVersionType
     kind: ClusterDeploymentKindType
     metadata: V1ObjectMeta
-    spec: {
+    spec?: {
         clusterName: string
         baseDomain?: string
         installed: boolean
@@ -93,4 +94,12 @@ export interface ClusterDeployment {
         }
         webConsoleURL: string
     }
+}
+
+export function getClusterDeployment(namespace: string, name: string) {
+    return getResource<ClusterDeployment>({
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name, namespace }
+    })
 }
