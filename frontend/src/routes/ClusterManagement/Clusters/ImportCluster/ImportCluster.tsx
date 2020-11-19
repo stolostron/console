@@ -107,6 +107,7 @@ export function ImportClusterPageContent() {
                     {error && (
                         <AcmAlertGroup>
                             <AcmAlert
+                                isInline
                                 variant={AlertVariant.danger}
                                 title={t('common:request.failed')}
                                 subtitle={error}
