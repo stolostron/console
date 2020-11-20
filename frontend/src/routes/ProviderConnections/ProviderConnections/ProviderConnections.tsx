@@ -133,10 +133,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 message: `You are about to delete ${providerConnections.length} provider connections. The provider connections will no longer be available for creating new clusters, but clusters that were previously created using the connections are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: async () => {
-                                    const results = deleteResources(providerConnections)
-                                    const promiseResults = await Promise.allSettled(
-                                        results.map((result) => result.promise)
-                                    )
+                                    const promiseResults = await deleteResources(providerConnections).promise
                                     const resultErrors: string[] = []
                                     for (let index = 0; index < promiseResults.length; index++) {
                                         const promiseResult = promiseResults[index]

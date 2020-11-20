@@ -65,6 +65,6 @@ export function getManagedCluster(name: string) {
     return getResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
-        metadata: { name }
+        metadata: { name },
     })
 }

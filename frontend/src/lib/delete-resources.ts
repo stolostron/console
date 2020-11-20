@@ -1,6 +1,10 @@
 import { IResource } from '../resources/resource'
-import { deleteResource } from './resource-request'
+import { deleteResource, IRequestResult } from './resource-request'
 
-export function deleteResources(resources: IResource[]) {
-    return resources.map((resource) => deleteResource(resource))
+export function deleteResources(resources: IResource[]): IRequestResult<PromiseSettledResult<unknown>[]> {
+    const results = resources.map((resource) => deleteResource(resource))
+    return {
+        promise: Promise.allSettled(results.map((result) => result.promise)),
+        abort: () => results.forEach((result) => result.abort()),
+    }
 }

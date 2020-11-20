@@ -93,7 +93,7 @@ export function ImportClusterPageContent() {
             } else {
                 setError('Unknown error occurred.')
             }
-            await Promise.allSettled(deleteResources(createdResources))
+            await deleteResources(createdResources).promise
         } finally {
             setLoading(false)
         }

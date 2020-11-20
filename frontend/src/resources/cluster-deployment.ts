@@ -100,6 +100,6 @@ export function getClusterDeployment(namespace: string, name: string) {
     return getResource<ClusterDeployment>({
         apiVersion: ClusterDeploymentApiVersion,
         kind: ClusterDeploymentKind,
-        metadata: { name, namespace }
+        metadata: { name, namespace },
     })
 }

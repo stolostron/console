@@ -84,6 +84,6 @@ export function getManagedClusterInfo(namespace: string, name: string) {
     return getResource<ManagedClusterInfo>({
         apiVersion: ManagedClusterInfoApiVersion,
         kind: ManagedClusterInfoKind,
-        metadata: { namespace, name }
+        metadata: { namespace, name },
     })
 }
