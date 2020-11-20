@@ -1,7 +1,5 @@
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
 import {
+    AcmButton,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -13,31 +11,33 @@ import {
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import { NavigationPath } from '../../../NavigationPath'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
-import { createResource, IRequestResult } from '../../../lib/resource-request'
-import { useQuery } from '../../../lib/useQuery'
+import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
 import {
+    createProviderConnection,
     getProviderConnectionProviderID,
     ProviderConnection,
-    setProviderConnectionProviderID,
     ProviderConnectionApiVersion,
-    ProviderConnectionKind
+    ProviderConnectionKind,
+    setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
 
-const lowercaseAlphaNumberCharacters = 'abcdefghijklmnopqrstuvwxyz-1234567890'
+const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 function validateKubernetesDnsName(value: string, name: string) {
     if (value) {
         if (value.length > 63) return `${name} can contain at most 63 characters.`
         for (const char of value) {
-            if (!lowercaseAlphaNumberCharacters.includes(char))
+            if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
                 return `${name} can only contain lowercase alphanumeric characters or '-'`
         }
-        if (!'abcdefghijklmnopqrstuvwxyz0123456789'.includes(value[0]))
+        if (!lowercaseAlphaNumericCharacters.includes(value[0]))
             return `${name} must start with an alphanumeric character`
-        if (!'abcdefghijklmnopqrstuvwxyz0123456789'.includes(value[value.length - 1]))
+        if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
             return `${name} must end with an alphanumeric character`
     }
     return undefined
@@ -66,67 +66,108 @@ export default function AddConnectionPage() {
     const { t } = useTranslation(['connection'])
     return (
         <Page>
-            <AcmPageHeader title={t('addConnection.title')} breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]} />
+            <AcmPageHeader
+                title={t('addConnection.title')}
+                breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+            />
             <AddConnectionPageData />
         </Page>
     )
 }
 
 export function AddConnectionPageData() {
-    const projectsQuery = useQuery(listProjects)
+    const [projects, setProjects] = useState<Project[]>()
+    const [error, setError] = useState<Error>()
+    const [retry, setRetry] = useState(0)
+    useEffect(() => {
+        const result = listProjects()
+        result.promise
+            .then((projects) => {
+                setProjects(projects)
+                setError(undefined)
+            })
+            .catch(setError)
+        return result.abort
+    }, [retry])
 
-    if (projectsQuery.loading) {
+    if (error) {
+        return (
+            <ErrorPage
+                error={error}
+                actions={
+                    <AcmButton
+                        onClick={() => {
+                            setRetry(retry + 1)
+                        }}
+                    >
+                        Retry
+                    </AcmButton>
+                }
+            />
+        )
+    }
+    if (!projects) {
         return <AcmLoadingPage />
-    } else if (projectsQuery.error) {
-        return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
+    }
+    if (projects.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title="No namespaces found." message="No namespaces found." />
+                <AcmEmptyState
+                    title="No namespaces found."
+                    message="No namespaces found."
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
             </AcmPageCard>
         )
     }
-
-    return <AddConnectionPageContent projects={projectsQuery.data} createProviderConnection={createResource} />
+    return <AddConnectionPageContent projects={projects} />
 }
 
-export function AddConnectionPageContent(props: {
-    projects: Project[]
-    createProviderConnection: (input: ProviderConnection) => IRequestResult
-}) {
+export function AddConnectionPageContent(props: { projects: Project[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
-    const [providerConnection, setProviderConnection] = useState<Partial<ProviderConnection>>({
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
-        metadata: {},
+        metadata: {
+            name: '',
+            namespace: '',
+        },
         spec: {
-            awsAccessKeyID: undefined,
-            awsSecretAccessKeyID: undefined,
-            baseDomainResourceGroupName: undefined,
-            clientId: undefined,
-            clientsecret: undefined,
-            subscriptionid: undefined,
-            tenantid: undefined,
-            gcProjectID: undefined,
-            gcServiceAccountKey: undefined,
-            username: undefined,
-            password: undefined,
-            vcenter: undefined,
-            cacertificate: undefined,
-            vmClusterName: undefined,
-            datacenter: undefined,
-            datastore: undefined,
-            libvirtURI: undefined,
+            awsAccessKeyID: '',
+            awsSecretAccessKeyID: '',
+            baseDomainResourceGroupName: '',
+            clientId: '',
+            clientsecret: '',
+            subscriptionid: '',
+            tenantid: '',
+            gcProjectID: '',
+            gcServiceAccountKey: '',
+            username: '',
+            password: '',
+            vcenter: '',
+            cacertificate: '',
+            vmClusterName: '',
+            datacenter: '',
+            datastore: '',
+            libvirtURI: '',
+            sshKnownHosts: '',
             baseDomain: '',
             pullSecret: '',
             sshPrivatekey: '',
             sshPublickey: '',
-            isOcp: undefined,
         },
     })
-    function updateProviderConnection(update: (providerConnection: Partial<ProviderConnection>) => void) {
+    function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
         setProviderConnection(copy)
@@ -158,11 +199,10 @@ export function AddConnectionPageContent(props: {
                     id="connectionName"
                     label={t('addConnection.connectionName.label')}
                     placeholder={t('addConnection.connectionName.placeholder')}
-                    value={providerConnection.metadata?.name}
+                    value={providerConnection.metadata.name}
                     onChange={(name) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata!.name = name
-                            return providerConnection
+                            providerConnection.metadata.name = name
                         })
                     }}
                     validation={(value) => validateKubernetesDnsName(value, 'Connection name')}
@@ -173,10 +213,10 @@ export function AddConnectionPageContent(props: {
                     id="namespaceName"
                     label={t('addConnection.namespaceName.label')}
                     placeholder={t('addConnection.namespaceName.placeholder')}
-                    value={providerConnection.metadata?.namespace}
+                    value={providerConnection.metadata.namespace}
                     onChange={(namespace) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata!.namespace = namespace
+                            providerConnection.metadata.namespace = namespace
                         })
                     }}
                     isRequired
@@ -513,8 +553,8 @@ export function AddConnectionPageContent(props: {
                                 delete providerConnection.spec!.datastore
                             }
                             delete providerConnection.data
-                            props
-                                .createProviderConnection(providerConnection as ProviderConnection)
+
+                            createProviderConnection(providerConnection)
                                 .promise.then(() => {
                                     history.push(NavigationPath.providerConnections)
                                 })

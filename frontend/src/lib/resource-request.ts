@@ -36,6 +36,7 @@ export enum ResourceErrorCode {
     BadGateway = 502,
     ServiceUnavailable = 503,
     GatewayTimeout = 504,
+    NetworkError = 700,
     RequestCancelled = 800,
     ConnectionReset = 900,
     Unknown = 999,
@@ -86,7 +87,15 @@ export function listResources<Resource extends IResource>(
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
-        promise: result.promise.then((result) => result.items as Resource[]),
+        promise: result.promise.then((result) =>
+            (result.items as Resource[]).map((item) => ({
+                ...item,
+                ...{
+                    apiVersion: resource.apiVersion,
+                    kind: resource.kind,
+                },
+            }))
+        ),
         abort: result.abort,
     }
 }
@@ -189,6 +198,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                 return response.data
             })
             .catch((err) => {
+                console.log(err)
                 if (Axios.isCancel(err)) {
                     throw new ResourceError('Request cancelled', ResourceErrorCode.RequestCancelled)
                 } else if (err instanceof Error) {
@@ -213,9 +223,11 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                                 ResourceErrorCode.Unknown
                             )
                         }
+                    } else if (err.message === 'Network Error') {
+                        throw new ResourceError('Network error', ResourceErrorCode.NetworkError)
                     }
                 }
-                throw new ResourceError('Unknown error', ResourceErrorCode.Unknown)
+                throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
             }),
         abort: cancelTokenSource.cancel,
     }

@@ -381,7 +381,7 @@ export async function startServer(): Promise<FastifyInstance> {
         done()
     })
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         fastify.listen(
             process.env.PORT ? Number(process.env.PORT) : undefined,
             '0.0.0.0',

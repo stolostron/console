@@ -14,7 +14,7 @@ export const ClosedConfirmModalProps: IConfirmModalProps = {
     open: false,
     confirm: () => {},
     cancel: () => {},
-    title: '',
+    title: 'CLOSED', // Must have a title
     message: '',
 }
 

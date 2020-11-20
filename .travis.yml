@@ -11,7 +11,7 @@ before_script:
 
 jobs:
     include:
-        - stage: test lint check
+        - stage: build test lint check push
           if: type != cron
           language: node_js
           node_js: "12"
@@ -22,7 +22,7 @@ jobs:
               - npm run check
               - npm test
 
-        - stage: build and push
+        - stage: build test lint check push
           if: type != cron
           script:
               - set -e
