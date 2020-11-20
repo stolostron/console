@@ -81,10 +81,10 @@ export function nockClusterList<Resource extends IResource>(
     )
 }
 
-export function nockCreate(resource: IResource, response: IResource, statusCode: number = 201) {
+export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .post(apiProxyUrl + getResourceApiPath(resource), JSON.stringify(resource))
-        .reply(statusCode, response, {
+        .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',

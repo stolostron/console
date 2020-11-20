@@ -1,9 +1,16 @@
-import { Card, CardBody, EmptyState, EmptyStateBody, EmptyStateIcon, PageSection, Title } from '@patternfly/react-core'
-import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import React from 'react'
+import {
+    Card,
+    CardBody,
+    EmptyState,
+    EmptyStateBody,
+    EmptyStatePrimary,
+    PageSection,
+    Title,
+} from '@patternfly/react-core'
+import React, { ReactNode } from 'react'
 import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
-export function ErrorState(props: { error: Error }) {
+export function ErrorState(props: { error: Error; actions?: ReactNode }) {
     let errorTitle = 'Error'
     let errorMessage = props.error.message
     if (props.error instanceof ResourceError) {
@@ -35,6 +42,10 @@ export function ErrorState(props: { error: Error }) {
             case ResourceErrorCode.InternalServerError:
                 errorTitle = 'Internal server error'
                 errorMessage = 'There was an unforseen error when accessing resources.'
+                break
+            case ResourceErrorCode.NetworkError:
+                errorTitle = 'Network error'
+                errorMessage = 'There was a network error when accessing resources.'
                 break
             case ResourceErrorCode.NotFound:
                 errorTitle = 'Not found'
@@ -76,21 +87,21 @@ export function ErrorState(props: { error: Error }) {
     }
     return (
         <EmptyState>
-            <EmptyStateIcon icon={ExclamationCircleIcon} />
             <Title size="lg" headingLevel="h4">
                 {errorTitle}
             </Title>
             <EmptyStateBody>{errorMessage}</EmptyStateBody>
+            {props.actions && <EmptyStatePrimary>{props.actions}</EmptyStatePrimary>}
         </EmptyState>
     )
 }
 
-export function ErrorPage(props: { error: Error }) {
+export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
     return (
         <PageSection>
             <Card>
                 <CardBody>
-                    <ErrorState error={props.error} />
+                    <ErrorState {...props} />
                 </CardBody>
             </Card>
         </PageSection>

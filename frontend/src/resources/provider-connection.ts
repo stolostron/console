@@ -45,7 +45,6 @@ export interface ProviderConnection extends V1Secret {
         pullSecret: string
         sshPrivatekey: string
         sshPublickey: string
-        isOcp?: boolean
     }
 }
 
@@ -79,26 +78,37 @@ export function listProviderConnections() {
     )
     return {
         promise: result.promise.then((providerConnections) => {
-            for (const providerConnection of providerConnections) {
-                if (providerConnection?.data?.metadata) {
-                    try {
-                        const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
-                        providerConnection.spec = YAML.parse(yaml)
-                    } catch {}
-                }
-                providerConnection.apiVersion = ProviderConnectionApiVersion
-                providerConnection.kind = ProviderConnectionKind
-            }
-            return providerConnections
+            return providerConnections.map(unpackProviderConnection)
         }),
         abort: result.abort,
     }
 }
 
 export function createProviderConnection(providerConnection: ProviderConnection) {
-    const copy = { ...providerConnection }
-    delete copy.data
-    copy.stringData = { metadata: YAML.stringify(copy.spec) }
-    delete copy.spec
-    return createResource<ProviderConnection>(copy)
+    return createResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
+}
+
+export function unpackProviderConnection(providerConnection: ProviderConnection) {
+    if (providerConnection.data) {
+        try {
+            const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
+            providerConnection.spec = YAML.parse(yaml)
+        } catch {}
+    } else if (providerConnection.stringData) {
+        try {
+            providerConnection.spec = YAML.parse(providerConnection.stringData.metadata)
+        } catch {}
+    }
+    delete providerConnection.stringData
+    delete providerConnection.data
+    return providerConnection
+}
+
+export function packProviderConnection(providerConnection: ProviderConnection) {
+    if (providerConnection.spec) {
+        providerConnection.stringData = { metadata: YAML.stringify(providerConnection.spec) }
+    }
+    delete providerConnection.spec
+    delete providerConnection.data
+    return providerConnection
 }
