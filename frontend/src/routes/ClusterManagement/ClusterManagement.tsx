@@ -4,7 +4,7 @@ import React, { Fragment, lazy, Suspense, useContext, useState, useEffect } from
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
-import { getFeatureGate, FeatureGate } from '../../resources/feature-gate'
+import { getFeatureGate } from '../../resources/feature-gate'
 
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
