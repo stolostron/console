@@ -59,7 +59,7 @@ export function nockList<Resource extends IResource>(
 
 export function nockClusterList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
-    resources: Resource[],
+    resources: Resource[] | IResource,
     labels?: string[]
 ) {
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
@@ -79,6 +79,38 @@ export function nockClusterList<Resource extends IResource>(
             'Access-Control-Allow-Credentials': 'true',
         }
     )
+}
+
+export function nockNamespacedList<Resource extends IResource>(
+    resource: { apiVersion: string; kind: string; metadata: { namespace?: string } },
+    resources: Resource[] | IResource,
+    labels?: string[]
+) {
+    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        join(apiProxyUrl, getResourceApiPath(resource))
+    )
+
+    if (labels) {
+        networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
+    }
+
+    if (Array.isArray(resources)) {
+        return networkMock.reply(
+            200,
+            { items: resources },
+            {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        )
+    } else {
+        return networkMock.reply(200, resources, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+    }
 }
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
