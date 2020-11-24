@@ -13,7 +13,7 @@ export interface ManagedClusterAddOn extends IResource {
     kind: ManagedClusterAddOnKindType
     metadata: V1ObjectMeta
     spec: {}
-    status: {
+    status?: {
         conditions: {
             lastTransitionTime: string
             message: string

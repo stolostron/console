@@ -31,7 +31,7 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         }
         return stopPollingFn
     }, [cma.startPolling, cma.stopPolling, mca.startPolling, mca.stopPolling, cma, mca])
-
+   
     if (cma.error) {
         return <ErrorPage error={cma.error} />
     } else if (mca.error) {
