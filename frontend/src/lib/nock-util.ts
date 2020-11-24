@@ -7,7 +7,7 @@ import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
-        .reply(200, resource ?? response, {
+        .reply(200, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
@@ -115,4 +115,13 @@ export const mockBadRequestStatus = {
     status: 'Failure',
     message: 'Bad request.',
     code: 400,
+}
+
+export const mockNotFoundStatus = {
+    kind: StatusKind,
+    apiVersion: StatusApiVersion,
+    metadata: {},
+    status: 'Failure',
+    message: 'Not Found.',
+    code: 404,
 }
