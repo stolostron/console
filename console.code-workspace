@@ -11,6 +11,9 @@
         }
     ],
     "settings": {
-        "jest.disabledWorkspaceFolders": ["docs"]
+        "jest.disabledWorkspaceFolders": [
+            "docs"
+        ],
+        "typescript.tsdk": "frontend/node_modules/typescript/lib"
     }
 }
