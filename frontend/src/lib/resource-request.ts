@@ -198,7 +198,6 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                 return response.data
             })
             .catch((err) => {
-                console.log(err)
                 if (Axios.isCancel(err)) {
                     throw new ResourceError('Request cancelled', ResourceErrorCode.RequestCancelled)
                 } else if (err instanceof Error) {
