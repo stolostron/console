@@ -10,6 +10,7 @@ const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
 const AddConnectionPage = lazy(() => import('./routes/ProviderConnections/AddConnection/AddConnection'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
+const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                 <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
                 <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
                 <Route exact path={NavigationPath.addConnection} component={AddConnectionPage} />
+                <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                 <Route exact path={NavigationPath.createBareMetalAssets} component={CreateBareMetalAssetPage} />
                 <Route path={NavigationPath.clusterManagement} component={ClusterManagementPage} />
                 <Route exact path="*">

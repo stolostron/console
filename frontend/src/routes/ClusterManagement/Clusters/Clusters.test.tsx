@@ -21,7 +21,5 @@ test('Clusters Page', async () => {
             <ClustersPage />
         </MemoryRouter>
     )
-    expect(getByText('managed.createCluster')).toBeInTheDocument()
-    expect(getByText('managed.importCluster')).toBeInTheDocument()
     await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 })

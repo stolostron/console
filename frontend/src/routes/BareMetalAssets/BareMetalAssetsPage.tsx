@@ -1,73 +1,41 @@
-import {
-    AcmLabels,
-    AcmLoadingPage,
-    AcmPageCard,
-    AcmTable,
-    AcmEmptyState,
-    AcmPageHeader,
-} from '@open-cluster-management/ui-components'
+import { AcmEmptyState, AcmLabels, AcmPageCard, AcmPageHeader, AcmTable } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
+import { BareMetalAsset, BMAStatusMessage, GetLabels, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
 import { ErrorPage } from '../../components/ErrorPage'
-import {
-    listBareMetalAssets,
-    BareMetalAsset,
-    BMAStatusMessage,
-    GetLabels,
-} from '../../../src/resources/bare-metal-asset'
-import { useQuery } from '../../lib/useQuery'
-import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { deleteResources } from '../../lib/delete-resources'
+import { deleteResource, IRequestResult } from '../../lib/resource-request'
+import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 
 export default function BareMetalAssetsPage() {
+    const { t } = useTranslation(['bma'])
     return (
         <Page>
-            <AcmPageHeader title={'Bare-metal Assets'} />
+            <AcmPageHeader title={t('bmas')} />
             <BareMetalAssets />
         </Page>
     )
 }
 
 export function BareMetalAssets() {
-    const { data, loading, error, startPolling, stopPolling } = useQuery(listBareMetalAssets)
-    useEffect(() => {
-        startPolling(5 * 1000)
-        return stopPolling
-    }, [startPolling, stopPolling])
-    const { t } = useTranslation(['bma'])
-
-    if (loading) {
-        return <AcmLoadingPage />
-    } else if (error) {
+    const { data, error, startPolling } = useQuery(listBareMetalAssets)
+    useEffect(startPolling, [startPolling])
+    if (error) {
         return <ErrorPage error={error} />
-    } else if (!data || data.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('bareMetalAsset.emptyState.title')}
-                    message={t('bareMetalAsset.emptyState.title')}
-                />
-            </AcmPageCard>
-        )
     }
-
     return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource}></BareMetalAssetsTable>
 }
-// TODO: use deleteResources instead of deleteResource
-export function deleteBareMetalAssets(
-    bareMetalAssets: BareMetalAsset[],
-) {
-    const promises: Array<Promise<any>> = []
 
-    Promise.all(deleteResources(bareMetalAssets))
+export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
+    return deleteResources(bareMetalAssets).promise
 }
 
 export function BareMetalAssetsTable(props: {
-    bareMetalAssets: BareMetalAsset[]
+    bareMetalAssets?: BareMetalAsset[]
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
 }) {
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
@@ -149,7 +117,9 @@ export function BareMetalAssetsTable(props: {
                                 }),
                                 open: true,
                                 confirm: () => {
-                                    deleteBareMetalAssets(bareMetalAssets)
+                                    void deleteBareMetalAssets(bareMetalAssets)
+                                    // TODO refresh
+                                    // TODO errors
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {

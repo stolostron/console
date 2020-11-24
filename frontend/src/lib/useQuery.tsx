@@ -13,20 +13,21 @@ export function useQuery<T extends IResource>(restFunc: () => IRequestResult<T[]
             const result = restFunc()
             result.promise
                 .then((data) => {
-                    setLoading(false)
                     setData(data)
+                    setLoading(false)
                     setError(undefined)
                 })
                 .catch((err: Error) => {
                     // TODO check for
                     if (err.name === 'AbortError') {
+                        setError(err)
                     } else {
-                        setLoading(false)
-                        setData(undefined)
                         setError(err)
                     }
+                    setLoading(false)
+                    setData(undefined)
                 })
-            // return result.abort
+            return result.abort
         },
         [restFunc]
     )
@@ -40,12 +41,13 @@ export function useQuery<T extends IResource>(restFunc: () => IRequestResult<T[]
         }
     }, [refresh, polling])
 
-    function startPolling(interval: number) {
-        setPolling(interval)
-    }
-
     function stopPolling() {
         setPolling(0)
+    }
+
+    function startPolling() {
+        setPolling(5 * 1000)
+        return stopPolling
     }
 
     return { error, loading, data, startPolling, stopPolling, refresh }

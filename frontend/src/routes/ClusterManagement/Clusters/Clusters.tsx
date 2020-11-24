@@ -5,13 +5,16 @@ import {
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import React, { useEffect } from 'react'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { listManagedClusters, ManagedCluster } from '../../../resources/managed-cluster'
+import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
     {
@@ -72,20 +75,52 @@ export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
-export function ClustersPageContent() {
-    const managedClustersQuery = useQuery(listManagedClusters)
-    useEffect(() => {
-        managedClustersQuery.startPolling(10 * 1000)
-        return managedClustersQuery.stopPolling
-    }, [managedClustersQuery])
+const ClusterActions = () => {
+    const [open, setOpen] = useState<boolean>(false)
+    const { push } = useHistory()
+    const { t } = useTranslation(['cluster'])
+    return (
+        <Dropdown
+            isOpen={open}
+            toggle={
+                <DropdownToggle
+                    onToggle={() => setOpen(!open)}
+                    toggleIndicator={CaretDownIcon}
+                    isPrimary
+                    id="cluster-actions"
+                >
+                    {t('managed.addCluster')}
+                </DropdownToggle>
+            }
+            dropdownItems={[
+                <DropdownItem
+                    key="create"
+                    component={Link}
+                    onClick={() => push(NavigationPath.createCluster)}
+                    id="create-cluster"
+                >
+                    {t('managed.createCluster')}
+                </DropdownItem>,
+                <DropdownItem
+                    key="import"
+                    component={Link}
+                    onClick={() => push(NavigationPath.importCluster)}
+                    id="import-cluster"
+                >
+                    {t('managed.importCluster')}
+                </DropdownItem>,
+            ]}
+        />
+    )
+}
 
+export function ClustersPageContent() {
+    const { data, startPolling, refresh } = useQuery(listManagedClusters)
+    useEffect(startPolling, [startPolling])
+    usePageContext(!!data, ClusterActions)
     return (
         <AcmPageCard>
-            <ClustersTable
-                managedClusters={managedClustersQuery.data}
-                deleteCluster={deleteResource}
-                refresh={managedClustersQuery.refresh}
-            />
+            <ClustersTable managedClusters={data} deleteCluster={deleteResource} refresh={refresh} />
         </AcmPageCard>
     )
 }
@@ -96,7 +131,7 @@ export function ClustersTable(props: {
     refresh: () => void
 }) {
     sessionStorage.removeItem('DiscoveredClusterName')
-    sessionStorage.removeItem("DiscoveredClusterConsoleURL")
+    sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
     const { t } = useTranslation(['cluster'])
 
@@ -104,26 +139,14 @@ export function ClustersTable(props: {
         return cluster.metadata.uid!
     }
 
-    const history = useHistory()
     return (
         <AcmTable<ManagedCluster>
             plural="clusters"
-            items={props.managedClusters ?? []}
+            items={props.managedClusters}
             columns={managedClusterCols}
             keyFn={mckeyFn}
             key="managedClustersTable"
-            tableActions={[
-                {
-                    id: 'createCluster',
-                    title: t('managed.createCluster'),
-                    click: () => history.push(NavigationPath.createCluster),
-                },
-                {
-                    id: 'importCluster',
-                    title: t('managed.importCluster'),
-                    click: () => history.push(NavigationPath.importCluster),
-                },
-            ]}
+            tableActions={[]}
             bulkActions={[
                 {
                     id: 'destroyCluster',
