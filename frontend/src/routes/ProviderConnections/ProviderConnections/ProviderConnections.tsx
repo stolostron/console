@@ -31,6 +31,8 @@ export default function ProviderConnectionsPage() {
     )
 }
 
+// Ingoring coverage since this will move one the console header navigation is done
+/* istanbul ignore next */
 const AddConnectionBtn = () => {
     const { t } = useTranslation(['connection'])
     const { push } = useHistory()
@@ -104,7 +106,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                     },
                     {
                         header: t('table.header.provider'),
-                        sort: (a: ProviderConnection, b: ProviderConnection) => {
+                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
                             return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
                         },
                         cell: (item: ProviderConnection) => {
