@@ -1,8 +1,8 @@
 import { render, waitFor } from '@testing-library/react'
-import { BrowserRouter, MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import React from 'react'
 import { nockGet } from '../../lib/nock-util'
-import { getFeatureGate, FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../../resources/feature-gate'
+import { FeatureGate } from '../../resources/feature-gate'
 import ClusterManagementPage from './ClusterManagement'
 
 const mockFeatureGate: FeatureGate = {
