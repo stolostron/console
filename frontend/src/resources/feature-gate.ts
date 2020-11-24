@@ -2,17 +2,17 @@ import { V1ObjectMeta } from '@kubernetes/client-node'
 import { getResource, listResources } from '../lib/resource-request'
 import { IResource } from './resource'
 
-export const FeatureGateApiVersion = "config.openshift.io/v1"
-export type FeatureGateApiVersionType = "config.openshift.io/v1"
+export const FeatureGateApiVersion = 'config.openshift.io/v1'
+export type FeatureGateApiVersionType = 'config.openshift.io/v1'
 
-export const FeatureGateKind = "FeatureGate"
-export type FeatureGateKindType = "FeatureGate"
+export const FeatureGateKind = 'FeatureGate'
+export type FeatureGateKindType = 'FeatureGate'
 
 export interface FeatureGate extends IResource {
     apiVersion: FeatureGateApiVersionType
     kind: FeatureGateKindType
     metadata: V1ObjectMeta
-    spec ?: {
+    spec?: {
         featureSet: string
     }
 }
