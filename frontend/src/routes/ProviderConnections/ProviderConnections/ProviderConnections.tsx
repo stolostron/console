@@ -121,7 +121,9 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         cell: 'metadata.namespace',
                     },
                 ]}
-                keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
+                keyFn={(providerConnection) => {
+                    return providerConnection.metadata?.uid as string
+                }}
                 tableActions={[]}
                 bulkActions={[
                     {
