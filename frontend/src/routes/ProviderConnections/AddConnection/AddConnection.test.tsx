@@ -22,6 +22,7 @@ const mockProject: Project = {
 const mockProjects: Project[] = [mockProject]
 
 describe('add connection page', () => {
+    jest.setTimeout(10000) // Test sometimes times out
     test('should create aws provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
