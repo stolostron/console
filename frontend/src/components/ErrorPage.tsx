@@ -13,7 +13,9 @@ import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {
     let errorTitle = 'Error'
     let errorMessage = props.error.message
+    /* istanbul ignore else */
     if (props.error instanceof ResourceError) {
+        /* istanbul ignore next */
         switch (props.error.code) {
             case ResourceErrorCode.BadGateway:
                 errorTitle = 'Bad gateway'

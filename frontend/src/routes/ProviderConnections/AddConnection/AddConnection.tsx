@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
+import { validateKubernetesDnsName, validatePrivateSshKey, validatePublicSshKey } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
 import {
@@ -26,41 +27,6 @@ import {
     ProviderConnectionKind,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
-
-const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
-function validateKubernetesDnsName(value: string, name: string) {
-    if (value) {
-        if (value.length > 63) return `${name} can contain at most 63 characters.`
-        for (const char of value) {
-            if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-                return `${name} can only contain lowercase alphanumeric characters or '-'`
-        }
-        if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-            return `${name} must start with an alphanumeric character`
-        if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-            return `${name} must end with an alphanumeric character`
-    }
-    return undefined
-}
-
-function validatePublicSshKey(value: string) {
-    if (value) {
-        const regExp = new RegExp('^ssh-.*')
-        if (!regExp.test(value.split('\n').join('').split('\r').join('').trim()))
-            return 'Must be a valid public ssh key.'
-    }
-    return undefined
-}
-
-function validatePrivateSshKey(value: string) {
-    if (value) {
-        const regExp = new RegExp('^-----BEGIN.*KEY-----$')
-        if (!regExp.test(value.split('\n').join('').split('\r').join('').trim()))
-            return 'Must be a valid private ssh key.'
-    }
-
-    return undefined
-}
 
 export default function AddConnectionPage() {
     const { t } = useTranslation(['connection'])
@@ -567,9 +533,11 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     </AcmSubmit>
                     <Button
                         variant="link"
-                        onClick={() => {
-                            history.push(NavigationPath.providerConnections)
-                        }}
+                        onClick={
+                            /* istanbul ignore next */ () => {
+                                history.push(NavigationPath.providerConnections)
+                            }
+                        }
                     >
                         Cancel
                     </Button>

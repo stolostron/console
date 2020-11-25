@@ -23,6 +23,13 @@ export interface IRequestResult<ResultType = unknown> {
     abort: () => void
 }
 
+export function resultsSettled<T>(results: IRequestResult<T>[]): IRequestResult<PromiseSettledResult<T>[]> {
+    return {
+        promise: Promise.allSettled(results.map((result) => result.promise)),
+        abort: () => results.forEach((result) => result.abort()),
+    }
+}
+
 export enum ResourceErrorCode {
     BadRequest = 400,
     Unauthorized = 401,
