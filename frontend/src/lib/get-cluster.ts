@@ -1,6 +1,12 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { getClusterDeployment, listClusterDeployments, ClusterDeployment } from '../resources/cluster-deployment'
-import { getManagedClusterInfo, listMCIs, ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
+import {
+    getManagedClusterInfo,
+    listMCIs,
+    ManagedClusterInfo,
+    NodeInfo,
+    OpenShiftDistributionInfo,
+} from '../resources/managed-cluster-info'
 import {
     listCertificateSigningRequests,
     CertificateSigningRequest,
@@ -27,7 +33,7 @@ export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
-    distributionVersion:  DistributionInfo | undefined
+    distributionVersion: DistributionInfo | undefined
     labels: { [key: string]: string } | undefined
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
@@ -78,8 +84,17 @@ export function getAllClusters(): IRequestResult<
     }
 }
 
-export function mapClusters(clusterDeployments: ClusterDeployment[], managedClusterInfos: ManagedClusterInfo[], certificateSigningRequests: CertificateSigningRequest[]) {
-    const uniqueClusterNames = Array.from(new Set([...clusterDeployments.map((cd) => cd.metadata.name), ...managedClusterInfos.map((mc) => mc.metadata.name)]))
+export function mapClusters(
+    clusterDeployments: ClusterDeployment[],
+    managedClusterInfos: ManagedClusterInfo[],
+    certificateSigningRequests: CertificateSigningRequest[]
+) {
+    const uniqueClusterNames = Array.from(
+        new Set([
+            ...clusterDeployments.map((cd) => cd.metadata.name),
+            ...managedClusterInfos.map((mc) => mc.metadata.name),
+        ])
+    )
     return uniqueClusterNames.map((cluster) => {
         const clusterDeployment = clusterDeployments.find((cd) => cd.metadata?.name === cluster)
         const managedClusterInfo = managedClusterInfos.find((mc) => mc.metadata?.name === cluster)
@@ -115,11 +130,17 @@ export function getDistributionInfo(managedClusterInfo: ManagedClusterInfo | und
     return { k8sVersion, ocp }
 }
 
-export function getKubeApiServer(clusterDeployment: ClusterDeployment | undefined, managedClusterInfo: ManagedClusterInfo | undefined) {
+export function getKubeApiServer(
+    clusterDeployment: ClusterDeployment | undefined,
+    managedClusterInfo: ManagedClusterInfo | undefined
+) {
     return clusterDeployment?.status?.apiURL ?? managedClusterInfo?.spec?.masterEndpoint
 }
 
-export function getConsoleUrl(clusterDeployment: ClusterDeployment | undefined, managedClusterInfo: ManagedClusterInfo | undefined) {
+export function getConsoleUrl(
+    clusterDeployment: ClusterDeployment | undefined,
+    managedClusterInfo: ManagedClusterInfo | undefined
+) {
     return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
 }
 
@@ -161,20 +182,20 @@ export function getClusterStatus(
         const provisionFailed = checkForCondition('ProvisionedFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
-    
+
         // provision success
         if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
-    
-        // deprovisioning
+
+            // deprovisioning
         } else if (clusterDeployment.metadata.deletionTimestamp) {
             cdStatus = ClusterStatus.destroying
-    
-        // provision/deprovision failure
+
+            // provision/deprovision failure
         } else if (provisionFailed || provisionLaunchError || deprovisionLaunchError) {
             cdStatus = ClusterStatus.failed
-    
-        // provisioning - default
+
+            // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.creating
         }
@@ -196,11 +217,11 @@ export function getClusterStatus(
     if (managedClusterInfo.metadata.deletionTimestamp) {
         mcStatus = ClusterStatus.detaching
 
-    // not accepted
+        // not accepted
     } else if (!clusterAccepted) {
         mcStatus = ClusterStatus.notaccepted
 
-    // not joined
+        // not joined
     } else if (!clusterJoined) {
         mcStatus = ClusterStatus.pendingimport
 

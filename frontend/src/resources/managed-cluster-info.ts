@@ -23,7 +23,7 @@ export type OpenShiftDistributionInfo = {
     availableUpdates: string[]
     desiredVersion: string
     upgradeFailed: boolean
-} 
+}
 
 export interface ManagedClusterInfo extends IResource {
     apiVersion: ManagedClusterInfoApiVersionType
