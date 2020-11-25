@@ -173,16 +173,12 @@ export async function startServer(): Promise<FastifyInstance> {
 
                 // in certain cases we only want to query managed namespaces only for performance
                 const parsedQuery = querystring.parse(query)
-                console.log('first parsed query', parsedQuery)
-                if (parsedQuery['managedNamespacesOnly'] !== undefined) {
+                if (parsedQuery['managedNamespacesOnly']) {
                     namespaceQuery = '?labelSelector="cluster.open-cluster-management.io/managedCluster"'
-                    console.log('parsedQuery', parsedQuery)
                     delete parsedQuery['managedNamespacesOnly']
                     query = querystring.stringify(parsedQuery)
                 }
             }
-
-            console.log('query', query)
 
             // Try the query at a cluster scope in case the use has permissions
             const clusteredRequestPromise = kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query)

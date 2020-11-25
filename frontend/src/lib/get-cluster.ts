@@ -174,11 +174,8 @@ export function getClusterStatus(
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined
 ) {
-    const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
-        const matchedCondition = conditions.find((c) => c.type === condition)
-        console.log('matchedCondition', matchedCondition)
-        return matchedCondition?.status === 'True'
-    }
+    const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
+        conditions.find((c) => c.type === condition)?.status === 'True'
 
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
@@ -187,8 +184,6 @@ export function getClusterStatus(
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
-
-        console.log('provisionedFailed', provisionFailed)
 
         // provision success
         if (clusterDeployment.spec?.installed) {
