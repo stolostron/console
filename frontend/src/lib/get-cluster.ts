@@ -46,6 +46,7 @@ export type Cluster = {
 export type DistributionInfo = {
     k8sVersion: string | undefined
     ocp: OpenShiftDistributionInfo | undefined
+    displayVersion: string | undefined
 }
 
 export type HiveSecrets = {
@@ -85,9 +86,9 @@ export function getAllClusters(): IRequestResult<
 }
 
 export function mapClusters(
-    clusterDeployments: ClusterDeployment[],
-    managedClusterInfos: ManagedClusterInfo[],
-    certificateSigningRequests: CertificateSigningRequest[]
+    clusterDeployments: ClusterDeployment[] = [],
+    managedClusterInfos: ManagedClusterInfo[] = [],
+    certificateSigningRequests: CertificateSigningRequest[] = []
 ) {
     const uniqueClusterNames = Array.from(
         new Set([
@@ -96,8 +97,8 @@ export function mapClusters(
         ])
     )
     return uniqueClusterNames.map((cluster) => {
-        const clusterDeployment = clusterDeployments.find((cd) => cd.metadata?.name === cluster)
-        const managedClusterInfo = managedClusterInfos.find((mc) => mc.metadata?.name === cluster)
+        const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
+        const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
         return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests)
     })
 }
@@ -127,7 +128,8 @@ export function getDistributionInfo(managedClusterInfo: ManagedClusterInfo | und
 
     const k8sVersion = managedClusterInfo.status?.version
     const ocp = managedClusterInfo.status?.distributionInfo?.ocp
-    return { k8sVersion, ocp }
+    const displayVersion = ocp?.version ? `OpenShift ${ocp.version}` : k8sVersion
+    return { k8sVersion, ocp, displayVersion }
 }
 
 export function getKubeApiServer(
@@ -172,16 +174,21 @@ export function getClusterStatus(
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined
 ) {
-    const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
-        conditions.find((c) => c.type === condition)?.status === 'True'
+    const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+        const matchedCondition = conditions.find((c) => c.type === condition)
+        console.log('matchedCondition', matchedCondition)
+        return matchedCondition?.status === 'True'
+    }
 
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
-        const provisionFailed = checkForCondition('ProvisionedFailed', cdConditions)
+        const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
+
+        console.log('provisionedFailed', provisionFailed)
 
         // provision success
         if (clusterDeployment.spec?.installed) {
