@@ -1,5 +1,5 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
-import { listNamespacedResources, getResource } from '../lib/resource-request'
+import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
+import { listNamespacedResources, listResources, getResource } from '../lib/resource-request'
 import { IResource } from './resource'
 
 export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
@@ -24,16 +24,10 @@ export interface ManagedClusterInfo extends IResource {
     metadata: V1ObjectMeta
     spec?: {
         loggingCA?: string
-        MasterEndpoiont?: string
+        masterEndpoint?: string
     }
     status?: {
-        conditions?: {
-            lastTransitionTime: string
-            message: string
-            reason: string
-            status: string
-            type: string
-        }[]
+        conditions?: V1CustomResourceDefinitionCondition[]
         version?: string
         kubeVendor?: string
         cloudVendor?: string
@@ -77,6 +71,13 @@ export function listManagedClusterInfos(namespace: string) {
         apiVersion: ManagedClusterInfoApiVersion,
         kind: ManagedClusterInfoKind,
         metadata: { namespace },
+    })
+}
+
+export function listMCIs() {
+    return listResources<ManagedClusterInfo>({
+        apiVersion: ManagedClusterInfoApiVersion,
+        kind: ManagedClusterInfoKind,
     })
 }
 
