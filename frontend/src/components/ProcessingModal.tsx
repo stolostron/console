@@ -1,41 +1,88 @@
 import { AcmButton, AcmModal } from '@open-cluster-management/ui-components'
-import { ModalVariant } from '@patternfly/react-core'
-import React from 'react'
+import { ModalVariant, Spinner } from '@patternfly/react-core'
+import React, { Fragment, ReactNode, useEffect, useState } from 'react'
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../lib/resource-request'
+import { ErrorState } from './ErrorPage'
 
-export interface IProcessingModalProps {
+export interface IRequestModalProps {
     open: boolean
     setOpen: (open: boolean) => void
-    confirm: () => void
-    cancel: () => void
+
+    action: () => IRequestResult
+    canRetry: boolean
+
     title: string
-    message: string
 }
 
-export const DefaultProcessingModalProps: IProcessingModalProps = {
-    open: false,
-    setOpen: () => {},
-    confirm: () => {},
-    cancel: () => {},
-    title: 'CLOSED', // Must have a title
-    message: '',
-}
+export function RequestModal(props: Partial<IRequestModalProps>) {
+    const { open, setOpen, action, title, message } = props
+    const [buttons, setButtons] = useState<ReactNode[]>()
+    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState<Error>()
+    const [cancel, setCancel] = useState<() => void>()
+    const [showCancel, setShowCancel] = useState(false)
 
-export function ProcessingModal(props: IProcessingModalProps) {
+    useEffect(() => {
+        setSuccess(false)
+        setError(undefined)
+        setShowCancel(false)
+        if (action) {
+            const { promise, abort } = action()
+            promise
+                .then(() => setSuccess(true))
+                .catch((err) => {
+                    if (err instanceof ResourceError) {
+                        if (err.code === ResourceErrorCode.Abort) {
+                            setOpen?.(false)
+                        }
+                    }
+                    setError(err)
+                })
+            const timeout = setTimeout(() => setShowCancel(true), 2 * 1000)
+            return () => {
+                clearTimeout(timeout)
+                abort()
+            }
+        }
+    }, [action])
+
+    setButtons([
+        <AcmButton
+            key="cancel"
+            variant="link"
+            onClick={() => {
+                // props.cancel?.()
+            }}
+        >
+            Cancel
+        </AcmButton>,
+    ])
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={props.title}
-            isOpen={props.open}
-            actions={[
-                <AcmButton key="confirm" variant="primary" onClick={() => props.confirm()}>
-                    Confirm
-                </AcmButton>,
-                <AcmButton key="cancel" variant="link" onClick={() => props.cancel()}>
-                    Cancel
-                </AcmButton>,
-            ]}
+            title={title}
+            isOpen={open}
+            actions={
+                <Fragment>
+                    {setShowCancel && setOpen && abort && (
+                        <AcmButton
+                            key="cancel"
+                            variant="link"
+                            onClick={() => {
+                                // cancel?.()
+                                abort()
+                            }}
+                        >
+                            Cancel
+                        </AcmButton>
+                    )}
+                </Fragment>
+            }
         >
-            {props.message}
+            {title}
+            {!success && !error && <Spinner />}
+            {success && <span>Success</span>}
+            {error && <ErrorState error={error} />}
         </AcmModal>
     )
 }
