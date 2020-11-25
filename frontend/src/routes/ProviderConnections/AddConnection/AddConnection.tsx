@@ -57,20 +57,7 @@ export function AddConnectionPageData() {
     }, [retry])
 
     if (error) {
-        return (
-            <ErrorPage
-                error={error}
-                actions={
-                    <AcmButton
-                        onClick={() => {
-                            setRetry(retry + 1)
-                        }}
-                    >
-                        Retry
-                    </AcmButton>
-                }
-            />
-        )
+        return <ErrorPage error={error} actions={<AcmButton onClick={() => setRetry(retry + 1)}>Retry</AcmButton>} />
     }
     if (!projects) {
         return <AcmLoadingPage />
@@ -81,15 +68,7 @@ export function AddConnectionPageData() {
                 <AcmEmptyState
                     title="No namespaces found."
                     message="No namespaces found."
-                    action={
-                        <AcmButton
-                            onClick={() => {
-                                setRetry(retry + 1)
-                            }}
-                        >
-                            Retry
-                        </AcmButton>
-                    }
+                    action={<AcmButton onClick={() => setRetry(retry + 1)}>Retry</AcmButton>}
                 />
             </AcmPageCard>
         )
