@@ -18,6 +18,13 @@ export interface NodeInfo {
     }[]
 }
 
+export type OpenShiftDistributionInfo = {
+    version: string
+    availableUpdates: string[]
+    desiredVersion: string
+    upgradeFailed: boolean
+} 
+
 export interface ManagedClusterInfo extends IResource {
     apiVersion: ManagedClusterInfoApiVersionType
     kind: ManagedClusterInfoKindType
@@ -34,12 +41,7 @@ export interface ManagedClusterInfo extends IResource {
         clusterID?: string
         distributionInfo?: {
             type: string
-            ocp: {
-                version: string
-                availableUpdates: string[]
-                desiredVersion: string
-                upgradeFailed: boolean
-            }
+            ocp: OpenShiftDistributionInfo
         }
         consoleURL?: string
         nodeList?: NodeInfo[]

@@ -27,21 +27,30 @@ export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
-    distributionVersion:  {
-        k8sVersion: string | undefined
-        ocp: OpenShiftDistributionInfo | undefined
-    }
+    distributionVersion:  DistributionInfo | undefined
     labels: { [key: string]: string } | undefined
-    nodes: NodeInfo & { active: number, inactive: number }
+    nodes: Nodes | undefined
     kubeApiServer: string | undefined
     consoleURL: string | undefined
-    hiveSecrets: {
-        kubeconfig: string | undefined
-        kubeadmin: string | undefined
-        installConfig: string | undefined
-    }
+    hiveSecrets: HiveSecrets | undefined
     isHive: boolean
     isManaged: boolean
+}
+
+export type DistributionInfo = {
+    k8sVersion: string | undefined
+    ocp: OpenShiftDistributionInfo | undefined
+}
+
+export type HiveSecrets = {
+    kubeconfig: string | undefined
+    kubeadmin: string | undefined
+    installConfig: string | undefined
+}
+
+export type Nodes = NodeInfo & {
+    active: number
+    inactive: number
 }
 
 export function getSingleCluster(
@@ -69,10 +78,19 @@ export function getAllClusters(): IRequestResult<
     }
 }
 
+export function mapClusters(clusterDeployments: ClusterDeployment[], managedClusterInfos: ManagedClusterInfo[], certificateSigningRequests: CertificateSigningRequest[]) {
+    const uniqueClusterNames = Array.from(new Set([...clusterDeployments.map((cd) => cd.metadata.name), ...managedClusterInfos.map((mc) => mc.metadata.name)]))
+    return uniqueClusterNames.map((cluster) => {
+        const clusterDeployment = clusterDeployments.find((cd) => cd.metadata?.name === cluster)
+        const managedClusterInfo = managedClusterInfos.find((mc) => mc.metadata?.name === cluster)
+        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests)
+    })
+}
+
 export function getCluster(
-    managedClusterInfo: ManagedClusterInfo,
-    clusterDeployment: ClusterDeployment,
-    certificateSigningRequests: CertificateSigningRequest[]
+    managedClusterInfo: ManagedClusterInfo | undefined,
+    clusterDeployment: ClusterDeployment | undefined,
+    certificateSigningRequests: CertificateSigningRequest[] | undefined
 ): Cluster {
     return {
         name: clusterDeployment?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -89,21 +107,25 @@ export function getCluster(
     }
 }
 
-export function getDistributionInfo(managedClusterInfo: ManagedClusterInfo) {
+export function getDistributionInfo(managedClusterInfo: ManagedClusterInfo | undefined) {
+    if (!managedClusterInfo) return undefined
+
     const k8sVersion = managedClusterInfo.status?.version
-    const { ocp } = managedClusterInfo.status?.distributionInfo ?? {}
+    const ocp = managedClusterInfo.status?.distributionInfo?.ocp
     return { k8sVersion, ocp }
 }
 
-export function getKubeApiServer(clusterDeployment: ClusterDeployment, managedClusterInfo: ManagedClusterInfo) {
-    return clusterDeployment.status?.apiURL ?? managedClusterInfo.spec?.masterEndpoint
+export function getKubeApiServer(clusterDeployment: ClusterDeployment | undefined, managedClusterInfo: ManagedClusterInfo | undefined) {
+    return clusterDeployment?.status?.apiURL ?? managedClusterInfo?.spec?.masterEndpoint
 }
 
-export function getConsoleUrl(clusterDeployment: ClusterDeployment, managedClusterInfo: ManagedClusterInfo) {
-    return clusterDeployment.status?.webConsoleURL ?? managedClusterInfo.status?.consoleURL
+export function getConsoleUrl(clusterDeployment: ClusterDeployment | undefined, managedClusterInfo: ManagedClusterInfo | undefined) {
+    return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
 }
 
-export function getNodes(managedClusterInfo: ManagedClusterInfo) {
+export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
+    if (!managedClusterInfo) return undefined
+
     const nodeList: NodeInfo[] = managedClusterInfo.status?.nodeList ?? []
     let active = 0
     let inactive = 0
@@ -115,7 +137,8 @@ export function getNodes(managedClusterInfo: ManagedClusterInfo) {
     return { nodeList, active, inactive }
 }
 
-export function getHiveSecrets(clusterDeployment: ClusterDeployment) {
+export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined) {
+    if (!clusterDeployment) return undefined
     return {
         kubeconfig: clusterDeployment.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
         kubeadmin: clusterDeployment.spec?.clusterMetadata?.adminPasswordSecretRef.name,
@@ -124,36 +147,37 @@ export function getHiveSecrets(clusterDeployment: ClusterDeployment) {
 }
 
 export function getClusterStatus(
-    clusterDeployment: ClusterDeployment,
-    managedClusterInfo: ManagedClusterInfo,
-    certificateSigningRequests: CertificateSigningRequest[]
+    clusterDeployment: ClusterDeployment | undefined,
+    managedClusterInfo: ManagedClusterInfo | undefined,
+    certificateSigningRequests: CertificateSigningRequest[] | undefined
 ) {
     const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
         conditions.find((c) => c.type === condition)?.status === 'True'
 
-    let cdStatus = ClusterStatus.pending
-    const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment.status?.conditions ?? []
-    const provisionFailed = checkForCondition('ProvisionedFailed', cdConditions)
-    const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
-    const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
-
     // ClusterDeployment status
-
-    // provision success
-    if (clusterDeployment.spec?.installed) {
-        cdStatus = ClusterStatus.detached
-
-    // deprovisioning
-    } else if (clusterDeployment.metadata.deletionTimestamp) {
-        cdStatus = ClusterStatus.destroying
-
-    // provision/deprovision failure
-    } else if (provisionFailed || provisionLaunchError || deprovisionLaunchError) {
-        cdStatus = ClusterStatus.failed
-
-    // provisioning - default
-    } else if (!clusterDeployment.spec?.installed) {
-        cdStatus = ClusterStatus.creating
+    let cdStatus = ClusterStatus.pending
+    if (clusterDeployment) {
+        const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
+        const provisionFailed = checkForCondition('ProvisionedFailed', cdConditions)
+        const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
+        const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
+    
+        // provision success
+        if (clusterDeployment.spec?.installed) {
+            cdStatus = ClusterStatus.detached
+    
+        // deprovisioning
+        } else if (clusterDeployment.metadata.deletionTimestamp) {
+            cdStatus = ClusterStatus.destroying
+    
+        // provision/deprovision failure
+        } else if (provisionFailed || provisionLaunchError || deprovisionLaunchError) {
+            cdStatus = ClusterStatus.failed
+    
+        // provisioning - default
+        } else if (!clusterDeployment.spec?.installed) {
+            cdStatus = ClusterStatus.creating
+        }
     }
 
     // if mc doesn't exist, default to cd status
@@ -161,13 +185,12 @@ export function getClusterStatus(
         return cdStatus
     }
 
+    // ManagedCluster status
     let mcStatus = ClusterStatus.pending
     const mcConditions: V1CustomResourceDefinitionCondition[] = managedClusterInfo.status?.conditions ?? []
     const clusterAccepted = checkForCondition('HubAcceptedManagedCluster', mcConditions)
     const clusterJoined = checkForCondition('ManagedClusterJoined', mcConditions)
     const clusterAvailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions)
-
-    // ManagedCluster status
 
     // detaching
     if (managedClusterInfo.metadata.deletionTimestamp) {
