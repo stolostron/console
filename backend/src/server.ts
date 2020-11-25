@@ -13,6 +13,7 @@ import { STATUS_CODES } from 'http'
 import * as https from 'https'
 import * as path from 'path'
 import { join } from 'path'
+import * as querystring from 'querystring'
 import { URL } from 'url'
 import { promisify } from 'util'
 import { logError, logger } from './lib/logger'
@@ -165,16 +166,31 @@ export async function startServer(): Promise<FastifyInstance> {
 
             let url = req.url.substr('/cluster-management/namespaced'.length)
             let query = ''
+            let namespaceQuery = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
                 url = url.substr(0, url.indexOf('?'))
+
+                // in certain cases we only want to query managed namespaces only for performance
+                const parsedQuery = querystring.parse(query)
+                if (parsedQuery['managedNamespacesOnly']) {
+                    namespaceQuery = '?labelSelector="cluster.open-cluster-management.io/managedCluster"'
+                    delete parsedQuery['managedNamespaces']
+                    query = querystring.stringify(parsedQuery)
+                }
             }
 
+            // Try the query at a cluster scope in case the use has permissions
             const clusteredRequestPromise = kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query)
 
+            // Query the projects (namespaces) the user can see in parallel in case the above fails.
             const projectsRequestPromise = kubeRequest<{
                 items: { metadata: { name: string } }[]
-            }>(token, req.method, process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects')
+            }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects' + namespaceQuery
+            )
 
             try {
                 const clusteredRequest = await clusteredRequestPromise
