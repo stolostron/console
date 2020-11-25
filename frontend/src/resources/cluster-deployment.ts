@@ -90,10 +90,14 @@ export interface ClusterDeployment {
 }
 
 export function listClusterDeployments() {
-    return listResources<ClusterDeployment>({
-        apiVersion: ClusterDeploymentApiVersion,
-        kind: ClusterDeploymentKind,
-    })
+    return listResources<ClusterDeployment>(
+        {
+            apiVersion: ClusterDeploymentApiVersion,
+            kind: ClusterDeploymentKind,
+        },
+        undefined,
+        ['managedNamespacesOnly']
+    )
 }
 
 export function getClusterDeployment(namespace: string, name: string) {

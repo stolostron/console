@@ -77,10 +77,14 @@ export function listManagedClusterInfos(namespace: string) {
 }
 
 export function listMCIs() {
-    return listResources<ManagedClusterInfo>({
-        apiVersion: ManagedClusterInfoApiVersion,
-        kind: ManagedClusterInfoKind,
-    })
+    return listResources<ManagedClusterInfo>(
+        {
+            apiVersion: ManagedClusterInfoApiVersion,
+            kind: ManagedClusterInfoKind,
+        },
+        undefined,
+        ['managedNamespacesOnly']
+    )
 }
 
 export function getManagedClusterInfo(namespace: string, name: string) {
