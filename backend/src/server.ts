@@ -40,6 +40,14 @@ export async function startServer(): Promise<FastifyInstance> {
         fastify = Fastify({ logger: false })
     }
 
+    if (process.env.NODE_ENV !== 'production') {
+        await fastify.register(fastifyCors, {
+            origin: true,
+            methods: ['GET', 'PUT', 'POST', 'DELETE'],
+            credentials: true,
+        })
+    }
+
     fastify.get('/ping', async (req, res) => {
         await res.code(200).send()
     })
@@ -156,7 +164,11 @@ export async function startServer(): Promise<FastifyInstance> {
         })
     }
 
-    fastify.all('/cluster-management/proxy/*', proxy)
+    fastify.get('/cluster-management/proxy/*', proxy)
+    fastify.put('/cluster-management/proxy/*', proxy)
+    fastify.post('/cluster-management/proxy/*', proxy)
+    fastify.patch('/cluster-management/proxy/*', proxy)
+    fastify.delete('/cluster-management/proxy/*', proxy)
 
     fastify.get('/cluster-management/namespaced/*', async (req, res) => {
         try {
@@ -178,7 +190,7 @@ export async function startServer(): Promise<FastifyInstance> {
 
             try {
                 const clusteredRequest = await clusteredRequestPromise
-                return res.code(clusteredRequest.status).send(clusteredRequest.data)
+                if (clusteredRequest.status < 400) return res.code(clusteredRequest.status).send(clusteredRequest.data)
             } catch {
                 // DO NOTHING - WILL QUERY BY PROJECTS
             }
@@ -194,20 +206,12 @@ export async function startServer(): Promise<FastifyInstance> {
             })
 
             const results = await Promise.all(promises)
-            return res.code(200).send({ items: results.map((r) => r.data.items).flat() })
+            return res.code(200).send({ items: results.flatMap((r) => r.data.items).filter((i) => i != null) })
         } catch (err) {
             logError('namespaced error', err, { method: req.method, url: req.url })
             void res.code(500).send()
         }
     })
-
-    if (process.env.NODE_ENV !== 'production') {
-        await fastify.register(fastifyCors, {
-            origin: true,
-            methods: ['GET', 'PUT', 'POST', 'DELETE'],
-            credentials: true,
-        })
-    }
 
     await fastify.register(fastifyCookie)
     fastify.addHook('onRequest', (request, reply, done) => {
@@ -217,10 +221,6 @@ export async function startServer(): Promise<FastifyInstance> {
     })
 
     fastify.addHook('onResponse', (request, reply, done) => {
-        if (request.method === 'OPTIONS') {
-            done()
-            return
-        }
         switch (request.url) {
             case '/ping':
                 break
