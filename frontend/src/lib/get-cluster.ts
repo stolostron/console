@@ -1,6 +1,6 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { getClusterDeployment, listClusterDeployments, ClusterDeployment } from '../resources/cluster-deployment'
-import { getManagedClusterInfo, listMCIs, ManagedClusterInfo, NodeInfo } from '../resources/managed-cluster-info'
+import { getManagedClusterInfo, listMCIs, ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import {
     listCertificateSigningRequests,
     CertificateSigningRequest,
@@ -21,6 +21,27 @@ export enum ClusterStatus {
     'pendingimport' = 'pendingimport',
     'ready' = 'ready',
     'offline' = 'offline',
+}
+
+export type Cluster = {
+    name: string | undefined
+    namespace: string | undefined
+    status: ClusterStatus
+    distributionVersion:  {
+        k8sVersion: string | undefined
+        ocp: OpenShiftDistributionInfo | undefined
+    }
+    labels: { [key: string]: string } | undefined
+    nodes: NodeInfo & { active: number, inactive: number }
+    kubeApiServer: string | undefined
+    consoleURL: string | undefined
+    hiveSecrets: {
+        kubeconfig: string | undefined
+        kubeadmin: string | undefined
+        installConfig: string | undefined
+    }
+    isHive: boolean
+    isManaged: boolean
 }
 
 export function getSingleCluster(
@@ -52,7 +73,7 @@ export function getCluster(
     managedClusterInfo: ManagedClusterInfo,
     clusterDeployment: ClusterDeployment,
     certificateSigningRequests: CertificateSigningRequest[]
-) {
+): Cluster {
     return {
         name: clusterDeployment?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
