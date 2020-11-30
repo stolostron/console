@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockClusterList, nockCreate } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockClusterList, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
 import {
@@ -314,5 +314,37 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         getByText('Add connection').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+    })
+
+    test('should show error if get project error', async () => {
+        const projectsNock = nockClusterList(mockProject, mockBadRequestStatus)
+        const { getByText } = render(
+            <MemoryRouter>
+                <AddConnectionPage />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
+
+        const projectsNock2 = nockClusterList(mockProject, [])
+        getByText('Retry').click()
+        await waitFor(() => expect(projectsNock2.isDone()).toBeTruthy())
+    })
+
+    test('should show empty page if there are no projects', async () => {
+        const projectsNock = nockClusterList(mockProject, [])
+        const { getByText, getAllByText } = render(
+            <MemoryRouter>
+                <AddConnectionPage />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getAllByText('No namespaces found.')[0]).toBeInTheDocument())
+        await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
+
+        const projectsNock2 = nockClusterList(mockProject, [])
+        getByText('Retry').click()
+        await waitFor(() => expect(projectsNock2.isDone()).toBeTruthy())
     })
 })
