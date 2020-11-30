@@ -25,7 +25,7 @@ const VALID_BMC_ADDR_REGEXP = new RegExp(
     '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
         '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
         '((\\d{1,3}\\.){3}\\d{1,3})|' + // OR ip (v4) address
-        '(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])))' + // OR ip (v6) address
+        '\\[?(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])]))\\]?' + // OR ip (v6) address
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$',
@@ -263,7 +263,21 @@ export function CreateBareMetalAssetPageContent(props: {
             password: '',
             username: '',
         },
+        data:{
+            password:'',
+            username:'',
+        },
     })
+
+    let [bmaEditSecret, setEditBMASecret] = useState<Partial<BMASecret>>({
+        kind: 'Secret',
+        apiVersion: 'v1',
+        data:{
+            password:'',
+            username:'',
+        },
+    })
+
 
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
         const copy = { ...bareMetalAsset }
@@ -274,6 +288,11 @@ export function CreateBareMetalAssetPageContent(props: {
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
+    }
+    function updateEditBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
+        const copy = { ...bmaSecret }
+        update(copy)
+        setEditBMASecret(copy)
     }
     if(props.editBareMetalAsset) isEdit = true
 
@@ -299,9 +318,15 @@ export function CreateBareMetalAssetPageContent(props: {
                 bmaSecret.stringData!.password = atob(props.editSecret!.data!['password'])
                 bmaSecret.stringData!.username = atob(props.editSecret!.data!['username'])
             })
+
+            updateEditBMASecret(bmaEditSecret => {
+                bmaEditSecret.data!.password = btoa(props.editSecret!.data!['password'])
+                bmaEditSecret.data!.username = btoa(props.editSecret!.data!['username'])
+
+            })
         }
     }, [])
-    
+    console.log('edit struc user: ', bmaEditSecret.data!.username)
 
     let secretName = ''
     return (
@@ -370,6 +395,11 @@ export function CreateBareMetalAssetPageContent(props: {
                     placeholder={t('createBareMetalAsset.username.placeholder')}
                     value={bmaSecret.stringData!.username}
                     onChange={(username) => {
+                        if(isEdit){
+                            updateEditBMASecret((bmaEditSecret) => {
+                                bmaEditSecret.data!.username = btoa(username)
+                            })
+                        }
                         updateBMASecret((bmaSecret) => {
                             bmaSecret.stringData!.username = username
                         })
@@ -382,6 +412,11 @@ export function CreateBareMetalAssetPageContent(props: {
                     placeholder={t('createBareMetalAsset.password.placeholder')}
                     value={bmaSecret.stringData!.password}
                     onChange={(password) => {
+                        if(isEdit){
+                            updateEditBMASecret((bmaEditSecret) => {
+                                bmaEditSecret.data!.password = btoa(password)
+                            })
+                        }
                         updateBMASecret((bmaSecret) => {
                             bmaSecret.stringData!.password = password
                         })
@@ -410,9 +445,11 @@ export function CreateBareMetalAssetPageContent(props: {
                         onClick={() => {
                             if(isEdit){
                                 console.log('is edit true: ', isEdit)
-                                patchResource(bmaSecret as BMASecret).promise.then(() => {
-                                    patchResource(bareMetalAsset as BareMetalAsset).promise.then(() => {
+                                console.log('checking new secret contents: ', bmaEditSecret)
 
+                                const  bodyFormData = JSON.stringify([{'data': bmaEditSecret.data}])
+                                patchResource(bmaEditSecret as Secret, bodyFormData).promise.then(() => {
+                                    patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(() => {
                                     })
                                 })
                             }
