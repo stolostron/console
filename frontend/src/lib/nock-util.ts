@@ -70,15 +70,23 @@ export function nockClusterList<Resource extends IResource>(
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     }
 
-    return networkMock.reply(
-        200,
-        { items: resources },
-        {
+    if (Array.isArray(resources)) {
+        return networkMock.reply(
+            200,
+            { items: resources },
+            {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        )
+    } else {
+        return networkMock.reply(200, resources, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
-        }
-    )
+        })
+    }
 }
 
 export function nockNamespacedList<Resource extends IResource>(
