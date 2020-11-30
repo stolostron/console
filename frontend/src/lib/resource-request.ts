@@ -89,14 +89,20 @@ export function listResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     options?: IRequestOptions,
     labels?: string[],
-    query?: Record<string, string>,
+    query?: Record<string, string>
 ): IRequestResult<Resource[]> {
     let url = baseUrl + apiNamespacedUrl + getResourceApiPath(resource)
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
-        if (query) url+= `&${Object.keys(query).map((key) => `${key}=${query[key]}`).join('&')}`
+        if (query)
+            url += `&${Object.keys(query)
+                .map((key) => `${key}=${query[key]}`)
+                .join('&')}`
     } else {
-        if (query) url+= `?${Object.keys(query).map((key) => `${key}=${query[key]}`).join('&')}`
+        if (query)
+            url += `?${Object.keys(query)
+                .map((key) => `${key}=${query[key]}`)
+                .join('&')}`
     }
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
