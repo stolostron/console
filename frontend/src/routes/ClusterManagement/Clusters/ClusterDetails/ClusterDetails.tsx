@@ -47,7 +47,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         if (items) {
             singleCluster = getCluster(items[1] as ManagedClusterInfo, items[0] as ClusterDeployment, items[2] as CertificateSigningRequest[])
         }
-        console.log('cluster', singleCluster)
 
         setCluster(singleCluster)
     }, [data])
