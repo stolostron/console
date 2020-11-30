@@ -9,13 +9,14 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation, RouteComponentProps, } from 'react-router-dom'
 import { ErrorPage } from '../../components/ErrorPage'
 import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
-import { createResource, IRequestResult } from '../../../src/lib/resource-request'
+import { createResource, patchResource, getResource, IRequestResult, listClusterResources } from '../../../src/lib/resource-request'
 import { Project, listProjects } from '../../resources/project'
+import { Secret } from '../../resources/secret'
 import { NavigationPath } from '../../NavigationPath'
 import { useQuery } from '../../lib/useQuery'
 
@@ -53,13 +54,151 @@ function ValidateField(value: string, field: string, t:Function) {
     }
 }
 
-export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
+async function getBareMetalAsset(name:string, namespace: string){
+    let bareMetalAsset: BareMetalAsset = {
+        kind: 'BareMetalAsset',
+        apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
+        metadata: {
+            name: name,
+            namespace: namespace,
+        },
+        spec: {
+            bmc: {
+                address: '',
+                credentialsName: '',
+            },
+            bootMACAddress: '',
+        },
+    }
+    const metadata = {
+        name: name,
+        namespace: namespace,
+    }
+
+    return getResource<BareMetalAsset>({kind: 'BareMetalAsset', apiVersion: 'inventory.open-cluster-management.io/v1alpha1', metadata}).promise
+}
+
+function getBMASecret(name:string, namespace: string){
+    const metadata = {
+        name: name,
+        namespace: namespace,
+    }
+    return getResource<Secret>({kind: 'Secret', apiVersion: 'v1', metadata:metadata}).promise
+}
+
+export default function CreateBareMetalAssetPage({ match }: RouteComponentProps<{ id: string }>, props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
+    let path: Array<string>  
+    let editAssetName:string = ''
+    let editAssetNamespace: string = ''
+
+    path = useLocation().pathname.split('/').reverse()
+    console.log('check path: ', path)
+    if(path[0] === 'edit'){
+        editAssetName = path[1]
+        editAssetNamespace = path[2]
+
+        return(
+            <Page>
+                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <EditBareMetalAssetPageData bmaSecretID={props.bmaSecretID} editAssetName={editAssetName} editAssetNamespace={editAssetNamespace}/>
+            </Page>
+        )
+    } 
+        return (
+            <Page>
+                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
+            </Page>
+        )
+}
+
+export function EditBareMetalAssetPageData(props: { bmaSecretID?: string, editAssetName:string,  editAssetNamespace: string }) {
+    const assetMetadata = {
+        name: props.editAssetName,
+        namespace: props.editAssetNamespace,
+    }
+    let secretMetadata
+    type EditData = {
+        projects: Array<Project>
+        bareMetalAsset: BareMetalAsset
+        secret: Secret
+    }
+    
+    const [projects, setProjects] = useState<Array<Project>>()
+    const [bareMetalAsset, setBareMetalAsset] = useState<BareMetalAsset>()
+    const [secret, setSecret] = useState<Secret>()
+    const [resourceError, setError] = useState<Error>()
+    
+    const [BMAObjects, setObjects] = useState<EditData>()
+
+    useEffect(() => {
+        let proj: Array<Project>
+        let bma: BareMetalAsset
+        let sec: Secret
+        let resultSecret: Promise<Secret>
+        console.log('returning secret')
+        const resultProjects = listClusterResources<Project>({kind:'Project', apiVersion:'project.openshift.io/v1'})
+        resultProjects.promise.then(r=>{
+            //setProjects(r)
+            proj = r
+            console.log('checking projects: ', proj)
+        }).catch(e=>{
+            setError(e)
+        })
+        
+        //const resultBMA = getResource<BareMetalAsset>({kind: 'BareMetalAsset', apiVersion: 'inventory.open-cluster-management.io/v1alpha1', metadata:assetMetadata}) //
+        const resultBMA = getBareMetalAsset(assetMetadata.name, assetMetadata.namespace)
+        resultBMA.then(r=>{
+            //setBareMetalAsset(r)
+            bma = r
+            console.log('checking bma: ', bma)
+
+            secretMetadata = {
+                name: bma!.spec?.bmc.credentialsName,
+                namespace: props.editAssetNamespace,
+            }
+            resultSecret = getBMASecret(secretMetadata.name!, secretMetadata.namespace)
+            resultSecret!.then(r=>{
+                //setSecret(r)
+                sec = r
+                console.log('checking sec: ', sec)
+                
+                setObjects({projects:proj, bareMetalAsset:bma, secret:sec})
+            }).catch(e => setError(e))
+           
+        }).catch(e => setError(e)) //catch error, add to error object and output it
+
+        
+        //const resultSecret = getResource<Secret>({kind: 'Secret', apiVersion: 'v1', metadata:{name:bareMetalAsset?.spec?.bmc.credentialsName, namespace:bareMetalAsset?.metadata.namespace}})
+    }, [])
+    const { t } = useTranslation(['bma'])
+    
+    if (secret?.metadata.name){
+        setError(undefined)
+    }
+    console.log('checking secret name, outside of useEffect: ', BMAObjects?.secret.metadata.name)
+
+    if (resourceError) {
+        return <ErrorPage error={resourceError} />
+    } else if (!BMAObjects) {
+        return <AcmLoadingPage />
+    } else if (BMAObjects.projects.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState title={t("createBareMetalAsset.emptyState.Namespaces.title")} message={t("createBareMetalAsset.emptyState.Namespaces.title")} />
+            </AcmPageCard>
+        )
+    }
+
     return (
-        <Page>
-            <AcmPageHeader title={t('createBareMetalAsset.title')} />
-            <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
-        </Page>
+        <CreateBareMetalAssetPageContent
+            projects={BMAObjects.projects}
+            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
+            bmaSecretID={props.bmaSecretID}
+            editBareMetalAsset={BMAObjects.bareMetalAsset}
+            editSecret={BMAObjects.secret}
+        />
     )
 }
 
@@ -92,17 +231,15 @@ export function CreateBareMetalAssetPageContent(props: {
     bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
     editBareMetalAsset?: BareMetalAsset
+    editSecret?: Secret
 }) {
+    console.log('entering page content func')
     const { t } = useTranslation(['bma'])
     const history = useHistory()
     let isEdit = false
 
-    if(props.editBareMetalAsset){
-        isEdit = true
-    }
-
     // ToDo: Prefill this when editing BMA
-    const [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
+    let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
         metadata: {
@@ -117,24 +254,55 @@ export function CreateBareMetalAssetPageContent(props: {
             bootMACAddress: '',
         },
     })
-    function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
-        const copy = { ...bareMetalAsset }
-        update(copy)
-        setBareMetalAsset(copy)
-    }
 
-    const [bmaSecret, setBMASecret] = useState<Partial<BMASecret>>({
+    let [bmaSecret, setBMASecret] = useState<Partial<BMASecret>>({
+        kind: 'Secret',
+        apiVersion: 'v1',
         metadata: {},
         stringData: {
             password: '',
             username: '',
         },
     })
+
+    function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
+        const copy = { ...bareMetalAsset }
+        update(copy)
+        setBareMetalAsset(copy)
+    }
     function updateBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
     }
+    if(props.editBareMetalAsset) isEdit = true
+
+    // console.log('checking secret data',Object.values(props.editSecret!.data!))
+    // console.log('checking secret data ',atob(props.editSecret!.data!['password']))
+    //const password = atob(bmaSecret.data)
+    useEffect(()=> {
+        console.log('testing out')
+        if(props.editBareMetalAsset){
+            console.log('testing out II')
+            isEdit = true
+            
+            updateBareMetalAsset(bareMetalAsset => {
+                bareMetalAsset.metadata!.namespace = props.editBareMetalAsset?.metadata.namespace
+                bareMetalAsset.metadata!.name = props.editBareMetalAsset?.metadata.name
+                bareMetalAsset.spec!.bootMACAddress = props.editBareMetalAsset?.spec?.bootMACAddress!
+                bareMetalAsset.spec!.bmc.address = props.editBareMetalAsset?.spec?.bmc.address!
+            })
+
+            updateBMASecret(bmaSecret => {
+                bmaSecret.metadata!.name = props.editSecret?.metadata.name
+                bmaSecret.metadata!.namespace = props.editSecret?.metadata.namespace
+                bmaSecret.stringData!.password = atob(props.editSecret!.data!['password'])
+                bmaSecret.stringData!.username = atob(props.editSecret!.data!['username'])
+            })
+        }
+    }, [])
+    
+
     let secretName = ''
     return (
         <AcmPageCard>
@@ -241,7 +409,12 @@ export function CreateBareMetalAssetPageContent(props: {
                         variant='primary'
                         onClick={() => {
                             if(isEdit){
-                                
+                                console.log('is edit true: ', isEdit)
+                                patchResource(bmaSecret as BMASecret).promise.then(() => {
+                                    patchResource(bareMetalAsset as BareMetalAsset).promise.then(() => {
+
+                                    })
+                                })
                             }
                             else{
                                 createResource(bmaSecret as BMASecret).promise.then(() => {
