@@ -31,7 +31,7 @@ export function BareMetalAssets() {
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
-    Promise.all(deleteResources(bareMetalAssets))
+    return deleteResources(bareMetalAssets).promise
 }
 
 export function BareMetalAssetsTable(props: {
@@ -117,7 +117,9 @@ export function BareMetalAssetsTable(props: {
                                 }),
                                 open: true,
                                 confirm: () => {
-                                    deleteBareMetalAssets(bareMetalAssets)
+                                    void deleteBareMetalAssets(bareMetalAssets)
+                                    // TODO refresh
+                                    // TODO errors
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {

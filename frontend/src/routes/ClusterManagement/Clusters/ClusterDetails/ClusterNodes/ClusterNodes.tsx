@@ -23,7 +23,7 @@ export function NodePoolsPageContent(props: { name: string; namespace: string })
     if (error) {
         return <ErrorPage error={error} />
     }
-    return <NodesPoolsTable nodes={mcis?.[0]?.status.nodeList!} refresh={refresh} />
+    return <NodesPoolsTable nodes={mcis?.[0]?.status?.nodeList!} refresh={refresh} />
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[]; refresh: () => void }) {

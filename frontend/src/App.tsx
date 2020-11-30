@@ -1,5 +1,7 @@
+/* istanbul ignore file */
+
 import '@patternfly/react-core/dist/styles/base.css'
-import React, { lazy } from 'react'
+import { lazy } from 'react'
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'

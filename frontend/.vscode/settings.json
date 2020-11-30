@@ -1,3 +1,4 @@
 {
-    "jest.pathToJest": "./.vscode/jest-test.sh"
+    "jest.pathToJest": "./.vscode/jest-test.sh",
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

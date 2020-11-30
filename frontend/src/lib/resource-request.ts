@@ -23,6 +23,13 @@ export interface IRequestResult<ResultType = unknown> {
     abort: () => void
 }
 
+export function resultsSettled<T>(results: IRequestResult<T>[]): IRequestResult<PromiseSettledResult<T>[]> {
+    return {
+        promise: Promise.allSettled(results.map((result) => result.promise)),
+        abort: () => results.forEach((result) => result.abort()),
+    }
+}
+
 export enum ResourceErrorCode {
     BadRequest = 400,
     Unauthorized = 401,
@@ -36,6 +43,7 @@ export enum ResourceErrorCode {
     BadGateway = 502,
     ServiceUnavailable = 503,
     GatewayTimeout = 504,
+    NetworkError = 700,
     RequestCancelled = 800,
     ConnectionReset = 900,
     Unknown = 999,
@@ -94,7 +102,15 @@ export function listResources<Resource extends IResource>(
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
-        promise: result.promise.then((result) => result.items as Resource[]),
+        promise: result.promise.then((result) =>
+            (result.items as Resource[]).map((item) => ({
+                ...item,
+                ...{
+                    apiVersion: resource.apiVersion,
+                    kind: resource.kind,
+                },
+            }))
+        ),
         abort: result.abort,
     }
 }
@@ -232,9 +248,11 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                                 ResourceErrorCode.Unknown
                             )
                         }
+                    } else if (err.message === 'Network Error') {
+                        throw new ResourceError('Network error', ResourceErrorCode.NetworkError)
                     }
                 }
-                throw new ResourceError('Unknown error', ResourceErrorCode.Unknown)
+                throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
             }),
         abort: cancelTokenSource.cancel,
     }
