@@ -39,9 +39,9 @@ const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     },
     {
         header: 'Distribution',
-        sort: 'distributionVersion.displayVersion',
-        search: 'distributionVersion.displayVersion',
-        cell: (cluster) => <DistributionField data={cluster.distributionVersion} />,
+        sort: 'distribution.displayVersion',
+        search: 'distribution.displayVersion',
+        cell: (cluster) => <DistributionField data={cluster.distribution} />,
     },
     {
         header: 'Labels',

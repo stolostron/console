@@ -24,6 +24,15 @@
   "discovery.emptyStateHeader": "No clusters are discovered, yet",
   "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
 
+  "table.name": "Name",
+  "table.status": "Status",
+  "table.distribution": "Distribution",
+  "table.labels": "Labels",
+  "table.nodes": "Nodes",
+  "table.kubeApiServer": "Cluster API address",
+  "table.consoleUrl": "Console URL",
+  "table.details": "Details",
+
   "empty-state.cluster.title": "No clusters found",
   "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the Import an existing cluster and Create a cluster buttons are disabled.",
   "empty-state.node.title": "No nodes found",

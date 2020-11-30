@@ -33,7 +33,7 @@ export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
-    distributionVersion: DistributionInfo | undefined
+    distribution: DistributionInfo | undefined
     labels: { [key: string]: string } | undefined
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
@@ -112,7 +112,7 @@ export function getCluster(
         name: clusterDeployment?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
         status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests),
-        distributionVersion: getDistributionInfo(managedClusterInfo),
+        distribution: getDistributionInfo(managedClusterInfo),
         labels: managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
