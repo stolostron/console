@@ -11,12 +11,12 @@ export interface BareMetalAsset {
     apiVersion: BareMetalAssetApiVersionType
     kind: BareMetalAssetKindType
     metadata: V1ObjectMeta
-    spec: {
+    spec?: {
         bmc: {
             address: string
             credentialsName: string
         }
-        bootMac: string
+        bootMACAddress: string
     }
     status?: {
         conditions: Array<{

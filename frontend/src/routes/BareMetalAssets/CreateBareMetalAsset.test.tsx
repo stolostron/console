@@ -27,7 +27,7 @@ const bareMetalAsset: BareMetalAsset = {
             address: 'example.com:80',
             credentialsName: 'secret-test-bare-metal-asset',
         },
-        bootMac: '00:90:7F:12:DE:7F',
+        bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
 
@@ -43,7 +43,7 @@ const newBareMetalAsset: BareMetalAsset = {
             address: 'example.com:80',
             credentialsName: 'test-bare-metal-asset-002-bmc-secret-1234',
         },
-        bootMac: '00:90:7F:12:DE:7F',
+        bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
 
@@ -75,10 +75,10 @@ describe('bare metal asset page', () => {
         userEvent.click(getByTestId('namespaceName-button'))
         userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
         await waitFor(() => expect(getByText(mockBareMetalAssets[0].metadata.namespace!)).toBeInTheDocument())
-        userEvent.type(getByTestId('baseboardManagementControllerAddress'), mockNewBareMetalAssets[0].spec.bmc.address!)
+        userEvent.type(getByTestId('baseboardManagementControllerAddress'), mockNewBareMetalAssets[0].spec?.bmc.address!)
         userEvent.type(getByTestId('username'), 'test')
         userEvent.type(getByTestId('password'), 'test')
-        userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec.bootMac!)
+        userEvent.type(getByTestId('bootMac'), mockNewBareMetalAssets[0].spec?.bootMACAddress!)
 
         // submitting new asset
         expect(getByText('createBareMetalAsset.button.create')).toBeInTheDocument()

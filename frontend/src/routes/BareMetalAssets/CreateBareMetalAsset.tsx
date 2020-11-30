@@ -45,7 +45,7 @@ function ValidateField(value: string, field: string, t:Function) {
                 return t("createBareMetalAsset.form.invalidBmcAddress")
             }
             break
-        case 'bootMac':
+        case 'bootMACAddress':
             if (!VALID_BOOT_MAC_REGEXP.test(value)) {
                 return t("createBareMetalAsset.form.invalidMacAddress")
             }
@@ -114,7 +114,7 @@ export function CreateBareMetalAssetPageContent(props: {
                 address: '',
                 credentialsName: '',
             },
-            bootMac: '',
+            bootMACAddress: '',
         },
     })
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
@@ -222,17 +222,17 @@ export function CreateBareMetalAssetPageContent(props: {
                     type='password'
                 />
                 <AcmTextInput
-                    id='bootMac'
-                    label={t('createBareMetalAsset.bootMac.label')}
-                    placeholder={t('createBareMetalAsset.bootMac.placeholder')}
-                    value={bareMetalAsset.spec?.bootMac}
-                    onChange={(bootMac) => {
+                    id='bootMACAddress'
+                    label={t('createBareMetalAsset.bootMACAddress.label')}
+                    placeholder={t('createBareMetalAsset.bootMACAddress.placeholder')}
+                    value={bareMetalAsset.spec?.bootMACAddress}
+                    onChange={(bootMACAddress) => {
                         updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.spec!.bootMac = bootMac
+                            bareMetalAsset.spec!.bootMACAddress = bootMACAddress
                         })
                     }}
                     isRequired
-                    validation={(value) => ValidateField(value, 'bootMac', t)}
+                    validation={(value) => ValidateField(value, 'bootMACAddress', t)}
                 />
 
                 <ActionGroup>
