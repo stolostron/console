@@ -1,5 +1,5 @@
 {
-    "name": "console-frontend",
+    "name": "@open-cluster-management/console-frontend",
     "version": "0.0.1",
     "private": true,
     "homepage": "/cluster-management/",
