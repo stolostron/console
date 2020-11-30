@@ -96,7 +96,8 @@ export function listClusterDeployments() {
             kind: ClusterDeploymentKind,
         },
         undefined,
-        ['managedNamespacesOnly']
+        undefined,
+        { managedNamespacesOnly: '' }
     )
 }
 

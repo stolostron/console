@@ -175,7 +175,7 @@ export async function startServer(): Promise<FastifyInstance> {
                 const parsedQuery = querystring.parse(query)
                 if (parsedQuery['managedNamespacesOnly']) {
                     namespaceQuery = '?labelSelector="cluster.open-cluster-management.io/managedCluster"'
-                    delete parsedQuery['managedNamespaces']
+                    delete parsedQuery['managedNamespacesOnly']
                     query = querystring.stringify(parsedQuery)
                 }
             }

@@ -3,71 +3,57 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
-    IAcmTableColumn,
+    IAcmTableColumn
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { deleteResource } from '../../../lib/resource-request'
+// import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { listManagedClusters, ManagedCluster } from '../../../resources/managed-cluster'
+import { getAllClusters, mapClusters, Cluster } from '../../../lib/get-cluster'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
+import { ClusterDeployment } from '../../../resources/cluster-deployment'
+import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
+import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
+import { StatusField, DistributionField } from '../../../components/ClusterCommon'
 
-const managedClusterCols: IAcmTableColumn<ManagedCluster>[] = [
+const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     {
         header: 'Name',
-        sort: 'metadata.name',
-        search: 'metadata.name',
-        cell: (managedCluster) => (
-            <Link to={NavigationPath.clusterDetails.replace(':id', managedCluster.metadata.name as string)}>
-                {managedCluster.metadata.name}
+        sort: 'name',
+        search: 'name',
+        cell: (cluster) => (
+            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
+                {cluster.name}
             </Link>
         ),
     },
     {
         header: 'Status',
-        sort: 'displayStatus',
-        search: 'displayStatus',
-        cell: (managedCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="2">
-                -
-                {/* {managedCluster.displayStatus === 'Ready' ? (
-                    <CheckIcon color="green" key="ready-icon" />
-                ) : (
-                    <Fragment key="ready-icon"></Fragment>
-                )}
-                {managedCluster.displayStatus === 'Pending import' ? (
-                    <MinusCircleIcon color="grey" key="pending-icon" />
-                ) : (
-                    <Fragment key="pending-icon"></Fragment>
-                )}
-                {managedCluster.displayStatus === 'Offline' ? (
-                    <ExclamationIcon color="red" key="offline-icon" />
-                ) : (
-                    <Fragment key="offline-icon"></Fragment>
-                )}
-                <span key="status">&nbsp; {managedCluster.displayStatus}</span> */}
-            </span>
-        ),
+        sort: 'status',
+        search: 'status',
+        cell: (cluster) => <StatusField status={cluster.status} />,
     },
     {
         header: 'Distribution',
-        sort: 'status.version.kubernetes',
-        search: 'status.version.kubernetes',
-        cell: 'status.version.kubernetes',
+        sort: 'distributionVersion.displayVersion',
+        search: 'distributionVersion.displayVersion',
+        cell: (cluster) => <DistributionField data={cluster.distributionVersion} />,
     },
     {
         header: 'Labels',
-        search: 'metadata.labels',
-        cell: (managedCluster) => <AcmLabels labels={managedCluster.metadata.labels} />,
+        // search: 'labels',
+        cell: (cluster) => cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-',
     },
     {
         header: 'Nodes',
         // sort: 'info.status.nodeList.length',
-        cell: (managedCluster) => <div>-</div>,
+        cell: (cluster) => {
+            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
+        },
     },
 ]
 
@@ -115,19 +101,34 @@ const ClusterActions = () => {
 }
 
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(listManagedClusters)
+    const { data, startPolling, refresh } = useQuery(getAllClusters)
     useEffect(startPolling, [startPolling])
     usePageContext(!!data, ClusterActions)
+
+    const items = data?.map((d) => {
+        if (d.status === 'fulfilled') {
+            return d.value
+        } else {
+            console.error(d.reason)
+            return []
+        }
+    })
+
+    let clusters: Cluster[] | undefined
+    if (items) {
+        clusters = mapClusters(items[0] as ClusterDeployment[], items[1] as ManagedClusterInfo[], items[2] as CertificateSigningRequest[])
+    }
+
     return (
         <AcmPageCard>
-            <ClustersTable managedClusters={data} deleteCluster={deleteResource} refresh={refresh} />
+            <ClustersTable clusters={clusters} refresh={refresh} />
         </AcmPageCard>
     )
 }
 
 export function ClustersTable(props: {
-    managedClusters?: ManagedCluster[]
-    deleteCluster: (managedCluster: ManagedCluster) => void
+    clusters?: Cluster[]
+    deleteCluster?: (managedCluster: Cluster) => void
     refresh: () => void
 }) {
     sessionStorage.removeItem('DiscoveredClusterName')
@@ -135,14 +136,14 @@ export function ClustersTable(props: {
 
     const { t } = useTranslation(['cluster'])
 
-    function mckeyFn(cluster: ManagedCluster) {
-        return cluster.metadata.uid!
+    function mckeyFn(cluster: Cluster) {
+        return cluster.name!
     }
 
     return (
-        <AcmTable<ManagedCluster>
+        <AcmTable<Cluster>
             plural="clusters"
-            items={props.managedClusters}
+            items={props.clusters}
             columns={managedClusterCols}
             keyFn={mckeyFn}
             key="managedClustersTable"
@@ -151,7 +152,7 @@ export function ClustersTable(props: {
                 {
                     id: 'destroyCluster',
                     title: t('managed.destroy'),
-                    click: (managedClusters) => {
+                    click: (clusters) => {
                         // TODO props.deleteCluster
                         props.refresh()
                     },

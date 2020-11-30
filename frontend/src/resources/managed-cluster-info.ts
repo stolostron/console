@@ -83,7 +83,8 @@ export function listMCIs() {
             kind: ManagedClusterInfoKind,
         },
         undefined,
-        ['managedNamespacesOnly']
+        undefined,
+        { managedNamespacesOnly: '' }
     )
 }
 

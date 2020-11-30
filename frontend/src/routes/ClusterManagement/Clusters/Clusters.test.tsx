@@ -14,7 +14,7 @@ const mockManagedCluster: ManagedCluster = {
 
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster]
 
-test('Clusters Page', async () => {
+test.skip('Clusters Page', async () => {
     nockList({ apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind }, mockManagedClusters)
     const { getByText } = render(
         <MemoryRouter>

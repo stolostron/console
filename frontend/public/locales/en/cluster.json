@@ -52,5 +52,17 @@
   "import.command.launchconsole": "Launch to console",
   "import.footer.viewcluster": "View cluster",
   "import.footer.importanother": "Import another",
-  "import.description": "Once you click on \"Save import and generate code\", the information you entered will be used to generate the code and cannot be modified anymore. If you wish to change any information, you will have to delete and re-import this cluster."
+  "import.description": "Once you click on \"Save import and generate code\", the information you entered will be used to generate the code and cannot be modified anymore. If you wish to change any information, you will have to delete and re-import this cluster.",
+  "status.pending": "Pending",
+  "status.destroying": "Destroying",
+  "status.creating": "Creating",
+  "status.failed": "Failed",
+  "status.detached": "Detached",
+  "status.detaching": "Detaching",
+  "status.notaccepted": "Not accepted",
+  "status.needsapproval": "Needs approval",
+  "status.pendingimport": "Pending import",
+  "status.ready": "Ready",
+  "status.offline": "Offline",
+  "upgrade.available": "Upgrade available"
 }
