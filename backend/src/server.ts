@@ -43,7 +43,7 @@ export async function startServer(): Promise<FastifyInstance> {
     if (process.env.NODE_ENV !== 'production') {
         await fastify.register(fastifyCors, {
             origin: true,
-            methods: ['GET', 'PUT', 'POST', 'DELETE'],
+            methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
             credentials: true,
         })
     }
