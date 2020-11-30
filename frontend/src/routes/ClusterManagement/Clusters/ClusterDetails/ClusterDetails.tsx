@@ -20,7 +20,7 @@ import { CertificateSigningRequest } from '../../../../resources/certificate-sig
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
 }>({
-    cluster: undefined,
+    cluster: undefined
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
