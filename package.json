@@ -1,5 +1,5 @@
 {
-    "name": "@open-cluster-management/consoleconsole",
+    "name": "@open-cluster-management/console",
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "scripts": {
