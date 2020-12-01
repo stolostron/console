@@ -277,7 +277,6 @@ function axiosRetry<ResponseType>(
         function retryRequest(config: AxiosRequestConfig & IRequestOptions) {
             Axios.request(config)
                 .then((response) => {
-                    console.log('checking header: ', config.headers)
                     resolve(response)
                 })
                 .catch((err) => {
