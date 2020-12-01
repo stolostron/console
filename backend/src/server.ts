@@ -64,7 +64,8 @@ export async function startServer(): Promise<FastifyInstance> {
         token: string,
         method: string,
         url: string,
-        data?: unknown
+        data?: unknown,
+        headers?: Record<string, string>
     ): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
@@ -76,7 +77,10 @@ export async function startServer(): Promise<FastifyInstance> {
                     method: method as Method,
                     httpsAgent: new https.Agent({ rejectUnauthorized: false }),
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        ...{
+                            Authorization: `Bearer ${token}`,
+                        },
+                        ...headers,
                     },
                     responseType: 'json',
                     validateStatus: () => true,
@@ -122,7 +126,17 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query, req.body)
+            const result = await kubeRequest(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + url + query,
+                req.body,
+                req.method === 'PATCH'
+                    ? {
+                          'Content-Type': 'application/merge-patch+json',
+                      }
+                    : undefined
+            )
             return res.code(result.status).send(result.data)
         } catch (err) {
             logError('proxy error', err, { method: req.method, url: req.url })
