@@ -221,7 +221,7 @@ export function CreateBareMetalAssetPageContent(props: {
 }) {
     const { t } = useTranslation(['bma'])
     const history = useHistory()
-    let isEdit = false
+    let isEdit = props.editBareMetalAsset ? true : false
     let secretName = ''
 
     const [resourceError, setError] = useState<Error>()
@@ -258,15 +258,6 @@ export function CreateBareMetalAssetPageContent(props: {
         },
     })
 
-    let [bmaEditSecret, setEditBMASecret] = useState<Partial<BMASecret>>({
-        kind: 'Secret',
-        apiVersion: 'v1',
-        data: {
-            password: '',
-            username: '',
-        },
-    })
-
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
         const copy = { ...bareMetalAsset }
         update(copy)
@@ -277,13 +268,8 @@ export function CreateBareMetalAssetPageContent(props: {
         update(copy)
         setBMASecret(copy)
     }
-    function updateEditBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
-        const copy = { ...bmaSecret }
-        update(copy)
-        setEditBMASecret(copy)
-    }
-    if (props.editBareMetalAsset) isEdit = true
 
+    
     useEffect(() => {
         if (props.editBareMetalAsset) {
             isEdit = true
@@ -300,11 +286,6 @@ export function CreateBareMetalAssetPageContent(props: {
                 bmaSecret.metadata!.namespace = props.editSecret?.metadata.namespace
                 bmaSecret.stringData!.password = atob(props.editSecret!.data!['password'])
                 bmaSecret.stringData!.username = atob(props.editSecret!.data!['username'])
-            })
-
-            updateEditBMASecret((bmaEditSecret) => {
-                bmaEditSecret.data!.password = btoa(props.editSecret!.data!['password'])
-                bmaEditSecret.data!.username = btoa(props.editSecret!.data!['username'])
             })
         }
     }, [])
@@ -376,11 +357,6 @@ export function CreateBareMetalAssetPageContent(props: {
                     placeholder={t('createBareMetalAsset.username.placeholder')}
                     value={bmaSecret.stringData!.username}
                     onChange={(username) => {
-                        if (isEdit) {
-                            updateEditBMASecret((bmaEditSecret) => {
-                                bmaEditSecret.data!.username = btoa(username)
-                            })
-                        }
                         updateBMASecret((bmaSecret) => {
                             bmaSecret.stringData!.username = username
                         })
@@ -393,11 +369,6 @@ export function CreateBareMetalAssetPageContent(props: {
                     placeholder={t('createBareMetalAsset.password.placeholder')}
                     value={bmaSecret.stringData!.password}
                     onChange={(password) => {
-                        if (isEdit) {
-                            updateEditBMASecret((bmaEditSecret) => {
-                                bmaEditSecret.data!.password = btoa(password)
-                            })
-                        }
                         updateBMASecret((bmaSecret) => {
                             bmaSecret.stringData!.password = password
                         })
@@ -425,7 +396,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         variant="primary"
                         onClick={() => {
                             if (isEdit) {
-                                patchResource(bmaEditSecret as Secret, bmaEditSecret).promise.then(() => {
+                                patchResource(bmaSecret as Secret, bmaSecret).promise.then(() => {
                                     patchResource(
                                         bareMetalAsset as BareMetalAsset,
                                         bareMetalAsset
