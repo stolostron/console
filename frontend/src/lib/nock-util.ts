@@ -4,7 +4,11 @@ import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resour
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 
-export function nockGet<Resource extends IResource>(resource: Resource, response?: IResource, statusCode: number = 200) {
+export function nockGet<Resource extends IResource>(
+    resource: Resource,
+    response?: IResource,
+    statusCode: number = 200
+) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
         .reply(statusCode, response ?? resource, {
