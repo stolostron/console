@@ -35,9 +35,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
 
-    console.log('error', error)
-    console.log('data', data)
-
     useEffect(startPolling, [startPolling])
     useEffect(() => {
         if (error) {
