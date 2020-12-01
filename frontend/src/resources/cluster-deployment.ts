@@ -49,9 +49,9 @@ export interface ClusterDeployment {
         }
     }
     status?: {
-        apiURL: string
+        apiURL?: string
         cliImage: string
-        clusterVersionStatus: {
+        clusterVersionStatus?: {
             availableUpdates: {
                 force: boolean
                 image: string
@@ -80,12 +80,12 @@ export interface ClusterDeployment {
             versionHash: string
         }
         conditions: V1CustomResourceDefinitionCondition[]
-        installedTimestamp: string
+        installedTimestamp?: string
         installerImage: string
         provisionRef: {
             name: string
         }
-        webConsoleURL: string
+        webConsoleURL?: string
     }
 }
 

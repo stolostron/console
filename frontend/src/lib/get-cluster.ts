@@ -55,9 +55,10 @@ export type HiveSecrets = {
     installConfig: string | undefined
 }
 
-export type Nodes = NodeInfo & {
+export type Nodes = {
     active: number
     inactive: number
+    nodeList: NodeInfo[]
 }
 
 export function getSingleCluster(
@@ -69,6 +70,7 @@ export function getSingleCluster(
         getManagedClusterInfo(namespace, name),
         listCertificateSigningRequests(name),
     ]
+
     return {
         promise: Promise.allSettled(results.map((result) => result.promise)),
         abort: () => results.forEach((result) => result.abort()),

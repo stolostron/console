@@ -2,6 +2,7 @@ import {
     AcmPageHeader,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
+    AcmSpinnerBackdrop
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
@@ -24,11 +25,10 @@ export const ClusterContext = React.createContext<{
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
+    const { data, startPolling, loading } = useQuery(useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id]))
+    const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster'])
-    const queryCluster = () => getSingleCluster(match.params.id, match.params.id)
-    const { data, startPolling } = useQuery(useCallback(queryCluster, [match.params.id]))
-    const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
 
     useEffect(startPolling, [startPolling])
     useEffect(() => {
@@ -48,6 +48,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
         setCluster(singleCluster)
     }, [data])
+
+    if (loading) {
+        return <AcmSpinnerBackdrop />
+    }
 
     return (
         <Page>

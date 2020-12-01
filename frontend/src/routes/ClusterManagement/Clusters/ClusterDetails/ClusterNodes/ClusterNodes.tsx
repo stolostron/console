@@ -3,30 +3,17 @@ import {
     AcmTable,
     IAcmTableColumn
 } from '@open-cluster-management/ui-components'
-import React, { ReactNode, useCallback, useEffect } from 'react'
-import { ErrorPage } from '../../../../../components/ErrorPage'
-import { useQuery } from '../../../../../lib/useQuery'
-import { listManagedClusterInfos, NodeInfo } from '../../../../../resources/managed-cluster-info'
-
-export function useManagedClusterInfos(namespace: string) {
-    const callback = useCallback(() => {
-        return listManagedClusterInfos(namespace)
-    }, [namespace])
-    return useQuery(callback)
-}
+import React, { ReactNode, useContext } from 'react'
+import { NodeInfo } from '../../../../../resources/managed-cluster-info'
+import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent(props: { name: string; namespace: string }) {
-    const { error, data, startPolling, refresh } = useManagedClusterInfos(props.namespace)
-    useEffect(startPolling, [startPolling])
+    const { cluster } = useContext(ClusterContext)
 
-    const mcis = data?.filter((m) => m.metadata.name === props.name)
-    if (error) {
-        return <ErrorPage error={error} />
-    }
-    return <NodesPoolsTable nodes={mcis?.[0]?.status?.nodeList!} refresh={refresh} />
+    return <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
 }
 
-export function NodesPoolsTable(props: { nodes: NodeInfo[]; refresh: () => void }) {
+export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     function getLabelCellFn(label: string) {
         const labelCellFn = (node: NodeInfo) => {
             return <span>{(node.labels && node.labels[label]) || ''}</span>
