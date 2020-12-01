@@ -447,8 +447,11 @@ export function CreateBareMetalAssetPageContent(props: {
                                 console.log('is edit true: ', isEdit)
                                 console.log('checking new secret contents: ', bmaEditSecret)
 
-                                const  bodyFormData = JSON.stringify([{'data': bmaEditSecret.data}])
-                                patchResource(bmaEditSecret as Secret, bodyFormData).promise.then(() => {
+                                const  data = '{"data":{"username":"ZEdWemRBPT0=", "password":"ZEdWemRBPT0="}}'
+                                //const data = bmaEditSecret
+                                //const data = [{"op":"replace", "path":"/data", "value":{"username":"ZEdWemRBPT0=", "password":"ZEdWemRBPT0="}}]
+                                //const data = '[]'
+                                patchResource(bmaEditSecret as Secret, data).promise.then(() => {
                                     patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(() => {
                                     })
                                 })

@@ -1,4 +1,5 @@
 import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { config } from 'process'
 import {
     getResourceApiPath,
     getResourceName,
@@ -6,6 +7,7 @@ import {
     IResource,
     ResourceList,
 } from '../resources/resource'
+import { Secret } from '../resources/secret'
 import { Status, StatusKind } from '../resources/status'
 
 const baseUrl = process.env.REACT_APP_BACKEND ?? ''
@@ -67,10 +69,11 @@ export function createResource<Resource extends IResource, ResultType = Resource
 
 export function patchResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
+    data: unknown,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
-    const url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
-    return patchRequest<Resource, ResultType>(url, resource, options)
+    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    return patchRequest<Resource, ResultType>(url, data, options)
 }
 
 export function deleteResource<Resource extends IResource>(
@@ -163,6 +166,8 @@ function postRequest<ResourceType, ResultType = ResourceType>(
     data: ResourceType,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
+
+
     return axiosRequest<ResultType>({
         ...{ url, method: 'POST', validateStatus: (status) => true, data },
         ...options,
@@ -171,11 +176,19 @@ function postRequest<ResourceType, ResultType = ResourceType>(
 
 function patchRequest<ResourceType, ResultType = ResourceType>(
     url: string,
-    data: ResourceType,
+    data: unknown,
     options?: IRequestOptions
 ): IRequestResult<ResultType>{
+    const cancelTokenSource = Axios.CancelToken.source()
+    Axios.patch(url, JSON.stringify(
+        { "op": "add", "path": "/myPath", "value": ["myValue"] }
+    ), {headers:{"Content-Type": "application/merge-patch+json"},
+    ...{ cancelToken: cancelTokenSource.token, withCredentials: true }})
+
+    //Axios.delete('/cluster-management/proxy/api/v1/namespaces/bma-test-cluster/secrets/test-asset-1-bmc-secret-k964z')
     return axiosRequest<ResultType>({
-        ...{ url, method: 'PATCH', validateStatus: (status) => true, data },
+        ...{ url, method: 'PATCH', validateStatus: (status) => true, data,
+        headers:{"Content-Type": "application/merge-patch+json"}},
         ...options,
     })
 }
@@ -258,7 +271,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     }
 }
 
-function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions): Promise<AxiosResponse<ResponseType>> {
+function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions & unknown): Promise<AxiosResponse<ResponseType>> {
     const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]
     const retries = config?.retries ?? 0
     const backoff = config?.backoff ?? 300
@@ -266,6 +279,7 @@ function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions):
         function retryRequest(config: AxiosRequestConfig & IRequestOptions) {
             Axios.request(config)
                 .then((response) => {
+                    console.log('checking header: ', config.headers)
                     resolve(response)
                 })
                 .catch((err) => {
