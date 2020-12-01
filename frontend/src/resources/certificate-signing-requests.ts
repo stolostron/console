@@ -24,8 +24,8 @@ export const CertificateSigningRequestListKind = 'CertificateSigningRequestList'
 export type CertificateSigningRequestListKindType = 'CertificateSigningRequestList'
 
 export interface CertificateSigningRequestList extends IResource {
-    apiVersion: CertificateSigningRequestListApiVersionType,
-    kind: CertificateSigningRequestListKindType,
+    apiVersion: CertificateSigningRequestListApiVersionType
+    kind: CertificateSigningRequestListKindType
     items: CertificateSigningRequest[]
 }
 
