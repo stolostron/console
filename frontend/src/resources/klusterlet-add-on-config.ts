@@ -39,7 +39,7 @@ export const createKlusterletAddonConfig = (data: {
             clusterName: data.clusterName,
             clusterNamespace: data.clusterName,
             clusterLabels: { ...data.clusterLabels },
-            applicationManager: { enabled: true, argocdCluster: true },
+            applicationManager: { enabled: true, argocdCluster: false },
             policyController: { enabled: true },
             searchCollector: { enabled: true },
             certPolicyController: { enabled: true },
