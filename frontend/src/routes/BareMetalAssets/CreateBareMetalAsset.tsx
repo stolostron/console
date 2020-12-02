@@ -111,11 +111,6 @@ export function EditBareMetalAssetPageData(props: {
 }) {
     const { t } = useTranslation(['bma'])
 
-    const assetMetadata = {
-        name: props.editAssetName,
-        namespace: props.editAssetNamespace,
-    }
-
     type EditData = {
         projects: Array<Project>
         bareMetalAsset: BareMetalAsset
@@ -135,7 +130,7 @@ export function EditBareMetalAssetPageData(props: {
         resultProjects.promise
             .then((r) => {
                 projects = r
-                const resultBMA = getBareMetalAsset({ name: assetMetadata.name, namespace: assetMetadata.namespace })
+                const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
                 resultBMA
                     .then((r) => {
                         bma = r
@@ -152,7 +147,7 @@ export function EditBareMetalAssetPageData(props: {
             .catch((e) => {
                 setError(e)
             })
-    }, [])
+    }, [props.editAssetName, props.editAssetNamespace])
 
     if (resourceError) {
         return <ErrorPage error={resourceError} />
@@ -265,24 +260,13 @@ export function CreateBareMetalAssetPageContent(props: {
     }
 
     useEffect(() => {
+
         if (props.editBareMetalAsset) {
             let unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
-            updateBareMetalAsset((bareMetalAsset) => {
-                bareMetalAsset.metadata!.namespace = props.editBareMetalAsset?.metadata.namespace
-                bareMetalAsset.metadata!.name = props.editBareMetalAsset?.metadata.name
-                bareMetalAsset.spec!.bootMACAddress = props.editBareMetalAsset?.spec?.bootMACAddress!
-                bareMetalAsset.spec!.bmc.address = props.editBareMetalAsset?.spec?.bmc.address!
-                bareMetalAsset.spec!.bmc.credentialsName = props.editBareMetalAsset?.spec?.bmc.credentialsName!
-            })
-            updateBMASecret((bmaSecret) => {
-                bmaSecret.metadata!.name = unpackedSecret.metadata!.name
-                bmaSecret.metadata!.namespace = unpackedSecret.metadata!.namespace
-                bmaSecret.stringData!.password = unpackedSecret.stringData!.password
-                bmaSecret.stringData!.username = unpackedSecret.stringData!.username
-                
-            })
+            setBareMetalAsset(props.editBareMetalAsset)
+            setBMASecret(unpackedSecret)
         }
-    }, [])
+    }, [props.editBareMetalAsset, props.editSecret])
 
     return (
         <AcmPageCard>
