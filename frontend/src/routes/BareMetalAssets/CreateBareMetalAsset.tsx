@@ -13,7 +13,7 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation} from 'react-router-dom'
 import { ErrorPage } from '../../components/ErrorPage'
-import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
+import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import {
     createResource,
     patchResource,
@@ -128,25 +128,20 @@ export function EditBareMetalAssetPageData(props: {
 
         const resultProjects = listClusterResources<Project>({ kind: 'Project', apiVersion: 'project.openshift.io/v1' })
         resultProjects.promise
-            .then((r) => {
-                projects = r
-                const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
-                resultBMA
-                    .then((r) => {
-                        bma = r
-                        resultSecret = getBMASecret({ name: bma!.spec?.bmc.credentialsName, namespace: props.editAssetNamespace })
-                        resultSecret!
-                            .then((r) => {
-                                secret = r
-                                setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
-                            })
-                            .catch((e) => setError(e))
-                    })
-                    .catch((e) => setError(e)) //catch error, add to error object and output it
-            })
-            .catch((e) => {
-                setError(e)
-            })
+            .then((r) => {projects = r}).catch((e) => {setError(e)})
+            const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
+            resultBMA
+                .then((r) => {
+                    bma = r
+                    resultSecret = getBMASecret({ name: bma!.spec?.bmc.credentialsName, namespace: props.editAssetNamespace })
+                    resultSecret!
+                        .then((r) => {
+                            secret = r
+                            setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
+                        })
+                        .catch((e) => setError(e))
+                })
+                .catch((e) => setError(e)) //catch error, add to error object and output it
     }, [props.editAssetName, props.editAssetNamespace])
 
     if (resourceError) {
@@ -262,8 +257,9 @@ export function CreateBareMetalAssetPageContent(props: {
     useEffect(() => {
 
         if (props.editBareMetalAsset) {
-            let unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
-            setBareMetalAsset(props.editBareMetalAsset)
+            const unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
+            const unpackedBMA: Partial<BareMetalAsset> = unpackBareMetalAsset(props.editBareMetalAsset) 
+            setBareMetalAsset(unpackedBMA)
             setBMASecret(unpackedSecret)
         }
     }, [props.editBareMetalAsset, props.editSecret])
