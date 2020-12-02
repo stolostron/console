@@ -112,6 +112,9 @@ export async function startServer(): Promise<FastifyInstance> {
     }
 
     async function proxy(req: FastifyRequest, res: FastifyReply) {
+        if (process.env.DELAY) {
+            await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+        }
         try {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
@@ -233,7 +236,11 @@ export async function startServer(): Promise<FastifyInstance> {
     fastify.addHook('onRequest', (request, reply, done) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         ;(request as any).start = process.hrtime()
-        done()
+        if (process.env.DELAY) {
+            setTimeout(done, Number(process.env.DELAY))
+        } else {
+            done()
+        }
     })
 
     fastify.addHook('onResponse', (request, reply, done) => {

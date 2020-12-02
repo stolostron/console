@@ -19,13 +19,16 @@ export interface ProviderConnection extends V1Secret {
     spec?: {
         awsAccessKeyID?: string
         awsSecretAccessKeyID?: string
+
         baseDomainResourceGroupName?: string
         clientId?: string
         clientsecret?: string
         subscriptionid?: string
         tenantid?: string
+
         gcProjectID?: string
         gcServiceAccountKey?: string
+
         username?: string
         password?: string
         vcenter?: string
@@ -33,13 +36,13 @@ export interface ProviderConnection extends V1Secret {
         vmClusterName?: string
         datacenter?: string
         datastore?: string
+
         libvirtURI?: string
         sshKnownHosts?: string
-
-        // Image Registry Mirror
-        // Bootstrap OS Image
-        // Cluster OS Image
-        // Additional Trust Bundle
+        imageMirror?: string
+        bootstrapOSImage?: string
+        clusterOSImage?: string
+        additionalTrustBundle?: string
 
         baseDomain: string
         pullSecret: string
