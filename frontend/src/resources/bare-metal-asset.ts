@@ -30,13 +30,6 @@ export interface BareMetalAsset {
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation: Function) {
-    // const KNOWN_STATUSES = [
-    //     'CredentialsFound',
-    //     'AssetSyncStarted',
-    //     'ClusterDeploymentFound',
-    //     'AssetSyncCompleted',
-    //     'Ready',
-    // ]
     GetLabels(bareMetalAssets)
     if (bareMetalAssets.status) {
         let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime

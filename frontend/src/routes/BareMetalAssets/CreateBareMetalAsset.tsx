@@ -11,7 +11,7 @@ import {
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation, RouteComponentProps } from 'react-router-dom'
+import { useHistory, useLocation} from 'react-router-dom'
 import { ErrorPage } from '../../components/ErrorPage'
 import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
 import {
@@ -22,7 +22,7 @@ import {
     listClusterResources,
 } from '../../../src/lib/resource-request'
 import { Project, listProjects } from '../../resources/project'
-import { Secret } from '../../resources/secret'
+import { Secret, unpackSecret } from '../../resources/secret'
 import { NavigationPath } from '../../NavigationPath'
 import { useQuery } from '../../lib/useQuery'
 
@@ -73,7 +73,6 @@ function getBMASecret(metadata: Object) {
 }
 
 export default function CreateBareMetalAssetPage(
-    { match }: RouteComponentProps<{ id: string }>,
     props: { bmaSecretID?: string }
 ) {
     const { t } = useTranslation(['bma'])
@@ -241,7 +240,7 @@ export function CreateBareMetalAssetPageContent(props: {
         },
     })
 
-    let [bmaSecret, setBMASecret] = useState<Partial<BMASecret>>({
+    let [bmaSecret, setBMASecret] = useState<Partial<Secret>>({
         kind: 'Secret',
         apiVersion: 'v1',
         metadata: {
@@ -263,33 +262,23 @@ export function CreateBareMetalAssetPageContent(props: {
         update(copy)
         setBareMetalAsset(copy)
     }
-    function updateBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
+    function updateBMASecret(update: (bmaSecret: Partial<Secret>) => void) {
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
     }
 
-    
     useEffect(() => {
         if (props.editBareMetalAsset) {
             isEdit = true
-            updateBareMetalAsset((bareMetalAsset) => {
-                bareMetalAsset.metadata!.namespace = props.editBareMetalAsset?.metadata.namespace
-                bareMetalAsset.metadata!.name = props.editBareMetalAsset?.metadata.name
-                bareMetalAsset.spec!.bootMACAddress = props.editBareMetalAsset?.spec?.bootMACAddress!
-                bareMetalAsset.spec!.bmc.address = props.editBareMetalAsset?.spec?.bmc.address!
-                bareMetalAsset.spec!.bmc.credentialsName = props.editBareMetalAsset?.spec?.bmc.credentialsName!
-            })
+            bareMetalAsset = props.editBareMetalAsset
+            bmaSecret = unpackSecret(props.editSecret!)
 
-            updateBMASecret((bmaSecret) => {
-                bmaSecret.metadata!.name = props.editSecret?.metadata.name
-                bmaSecret.metadata!.namespace = props.editSecret?.metadata.namespace
-                bmaSecret.stringData!.password = atob(props.editSecret!.data!['password'])
-                bmaSecret.stringData!.username = atob(props.editSecret!.data!['username'])
-            })
+            // prompt re-render after assignment
+            updateBareMetalAsset((bareMetalAsset) => {})
+            updateBMASecret((bmaSecret) => {})
         }
     }, [])
-
 
     return (
         <AcmPageCard>
@@ -396,31 +385,37 @@ export function CreateBareMetalAssetPageContent(props: {
                         variant="primary"
                         onClick={() => {
                             if (isEdit) {
-                                patchResource(bmaSecret as Secret, bmaSecret).promise.then(() => {
-                                    patchResource(
-                                        bareMetalAsset as BareMetalAsset,
-                                        bareMetalAsset
-                                    ).promise.catch(e=>{
+                                patchResource(bmaSecret as Secret, bmaSecret)
+                                    .promise.then(() => {
+                                        patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(()=>{
+                                            history.push(NavigationPath.bareMetalAssets)
+                                        }).catch(
+                                            (e) => {
+                                                setError(e)
+                                                //Error alert?
+                                            }
+                                        )
+                                    })
+                                    .catch((e) => {
                                         setError(e)
                                         //Error alert?
                                     })
-                                }).catch(e =>{
-                                    setError(e)
-                                    //Error alert?
-                                })
                             } else {
                                 createResource(bmaSecret as BMASecret).promise.then(() => {
-                                    props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
-                                        history.push(NavigationPath.bareMetalAssets)
-                                    }).catch(e=>{
-                                        setError(e)
-                                        //Error alert?
-                                    })
+                                    props
+                                        .createBareMetalAsset(bareMetalAsset as BareMetalAsset)
+                                        .promise.then(() => {
+                                            history.push(NavigationPath.bareMetalAssets)
+                                        })
+                                        .catch((e) => {
+                                            setError(e)
+                                            //Error alert?
+                                        })
                                 })
                             }
                         }}
                     >
-                        {t('createBareMetalAsset.button.create')}
+                        {isEdit ? t('editBareMetalAsset.button.submit') : t('createBareMetalAsset.button.create')}
                     </AcmSubmit>
                     <Button
                         variant="link"

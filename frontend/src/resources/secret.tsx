@@ -18,12 +18,14 @@ export function getSecret(metadata: { name: string; namespace: string }) {
     return getResource<Secret>({ apiVersion: SecretApiVersion, kind: SecretKind, metadata })
 }
 
-export function unpackSecret(secret: Secret) {
+export function unpackSecret(secret: Secret | Partial<Secret> ) {
+    let unpackedSecret: Partial<Secret>
     if (secret.data) {
         if (!secret.stringData) secret.stringData = {}
         for (const key in secret.data) {
             secret.stringData[key] = Buffer.from(secret.data[key], 'base64').toString('ascii')
         }
     }
-    return secret
+    unpackedSecret = secret
+    return unpackedSecret
 }

@@ -19,7 +19,8 @@
   "createBareMetalAsset.form.invalidBmcAddress":"Invalid format of BMC address",
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
-
+  
+  "editBareMetalAsset.button.submit":"Submit",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
   "bareMetalAsset.tableHeader.name":"Name",
