@@ -15,97 +15,49 @@ import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextA
 import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
+import { IRequestResult } from '../../../lib/resource-request'
 import { validateKubernetesDnsName, validatePrivateSshKey, validatePublicSshKey } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
 import {
     createProviderConnection,
+    getProviderConnection,
     getProviderConnectionProviderID,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     setProviderConnectionProviderID,
+    replaceProviderConnection,
 } from '../../../resources/provider-connection'
 
-export default function AddConnectionPage() {
+export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
     return (
         <Page>
-            <AcmPageHeader
-                title={t('addConnection.title')}
-                breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
-            />
-            <AddConnectionPageData />
+            {match.params.namespace ? (
+                <AcmPageHeader
+                    title={t('editConnection.title')}
+                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                />
+            ) : (
+                <AcmPageHeader
+                    title={t('addConnection.title')}
+                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                />
+            )}
+            <AddConnectionPageData {...match.params} />
         </Page>
     )
 }
 
-export function AddConnectionPageData() {
+export function AddConnectionPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection'])
     const [projects, setProjects] = useState<Project[]>()
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
-    useEffect(() => {
-        const result = listProjects()
-        result.promise
-            .then((projects) => {
-                setProjects(projects)
-                setError(undefined)
-            })
-            .catch(setError)
-        return result.abort
-    }, [retry])
-
-    if (error) {
-        return (
-            <ErrorPage
-                error={error}
-                actions={
-                    <AcmButton
-                        onClick={() => {
-                            setRetry(retry + 1)
-                        }}
-                    >
-                        Retry
-                    </AcmButton>
-                }
-            />
-        )
-    }
-    if (!projects) {
-        return <AcmLoadingPage />
-    }
-    if (projects.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('addConnection.error.noNamespacesFound')}
-                    message={t('addConnection.error.noNamespacesFound')}
-                    action={
-                        <AcmButton
-                            onClick={() => {
-                                setRetry(retry + 1)
-                            }}
-                        >
-                            Retry
-                        </AcmButton>
-                    }
-                />
-            </AcmPageCard>
-        )
-    }
-    return <AddConnectionPageContent projects={projects} />
-}
-
-export function AddConnectionPageContent(props: { projects: Project[] }) {
-    const { t } = useTranslation(['connection'])
-    const history = useHistory()
-
-    const [addButtonLabel, setAddButtonLabel] = useState<string>(t('addConnection.addButton.label'))
-    const [errors, setErrors] = useState<string[]>([])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
@@ -148,6 +100,84 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
             sshPublickey: '',
         },
     })
+
+    useEffect(() => {
+        setError(undefined)
+    }, [retry])
+
+    useEffect(() => {
+        const result = listProjects()
+        result.promise
+            .then((projects) => {
+                setProjects(projects)
+            })
+            .catch(setError)
+        return result.abort
+    }, [retry])
+
+    useEffect(() => {
+        const result = getProviderConnection(props)
+        result.promise
+            .then((providerConnection) => {
+                setProviderConnection(providerConnection)
+            })
+            .catch(setError)
+        return result.abort
+    }, [retry, props])
+
+    if (error) {
+        return (
+            <ErrorPage
+                error={error}
+                actions={
+                    <AcmButton
+                        onClick={() => {
+                            setRetry(retry + 1)
+                        }}
+                    >
+                        Retry
+                    </AcmButton>
+                }
+            />
+        )
+    }
+    if (!projects) {
+        return <AcmLoadingPage />
+    }
+    if (projects.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('addConnection.error.noNamespacesFound')}
+                    message={t('addConnection.error.noNamespacesFound')}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
+            </AcmPageCard>
+        )
+    }
+
+    return <AddConnectionPageContent projects={projects} providerConnection={providerConnection} />
+}
+
+export function AddConnectionPageContent(props: { projects: Project[]; providerConnection: ProviderConnection }) {
+    const { t } = useTranslation(['connection'])
+    const history = useHistory()
+
+    const isEditing = props.providerConnection.metadata.name !== ''
+    const [addButtonLabel, setAddButtonLabel] = useState<string>(
+        isEditing ? t('addConnection.editButton.label') : t('addConnection.addButton.label')
+    )
+    const [errors, setErrors] = useState<string[]>([])
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -168,6 +198,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                         })
                     }}
+                    isDisabled={isEditing}
                     isRequired
                 >
                     {providers.map((provider) => (
@@ -189,6 +220,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     }}
                     validation={(value) => validateKubernetesDnsName(value, 'Connection name')}
                     isRequired
+                    isDisabled={isEditing}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 />
                 <AcmSelect
@@ -203,6 +235,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                         })
                     }}
                     isRequired
+                    isDisabled={isEditing}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 >
                     {props.projects.map((project) => (
@@ -629,9 +662,16 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             delete providerConnection.data
 
                             setErrors([])
-                            setAddButtonLabel(t('addConnection.addingButton.label'))
-                            return createProviderConnection(providerConnection)
-                                .promise.then(() => {
+                            setAddButtonLabel(t('addConnection.applyingButton.label'))
+
+                            let result: IRequestResult<ProviderConnection>
+                            if (isEditing) {
+                                result = replaceProviderConnection(providerConnection)
+                            } else {
+                                result = createProviderConnection(providerConnection)
+                            }
+                            return result.promise
+                                .then(() => {
                                     history.push(NavigationPath.providerConnections)
                                 })
                                 .catch((err) => {
@@ -639,7 +679,11 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                                     if (err instanceof Error) {
                                         setErrors([err.message])
                                     }
-                                    setAddButtonLabel(t('addConnection.addButton.label'))
+                                    setAddButtonLabel(
+                                        isEditing
+                                            ? t('addConnection.editButton.label')
+                                            : t('addConnection.addButton.label')
+                                    )
                                 })
                         }}
                     >
