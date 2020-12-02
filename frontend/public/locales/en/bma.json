@@ -20,7 +20,7 @@
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
   
-  "editBareMetalAsset.button.submit":"Submit",
+  "editBareMetalAsset.button.submit":"Apply",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
   "bareMetalAsset.tableHeader.name":"Name",

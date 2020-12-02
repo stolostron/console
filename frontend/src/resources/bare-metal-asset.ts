@@ -113,22 +113,21 @@ export function listBareMetalAssets() {
     }
 }
 
-export function unpackBareMetalAsset(bma:BareMetalAsset){
-    const unpackedBMA:Partial<BareMetalAsset> = {
+export function unpackBareMetalAsset(bma: BareMetalAsset) {
+    const unpackedBMA: Partial<BareMetalAsset> = {
         kind: bma.kind,
         apiVersion: bma.apiVersion,
         metadata: {
             name: bma.metadata.name,
-            namespace: bma.metadata.namespace
+            namespace: bma.metadata.namespace,
         },
         spec: {
             bmc: {
                 address: bma.spec?.bmc.address!,
-                credentialsName: bma.spec?.bmc.address!,
+                credentialsName: bma.spec?.bmc.credentialsName!,
             },
             bootMACAddress: bma.spec?.bootMACAddress!,
         },
-        
     }
     return unpackedBMA
 }

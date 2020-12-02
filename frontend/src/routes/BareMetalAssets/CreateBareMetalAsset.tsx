@@ -1,4 +1,6 @@
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -8,10 +10,10 @@ import {
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation} from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ErrorPage } from '../../components/ErrorPage'
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import {
@@ -72,9 +74,7 @@ function getBMASecret(metadata: Object) {
     return getResource<Secret>({ kind: 'Secret', apiVersion: 'v1', metadata: metadata }).promise
 }
 
-export default function CreateBareMetalAssetPage(
-    props: { bmaSecretID?: string }
-) {
+export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
     let path: Array<string>
     let editAssetName: string = ''
@@ -128,20 +128,28 @@ export function EditBareMetalAssetPageData(props: {
 
         const resultProjects = listClusterResources<Project>({ kind: 'Project', apiVersion: 'project.openshift.io/v1' })
         resultProjects.promise
-            .then((r) => {projects = r}).catch((e) => {setError(e)})
-            const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
-            resultBMA
-                .then((r) => {
-                    bma = r
-                    resultSecret = getBMASecret({ name: bma!.spec?.bmc.credentialsName, namespace: props.editAssetNamespace })
-                    resultSecret!
-                        .then((r) => {
-                            secret = r
-                            setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
-                        })
-                        .catch((e) => setError(e))
+            .then((r) => {
+                projects = r
+            })
+            .catch((e) => {
+                setError(e)
+            })
+        const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
+        resultBMA
+            .then((r) => {
+                bma = r
+                resultSecret = getBMASecret({
+                    name: bma!.spec?.bmc.credentialsName,
+                    namespace: props.editAssetNamespace,
                 })
-                .catch((e) => setError(e)) //catch error, add to error object and output it
+                resultSecret!
+                    .then((r) => {
+                        secret = r
+                        setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
+                    })
+                    .catch((e) => setError(e))
+            })
+            .catch((e) => setError(e)) //catch error, add to error object and output it
     }, [props.editAssetName, props.editAssetNamespace])
 
     if (resourceError) {
@@ -209,7 +217,7 @@ export function CreateBareMetalAssetPageContent(props: {
     let isEdit = props.editBareMetalAsset ? true : false
     let secretName = ''
 
-    //const [resourceError, setError] = useState<Error>()
+    const [errors, setErrors] = useState<string[]>([])
     let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -255,10 +263,9 @@ export function CreateBareMetalAssetPageContent(props: {
     }
 
     useEffect(() => {
-
         if (props.editBareMetalAsset) {
             const unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
-            const unpackedBMA: Partial<BareMetalAsset> = unpackBareMetalAsset(props.editBareMetalAsset) 
+            const unpackedBMA: Partial<BareMetalAsset> = unpackBareMetalAsset(props.editBareMetalAsset)
             setBareMetalAsset(unpackedBMA)
             setBMASecret(unpackedSecret)
         }
@@ -362,38 +369,57 @@ export function CreateBareMetalAssetPageContent(props: {
                     isRequired
                     validation={(value) => ValidateField(value, 'bootMACAddress', t)}
                 />
-
+                {errors && errors.length > 0 && (
+                    <AcmAlertGroup>
+                        {errors.map((error) => (
+                            <AcmAlert
+                                isInline
+                                variant={AlertVariant.danger}
+                                title={t('common:request.failed')}
+                                subtitle={error}
+                                key={error}
+                            />
+                        ))}
+                    </AcmAlertGroup>
+                )}
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
                         variant="primary"
                         onClick={() => {
+                            setErrors([])
                             if (isEdit) {
-                                patchResource(bmaSecret as BMASecret, bmaSecret)
+                                return patchResource(bmaSecret as BMASecret, bmaSecret)
                                     .promise.then(() => {
-                                        patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(()=>{
-                                            history.push(NavigationPath.bareMetalAssets)
-                                        }).catch(
-                                            (e) => {
-                                                //setError(e)
-                                                //Error alert?
-                                            }
-                                        )
+                                        return patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset)
+                                            .promise.then(() => {
+                                                history.push(NavigationPath.bareMetalAssets)
+                                            })
+                                            .catch((e) => {
+                                                /* istanbul ignore else */
+                                                if (e instanceof Error) {
+                                                    setErrors([e.message])
+                                                }
+                                            })
                                     })
                                     .catch((e) => {
-                                        //setError(e)
-                                        //Error alert?
+                                        /* istanbul ignore else */
+                                        if (e instanceof Error) {
+                                            setErrors([e.message])
+                                        }
                                     })
                             } else {
-                                createResource(bmaSecret as BMASecret).promise.then(() => {
-                                    props
+                                return createResource(bmaSecret as BMASecret).promise.then(() => {
+                                    return props
                                         .createBareMetalAsset(bareMetalAsset as BareMetalAsset)
                                         .promise.then(() => {
                                             history.push(NavigationPath.bareMetalAssets)
                                         })
                                         .catch((e) => {
-                                            //setError(e)
-                                            //Error alert?
+                                            /* istanbul ignore else */
+                                            if (e instanceof Error) {
+                                                setErrors([e.message])
+                                            }
                                         })
                                 })
                             }
