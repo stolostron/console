@@ -103,7 +103,7 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     return (
         <AcmPageCard>
             <AcmTable<NodeInfo>
-                plural="nodeinfos"
+                plural="nodes"
                 items={props.nodes}
                 columns={columns}
                 keyFn={keyFn}

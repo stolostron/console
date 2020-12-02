@@ -2,11 +2,12 @@ import {
     AcmPageHeader,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-    AcmSpinnerBackdrop
+    AcmSpinnerBackdrop,
+    AcmPage,
+    AcmButton
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
 import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
@@ -17,6 +18,8 @@ import { getSingleCluster, getCluster, Cluster } from '../../../../lib/get-clust
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -25,36 +28,56 @@ export const ClusterContext = React.createContext<{
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
-    const { data, startPolling, loading } = useQuery(useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id]))
+    const { data, startPolling, loading, error } = useQuery(useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id]))
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
+    const [resourceError, setResourceError] = useState<Error | undefined>(undefined)
     const location = useLocation()
+    const history = useHistory()
     const { t } = useTranslation(['cluster'])
 
     useEffect(startPolling, [startPolling])
     useEffect(() => {
-        const items = data?.map((d) => {
-            if (d.status === 'fulfilled') {
-                return d.value
-            } else {
-                console.error(d.reason)
-                return undefined
-            }
-        })
-
-        let singleCluster: Cluster | undefined
-        if (items) {
-            singleCluster = getCluster(items[1] as ManagedClusterInfo, items[0] as ClusterDeployment, items[2] as CertificateSigningRequest[])
+        if (error) {
+            return setResourceError(error)
         }
 
-        setCluster(singleCluster)
-    }, [data])
+        const results = data ?? []
+        if (results.length > 0) {
+            if (results[0].status === 'rejected' && results[1].status === 'rejected') {
+                const cdRequest = results[0] as PromiseRejectedResult
+                const mciRequest = results[1] as PromiseRejectedResult
+                if (cdRequest.reason.code === mciRequest.reason.code) {
+                    const resourceError: ResourceError = { code: mciRequest.reason.code as ResourceErrorCode, message: cdRequest.reason.message + '.  ' + mciRequest.reason.message as string, name: '' }
+                    setResourceError(resourceError)
+                } else {
+                    const resourceError: ResourceError = { code: mciRequest.reason.code as ResourceErrorCode, message: mciRequest.reason.message as string, name: '' }
+                    setResourceError(resourceError)
+                }
+            }
+
+            const items = results.map((d) => {
+                if (d.status === 'fulfilled') {
+                    return d.value
+                } else {
+                    return undefined
+                }
+            })
+    
+            const singleCluster = getCluster(items[1] as ManagedClusterInfo, items[0] as ClusterDeployment, items[2] as CertificateSigningRequest[])
+            setCluster(singleCluster)
+        }
+    }, [data, error])
 
     if (loading) {
         return <AcmSpinnerBackdrop />
     }
 
+    if (resourceError) {
+        return <AcmPage><ErrorPage error={resourceError} actions={<AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>{t('button.backToClusters')}</AcmButton>} /></AcmPage>
+    }
+
     return (
-        <Page>
+        <AcmPage>
             <ClusterContext.Provider value={{ cluster }}>
                 <AcmPageHeader title={match.params.id} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('cluster.details'), to: '' }]} />
                 <AcmSecondaryNav>
@@ -91,6 +114,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     </Switch>
                 </Suspense>
             </ClusterContext.Provider>
-        </Page>
+        </AcmPage>
     )
 }

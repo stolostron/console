@@ -137,9 +137,15 @@ const mockCertificateSigningRequestList: CertificateSigningRequestList = {
     items: []
 }
 
+const clusterDeployment404 = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"clusterdeployments.hive.openshift.io \"foobar\" not found","reason":"NotFound","details":{"name":"foobar","group":"hive.openshift.io","kind":"clusterdeployments"},"code":404}
+const managedClusterInfo404 = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"managedclusterinfos.internal.open-cluster-management.io \"foobar\" not found","reason":"NotFound","details":{"name":"foobar","group":"internal.open-cluster-management.io","kind":"managedclusterinfos"},"code":404}
+
 const nockManagedClusterInfo = () => nockGet(mockManagedClusterInfo)
 const nockClusterDeployment = () => nockGet(mockClusterDeployment)
 const nockCertificateSigningRequestList = () => nockClusterList({ apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind }, mockCertificateSigningRequestList, ['open-cluster-management.io/cluster-name=test-cluster'])
+
+const nockManagedClusterInfo404 = () => nockGet(mockManagedClusterInfo, managedClusterInfo404, 404)
+const nockClusterDeployment404 = () => nockGet(mockClusterDeployment, clusterDeployment404, 404)
 
 describe('ClusterDetails page', () => {
     const Component = () => (
@@ -164,5 +170,13 @@ describe('ClusterDetails page', () => {
         await waitFor(() => expect(getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
         userEvent.click(getByText('Region'))
         await waitFor(() => expect(getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+    })
+    test('renders error state', async () => {
+        nockManagedClusterInfo404()
+        nockClusterDeployment404()
+        nockCertificateSigningRequestList()
+
+        const { getByText } = render(<Component />)
+        await waitFor(() => expect(getByText('Error')).toBeInTheDocument())
     })
 })

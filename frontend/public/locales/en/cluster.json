@@ -23,6 +23,7 @@
   "discovery.enablediscoverybtn": "Enable cluster discovery",
   "discovery.emptyStateHeader": "No clusters are discovered, yet",
   "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
+  "button.backToClusters": "Back to Clusters page",
 
   "table.name": "Name",
   "table.status": "Status",
