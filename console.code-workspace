@@ -1,9 +1,6 @@
 {
     "folders": [
         {
-            "path": "docs"
-        },
-        {
             "path": "frontend"
         },
         {
@@ -11,9 +8,6 @@
         }
     ],
     "settings": {
-        "jest.disabledWorkspaceFolders": [
-            "docs"
-        ],
         "typescript.tsdk": "frontend/node_modules/typescript/lib"
     }
 }

@@ -2,7 +2,7 @@
 import { config } from 'dotenv'
 config()
 
-import { logger } from './lib/logger'
+import { logger, stopLogger } from './lib/logger'
 
 if (!process.env.GENERATE) {
     if (!process.env.CLUSTER_API_URL) throw new Error('CLUSTER_API_URL required')
@@ -34,6 +34,7 @@ process.on('exit', function processExit(code) {
     } else {
         logger.debug({ msg: `process exit` })
     }
+    stopLogger()
 })
 
 process.on('uncaughtException', (error) => {

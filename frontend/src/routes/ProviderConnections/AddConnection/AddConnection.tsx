@@ -1,4 +1,6 @@
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmButton,
     AcmEmptyState,
     AcmForm,
@@ -10,7 +12,7 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -42,6 +44,7 @@ export default function AddConnectionPage() {
 }
 
 export function AddConnectionPageData() {
+    const { t } = useTranslation(['connection'])
     const [projects, setProjects] = useState<Project[]>()
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
@@ -79,8 +82,8 @@ export function AddConnectionPageData() {
         return (
             <AcmPageCard>
                 <AcmEmptyState
-                    title="No namespaces found."
-                    message="No namespaces found."
+                    title={t('addConnection.error.noNamespacesFound')}
+                    message={t('addConnection.error.noNamespacesFound')}
                     action={
                         <AcmButton
                             onClick={() => {
@@ -101,6 +104,9 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
+    const [addButtonLabel, setAddButtonLabel] = useState<string>(t('addConnection.addButton.label'))
+    const [errors, setErrors] = useState<string[]>([])
+
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
@@ -111,13 +117,16 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
         spec: {
             awsAccessKeyID: '',
             awsSecretAccessKeyID: '',
+
             baseDomainResourceGroupName: '',
             clientId: '',
             clientsecret: '',
             subscriptionid: '',
             tenantid: '',
+
             gcProjectID: '',
             gcServiceAccountKey: '',
+
             username: '',
             password: '',
             vcenter: '',
@@ -125,8 +134,14 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
             vmClusterName: '',
             datacenter: '',
             datastore: '',
+
             libvirtURI: '',
             sshKnownHosts: '',
+            imageMirror: '',
+            bootstrapOSImage: '',
+            clusterOSImage: '',
+            additionalTrustBundle: '',
+
             baseDomain: '',
             pullSecret: '',
             sshPrivatekey: '',
@@ -146,6 +161,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="providerName"
                     label={t('addConnection.providerName.label')}
                     placeholder={t('addConnection.providerName.placeholder')}
+                    labelHelp={t('addConnection.providerName.labelHelp')}
                     value={getProviderConnectionProviderID(providerConnection)}
                     onChange={(providerID) => {
                         updateProviderConnection((providerConnection) => {
@@ -160,11 +176,11 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                         </SelectOption>
                     ))}
                 </AcmSelect>
-
                 <AcmTextInput
                     id="connectionName"
                     label={t('addConnection.connectionName.label')}
                     placeholder={t('addConnection.connectionName.placeholder')}
+                    labelHelp={t('addConnection.connectionName.labelHelp')}
                     value={providerConnection.metadata.name}
                     onChange={(name) => {
                         updateProviderConnection((providerConnection) => {
@@ -179,6 +195,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="namespaceName"
                     label={t('addConnection.namespaceName.label')}
                     placeholder={t('addConnection.namespaceName.placeholder')}
+                    labelHelp={t('addConnection.namespaceName.labelHelp')}
                     value={providerConnection.metadata.namespace}
                     onChange={(namespace) => {
                         updateProviderConnection((providerConnection) => {
@@ -198,6 +215,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="awsAccessKeyID"
                     label={t('addConnection.awsAccessKeyID.label')}
                     placeholder={t('addConnection.awsAccessKeyID.placeholder')}
+                    labelHelp={t('addConnection.awsAccessKeyID.labelHelp')}
                     value={providerConnection.spec?.awsAccessKeyID}
                     onChange={(awsAccessKeyID) => {
                         updateProviderConnection((providerConnection) => {
@@ -211,6 +229,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="awsSecretAccessKeyID"
                     label={t('addConnection.awsSecretAccessKeyID.label')}
                     placeholder={t('addConnection.awsSecretAccessKeyID.placeholder')}
+                    labelHelp={t('addConnection.awsSecretAccessKeyID.labelHelp')}
                     value={providerConnection.spec?.awsSecretAccessKeyID}
                     onChange={(awsSecretAccessKeyID) => {
                         updateProviderConnection((providerConnection) => {
@@ -224,6 +243,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="baseDomainResourceGroupName"
                     label={t('addConnection.baseDomainResourceGroupName.label')}
                     placeholder={t('addConnection.baseDomainResourceGroupName.placeholder')}
+                    labelHelp={t('addConnection.baseDomainResourceGroupName.labelHelp')}
                     value={providerConnection.spec?.baseDomainResourceGroupName}
                     onChange={(baseDomainResourceGroupName) => {
                         updateProviderConnection((providerConnection) => {
@@ -237,6 +257,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="clientId"
                     label={t('addConnection.clientId.label')}
                     placeholder={t('addConnection.clientId.placeholder')}
+                    labelHelp={t('addConnection.clientId.labelHelp')}
                     value={providerConnection.spec?.clientId}
                     onChange={(clientId) => {
                         updateProviderConnection((providerConnection) => {
@@ -250,6 +271,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="clientsecret"
                     label={t('addConnection.clientsecret.label')}
                     placeholder={t('addConnection.clientsecret.placeholder')}
+                    labelHelp={t('addConnection.clientsecret.labelHelp')}
                     value={providerConnection.spec?.clientsecret}
                     onChange={(clientsecret) => {
                         updateProviderConnection((providerConnection) => {
@@ -263,6 +285,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="subscriptionid"
                     label={t('addConnection.subscriptionid.label')}
                     placeholder={t('addConnection.subscriptionid.placeholder')}
+                    labelHelp={t('addConnection.subscriptionid.labelHelp')}
                     value={providerConnection.spec?.subscriptionid}
                     onChange={(subscriptionid) => {
                         updateProviderConnection((providerConnection) => {
@@ -276,6 +299,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="tenantid"
                     label={t('addConnection.tenantid.label')}
                     placeholder={t('addConnection.tenantid.placeholder')}
+                    labelHelp={t('addConnection.tenantid.labelHelp')}
                     value={providerConnection.spec?.tenantid}
                     onChange={(tenantid) => {
                         updateProviderConnection((providerConnection) => {
@@ -289,6 +313,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="gcProjectID"
                     label={t('addConnection.gcProjectID.label')}
                     placeholder={t('addConnection.gcProjectID.placeholder')}
+                    labelHelp={t('addConnection.gcProjectID.labelHelp')}
                     value={providerConnection.spec?.gcProjectID}
                     onChange={(gcProjectID) => {
                         updateProviderConnection((providerConnection) => {
@@ -302,6 +327,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="gcServiceAccountKey"
                     label={t('addConnection.gcServiceAccountKey.label')}
                     placeholder={t('addConnection.gcServiceAccountKey.placeholder')}
+                    labelHelp={t('addConnection.gcServiceAccountKey.labelHelp')}
                     value={providerConnection.spec?.gcServiceAccountKey}
                     onChange={(gcServiceAccountKey) => {
                         updateProviderConnection((providerConnection) => {
@@ -315,6 +341,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="vcenter"
                     label={t('addConnection.vcenter.label')}
                     placeholder={t('addConnection.vcenter.placeholder')}
+                    labelHelp={t('addConnection.vcenter.labelHelp')}
                     value={providerConnection.spec?.vcenter}
                     onChange={(vcenter) => {
                         updateProviderConnection((providerConnection) => {
@@ -328,6 +355,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="username"
                     label={t('addConnection.username.label')}
                     placeholder={t('addConnection.username.placeholder')}
+                    labelHelp={t('addConnection.username.labelHelp')}
                     value={providerConnection.spec?.username}
                     onChange={(username) => {
                         updateProviderConnection((providerConnection) => {
@@ -341,6 +369,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="password"
                     label={t('addConnection.password.label')}
                     placeholder={t('addConnection.password.placeholder')}
+                    labelHelp={t('addConnection.password.labelHelp')}
                     value={providerConnection.spec?.password}
                     onChange={(password) => {
                         updateProviderConnection((providerConnection) => {
@@ -354,6 +383,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="cacertificate"
                     label={t('addConnection.cacertificate.label')}
                     placeholder={t('addConnection.cacertificate.placeholder')}
+                    labelHelp={t('addConnection.cacertificate.labelHelp')}
                     value={providerConnection.spec?.cacertificate}
                     onChange={(cacertificate) => {
                         updateProviderConnection((providerConnection) => {
@@ -367,6 +397,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="vmClusterName"
                     label={t('addConnection.vmClusterName.label')}
                     placeholder={t('addConnection.vmClusterName.placeholder')}
+                    labelHelp={t('addConnection.vmClusterName.labelHelp')}
                     value={providerConnection.spec?.vmClusterName}
                     onChange={(vmClusterName) => {
                         updateProviderConnection((providerConnection) => {
@@ -380,6 +411,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="datacenter"
                     label={t('addConnection.datacenter.label')}
                     placeholder={t('addConnection.datacenter.placeholder')}
+                    labelHelp={t('addConnection.datacenter.labelHelp')}
                     value={providerConnection.spec?.datacenter}
                     onChange={(datacenter) => {
                         updateProviderConnection((providerConnection) => {
@@ -393,6 +425,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="datastore"
                     label={t('addConnection.datastore.label')}
                     placeholder={t('addConnection.datastore.placeholder')}
+                    labelHelp={t('addConnection.datastore.labelHelp')}
                     value={providerConnection.spec?.datastore}
                     onChange={(datastore) => {
                         updateProviderConnection((providerConnection) => {
@@ -406,6 +439,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="libvirtURI"
                     label={t('addConnection.libvirtURI.label')}
                     placeholder={t('addConnection.libvirtURI.placeholder')}
+                    labelHelp={t('addConnection.libvirtURI.labelHelp')}
                     value={providerConnection.spec?.libvirtURI}
                     onChange={(libvirtURI) => {
                         updateProviderConnection((providerConnection) => {
@@ -419,6 +453,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="sshKnownHosts"
                     label={t('addConnection.sshKnownHosts.label')}
                     placeholder={t('addConnection.sshKnownHosts.placeholder')}
+                    labelHelp={t('addConnection.sshKnownHosts.labelHelp')}
                     value={providerConnection.spec?.sshKnownHosts}
                     onChange={(sshKnownHosts) => {
                         updateProviderConnection((providerConnection) => {
@@ -429,9 +464,62 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     isRequired
                 />
                 <AcmTextInput
+                    id="imageMirror"
+                    label={t('addConnection.imageMirror.label')}
+                    placeholder={t('addConnection.imageMirror.placeholder')}
+                    labelHelp={t('addConnection.imageMirror.labelHelp')}
+                    value={providerConnection.spec?.imageMirror}
+                    onChange={(imageMirror) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.imageMirror = imageMirror as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                />
+                <AcmTextInput
+                    id="bootstrapOSImage"
+                    label={t('addConnection.bootstrapOSImage.label')}
+                    placeholder={t('addConnection.bootstrapOSImage.placeholder')}
+                    labelHelp={t('addConnection.bootstrapOSImage.labelHelp')}
+                    value={providerConnection.spec?.bootstrapOSImage}
+                    onChange={(bootstrapOSImage) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.bootstrapOSImage = bootstrapOSImage as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                />
+                <AcmTextInput
+                    id="clusterOSImage"
+                    label={t('addConnection.clusterOSImage.label')}
+                    placeholder={t('addConnection.clusterOSImage.placeholder')}
+                    labelHelp={t('addConnection.clusterOSImage.labelHelp')}
+                    value={providerConnection.spec?.clusterOSImage}
+                    onChange={(clusterOSImage) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.clusterOSImage = clusterOSImage as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                />
+                <AcmTextInput
+                    id="additionalTrustBundle"
+                    label={t('addConnection.additionalTrustBundle.label')}
+                    placeholder={t('addConnection.additionalTrustBundle.placeholder')}
+                    labelHelp={t('addConnection.additionalTrustBundle.labelHelp')}
+                    value={providerConnection.spec?.additionalTrustBundle}
+                    onChange={(additionalTrustBundle) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.additionalTrustBundle = additionalTrustBundle as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                />
+                <AcmTextInput
                     id="baseDomain"
                     label={t('addConnection.baseDomain.label')}
                     placeholder={t('addConnection.baseDomain.placeholder')}
+                    labelHelp={t('addConnection.baseDomain.labelHelp')}
                     value={providerConnection.spec?.baseDomain}
                     onChange={(baseDomain) => {
                         updateProviderConnection((providerConnection) => {
@@ -445,6 +533,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="pullSecret"
                     label={t('addConnection.pullSecret.label')}
                     placeholder={t('addConnection.pullSecret.placeholder')}
+                    labelHelp={t('addConnection.pullSecret.labelHelp')}
                     value={providerConnection.spec?.pullSecret}
                     onChange={(pullSecret) => {
                         updateProviderConnection((providerConnection) => {
@@ -458,6 +547,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="sshPrivateKey"
                     label={t('addConnection.sshPrivateKey.label')}
                     placeholder={t('addConnection.sshPrivateKey.placeholder')}
+                    labelHelp={t('addConnection.sshPrivateKey.labelHelp')}
                     resizeOrientation="vertical"
                     value={providerConnection.spec?.sshPrivatekey}
                     onChange={(sshPrivatekey) => {
@@ -473,6 +563,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     id="sshPublicKey"
                     label={t('addConnection.sshPublicKey.label')}
                     placeholder={t('addConnection.sshPublicKey.placeholder')}
+                    labelHelp={t('addConnection.sshPublicKey.labelHelp')}
                     resizeOrientation="vertical"
                     value={providerConnection.spec?.sshPublickey}
                     onChange={(sshPublickey) => {
@@ -484,6 +575,19 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     validation={validatePublicSshKey}
                     isRequired
                 />
+                {errors && errors.length > 0 && (
+                    <AcmAlertGroup>
+                        {errors.map((error) => (
+                            <AcmAlert
+                                isInline
+                                variant={AlertVariant.danger}
+                                title={t('common:request.failed')}
+                                subtitle={error}
+                                key={error}
+                            />
+                        ))}
+                    </AcmAlertGroup>
+                )}
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
@@ -504,6 +608,10 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             if (providerID !== ProviderID.BMC) {
                                 delete providerConnection.spec!.libvirtURI
                                 delete providerConnection.spec!.sshKnownHosts
+                                delete providerConnection.spec!.imageMirror
+                                delete providerConnection.spec!.bootstrapOSImage
+                                delete providerConnection.spec!.clusterOSImage
+                                delete providerConnection.spec!.additionalTrustBundle
                             }
                             if (providerID !== ProviderID.GCP) {
                                 delete providerConnection.spec!.gcProjectID
@@ -520,16 +628,22 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             }
                             delete providerConnection.data
 
-                            createProviderConnection(providerConnection)
+                            setErrors([])
+                            setAddButtonLabel(t('addConnection.addingButton.label'))
+                            return createProviderConnection(providerConnection)
                                 .promise.then(() => {
                                     history.push(NavigationPath.providerConnections)
                                 })
                                 .catch((err) => {
-                                    // TODO
+                                    /* istanbul ignore else */
+                                    if (err instanceof Error) {
+                                        setErrors([err.message])
+                                    }
+                                    setAddButtonLabel(t('addConnection.addButton.label'))
                                 })
                         }}
                     >
-                        Add connection
+                        {addButtonLabel}
                     </AcmSubmit>
                     <Button
                         variant="link"
@@ -539,7 +653,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             }
                         }
                     >
-                        Cancel
+                        {t('addConnection.cancelButton.label')}
                     </Button>
                 </ActionGroup>
             </AcmForm>

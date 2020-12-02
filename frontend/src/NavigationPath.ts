@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export enum NavigationPath {
     clusterManagement = '/cluster-management/cluster-management',
     clusters = '/cluster-management/cluster-management/clusters',
