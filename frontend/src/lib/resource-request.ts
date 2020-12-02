@@ -1,5 +1,4 @@
 import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import { config } from 'process'
 import {
     getResourceApiPath,
     getResourceName,
@@ -7,7 +6,6 @@ import {
     IResource,
     ResourceList,
 } from '../resources/resource'
-import { Secret } from '../resources/secret'
 import { Status, StatusKind } from '../resources/status'
 
 const baseUrl = process.env.REACT_APP_BACKEND ?? ''

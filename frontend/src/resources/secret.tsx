@@ -1,5 +1,4 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { check } from 'prettier'
 import { getResource } from '../lib/resource-request'
 import { IResource } from './resource'
 
