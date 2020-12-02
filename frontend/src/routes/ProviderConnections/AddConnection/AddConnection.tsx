@@ -20,6 +20,17 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
 import { validateKubernetesDnsName, validatePrivateSshKey, validatePublicSshKey } from '../../../lib/validation'
+import { 
+    validateKubernetesDnsName, 
+    validatePrivateSshKey, 
+    validatePublicSshKey,
+    validateCertificate,
+    validateGCProjectID,
+    validateJSON,
+    validateLibvirtURI,
+    validateBaseDNSName,
+    validateImageMirror
+} from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
 import {
@@ -363,6 +374,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
                     isRequired
+                    validation={validateGCProjectID}
                 />
                 <AcmTextArea
                     id="gcServiceAccountKey"
@@ -377,6 +389,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
                     isRequired
+                    validation={validateJSON}
                 />
                 <AcmTextInput
                     id="vcenter"
@@ -433,6 +446,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                     isRequired
+                    validation={validateCertificate}
                 />
                 <AcmTextInput
                     id="vmClusterName"
@@ -489,6 +503,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                     isRequired
+                    validation={validateLibvirtURI}
                 />
                 <AcmTextArea
                     id="sshKnownHosts"
@@ -516,6 +531,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                    validation={validateImageMirror}
                 />
                 <AcmTextInput
                     id="bootstrapOSImage"
@@ -555,6 +571,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                    validation={validateCertificate}
                 />
                 <AcmTextInput
                     id="baseDomain"
@@ -569,6 +586,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                     isRequired
+                    validation={validateBaseDNSName}
                 />
                 <AcmTextArea
                     id="pullSecret"
@@ -583,6 +601,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                     isRequired
+                    validation={validateJSON}
                 />
                 <AcmTextArea
                     id="sshPrivateKey"
