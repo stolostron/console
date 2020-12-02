@@ -115,7 +115,7 @@ export function EditBareMetalAssetPageData(props: {
         name: props.editAssetName,
         namespace: props.editAssetNamespace,
     }
-    let secretMetadata
+
     type EditData = {
         projects: Array<Project>
         bareMetalAsset: BareMetalAsset
@@ -139,11 +139,7 @@ export function EditBareMetalAssetPageData(props: {
                 resultBMA
                     .then((r) => {
                         bma = r
-                        secretMetadata = {
-                            name: bma!.spec?.bmc.credentialsName,
-                            namespace: props.editAssetNamespace,
-                        }
-                        resultSecret = getBMASecret({ name: secretMetadata.name!, namespace: secretMetadata.namespace })
+                        resultSecret = getBMASecret({ name: bma!.spec?.bmc.credentialsName, namespace: props.editAssetNamespace })
                         resultSecret!
                             .then((r) => {
                                 secret = r
@@ -223,7 +219,7 @@ export function CreateBareMetalAssetPageContent(props: {
     let isEdit = props.editBareMetalAsset ? true : false
     let secretName = ''
 
-    const [resourceError, setError] = useState<Error>()
+    //const [resourceError, setError] = useState<Error>()
     let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -270,7 +266,6 @@ export function CreateBareMetalAssetPageContent(props: {
 
     useEffect(() => {
         if (props.editBareMetalAsset) {
-            isEdit = true
             let unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
             updateBareMetalAsset((bareMetalAsset) => {
                 bareMetalAsset.metadata!.namespace = props.editBareMetalAsset?.metadata.namespace
@@ -400,13 +395,13 @@ export function CreateBareMetalAssetPageContent(props: {
                                             history.push(NavigationPath.bareMetalAssets)
                                         }).catch(
                                             (e) => {
-                                                setError(e)
+                                                //setError(e)
                                                 //Error alert?
                                             }
                                         )
                                     })
                                     .catch((e) => {
-                                        setError(e)
+                                        //setError(e)
                                         //Error alert?
                                     })
                             } else {
@@ -417,7 +412,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                             history.push(NavigationPath.bareMetalAssets)
                                         })
                                         .catch((e) => {
-                                            setError(e)
+                                            //setError(e)
                                             //Error alert?
                                         })
                                 })
