@@ -263,7 +263,6 @@ export function CreateBareMetalAssetPageContent(props: {
         setBareMetalAsset(copy)
     }
     function updateBMASecret(update: (bmaSecret: Partial<Secret>) => void) {
-        console.log('checking copied secret: ', bmaSecret)
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
@@ -395,8 +394,6 @@ export function CreateBareMetalAssetPageContent(props: {
                         variant="primary"
                         onClick={() => {
                             if (isEdit) {
-
-                                console.log('checking bma contents: ', bareMetalAsset)
                                 patchResource(bmaSecret as BMASecret, bmaSecret)
                                     .promise.then(() => {
                                         patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(()=>{

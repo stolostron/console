@@ -28,6 +28,5 @@ export function unpackSecret(secret: Secret | Partial<Secret> ) {
         }
     }
     unpackedSecret = secret
-    console.log('checking secret unpack: ', unpackedSecret)
     return unpackedSecret
 }
