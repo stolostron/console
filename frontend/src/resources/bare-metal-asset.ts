@@ -11,12 +11,12 @@ export interface BareMetalAsset {
     apiVersion: BareMetalAssetApiVersionType
     kind: BareMetalAssetKindType
     metadata: V1ObjectMeta
-    spec: {
+    spec?: {
         bmc: {
             address: string
             credentialsName: string
         }
-        bootMac: string
+        bootMACAddress: string
     }
     status?: {
         conditions: Array<{
@@ -30,13 +30,6 @@ export interface BareMetalAsset {
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation: Function) {
-    // const KNOWN_STATUSES = [
-    //     'CredentialsFound',
-    //     'AssetSyncStarted',
-    //     'ClusterDeploymentFound',
-    //     'AssetSyncCompleted',
-    //     'Ready',
-    // ]
     GetLabels(bareMetalAssets)
     if (bareMetalAssets.status) {
         let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
@@ -118,4 +111,23 @@ export function listBareMetalAssets() {
         }),
         abort: result.abort,
     }
+}
+
+export function unpackBareMetalAsset(bma: BareMetalAsset) {
+    const unpackedBMA: Partial<BareMetalAsset> = {
+        kind: bma.kind,
+        apiVersion: bma.apiVersion,
+        metadata: {
+            name: bma.metadata.name,
+            namespace: bma.metadata.namespace,
+        },
+        spec: {
+            bmc: {
+                address: bma.spec?.bmc.address!,
+                credentialsName: bma.spec?.bmc.credentialsName!,
+            },
+            bootMACAddress: bma.spec?.bootMACAddress!,
+        },
+    }
+    return unpackedBMA
 }
