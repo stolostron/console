@@ -263,6 +263,7 @@ export function CreateBareMetalAssetPageContent(props: {
         setBareMetalAsset(copy)
     }
     function updateBMASecret(update: (bmaSecret: Partial<Secret>) => void) {
+        console.log('checking copied secret: ', bmaSecret)
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
@@ -271,12 +272,21 @@ export function CreateBareMetalAssetPageContent(props: {
     useEffect(() => {
         if (props.editBareMetalAsset) {
             isEdit = true
-            bareMetalAsset = props.editBareMetalAsset
-            bmaSecret = unpackSecret(props.editSecret!)
-
-            // prompt re-render after assignment
-            updateBareMetalAsset((bareMetalAsset) => {})
-            updateBMASecret((bmaSecret) => {})
+            let unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
+            updateBareMetalAsset((bareMetalAsset) => {
+                bareMetalAsset.metadata!.namespace = props.editBareMetalAsset?.metadata.namespace
+                bareMetalAsset.metadata!.name = props.editBareMetalAsset?.metadata.name
+                bareMetalAsset.spec!.bootMACAddress = props.editBareMetalAsset?.spec?.bootMACAddress!
+                bareMetalAsset.spec!.bmc.address = props.editBareMetalAsset?.spec?.bmc.address!
+                bareMetalAsset.spec!.bmc.credentialsName = props.editBareMetalAsset?.spec?.bmc.credentialsName!
+            })
+            updateBMASecret((bmaSecret) => {
+                bmaSecret.metadata!.name = unpackedSecret.metadata!.name
+                bmaSecret.metadata!.namespace = unpackedSecret.metadata!.namespace
+                bmaSecret.stringData!.password = unpackedSecret.stringData!.password
+                bmaSecret.stringData!.username = unpackedSecret.stringData!.username
+                
+            })
         }
     }, [])
 
@@ -385,7 +395,9 @@ export function CreateBareMetalAssetPageContent(props: {
                         variant="primary"
                         onClick={() => {
                             if (isEdit) {
-                                patchResource(bmaSecret as Secret, bmaSecret)
+
+                                console.log('checking bma contents: ', bareMetalAsset)
+                                patchResource(bmaSecret as BMASecret, bmaSecret)
                                     .promise.then(() => {
                                         patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset).promise.then(()=>{
                                             history.push(NavigationPath.bareMetalAssets)
