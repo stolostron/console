@@ -39,6 +39,7 @@ export type Cluster = {
     kubeApiServer: string | undefined
     consoleURL: string | undefined
     hiveSecrets: HiveSecrets | undefined
+    provisionJob: string | undefined
     isHive: boolean
     isManaged: boolean
 }
@@ -120,6 +121,7 @@ export function getCluster(
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
         consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo),
         hiveSecrets: getHiveSecrets(clusterDeployment),
+        provisionJob: clusterDeployment?.status?.provisionRef?.name,
         isHive: !!clusterDeployment,
         isManaged: !!managedClusterInfo,
     }

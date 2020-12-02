@@ -73,5 +73,9 @@
   "status.pendingimport": "Pending import",
   "status.ready": "Ready",
   "status.offline": "Offline",
-  "upgrade.available": "Upgrade available"
+  "upgrade.available": "Upgrade available",
+  "provision.notification.creating": "Cluster provisioning is in progress:",
+  "provision.notification.failed": "Cluster provisioning failed:",
+  "provision.notification.destroying": "Cluster deprovisioning is in progress:",
+  "view.logs": "View logs"
 }
