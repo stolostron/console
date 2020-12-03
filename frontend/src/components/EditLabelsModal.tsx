@@ -1,7 +1,9 @@
 import { AcmAlert, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import React, { useLayoutEffect, useState } from 'react'
+import { patchResource, ResourceError } from '../lib/resource-request'
 import { IResource } from '../resources/resource'
+import { getErrorInfo } from './ErrorPage'
 
 export function EditLabelsModal(props: { resource?: IResource; close: () => void }) {
     const [labels, setLabels] = useState<Record<string, string> | undefined>({})
@@ -32,8 +34,21 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                         variant="primary"
                         onClick={() => {
                             setError(undefined)
-                            // TODO
-                            props.close()
+                            if (props.resource) {
+                                // TODO
+                                patchResource(props.resource, {
+                                    metadata: {
+                                        labels,
+                                    },
+                                })
+                                    .promise.then(() => {
+                                        props.close()
+                                    })
+                                    .catch((err) => {
+                                        const errorInfo = getErrorInfo(err)
+                                        setError({ title: errorInfo.message, subtitle: errorInfo.message })
+                                    })
+                            }
                         }}
                     >
                         Apply

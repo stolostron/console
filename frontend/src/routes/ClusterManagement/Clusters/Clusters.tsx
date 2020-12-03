@@ -149,7 +149,13 @@ export function ClustersTable(props: {
 
     return (
         <Fragment>
-            <EditLabelsModal resource={editResourceLabels} close={() => setEditResourceLabels(undefined)} />
+            <EditLabelsModal
+                resource={editResourceLabels}
+                close={() => {
+                    setEditResourceLabels(undefined)
+                    props.refresh()
+                }}
+            />
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
