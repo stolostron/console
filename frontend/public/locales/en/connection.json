@@ -109,5 +109,20 @@
     "addConnection.sshPublicKey.placeholder": "Enter your SSH Public Key",
     "addConnection.sshPublicKey.labelHelp": "The public SSH key to use to access your cluster machines.",
 
+    "validate.kubernetesDnsName.length": "can contain at most 63 characters",
+    "validate.kubernetesDnsName.char": "can only contain lowercase alphanumeric characters or '-'",
+    "validate.kubernetesDnsName.startchar": "must start with an alphanumeric character",
+    "validate.kubernetesDnsName.endchar": "must end with an alphanumeric character",
+    "validate.publicSshKey.required": "Public key required",
+    "validate.privateSshKey.required": "Private key required",
+    "validate.certificate.required": "Certificate required",
+    "validate.gcProjectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
+    "validate.json.required": "JSON required",
+    "validate.libevirtURI.format": "Provide valid Libvirt URI (driver[+transport]://[username@][hostname][:port]/[path][?extraparameters] )",
+    "validate.imageMirror.format": "Value must have the format HOSTNAME:PORT/PATH",
+    "validate.imageMirror.port": "Port must be an integer",
+    "validate.imageMirror.repositorypath": "Value for the repository path must consist of alphanumeric characters, '-', '.' or '_', and must start and end with an alphanumeric character",
+    "validate.baseDnsName.char": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
+    "validate.baseDnsName.start": "The base DNS domain must not begin with a period.",
     "end": ""
 }

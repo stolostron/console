@@ -139,7 +139,7 @@ describe('add connection page', () => {
                 gcServiceAccountKey: '{"id":"id"}',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
-                sshPrivatekey: '-----BEGINKEY-----',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
             },
         }
@@ -191,7 +191,7 @@ describe('add connection page', () => {
                 tenantid: 'tenantid',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
-                sshPrivatekey: '-----BEGINKEY-----',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
             },
         }
@@ -250,7 +250,7 @@ describe('add connection page', () => {
                 additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
-                sshPrivatekey: '-----BEGINKEY-----',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
@@ -312,7 +312,7 @@ describe('add connection page', () => {
                 datastore: 'datastore',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
-                sshPrivatekey: '-----BEGINKEY-----',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
             },
         }
