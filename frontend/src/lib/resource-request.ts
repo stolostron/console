@@ -73,6 +73,15 @@ export function replaceResource<Resource extends IResource, ResultType = Resourc
     return putRequest<Resource, ResultType>(url, resource, options)
 }
 
+export function patchResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    data: unknown,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    return patchRequest<Resource, ResultType>(url, data, options)
+}
+
 export function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: IRequestOptions
@@ -192,6 +201,23 @@ function putRequest<ResourceType, ResultType = ResourceType>(
     })
 }
 
+function patchRequest<ResourceType, ResultType = ResourceType>(
+    url: string,
+    data: unknown,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    return axiosRequest<ResultType>({
+        ...{
+            url,
+            method: 'PATCH',
+            validateStatus: (status) => true,
+            headers: { 'Content-Type': 'application/json' },
+            data,
+        },
+        ...options,
+    })
+}
+
 function deleteRequest(url: string, options?: IRequestOptions): IRequestResult {
     return axiosRequest({
         ...{ url, method: 'DELETE', validateStatus: (status) => true },
@@ -270,7 +296,9 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     }
 }
 
-function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions): Promise<AxiosResponse<ResponseType>> {
+function axiosRetry<ResponseType>(
+    config: AxiosRequestConfig & IRequestOptions & unknown
+): Promise<AxiosResponse<ResponseType>> {
     const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]
     const retries = config?.retries ?? 0
     const backoff = config?.backoff ?? 300

@@ -16,4 +16,5 @@ export enum NavigationPath {
     editConnection = '/cluster-management/cluster-management/provider-connections/:namespace/:name',
     bareMetalAssets = '/cluster-management/bare-metal-assets',
     createBareMetalAssets = '/cluster-management/bare-metal-assets/create',
+    editBareMetalAssets = '/cluster-management/bare-metal-assets/:namespace/:name/edit',
 }
