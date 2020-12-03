@@ -135,6 +135,23 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         })
 }
 
+export function nockReplace(resource: IResource, response?: IResource, statusCode: number = 200) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiProxyUrl + getResourceNameApiPath(resource))
+        .optionally()
+        .reply(204, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PUT, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .put(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(resource))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PUT, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
 export function nockDelete(resource: IResource, response?: IResource) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(apiProxyUrl + getResourceNameApiPath(resource))

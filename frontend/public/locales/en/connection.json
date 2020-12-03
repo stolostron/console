@@ -14,10 +14,12 @@
     "modal.delete.content": "Deleting {{name}} is irreversible. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. Are you sure that you want to continue?",
 
     "addConnection.error.noNamespacesFound": "No namespaces found.",
+    "addConnection.editButton.label": "Apply",
     "addConnection.addButton.label": "Add Connection",
-    "addConnection.addingButton.label": "Adding Connection",
+    "addConnection.applyingButton.label": "Applying",
     "addConnection.cancelButton.label": "Cancel",
 
+    "editConnection.title": "Edit Provider Connection",
     "addConnection.title": "Add Provider Connection",
     "addConnection.connectionName.label": "Connection Name",
     "addConnection.connectionName.placeholder": "Enter the name for the provider connection",

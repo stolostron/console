@@ -13,6 +13,7 @@ export enum NavigationPath {
     importCommand = '/cluster-management/cluster-management/import-cluster/:clusterName',
     providerConnections = '/cluster-management/cluster-management/provider-connections',
     addConnection = '/cluster-management/cluster-management/provider-connections/add-connection',
+    editConnection = '/cluster-management/cluster-management/provider-connections/:namespace/:name',
     bareMetalAssets = '/cluster-management/bare-metal-assets',
     createBareMetalAssets = '/cluster-management/bare-metal-assets/create',
     editBareMetalAssets = '/cluster-management/bare-metal-assets/:namespace/:name/edit',
