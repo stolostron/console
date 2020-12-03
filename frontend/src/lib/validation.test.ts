@@ -23,8 +23,8 @@ describe('validation', () => {
                 'abcd012345678901234567890123456789012345678901234567890123456789',
                 false,
             ],
-            [`should not allow '.'`, 'abc.', false],
-            [`should not allow '_'`, 'abc_', false],
+            [`should not allow '.'`, 'abc.d', false],
+            [`should not allow '_'`, 'abc_d', false],
             [`should not allow start with '-'`, '-abc', false],
             [`should not allow end with '-'`, 'abc-', false],
         ])('%s', (name, value, isValid) => {
