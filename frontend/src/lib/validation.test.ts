@@ -9,8 +9,8 @@ import {
     validateBaseDnsName,
     validateImageMirror,
 } from './validation'
-import { useTranslation } from 'react-i18next'
-const { t } = useTranslation(['connection'])
+
+const t = (key: string) => key
 describe('validation', () => {
     describe('validateKubernetesDnsName', () => {
         test.each(
