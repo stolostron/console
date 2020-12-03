@@ -210,7 +210,7 @@ export function ImportCommandPageContent(props: { clusterName: string }) {
     const [importCommand, setImportCommand] = useState<string>('')
     const [error, setError] = useState<string>()
     const [loading, setLoading] = useState<boolean>(true)
-    const [active, setActive] = useState('first')
+    const [active] = useState('first')
     const [clusterConsoleURL] = useState<string>(sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? '')
 
     useEffect(() => {

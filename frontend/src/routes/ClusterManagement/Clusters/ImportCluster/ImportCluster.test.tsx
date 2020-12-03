@@ -17,9 +17,7 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import * as nock from 'nock'
 import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
-import { ManagedClusterAddOnApiVersion } from '../../../../resources/managed-cluster-add-on'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 import { ImportCommandPageContent } from './ImportCluster'
