@@ -178,8 +178,6 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
-    const [addButtonLabel, setAddButtonLabel] = useState<string>(t('addConnection.addButton.label'))
-
     const [discovery, toggleDiscovery] = useState<Boolean>(false)
     useEffect(() => {
         if (sessionStorage.getItem("DiscoveryEnabled") === null) {
