@@ -29,6 +29,8 @@ import {
     ProviderConnectionKind,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
+import { getFeatureGate } from '../../../resources/feature-gate'
+
 
 export default function AddConnectionPage() {
     const { t } = useTranslation(['connection'])
@@ -107,6 +109,26 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
     const [addButtonLabel, setAddButtonLabel] = useState<string>(t('addConnection.addButton.label'))
     const [errors, setErrors] = useState<string[]>([])
 
+    const [discovery, toggleDiscovery] = useState<Boolean>(false)
+    useEffect(() => {
+        if (sessionStorage.getItem("DiscoveryEnabled") === null) {
+            const result = getFeatureGate('open-cluster-management-discovery')
+            result.promise
+                .then((featureGate) => {
+                    if (featureGate.spec!.featureSet === "DiscoveryEnabled") {
+                        sessionStorage.setItem("DiscoveryEnabled", "true")
+                        toggleDiscovery(true)
+                    }
+                })
+                .catch((err: Error) => {
+                    // If error retrieving feature flag, continue
+                    sessionStorage.setItem("DiscoveryEnabled", "false")
+                    toggleDiscovery(false)
+                })
+                return result.abort
+        }
+        toggleDiscovery((sessionStorage.getItem("DiscoveryEnabled") === "true" ? true : false))
+    }, [])
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
@@ -154,6 +176,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
         setProviderConnection(copy)
     }
 
+
     return (
         <AcmPageCard>
             <AcmForm>
@@ -170,7 +193,13 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     }}
                     isRequired
                 >
-                    {providers.map((provider) => (
+                    {
+                    providers.filter(function(provider) {
+                        if (!discovery && provider.key === ProviderID.CRH) {
+                          return false // skip
+                        }
+                        return true
+                      }).map((provider) => (
                         <SelectOption key={provider.key} value={provider.key}>
                             {provider.name}
                         </SelectOption>
