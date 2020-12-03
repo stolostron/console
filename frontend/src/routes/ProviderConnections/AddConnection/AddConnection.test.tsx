@@ -1,9 +1,10 @@
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockClusterList, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { NavigationPath } from '../../../NavigationPath'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
 import {
     packProviderConnection,
@@ -21,8 +22,34 @@ const mockProject: Project = {
 
 const mockProjects: Project[] = [mockProject]
 
+function EmptyPage() {
+    return <div></div>
+}
+
+let location: Location
+function TestAddConnectionPage() {
+    return (
+        <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+            <Route
+                path={NavigationPath.addConnection}
+                render={(props: any) => {
+                    location = props.location
+                    return <AddConnectionPage {...props} />
+                }}
+            />
+            <Route
+                path={NavigationPath.providerConnections}
+                render={(props: any) => {
+                    location = props.location
+                    return <EmptyPage />
+                }}
+            />
+        </MemoryRouter>
+    )
+}
+
 describe('add connection page', () => {
-    test('should create aws provider connection', async () => {
+    it('should create aws provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -47,11 +74,7 @@ describe('add connection page', () => {
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const badRequestNock = nockCreate(packProviderConnection({ ...providerConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -79,7 +102,7 @@ describe('add connection page', () => {
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
-    test('should create gcp provider connection', async () => {
+    it('should create gcp provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -103,11 +126,7 @@ describe('add connection page', () => {
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -132,7 +151,7 @@ describe('add connection page', () => {
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
-    test('should create azr provider connection', async () => {
+    it('should create azr provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -159,11 +178,7 @@ describe('add connection page', () => {
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -194,7 +209,7 @@ describe('add connection page', () => {
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
-    test('should create bmc provider connection', async () => {
+    it('should create bmc provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -222,11 +237,7 @@ describe('add connection page', () => {
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -259,7 +270,7 @@ describe('add connection page', () => {
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
-    test('should create vmw provider connection', async () => {
+    it('should create vmw provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -288,11 +299,7 @@ describe('add connection page', () => {
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -326,15 +333,12 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+        expect(location.pathname).toBe(NavigationPath.providerConnections)
     })
 
-    test('should show error if get project error', async () => {
+    it('should show error if get project error', async () => {
         const projectsNock = nockClusterList(mockProject, mockBadRequestStatus)
-        const { getByText } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
-            </MemoryRouter>
-        )
+        const { getByText } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
         await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
@@ -344,11 +348,14 @@ describe('add connection page', () => {
         await waitFor(() => expect(projectsNock2.isDone()).toBeTruthy())
     })
 
-    test('should show empty page if there are no projects', async () => {
+    it('should show empty page if there are no projects', async () => {
         const projectsNock = nockClusterList(mockProject, [])
         const { getByText, getAllByText } = render(
-            <MemoryRouter>
-                <AddConnectionPage />
+            <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+                <Route
+                    path={NavigationPath.addConnection}
+                    component={(props: any) => <AddConnectionPage {...props} />}
+                />
             </MemoryRouter>
         )
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())

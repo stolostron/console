@@ -37,7 +37,7 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
     const { t } = useTranslation(['connection'])
     return (
         <Page>
-            {match.params.namespace ? (
+            {match?.params.namespace ? (
                 <AcmPageHeader
                     title={t('editConnection.title')}
                     breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
@@ -48,7 +48,7 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                     breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
                 />
             )}
-            <AddConnectionPageData {...match.params} />
+            <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
         </Page>
     )
 }
@@ -116,13 +116,15 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     }, [retry])
 
     useEffect(() => {
-        const result = getProviderConnection(props)
-        result.promise
-            .then((providerConnection) => {
-                setProviderConnection(providerConnection)
-            })
-            .catch(setError)
-        return result.abort
+        if (props.name) {
+            const result = getProviderConnection(props)
+            result.promise
+                .then((providerConnection) => {
+                    setProviderConnection(providerConnection)
+                })
+                .catch(setError)
+            return result.abort
+        }
     }, [retry, props])
 
     if (error) {
@@ -142,6 +144,9 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
         )
     }
     if (!projects) {
+        return <AcmLoadingPage />
+    }
+    if (props.name && !providerConnection) {
         return <AcmLoadingPage />
     }
     if (projects.length === 0) {
@@ -177,7 +182,9 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
     )
     const [errors, setErrors] = useState<string[]>([])
 
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
+        JSON.parse(JSON.stringify(props.providerConnection))
+    )
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -626,49 +633,50 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         id="submit"
                         variant="primary"
                         onClick={() => {
-                            const providerID = getProviderConnectionProviderID(providerConnection)
+                            const data = JSON.parse(JSON.stringify(providerConnection))
+                            const providerID = getProviderConnectionProviderID(data)
                             if (providerID !== ProviderID.AWS) {
-                                delete providerConnection.spec!.awsAccessKeyID
-                                delete providerConnection.spec!.awsSecretAccessKeyID
+                                delete data.spec!.awsAccessKeyID
+                                delete data.spec!.awsSecretAccessKeyID
                             }
                             if (providerID !== ProviderID.AZR) {
-                                delete providerConnection.spec!.baseDomainResourceGroupName
-                                delete providerConnection.spec!.clientId
-                                delete providerConnection.spec!.clientsecret
-                                delete providerConnection.spec!.subscriptionid
-                                delete providerConnection.spec!.tenantid
+                                delete data.spec!.baseDomainResourceGroupName
+                                delete data.spec!.clientId
+                                delete data.spec!.clientsecret
+                                delete data.spec!.subscriptionid
+                                delete data.spec!.tenantid
                             }
                             if (providerID !== ProviderID.BMC) {
-                                delete providerConnection.spec!.libvirtURI
-                                delete providerConnection.spec!.sshKnownHosts
-                                delete providerConnection.spec!.imageMirror
-                                delete providerConnection.spec!.bootstrapOSImage
-                                delete providerConnection.spec!.clusterOSImage
-                                delete providerConnection.spec!.additionalTrustBundle
+                                delete data.spec!.libvirtURI
+                                delete data.spec!.sshKnownHosts
+                                delete data.spec!.imageMirror
+                                delete data.spec!.bootstrapOSImage
+                                delete data.spec!.clusterOSImage
+                                delete data.spec!.additionalTrustBundle
                             }
                             if (providerID !== ProviderID.GCP) {
-                                delete providerConnection.spec!.gcProjectID
-                                delete providerConnection.spec!.gcServiceAccountKey
+                                delete data.spec!.gcProjectID
+                                delete data.spec!.gcServiceAccountKey
                             }
                             if (providerID !== ProviderID.VMW) {
-                                delete providerConnection.spec!.username
-                                delete providerConnection.spec!.password
-                                delete providerConnection.spec!.vcenter
-                                delete providerConnection.spec!.cacertificate
-                                delete providerConnection.spec!.vmClusterName
-                                delete providerConnection.spec!.datacenter
-                                delete providerConnection.spec!.datastore
+                                delete data.spec!.username
+                                delete data.spec!.password
+                                delete data.spec!.vcenter
+                                delete data.spec!.cacertificate
+                                delete data.spec!.vmClusterName
+                                delete data.spec!.datacenter
+                                delete data.spec!.datastore
                             }
-                            delete providerConnection.data
+                            delete data.data
 
                             setErrors([])
                             setAddButtonLabel(t('addConnection.applyingButton.label'))
 
                             let result: IRequestResult<ProviderConnection>
                             if (isEditing) {
-                                result = replaceProviderConnection(providerConnection)
+                                result = replaceProviderConnection(data)
                             } else {
-                                result = createProviderConnection(providerConnection)
+                                result = createProviderConnection(data)
                             }
                             return result.promise
                                 .then(() => {
