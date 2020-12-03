@@ -1,7 +1,7 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from '../lib/providers'
-import { createResource, listResources } from '../lib/resource-request'
+import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -87,8 +87,24 @@ export function listProviderConnections() {
     }
 }
 
+export function getProviderConnection(metadata: { name: string; namespace: string }) {
+    const result = getResource<ProviderConnection>({
+        apiVersion: ProviderConnectionApiVersion,
+        kind: ProviderConnectionKind,
+        metadata,
+    })
+    return {
+        promise: result.promise.then(unpackProviderConnection),
+        abort: result.abort,
+    }
+}
+
 export function createProviderConnection(providerConnection: ProviderConnection) {
     return createResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
+}
+
+export function replaceProviderConnection(providerConnection: ProviderConnection) {
+    return replaceResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
 }
 
 export function unpackProviderConnection(providerConnection: ProviderConnection) {
