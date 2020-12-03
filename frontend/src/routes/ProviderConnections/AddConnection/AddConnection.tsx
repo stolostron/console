@@ -559,7 +559,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                 />
-                <AcmTextInput
+                <AcmTextArea
                     id="additionalTrustBundle"
                     label={t('addConnection.additionalTrustBundle.label')}
                     placeholder={t('addConnection.additionalTrustBundle.placeholder')}
