@@ -15,97 +15,49 @@ import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextA
 import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
+import { IRequestResult } from '../../../lib/resource-request'
 import { validateKubernetesDnsName, validatePrivateSshKey, validatePublicSshKey } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
 import {
     createProviderConnection,
+    getProviderConnection,
     getProviderConnectionProviderID,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     setProviderConnectionProviderID,
+    replaceProviderConnection,
 } from '../../../resources/provider-connection'
 
-export default function AddConnectionPage() {
+export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
     return (
         <Page>
-            <AcmPageHeader
-                title={t('addConnection.title')}
-                breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
-            />
-            <AddConnectionPageData />
+            {match?.params.namespace ? (
+                <AcmPageHeader
+                    title={t('editConnection.title')}
+                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                />
+            ) : (
+                <AcmPageHeader
+                    title={t('addConnection.title')}
+                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                />
+            )}
+            <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
         </Page>
     )
 }
 
-export function AddConnectionPageData() {
+export function AddConnectionPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection'])
     const [projects, setProjects] = useState<Project[]>()
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
-    useEffect(() => {
-        const result = listProjects()
-        result.promise
-            .then((projects) => {
-                setProjects(projects)
-                setError(undefined)
-            })
-            .catch(setError)
-        return result.abort
-    }, [retry])
-
-    if (error) {
-        return (
-            <ErrorPage
-                error={error}
-                actions={
-                    <AcmButton
-                        onClick={() => {
-                            setRetry(retry + 1)
-                        }}
-                    >
-                        Retry
-                    </AcmButton>
-                }
-            />
-        )
-    }
-    if (!projects) {
-        return <AcmLoadingPage />
-    }
-    if (projects.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('addConnection.error.noNamespacesFound')}
-                    message={t('addConnection.error.noNamespacesFound')}
-                    action={
-                        <AcmButton
-                            onClick={() => {
-                                setRetry(retry + 1)
-                            }}
-                        >
-                            Retry
-                        </AcmButton>
-                    }
-                />
-            </AcmPageCard>
-        )
-    }
-    return <AddConnectionPageContent projects={projects} />
-}
-
-export function AddConnectionPageContent(props: { projects: Project[] }) {
-    const { t } = useTranslation(['connection'])
-    const history = useHistory()
-
-    const [addButtonLabel, setAddButtonLabel] = useState<string>(t('addConnection.addButton.label'))
-    const [errors, setErrors] = useState<string[]>([])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
@@ -148,6 +100,92 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
             sshPublickey: '',
         },
     })
+
+    useEffect(() => {
+        setError(undefined)
+    }, [retry])
+
+    useEffect(() => {
+        const result = listProjects()
+        result.promise
+            .then((projects) => {
+                setProjects(projects)
+            })
+            .catch(setError)
+        return result.abort
+    }, [retry])
+
+    useEffect(() => {
+        if (props.name) {
+            const result = getProviderConnection(props)
+            result.promise
+                .then((providerConnection) => {
+                    setProviderConnection(providerConnection)
+                })
+                .catch(setError)
+            return result.abort
+        }
+    }, [retry, props])
+
+    if (error) {
+        return (
+            <ErrorPage
+                error={error}
+                actions={
+                    <AcmButton
+                        onClick={() => {
+                            setRetry(retry + 1)
+                        }}
+                    >
+                        Retry
+                    </AcmButton>
+                }
+            />
+        )
+    }
+    if (!projects) {
+        return <AcmLoadingPage />
+    }
+    if (props.name && providerConnection.metadata.name === '') {
+        return <AcmLoadingPage />
+    }
+    if (projects.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('addConnection.error.noNamespacesFound')}
+                    message={t('addConnection.error.noNamespacesFound')}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
+            </AcmPageCard>
+        )
+    }
+
+    return <AddConnectionPageContent projects={projects} providerConnection={providerConnection} />
+}
+
+export function AddConnectionPageContent(props: { projects: Project[]; providerConnection: ProviderConnection }) {
+    const { t } = useTranslation(['connection'])
+    const history = useHistory()
+
+    const isEditing = () => props.providerConnection.metadata.name !== ''
+
+    const [errors, setErrors] = useState<string[]>([])
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
+        JSON.parse(JSON.stringify(props.providerConnection))
+    )
+    // useEffect(() => {
+    //     setProviderConnection(JSON.parse(JSON.stringify(props.providerConnection)))
+    // }, [props.providerConnection])
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -168,6 +206,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                         })
                     }}
+                    isDisabled={isEditing()}
                     isRequired
                 >
                     {providers.map((provider) => (
@@ -189,6 +228,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                     }}
                     validation={(value) => validateKubernetesDnsName(value, 'Connection name')}
                     isRequired
+                    isDisabled={isEditing()}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 />
                 <AcmSelect
@@ -203,6 +243,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                         })
                     }}
                     isRequired
+                    isDisabled={isEditing()}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 >
                     {props.projects.map((project) => (
@@ -593,45 +634,52 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                         id="submit"
                         variant="primary"
                         onClick={() => {
-                            const providerID = getProviderConnectionProviderID(providerConnection)
+                            const data = JSON.parse(JSON.stringify(providerConnection))
+                            const providerID = getProviderConnectionProviderID(data)
                             if (providerID !== ProviderID.AWS) {
-                                delete providerConnection.spec!.awsAccessKeyID
-                                delete providerConnection.spec!.awsSecretAccessKeyID
+                                delete data.spec!.awsAccessKeyID
+                                delete data.spec!.awsSecretAccessKeyID
                             }
                             if (providerID !== ProviderID.AZR) {
-                                delete providerConnection.spec!.baseDomainResourceGroupName
-                                delete providerConnection.spec!.clientId
-                                delete providerConnection.spec!.clientsecret
-                                delete providerConnection.spec!.subscriptionid
-                                delete providerConnection.spec!.tenantid
+                                delete data.spec!.baseDomainResourceGroupName
+                                delete data.spec!.clientId
+                                delete data.spec!.clientsecret
+                                delete data.spec!.subscriptionid
+                                delete data.spec!.tenantid
                             }
                             if (providerID !== ProviderID.BMC) {
-                                delete providerConnection.spec!.libvirtURI
-                                delete providerConnection.spec!.sshKnownHosts
-                                delete providerConnection.spec!.imageMirror
-                                delete providerConnection.spec!.bootstrapOSImage
-                                delete providerConnection.spec!.clusterOSImage
-                                delete providerConnection.spec!.additionalTrustBundle
+                                delete data.spec!.libvirtURI
+                                delete data.spec!.sshKnownHosts
+                                delete data.spec!.imageMirror
+                                delete data.spec!.bootstrapOSImage
+                                delete data.spec!.clusterOSImage
+                                delete data.spec!.additionalTrustBundle
                             }
                             if (providerID !== ProviderID.GCP) {
-                                delete providerConnection.spec!.gcProjectID
-                                delete providerConnection.spec!.gcServiceAccountKey
+                                delete data.spec!.gcProjectID
+                                delete data.spec!.gcServiceAccountKey
                             }
                             if (providerID !== ProviderID.VMW) {
-                                delete providerConnection.spec!.username
-                                delete providerConnection.spec!.password
-                                delete providerConnection.spec!.vcenter
-                                delete providerConnection.spec!.cacertificate
-                                delete providerConnection.spec!.vmClusterName
-                                delete providerConnection.spec!.datacenter
-                                delete providerConnection.spec!.datastore
+                                delete data.spec!.username
+                                delete data.spec!.password
+                                delete data.spec!.vcenter
+                                delete data.spec!.cacertificate
+                                delete data.spec!.vmClusterName
+                                delete data.spec!.datacenter
+                                delete data.spec!.datastore
                             }
-                            delete providerConnection.data
+                            delete data.data
 
                             setErrors([])
-                            setAddButtonLabel(t('addConnection.addingButton.label'))
-                            return createProviderConnection(providerConnection)
-                                .promise.then(() => {
+
+                            let result: IRequestResult<ProviderConnection>
+                            if (isEditing()) {
+                                result = replaceProviderConnection(data)
+                            } else {
+                                result = createProviderConnection(data)
+                            }
+                            return result.promise
+                                .then(() => {
                                     history.push(NavigationPath.providerConnections)
                                 })
                                 .catch((err) => {
@@ -639,12 +687,11 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                                     if (err instanceof Error) {
                                         setErrors([err.message])
                                     }
-                                    setAddButtonLabel(t('addConnection.addButton.label'))
                                 })
                         }}
-                    >
-                        {addButtonLabel}
-                    </AcmSubmit>
+                        label={isEditing() ? t('addConnection.editButton.label') : t('addConnection.addButton.label')}
+                        processingLabel={t('addConnection.applyingButton.label')}
+                    />
                     <Button
                         variant="link"
                         onClick={

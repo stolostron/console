@@ -70,7 +70,10 @@ Frontend has a cookie `acm-access-token-cookie` that contains the user's token.
 
 If the backend responds with a `401 Unauthorized` the frontend starts an OAuth flow to authorize with the cluster.
 
-- Frontend redirects to the backend `/login` route.
-- Backend redirects to the cluster authorization endpoint.
-- Cluster OAuth redirects back to the backend `/login/callback` route.
+- Frontend redirects to the backend `/login` endpoint.
+- Backend redirects to the cluster `/authorize` endpoint.
+- Cluster OAuth redirects back to the backend `/login/callback` endpoint.
 - Backend redirects to the frontend and sets the `acm-access-token-cookie`.
+
+If you find that you are in an infinite login loop it usualy means that you have a "secure" cookie that the backend cannot update.
+Open https://localhost and goto developer tooks -> application and remove the acm token cookie.

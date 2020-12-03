@@ -61,6 +61,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
     const { t } = useTranslation(['connection', 'common'])
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [errors, setErrors] = useState<string[]>([])
+    const history = useHistory()
     return (
         <Fragment>
             {errors && (
@@ -159,7 +160,17 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                     },
                 ]}
                 rowActions={[
-                    // { id: 'editConnection', title: 'Edit connection', click: (item: ProviderConnection) => {} },
+                    {
+                        id: 'editConnection',
+                        title: t('edit'),
+                        click: (providerConnection: ProviderConnection) => {
+                            history.push(
+                                NavigationPath.editConnection
+                                    .replace(':namespace', providerConnection.metadata.namespace!)
+                                    .replace(':name', providerConnection.metadata.name!)
+                            )
+                        },
+                    },
                     {
                         id: 'deleteConnection',
                         title: t('delete'),
