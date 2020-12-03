@@ -45,6 +45,7 @@ describe('add connection page', () => {
         }
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
+        const badRequestNock = nockCreate(packProviderConnection({ ...providerConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(
             <MemoryRouter>
@@ -71,7 +72,10 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('Add connection').click()
+        getByText('addConnection.addButton.label').click()
+        await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
@@ -124,7 +128,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('Add connection').click()
+        getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
@@ -186,7 +190,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('Add connection').click()
+        getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
@@ -205,6 +209,10 @@ describe('add connection page', () => {
             spec: {
                 libvirtURI: 'libvirtURI',
                 sshKnownHosts: 'sshKnownHosts',
+                imageMirror: 'imageMirror',
+                bootstrapOSImage: 'bootstrapOSImage',
+                clusterOSImage: 'clusterOSImage',
+                additionalTrustBundle: 'additionalTrustBundle',
                 baseDomain: 'baseDomain',
                 pullSecret: 'pullSecret',
                 sshPrivatekey: '-----BEGINKEY-----',
@@ -239,11 +247,15 @@ describe('add connection page', () => {
         )
         userEvent.type(getByTestId('libvirtURI'), providerConnection.spec!.libvirtURI!)
         userEvent.type(getByTestId('sshKnownHosts'), providerConnection.spec!.sshKnownHosts!)
+        userEvent.type(getByTestId('imageMirror'), providerConnection.spec!.imageMirror!)
+        userEvent.type(getByTestId('bootstrapOSImage'), providerConnection.spec!.bootstrapOSImage!)
+        userEvent.type(getByTestId('clusterOSImage'), providerConnection.spec!.clusterOSImage!)
+        userEvent.type(getByTestId('additionalTrustBundle'), providerConnection.spec!.additionalTrustBundle!)
         userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('Add connection').click()
+        getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
@@ -312,7 +324,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('Add connection').click()
+        getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
@@ -340,7 +352,7 @@ describe('add connection page', () => {
             </MemoryRouter>
         )
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getAllByText('No namespaces found.')[0]).toBeInTheDocument())
+        await waitFor(() => expect(getAllByText('addConnection.error.noNamespacesFound')[0]).toBeInTheDocument())
         await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
 
         const projectsNock2 = nockClusterList(mockProject, [])
