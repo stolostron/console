@@ -1,6 +1,6 @@
-import { V1ObjectMeta, V1Pod, V1PodList } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
 import { listNamespacedResources } from '../lib/resource-request'
-import { IResource, ResourceList } from './resource'
+import { IResource } from './resource'
 import { getLatest } from '../lib/utils'
 import { ClusterStatus } from '../lib/get-cluster'
 
