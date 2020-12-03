@@ -113,17 +113,17 @@ export function validateImageMirror(value: string, t: TFunction) {
         return errDnsName
     }
     if (dnsName.length === 1) {
-        return t('validate.imageMirror.format') || 'Value must have the format HOSTNAME:PORT/PATH'
+        return t('validate.imageMirror.format') 
     }
     const port = dnsName[1].split('/', 2)
     if ((port.length === 1 && port[0].length === 0) || !VALIDATE_NUMERIC_TESTER.test(port[0])) {
-        return t('validate.imageMirror.port') || 'Value must be an integer port value'
+        return t('validate.imageMirror.port')
     }
     if (port.length === 1) {
-        return t('validate.imageMirror.format') || 'Value must have the format HOSTNAME:PORT/PATH'
+        return t('validate.imageMirror.format') 
     }
     if (!VALID_REPOPATH_TESTER.test(value)) {
-        return t('validate.imageMirror.repositorypath') || `Value for the repository path must consist of alphanumeric characters, '-', '.' or '_', and must start and end with an alphanumeric character`
+        return t('validate.imageMirror.repositorypath')
     }
     return undefined
 }
