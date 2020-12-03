@@ -16,8 +16,10 @@ describe('validation', () => {
         test.each(
             [
                 [`should allow lowercase alphabets`,'abc', true ],
+                [`should allow empty`,'',true],
                 [`should allow number`,  '123', true ],
                 [`should allow name with '-'`,  'ab-c12', true ],
+                [`should not allow name longer than 63`,  'abcd012345678901234567890123456789012345678901234567890123456789', false ],
                 [`should not allow '.'`,  'abc.', false ],
                 [`should not allow '_'`,  'abc_', false ],
                 [`should not allow start with '-'`,  '-abc', false ],
@@ -67,7 +69,11 @@ describe('validation', () => {
             [
                 [`should allow rsa public key`,'ssh-rsa AAAAB3Nz', true ],
                 [`should allow ed25519 public key`,'ssh-ed25519 AAAAC3', true ],
+                [`should not allow unsupported type`,'ssh-abc AAAAB3Nz', false ],
+                [`should not allow wrong length in key`,'ssh-rsa AAAAC3', false ],
                 [`should not allow invalid rsa key`,  'ssh-rsa ABC', false ],
+                [`should not allow empty input`,  '', false ],
+                [`should not allow invalid character in key`,  'ssh-rsa A@B-C', false ],
                 [`should not allow non public key`,  'abcdefg', false ],
             ],
         )('%s',(name,value,isValid)=>{
