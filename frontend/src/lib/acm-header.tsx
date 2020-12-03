@@ -36,7 +36,6 @@ export const fetchHeader = async () => {
         })
 
         if (headerResponse.status === 200) {
-            console.log('headerResponse', headerResponse)
             const { headerHtml, files, props, state } = headerResponse.data as HeaderAssets
 
             const head = document.querySelector('head')

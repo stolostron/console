@@ -76,8 +76,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return <AcmPage><ErrorPage error={resourceError} actions={<AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>{t('button.backToClusters')}</AcmButton>} /></AcmPage>
     }
 
-    console.log('status', cluster?.status)
-
     return (
         <AcmPage>
             <ClusterContext.Provider value={{ cluster }}>
