@@ -13,6 +13,7 @@ import { STATUS_CODES } from 'http'
 import * as https from 'https'
 import * as path from 'path'
 import { join } from 'path'
+import * as querystring from 'querystring'
 import { URL } from 'url'
 import { promisify } from 'util'
 import { logError, logger } from './lib/logger'
@@ -40,6 +41,14 @@ export async function startServer(): Promise<FastifyInstance> {
         fastify = Fastify({ logger: false })
     }
 
+    if (process.env.NODE_ENV !== 'production') {
+        await fastify.register(fastifyCors, {
+            origin: true,
+            methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE'],
+            credentials: true,
+        })
+    }
+
     fastify.get('/ping', async (req, res) => {
         await res.code(200).send()
     })
@@ -56,7 +65,8 @@ export async function startServer(): Promise<FastifyInstance> {
         token: string,
         method: string,
         url: string,
-        data?: unknown
+        data?: unknown,
+        headers?: Record<string, string>
     ): Promise<AxiosResponse<T>> {
         let response: AxiosResponse<T>
         // eslint-disable-next-line no-constant-condition
@@ -68,7 +78,10 @@ export async function startServer(): Promise<FastifyInstance> {
                     method: method as Method,
                     httpsAgent: new https.Agent({ rejectUnauthorized: false }),
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        ...{
+                            Authorization: `Bearer ${token}`,
+                        },
+                        ...headers,
                     },
                     responseType: 'json',
                     validateStatus: () => true,
@@ -103,6 +116,9 @@ export async function startServer(): Promise<FastifyInstance> {
     }
 
     async function proxy(req: FastifyRequest, res: FastifyReply) {
+        if (process.env.DELAY) {
+            await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+        }
         try {
             const token = req.cookies['acm-access-token-cookie']
             if (!token) return res.code(401).send()
@@ -114,7 +130,17 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
-            const result = await kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query, req.body)
+            const result = await kubeRequest(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + url + query,
+                req.body,
+                req.method === 'PATCH'
+                    ? {
+                          'Content-Type': 'application/merge-patch+json',
+                      }
+                    : undefined
+            )
             return res.code(result.status).send(result.data)
         } catch (err) {
             logError('proxy error', err, { method: req.method, url: req.url })
@@ -156,7 +182,11 @@ export async function startServer(): Promise<FastifyInstance> {
         })
     }
 
-    fastify.all('/cluster-management/proxy/*', proxy)
+    fastify.get('/cluster-management/proxy/*', proxy)
+    fastify.put('/cluster-management/proxy/*', proxy)
+    fastify.post('/cluster-management/proxy/*', proxy)
+    fastify.patch('/cluster-management/proxy/*', proxy)
+    fastify.delete('/cluster-management/proxy/*', proxy)
 
     fastify.get('/cluster-management/namespaced/*', async (req, res) => {
         try {
@@ -165,20 +195,35 @@ export async function startServer(): Promise<FastifyInstance> {
 
             let url = req.url.substr('/cluster-management/namespaced'.length)
             let query = ''
+            let namespaceQuery = ''
             if (url.includes('?')) {
                 query = url.substr(url.indexOf('?'))
                 url = url.substr(0, url.indexOf('?'))
+
+                // in certain cases we only want to query managed namespaces only for performance
+                const parsedQuery = querystring.parse(query)
+                if (parsedQuery['managedNamespacesOnly']) {
+                    namespaceQuery = '?labelSelector="cluster.open-cluster-management.io/managedCluster"'
+                    delete parsedQuery['managedNamespacesOnly']
+                    query = querystring.stringify(parsedQuery)
+                }
             }
 
+            // Try the query at a cluster scope in case the use has permissions
             const clusteredRequestPromise = kubeRequest(token, req.method, process.env.CLUSTER_API_URL + url + query)
 
+            // Query the projects (namespaces) the user can see in parallel in case the above fails.
             const projectsRequestPromise = kubeRequest<{
                 items: { metadata: { name: string } }[]
-            }>(token, req.method, process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects')
+            }>(
+                token,
+                req.method,
+                process.env.CLUSTER_API_URL + '/apis/project.openshift.io/v1/projects' + namespaceQuery
+            )
 
             try {
                 const clusteredRequest = await clusteredRequestPromise
-                return res.code(clusteredRequest.status).send(clusteredRequest.data)
+                if (clusteredRequest.status < 400) return res.code(clusteredRequest.status).send(clusteredRequest.data)
             } catch {
                 // DO NOTHING - WILL QUERY BY PROJECTS
             }
@@ -194,33 +239,25 @@ export async function startServer(): Promise<FastifyInstance> {
             })
 
             const results = await Promise.all(promises)
-            return res.code(200).send({ items: results.map((r) => r.data.items).flat() })
+            return res.code(200).send({ items: results.flatMap((r) => r.data.items).filter((i) => i != null) })
         } catch (err) {
             logError('namespaced error', err, { method: req.method, url: req.url })
             void res.code(500).send()
         }
     })
 
-    if (process.env.NODE_ENV !== 'production') {
-        await fastify.register(fastifyCors, {
-            origin: true,
-            methods: ['GET', 'PUT', 'POST', 'DELETE'],
-            credentials: true,
-        })
-    }
-
     await fastify.register(fastifyCookie)
     fastify.addHook('onRequest', (request, reply, done) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         ;(request as any).start = process.hrtime()
-        done()
+        if (process.env.DELAY) {
+            setTimeout(done, Number(process.env.DELAY))
+        } else {
+            done()
+        }
     })
 
     fastify.addHook('onResponse', (request, reply, done) => {
-        if (request.method === 'OPTIONS') {
-            done()
-            return
-        }
         switch (request.url) {
             case '/ping':
                 break

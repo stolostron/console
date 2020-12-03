@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { IResource } from '../resources/resource'
 import { IRequestResult } from './resource-request'
 
-export function useQuery<T extends IResource>(restFunc: () => IRequestResult<T[]>) {
+export function useQuery<T>(restFunc: () => IRequestResult<T[]>) {
     const [data, setData] = useState<T[]>()
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)

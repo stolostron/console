@@ -1,4 +1,4 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
 import { IResource } from './resource'
 
@@ -32,13 +32,7 @@ export interface ManagedCluster extends IResource {
             cpu: string
             memory: string
         }
-        conditions: {
-            lastTransitionTime: string
-            message: string
-            reason: string
-            status: string
-            type: string
-        }[]
+        conditions: V1CustomResourceDefinitionCondition[]
         version: {
             kubernetes: string
         }

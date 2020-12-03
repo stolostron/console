@@ -125,7 +125,7 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
         clusterName: 'foobar',
         clusterNamespace: 'foobar',
         clusterLabels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
-        applicationManager: { enabled: true, argocdCluster: true },
+        applicationManager: { enabled: true, argocdCluster: false },
         policyController: { enabled: true },
         searchCollector: { enabled: true },
         certPolicyController: { enabled: true },
@@ -173,7 +173,7 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
         uid: 'fba00095-386b-4d68-b2da-97003bc6a987',
     },
     spec: {
-        applicationManager: { enabled: true, argocdCluster: true },
+        applicationManager: { enabled: true, argocdCluster: false },
         certPolicyController: { enabled: true },
         clusterLabels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         clusterName: 'foobar',

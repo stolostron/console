@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export enum NavigationPath {
     clusterManagement = '/cluster-management/cluster-management',
     clusters = '/cluster-management/cluster-management/clusters',
@@ -13,4 +15,5 @@ export enum NavigationPath {
     addConnection = '/cluster-management/cluster-management/provider-connections/add-connection',
     bareMetalAssets = '/cluster-management/bare-metal-assets',
     createBareMetalAssets = '/cluster-management/bare-metal-assets/create',
+    editBareMetalAssets = '/cluster-management/bare-metal-assets/:namespace/:name/edit',
 }

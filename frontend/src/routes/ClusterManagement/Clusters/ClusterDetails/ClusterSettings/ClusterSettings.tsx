@@ -31,19 +31,12 @@ export function ClustersSettingsPageContent(props: { name: string; namespace: st
         }
         return stopPollingFn
     }, [cma.startPolling, cma.stopPolling, mca.startPolling, mca.stopPolling, cma, mca])
-
+   
     if (cma.error) {
         return <ErrorPage error={cma.error} />
     } else if (mca.error) {
         return <ErrorPage error={mca.error} />
     }
-    // } else if (!cma.data || cma.data.length === 0 || !mca.data || mca.data.length === 0) {
-    //     return (
-    //         <AcmPageCard>
-    //             <AcmEmptyState title="No add-ons found." message="Your cluster does not contain any addons." />
-    //         </AcmPageCard>
-    //     )
-    // }
 
     return <ClusterSettingsTable clusterManagementAddOns={cma.data} managedClusterAddOns={mca.data} refresh={refresh} />
 }

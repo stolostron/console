@@ -7,6 +7,7 @@ import nock from 'nock'
 import { configure } from '@testing-library/dom'
 
 configure({ testIdAttribute: 'id' })
+jest.setTimeout(20 * 1000)
 
 process.env.REACT_APP_BACKEND = 'http://www.example.com:80'
 

@@ -13,11 +13,11 @@ export interface ClusterManagementAddOn extends IResource {
     kind: ClusterManagementAddOnKindType
     metadata: V1ObjectMeta
     spec: {
-        addOnMeta: {
+        addOnMeta?: {
             displayName: string
             description: string
         }
-        addOnConfiguration: {
+        addOnConfiguration?: {
             crdName: string
             crName: string
         }

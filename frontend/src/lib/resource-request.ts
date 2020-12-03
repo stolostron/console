@@ -23,6 +23,13 @@ export interface IRequestResult<ResultType = unknown> {
     abort: () => void
 }
 
+export function resultsSettled<T>(results: IRequestResult<T>[]): IRequestResult<PromiseSettledResult<T>[]> {
+    return {
+        promise: Promise.allSettled(results.map((result) => result.promise)),
+        abort: () => results.forEach((result) => result.abort()),
+    }
+}
+
 export enum ResourceErrorCode {
     BadRequest = 400,
     Unauthorized = 401,
@@ -58,6 +65,15 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource, options)
 }
 
+export function patchResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    data: unknown,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    return patchRequest<Resource, ResultType>(url, data, options)
+}
+
 export function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: IRequestOptions
@@ -81,10 +97,22 @@ export function getResource<Resource extends IResource>(
 export function listResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     options?: IRequestOptions,
-    labels?: string[]
+    labels?: string[],
+    query?: Record<string, string>
 ): IRequestResult<Resource[]> {
     let url = baseUrl + apiNamespacedUrl + getResourceApiPath(resource)
-    if (labels) url += '?labelSelector=' + labels.join(',')
+    if (labels) {
+        url += '?labelSelector=' + labels.join(',')
+        if (query)
+            url += `&${Object.keys(query)
+                .map((key) => `${key}=${query[key]}`)
+                .join('&')}`
+    } else {
+        if (query)
+            url += `?${Object.keys(query)
+                .map((key) => `${key}=${query[key]}`)
+                .join('&')}`
+    }
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
         promise: result.promise.then((result) =>
@@ -150,6 +178,23 @@ function postRequest<ResourceType, ResultType = ResourceType>(
 ): IRequestResult<ResultType> {
     return axiosRequest<ResultType>({
         ...{ url, method: 'POST', validateStatus: (status) => true, data },
+        ...options,
+    })
+}
+
+function patchRequest<ResourceType, ResultType = ResourceType>(
+    url: string,
+    data: unknown,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    return axiosRequest<ResultType>({
+        ...{
+            url,
+            method: 'PATCH',
+            validateStatus: (status) => true,
+            headers: { 'Content-Type': 'application/json' },
+            data,
+        },
         ...options,
     })
 }
@@ -232,7 +277,9 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     }
 }
 
-function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions): Promise<AxiosResponse<ResponseType>> {
+function axiosRetry<ResponseType>(
+    config: AxiosRequestConfig & IRequestOptions & unknown
+): Promise<AxiosResponse<ResponseType>> {
     const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]
     const retries = config?.retries ?? 0
     const backoff = config?.backoff ?? 300

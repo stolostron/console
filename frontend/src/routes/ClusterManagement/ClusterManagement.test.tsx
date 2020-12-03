@@ -1,7 +1,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import React from 'react'
-import { nockGet } from '../../lib/nock-util'
+import { nockGet, mockNotFoundStatus } from '../../lib/nock-util'
 import { FeatureGate } from '../../resources/feature-gate'
 import ClusterManagementPage from './ClusterManagement'
 
@@ -37,7 +37,9 @@ describe('Cluster Management', () => {
 
     test('No Discovery Feature Flag', async () => {
         sessionStorage.clear()
+        const nockScope = nockGet(mockFeatureGate, mockNotFoundStatus)
         const { getByText, queryByText } = render(<Component/>)
+        await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('cluster:clusters')).toBeInTheDocument())
         await waitFor(() => expect(getByText('Provider Connections')).toBeInTheDocument())
         await waitFor(() => expect(queryByText('Discovered Clusters')).toBeNull())

@@ -1,23 +1,76 @@
-# Console
-
-Red Hat - Advanced Cluster Management for Kubernetes - Cluster Lifecycle UI Console
+# @open-cluster-management/console
 
 [![Build Status](https://travis-ci.com/open-cluster-management/console.svg?token=APpLzibLo9i2xU1nq9kC&branch=master)](https://travis-ci.com/open-cluster-management/console)
 
+## Prerequisites
+
+- Node.js v12.x
+
 ## Running
 
-### Prerequisites
+1. Clone repository
 
-- Node.js v12.x.x
-- OpenShift 4.x.x cluster
-- Advanced Cluster Management installed on your OCP cluster
+2. Install dependencies
 
+   ```
+   npm ci
+   ```
 
-### How to start
+3. Setup environment
 
-**Important:** Make sure your `oc` client is configured to your OCP cluster (`oc login`), the token must be valid to run this app locally.
+   You need:
 
-1.  Clone this repository
-2.  From the root directory, run `npm ci`
-3.  From the root directory, run `npm start`
-4.  In your browser, go to `http://localhost:3000/cluster-management`
+   - to be connected to a OpenShift 4.x.x cluster
+   - to have Advanced Cluster Management installed on the cluster
+
+   ```
+   npm run setup
+   ```
+
+   This will create a `.env` file in backend containing the environment variables.
+
+4. Start the development services
+
+   ```
+   npm start
+   ```
+
+   This will start the frontend and the backend in parallel.
+
+   The frontend will proxy requests to the backend using react scripts.
+
+   The backend will proxy requests to the kubernetes cluster specified by CLUSTER_API_URL in backend/.env.
+
+## Design
+
+### Backend
+
+The backend is a passthrough to kubernetes with a few tweaks.
+
+The header `Bearer TOKEN` will be injected into each request from the `acm-access-token-cookie` cookie. All requests are performed with the users token so kubernetes RBAC is enforced.
+
+- `/api/proxy` will proxy the requests to the kubernetes cluster.
+  - PATCH is the only exception, it will change the headers to properly patch a resource.
+
+- `/api/namespaced` will proxy the requests to the kubernetes cluster, but
+  - it will try to access the resources at a cluster level for performance
+  - if it cannot because cluster level access is forbidden
+    - it will determine the namespaces the user can access using `projects` and query each namespace for the resource in parallel as the user.
+    - This is needed for performance as it cannot be done from the frontend as browsers limit the number of concurrent requests.
+
+### Frontend
+
+The frontend is using react scripts to simplify dependencies. The react scripts internally handle all the webpacking of the frontend. The goal here is fewer dependencies of the frontend.
+
+React scripts allow for proxying of frontend requests to a backend. This is configured in the package.json of the frontend.
+
+### Authentication
+
+Frontend has a cookie `acm-access-token-cookie` that contains the user's token.
+
+If the backend responds with a `401 Unauthorized` the frontend starts an OAuth flow to authorize with the cluster.
+
+- Frontend redirects to the backend `/login` route.
+- Backend redirects to the cluster authorization endpoint.
+- Cluster OAuth redirects back to the backend `/login/callback` route.
+- Backend redirects to the frontend and sets the `acm-access-token-cookie`.
