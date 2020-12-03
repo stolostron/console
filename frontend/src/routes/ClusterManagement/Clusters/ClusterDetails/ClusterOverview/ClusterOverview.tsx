@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
-import { getHiveJob } from '../../../../../resources/hive-job'
+import { getHivePod } from '../../../../../resources/pod'
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
@@ -44,10 +44,10 @@ export function ProvisionNotification() {
         const namespace = cluster?.namespace ?? ''
         const status = cluster?.status ?? ''
         if (provisionStatuses.includes(status) && name && namespace) {
-            const response = getHiveJob(namespace, name, status)
+            const response = getHivePod(namespace, name, status)
             response.then((job) => {
                 const podName = job?.metadata.name
-                setHiveLink(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
+                podName && setHiveLink(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
             })
         }
     }, [cluster?.namespace, cluster?.name, cluster?.status])
@@ -60,7 +60,7 @@ export function ProvisionNotification() {
         <div style={{ marginBottom: '1rem' }}>
             <AcmAlert
                 isInline
-                variant={cluster?.status === ClusterStatus.failed ? AlertVariant.danger : AlertVariant.default}
+                variant={cluster?.status === ClusterStatus.failed ? AlertVariant.danger : AlertVariant.info}
                 title={
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
