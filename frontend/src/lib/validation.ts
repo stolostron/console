@@ -36,12 +36,12 @@ export function validatePublicSshKey(value: string, t: TFunction) {
             }
         }
     }
-    return t('validate.publicSshKey.required') 
+    return t('validate.publicSshKey.required')
 }
 
 export function validatePrivateSshKey(value: string, t: TFunction) {
     if (!/-----BEGIN [a-zA-Z]+ PRIVATE KEY-----\n([\s\S]*?)\n-----END [a-zA-Z]+ PRIVATE KEY-----/gm.test(value)) {
-        return t('validate.privateSshKey.required') 
+        return t('validate.privateSshKey.required')
     }
 
     return undefined
@@ -57,7 +57,7 @@ export function validateCertificate(value: string, t: TFunction) {
 export function validateGCProjectID(value: string, t: TFunction) {
     const gcProjectIDPattern = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/
     if (!gcProjectIDPattern.test(value)) {
-        return t('validate.gcProjectID.format') 
+        return t('validate.gcProjectID.format')
     }
 
     return undefined // the value is valid
@@ -77,7 +77,7 @@ export function validateJSON(value: string, t: TFunction) {
 export function validateBaseDnsName(value: string, t: TFunction) {
     const VALID_DNS_NAME_TESTER = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
     if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
-        return t('validate.baseDnsName.start') 
+        return t('validate.baseDnsName.start')
     }
     if (!VALID_DNS_NAME_TESTER.test(value)) {
         return t('validate.baseDnsName.char')
@@ -90,7 +90,7 @@ export function validateLibvirtURI(value: string, t: TFunction) {
     const VALID_LIBVIRT_PROTOCOLS = ['qemu+ssh']
     const protoValuePair = value.split('://')
     if (protoValuePair.length !== 2 || !VALID_LIBVIRT_PROTOCOLS.includes(protoValuePair[0])) {
-        return t('validate.libevirtURI.format') 
+        return t('validate.libevirtURI.format')
     }
 
     if (!protoValuePair[1]) {
@@ -113,14 +113,14 @@ export function validateImageMirror(value: string, t: TFunction) {
         return errDnsName
     }
     if (dnsName.length === 1) {
-        return t('validate.imageMirror.format') 
+        return t('validate.imageMirror.format')
     }
     const port = dnsName[1].split('/', 2)
     if ((port.length === 1 && port[0].length === 0) || !VALIDATE_NUMERIC_TESTER.test(port[0])) {
         return t('validate.imageMirror.port')
     }
     if (port.length === 1) {
-        return t('validate.imageMirror.format') 
+        return t('validate.imageMirror.format')
     }
     if (!VALID_REPOPATH_TESTER.test(value)) {
         return t('validate.imageMirror.repositorypath')
