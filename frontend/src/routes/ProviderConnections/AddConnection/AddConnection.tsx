@@ -526,7 +526,21 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             providerConnection.spec!.baseDomain = baseDomain as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                    isRequired
+                />
+                <AcmTextArea
+                    id="ocmAPIToken"
+                    label={t('addConnection.ocmapitoken.label')}
+                    placeholder={t('addConnection.ocmapitoken.placeholder')}
+                    labelHelp={t('addConnection.ocmapitoken.labelHelp')}
+                    value={providerConnection.spec?.ocmAPIToken}
+                    onChange={(ocmAPIToken) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.ocmAPIToken = ocmAPIToken as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
                     isRequired
                 />
                 <AcmTextArea
@@ -540,7 +554,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             providerConnection.spec!.pullSecret = pullSecret as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     isRequired
                 />
                 <AcmTextArea
@@ -555,7 +569,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             providerConnection.spec!.sshPrivatekey = sshPrivatekey as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     validation={validatePrivateSshKey}
                     isRequired
                 />
@@ -571,7 +585,7 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                             providerConnection.spec!.sshPublickey = sshPublickey as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     validation={validatePublicSshKey}
                     isRequired
                 />
@@ -625,6 +639,9 @@ export function AddConnectionPageContent(props: { projects: Project[] }) {
                                 delete providerConnection.spec!.vmClusterName
                                 delete providerConnection.spec!.datacenter
                                 delete providerConnection.spec!.datastore
+                            }
+                            if (providerID !== ProviderID.CRH) {
+                                delete providerConnection.spec!.ocmAPIToken
                             }
                             delete providerConnection.data
 

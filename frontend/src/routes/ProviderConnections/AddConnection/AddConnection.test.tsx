@@ -328,6 +328,58 @@ describe('add connection page', () => {
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
 
+    test('should create cloud.redhat.com provider connection', async () => {
+        const providerConnection: ProviderConnection = {
+            apiVersion: ProviderConnectionApiVersion,
+            kind: ProviderConnectionKind,
+            metadata: {
+                name: 'connection',
+                namespace: mockProject.metadata.name,
+                labels: {
+                    'cluster.open-cluster-management.io/provider': ProviderID.CRH,
+                    'cluster.open-cluster-management.io/cloudconnection': '',
+                },
+            },
+            spec: {
+                baseDomain: '',
+                pullSecret: '',
+                sshPrivatekey: '',
+                sshPublickey: '',
+                ocmAPIToken: 'test-ocm-api-token',
+            },
+        }
+
+        const projectsNock = nockClusterList(mockProject, mockProjects)
+        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const { getByText, getByTestId, container } = render(
+            <MemoryRouter>
+                <AddConnectionPage />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() =>
+            expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
+        )
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
+        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.CRH).name)).toBeInTheDocument())
+        getByText(getProviderByKey(ProviderID.CRH).name).click()
+        userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
+        await waitFor(() =>
+            expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
+        )
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
+        await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
+        getByText(providerConnection.metadata.namespace!).click()
+
+        userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
+        userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
+        userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
+        userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
+        userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
+        getByText('addConnection.addButton.label').click()
+        await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+    })
+
     test('should show error if get project error', async () => {
         const projectsNock = nockClusterList(mockProject, mockBadRequestStatus)
         const { getByText } = render(
