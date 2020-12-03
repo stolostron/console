@@ -146,7 +146,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     if (!projects) {
         return <AcmLoadingPage />
     }
-    if (props.name && !providerConnection) {
+    if (props.name && providerConnection.metadata.name === '') {
         return <AcmLoadingPage />
     }
     if (projects.length === 0) {
@@ -176,15 +176,16 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
-    const isEditing = props.providerConnection.metadata.name !== ''
-    const [addButtonLabel, setAddButtonLabel] = useState<string>(
-        isEditing ? t('addConnection.editButton.label') : t('addConnection.addButton.label')
-    )
+    const isEditing = () => props.providerConnection.metadata.name !== ''
+
     const [errors, setErrors] = useState<string[]>([])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
+    // useEffect(() => {
+    //     setProviderConnection(JSON.parse(JSON.stringify(props.providerConnection)))
+    // }, [props.providerConnection])
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -205,7 +206,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                         })
                     }}
-                    isDisabled={isEditing}
+                    isDisabled={isEditing()}
                     isRequired
                 >
                     {providers.map((provider) => (
@@ -227,7 +228,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     validation={(value) => validateKubernetesDnsName(value, 'Connection name')}
                     isRequired
-                    isDisabled={isEditing}
+                    isDisabled={isEditing()}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 />
                 <AcmSelect
@@ -242,7 +243,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     isRequired
-                    isDisabled={isEditing}
+                    isDisabled={isEditing()}
                     hidden={!getProviderConnectionProviderID(providerConnection)}
                 >
                     {props.projects.map((project) => (
@@ -670,10 +671,9 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             delete data.data
 
                             setErrors([])
-                            setAddButtonLabel(t('addConnection.applyingButton.label'))
 
                             let result: IRequestResult<ProviderConnection>
-                            if (isEditing) {
+                            if (isEditing()) {
                                 result = replaceProviderConnection(data)
                             } else {
                                 result = createProviderConnection(data)
@@ -687,16 +687,11 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                                     if (err instanceof Error) {
                                         setErrors([err.message])
                                     }
-                                    setAddButtonLabel(
-                                        isEditing
-                                            ? t('addConnection.editButton.label')
-                                            : t('addConnection.addButton.label')
-                                    )
                                 })
                         }}
-                    >
-                        {addButtonLabel}
-                    </AcmSubmit>
+                        label={isEditing() ? t('addConnection.editButton.label') : t('addConnection.addButton.label')}
+                        processingLabel={t('addConnection.applyingButton.label')}
+                    />
                     <Button
                         variant="link"
                         onClick={

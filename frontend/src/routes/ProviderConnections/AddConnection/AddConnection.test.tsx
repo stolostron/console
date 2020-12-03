@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { mockBadRequestStatus, nockClusterList, nockCreate } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockClusterList, nockCreate, nockGet, nockReplace } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
@@ -48,32 +48,52 @@ function TestAddConnectionPage() {
     )
 }
 
+const awsProviderConnection: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'connection',
+        namespace: mockProject.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/provider': ProviderID.AWS,
+            'cluster.open-cluster-management.io/cloudconnection': '',
+        },
+    },
+    spec: {
+        awsAccessKeyID: 'awsAccessKeyID',
+        awsSecretAccessKeyID: 'awsSecretAccessKeyID',
+        baseDomain: 'baseDomain',
+        pullSecret: 'pullSecret',
+        sshPrivatekey: '-----BEGINKEY-----',
+        sshPublickey: 'ssh-',
+    },
+}
+
+function TestEditConnectionPage() {
+    return (
+        <MemoryRouter
+            initialEntries={[
+                NavigationPath.editConnection
+                    .replace(':namespace', awsProviderConnection.metadata.namespace!)
+                    .replace(':name', awsProviderConnection.metadata.name!),
+            ]}
+        >
+            <Route
+                path={NavigationPath.editConnection}
+                render={(props: any) => {
+                    location = props.location
+                    return <AddConnectionPage {...props} />
+                }}
+            />
+        </MemoryRouter>
+    )
+}
+
 describe('add connection page', () => {
     it('should create aws provider connection', async () => {
-        const providerConnection: ProviderConnection = {
-            apiVersion: ProviderConnectionApiVersion,
-            kind: ProviderConnectionKind,
-            metadata: {
-                name: 'connection',
-                namespace: mockProject.metadata.name,
-                labels: {
-                    'cluster.open-cluster-management.io/provider': ProviderID.AWS,
-                    'cluster.open-cluster-management.io/cloudconnection': '',
-                },
-            },
-            spec: {
-                awsAccessKeyID: 'awsAccessKeyID',
-                awsSecretAccessKeyID: 'awsSecretAccessKeyID',
-                baseDomain: 'baseDomain',
-                pullSecret: 'pullSecret',
-                sshPrivatekey: '-----BEGINKEY-----',
-                sshPublickey: 'ssh-',
-            },
-        }
-
         const projectsNock = nockClusterList(mockProject, mockProjects)
-        const badRequestNock = nockCreate(packProviderConnection({ ...providerConnection }), mockBadRequestStatus)
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
+        const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
@@ -82,19 +102,19 @@ describe('add connection page', () => {
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
         await waitFor(() => expect(getByText(getProviderByKey(ProviderID.AWS).name)).toBeInTheDocument())
         getByText(getProviderByKey(ProviderID.AWS).name).click()
-        userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
+        userEvent.type(getByTestId('connectionName'), awsProviderConnection.metadata.name!)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(providerConnection.metadata.namespace!).click()
-        userEvent.type(getByTestId('awsAccessKeyID'), providerConnection.spec!.awsAccessKeyID!)
-        userEvent.type(getByTestId('awsSecretAccessKeyID'), providerConnection.spec!.awsSecretAccessKeyID!)
-        userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
+        await waitFor(() => expect(getByText(awsProviderConnection.metadata.namespace!)).toBeInTheDocument())
+        getByText(awsProviderConnection.metadata.namespace!).click()
+        userEvent.type(getByTestId('awsAccessKeyID'), awsProviderConnection.spec!.awsAccessKeyID!)
+        userEvent.type(getByTestId('awsSecretAccessKeyID'), awsProviderConnection.spec!.awsSecretAccessKeyID!)
+        userEvent.type(getByTestId('baseDomain'), awsProviderConnection.spec!.baseDomain!)
+        userEvent.type(getByTestId('pullSecret'), awsProviderConnection.spec!.pullSecret!)
+        userEvent.type(getByTestId('sshPrivateKey'), awsProviderConnection.spec!.sshPrivatekey!)
+        userEvent.type(getByTestId('sshPublicKey'), awsProviderConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
@@ -365,5 +385,25 @@ describe('add connection page', () => {
         const projectsNock2 = nockClusterList(mockProject, [])
         getByText('Retry').click()
         await waitFor(() => expect(projectsNock2.isDone()).toBeTruthy())
+    })
+})
+
+describe('edit connection page', () => {
+    it('should edit provider connection', async () => {
+        const projectsNock = nockClusterList(mockProject, mockProjects)
+        const getProviderConnectionNock = nockGet(awsProviderConnection)
+        const { getByText, getByTestId } = render(<TestEditConnectionPage />)
+        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getByText('addConnection.editButton.label')).toBeInTheDocument())
+
+        await waitFor(() => expect(getByTestId('awsAccessKeyID')).toBeInTheDocument())
+        userEvent.type(getByTestId('awsAccessKeyID'), '-edit')
+
+        const copy: ProviderConnection = JSON.parse(JSON.stringify(awsProviderConnection))
+        copy.spec!.awsAccessKeyID += '-edit'
+        const replaceNock = nockReplace(packProviderConnection(copy))
+        getByText('addConnection.editButton.label').click()
+        await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
     })
 })
