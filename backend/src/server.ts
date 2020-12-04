@@ -130,16 +130,21 @@ export async function startServer(): Promise<FastifyInstance> {
                 url = url.substr(0, url.indexOf('?'))
             }
 
+            let extraHeaders: Record<string, string>
+            if (req.method === 'PATCH') {
+                if (Array.isArray(req.body)) {
+                    extraHeaders = { 'Content-Type': 'application/json-patch+json' }
+                } else {
+                    extraHeaders = { 'Content-Type': 'application/merge-patch+json' }
+                }
+            }
+
             const result = await kubeRequest(
                 token,
                 req.method,
                 process.env.CLUSTER_API_URL + url + query,
                 req.body,
-                req.method === 'PATCH'
-                    ? {
-                          'Content-Type': 'application/merge-patch+json',
-                      }
-                    : undefined
+                extraHeaders
             )
             return res.code(result.status).send(result.data)
         } catch (err) {

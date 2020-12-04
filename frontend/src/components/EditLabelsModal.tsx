@@ -1,31 +1,39 @@
 import { AcmAlert, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import React, { useLayoutEffect, useState } from 'react'
-import { patchResource, ResourceError } from '../lib/resource-request'
+import { useTranslation } from 'react-i18next'
+import { patchResource } from '../lib/resource-request'
 import { IResource } from '../resources/resource'
 import { getErrorInfo } from './ErrorPage'
 
 export function EditLabelsModal(props: { resource?: IResource; close: () => void }) {
-    const [labels, setLabels] = useState<Record<string, string> | undefined>({})
+    const { t } = useTranslation(['labels'])
+
+    const [labels, setLabels] = useState<Record<string, string>>({})
     const [error, setError] = useState<{ title: string; subtitle: string } | undefined>()
     useLayoutEffect(() => {
-        setLabels(props.resource?.metadata.labels)
+        const labels = props.resource?.metadata.labels ?? {}
+        setLabels({ ...labels })
     }, [props.resource])
 
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={`Edit labels`}
+            title={t('edit.labels.title')}
             isOpen={props.resource !== undefined}
             onClose={props.close}
         >
             <AcmForm style={{ gap: 0 }}>
+                <div>{t('labels.description')}</div>
+                &nbsp;
                 <AcmLabelsInput
                     id="labels-input"
                     label={`${props.resource?.metadata.name} labels`}
                     buttonLabel="Add label"
                     value={labels}
-                    onChange={(labels) => setLabels(labels)}
+                    onChange={(labels) => {
+                        if (labels) setLabels(labels)
+                    }}
                 />
                 {error && <AcmAlert {...error} />}
                 <ActionGroup>
@@ -35,12 +43,25 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                         onClick={() => {
                             setError(undefined)
                             if (props.resource) {
-                                // TODO
-                                patchResource(props.resource, {
-                                    metadata: {
-                                        labels,
-                                    },
-                                })
+                                let patch: { op: string; path: string; value?: unknown }[] = []
+                                if (props.resource.metadata.labels) {
+                                    patch = [
+                                        ...patch,
+                                        ...Object.keys(props.resource.metadata.labels).map((key) => ({
+                                            op: 'remove',
+                                            path: `/metadata/labels/${key}`,
+                                        })),
+                                    ]
+                                }
+                                patch = [
+                                    ...patch,
+                                    ...Object.keys(labels).map((key) => ({
+                                        op: 'add',
+                                        path: `/metadata/labels/${key}`,
+                                        value: labels[key],
+                                    })),
+                                ]
+                                return patchResource(props.resource, patch)
                                     .promise.then(() => {
                                         props.close()
                                     })
@@ -50,11 +71,11 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                                     })
                             }
                         }}
-                    >
-                        Apply
-                    </AcmSubmit>
+                        label={t('save')}
+                        processingLabel={t('saving')}
+                    ></AcmSubmit>
                     <Button variant="link" onClick={props.close}>
-                        Cancel
+                        {t('cancel')}
                     </Button>
                 </ActionGroup>
             </AcmForm>
