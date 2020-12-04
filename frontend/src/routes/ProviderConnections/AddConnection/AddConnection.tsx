@@ -19,7 +19,6 @@ import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
-import { validateKubernetesDnsName, validatePrivateSshKey, validatePublicSshKey } from '../../../lib/validation'
 import { 
     validateKubernetesDnsName, 
     validatePrivateSshKey, 

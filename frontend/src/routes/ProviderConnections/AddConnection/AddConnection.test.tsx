@@ -64,8 +64,8 @@ const awsProviderConnection: ProviderConnection = {
         awsSecretAccessKeyID: 'awsSecretAccessKeyID',
         baseDomain: 'base.domain',
         pullSecret: '{"pullSecret":"secret"}',
-        sshPrivatekey: '-----BEGIN PRIVATE KEY-----',
-        sshPublickey:  'ssh-rsa AAAAB1 fakeemail@redhat.com',
+        sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+        sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
     },
 }
 
@@ -140,7 +140,7 @@ describe('add connection page', () => {
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
@@ -192,7 +192,7 @@ describe('add connection page', () => {
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
@@ -313,7 +313,7 @@ describe('add connection page', () => {
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                sshPublickey:  'ssh-rsa AAAAB1 fake@email.com',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
