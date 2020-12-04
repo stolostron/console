@@ -62,10 +62,10 @@ const awsProviderConnection: ProviderConnection = {
     spec: {
         awsAccessKeyID: 'awsAccessKeyID',
         awsSecretAccessKeyID: 'awsSecretAccessKeyID',
-        baseDomain: 'baseDomain',
-        pullSecret: 'pullSecret',
-        sshPrivatekey: '-----BEGINKEY-----',
-        sshPublickey: 'ssh-',
+        baseDomain: 'base.domain',
+        pullSecret: '{"pullSecret":"secret"}',
+        sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+        sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
     },
 }
 
@@ -135,12 +135,12 @@ describe('add connection page', () => {
                 },
             },
             spec: {
-                gcProjectID: 'gcProjectID',
-                gcServiceAccountKey: 'gcServiceAccountKey',
-                baseDomain: 'baseDomain',
-                pullSecret: 'pullSecret',
-                sshPrivatekey: '-----BEGINKEY-----',
-                sshPublickey: 'ssh-',
+                gcProjectID: 'gc-project-id',
+                gcServiceAccountKey: '{"id":"id"}',
+                baseDomain: 'base.domain',
+                pullSecret: '{"pullSecret":"secret"}',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
@@ -189,10 +189,10 @@ describe('add connection page', () => {
                 clientsecret: 'clientsecret',
                 subscriptionid: 'subscriptionid',
                 tenantid: 'tenantid',
-                baseDomain: 'baseDomain',
-                pullSecret: 'pullSecret',
-                sshPrivatekey: '-----BEGINKEY-----',
-                sshPublickey: 'ssh-',
+                baseDomain: 'base.domain',
+                pullSecret: '{"pullSecret":"secret"}',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
@@ -242,16 +242,16 @@ describe('add connection page', () => {
                 },
             },
             spec: {
-                libvirtURI: 'libvirtURI',
+                libvirtURI: 'qemu+ssh://libvirtURI',
                 sshKnownHosts: 'sshKnownHosts',
-                imageMirror: 'imageMirror',
+                imageMirror: 'image.mirror:123/abc',
                 bootstrapOSImage: 'bootstrapOSImage',
                 clusterOSImage: 'clusterOSImage',
-                additionalTrustBundle: 'additionalTrustBundle',
-                baseDomain: 'baseDomain',
-                pullSecret: 'pullSecret',
-                sshPrivatekey: '-----BEGINKEY-----',
-                sshPublickey: 'ssh-',
+                additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
+                baseDomain: 'base.domain',
+                pullSecret: '{"pullSecret":"secret"}',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
@@ -306,14 +306,14 @@ describe('add connection page', () => {
                 username: 'username',
                 password: 'password',
                 vcenter: 'vcenter',
-                cacertificate: 'cacertificate',
+                cacertificate: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
                 vmClusterName: 'vmClusterName',
                 datacenter: 'datacenter',
                 datastore: 'datastore',
-                baseDomain: 'baseDomain',
-                pullSecret: 'pullSecret',
-                sshPrivatekey: '-----BEGINKEY-----',
-                sshPublickey: 'ssh-',
+                baseDomain: 'base.domain',
+                pullSecret: '{"pullSecret":"secret"}',
+                sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
 
