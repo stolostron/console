@@ -570,7 +570,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
-                    validation={(value)=> value && validateCertificate(value,t)}
+                    validation={(value)=> value? validateCertificate(value,t):undefined}
                 />
                 <AcmTextInput
                     id="baseDomain"
