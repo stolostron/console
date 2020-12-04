@@ -42,6 +42,8 @@ import {
     setProviderConnectionProviderID,
     replaceProviderConnection,
 } from '../../../resources/provider-connection'
+import { getFeatureGate } from '../../../resources/feature-gate'
+
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -186,6 +188,27 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
     const { t } = useTranslation(['connection'])
     const history = useHistory()
 
+    const [discovery, toggleDiscovery] = useState<Boolean>(false)
+    useEffect(() => {
+        if (sessionStorage.getItem("DiscoveryEnabled") === null) {
+            const result = getFeatureGate('open-cluster-management-discovery')
+            result.promise
+                .then((featureGate) => {
+                    if (featureGate.spec!.featureSet === "DiscoveryEnabled") {
+                        sessionStorage.setItem("DiscoveryEnabled", "true")
+                        toggleDiscovery(true)
+                    }
+                })
+                .catch((err: Error) => {
+                    // If error retrieving feature flag, continue
+                    sessionStorage.setItem("DiscoveryEnabled", "false")
+                    toggleDiscovery(false)
+                })
+                return result.abort
+        }
+        toggleDiscovery((sessionStorage.getItem("DiscoveryEnabled") === "true" ? true : false))
+    }, [])
+
     const isEditing = () => props.providerConnection.metadata.name !== ''
 
     const [errors, setErrors] = useState<string[]>([])
@@ -201,6 +224,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
         update(copy)
         setProviderConnection(copy)
     }
+
 
     return (
         <AcmPageCard>
@@ -219,7 +243,13 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     isDisabled={isEditing()}
                     isRequired
                 >
-                    {providers.map((provider) => (
+                    {
+                    providers.filter(function(provider) {
+                        if (!discovery && provider.key === ProviderID.CRH) {
+                          return false // skip
+                        }
+                        return true
+                      }).map((provider) => (
                         <SelectOption key={provider.key} value={provider.key}>
                             {provider.name}
                         </SelectOption>
@@ -583,7 +613,21 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             providerConnection.spec!.baseDomain = baseDomain as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                    isRequired
+                />
+                <AcmTextArea
+                    id="ocmAPIToken"
+                    label={t('addConnection.ocmapitoken.label')}
+                    placeholder={t('addConnection.ocmapitoken.placeholder')}
+                    labelHelp={t('addConnection.ocmapitoken.labelHelp')}
+                    value={providerConnection.spec?.ocmAPIToken}
+                    onChange={(ocmAPIToken) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.ocmAPIToken = ocmAPIToken as string
+                        })
+                    }}
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
                     isRequired
                     validation={(value) => validateBaseDnsName(value, t)}
                 />
@@ -598,7 +642,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             providerConnection.spec!.pullSecret = pullSecret as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     isRequired
                     validation={(value)=>validateJSON(value,t)}
                 />
@@ -614,7 +658,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             providerConnection.spec!.sshPrivatekey = sshPrivatekey as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     validation={(value)=>validatePrivateSshKey(value,t)}
                     isRequired
                 />
@@ -630,7 +674,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             providerConnection.spec!.sshPublickey = sshPublickey as string
                         })
                     }}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
+                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                     validation={(value)=>validatePublicSshKey(value,t)}
                     isRequired
                 />
@@ -685,6 +729,9 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                                 delete data.spec!.vmClusterName
                                 delete data.spec!.datacenter
                                 delete data.spec!.datastore
+                            }
+                            if (providerID !== ProviderID.CRH) {
+                                delete data.spec!.ocmAPIToken
                             }
                             delete data.data
 

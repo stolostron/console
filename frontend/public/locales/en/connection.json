@@ -108,6 +108,9 @@
     "addConnection.sshPublicKey.label": "SSH Public Key",
     "addConnection.sshPublicKey.placeholder": "Enter your SSH Public Key",
     "addConnection.sshPublicKey.labelHelp": "The public SSH key to use to access your cluster machines.",
+    "addConnection.ocmapitoken.label": "OpenShift Cluster Manager API Token",
+    "addConnection.ocmapitoken.placeholder": "Enter the OpenShift Cluster Manager API Token",
+    "addConnection.ocmapitoken.labelHelp": "The OpenShift Cluster Manager API Token can be retrieved from - https://cloud.redhat.com/openshift/token",
 
     "validate.kubernetesDnsName.length": "can contain at most 63 characters",
     "validate.kubernetesDnsName.char": "can only contain lowercase alphanumeric characters or '-'",
