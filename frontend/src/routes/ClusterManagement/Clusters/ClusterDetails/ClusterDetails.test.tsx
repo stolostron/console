@@ -19,7 +19,7 @@ import {
     CertificateSigningRequestApiVersion,
     CertificateSigningRequestKind,
 } from '../../../../resources/certificate-signing-requests'
-import { PodList, PodListApiVersion, PodListKind, PodApiVersion, PodKind } from '../../../../resources/pod'
+import { PodList, PodApiVersion, PodKind } from '../../../../resources/pod'
 import { nockGet, nockClusterList, nockNamespacedList } from '../../../../lib/nock-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
