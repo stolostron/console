@@ -1,11 +1,13 @@
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmEmptyState,
     AcmLabels,
     AcmPageCard,
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import { AlertActionCloseButton, AlertVariant, Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -149,6 +151,29 @@ export function ClustersTable(props: {
 
     return (
         <Fragment>
+            {errors && (
+                <AcmAlertGroup>
+                    {errors.map((error, index) => (
+                        <AcmAlert
+                            isInline
+                            isLiveRegion
+                            variant={AlertVariant.danger}
+                            title={error}
+                            key={index.toString()}
+                            actionClose={
+                                <AlertActionCloseButton
+                                    title={error}
+                                    variantLabel={`${AlertVariant.danger} alert`}
+                                    onClose={
+                                        /* istanbul ignore next */ () =>
+                                            setErrors([...errors.filter((e) => e !== error)])
+                                    }
+                                />
+                            }
+                        />
+                    ))}
+                </AcmAlertGroup>
+            )}
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -178,14 +203,24 @@ export function ClustersTable(props: {
                                     ) as Array<string>
                                     const promiseResults = await deleteClusters(clusterNames, true)
                                     const resultErrors: string[] = []
+                                    let i = 0
                                     promiseResults.promise.then((results)=>{
                                         results.forEach((result)=>{
                                             if(result.status === 'rejected'){
                                                 resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
                                             }
+                                            else {
+                                                console.log(result.value)
+                                                result.value.forEach((result)=>{
+                                                    if (result.status === 'rejected'){
+                                                        resultErrors.push(`Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`)
+                                                        setErrors([...errors, ...resultErrors])
+                                                    }
+                                                })
+                                                i++
+                                            }
                                         })
                                     })
-                                    setErrors([...errors, ...resultErrors])
                                     setConfirm(ClosedConfirmModalProps)
                                     props.refresh()
                                 },
@@ -206,23 +241,31 @@ export function ClustersTable(props: {
                                 title: t('modal.detach.title'),
                                 message: `You are about to detach ${managedClusters.length} managed clusters. This action is irreversible.`,
                                 open: true,
-                                confirm: async () => {
-
+                                confirm: () => {
                                     const managedClusterNames = managedClusters.map(
                                         (managedCluster) => managedCluster.name
                                     ) as Array<string>
-                                    const promiseResults = await deleteClusters(managedClusterNames, false)
+                                    const promiseResults = deleteClusters(managedClusterNames, false)
                                     const resultErrors: string[] = []
+                                    let i = 0
                                     promiseResults.promise.then((results)=>{
+                                        console.log(results[0])
                                         results.forEach((result)=>{
                                             if(result.status === 'rejected'){
                                                 resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
                                             }
+                                            else {
+                                                result.value.forEach((result)=>{
+                                                    if (result.status === 'rejected'){
+                                                        resultErrors.push(`Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`)
+                                                        setErrors([...errors, ...resultErrors])
+                                                    }
+                                                })
+                                                i++
+                                            }
                                         })
                                     })
-                                    setErrors([...errors, ...resultErrors])
                                     setConfirm(ClosedConfirmModalProps)
-                                    props.refresh()
                                 },
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
@@ -239,19 +282,19 @@ export function ClustersTable(props: {
                     { id: 'upgradeCluster', title: t('managed.upgrade'), click: (managedCluster) => {} },
                     { id: 'searchCluster', title: t('managed.search'), click: (managedCluster) => {} },
                     { id: 'detachCluster', title: t('managed.detached'), click: (managedCluster) => {
-                        //
                         setConfirm({
-                            title: t('modal.delete.title'),
+                            title: t('modal.detach.title'),
                             message: `You are about to detach ${managedCluster.name}. This action is irreversible.`,
                             open: true,
                             confirm: () => {
-                                deleteCluster(managedCluster.name!, false)
-                                    .promise.then(props.refresh)
-                                    .catch(() => {
-                                        setErrors([
-                                            ...errors,
-                                            `Failed to detach managed cluster named ${managedCluster.name}`,
-                                        ])
+                                const resultErrors: string[] = []
+                                const promiseResults = deleteCluster(managedCluster.name!, false)
+                                    .promise.then((results)=>{
+                                        results.forEach((result)=>{
+                                            if(result.status === 'rejected'){
+                                                setErrors([`Failed to detach managed cluster ${managedCluster.name}. ${result.reason}`])
+                                            }
+                                        })
                                     })
                                 setConfirm(ClosedConfirmModalProps)
                             },
@@ -267,13 +310,14 @@ export function ClustersTable(props: {
                             message: `You are about to destroy ${managedCluster.name}. This action is irreversible.`,
                             open: true,
                             confirm: () => {
-                                deleteCluster(managedCluster.name!, true)
-                                    .promise.then(props.refresh)
-                                    .catch(() => {
-                                        setErrors([
-                                            ...errors,
-                                            `Failed to destroy managed cluster named ${managedCluster.name}`,
-                                        ])
+                                const resultErrors: string[] = []
+                                const promiseResults = deleteCluster(managedCluster.name!, false)
+                                    .promise.then((results)=>{
+                                        results.forEach((result)=>{
+                                            if(result.status === 'rejected'){
+                                                setErrors([`Failed to destroy managed cluster ${managedCluster.name}. ${result.reason}`])
+                                            }
+                                        })
                                     })
                                 setConfirm(ClosedConfirmModalProps)
                             },
