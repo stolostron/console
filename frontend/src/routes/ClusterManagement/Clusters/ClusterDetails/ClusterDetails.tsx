@@ -24,7 +24,7 @@ import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-reque
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
 }>({
-    cluster: undefined,
+    cluster: undefined
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
