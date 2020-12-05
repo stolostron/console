@@ -1,12 +1,12 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, waitFor, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LoginCredentials } from './LoginCredentials'
-import { ClusterContext }  from '../ClusterDetails/ClusterDetails'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockGet } from '../../../../lib/nock-util'
+import { nockGet, mockBadRequestStatus } from '../../../../lib/nock-util'
 
-const cluster: Cluster = {
+const mockCluster: Cluster = {
     name: 'test-cluster',
     namespace: 'test-cluster',
     status: ClusterStatus.ready,
@@ -20,35 +20,84 @@ const cluster: Cluster = {
         },
         displayVersion: '4.6',
     },
-    labels: [],
+    labels: undefined,
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
     hiveSecrets: {
         kubeconfig: '',
-        kubeadmin: 'test-cluster-kubeadmin',
-        installConfig: ''
+        kubeadmin: 'test-cluster-0-fk6c9-admin-password',
+        installConfig: '',
     },
     isHive: true,
-    isManaged: true
+    isManaged: true,
+}
+
+const mockKubeadminSecret = {
+    kind: 'Secret',
+    apiVersion: 'v1',
+    metadata: {
+        name: 'test-cluster-0-fk6c9-admin-password',
+        namespace: 'test-cluster',
+        selfLink: '/api/v1/namespaces/test-cluster/secrets/test-cluster-0-fk6c9-admin-password',
+        uid: 'e5b03674-b778-45a9-a804-26ca396ce96d',
+        resourceVersion: '54087401',
+        labels: {
+            'hive.openshift.io/cluster-provision-name': 'test-cluster-0-fk6c9',
+            'hive.openshift.io/secret-type': 'kubeadmincreds',
+        },
+        ownerReferences: [
+            {
+                apiVersion: 'hive.openshift.io/v1',
+                kind: 'ClusterProvision',
+                name: 'test-cluster-0-fk6c9',
+                uid: 'cc081438-122e-4f5a-b4e8-5dbf699c0270',
+                blockOwnerDeletion: true,
+            },
+        ],
+    },
+    data: { password: 'QXhNQXktVWZNR0gtUFdWeEwtRFo5M3c=', username: 'a3ViZWFkbWlu' },
+    type: 'Opaque',
 }
 
 describe('LoginCredentials', () => {
-    test('renders', () => {
-        const { getByTestId } = render(
-            <ClusterContext.Provider value={{ cluster }}>
+    test('renders', async () => {
+        nockGet(mockKubeadminSecret)
+        render(
+            <ClusterContext.Provider value={{ cluster: mockCluster }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
-        expect(getByTestId('login-credentials')).toBeInTheDocument()
+        expect(screen.getByRole('button')).toBeInTheDocument()
+        await waitFor(() => screen.getByText('credentials.show'))
+        userEvent.click(screen.getByRole('button'))
+        await waitFor(() => screen.getByText('credentials.loading'))
+        await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
+        await waitFor(() => screen.getByText('credentials.hide'))
+        userEvent.click(screen.getByRole('button'))
+        await waitFor(() => screen.getByText('credentials.show'))
     })
     test('renders as a hyphen when secret name is not set', () => {
-        const { queryByTestId, getByText } = render(
+        render(
             <ClusterContext.Provider value={{ cluster: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
-        expect(queryByTestId('login-credentials')).toBeNull()
-        expect(getByText('-')).toBeInTheDocument()
+        expect(screen.queryByTestId('login-credentials')).toBeNull()
+        expect(screen.getByText('-')).toBeInTheDocument()
+    })
+    test('renders in a failed state', async () => {
+        nockGet(mockKubeadminSecret, mockBadRequestStatus)
+        render(
+            <ClusterContext.Provider value={{ cluster: mockCluster }}>
+                <LoginCredentials />
+            </ClusterContext.Provider>
+        )
+        expect(screen.getByRole('button')).toBeInTheDocument()
+        await waitFor(() => screen.getByText('credentials.show'))
+        userEvent.click(screen.getByRole('button'))
+        await waitFor(() => screen.getByText('credentials.loading'))
+        await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
+        await waitFor(() => screen.getByText('credentials.failed'))
     })
 })

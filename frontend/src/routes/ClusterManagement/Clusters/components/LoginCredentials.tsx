@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useState, useEffect } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { AcmIcon, AcmIconVariant, AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
@@ -48,17 +48,23 @@ export function LoginCredentials() {
     const disableButton = loading || error
     const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
     
-    const onClick = () => {
+    const onClick = async () => {
+        /* istanbul ignore next */
+        const namespace = cluster?.namespace ?? ''
+        /* istanbul ignore next */
+        const name = cluster?.hiveSecrets?.kubeadmin ?? ''
         if (!credentials && !isVisible && cluster?.hiveSecrets?.kubeadmin) {
             setLoading(true)
-            getSecret({ name: cluster?.hiveSecrets?.kubeadmin ?? '', namespace: cluster?.namespace ?? '' })
-                .promise.then((result) => {
-                    const { stringData } = unpackSecret(result)
-                    setCredentials(stringData as LoginCredential)
-                    setLoading(false)
-                    setVisible(!isVisible)
-                })
-                .catch(() => setError(true))
+            try {
+                const secret = await getSecret({ name, namespace }).promise
+                const { stringData } = unpackSecret(secret)
+                setCredentials(stringData as LoginCredential)
+                setVisible(!isVisible)
+            } catch(err) {
+                setError(true)
+            } finally {
+                setLoading(false)
+            }
         } else {
             setVisible(!isVisible)
         }
