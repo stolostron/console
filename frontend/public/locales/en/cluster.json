@@ -16,6 +16,7 @@
   "managed.createCluster": "Create cluster",
   "managed.addCluster": "Add cluster",
   "managed.destroy": "Destroy",
+  "managed.destroySelected": "Destroy cluster",
   "discovered": "Discovered",
   "discovery.disable": "Disable cluster discovery",
   "discovery.edit": "Edit cluster discovery",
@@ -74,5 +75,9 @@
   "status.pendingimport": "Pending import",
   "status.ready": "Ready",
   "status.offline": "Offline",
-  "upgrade.available": "Upgrade available"
+  "upgrade.available": "Upgrade available",
+
+  "modal.destroy.title": "Destroy managed cluster",
+  "modal.destroy.content": "Destroying {{name}} is irreversible. Are you sure that you want to continue?",
+  "modal.detach.content": "Detaching {{name}} is irreversible. Are you sure that you want to continue?"
 }
