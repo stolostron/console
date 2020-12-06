@@ -23,4 +23,4 @@ export const createDownloadFile = (filename: string, content: string, type?: str
     a.download = filename
     a.dispatchEvent(event)
     window.URL.revokeObjectURL(url)
-  }
+}
