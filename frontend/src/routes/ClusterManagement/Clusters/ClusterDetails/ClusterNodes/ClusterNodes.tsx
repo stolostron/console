@@ -7,9 +7,8 @@ import React, { ReactNode, useContext } from 'react'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
 
-export function NodePoolsPageContent(props: { name: string; namespace: string }) {
+export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
-
     return <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
 }
 

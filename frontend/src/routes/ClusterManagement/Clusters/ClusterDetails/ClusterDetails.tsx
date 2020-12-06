@@ -15,21 +15,28 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { useQuery } from '../../../../lib/useQuery'
 import { getSingleCluster, getCluster, Cluster } from '../../../../lib/get-cluster'
+import { getAllAddons, getAddons, Addon } from '../../../../lib/get-addons'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
+    readonly addons: Addon[] | undefined
 }>({
-    cluster: undefined
+    cluster: undefined,
+    addons: undefined
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const { data, startPolling, loading, error } = useQuery(useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id]))
+    const { data: addonData, startPolling: addonStartPolling } = useQuery(useCallback(() => getAllAddons(match.params.id), [match.params.id]))
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
+    const [addons, setAddons] = useState<Addon[] | undefined>(undefined)
     const [resourceError, setResourceError] = useState<Error | undefined>(undefined)
     const location = useLocation()
     const history = useHistory()
@@ -68,6 +75,16 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         }
     }, [data, error])
 
+    useEffect(addonStartPolling, [addonStartPolling])
+    useEffect(() => {
+        const results = addonData ?? []
+        const items = results.map((result) => result.status === 'fulfilled' ? result.value : [])
+        if (items.length === 2) {
+            const data = getAddons(items[0] as ClusterManagementAddOn[], items[1] as ManagedClusterAddOn[])
+            setAddons(data)
+        }
+    }, [addonData])
+
     if (loading) {
         return <AcmSpinnerBackdrop />
     }
@@ -78,7 +95,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     return (
         <AcmPage>
-            <ClusterContext.Provider value={{ cluster }}>
+            <ClusterContext.Provider value={{ cluster, addons }}>
                 <AcmPageHeader title={match.params.id} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('cluster.details'), to: '' }]} />
                 <AcmSecondaryNav>
                     <AcmSecondaryNavItem
@@ -103,10 +120,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                             <ClusterOverviewPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterNodes}>
-                            <NodePoolsPageContent name={match.params.id} namespace={match.params.id} />
+                            <NodePoolsPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterSettings}>
-                            <ClustersSettingsPageContent name={match.params.id} namespace={match.params.id} />
+                            <ClustersSettingsPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterDetails}>
                             <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
