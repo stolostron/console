@@ -14,7 +14,7 @@ export enum AddonStatus {
     'Progressing' = 'Progressing',
     'Degraded' = 'Degraded',
     'Disabled' = 'Disabled',
-    'Unknown' = 'Unknown'
+    'Unknown' = 'Unknown',
 }
 
 export type LaunchLink = {
@@ -22,22 +22,25 @@ export type LaunchLink = {
     href: string
 }
 
-export function getAllAddons(cluster: string): IRequestResult<
-    PromiseSettledResult<ClusterManagementAddOn[] | ManagedClusterAddOn[]>[]
-> {
+export function getAllAddons(
+    cluster: string
+): IRequestResult<PromiseSettledResult<ClusterManagementAddOn[] | ManagedClusterAddOn[]>[]> {
     const results = [listClusterManagementAddOns(), listManagedClusterAddOns(cluster)]
     return {
         promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort())
+        abort: () => results.forEach((result) => result.abort()),
     }
 }
 
-export function getAddons(clusterManagementAddons: ClusterManagementAddOn[], managedClusterAddons: ManagedClusterAddOn[]) {
+export function mapAddons(
+    clusterManagementAddons: ClusterManagementAddOn[],
+    managedClusterAddons: ManagedClusterAddOn[]
+) {
     const addons: Addon[] = clusterManagementAddons.map((cma) => ({
         name: cma.metadata.name as string,
         status: getDisplayStatus(cma, managedClusterAddons),
         message: getDisplayMessage(cma, managedClusterAddons),
-        launchLink: getLaunchLink(cma, managedClusterAddons)
+        launchLink: getLaunchLink(cma, managedClusterAddons),
     }))
     return addons
 }
@@ -114,12 +117,12 @@ function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[])
     const pathKey = 'console.open-cluster-management.io/launch-link'
     const textKey = 'console.open-cluster-management.io/launch-link-text'
     const isInstalled = mcas.find((mca) => mca.metadata.name === cma.metadata.name)
-    const annotations =  Object.keys(cma.metadata.annotations ?? {})
+    const annotations = Object.keys(cma.metadata.annotations ?? {})
     const hasLaunchLink = annotations.includes(pathKey) && annotations.includes(textKey)
     if (isInstalled && hasLaunchLink) {
         return {
             displayText: cma?.metadata?.annotations?.[textKey] ?? '',
-            href: cma?.metadata?.annotations?.[pathKey] ?? ''
+            href: cma?.metadata?.annotations?.[pathKey] ?? '',
         }
     } else {
         return undefined

@@ -2,7 +2,6 @@
   "page.header.cluster-management": "Cluster Management",
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
-  "cluster.details": "Cluster details",
   "managed": "Managed",
   "managed.emptyStateHeader": "No managed clusters found",
   "managed.detached": "Detach cluster",
@@ -34,6 +33,11 @@
   "table.consoleUrl": "Console URL",
   "table.details": "Details",
   "table.message": "Message",
+  "table.role": "Role",
+  "table.region": "Region",
+  "table.zone": "Zone",
+  "table.instanceType": "Instance type",
+  "table.size": "Size - Core and memory",
 
   "empty-state.cluster.title": "No clusters found",
   "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the Import an existing cluster and Create a cluster buttons are disabled.",
@@ -75,5 +79,9 @@
   "status.pendingimport": "Pending import",
   "status.ready": "Ready",
   "status.offline": "Offline",
-  "upgrade.available": "Upgrade available"
+  "upgrade.available": "Upgrade available",
+
+  "tab.overview": "Overview",
+  "tab.nodes": "Nodes",
+  "tab.settings": "Settings"
 }

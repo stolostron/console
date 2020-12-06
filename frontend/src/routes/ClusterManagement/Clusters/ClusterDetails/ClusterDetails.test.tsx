@@ -1,11 +1,13 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, waitForElementToBeRemoved, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Switch, Route } from 'react-router-dom'
 import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../../../resources/managed-cluster-info'
 import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../../../../resources/cluster-deployment'
 import { CertificateSigningRequestList, CertificateSigningRequestListApiVersion, CertificateSigningRequestListKind, CertificateSigningRequestApiVersion, CertificateSigningRequestKind } from '../../../../resources/certificate-signing-requests'
-import { nockGet, nockClusterList } from '../../../../lib/nock-util'
+import { ClusterManagementAddOn, ClusterManagementAddOnKind,  ClusterManagementAddOnApiVersion} from '../../../../resources/cluster-management-add-on'
+import { ManagedClusterAddOn, ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind } from '../../../../resources/managed-cluster-add-on'
+import { nockGet, nockClusterList, nockNamespacedList, mockBadRequestStatus } from '../../../../lib/nock-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
 
@@ -137,15 +139,240 @@ const mockCertificateSigningRequestList: CertificateSigningRequestList = {
     items: []
 }
 
-const clusterDeployment404 = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"clusterdeployments.hive.openshift.io \"foobar\" not found","reason":"NotFound","details":{"name":"foobar","group":"hive.openshift.io","kind":"clusterdeployments"},"code":404}
-const managedClusterInfo404 = {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"managedclusterinfos.internal.open-cluster-management.io \"foobar\" not found","reason":"NotFound","details":{"name":"foobar","group":"internal.open-cluster-management.io","kind":"managedclusterinfos"},"code":404}
+const mockclusterManagementAddOnApp: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: { name: 'application-manager'},
+    spec: {},
+}
+const mockclusterManagementAddOnWork: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: {
+        name: 'work-manager',
+    },
+    spec: {},
+}
+
+const mockclusterManagementAddOnCert: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: {
+        name: 'cert-policy-controller',
+    },
+    spec: {},
+}
+
+const mockclusterManagementAddOnIAM: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: {
+        name: 'iam-policy-controller',
+    },
+    spec: {},
+}
+
+const mockclusterManagementAddOnPolicy: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: {
+        name: 'policy-controller',
+    },
+    spec: {},
+}
+
+const mockclusterManagementAddOnSearch: ClusterManagementAddOn = {
+    apiVersion: ClusterManagementAddOnApiVersion,
+    kind: ClusterManagementAddOnKind,
+    metadata: {
+        name: 'search-collector',
+    },
+    spec: {},
+}
+const mockclusterManagementAddOns: ClusterManagementAddOn[] = [
+    mockclusterManagementAddOnApp,
+    mockclusterManagementAddOnWork,
+    mockclusterManagementAddOnCert,
+    mockclusterManagementAddOnIAM,
+    mockclusterManagementAddOnPolicy,
+    mockclusterManagementAddOnSearch,
+]
+
+const mockmanagedClusterAddOn: ManagedClusterAddOn = {
+        apiVersion: ManagedClusterAddOnApiVersion,
+        kind: ManagedClusterAddOnKind,
+        metadata: {
+            name: 'application-manager',
+            namespace: 'test-cluster',
+        },
+        spec: {}
+}
+
+const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'application-manager',
+        namespace: 'test-cluster',
+    },
+    spec: {},
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '',
+                message: 'Progressing',
+                reason: 'Progressing',
+                status: 'True',
+                type: 'Progressing',
+            },
+        ],
+        addOnMeta: {
+            displayName: 'application-manager',
+            description: 'application-manager description',
+        },
+        addOnConfiguration: {
+            crdName: 'klusterletaddonconfig',
+            crName: 'test-cluster',
+        },
+    },
+}
+
+const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
+    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+    kind: 'ManagedClusterAddOn',
+    metadata: {
+        name: 'work-manager',
+        namespace: 'test-cluster',
+    },
+    spec: {},
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '',
+                message: 'Degraded',
+                reason: 'Degraded',
+                status: 'True',
+                type: 'Degraded',
+            },
+        ],
+        addOnMeta: {
+            displayName: 'work-manager',
+            description: 'work-manager description',
+        },
+        addOnConfiguration: {
+            crdName: 'klusterletaddonconfig',
+            crName: 'test-cluster',
+        },
+    },
+}
+
+const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
+    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+    kind: 'ManagedClusterAddOn',
+    metadata: {
+        name: 'cert-policy-controller',
+        namespace: 'test-cluster',
+    },
+    spec: {},
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '',
+                message: 'Available',
+                reason: 'Available',
+                status: 'True',
+                type: 'Available',
+            },
+        ],
+        addOnMeta: {
+            displayName: 'cert-policy-controller',
+            description: 'cert-policy-controller description',
+        },
+        addOnConfiguration: {
+            crdName: 'klusterletaddonconfig',
+            crName: 'test-cluster',
+        },
+    },
+}
+
+const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
+    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+    kind: 'ManagedClusterAddOn',
+    metadata: {
+        uid: '',
+        name: 'policy-controller',
+        namespace: 'test-cluster',
+    },
+    spec: {},
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '',
+                message: 'Progressing',
+                reason: 'Progressing',
+                status: 'False',
+                type: 'Progressing',
+            },
+        ],
+        addOnMeta: {
+            displayName: 'policy-controller',
+            description: 'policy-controller description',
+        },
+        addOnConfiguration: {
+            crdName: 'klusterletaddonconfig',
+            crName: 'test-cluster',
+        },
+    },
+}
+
+const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
+    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+    kind: 'ManagedClusterAddOn',
+    metadata: {
+        uid: '',
+        name: 'search-collector',
+        namespace: 'test-cluster',
+    },
+    spec: {},
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '',
+                message: 'Unknown',
+                reason: 'Unknown',
+                status: 'True',
+                type: 'Unknown',
+            },
+        ],
+        addOnMeta: {
+            displayName: 'search-collector',
+            description: 'search-collector description',
+        },
+        addOnConfiguration: {
+            crdName: 'klusterletaddonconfig',
+            crName: 'test-cluster',
+        },
+    },
+}
+
+const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
+    mockManagedClusterAddOnApp,
+    mockManagedClusterAddOnWork,
+    mockManagedClusterAddOnCert,
+    mockManagedClusterAddOnPolicy,
+    mockManagedClusterAddOnSearch,
+]
 
 const nockManagedClusterInfo = () => nockGet(mockManagedClusterInfo)
 const nockClusterDeployment = () => nockGet(mockClusterDeployment)
 const nockCertificateSigningRequestList = () => nockClusterList({ apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind }, mockCertificateSigningRequestList, ['open-cluster-management.io/cluster-name=test-cluster'])
+const nockClusterManagementAddons = () => nockClusterList(mockclusterManagementAddOnApp, mockclusterManagementAddOns)
+const nockManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
 
-const nockManagedClusterInfo404 = () => nockGet(mockManagedClusterInfo, managedClusterInfo404, 404)
-const nockClusterDeployment404 = () => nockGet(mockClusterDeployment, clusterDeployment404, 404)
+const nockManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
+const nockClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
+const nockClusterManagementAddonsError = () => nockClusterList(mockclusterManagementAddOnApp, mockBadRequestStatus)
+const nockManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
 
 describe('ClusterDetails page', () => {
     const Component = () => (
@@ -155,28 +382,100 @@ describe('ClusterDetails page', () => {
             </Switch>
         </MemoryRouter>
     )
-    test('renders', async () => {
-        nockManagedClusterInfo()
-        nockClusterDeployment()
-        nockCertificateSigningRequestList()
 
-        const { getByText } = render(<Component />)
-        await waitFor(() => expect(getByText('cluster.details')).toBeInTheDocument())
-
-        // Nodes tab
-        userEvent.click(getByText('Nodes'))
-        await waitFor(() => expect(getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
-        userEvent.click(getByText('Role'))
-        await waitFor(() => expect(getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
-        userEvent.click(getByText('Region'))
-        await waitFor(() => expect(getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
-    })
     test('renders error state', async () => {
-        nockManagedClusterInfo404()
-        nockClusterDeployment404()
+        nockManagedClusterInfoError()
+        nockClusterDeploymentError()
         nockCertificateSigningRequestList()
+        nockClusterManagementAddons()
+        nockManagedClusterAddons()
 
-        const { getByText } = render(<Component />)
-        await waitFor(() => expect(getByText('Error')).toBeInTheDocument())
+        render(<Component />)
+        await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+        await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument())
+    })
+
+    // OVERVIEW TAB
+    describe('Overview tab', () => {
+        test('renders', async () => {
+            nockManagedClusterInfo()
+            nockClusterDeployment()
+            nockCertificateSigningRequestList()
+            nockClusterManagementAddons()
+            nockManagedClusterAddons()
+    
+            render(<Component />)
+            await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy())
+            await waitFor(() => expect(screen.getByText('table.details')).toBeInTheDocument())
+        })
+    })
+
+    // NODES TAB
+    describe('Nodes tab', () => {
+        test('renders', async () => {
+            nockManagedClusterInfo()
+            nockClusterDeployment()
+            nockCertificateSigningRequestList()
+            nockClusterManagementAddons()
+            nockManagedClusterAddons()
+    
+            render(<Component />)
+            await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy())
+    
+            userEvent.click(screen.getByText('tab.nodes'))
+            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+            userEvent.click(screen.getByText('table.role'))
+            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+            userEvent.click(screen.getByText('table.region'))
+            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+        })
+    })
+
+    // SETTINGS TAB
+    describe('Settings tab', () => {
+        test('renders', async () => {
+            nockManagedClusterInfo()
+            nockClusterDeployment()
+            nockCertificateSigningRequestList()
+            nockClusterManagementAddons()
+            nockManagedClusterAddons()
+    
+            render(<Component />)
+            await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy())
+    
+            userEvent.click(screen.getByText('tab.settings'))
+            await waitFor(() => expect(screen.getByText(mockmanagedClusterAddOns[0].metadata.name!)).toBeInTheDocument())
+        })
+        test('should show error if the ManagedClusterAddons fail to query', async () => {
+            nockManagedClusterInfo()
+            nockClusterDeployment()
+            nockCertificateSigningRequestList()
+            nockClusterManagementAddons()
+            nockManagedClusterAddonsError()
+    
+            render(<Component />)
+            await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy())
+
+            userEvent.click(screen.getByText('tab.settings'))
+            await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument())
+        })
+        test('should show error if the ClusterManagementAddons fail to query', async () => {
+            nockManagedClusterInfo()
+            nockClusterDeployment()
+            nockCertificateSigningRequestList()
+            nockClusterManagementAddonsError()
+            nockManagedClusterAddons()
+    
+            render(<Component />)
+            await waitForElementToBeRemoved(() => screen.getByRole('progressbar'))
+            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy())
+
+            userEvent.click(screen.getByText('tab.settings'))
+            await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument())
+        })
     })
 })

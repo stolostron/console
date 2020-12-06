@@ -83,7 +83,7 @@ export function getAllClusters(): IRequestResult<
     const results = [listClusterDeployments(), listMCIs(), listCertificateSigningRequests()]
     return {
         promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort())
+        abort: () => results.forEach((result) => result.abort()),
     }
 }
 
