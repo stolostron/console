@@ -20,6 +20,7 @@ import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -79,7 +80,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     return (
         <AcmPage>
             <ClusterContext.Provider value={{ cluster }}>
-                <AcmPageHeader title={match.params.id} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('cluster.details'), to: '' }]} />
+                <AcmPageHeader
+                    title={match.params.id}
+                    breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('cluster.details'), to: '' }]}
+                    actions={<DownloadConfigurationDropdown />} />
                 <AcmSecondaryNav>
                     <AcmSecondaryNavItem
                         isActive={location.pathname === NavigationPath.clusterOverview.replace(':id', match.params.id)}
