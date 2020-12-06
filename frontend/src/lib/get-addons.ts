@@ -116,13 +116,19 @@ function getDisplayMessage(cma: ClusterManagementAddOn, mcas: ManagedClusterAddO
 function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[]): LaunchLink | undefined {
     const pathKey = 'console.open-cluster-management.io/launch-link'
     const textKey = 'console.open-cluster-management.io/launch-link-text'
-    const isInstalled = mcas.find((mca) => mca.metadata.name === cma.metadata.name)
-    const annotations = Object.keys(cma.metadata.annotations ?? {})
-    const hasLaunchLink = annotations.includes(pathKey) && annotations.includes(textKey)
-    if (isInstalled && hasLaunchLink) {
-        return {
-            displayText: cma?.metadata?.annotations?.[textKey] ?? '',
-            href: cma?.metadata?.annotations?.[pathKey] ?? '',
+    const mca = mcas.find((mca) => mca.metadata.name === cma.metadata.name)
+    if (mca) {
+        const mcaAnnotations = Object.keys(mca.metadata.annotations ?? {})
+        const mcaHasLaunchLink = mcaAnnotations.includes(pathKey) && mcaAnnotations.includes(textKey)
+        const cmaAnnotations = Object.keys(cma.metadata.annotations ?? {})
+        const cmaHasLaunchLink = cmaAnnotations.includes(pathKey) && cmaAnnotations.includes(textKey)
+        if (mcaHasLaunchLink || cmaHasLaunchLink) {
+            return {
+                displayText: mca?.metadata?.annotations?.[textKey] ?? cma?.metadata?.annotations?.[textKey] ?? '',
+                href: mca?.metadata?.annotations?.[pathKey] ?? cma?.metadata?.annotations?.[pathKey] ?? '',
+            }
+        } else {
+            return undefined
         }
     } else {
         return undefined
