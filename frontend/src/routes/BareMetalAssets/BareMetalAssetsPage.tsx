@@ -63,19 +63,21 @@ export function BareMetalAssetsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<BareMetalAsset>
-                emptyState={<AcmEmptyState
-                    title={t('bareMetalAsset.emptyState.title')}
-                    action={
-                        <AcmButton
-                            variant="primary"
-                            onClick={() => {
-                                history.push(NavigationPath.createBareMetalAssets)
-                            }}
-                        >
-                            {t('createBareMetalAsset.title')}
-                        </AcmButton>
-                    }
-                />}
+                emptyState={
+                    <AcmEmptyState
+                        title={t('bareMetalAsset.emptyState.title')}
+                        action={
+                            <AcmButton
+                                variant="primary"
+                                onClick={() => {
+                                    history.push(NavigationPath.createBareMetalAssets)
+                                }}
+                            >
+                                {t('createBareMetalAsset.title')}
+                            </AcmButton>
+                        }
+                    />
+                }
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
