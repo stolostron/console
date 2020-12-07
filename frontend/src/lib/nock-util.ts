@@ -53,7 +53,7 @@ export function nockList<Resource extends IResource>(
 
     if (labels) {
         nockScope = nockScope.query({
-            labelselector: encodeURIComponent(labels.join(',')),
+            labelSelector: encodeURIComponent(labels.join(',')),
         })
     } else if (query) {
         nockScope = nockScope.query({
