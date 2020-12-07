@@ -3,8 +3,8 @@ import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/manag
 import { deleteResources } from './delete-resources'
 import { IRequestResult } from './resource-request'
 
-export function deleteCluster(clusterName: string, destroy?:boolean): IRequestResult<PromiseSettledResult<unknown>[]> {
-    if (destroy){
+export function deleteCluster(clusterName: string, destroy?: boolean): IRequestResult<PromiseSettledResult<unknown>[]> {
+    if (destroy) {
         return deleteResources([
             {
                 apiVersion: ManagedClusterApiVersion,
