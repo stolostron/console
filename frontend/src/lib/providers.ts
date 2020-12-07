@@ -4,6 +4,7 @@ export enum ProviderID {
     AZR = 'azr',
     VMW = 'vmw',
     BMC = 'bmc',
+    CRH = 'crh',
     UKN = 'unknown',
 }
 
@@ -18,6 +19,7 @@ export const providers: Provider[] = [
     { key: ProviderID.AZR, name: 'Microsoft Azure' },
     { key: ProviderID.VMW, name: 'VMware vSphere' },
     { key: ProviderID.BMC, name: 'Bare-Metal' },
+    { key: ProviderID.CRH, name: 'cloud.redhat.com' },
 ]
 
 export function getProvider(name: string): Provider {

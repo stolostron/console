@@ -25,6 +25,7 @@ function App() {
                 <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
                 <Route exact path={NavigationPath.importCommand} component={ImportCommandPage} />
                 <Route exact path={NavigationPath.addConnection} component={AddConnectionPage} />
+                <Route exact path={NavigationPath.editConnection} component={AddConnectionPage} />
                 <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                 <Route exact path={NavigationPath.editBareMetalAssets} component={EditBareMetalAssetPage} />
                 <Route exact path={NavigationPath.createBareMetalAssets} component={CreateBareMetalAssetPage} />

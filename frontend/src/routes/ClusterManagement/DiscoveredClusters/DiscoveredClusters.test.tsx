@@ -99,5 +99,5 @@ test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
     const { getByText } = render(<DiscoveredClustersPage />)
     await waitFor(() => expect(listNock.isDone()).toBeTruthy())
-    await waitFor(() => expect(getByText('You do not have any discovered clusters yet.')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('discovery.emptyStateHeader')).toBeInTheDocument())
 })

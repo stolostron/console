@@ -1,8 +1,9 @@
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockDelete, nockList } from '../../../lib/nock-util'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
@@ -23,6 +24,7 @@ const mockProviderConnection2: ProviderConnection = {
 }
 
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
+let testLocation: Location
 
 describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
@@ -30,11 +32,44 @@ describe('provider connections page', () => {
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const { getByText } = render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
+            <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
+                <Route
+                    path={NavigationPath.providerConnections}
+                    render={(props: any) => {
+                        testLocation = props.location
+                        return <ProviderConnectionsPage {...props} />
+                    }}
+                />
             </MemoryRouter>
         )
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+        expect(testLocation.pathname).toEqual(NavigationPath.providerConnections)
+    })
+
+    test('should goto the edit connection page', async () => {
+        nockList(mockProviderConnection1, mockProviderConnections, [
+            'cluster.open-cluster-management.io/cloudconnection=',
+        ])
+        const { getByText, getAllByLabelText } = render(
+            <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
+                <Route
+                    path={NavigationPath.providerConnections}
+                    render={(props: any) => {
+                        testLocation = props.location
+                        return <ProviderConnectionsPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        )
+        await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        expect(testLocation.pathname).toEqual(NavigationPath.providerConnections)
+        userEvent.click(getByText('edit'))
+        expect(testLocation.pathname).toEqual(
+            NavigationPath.editConnection
+                .replace(':namespace', mockProviderConnection1.metadata.namespace!)
+                .replace(':name', mockProviderConnection1.metadata.name!)
+        )
     })
 
     test('should be able to delete a provider connection', async () => {
