@@ -181,7 +181,7 @@ describe('Cluster Page', () => {
         await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 
         userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
-        userEvent.click(getByText('managed.destroy')) // click the delete action
+        userEvent.click(getByText('managenfod.destroy')) // click the delete action
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
 
         await waitFor(() => expect(listdeployNockii.isDone()).toBeTruthy()) // expect the list api call
@@ -231,7 +231,7 @@ describe('Cluster Page', () => {
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeNull())
     })
     test('batch action detaches cluster', async () => {
-        const listNockInfo = nockList(
+        nockList(
             { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
             mockManagedClusterInfos,
             undefined,
@@ -242,7 +242,7 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
-        const listdeployNock = nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
+        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
 
         nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
         nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
@@ -272,7 +272,7 @@ describe('Cluster Page', () => {
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeNull())
     })
     test('batch action detaches cluster', async () => {
-        const listNockInfo = nockList(
+        nockList(
             { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
             mockManagedClusterInfos,
             undefined,
@@ -283,7 +283,7 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
-        const listdeployNock = nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
+        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
 
         nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
         nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
