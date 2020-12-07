@@ -2,7 +2,6 @@
   "page.header.cluster-management": "Cluster Management",
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
-  "cluster.details": "Cluster details",
   "managed": "Managed",
   "managed.emptyStateHeader": "No managed clusters found",
   "managed.detached": "Detach cluster",
@@ -33,6 +32,12 @@
   "table.kubeApiServer": "Cluster API address",
   "table.consoleUrl": "Console URL",
   "table.details": "Details",
+  "table.message": "Message",
+  "table.role": "Role",
+  "table.region": "Region",
+  "table.zone": "Zone",
+  "table.instanceType": "Instance type",
+  "table.size": "Size - Core and memory",
   "table.credentials": "Username/password",
 
   "credentials.show": "Reveal credentials",
@@ -80,5 +85,9 @@
   "status.pendingimport": "Pending import",
   "status.ready": "Ready",
   "status.offline": "Offline",
-  "upgrade.available": "Upgrade available"
+  "upgrade.available": "Upgrade available",
+
+  "tab.overview": "Overview",
+  "tab.nodes": "Nodes",
+  "tab.settings": "Settings"
 }
