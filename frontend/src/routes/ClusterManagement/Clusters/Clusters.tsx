@@ -194,7 +194,7 @@ export function ClustersTable(props: {
                         title: t('managed.destroy'),
                         click: (clusters) => {
                             setConfirm({
-                                title: t('modal.delete.title'),
+                                title: t('modal.destroy.title'),
                                 message: `You are about to destroy ${clusters.length} managed clusters. This action is irreversible.`,
                                 open: true,
                                 confirm: async () => {
@@ -210,7 +210,6 @@ export function ClustersTable(props: {
                                                 resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
                                             }
                                             else {
-                                                console.log(result.value)
                                                 result.value.forEach((result)=>{
                                                     if (result.status === 'rejected'){
                                                         resultErrors.push(`Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`)
@@ -249,7 +248,6 @@ export function ClustersTable(props: {
                                     const resultErrors: string[] = []
                                     let i = 0
                                     promiseResults.promise.then((results)=>{
-                                        console.log(results[0])
                                         results.forEach((result)=>{
                                             if(result.status === 'rejected'){
                                                 resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
@@ -306,7 +304,7 @@ export function ClustersTable(props: {
                     } },
                     { id: 'destroyCluster', title: t('managed.destroySelected'), click: (managedCluster) => {
                         setConfirm({
-                            title: t('modal.delete.title'),
+                            title: t('modal.destroy.title'),
                             message: `You are about to destroy ${managedCluster.name}. This action is irreversible.`,
                             open: true,
                             confirm: () => {
