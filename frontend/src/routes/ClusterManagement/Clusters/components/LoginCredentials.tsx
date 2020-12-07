@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useState } from 'react'
-import { AcmIcon, AcmIconVariant, AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
+import { AcmIcon, AcmIconVariant, AcmButton, AcmInlineStatus, AcmInlineCopy, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -74,7 +74,12 @@ export function LoginCredentials() {
         return (
             <Fragment>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
-                {isVisible && <div>{credentials?.username} / {credentials?.password}</div>}
+                {isVisible && (
+                    <Fragment>
+                        <div><AcmInlineCopy text={credentials?.username ?? ''} id="username-credentials" /></div>
+                        <div><AcmInlineCopy text={credentials?.password ?? ''} id="password-credentials" /></div>
+                    </Fragment>
+                )}
                 <AcmButton variant={ButtonVariant.link} className={classes.button} onClick={onClick} isDisabled={disableButton} id='login-credentials'>
                     <Fragment>
                         {(() => {
