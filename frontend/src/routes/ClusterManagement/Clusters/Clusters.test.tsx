@@ -181,7 +181,7 @@ describe('Cluster Page', () => {
         await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 
         userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
-        userEvent.click(getByText('managenfod.destroy')) // click the delete action
+        userEvent.click(getByText('managed.destroy')) // click the delete action
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
 
         await waitFor(() => expect(listdeployNockii.isDone()).toBeTruthy()) // expect the list api call
