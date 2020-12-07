@@ -320,84 +320,79 @@ export async function startServer(): Promise<FastifyInstance> {
         done()
     })
 
-    if (!process.env.GENERATE) {
-        // GET .well-known/oauth-authorization-server from the CLUSTER API for oauth
-        const response = await Axios.get<{ authorization_endpoint: string; token_endpoint: string }>(
-            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
-            {
-                httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-                headers: { Accept: 'application/json' },
-                responseType: 'json',
-            }
-        )
+    // GET .well-known/oauth-authorization-server from the CLUSTER API for oauth
+    const response = await Axios.get<{ authorization_endpoint: string; token_endpoint: string }>(
+        `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
+        {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+            headers: { Accept: 'application/json' },
+            responseType: 'json',
+        }
+    )
 
-        const authorizeUrl = new URL(response.data.authorization_endpoint)
-        const tokenUrl = new URL(response.data.token_endpoint)
-        const validStates = new Set()
-        await fastify.register(fastifyOauth2, {
-            name: 'openshift',
-            scope: ['user:full'],
-            credentials: {
-                client: {
-                    id: process.env.OAUTH2_CLIENT_ID,
-                    secret: process.env.OAUTH2_CLIENT_SECRET,
-                },
-                auth: {
-                    authorizeHost: `${authorizeUrl.protocol}//${authorizeUrl.hostname}`,
-                    authorizePath: authorizeUrl.pathname,
-                    tokenHost: `${tokenUrl.protocol}//${tokenUrl.hostname}`,
-                    tokenPath: tokenUrl.pathname,
-                },
+    const authorizeUrl = new URL(response.data.authorization_endpoint)
+    const tokenUrl = new URL(response.data.token_endpoint)
+    const validStates = new Set()
+    await fastify.register(fastifyOauth2, {
+        name: 'openshift',
+        scope: ['user:full'],
+        credentials: {
+            client: {
+                id: process.env.OAUTH2_CLIENT_ID,
+                secret: process.env.OAUTH2_CLIENT_SECRET,
             },
-            // register a url to start the redirect flow
-            startRedirectPath: '/cluster-management/login',
-            // oauth redirect here after the user login
-            callbackUri: process.env.OAUTH2_REDIRECT_URL,
-            generateStateFunction: (request: FastifyRequest) => {
-                const query = request.query as { code: string; state: string }
-                const state = query.state
-                validStates.add(state)
-                return state
+            auth: {
+                authorizeHost: `${authorizeUrl.protocol}//${authorizeUrl.hostname}`,
+                authorizePath: authorizeUrl.pathname,
+                tokenHost: `${tokenUrl.protocol}//${tokenUrl.hostname}`,
+                tokenPath: tokenUrl.pathname,
             },
-            checkStateFunction: (returnedState: string, callback: (error?: Error) => void) => {
-                if (validStates.has(returnedState)) {
-                    validStates.delete(returnedState)
-                    callback()
-                    return
-                }
-                callback(new Error('Invalid state'))
-            },
-        })
-
-        fastify.get('/cluster-management/login/callback', async function (request, reply) {
+        },
+        // register a url to start the redirect flow
+        startRedirectPath: '/cluster-management/login',
+        // oauth redirect here after the user login
+        callbackUri: process.env.OAUTH2_REDIRECT_URL,
+        generateStateFunction: (request: FastifyRequest) => {
             const query = request.query as { code: string; state: string }
-            validStates.add(query.state)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const openshift = ((this as unknown) as any).openshift as OAuth2Namespace
-            const token = await openshift.getAccessTokenFromAuthorizationCodeFlow(request)
-            return reply
-                .setCookie('acm-access-token-cookie', `${token.access_token}`, {
-                    path: '/',
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    maxAge: token.expires_in,
-                })
-                .redirect(`${process.env.FRONTEND_URL}`)
-        })
-
-        fastify.delete('/cluster-management/login', async function (request, reply) {
-            const token = request.cookies['acm-access-token-cookie']
-            if (token) {
-                await Axios.delete(
-                    `${process.env.CLUSTER_API_URL}/apis/oauth.openshift.io/v1/oauthaccesstokens/${token}`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
-                )
-                return reply.code(200).send()
+            const state = query.state
+            validStates.add(state)
+            return state
+        },
+        checkStateFunction: (returnedState: string, callback: (error?: Error) => void) => {
+            if (validStates.has(returnedState)) {
+                validStates.delete(returnedState)
+                callback()
+                return
             }
-        })
-    }
+            callback(new Error('Invalid state'))
+        },
+    })
+
+    fastify.get('/cluster-management/login/callback', async function (request, reply) {
+        const query = request.query as { code: string; state: string }
+        validStates.add(query.state)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const openshift = ((this as unknown) as any).openshift as OAuth2Namespace
+        const token = await openshift.getAccessTokenFromAuthorizationCodeFlow(request)
+        return reply
+            .setCookie('acm-access-token-cookie', `${token.access_token}`, {
+                path: '/',
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: token.expires_in,
+            })
+            .redirect(`${process.env.FRONTEND_URL}`)
+    })
+
+    fastify.delete('/cluster-management/login', async function (request, reply) {
+        const token = request.cookies['acm-access-token-cookie']
+        if (token) {
+            await Axios.delete(`${process.env.CLUSTER_API_URL}/apis/oauth.openshift.io/v1/oauthaccesstokens/${token}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            return reply.code(200).send()
+        }
+    })
 
     await fastify.register(fastifyCompress)
 
