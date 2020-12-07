@@ -31,9 +31,7 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                     label={`${props.resource?.metadata.name} labels`}
                     buttonLabel="Add label"
                     value={labels}
-                    onChange={(labels) => {
-                        if (labels) setLabels(labels)
-                    }}
+                    onChange={(labels) => setLabels(labels!)}
                 />
                 {error && <AcmAlert {...error} />}
                 <ActionGroup>
@@ -42,34 +40,33 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                         variant="primary"
                         onClick={() => {
                             setError(undefined)
-                            if (props.resource) {
-                                let patch: { op: string; path: string; value?: unknown }[] = []
-                                if (props.resource.metadata.labels) {
-                                    patch = [
-                                        ...patch,
-                                        ...Object.keys(props.resource.metadata.labels).map((key) => ({
-                                            op: 'remove',
-                                            path: `/metadata/labels/${key}`,
-                                        })),
-                                    ]
-                                }
+                            let patch: { op: string; path: string; value?: unknown }[] = []
+                            /* istanbul ignore else */
+                            if (props.resource!.metadata.labels) {
                                 patch = [
                                     ...patch,
-                                    ...Object.keys(labels).map((key) => ({
-                                        op: 'add',
+                                    ...Object.keys(props.resource!.metadata.labels).map((key) => ({
+                                        op: 'remove',
                                         path: `/metadata/labels/${key}`,
-                                        value: labels[key],
                                     })),
                                 ]
-                                return patchResource(props.resource, patch)
-                                    .promise.then(() => {
-                                        props.close()
-                                    })
-                                    .catch((err) => {
-                                        const errorInfo = getErrorInfo(err)
-                                        setError({ title: errorInfo.message, subtitle: errorInfo.message })
-                                    })
                             }
+                            patch = [
+                                ...patch,
+                                ...Object.keys(labels).map((key) => ({
+                                    op: 'add',
+                                    path: `/metadata/labels/${key}`,
+                                    value: labels[key],
+                                })),
+                            ]
+                            return patchResource(props.resource!, patch)
+                                .promise.then(() => {
+                                    props.close()
+                                })
+                                .catch((err) => {
+                                    const errorInfo = getErrorInfo(err)
+                                    setError({ title: errorInfo.message, subtitle: errorInfo.message })
+                                })
                         }}
                         label={t('save')}
                         processingLabel={t('saving')}
