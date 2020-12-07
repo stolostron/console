@@ -1,5 +1,12 @@
-import { AcmEmptyState, AcmLabels, AcmPageCard, AcmPageHeader, AcmTable } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
+import {
+    AcmButton,
+    AcmEmptyState,
+    AcmLabels,
+    AcmPageCard,
+    AcmPageHeader,
+    AcmTable,
+} from '@open-cluster-management/ui-components'
+import { Button, Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -56,7 +63,19 @@ export function BareMetalAssetsTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<BareMetalAsset>
-                emptyState={<AcmEmptyState title={t('bareMetalAsset.emptyState.title')} />}
+                emptyState={<AcmEmptyState
+                    title={t('bareMetalAsset.emptyState.title')}
+                    action={
+                        <AcmButton
+                            variant="primary"
+                            onClick={() => {
+                                history.push(NavigationPath.createBareMetalAssets)
+                            }}
+                        >
+                            {t('createBareMetalAsset.title')}
+                        </AcmButton>
+                    }
+                />}
                 plural="bare metal assets"
                 items={props.bareMetalAssets}
                 columns={[
@@ -135,13 +154,19 @@ export function BareMetalAssetsTable(props: {
                     },
                 ]}
                 rowActions={[
-                    { id: 'editLabels', 
-                      title: t('bareMetalAsset.rowAction.editLabels.title'),
-                      click: (item) => {
-                      } },
-                    { id: 'editAsset', title: t('bareMetalAsset.rowAction.editAsset.title'), click: (bareMetalAsset: BareMetalAsset) => {
-                        history.push(NavigationPath.editBareMetalAssets.replace(':namespace/:name', `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string))
-                    } },
+                    { id: 'editLabels', title: t('bareMetalAsset.rowAction.editLabels.title'), click: (item) => {} },
+                    {
+                        id: 'editAsset',
+                        title: t('bareMetalAsset.rowAction.editAsset.title'),
+                        click: (bareMetalAsset: BareMetalAsset) => {
+                            history.push(
+                                NavigationPath.editBareMetalAssets.replace(
+                                    ':namespace/:name',
+                                    `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string
+                                )
+                            )
+                        },
+                    },
                     {
                         id: 'deleteAsset',
                         title: t('bareMetalAsset.rowAction.deleteAsset.title'),
