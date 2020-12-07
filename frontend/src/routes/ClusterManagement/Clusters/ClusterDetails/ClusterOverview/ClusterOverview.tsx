@@ -4,6 +4,7 @@ import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
+import { LoginCredentials } from '../../components/LoginCredentials'
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
@@ -20,7 +21,8 @@ export function ClusterOverviewPageContent() {
                 ]}
                 rightItems={[
                     { key: t('table.kubeApiServer'), value: cluster?.kubeApiServer },
-                    { key: t('table.consoleUrl'), value: cluster?.consoleURL && <a href={cluster?.consoleURL} target="_blank" rel="noreferrer">{cluster?.consoleURL}</a> }
+                    { key: t('table.consoleUrl'), value: cluster?.consoleURL && <a href={cluster?.consoleURL} target="_blank" rel="noreferrer">{cluster?.consoleURL}</a> },
+                    { key: t('table.credentials'), value: <LoginCredentials /> }
                 ]} />
         </PageSection>
     )
