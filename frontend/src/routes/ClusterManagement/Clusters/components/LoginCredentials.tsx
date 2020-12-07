@@ -16,7 +16,7 @@ export type LoginCredentialStyle = {
 }
 
 const useStyles = makeStyles({
-    button: {
+    toggleButton: {
         paddingLeft: '0 !important',
         '& svg': {
             width: '24px'
@@ -34,6 +34,11 @@ const useStyles = makeStyles({
             '& .credentials-toggle svg': {
                 fill: 'var(--pf-c-button--m-link--hover--Color)'
             }
+        }
+    },
+    credentialsContainer: {
+        '& button': {
+            paddingRight: 0,
         }
     }
 })
@@ -75,12 +80,13 @@ export function LoginCredentials() {
             <Fragment>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
                 {isVisible && (
-                    <Fragment>
-                        <div><AcmInlineCopy text={credentials?.username ?? ''} id="username-credentials" /></div>
-                        <div><AcmInlineCopy text={credentials?.password ?? ''} id="password-credentials" /></div>
-                    </Fragment>
+                    <div className={classes.credentialsContainer}>
+                        <AcmInlineCopy text={credentials?.username ?? ''} id="username-credentials" />
+                        {'  /  '}
+                        <AcmInlineCopy text={credentials?.password ?? ''} id="password-credentials" />
+                    </div>
                 )}
-                <AcmButton variant={ButtonVariant.link} className={classes.button} onClick={onClick} isDisabled={disableButton} id='login-credentials'>
+                <AcmButton variant={ButtonVariant.link} className={classes.toggleButton} onClick={onClick} isDisabled={disableButton} id='login-credentials'>
                     <Fragment>
                         {(() => {
                             if (error) {
