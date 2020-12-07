@@ -10,10 +10,24 @@ export function nockGet<Resource extends IResource>(
     statusCode: number = 200
 ) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
+        .get(join(apiProxyUrl, getResourceApiPath(resource)))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
+export function nockOptions<Resource extends IResource>(
+    resource: Resource,
+    response?: IResource,
+    statusCode: number = 200
+) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(join(apiProxyUrl, getResourceNameApiPath(resource)))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
             'Access-Control-Allow-Credentials': 'true',
         })
 }
@@ -24,7 +38,8 @@ export function nockList<Resource extends IResource>(
         kind: string
     },
     resources: Resource[] | IResource,
-    labels?: string[]
+    labels?: string[],
+    query?: object,
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(
@@ -38,7 +53,11 @@ export function nockList<Resource extends IResource>(
 
     if (labels) {
         nockScope = nockScope.query({
-            labelSelector: encodeURIComponent(labels.join(',')),
+            labelselector: encodeURIComponent(labels.join(',')),
+        })
+    } else if (query) {
+        nockScope = nockScope.query({
+            ...query,
         })
     }
 
