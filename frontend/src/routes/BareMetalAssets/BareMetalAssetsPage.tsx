@@ -135,8 +135,13 @@ export function BareMetalAssetsTable(props: {
                     },
                 ]}
                 rowActions={[
-                    { id: 'editLabels', title: t('bareMetalAsset.rowAction.editLabels.title'), click: (item) => {} },
-                    { id: 'editAsset', title: t('bareMetalAsset.rowAction.editAsset.title'), click: (item) => {} },
+                    { id: 'editLabels', 
+                      title: t('bareMetalAsset.rowAction.editLabels.title'),
+                      click: (item) => {
+                      } },
+                    { id: 'editAsset', title: t('bareMetalAsset.rowAction.editAsset.title'), click: (bareMetalAsset: BareMetalAsset) => {
+                        history.push(NavigationPath.editBareMetalAssets.replace(':namespace/:name', `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string))
+                    } },
                     {
                         id: 'deleteAsset',
                         title: t('bareMetalAsset.rowAction.deleteAsset.title'),

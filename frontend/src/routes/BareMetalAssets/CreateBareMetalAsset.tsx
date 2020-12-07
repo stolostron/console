@@ -1,4 +1,6 @@
 import {
+    AcmAlert,
+    AcmAlertGroup,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -8,14 +10,21 @@ import {
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useState } from 'react'
+import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ErrorPage } from '../../components/ErrorPage'
-import { BareMetalAsset, BMASecret, MakeId } from '../../../src/resources/bare-metal-asset'
-import { createResource, IRequestResult } from '../../../src/lib/resource-request'
+import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
+import {
+    createResource,
+    patchResource,
+    getResource,
+    IRequestResult,
+    listClusterResources,
+} from '../../../src/lib/resource-request'
 import { Project, listProjects } from '../../resources/project'
+import { Secret, unpackSecret } from '../../resources/secret'
 import { NavigationPath } from '../../NavigationPath'
 import { useQuery } from '../../lib/useQuery'
 
@@ -24,12 +33,12 @@ const VALID_BMC_ADDR_REGEXP = new RegExp(
     '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
         '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
         '((\\d{1,3}\\.){3}\\d{1,3})|' + // OR ip (v4) address
-        '(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])))' + // OR ip (v6) address
+        '\\[?(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])]))\\]?' + // OR ip (v6) address
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$',
-        'i'
-    )
+    'i'
+)
 
 const addDefaultProtocol = (addr: string) => {
     if (addr && addr.length && !addr.includes('://')) {
@@ -38,28 +47,134 @@ const addDefaultProtocol = (addr: string) => {
     return addr
 }
 
-function ValidateField(value: string, field: string, t:Function) {
+function ValidateField(value: string, field: string, t: Function) {
     switch (field) {
         case 'address':
             if (!VALID_BMC_ADDR_REGEXP.test(addDefaultProtocol(value))) {
-                return t("createBareMetalAsset.form.invalidBmcAddress")
+                return t('createBareMetalAsset.form.invalidBmcAddress')
             }
             break
-        case 'bootMac':
+        case 'bootMACAddress':
             if (!VALID_BOOT_MAC_REGEXP.test(value)) {
-                return t("createBareMetalAsset.form.invalidMacAddress")
+                return t('createBareMetalAsset.form.invalidMacAddress')
             }
             break
     }
 }
 
+async function getBareMetalAsset(metadata: Object) {
+    return getResource<BareMetalAsset>({
+        kind: 'BareMetalAsset',
+        apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
+        metadata,
+    }).promise
+}
+
+function getBMASecret(metadata: Object) {
+    return getResource<Secret>({ kind: 'Secret', apiVersion: 'v1', metadata: metadata }).promise
+}
+
 export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
+    let path: Array<string>
+    let editAssetName: string = ''
+    let editAssetNamespace: string = ''
+
+    path = useLocation().pathname.split('/').reverse()
+    if (path[0] === 'edit') {
+        editAssetName = path[1]
+        editAssetNamespace = path[2]
+
+        return (
+            <Page>
+                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <EditBareMetalAssetPageData
+                    bmaSecretID={props.bmaSecretID}
+                    editAssetName={editAssetName}
+                    editAssetNamespace={editAssetNamespace}
+                />
+            </Page>
+        )
+    }
     return (
         <Page>
             <AcmPageHeader title={t('createBareMetalAsset.title')} />
             <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
         </Page>
+    )
+}
+
+export function EditBareMetalAssetPageData(props: {
+    bmaSecretID?: string
+    editAssetName: string
+    editAssetNamespace: string
+}) {
+    const { t } = useTranslation(['bma'])
+
+    type EditData = {
+        projects: Array<Project>
+        bareMetalAsset: BareMetalAsset
+        secret: Secret
+    }
+
+    const [resourceError, setError] = useState<Error>()
+    const [BMAObjects, setObjects] = useState<EditData>()
+
+    useEffect(() => {
+        let projects: Array<Project>
+        let bma: BareMetalAsset
+        let secret: Secret
+        let resultSecret: Promise<Secret>
+
+        const resultProjects = listClusterResources<Project>({ kind: 'Project', apiVersion: 'project.openshift.io/v1' })
+        resultProjects.promise
+            .then((r) => {
+                projects = r
+            })
+            .catch((e) => {
+                setError(e)
+            })
+        const resultBMA = getBareMetalAsset({ name: props.editAssetName, namespace: props.editAssetNamespace })
+        resultBMA
+            .then((r) => {
+                bma = r
+                resultSecret = getBMASecret({
+                    name: bma!.spec?.bmc.credentialsName,
+                    namespace: props.editAssetNamespace,
+                })
+                resultSecret!
+                    .then((r) => {
+                        secret = r
+                        setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
+                    })
+                    .catch((e) => setError(e))
+            })
+            .catch((e) => setError(e)) //catch error, add to error object and output it
+    }, [props.editAssetName, props.editAssetNamespace])
+
+    if (resourceError) {
+        return <ErrorPage error={resourceError} />
+    } else if (!BMAObjects || !BMAObjects.projects) {
+        return <AcmLoadingPage />
+    } else if (BMAObjects.projects.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                    message={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                />
+            </AcmPageCard>
+        )
+    }
+
+    return (
+        <CreateBareMetalAssetPageContent
+            projects={BMAObjects.projects}
+            createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
+            bmaSecretID={props.bmaSecretID}
+            editBareMetalAsset={BMAObjects.bareMetalAsset}
+            editSecret={BMAObjects.secret}
+        />
     )
 }
 
@@ -70,10 +185,13 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
         return <AcmLoadingPage />
     } else if (projectsQuery.error) {
         return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data|| projectsQuery.data.length === 0) {
+    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
         return (
             <AcmPageCard>
-                <AcmEmptyState title={t("createBareMetalAsset.emptyState.Namespaces.title")} message={t("createBareMetalAsset.emptyState.Namespaces.title")} />
+                <AcmEmptyState
+                    title={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                    message={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                />
             </AcmPageCard>
         )
     }
@@ -91,11 +209,16 @@ export function CreateBareMetalAssetPageContent(props: {
     projects: Project[]
     bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
+    editBareMetalAsset?: BareMetalAsset
+    editSecret?: Secret
 }) {
     const { t } = useTranslation(['bma'])
     const history = useHistory()
+    let isEdit = props.editBareMetalAsset ? true : false
+    let secretName = ''
 
-    const [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
+    const [errors, setErrors] = useState<string[]>([])
+    let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
         metadata: {
@@ -107,28 +230,47 @@ export function CreateBareMetalAssetPageContent(props: {
                 address: '',
                 credentialsName: '',
             },
-            bootMac: '',
+            bootMACAddress: '',
         },
     })
+
+    let [bmaSecret, setBMASecret] = useState<Partial<Secret>>({
+        kind: 'Secret',
+        apiVersion: 'v1',
+        metadata: {
+            name: '',
+            namespace: '',
+        },
+        stringData: {
+            password: '',
+            username: '',
+        },
+        data: {
+            password: '',
+            username: '',
+        },
+    })
+
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
         const copy = { ...bareMetalAsset }
         update(copy)
         setBareMetalAsset(copy)
     }
-
-    const [bmaSecret, setBMASecret] = useState<Partial<BMASecret>>({
-        metadata: {},
-        stringData: {
-            password: '',
-            username: '',
-        },
-    })
-    function updateBMASecret(update: (bmaSecret: Partial<BMASecret>) => void) {
+    function updateBMASecret(update: (bmaSecret: Partial<Secret>) => void) {
         const copy = { ...bmaSecret }
         update(copy)
         setBMASecret(copy)
     }
-    let secretName = ''
+
+    useEffect(() => {
+        if (props.editBareMetalAsset) {
+            const unpackedSecret: Partial<Secret> = unpackSecret(props.editSecret!)
+            const unpackedBMA: Partial<BareMetalAsset> = unpackBareMetalAsset(props.editBareMetalAsset)
+            setBareMetalAsset(unpackedBMA)
+            setBMASecret(unpackedSecret)
+        }
+    }, [props.editBareMetalAsset, props.editSecret])
+
     return (
         <AcmPageCard>
             <AcmForm>
@@ -150,6 +292,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    isDisabled={isEdit}
                     validation={(value) => ValidateField(value, 'name', t)}
                 ></AcmTextInput>
                 <AcmSelect
@@ -167,6 +310,7 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
+                    isDisabled={isEdit}
                 >
                     {props.projects.map((project) => (
                         <SelectOption key={project.metadata.name} value={project.metadata.name}>
@@ -210,38 +354,81 @@ export function CreateBareMetalAssetPageContent(props: {
                         })
                     }}
                     isRequired
-                    type='password'
+                    type="password"
                 />
                 <AcmTextInput
-                    id='bootMac'
-                    label={t('createBareMetalAsset.bootMac.label')}
-                    placeholder={t('createBareMetalAsset.bootMac.placeholder')}
-                    value={bareMetalAsset.spec?.bootMac}
-                    onChange={(bootMac) => {
+                    id="bootMACAddress"
+                    label={t('createBareMetalAsset.bootMACAddress.label')}
+                    placeholder={t('createBareMetalAsset.bootMACAddress.placeholder')}
+                    value={bareMetalAsset.spec?.bootMACAddress}
+                    onChange={(bootMACAddress) => {
                         updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.spec!.bootMac = bootMac
+                            bareMetalAsset.spec!.bootMACAddress = bootMACAddress
                         })
                     }}
                     isRequired
-                    validation={(value) => ValidateField(value, 'bootMac', t)}
+                    validation={(value) => ValidateField(value, 'bootMACAddress', t)}
                 />
-
+                {errors && errors.length > 0 && (
+                    <AcmAlertGroup>
+                        {errors.map((error) => (
+                            <AcmAlert
+                                isInline
+                                variant={AlertVariant.danger}
+                                title={t('common:request.failed')}
+                                subtitle={error}
+                                key={error}
+                            />
+                        ))}
+                    </AcmAlertGroup>
+                )}
                 <ActionGroup>
                     <AcmSubmit
-                        id='submit'
-                        variant='primary'
+                        id="submit"
+                        variant="primary"
                         onClick={() => {
-                            createResource(bmaSecret as BMASecret).promise.then(() => {
-                                props.createBareMetalAsset(bareMetalAsset as BareMetalAsset).promise.then(() => {
-                                    history.push(NavigationPath.bareMetalAssets)
+                            setErrors([])
+                            if (isEdit) {
+                                return patchResource(bmaSecret as BMASecret, bmaSecret)
+                                    .promise.then(() => {
+                                        return patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset)
+                                            .promise.then(() => {
+                                                history.push(NavigationPath.bareMetalAssets)
+                                            })
+                                            .catch((e) => {
+                                                /* istanbul ignore else */
+                                                if (e instanceof Error) {
+                                                    setErrors([e.message])
+                                                }
+                                            })
+                                    })
+                                    .catch((e) => {
+                                        /* istanbul ignore else */
+                                        if (e instanceof Error) {
+                                            setErrors([e.message])
+                                        }
+                                    })
+                            } else {
+                                return createResource(bmaSecret as BMASecret).promise.then(() => {
+                                    return props
+                                        .createBareMetalAsset(bareMetalAsset as BareMetalAsset)
+                                        .promise.then(() => {
+                                            history.push(NavigationPath.bareMetalAssets)
+                                        })
+                                        .catch((e) => {
+                                            /* istanbul ignore else */
+                                            if (e instanceof Error) {
+                                                setErrors([e.message])
+                                            }
+                                        })
                                 })
-                            })
+                            }
                         }}
                     >
-                        {t('createBareMetalAsset.button.create')}
+                        {isEdit ? t('editBareMetalAsset.button.submit') : t('createBareMetalAsset.button.create')}
                     </AcmSubmit>
                     <Button
-                        variant='link'
+                        variant="link"
                         onClick={() => {
                             history.push(NavigationPath.bareMetalAssets)
                         }}

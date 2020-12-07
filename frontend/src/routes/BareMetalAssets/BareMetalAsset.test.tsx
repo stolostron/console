@@ -18,7 +18,7 @@ const bareMetalAsset: BareMetalAsset = {
             address: 'example.com:80',
             credentialsName: 'secret-test-bare-metal-asset',
         },
-        bootMac: '00:90:7F:12:DE:7F',
+        bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
 
