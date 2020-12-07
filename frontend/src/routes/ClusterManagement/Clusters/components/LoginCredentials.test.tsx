@@ -68,13 +68,13 @@ describe('LoginCredentials', () => {
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
-        expect(screen.getByRole('button')).toBeInTheDocument()
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         await waitFor(() => screen.getByText('credentials.show'))
-        userEvent.click(screen.getByRole('button'))
+        userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
         await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
         await waitFor(() => screen.getByText('credentials.hide'))
-        userEvent.click(screen.getByRole('button'))
+        userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.show'))
     })
     test('renders as a hyphen when secret name is not set', () => {
@@ -93,9 +93,9 @@ describe('LoginCredentials', () => {
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
-        expect(screen.getByRole('button')).toBeInTheDocument()
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         await waitFor(() => screen.getByText('credentials.show'))
-        userEvent.click(screen.getByRole('button'))
+        userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
         await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
         await waitFor(() => screen.getByText('credentials.failed'))
