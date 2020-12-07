@@ -39,7 +39,7 @@ export function nockList<Resource extends IResource>(
     },
     resources: Resource[] | IResource,
     labels?: string[],
-    query?: object,
+    query?: object
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(
