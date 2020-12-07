@@ -44,6 +44,8 @@ export interface ProviderConnection extends V1Secret {
         clusterOSImage?: string
         additionalTrustBundle?: string
 
+        ocmAPIToken?: string
+
         baseDomain: string
         pullSecret: string
         sshPrivatekey: string
