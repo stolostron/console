@@ -36,7 +36,7 @@ export function StatusField(props: { status: ClusterStatus }) {
 
 export function DistributionField(props: { data: DistributionInfo | undefined }) {
     const { t } = useTranslation(['cluster'])
-    if (!props.data) return <span>{'-'}</span>
+    if (!props.data) return <>-</>
     if (props.data.ocp?.availableUpdates && props.data.ocp.availableUpdates.length > 0) {
         return (
             <span>
@@ -48,6 +48,6 @@ export function DistributionField(props: { data: DistributionInfo | undefined })
             </span>
         )
     } else {
-        return <span>{props.data.displayVersion ?? '-'}</span>
+        return <>{props.data.displayVersion ?? '-'}</>
     }
 }
