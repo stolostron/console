@@ -37,7 +37,8 @@
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "jest-junit": "^12.0.0",
         "nock": "^13.0.5",
-        "prettier": "^2.2.0"
+        "prettier": "^2.2.0",
+        "ts-jest": "^26.4.4"
     },
     "scripts": {
         "start": "REACT_APP_BACKEND=http://localhost:4000 react-scripts start",

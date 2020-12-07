@@ -7,15 +7,20 @@ import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
-    statusCode: number = 200
+    statusCode: number = 200,
+    optional?: boolean
 ) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
-        .reply(statusCode, response ?? resource, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
+    let scope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        join(apiProxyUrl, getResourceNameApiPath(resource))
+    )
+    if (optional === true) {
+        scope = scope.optionally()
+    }
+    return scope.reply(statusCode, response ?? resource, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
 }
 
 export function nockList<Resource extends IResource>(

@@ -15,7 +15,6 @@ import {
 import AddConnectionPage from './AddConnection'
 import { FeatureGate } from '../../../resources/feature-gate'
 
-
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
@@ -29,7 +28,7 @@ const mockFeatureGate: FeatureGate = {
         name: 'open-cluster-management-discovery',
     },
     spec: {
-        featureSet: 'DiscoveryEnabled'
+        featureSet: 'DiscoveryEnabled',
     },
 }
 
@@ -101,6 +100,11 @@ function TestEditConnectionPage() {
         </MemoryRouter>
     )
 }
+
+beforeEach(() => {
+    sessionStorage.clear()
+    nockGet(mockFeatureGate, undefined, 200, true)
+})
 
 describe('add connection page', () => {
     it('should create aws provider connection', async () => {
@@ -370,8 +374,6 @@ describe('add connection page', () => {
     })
 
     it('should create cloud.redhat.com provider connection', async () => {
-        sessionStorage.clear()
-        nockGet(mockFeatureGate)
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
@@ -394,8 +396,7 @@ describe('add connection page', () => {
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(<TestAddConnectionPage/>
-        )
+        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
@@ -419,6 +420,7 @@ describe('add connection page', () => {
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
     })
+
     it('should show error if get project error', async () => {
         const projectsNock = nockClusterList(mockProject, mockBadRequestStatus)
         const { getByText } = render(<TestAddConnectionPage />)
@@ -458,7 +460,7 @@ describe('edit connection page', () => {
         const { getByText, getByTestId } = render(<TestEditConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('addConnection.editButton.label')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 
         await waitFor(() => expect(getByTestId('awsAccessKeyID')).toBeInTheDocument())
         userEvent.type(getByTestId('awsAccessKeyID'), '-edit')
@@ -466,7 +468,7 @@ describe('edit connection page', () => {
         const copy: ProviderConnection = JSON.parse(JSON.stringify(awsProviderConnection))
         copy.spec!.awsAccessKeyID += '-edit'
         const replaceNock = nockReplace(packProviderConnection(copy))
-        getByText('addConnection.editButton.label').click()
+        getByText('addConnection.saveButton.label').click()
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
     })
 })
