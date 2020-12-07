@@ -106,18 +106,18 @@ describe('bare metal asset page', () => {
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
 
-        const { getByTestId } = render(
+        const { getByTestId, queryAllByText } = render(
             <MemoryRouter initialEntries={["/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"]}>
                 <Route path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
                  render={() => <EditBareMetalAssetPageData editAssetNamespace={'test-bare-metal-asset-namespace'} editAssetName={'test-bare-metal-asset-001'}/>} />
             </MemoryRouter>
         )
-
         
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) 
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy()) 
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy()) 
 
+        await waitFor(() => expect(queryAllByText('progressbar')).toHaveLength(0))
         expect(getByTestId("bootMACAddress")).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
         expect(getByTestId("baseboardManagementControllerAddress")).toHaveValue(bareMetalAsset.spec?.bmc.address)
         
