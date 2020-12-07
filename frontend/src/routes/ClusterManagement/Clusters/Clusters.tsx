@@ -285,8 +285,7 @@ export function ClustersTable(props: {
                             message: `You are about to detach ${managedCluster.name}. This action is irreversible.`,
                             open: true,
                             confirm: () => {
-                                const resultErrors: string[] = []
-                                const promiseResults = deleteCluster(managedCluster.name!, false)
+                                deleteCluster(managedCluster.name!, false)
                                     .promise.then((results)=>{
                                         results.forEach((result)=>{
                                             if(result.status === 'rejected'){
@@ -308,8 +307,7 @@ export function ClustersTable(props: {
                             message: `You are about to destroy ${managedCluster.name}. This action is irreversible.`,
                             open: true,
                             confirm: () => {
-                                const resultErrors: string[] = []
-                                const promiseResults = deleteCluster(managedCluster.name!, false)
+                                deleteCluster(managedCluster.name!, false)
                                     .promise.then((results)=>{
                                         results.forEach((result)=>{
                                             if(result.status === 'rejected'){
