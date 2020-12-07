@@ -4,11 +4,6 @@ import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
 import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../../resources/discovered-cluster'
-import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
@@ -22,9 +17,12 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import { Secret } from '../../../../resources/secret'
+import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
+import { ImportCommandPageContent } from './ImportCluster'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
+
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -97,16 +95,14 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
 ]
 
 const mockSecretResponse: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
     metadata: {
         name: 'foobar-import',
         namespace: 'foobar',
     },
-    data: {
-        'crds.yaml': 'test',
-        'import.yaml': 'test',
-    },
+    data: { 'crds.yaml': 'crd yaml', 'import.yaml': 'import yaml' },
+    type: 'Opaque',
 }
 
 const mockManagedCluster: ManagedCluster = {
@@ -316,6 +312,26 @@ describe('Import Discovered Cluster', () => {
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
 
         // Ensure import command is visible
+        await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
+    })
+})
+
+describe('ImportCommand', () => {
+    const Component = () => {
+        return (
+            <MemoryRouter initialEntries={['/cluster-management/clusters/import/foobar']}>
+                <Route path="/cluster-management/clusters/import/:clusterName">
+                    <ImportCommandPageContent clusterName='foobar' />
+                </Route>
+            </MemoryRouter>
+        )
+    }
+
+    test('renders import command', async () => {
+        const getSecretNock = nockGet(mockSecretResponse)
+        const { getByRole, getByTestId } = render(<Component />)
+        expect(getByRole('progressbar')).toBeInTheDocument()
+        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
     })
 })

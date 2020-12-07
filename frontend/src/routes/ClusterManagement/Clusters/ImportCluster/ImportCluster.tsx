@@ -1,5 +1,6 @@
 import {
     AcmAlert,
+    AcmCodeSnippet,
     AcmAlertGroup,
     AcmExpandableSection,
     AcmForm,
@@ -11,10 +12,10 @@ import {
     AcmSpinnerBackdrop,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, AlertVariant, Button, Label, SelectOption, Text, TextVariants } from '@patternfly/react-core'
+import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants, Card, CardBody, CardTitle, CardFooter, Tabs, Tab, TabTitleText, } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { deleteResources } from '../../../../lib/delete-resources'
@@ -24,7 +25,7 @@ import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-ad
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
-import { ImportCommandPageContent } from '../ImportCommand/ImportCommand'
+import { getSecret, Secret } from '../../../../resources/secret'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -201,4 +202,85 @@ export function ImportClusterPageContent() {
             </AcmExpandableSection>
         </AcmPageCard>
     )
+}
+
+
+export function ImportCommandPageContent(props: { clusterName: string }) {
+    const { t } = useTranslation(['cluster', 'common'])
+    const [importCommand, setImportCommand] = useState<string>('')
+    const [error, setError] = useState<string>()
+    const [loading, setLoading] = useState<boolean>(true)
+    const [active] = useState('first')
+    const [clusterConsoleURL] = useState<string>(sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? '')
+
+    useEffect(() => {
+        pollImportYamlSecret(props.clusterName)
+            .then((secret) => {
+                const klusterletCRD = secret.data?.['crds.yaml']
+                const importYaml = secret.data?.['import.yaml']
+                setImportCommand(
+                    `echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`
+                )
+            })
+            .catch((err) => {
+                const resourceError = err as ResourceError
+                setError(resourceError.message)
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+    }, [props.clusterName])
+
+    if (loading) {
+        return <AcmSpinnerBackdrop />
+    } else if (error) {
+        return <AcmAlert variant={AlertVariant.danger} title={t('common:request.failed')} subtitle={error} />
+    }
+
+    return (
+        <Card>
+            <Tabs activeKey={active}>
+                <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
+                    <Card>
+                        <CardTitle>{t('import.command.generated')}</CardTitle>
+                        <CardBody>
+                            <AcmCodeSnippet
+                            id="import-command"
+                            fakeCommand={t('import.command.fake')}
+                            command={importCommand}
+                            copyTooltipText={t('clipboardCopy')}
+                            copySuccessText={t('copied')}
+                            />
+                        </CardBody>
+                        <CardTitle>{t('import.command.configurecluster')}</CardTitle>
+                        <CardBody>
+                            {t('import.command.configureclusterdescription')}
+                        </CardBody>
+                        { clusterConsoleURL ?
+                            <CardFooter>
+                                <Button key="launchToConsoleBtn" variant="secondary" isDisabled={!clusterConsoleURL} onClick={() => {window.open(clusterConsoleURL, "_blank")}}>{t('import.command.launchconsole')}</Button>
+                            </CardFooter> :
+                             null
+                        }
+                    </Card>
+                </Tab>
+            </Tabs>
+        </Card>
+    )
+}
+
+async function pollImportYamlSecret(clusterName: string): Promise<Secret> {
+    let retries = 10
+    const poll = async (resolve: any, reject: any) => {
+        getSecret({ namespace: clusterName, name: `${clusterName}-import` })
+            .promise.then((secret) => resolve(secret))
+            .catch((err) => {
+                if (retries-- > 0) {
+                    setTimeout(poll, 500, resolve, reject)
+                } else {
+                    reject(err)
+                }
+            })
+    }
+    return new Promise(poll)
 }
