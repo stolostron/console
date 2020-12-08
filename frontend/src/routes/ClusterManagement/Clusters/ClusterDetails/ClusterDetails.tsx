@@ -8,8 +8,7 @@ import {
     AcmPage,
     AcmButton,
     AcmActionGroup,
-    AcmLaunchLink,
-    LaunchLink
+    AcmLaunchLink
 } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -137,18 +136,20 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         { text: match.params.id, to: '' },
                     ]}
                     actions={
-                        <AcmActionGroup>
-                            <AcmLaunchLink
-                                links={addons
-                                    ?.filter((addon) => addon.launchLink)
-                                    ?.map((addon) => ({
-                                        id: addon.launchLink?.displayText ?? '',
-                                        text: addon.launchLink?.displayText ?? '',
-                                        href: addon.launchLink?.href ?? '',
-                                    }))}
-                            />
-                            <DownloadConfigurationDropdown cluster={cluster} />
-                        </AcmActionGroup>
+                        <Fragment>
+                            <AcmActionGroup>
+                                <AcmLaunchLink
+                                    links={addons
+                                        ?.filter((addon) => addon.launchLink)
+                                        ?.map((addon) => ({
+                                            id: addon.launchLink?.displayText ?? '',
+                                            text: addon.launchLink?.displayText ?? '',
+                                            href: addon.launchLink?.href ?? '',
+                                        }))}
+                                />
+                                <DownloadConfigurationDropdown />
+                            </AcmActionGroup>
+                        </Fragment>
                     }
                 />
                 <AcmSecondaryNav>
