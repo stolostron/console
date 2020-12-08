@@ -16,22 +16,8 @@
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
     "dependencies": {
-        "@kubernetes/client-node": "^0.13.0",
-        "@types/yamljs": "^0.2.31",
-        "axios": "^0.21.0",
         "dotenv": "^8.2.0",
-        "fastify": "^3.8.0",
-        "fastify-compress": "^3.4.0",
-        "fastify-cookie": "^4.1.0",
-        "fastify-cors": "^5.0.0",
-        "fastify-etag": "^1.0.0",
-        "fastify-helmet": "^5.0.3",
-        "fastify-https-redirect": "^1.0.3",
-        "fastify-oauth2": "^4.2.1",
-        "fastify-reply-from": "^3.4.0",
-        "fastify-static": "^3.3.0",
-        "pino": "^6.7.0",
-        "yamljs": "^0.3.0"
+        "pino": "^6.7.0"
     },
     "devDependencies": {
         "@types/eslint": "^7.2.5",

@@ -1,9 +1,9 @@
 /* istanbul ignore file */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServer, IncomingMessage, request, RequestOptions, Server, ServerResponse } from 'http'
-import { parse } from 'url'
-import { logError, logger } from './logger'
+import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
 import { Agent } from 'https'
+import { parse } from 'url'
+import { logError } from './logger'
 
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
@@ -31,7 +31,7 @@ const agent = new Agent({
     rejectUnauthorized: false,
 })
 
-export function requestHandler(req: IncomingMessage, res: ServerResponse) {
+export function requestHandler(req: IncomingMessage, res: ServerResponse): void {
     try {
         let requrl = req.url
 
@@ -79,13 +79,14 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse) {
             options.headers.authorization = `Bearer ${token}`
             options.agent = agent
 
-            return req.pipe(
+            req.pipe(
                 request(options, (response) => {
                     res.writeHead(response.statusCode, response.headers)
                     response.pipe(res, { end: true })
                 }),
                 { end: true }
             )
+            return
 
             // const result = await kubeRequest(
             //     token,
