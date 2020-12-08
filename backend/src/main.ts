@@ -26,6 +26,15 @@ process
         console.error(err)
         void stopServer()
     })
+    // process.on('multipleResolves', (type, promise, reason) => {
+    //     logger.error({ msg: 'process multipleResolves', type })
+    //     void fastify.close()
+    // })
+
+    // process.on('unhandledRejection', (reason, promise) => {
+    //     logger.error({ msg: 'process unhandledRejection', reason })
+    //     void fastify.close()
+    // })
     .on('exit', function processExit(code) {
         console.log(`process exit${code ? `  code:${code}` : ''}`)
     })
