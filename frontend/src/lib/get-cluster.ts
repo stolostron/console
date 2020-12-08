@@ -243,7 +243,6 @@ export function getClusterStatus(
         if (certificateSigningRequests && certificateSigningRequests.length) {
             const clusterCsrs =
                 certificateSigningRequests?.filter((csr) => {
-                    console.log('aslkd', csr.metadata.labels?.[CSR_CLUSTER_LABEL], managedClusterInfo.metadata.name)
                     return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
                 }) ?? []
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
@@ -258,7 +257,6 @@ export function getClusterStatus(
     // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
     // so this is the case is the cluster is being detached but not destroyed)
     if ((mcStatus === 'detaching' || !clusterJoined) && clusterDeployment && cdStatus !== 'detached') {
-        console.log('CD STATUS')
         return cdStatus
     } else {
         return mcStatus
