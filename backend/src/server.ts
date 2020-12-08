@@ -1,13 +1,7 @@
 /* istanbul ignore file */
 
 import { readFileSync } from 'fs'
-import {
-    createServer as createHttpServer,
-    IncomingMessage,
-    Server as HttpServer,
-    ServerResponse,
-    STATUS_CODES,
-} from 'http'
+import { createServer as createHttpServer, IncomingMessage, Server as HttpServer, ServerResponse } from 'http'
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'

@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
-import { Agent } from 'https'
+import { Http2ServerRequest } from 'http2'
+import { Agent, get } from 'https'
 import { parse } from 'url'
 
 function getToken(req: IncomingMessage) {
@@ -19,8 +20,15 @@ const agent = new Agent({
     rejectUnauthorized: false,
 })
 
-function getBody(req: IncomingMessage): unknown {
-    return {}
+function getBody(req: IncomingMessage): Promise<unknown> {
+    console.log(1)
+    return new Promise((resolve) => {
+        let data = ''
+        req.on('data', (chunk) => (data += chunk))
+        req.on('end', () => {
+            resolve(JSON.parse(data))
+        })
+    })
 }
 
 const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: string; token_endpoint: string }>(
@@ -29,9 +37,18 @@ const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: st
         options.method = 'GET'
         options.agent = agent
         options.headers = { Accept: 'application/json' }
-        request(options, (response) => {
-            const body = getBody(response) as { authorization_endpoint: string; token_endpoint: string }
-            resolve(body)
+        get(options, (response) => {
+            getBody(response)
+                .then((body) => {
+                    console.log(body)
+                    resolve(body as { authorization_endpoint: string; token_endpoint: string })
+                })
+                .catch((err) => {
+                    console.error(err)
+                    reject(err)
+                })
+        }).on('error', (err) => {
+            reject(err)
         })
     }
 )
@@ -109,30 +126,57 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         }
 
         // OAuth Login
-        if (url.startsWith('/login')) {
-            if (url.startsWith('/login/callback')) {
-                oauthAuthorizationServerPromise
-                    .then((info) => {
-                        const queryString = url.substr(url.indexOf('?'))
-                        // TODO call and get token
-                        return res.writeHead(redirect, { location: 'frontend' }).end()
-                        // return res.writeHead(redirect, { location: info.authorization_endpoint }).end()
-                    })
-                    .catch((err) => {
-                        res.writeHead(500).end()
-                    })
-                // const query =
-                // TODO get code...
-            } else {
-                oauthAuthorizationServerPromise
-                    .then((info) => {
-                        return res.writeHead(redirect, { location: info.authorization_endpoint }).end()
-                    })
-                    .catch((err) => {
-                        res.writeHead(500).end()
-                    })
-                // TODO - how to pass /login/callback?
-            }
+        if (url === '/login') {
+            return oauthAuthorizationServerPromise
+                .then((info) => {
+                    console.log(info)
+                    // const queryString = url.substr(url.indexOf('?'))
+                    // TODO call and get token
+                    // ?response_type%3Dcode&client_id%3Dmulticloudingress&redirect_uri%3Dhttp%3A%2F%2Flocalhost%3A4000%2Fcluster-management%2Flogin%2Fcallback&scope%3Duser%3Afull&state%3D
+                    const queryString =
+                        '?' +
+                        [
+                            `response_type=code`,
+                            `client_id=multicloudingress`,
+                            `redirect_uri=http://localhost:4000/cluster-management/login/callback`,
+                            `scope=user:full`,
+                            `state=`,
+                        ]
+                            .map((v) => encodeURIComponent(v))
+                            .join('&')
+
+                    return res.writeHead(302, { location: `${info.authorization_endpoint}${queryString}` }).end()
+                })
+                .catch((err) => {
+                    console.log(err)
+                    return res.writeHead(500).end()
+                })
+        }
+
+        if (url.startsWith('/login/callback')) {
+            return oauthAuthorizationServerPromise
+                .then((info) => {
+                    // const queryString = url.substr(url.indexOf('?'))
+                    // // TODO call and get token
+                    // const queryString = encodeURIComponent(
+                    //     [
+                    //         `?response_type=code`,
+                    //         `client_id=multicloudingress`,
+                    //         `redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fcluster-management%2Flogin%2Fcallback&`,
+                    //         `scope=user full`,
+                    //         `state=`,
+                    //     ].join('&')
+                    // )
+                    // return res.writeHead(302, { location: `info.authorization_endpoint${queryString}` }).end()
+
+                    // return res.writeHead(redirect, { location: info.authorization_endpoint }).end()
+                    return res.writeHead(500).end()
+                })
+                .catch((err) => {
+                    return res.writeHead(500).end()
+                })
+            // const query =
+            // TODO get code...
         }
 
         // Console Header
@@ -144,11 +188,13 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
 
             let options: RequestOptions
             if (url.startsWith('/multicloud/header/')) {
+                // TODO CACHE CONtROL
                 options = parse(`${acmUrl}/${req.url}`)
                 // options = parse(req.url)
             }
 
             if (url == '/cluster-management/header') {
+                // TODO CACHE CONtROL
                 const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
                 options = parse(`${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`)
             }
