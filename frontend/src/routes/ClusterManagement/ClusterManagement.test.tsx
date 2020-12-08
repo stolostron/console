@@ -12,23 +12,22 @@ const mockFeatureGate: FeatureGate = {
         name: 'open-cluster-management-discovery',
     },
     spec: {
-        featureSet: 'DiscoveryEnabled'
+        featureSet: 'DiscoveryEnabled',
     },
 }
 
 describe('Cluster Management', () => {
-
     const Component = () => {
         return (
-            <MemoryRouter >
-                    <ClusterManagementPage />
+            <MemoryRouter>
+                <ClusterManagementPage />
             </MemoryRouter>
         )
     }
 
     test('Discovery Feature Flag Enabled', async () => {
         sessionStorage.clear()
-        const { getByText } = render(<Component/>)
+        const { getByText } = render(<Component />)
         nockGet(mockFeatureGate)
         await waitFor(() => expect(getByText('cluster:clusters')).toBeInTheDocument())
         await waitFor(() => expect(getByText('Provider Connections')).toBeInTheDocument())
@@ -38,7 +37,7 @@ describe('Cluster Management', () => {
     test('No Discovery Feature Flag', async () => {
         sessionStorage.clear()
         const nockScope = nockGet(mockFeatureGate, mockNotFoundStatus)
-        const { getByText, queryByText } = render(<Component/>)
+        const { getByText, queryByText } = render(<Component />)
         await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('cluster:clusters')).toBeInTheDocument())
         await waitFor(() => expect(getByText('Provider Connections')).toBeInTheDocument())

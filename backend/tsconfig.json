@@ -19,5 +19,5 @@
         "lib": ["ES2019"],
         "skipLibCheck": true
     },
-    "include": ["src/**/*.ts", "src/services/notes.old"]
+    "include": ["src/**/*.ts"]
 }

@@ -34,7 +34,7 @@ export type Cluster = {
     namespace: string | undefined
     status: ClusterStatus
     distribution: DistributionInfo | undefined
-    labels: { [key: string]: string } | undefined
+    labels: Record<string, string> | undefined
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
     consoleURL: string | undefined
