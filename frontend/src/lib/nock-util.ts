@@ -154,6 +154,16 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         })
 }
 
+export function nockPatch(resource: IResource, response?: IResource, statusCode: number = 204){
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .patch(apiProxyUrl + getResourceApiPath(resource), JSON.stringify(resource))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
 export function nockReplace(resource: IResource, response?: IResource, statusCode: number = 200) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(apiProxyUrl + getResourceNameApiPath(resource))
