@@ -3,11 +3,11 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
-    IAcmTableColumn
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 // import { deleteResource } from '../../../lib/resource-request'
@@ -19,6 +19,9 @@ import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { StatusField, DistributionField } from '../../../components/ClusterCommon'
+import { EditLabelsModal } from '../../../components/EditLabelsModal'
+import { IResource } from '../../../resources/resource'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources/managed-cluster'
 
 const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     {
@@ -26,9 +29,7 @@ const managedClusterCols: IAcmTableColumn<Cluster>[] = [
         sort: 'name',
         search: 'name',
         cell: (cluster) => (
-            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                {cluster.name}
-            </Link>
+            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>{cluster.name}</Link>
         ),
     },
     {
@@ -46,7 +47,7 @@ const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     {
         header: 'Labels',
         // search: 'labels',
-        cell: (cluster) => cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-',
+        cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
     },
     {
         header: 'Nodes',
@@ -116,7 +117,11 @@ export function ClustersPageContent() {
 
     let clusters: Cluster[] | undefined
     if (items) {
-        clusters = mapClusters(items[0] as ClusterDeployment[], items[1] as ManagedClusterInfo[], items[2] as CertificateSigningRequest[])
+        clusters = mapClusters(
+            items[0] as ClusterDeployment[],
+            items[1] as ManagedClusterInfo[],
+            items[2] as CertificateSigningRequest[]
+        )
     }
 
     return (
@@ -136,38 +141,62 @@ export function ClustersTable(props: {
 
     const { t } = useTranslation(['cluster'])
 
+    const [editResourceLabels, setEditResourceLabels] = useState<IResource | undefined>()
+
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
 
     return (
-        <AcmTable<Cluster>
-            plural="clusters"
-            items={props.clusters}
-            columns={managedClusterCols}
-            keyFn={mckeyFn}
-            key="managedClustersTable"
-            tableActions={[]}
-            bulkActions={[
-                {
-                    id: 'destroyCluster',
-                    title: t('managed.destroy'),
-                    click: (clusters) => {
-                        // TODO props.deleteCluster
-                        props.refresh()
+        <Fragment>
+            <EditLabelsModal
+                resource={editResourceLabels}
+                close={() => {
+                    setEditResourceLabels(undefined)
+                    props.refresh()
+                }}
+            />
+            <AcmTable<Cluster>
+                plural="clusters"
+                items={props.clusters}
+                columns={managedClusterCols}
+                keyFn={mckeyFn}
+                key="managedClustersTable"
+                tableActions={[]}
+                bulkActions={[
+                    {
+                        id: 'destroyCluster',
+                        title: t('managed.destroy'),
+                        click: (clusters) => {
+                            // TODO props.deleteCluster
+                            props.refresh()
+                        },
                     },
-                },
-                { id: 'detachCluster', title: t('managed.detachSelected'), click: (managedClusters) => {} },
-                { id: 'upgradeClusters', title: t('managed.upgradeSelected'), click: (managedClusters) => {} },
-            ]}
-            rowActions={[
-                { id: 'editLabels', title: t('managed.editLabels'), click: (managedCluster) => {} },
-                { id: 'launchToCluster', title: t('managed.launch'), click: (managedCluster) => {} },
-                { id: 'upgradeCluster', title: t('managed.upgrade'), click: (managedCluster) => {} },
-                { id: 'searchCluster', title: t('managed.search'), click: (managedCluster) => {} },
-                { id: 'detachCluster', title: t('managed.detached'), click: (managedCluster) => {} },
-            ]}
-            emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
-        />
+                    { id: 'detachCluster', title: t('managed.detachSelected'), click: (clusters) => {} },
+                    { id: 'upgradeClusters', title: t('managed.upgradeSelected'), click: (clusters) => {} },
+                ]}
+                rowActions={[
+                    {
+                        id: 'editLabels',
+                        title: t('managed.editLabels'),
+                        click: (cluster) => {
+                            setEditResourceLabels({
+                                apiVersion: ManagedClusterApiVersion,
+                                kind: ManagedClusterKind,
+                                metadata: {
+                                    name: cluster.name,
+                                    labels: cluster.labels,
+                                },
+                            })
+                        },
+                    },
+                    { id: 'launchToCluster', title: t('managed.launch'), click: (cluster) => {} },
+                    { id: 'upgradeCluster', title: t('managed.upgrade'), click: (cluster) => {} },
+                    { id: 'searchCluster', title: t('managed.search'), click: (cluster) => {} },
+                    { id: 'detachCluster', title: t('managed.detached'), click: (cluster) => {} },
+                ]}
+                emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
+            />
+        </Fragment>
     )
 }

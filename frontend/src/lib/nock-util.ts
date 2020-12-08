@@ -7,15 +7,20 @@ import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
-    statusCode: number = 200
+    statusCode: number = 200,
+    optional?: boolean
 ) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
-        .reply(statusCode, response ?? resource, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
+    let scope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        join(apiProxyUrl, getResourceNameApiPath(resource))
+    )
+    if (optional === true) {
+        scope = scope.optionally()
+    }
+    return scope.reply(statusCode, response ?? resource, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
 }
 
 export function nockList<Resource extends IResource>(
@@ -131,6 +136,23 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
+export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 200) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiProxyUrl + getResourceNameApiPath(resource))
+        .optionally()
+        .reply(200, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .patch(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(data))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
 }
