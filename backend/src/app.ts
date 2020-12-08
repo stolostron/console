@@ -43,7 +43,8 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse) {
                     res.setHeader('Access-Control-Allow-Credentials', 'true')
                     break
                 case 'OPTIONS':
-                    res.setHeader('Access-Control-Allow-Origin', '*')
+                    res.setHeader('Vary', 'Origin, Access-Control-Allow-Origin')
+                    res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
                     res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
                     res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
                     res.setHeader('Access-Control-Allow-Credentials', 'true')
@@ -52,10 +53,9 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse) {
                 case 'POST':
                 case 'PATCH':
                 case 'DELETE':
-                    res.setHeader('Access-Control-Allow-Origin', '*')
-                    res.setHeader('Access-Control-Allow-Methods', `${req.method}, OPTIONS`)
-                    res.setHeader('Access-Control-Allow-Headers', 'content-type')
+                    res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
                     res.setHeader('Access-Control-Allow-Credentials', 'true')
+                    res.setHeader('Vary', 'Origin')
                     break
             }
         }
