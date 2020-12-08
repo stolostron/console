@@ -1,19 +1,21 @@
+import React, { ReactNode, useContext } from 'react'
 import {
     AcmPageCard,
     AcmTable,
     IAcmTableColumn
 } from '@open-cluster-management/ui-components'
-import React, { ReactNode, useContext } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
 
-export function NodePoolsPageContent(props: { name: string; namespace: string }) {
+export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
-
     return <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
+    const { t } = useTranslation(['cluster'])
+
     function getLabelCellFn(label: string) {
         const labelCellFn = (node: NodeInfo) => {
             return <span>{(node.labels && node.labels[label]) || ''}</span>
@@ -66,33 +68,33 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     }
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
-            header: 'Name',
+            header: t('table.name'),
             sort: 'name',
             search: 'name',
             cell: 'name',
         },
         {
-            header: 'Role',
+            header: t('table.role'),
             sort: rolesSortFn,
             cell: rolesCellFn,
         },
         {
-            header: 'Region',
+            header: t('table.region'),
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/region'),
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/region'),
         },
         {
-            header: 'Zone',
+            header: t('table.zone'),
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/zone'),
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/zone'),
         },
         {
-            header: 'Instance type',
+            header: t('table.instanceType'),
             sort: getLabelSortFn('beta.kubernetes.io/instance-type'),
             cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
         },
         {
-            header: 'Size - Core and memory',
+            header: t('table.size'),
             cell: capacityCellFn,
         },
     ]
