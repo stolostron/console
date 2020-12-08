@@ -13,10 +13,10 @@ export interface SelfSubjectAccessReview extends IResource {
     kind: SelfSubjectAccessReviewType
     metadata: V1ObjectMeta
     spec: {
-        resourceAttributes: ResourceAttributes,
+        resourceAttributes: ResourceAttributes
         user?: string
     }
-    status?:{
+    status?: {
         allowed: boolean
         denied: boolean
         evaluationError: string
@@ -25,22 +25,22 @@ export interface SelfSubjectAccessReview extends IResource {
 }
 export type ResourceAttributes = {
     group: string
-            name: string
-            namespace: string
-            resource: string
-            subresource: string
-            verb: string
-            version: string
+    name: string
+    namespace: string
+    resource: string
+    subresource: string
+    verb: string
+    version: string
 }
 
-export function createSubjectAccessReview(resourceAttributes:ResourceAttributes){
+export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
     const result = createResource<SelfSubjectAccessReview>({
         apiVersion: SelfSubjectAccessReviewApiVersion,
         kind: SelfSubjectAccessReviewKind,
-        metadata:{},
-        spec:{
-            resourceAttributes
-        }
+        metadata: {},
+        spec: {
+            resourceAttributes,
+        },
     })
     return {
         promise: result.promise.then((selfSubjectAccessReview) => {
