@@ -73,10 +73,10 @@ export default function ClusterManagementPage() {
                             </NavItem>
                             {discovery === true ? (
                                 <NavItem isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}>
-                                    <Link to={NavigationPath.discoveredClusters}>{'Discovered Clusters'}</Link>
+                                    <Link to={NavigationPath.discoveredClusters}>{t('discovered.clusters')}</Link>
                                 </NavItem>) : null }
                             <NavItem isActive={location.pathname.startsWith(NavigationPath.providerConnections)}>
-                                <Link to={NavigationPath.providerConnections}>{'Provider Connections'}</Link>
+                                <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
                             </NavItem>
                         </NavList>
                     </Nav>

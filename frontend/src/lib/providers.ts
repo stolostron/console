@@ -18,7 +18,7 @@ export const providers: Provider[] = [
     { key: ProviderID.AWS, name: 'Amazon Web Services' },
     { key: ProviderID.AZR, name: 'Microsoft Azure' },
     { key: ProviderID.VMW, name: 'VMware vSphere' },
-    { key: ProviderID.BMC, name: 'Bare-Metal' },
+    { key: ProviderID.BMC, name: 'Bare Metal' },
     { key: ProviderID.CRH, name: 'cloud.redhat.com' },
 ]
 

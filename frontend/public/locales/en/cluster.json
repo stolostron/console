@@ -1,5 +1,5 @@
 {
-  "page.header.cluster-management": "Cluster Management",
+  "page.header.cluster-management": "Cluster management",
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
   "managed": "Managed",
@@ -16,9 +16,10 @@
   "managed.addCluster": "Add cluster",
   "managed.destroy": "Destroy",
   "discovered": "Discovered",
+  "discovered.clusters": "Discovered clusters",
   "discovery.disable": "Disable cluster discovery",
   "discovery.edit": "Edit cluster discovery",
-  "discovery.import": "Import cluster",
+  "discovery.import": "Import a cluster",
   "discovery.enablediscoverybtn": "Enable cluster discovery",
   "discovery.emptyStateHeader": "No clusters are discovered, yet",
   "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
