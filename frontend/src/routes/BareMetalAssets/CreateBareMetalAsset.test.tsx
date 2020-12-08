@@ -1,5 +1,5 @@
 import React from 'react'
-import { getAllByText, render, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
@@ -106,7 +106,7 @@ describe('bare metal asset page', () => {
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
 
-        const { getByTestId, queryByText, container } = render(
+        const { getByTestId } = render(
             <MemoryRouter initialEntries={["/cluster-management/baremetal-assets/bma-test-cluster-namespace/test-bare-metal-asset-001/edit"]}>
                 <Route path="/cluster-management/baremetal-assets/bma-test-cluster-namespace/test-bare-metal-asset-001/edit"
                  render={() => <EditBareMetalAssetPageData editAssetNamespace={'test-bare-metal-asset-namespace'} editAssetName={'test-bare-metal-asset-001'}/>} />
