@@ -24,7 +24,10 @@
         "frontend:build": "cd frontend && npm run build",
         "update": "npm run backend:update && npm run frontend:update",
         "backend:update": "cd backend && npm run update",
-        "frontend:update": "cd frontend && npm run update"
+        "frontend:update": "cd frontend && npm run update",
+        "clean": "concurrently npm:*:clean",
+        "backend:clean": "cd backend && npm run clean",
+        "frontend:clean": "cd frontend && npm run clean"
     },
     "dependencies": {
         "concurrently": "^5.3.0"
