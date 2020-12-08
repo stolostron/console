@@ -1,6 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource } from './resource'
-import { ClusterLabels } from './managed-cluster'
 import { createResource } from '../lib/resource-request'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
