@@ -99,12 +99,10 @@ export function startServer(
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
                             msg.ms = time
-                            if (res.statusCode < 400) {
-                                logger.info(msg)
-                            } else if (res.statusCode < 500) {
-                                logger.info(msg)
+                            if (res.statusCode < 500) {
+                                console.info(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
                             } else {
-                                logger.error(msg)
+                                console.error(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
                             }
                         }
                     })

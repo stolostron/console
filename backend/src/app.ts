@@ -1,9 +1,7 @@
 /* istanbul ignore file */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
 import { Agent } from 'https'
 import { parse } from 'url'
-import { logError } from './logger'
 
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
@@ -17,26 +15,16 @@ function getToken(req: IncomingMessage) {
     return cookies?.['acm-access-token-cookie']
 }
 
-function parseUrl(url: string, length: number) {
-    url = url.substr(length)
-    let query = ''
-    if (url.includes('?')) {
-        query = url.substr(url.indexOf('?'))
-        url = url.substr(0, url.indexOf('?'))
-    }
-    return { url, query }
-}
-
 const agent = new Agent({
     rejectUnauthorized: false,
 })
 
 export function requestHandler(req: IncomingMessage, res: ServerResponse): void {
     try {
-        let requrl = req.url
+        let url = req.url
 
+        // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
-            // CORS
             switch (req.method) {
                 case 'GET':
                     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -60,20 +48,19 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): void 
             }
         }
 
-        if (requrl === '/livenessProbe') return res.writeHead(200).end()
-
-        if (requrl === '/readinessProbe') return res.writeHead(200).end()
-
-        if (requrl.startsWith('/cluster-management/namespaced')) {
-            requrl = '/cluster-management/proxy' + requrl.substr('/cluster-management/namespaced'.length)
+        if (url.startsWith('/cluster-management/namespaced')) {
+            url = url.substr('/cluster-management/namespaced'.length)
         }
 
-        if (requrl.startsWith('/cluster-management/proxy')) {
-            const token = getToken(req)
-            if (token === undefined) res.writeHead(401).end()
+        if (url.startsWith('/cluster-management/proxy')) {
+            url = url.substr('/cluster-management/proxy'.length)
+        }
 
-            const { url, query } = parseUrl(requrl, '/cluster-management/proxy'.length)
-            const options: RequestOptions = parse(process.env.CLUSTER_API_URL + url + query)
+        if (url.startsWith('/api')) {
+            const token = getToken(req)
+            if (token === undefined) return res.writeHead(401).end()
+
+            const options: RequestOptions = parse(process.env.CLUSTER_API_URL)
             options.method = req.method
             options.headers = req.headers
             options.headers.authorization = `Bearer ${token}`
@@ -82,33 +69,24 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): void 
             req.pipe(
                 request(options, (response) => {
                     res.writeHead(response.statusCode, response.headers)
-                    response.pipe(res, { end: true })
-                }),
-                { end: true }
+                    if (req.method === 'GET' && response.statusCode === 403) {
+                        // TODO handle use project query
+                    } else {
+                        response.pipe(res)
+                    }
+                })
             )
             return
+        }
 
-            // const result = await kubeRequest(
-            //     token,
-            //     req.method,
-            //     process.env.CLUSTER_API_URL + url + query,
-            //     req.body,
-            //     req.method === 'PATCH'
-            //         ? {
-            //               'Content-Type': 'application/merge-patch+json',
-            //           }
-            //         : undefined
-            // )
-            // return res.writeHead(result.status).end(result.data)
-        }
-        if (requrl.endsWith('.json')) {
-            res.writeHead(200, { 'Content-Type': 'application.json' }).end('{}')
-        } else {
-            res.writeHead(500).end()
-        }
+        if (url === '/livenessProbe') return res.writeHead(200).end()
+        if (url === '/readinessProbe') return res.writeHead(200).end()
+        res.writeHead(404).end()
     } catch (err) {
-        logError('request error', err, { method: req.method, url: req.url })
-        // res.writeHead(500).end()
+        console.error(err)
+        if (!res.headersSent) {
+            res.writeHead(500)
+        }
         res.end()
     }
 }
