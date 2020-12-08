@@ -34,7 +34,7 @@ export type ResourceAttributes = {
 }
 
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
-    const result = createResource<SelfSubjectAccessReview>({
+    return createResource<SelfSubjectAccessReview>({
         apiVersion: SelfSubjectAccessReviewApiVersion,
         kind: SelfSubjectAccessReviewKind,
         metadata: {},
@@ -42,10 +42,4 @@ export function createSubjectAccessReview(resourceAttributes: ResourceAttributes
             resourceAttributes,
         },
     })
-    return {
-        promise: result.promise.then((selfSubjectAccessReview) => {
-            return selfSubjectAccessReview
-        }),
-        abort: result.abort,
-    }
 }
