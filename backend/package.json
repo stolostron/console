@@ -126,9 +126,7 @@
                 {
                     "ignoreVoid": true
                 }
-            ],
-            "no-console": "error",
-            "no-process-exit": "error"
+            ]
         }
     }
 }
