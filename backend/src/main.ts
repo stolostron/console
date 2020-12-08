@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import { config } from 'dotenv'
+import { requestHandler } from './app'
 config()
 
 import { logger, stopLogger } from './logger'
@@ -18,30 +19,27 @@ logger.debug({ msg: 'environment', BACKEND_URL: process.env.BACKEND_URL })
 if (!process.env.FRONTEND_URL) throw new Error('FRONTEND_URL required')
 logger.debug({ msg: 'environment', FRONTEND_URL: process.env.FRONTEND_URL })
 
-process.on('exit', function processExit(code) {
-    if (code !== 0) logger.error({ msg: `process exit`, code: code })
-    else logger.debug({ msg: `process exit` })
-    stopLogger()
-})
+process
+    .on('SIGINT', (signal) => {
+        process.stdout.write('\n')
+        logger.debug({ msg: `process ${signal}` })
+        void stopServer()
+    })
+    .on('SIGTERM', (signal) => {
+        logger.debug({ msg: `process ${signal}` })
+        void stopServer()
+    })
+    .on('uncaughtException', (err) => {
+        logger.error({ msg: 'process uncaughtException', error: err.message, stack: err.stack })
+        void stopServer()
+    })
+    .on('exit', function processExit(code) {
+        if (code !== 0) {
+            logger.error({ msg: `process exit`, code })
+        } else {
+            logger.debug({ msg: `process exit` })
+        }
+    })
 
-process.on('uncaughtException', (error) => {
-    logger.error({ msg: 'process uncaughtException', name: error.name, error: error.message })
-    logger.error(error)
-    stopLogger()
-    process.exit(1)
-})
-
-process.on('multipleResolves', (type, promise, reason) => {
-    logger.error({ msg: 'process multipleResolves', type })
-    stopLogger()
-    process.exit(1)
-})
-
-process.on('unhandledRejection', (reason, promise) => {
-    logger.error({ msg: 'process unhandledRejection', reason })
-    stopLogger()
-    process.exit(1)
-})
-
-import { startServer } from './server'
-void startServer()
+import { startServer, stopServer } from './server'
+void startServer(requestHandler)
