@@ -5,11 +5,11 @@ import { startServer, stopServer } from './server'
 
 config()
 
-console.log(`process start  NODE_ENV:${process.env.NODE_ENV}  nodeVersion:${process.versions.node}`)
+console.log(`process start  NODE_ENV=${process.env.NODE_ENV}  nodeVersion=${process.versions.node}`)
 
 for (const variable of ['CLUSTER_API_URL', 'OAUTH2_REDIRECT_URL', 'BACKEND_URL', 'FRONTEND_URL']) {
     if (!process.env[variable]) throw new Error(`${variable} required`)
-    console.log(`${variable}:${process.env[variable]}`)
+    console.log(`environment  ${variable}=${process.env[variable]}`)
 }
 
 process
