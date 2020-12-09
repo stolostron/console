@@ -10,7 +10,7 @@ import { ImportCommandContainer } from '../../../Clusters/components/ImportComma
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster']) 
+    const { t } = useTranslation(['cluster'])
     return (
         <PageSection>
             <HiveNotification />
