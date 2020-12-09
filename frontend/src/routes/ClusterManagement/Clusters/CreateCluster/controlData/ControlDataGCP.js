@@ -212,7 +212,7 @@ const gcpControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    fetchAvailable: LOAD_OCP_IMAGES('gcp'),
+    //fetchAvailable: LOAD_OCP_IMAGES('gcp'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,
@@ -231,7 +231,7 @@ const gcpControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    fetchAvailable: LOAD_CLOUD_CONNECTIONS('gcp'),
+    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('gcp'),
     prompts: CREATE_CLOUD_CONNECTION,
   },
   ...labelControlData,

@@ -135,7 +135,7 @@ const bareControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    fetchAvailable: LOAD_OCP_IMAGES('bmc'),
+    //fetchAvailable: LOAD_OCP_IMAGES('bmc'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,
@@ -154,7 +154,7 @@ const bareControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
+    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
     prompts: CREATE_CLOUD_CONNECTION,
   },
   ...labelControlData,
@@ -243,11 +243,11 @@ const bareControlData = [
         mode: ControlMode.PROMPT_ONLY,
       },
     ],
-    fetchAvailable: {
-      //query: BareMetalAssets,
-      loadingDesc: 'table.bma.loading',
-      setAvailable: setAvailableBMAs,
-    },
+//    fetchAvailable: {
+//      //query: BareMetalAssets,
+//      loadingDesc: 'table.bma.loading',
+//      setAvailable: setAvailableBMAs,
+//    },
     active: []
   },
   {

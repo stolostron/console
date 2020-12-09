@@ -16,7 +16,7 @@ const vmwControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    fetchAvailable: LOAD_OCP_IMAGES('vmw'),
+    //fetchAvailable: LOAD_OCP_IMAGES('vmw'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,
@@ -35,7 +35,7 @@ const vmwControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
+    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
     prompts: CREATE_CLOUD_CONNECTION,
     encode: ['cacertificate']
   },

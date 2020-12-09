@@ -304,7 +304,7 @@ const azrControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    fetchAvailable: LOAD_OCP_IMAGES('azr'),
+    //fetchAvailable: LOAD_OCP_IMAGES('azr'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,
@@ -323,7 +323,7 @@ const azrControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    fetchAvailable: LOAD_CLOUD_CONNECTIONS('azr'),
+    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('azr'),
     prompts: CREATE_CLOUD_CONNECTION,
   },
   ...labelControlData,

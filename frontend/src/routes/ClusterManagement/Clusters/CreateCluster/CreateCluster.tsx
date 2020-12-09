@@ -59,6 +59,7 @@ export default function CreateClusterPage() {
             <AcmPageHeader title={t('managed.createCluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
             <PageSection className="pf-c-content">
               <TemplateEditor
+                type={'cluster'}
                 title={'Cluster YAML'}
                 monacoEditor={<MonacoEditor />}
                 controlData={controlData}
