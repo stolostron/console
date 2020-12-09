@@ -74,6 +74,22 @@ export const fetchHeader = async () => {
                 body?.appendChild(vendorScript)
             }
             head?.appendChild(link)
+
+            // Dependency on console-header to provide the OpenShift console url because
+            // we do not have a service account to query for the url ourselves if the user does not have privileges
+            const appLinks = headerResponse?.data?.state?.uiconfig?.config?.appLinks ?? []
+            const openShiftConsoleApp =
+                appLinks.find((link: { name: string }) => link.name === 'Red Hat OpenShift Container Platform') ?? {}
+            const openShiftConsoleUrl = openShiftConsoleApp.url
+            if (openShiftConsoleUrl) {
+                const input = document.createElement('input')
+                input.id = 'openshift-console-url'
+                input.value = openShiftConsoleUrl
+                input.hidden = true
+                body?.appendChild(input)
+            } else {
+                console.error('OpenShift Console URL not found in console-header response')
+            }
         }
     } catch (err) {
         headerResponse = err

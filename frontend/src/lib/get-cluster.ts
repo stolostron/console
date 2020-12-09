@@ -34,7 +34,7 @@ export type Cluster = {
     namespace: string | undefined
     status: ClusterStatus
     distribution: DistributionInfo | undefined
-    labels: { [key: string]: string } | undefined
+    labels: Record<string, string> | undefined
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
     consoleURL: string | undefined
@@ -196,12 +196,22 @@ export function getClusterStatus(
             cdStatus = ClusterStatus.destroying
 
             // provision/deprovision failure
-        } else if (provisionFailed || provisionLaunchError || deprovisionLaunchError) {
+        } else if (provisionLaunchError || deprovisionLaunchError) {
             cdStatus = ClusterStatus.failed
 
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
-            cdStatus = ClusterStatus.creating
+            if (provisionFailed) {
+                const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
+                const currentProvisionRef = clusterDeployment.status?.provisionRef.name ?? ''
+                if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
+                    cdStatus = ClusterStatus.failed
+                } else {
+                    cdStatus = ClusterStatus.creating
+                }
+            } else {
+                cdStatus = ClusterStatus.creating
+            }
         }
     }
 

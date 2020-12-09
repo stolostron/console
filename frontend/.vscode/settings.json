@@ -1,4 +1,4 @@
 {
-    "jest.pathToJest": "./.vscode/jest-test.sh",
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "jest.runAllTestsFirst": false
 }

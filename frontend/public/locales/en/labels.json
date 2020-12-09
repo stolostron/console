@@ -1,0 +1,7 @@
+{
+    "save": "Save",
+    "saving": "Saving",
+    "cancel": "Cancel",
+    "edit.labels.title": "Edit labels",
+    "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels."
+}

@@ -143,7 +143,8 @@ export function EditBareMetalAssetPageData(props: {
                     namespace: props.editAssetNamespace,
                 })
                 resultSecret!
-                    .then((r) => {
+                    .then(async (r) => {
+                        await resultProjects.promise
                         secret = r
                         setObjects({ projects: projects, bareMetalAsset: bma, secret: secret })
                     })
