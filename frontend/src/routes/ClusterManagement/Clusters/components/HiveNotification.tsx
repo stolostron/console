@@ -26,10 +26,15 @@ export function HiveNotification() {
 
     const onClick = () => {
         const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector('#openshift-console-url')
+        /* istanbul ignore next */
         const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
+        /* istanbul ignore next */
         const name = cluster?.name ?? ''
+        /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
+        /* istanbul ignore next */
         const status = cluster?.status ?? ''
+        /* istanbul ignore else */
         if (name && namespace) {
             const response = getHivePod(namespace, name, status)
             response.then((job) => {
@@ -41,12 +46,12 @@ export function HiveNotification() {
 
     const provisionStatuses: string[] = [ClusterStatus.creating, ClusterStatus.destroying, ClusterStatus.failed]
 
-    if (!provisionStatuses.includes(cluster?.status ?? '')) {
+    if (!provisionStatuses.includes(/* istanbul ignore next */ cluster?.status ?? '')) {
         return null
     }
 
     return (
-        <div style={{ marginBottom: '1rem' }} id="hive-notification">
+        <div style={{ marginBottom: '1rem' }} id={`hive-notification-${cluster?.status}`}>
             <AcmAlert
                 isInline
                 variant={cluster?.status === ClusterStatus.failed ? AlertVariant.danger : AlertVariant.info}

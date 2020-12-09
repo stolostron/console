@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AcmCodeSnippet, AcmAlert } from '@open-cluster-management/ui-components'
+import { AcmCodeSnippet, AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import {
-    Button,
     Card,
     CardBody,
     CardTitle,
@@ -45,7 +44,7 @@ export function ImportCommandContainer() {
         return (
             <Card style={{ height: '276px', marginBottom: '24px' }}>
                 <CardBody>
-                    <Skeleton height="100%" screenreaderText={t('import.command.fetching')} />
+                    <Skeleton height="100%" role="progressbar" screenreaderText={t('import.command.fetching')} />
                 </CardBody>
             </Card>
         )
@@ -94,16 +93,16 @@ export function ImportCommand(props: ImportCommandProps) {
                             <CardBody>{t('import.command.configureclusterdescription')}</CardBody>
                             {sessionStorage.getItem('DiscoveredClusterConsoleURL') && (
                                 <CardFooter>
-                                    <Button
-                                        key="launchToConsoleBtn"
+                                    <AcmButton
+                                        id="launch-console"
                                         variant="secondary"
                                         component="a"
-                                        href={sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? ''}
+                                        href={/* istanbul ignore next */ sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? ''}
                                         target="_blank"
                                         rel="noreferrer"
                                     >
                                         {t('import.command.launchconsole')}
-                                    </Button>
+                                    </AcmButton>
                                 </CardFooter>
                             )}
                         </Card>

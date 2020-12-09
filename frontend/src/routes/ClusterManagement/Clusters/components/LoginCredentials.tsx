@@ -81,9 +81,9 @@ export function LoginCredentials() {
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
                 {isVisible && (
                     <div className={classes.credentialsContainer}>
-                        <AcmInlineCopy text={credentials?.username ?? ''} id="username-credentials" />
+                        <AcmInlineCopy text={/* istanbul ignore next */ credentials?.username ?? ''} id="username-credentials" />
                         {'  /  '}
-                        <AcmInlineCopy text={credentials?.password ?? ''} id="password-credentials" />
+                        <AcmInlineCopy text={/* istanbul ignore next */ credentials?.password ?? ''} id="password-credentials" />
                     </div>
                 )}
                 <AcmButton variant={ButtonVariant.link} className={classes.toggleButton} onClick={onClick} isDisabled={disableButton} id='login-credentials'>
