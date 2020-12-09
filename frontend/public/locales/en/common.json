@@ -1,11 +1,19 @@
 {
     "cancel": "Cancel",
     "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving",
     "clipboardCopy": "Copy to clipboard",
     "copied": "Copied",
     "label.add": "Add label",
 
     "request.failed": "Request failed",
 
-    "rbac.unauthorized": "You are not authorized to complete this action. See your cluster administrator for role-based access control information."
+    "rbac.unauthorized": "You are not authorized to complete this action. See your cluster administrator for role-based access control information.",
+
+    "labels.capital": "Labels",
+    "labels.lower": "labels",
+    "labels.button.add": "Add label",
+    "labels.edit.title": "Edit labels",
+    "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels."
 }

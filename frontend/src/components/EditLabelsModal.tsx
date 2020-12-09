@@ -9,7 +9,7 @@ import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/manag
 import { Cluster } from '../lib/get-cluster'
 
 export function EditLabelsModal(props: { cluster?: Cluster; close: () => void }) {
-    const { t } = useTranslation(['labels'])
+    const { t } = useTranslation()
 
     const [labels, setLabels] = useState<Record<string, string>>({})
     const [error, setError] = useState<{ title: string; subtitle: string } | undefined>()
@@ -21,7 +21,7 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={t('edit.labels.title')}
+            title={t('labels.edit.title')}
             isOpen={props.cluster !== undefined}
             onClose={props.close}
         >
@@ -30,15 +30,15 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
                 &nbsp;
                 <AcmLabelsInput
                     id="labels-input"
-                    label={`${props.cluster?.name} labels`}
-                    buttonLabel="Add label"
+                    label={`${props.cluster?.name} ${t('labels.lower')}`}
+                    buttonLabel={t('labels.button.add')}
                     value={labels}
                     onChange={(labels) => setLabels(labels!)}
                 />
                 {error && <AcmAlert {...error} variant={AlertVariant.danger} isInline style={{ marginTop: '24px' }} />}
                 <ActionGroup>
                     <AcmSubmit
-                        id="submit"
+                        id="add-labels"
                         variant="primary"
                         onClick={() => {
                             setError(undefined)
@@ -81,7 +81,7 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
                         }}
                         label={t('save')}
                         processingLabel={t('saving')}
-                    ></AcmSubmit>
+                    />
                     <Button variant="link" onClick={props.close}>
                         {t('cancel')}
                     </Button>
