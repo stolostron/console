@@ -13,10 +13,10 @@ class WrappedImportBareMetalAssetsButton extends React.Component {
   render() {
     return (
       <div>
-        <Button id={i18n('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
-          {i18n('modal.import-acmbaremetalasset.button.text')}
+        <Button id={i18n.t('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
+          {i18n.t('modal.import-acmbaremetalasset.button.text')}
         </Button>
-        <Tooltip control={{tooltip:i18n('modal.import-acmbaremetalasset.button.tooltip')}} />
+        <Tooltip control={{tooltip:i18n.t('modal.import-acmbaremetalasset.button.tooltip')}} />
       </div>
     )
   }

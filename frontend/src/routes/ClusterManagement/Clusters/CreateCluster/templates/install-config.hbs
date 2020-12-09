@@ -38,23 +38,23 @@ controlPlane:
 {{/if}}
       rootVolume:
         iops: 4000
-        size: {{{../masterRootStorage}}} 
+        size: {{{../../masterRootStorage}}} 
         type: io1
-      type: {{{../masterType}}} 
+      type: {{{../../masterType}}} 
   {{/case}}
 
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../masterType}}} 
+      type: {{{../../masterType}}} 
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
       osDisk:
-        diskSizeGB: {{{../masterRootStorage}}} 
-      type:  {{{../masterType}}} 
+        diskSizeGB: {{{../../masterRootStorage}}} 
+      type:  {{{../../masterType}}} 
   {{/case}}
 
   {{#case 'vSphere'}}
@@ -90,9 +90,9 @@ compute:
     aws:
       rootVolume:
         iops: 2000
-        size: {{{../workerStorage}}} 
+        size: {{{../../workerStorage}}} 
         type: io1
-      type: {{{../workerType}}} 
+      type: {{{../../workerType}}} 
 {{#if ../workerZones}}
       zones: 
       {{#each ../../workerZones}}
@@ -105,15 +105,15 @@ compute:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../workerType}}} 
+      type: {{{../../workerType}}} 
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
-      type:  {{{../workerType}}} 
+      type:  {{{../../workerType}}} 
       osDisk:
-        diskSizeGB: {{{../workerStorage}}} 
+        diskSizeGB: {{{../../workerStorage}}} 
       {{#if ../workerZones}}
       zones: 
       {{#each ../../workerZones}}
