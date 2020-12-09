@@ -211,11 +211,11 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
             let options: RequestOptions
             if (url.startsWith('/multicloud/header/')) {
                 // TODO CACHE CONtROL
-                options = parseUrl(`${acmUrl}/${req.url}`)
+                options = parseUrl(`${acmUrl}${url}`)
                 // options = parse(req.url)
             }
 
-            if (url == '/cluster-management/header') {
+            if (url == '/header') {
                 // TODO CACHE CONtROL
                 const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
                 options = parseUrl(`${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`)

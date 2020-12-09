@@ -85,6 +85,14 @@ export function startServer(
                             } else {
                                 console.error(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
                             }
+                            const used = process.memoryUsage()
+                            process.stdout.write('memory  ')
+                            for (const key in used) {
+                                process.stdout.write(
+                                    `${key} ${Math.round(((used as unknown)[key] / 1024 / 1024) * 100) / 100} MB  `
+                                )
+                            }
+                            process.stdout.write('\n')
                         }
                     })
                 })
