@@ -5,11 +5,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'carbon-components-react'
 import BareMetalAssetCreateModal from '../../modals/CreateBareMetalAssetModal'
+import { useTranslation } from 'react-i18next'
 
 class WrappedCreateBareMetalAssetModal extends React.Component {
   static propTypes = {
     appendTable: PropTypes.func,
-    locale: PropTypes.string,
   }
 
   constructor(props) {
@@ -20,8 +20,9 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
   }
 
   render() {
+    const { t } = useTranslation(['create'])
     const { open } = this.state
-    const { appendTable, locale } = this.props
+    const { appendTable } = this.props
     const onClick = () => {
       this.setState({open:true})
     }
@@ -42,8 +43,8 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
     }
     return (
       <div>
-        <Button id={msgs.get('modal.create-acmbaremetalasset.button.key', locale)} onClick={onClick.bind(this)}>
-          {msgs.get('modal.create-acmbaremetalasset.button.text', locale)}
+        <Button id={t('modal.create-acmbaremetalasset.button.key')} onClick={onClick.bind(this)}>
+          {t('modal.create-acmbaremetalasset.button.text')}
         </Button>
         <BareMetalAssetCreateModal open={open} {...this.props}
           appendTable={mapAndSubmitModel.bind(this)}

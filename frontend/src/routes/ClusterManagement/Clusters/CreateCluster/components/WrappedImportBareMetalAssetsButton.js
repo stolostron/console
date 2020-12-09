@@ -1,24 +1,22 @@
-'use strict'
 
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'carbon-components-react'
 import { Tooltip } from 'C:/Users/jswanke/git/temptifly/src' //'temptifly'
+import i18n from 'i18next'
 
 class WrappedImportBareMetalAssetsButton extends React.Component {
   static propTypes = {
     appendTable: PropTypes.func,
-    locale: PropTypes.string,
   }
 
   render() {
-    const { locale } = this.props
     return (
       <div>
-        <Button id={msgs.get('modal.import-acmbaremetalasset.button.key', locale)} onClick={this.importCSV.bind(this)}>
-          {msgs.get('modal.import-acmbaremetalasset.button.text', locale)}
+        <Button id={i18n('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
+          {i18n('modal.import-acmbaremetalasset.button.text')}
         </Button>
-        <Tooltip control={{tooltip:msgs.get('modal.import-acmbaremetalasset.button.tooltip', locale)}} locale={locale} />
+        <Tooltip control={{tooltip:i18n('modal.import-acmbaremetalasset.button.tooltip')}} />
       </div>
     )
   }

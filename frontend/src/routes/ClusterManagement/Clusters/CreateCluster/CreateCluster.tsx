@@ -45,27 +45,25 @@ let hiveTemplate = require('./templates/hive-template.hbs');
 
 
 export default function CreateClusterPage() {
-    const { t } = useTranslation(['cluster'])
-    const i18n = (key: any) => {
-      return t(key)
+    const { t } = useTranslation(['create'])
+    const i18n = (key: any, arg: any) => {
+      return t(key, arg)
     }
 
 //              portals={Portals}
 //              fetchControl={fetchControl}
 //              createControl={createControl}
-//              i18n={i18n}
-//                controlData={controlData}
-//                template={hiveTemplate}
 
     return (
         <AcmPage>
             <AcmPageHeader title={t('managed.createCluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
             <PageSection className="pf-c-content">
               <TemplateEditor
-                title={'Application YAML'}
+                title={'Cluster YAML'}
                 monacoEditor={<MonacoEditor />}
                 controlData={controlData}
                 template={hiveTemplate}
+                i18n={i18n}
               />
             </PageSection>
         </AcmPage>
