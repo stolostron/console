@@ -1,0 +1,20 @@
+
+// On create page
+.pf-c-content {
+  .creation-view {
+    &.showEditor {
+      margin: -24px 0 -3.125rem 0;
+    }
+
+    .creation-view-split-container {
+      &.showEditor {
+        height: calc(100vh - 200px);
+
+        .creation-view-controls-container {
+          padding-top: 1.0rem;
+          height: calc(100vh - 205px);
+        }
+      }
+    }
+  }
+}

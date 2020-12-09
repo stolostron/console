@@ -1,0 +1,262 @@
+
+apiVersion: v1
+metadata:
+  name: {{{name}}}
+baseDomain: {{{baseDomain}}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Master Nodes============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_eq infrastructure 'BMC'}}
+controlPlane:
+  name: master
+  replicas: {{{../masterNodeCount}}}
+  platform:
+    baremetal: {}
+{{/if_eq}}
+
+{{#each masterPool}}
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+
+{{#switch ../infrastructure}}
+
+  {{#case 'AWS'}}
+  platform:
+    aws:
+{{#if ../masterZones}}
+      zones: 
+      {{#each ../../masterZones}}
+      - {{{../../region}}}{{{ this }}}
+      {{/each}}
+{{/if}}
+      rootVolume:
+        iops: 4000
+        size: {{{../masterRootStorage}}} 
+        type: io1
+      type: {{{../masterType}}} 
+  {{/case}}
+
+  {{#case 'GCP'}}
+  platform:
+    gcp:
+      type: {{{../masterType}}} 
+  {{/case}}
+
+  {{#case 'Azure'}}
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: {{{../masterRootStorage}}} 
+      type:  {{{../masterType}}} 
+  {{/case}}
+
+  {{#case 'vSphere'}}
+  {{/case}}
+
+{{/switch}}
+
+{{/each}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Worker Nodes============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_eq infrastructure 'BMC'}}
+compute:
+- name: worker
+  replicas: {{{../computeNodeCount}}}
+{{/if_eq}}
+
+{{#each workerPools}}
+{{#if @first}}
+compute:
+- hyperthreading: Enabled
+  name: {{{workerName}}}
+  replicas: {{{computeNodeCount}}} 
+{{#switch ../infrastructure}}
+
+  {{#case 'AWS'}}
+  platform:
+    aws:
+      rootVolume:
+        iops: 2000
+        size: {{{../workerStorage}}} 
+        type: io1
+      type: {{{../workerType}}} 
+{{#if ../workerZones}}
+      zones: 
+      {{#each ../../workerZones}}
+      - {{{../../region}}}{{{ this }}}
+      {{/each}}
+{{/if}}
+
+  {{/case}}
+
+  {{#case 'GCP'}}
+  platform:
+    gcp:
+      type: {{{../workerType}}} 
+  {{/case}}
+
+  {{#case 'Azure'}}
+  platform:
+    azure:
+      type:  {{{../workerType}}} 
+      osDisk:
+        diskSizeGB: {{{../workerStorage}}} 
+      {{#if ../workerZones}}
+      zones: 
+      {{#each ../../workerZones}}
+      - "{{{ this }}}"
+      {{/each}}
+      {{/if}}
+  {{/case}}
+
+  {{#case 'vSphere'}}
+  {{/case}}
+
+{{/switch}}
+{{/if}}
+{{/each}}
+
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Networks================================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_ne infrastructure 'vSphere'}}
+networking:
+  clusterNetwork:
+  - cidr: {{{../clusterNetwork}}} 
+    hostPrefix: {{{../hostPrefix}}} 
+  machineCIDR: {{{../machineCIDR}}} 
+  networkType: {{{../networkType}}} 
+  serviceNetwork:
+  - {{{../serviceNetwork}}} 
+{{/if_ne}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Platform================================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+
+platform:
+{{#switch infrastructure}}
+
+{{#case 'BMC'}}
+  baremetal:
+    libvirtURI: {{{../libvirtURI}}}
+    provisioningNetworkCIDR: {{{../provisioningNetworkCIDR}}} 
+    provisioningNetworkInterface: {{{../provisioningNetworkInterface}}} 
+    provisioningBridge: {{{../provisioningNetworkBridge }}}  
+    externalBridge: {{{../externalNetworkBridge }}}  
+    {{#if_gt '4.5.0' ../releaseImageVersion}}
+    dnsVIP: {{{../dnsVIP}}} 
+    {{/if_gt}}
+    apiVIP: {{{../apiVIP}}} 
+    ingressVIP: {{{../ingressVIP}}} 
+{{! ==================Disconnected BMC================================ }}
+{{#if ../bootstrapOSImage}}
+    bootstrapOSImage: >-
+      {{{../../bootstrapOSImage}}}
+{{/if}}
+{{#if ../clusterOSImage}}
+    clusterOSImage: >-
+      {{{../../clusterOSImage}}}
+{{/if}}
+    hosts:
+{{#each ../hosts}}
+      - name: {{{hostName}}}  
+        namespace: {{{hostNamespace}}}  
+        role: {{{role}}}  
+        bmc:
+          address: '{{{bmcAddress}}}'  
+{{#if ../../disableCertificateVerification}}
+          disableCertificateVerification: true
+{{/if}}
+          username: {{{username}}}  
+          password: {{{password}}}  
+        bootMACAddress: {{{macAddress}}}  
+        hardwareProfile: default
+{{/each}}
+{{/case}}
+
+{{#case 'AWS'}}
+  aws:
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'GCP'}}
+  gcp:
+    projectID: {{{../gcProjectID}}} 
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'Azure'}}
+  azure:
+    baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}}
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'vSphere'}}
+  vsphere:
+    vCenter: {{{../vcenter}}}
+    username: {{{../username}}}
+    password: {{{../password}}}
+    datacenter: {{{../datacenter}}}
+    defaultDatastore: {{{../datastore}}}
+    cluster: {{{../vmClusterName}}}
+    apiVIP: {{{../apiVIP}}}  
+    ingressVIP: {{{../ingressVIP}}}  
+    network: {{{../networkType}}}
+{{/case}}
+
+{{/switch}}
+
+pullSecret: "" # skip, hive will inject based on it's secrets
+{{#if sshPublickey}}
+sshKey: |-
+{{#each sshPublickey}}
+    {{{.}}}
+{{/each}}
+{{/if}}
+
+{{! ==================Disconnected BMC================================ }}
+{{#if additionalTrustBundle}}
+additionalTrustBundle: |-
+{{#each additionalTrustBundle}}
+    {{{.}}}
+{{/each}}
+{{/if}}
+
+
+{{#if imageMirror}}
+{{#if imageMirror.[0]}}
+imageContentSources:
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-release-nightly
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+{{/if}}
+{{/if}}
