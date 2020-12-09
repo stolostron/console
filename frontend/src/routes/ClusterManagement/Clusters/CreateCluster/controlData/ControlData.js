@@ -7,6 +7,14 @@ import gcpControlData from './ControlDataGCP'
 import azrControlData from './ControlDataAZR'
 import vmwControlData from './ControlDataVMW'
 import bmcControlData from './ControlDataBMC'
+import {
+    RedHatLogo,
+    AwsLogo,
+    GoogleLogo,
+    AzureLogo,
+    VMwareLogo,
+    BaremetalLogo
+} from './Logos'
 
 export const getActiveCardID = (control, fetchData = {}) => {
   const { requestedUIDs } = fetchData
@@ -70,7 +78,7 @@ export const controlData = [
     available: [
       {
         id: 'OpenShift',
-        //logo: `${config.contextPath}/graphics/redhat-logo.svg`,
+        logo: <RedHatLogo />,
         title: 'cluster.create.ocp.subtitle',
       },
     ],
@@ -96,7 +104,7 @@ export const controlData = [
     available: [
       {
         id: 'AWS',
-        //logo: '../graphics/aws-logo.svg',
+        logo: <AwsLogo />,
         title: 'cluster.create.aws.subtitle',
         change: {
           insertControlData: awsControlData,
@@ -107,7 +115,7 @@ export const controlData = [
       },
       {
         id: 'GCP',
-        //logo: '../graphics/google_cloud-icon.svg',
+        logo: <GoogleLogo />,
         title: 'cluster.create.google.subtitle',
         change: {
           insertControlData: gcpControlData,
@@ -118,7 +126,7 @@ export const controlData = [
       },
       {
         id: 'Azure',
-        //logo: `${config.contextPath}/graphics/azure_cloud-icon.svg`,
+        logo: <AzureLogo  />,
         title: 'cluster.create.azure.subtitle',
         change: {
           insertControlData: azrControlData,
@@ -129,7 +137,7 @@ export const controlData = [
       },
       {
         id: 'vSphere',
-        //logo: `${config.contextPath}/graphics/vmware_vsphere-icon.svg`,
+        logo: <VMwareLogo  />,
         title: 'cluster.create.vmware.subtitle',
         change: {
           insertControlData: vmwControlData,
@@ -140,7 +148,7 @@ export const controlData = [
       },
       {
         id: 'BMC',
-        //logo: `${config.contextPath}/graphics/baremetal.svg`,
+        logo: <BaremetalLogo />,
         title: 'cluster.create.baremetal.subtitle',
         change: {
           insertControlData: bmcControlData,
