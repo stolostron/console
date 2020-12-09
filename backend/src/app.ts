@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
-import { Http2ServerRequest } from 'http2'
 import { Agent, get } from 'https'
-import { parse } from 'url'
+import { parse as parseUrl } from 'url'
+import { parse as parseQueryString, encode as stringifyQuery } from 'querystring'
 
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
@@ -16,31 +16,19 @@ function getToken(req: IncomingMessage) {
     return cookies?.['acm-access-token-cookie']
 }
 
-const agent = new Agent({
-    rejectUnauthorized: false,
-})
-
-function getBody(req: IncomingMessage): Promise<unknown> {
-    console.log(1)
-    return new Promise((resolve) => {
-        let data = ''
-        req.on('data', (chunk) => (data += chunk))
-        req.on('end', () => {
-            resolve(JSON.parse(data))
-        })
-    })
-}
+const agent = new Agent({ rejectUnauthorized: false })
 
 const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: string; token_endpoint: string }>(
     (resolve, reject) => {
-        const options: RequestOptions = parse(`${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`)
+        const options: RequestOptions = parseUrl(
+            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+        )
         options.method = 'GET'
         options.agent = agent
         options.headers = { Accept: 'application/json' }
         get(options, (response) => {
             getBody(response)
                 .then((body) => {
-                    console.log(body)
                     resolve(body as { authorization_endpoint: string; token_endpoint: string })
                 })
                 .catch((err) => {
@@ -52,14 +40,6 @@ const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: st
         })
     }
 )
-// const response = await Axios.get<{ authorization_endpoint: string; token_endpoint: string }>(
-//     `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
-//     {
-//         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-//         headers: { Accept: 'application/json' },
-//         responseType: 'json',
-//     }
-// )
 
 export function requestHandler(req: IncomingMessage, res: ServerResponse): unknown {
     try {
@@ -107,7 +87,8 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
             const token = getToken(req)
             if (token === undefined) return res.writeHead(401).end()
 
-            const options: RequestOptions = parse(process.env.CLUSTER_API_URL)
+            const options: RequestOptions = parseUrl(process.env.CLUSTER_API_URL)
+            options.path = url
             options.method = req.method
             options.headers = req.headers
             options.headers.authorization = `Bearer ${token}`
@@ -119,9 +100,10 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
                     if (req.method === 'GET' && response.statusCode === 403) {
                         // TODO handle use project query
                     } else {
-                        response.pipe(res)
+                        response.pipe(res, { end: true })
                     }
-                })
+                }),
+                { end: true }
             )
         }
 
@@ -129,54 +111,94 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         if (url === '/login') {
             return oauthAuthorizationServerPromise
                 .then((info) => {
-                    console.log(info)
-                    // const queryString = url.substr(url.indexOf('?'))
-                    // TODO call and get token
-                    // ?response_type%3Dcode&client_id%3Dmulticloudingress&redirect_uri%3Dhttp%3A%2F%2Flocalhost%3A4000%2Fcluster-management%2Flogin%2Fcallback&scope%3Duser%3Afull&state%3D
-                    const queryString =
-                        '?' +
-                        [
-                            `response_type=code`,
-                            `client_id=multicloudingress`,
-                            `redirect_uri=http://localhost:4000/cluster-management/login/callback`,
-                            `scope=user:full`,
-                            `state=`,
-                        ]
-                            .map((v) => encodeURIComponent(v))
-                            .join('&')
-
+                    const query = {
+                        response_type: `code`,
+                        client_id: `multicloudingress`,
+                        redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                        scope: `user:full`,
+                        state: '',
+                    }
+                    const queryString = `?${stringifyQuery(query)}`
                     return res.writeHead(302, { location: `${info.authorization_endpoint}${queryString}` }).end()
                 })
                 .catch((err) => {
-                    console.log(err)
+                    console.error(err)
                     return res.writeHead(500).end()
                 })
         }
 
-        if (url.startsWith('/login/callback')) {
+        if (url.startsWith('/login/callback') || url.startsWith('/cluster-management/login/callback')) {
             return oauthAuthorizationServerPromise
                 .then((info) => {
-                    // const queryString = url.substr(url.indexOf('?'))
-                    // // TODO call and get token
-                    // const queryString = encodeURIComponent(
-                    //     [
-                    //         `?response_type=code`,
-                    //         `client_id=multicloudingress`,
-                    //         `redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fcluster-management%2Flogin%2Fcallback&`,
-                    //         `scope=user full`,
-                    //         `state=`,
-                    //     ].join('&')
-                    // )
-                    // return res.writeHead(302, { location: `info.authorization_endpoint${queryString}` }).end()
+                    if (url.includes('?')) {
+                        const queryString = url.substr(url.indexOf('?') + 1)
+                        const query = parseQueryString(queryString)
+                        const code = query.code as string
+                        const state = query.state
 
-                    // return res.writeHead(redirect, { location: info.authorization_endpoint }).end()
-                    return res.writeHead(500).end()
+                        const requestQuery: Record<string, string> = {
+                            grant_type: `authorization_code`,
+                            code: code,
+                            redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                            client_id: process.env.OAUTH2_CLIENT_ID,
+                            client_secret: process.env.OAUTH2_CLIENT_SECRET,
+                        }
+                        const requestQueryString = stringifyQuery(requestQuery)
+
+                        get(
+                            info.token_endpoint + '?' + requestQueryString,
+                            {
+                                agent,
+                                headers: { Accept: 'application/json' },
+                            },
+                            (response) => {
+                                getBody(response)
+                                    .then((body) => {
+                                        const headers = {
+                                            'Set-Cookie': `acm-access-token-cookie=${body.access_token as string}; ${
+                                                process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
+                                            } HttpOnly; Path=/`,
+                                            location: `http://localhost:3000`,
+                                        }
+                                        return res.writeHead(302, headers).end()
+                                    })
+                                    .catch((err) => {
+                                        console.error(err)
+                                        return res.writeHead(500).end()
+                                    })
+                            }
+                        ).on('error', (err) => {
+                            return res.writeHead(500).end()
+                        })
+                    } else {
+                        return res.writeHead(500).end()
+                    }
                 })
                 .catch((err) => {
+                    console.error(err)
                     return res.writeHead(500).end()
                 })
             // const query =
             // TODO get code...
+        }
+
+        if (url === '/logout') {
+            const token = getToken(req)
+            if (token === undefined) return res.writeHead(401).end()
+            return oauthAuthorizationServerPromise
+                .then((info) => {
+                    request(
+                        info.token_endpoint,
+                        { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } },
+                        (response) => {
+                            return res.writeHead(response.statusCode).end()
+                        }
+                    )
+                })
+                .catch((err) => {
+                    console.error(err)
+                    return res.writeHead(500).end()
+                })
         }
 
         // Console Header
@@ -189,14 +211,14 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
             let options: RequestOptions
             if (url.startsWith('/multicloud/header/')) {
                 // TODO CACHE CONtROL
-                options = parse(`${acmUrl}/${req.url}`)
+                options = parseUrl(`${acmUrl}/${req.url}`)
                 // options = parse(req.url)
             }
 
             if (url == '/cluster-management/header') {
                 // TODO CACHE CONtROL
                 const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
-                options = parse(`${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`)
+                options = parseUrl(`${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`)
             }
 
             if (options) {
@@ -208,17 +230,18 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
                 return req.pipe(
                     request(options, (r) => {
                         if (r.statusCode === 301) {
-                            options = parse(r.headers.location)
+                            options = parseUrl(r.headers.location)
                             options.method = req.method
                             options.headers = req.headers
                             // options.headers.host = options.host
                             options.headers.authorization = `Bearer ${token}`
                             options.agent = agent
-                            request(options, (r) => r.pipe(res.writeHead(r.statusCode, r.headers)))
+                            request(options, (r) => r.pipe(res.writeHead(r.statusCode, r.headers), { end: true }))
                         } else {
-                            r.pipe(res.writeHead(r.statusCode, r.headers))
+                            r.pipe(res.writeHead(r.statusCode, r.headers), { end: true })
                         }
-                    })
+                    }),
+                    { end: true }
                 )
             }
         }
@@ -233,3 +256,42 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         return res.end()
     }
 }
+
+function getBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+        let data = ''
+        req.on('data', (chunk) => (data += chunk))
+        req.on('end', () => {
+            try {
+                resolve(JSON.parse(data))
+            } catch (err) {
+                console.error(err)
+                reject()
+            }
+        })
+        req.on('error', (err) => {
+            console.error(err)
+            reject()
+        })
+    })
+}
+
+// function parseQueryString(queryString: string): Record<string, string> {
+//     if (queryString.includes('?')) {
+//         queryString = queryString.substr(queryString.indexOf('?') + 1)
+//     }
+//     return queryString.split('&').reduce((query, value) => {
+//         const parts = value.split('=')
+//         if (parts.length === 2) query[parts[0]] = parts[1]
+//         return query
+//     }, {} as Record<string, string>)
+// }
+
+// function encodeQueryString(query: Record<string, string>): string {
+//     return (
+//         '?' +
+//         Object.keys(query)
+//             .map((key) => `${key}=${encodeURIComponent(query[key])}`)
+//             .join('&')
+//     )
+// }

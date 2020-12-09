@@ -34,10 +34,10 @@ export function startServer(
 
     try {
         if (cert && key) {
-            console.log(`server start  https=true`)
+            console.info(`server start  https=true`)
             server = createHttpsServer({ cert, key }, requestHandler)
         } else {
-            console.log(`server start  https=false`)
+            console.info(`server start  https=false`)
             server = createHttpServer(requestHandler)
         }
         return new Promise((resolve, reject) => {
@@ -45,20 +45,18 @@ export function startServer(
                 .listen(process.env.PORT, () => {
                     const address = server.address()
                     if (address === null) {
-                        console.log(`server listening`)
+                        console.info(`server listening`)
                     } else if (typeof address === 'string') {
-                        console.log(`server listening  ${address}`)
+                        console.info(`server listening  ${address}`)
                     } else {
-                        console.log(`server listening  port=${address.port}`)
+                        console.info(`server listening  port=${address.port}`)
                     }
 
                     resolve(server)
                 })
                 .on('connection', (socket) => {
                     let socketID = nextSocketID++
-                    while (sockets[socketID] !== undefined) {
-                        socketID = nextSocketID++
-                    }
+                    while (sockets[socketID] !== undefined) socketID = nextSocketID++
                     sockets[socketID] = socket
                     ;((socket as unknown) as ISocketRequests).socketID = socketID
                     ;((socket as unknown) as ISocketRequests).activeRequests = 0
@@ -92,7 +90,7 @@ export function startServer(
                 })
                 .on('error', (err: NodeJS.ErrnoException) => {
                     if (err.code === 'EADDRINUSE') {
-                        console.error(`server error  error:address already in use`)
+                        console.error(`server error  error=address already in use`)
                         reject(undefined)
                     } else {
                         console.error(`server error  name=${err.name}  error=${err.message}  code=${err.code}`)
@@ -127,13 +125,13 @@ export async function stopServer(): Promise<void> {
     }
 
     if (server?.listening) {
-        console.log(`closing server`)
+        console.info(`server closing`)
         await new Promise<undefined>((resolve) =>
             server.close((err: Error | undefined) => {
                 if (err) {
                     console.error(`server close error  name=${err.name}  error=${err.message}`)
                 } else {
-                    console.log(`server closed`)
+                    console.info(`server closed`)
                 }
                 resolve(undefined)
             })
