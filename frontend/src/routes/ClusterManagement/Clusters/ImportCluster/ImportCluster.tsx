@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
     AcmAlert,
-    AcmAlertGroup,
     AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
@@ -161,15 +160,13 @@ export function ImportClusterPageContent() {
                     />
                     <Text component={TextVariants.small}>{t('import.description')}</Text>
                     {error && (
-                        <AcmAlertGroup>
-                            <AcmAlert
-                                isInline
-                                variant={AlertVariant.danger}
-                                title={t('common:request.failed')}
-                                subtitle={error}
-                                key={error}
-                            />
-                        </AcmAlertGroup>
+                        <AcmAlert
+                            isInline
+                            variant={AlertVariant.danger}
+                            title={t('common:request.failed')}
+                            subtitle={error}
+                            key={error}
+                        />
                     )}
                     <ActionGroup>
                         <AcmSubmit id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit} label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')} processingLabel={t('import.generating')} />  
@@ -187,7 +184,7 @@ export function ImportClusterPageContent() {
                     </ActionGroup>
                     {importCommand && (
                         <React.Fragment>
-                            <ImportCommand clusterName={clusterName} importCommand={importCommand}>
+                            <ImportCommand importCommand={importCommand}>
                                 {!loading && !error && (
                                     <ActionGroup>
                                         <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>

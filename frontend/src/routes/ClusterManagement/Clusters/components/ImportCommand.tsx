@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, Dispatch, SetStateAction } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AcmCodeSnippet, AcmAlert } from '@open-cluster-management/ui-components'
 import {
@@ -61,11 +61,8 @@ export function ImportCommandContainer() {
 }
 
 type ImportCommandProps = {
-    clusterName?: string | undefined
     loading?: boolean
-    setLoading?: Dispatch<SetStateAction<boolean>>
     error?: string
-    setError?: Dispatch<SetStateAction<string | undefined>>
     children?: React.ReactNode
     importCommand?: string
 }
