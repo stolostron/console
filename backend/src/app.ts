@@ -6,18 +6,6 @@ import { parse as parseQueryString, encode as stringifyQuery } from 'querystring
 import { createReadStream } from 'fs'
 import { extname } from 'path'
 
-function getToken(req: IncomingMessage) {
-    let cookies: Record<string, string>
-    if (req.headers.cookie) {
-        cookies = req.headers.cookie.split('; ').reduce((cookies, value) => {
-            const parts = value.split('=')
-            if (parts.length === 2) cookies[parts[0]] = parts[1]
-            return cookies
-        }, {} as Record<string, string>)
-    }
-    return cookies?.['acm-access-token-cookie']
-}
-
 const agent = new Agent({ rejectUnauthorized: false })
 
 const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: string; token_endpoint: string }>(
@@ -368,4 +356,16 @@ function getBody(req: IncomingMessage): Promise<Record<string, unknown>> {
             reject()
         })
     })
+}
+
+function getToken(req: IncomingMessage) {
+    let cookies: Record<string, string>
+    if (req.headers.cookie) {
+        cookies = req.headers.cookie.split('; ').reduce((cookies, value) => {
+            const parts = value.split('=')
+            if (parts.length === 2) cookies[parts[0]] = parts[1]
+            return cookies
+        }, {} as Record<string, string>)
+    }
+    return cookies?.['acm-access-token-cookie']
 }
