@@ -295,12 +295,16 @@
   "tooltip.cloud.provider.vmw.datastore": "The name of the default vSphere datastore to use.",
   "tooltip.creation.ocp.imageMirror": "Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.",
 
+  "modal.import-acmbaremetalasset.button.text": "Import assets",
+  "modal.import-acmbaremetalasset.button.tooltip": "Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.",
+  "modal.create-acmbaremetalasset.button.key": "Create asset",
+  "modal.create-acmbaremetalasset.button.text": "Create asset",
+
   "pagination.itemsPerPage": "Items per page",
   "pagination.pageRange": "{{0}} of {{1}} pages",
   "pagination.itemRange": "{{0}}-{{1}}",
   "pagination.itemRangeDescription": "of {{0}} items",
-  "modal.import-acmbaremetalasset.button.text": "Import assets",
-  "modal.import-acmbaremetalasset.button.tooltip": "Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.",
+  
   "editor.show.secrets": "Show secrets",
   "enter.add.label": "Enter key=value then press enter or comma",
   "enter.duplicate.key": "Duplicate key: {{0}}",

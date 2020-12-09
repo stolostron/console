@@ -1,11 +1,9 @@
-'use strict'
 /* eslint-disable import/no-named-as-default */
 
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'carbon-components-react'
-import BareMetalAssetCreateModal from '../../modals/CreateBareMetalAssetModal'
-import { useTranslation } from 'react-i18next'
+//import BareMetalAssetCreateModal from '../../modals/CreateBareMetalAssetModal'
 
 class WrappedCreateBareMetalAssetModal extends React.Component {
   static propTypes = {
@@ -20,7 +18,7 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
   }
 
   render() {
-    const { t } = useTranslation(['create'])
+    const { t } = this.props
     const { open } = this.state
     const { appendTable } = this.props
     const onClick = () => {
@@ -41,14 +39,16 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
         username,
       })
     }
+    
+//        <BareMetalAssetCreateModal open={open} {...this.props}
+//          appendTable={mapAndSubmitModel.bind(this)}
+//          closePrompt={closePrompt.bind(this)} />
+    
     return (
       <div>
         <Button id={t('modal.create-acmbaremetalasset.button.key')} onClick={onClick.bind(this)}>
           {t('modal.create-acmbaremetalasset.button.text')}
         </Button>
-        <BareMetalAssetCreateModal open={open} {...this.props}
-          appendTable={mapAndSubmitModel.bind(this)}
-          closePrompt={closePrompt.bind(this)} />
       </div>
     )
   }

@@ -14,9 +14,13 @@ import {
   VALIDATE_ALPHANUMERIC_PERIOD,
   VALIDATE_MAC_ADDRESS} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
 //import { BareMetalAssets} from '../../../../lib/client/queries'
-//import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
+import { withTranslation } from 'react-i18next';
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
+import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
+
+const ImportBareMetalAssetsButton = withTranslation(['create'])(WrappedImportBareMetalAssetsButton)
+const CreateBareMetalAssetModal = withTranslation(['create'])(WrappedCreateBareMetalAssetModal)
 
 const VALID_BMC_ADDR_REGEXP = new RegExp('^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
   '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -180,8 +184,8 @@ const bareControlData = [
     type: 'table',
     prompts: {
       actions: [
-        //<WrappedCreateBareMetalAssetModal key='create-bma' />,
-        <WrappedImportBareMetalAssetsButton key='import-bmas' />,
+        <CreateBareMetalAssetModal key='create-bma' />,
+        <ImportBareMetalAssetsButton key='import-bmas' />,
       ],
     },
     validation: {

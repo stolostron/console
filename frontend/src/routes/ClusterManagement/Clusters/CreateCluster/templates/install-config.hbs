@@ -181,13 +181,13 @@ platform:
       {{{../../clusterOSImage}}}
 {{/if}}
     hosts:
-{{#each ../hosts}}
+{{#each ../../hosts}}
       - name: {{{hostName}}}  
         namespace: {{{hostNamespace}}}  
         role: {{{role}}}  
         bmc:
           address: '{{{bmcAddress}}}'  
-{{#if ../../disableCertificateVerification}}
+{{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
           username: {{{username}}}  
@@ -199,32 +199,32 @@ platform:
 
 {{#case 'AWS'}}
   aws:
-    region: {{{../region}}}
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'GCP'}}
   gcp:
-    projectID: {{{../gcProjectID}}} 
-    region: {{{../region}}}
+    projectID: {{{../../gcProjectID}}} 
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}}
-    region: {{{../region}}}
+    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{../vcenter}}}
-    username: {{{../username}}}
-    password: {{{../password}}}
-    datacenter: {{{../datacenter}}}
-    defaultDatastore: {{{../datastore}}}
-    cluster: {{{../vmClusterName}}}
-    apiVIP: {{{../apiVIP}}}  
-    ingressVIP: {{{../ingressVIP}}}  
-    network: {{{../networkType}}}
+    vCenter: {{{../../vcenter}}}
+    username: {{{../../username}}}
+    password: {{{../../password}}}
+    datacenter: {{{../../datacenter}}}
+    defaultDatastore: {{{../../datastore}}}
+    cluster: {{{../../vmClusterName}}}
+    apiVIP: {{{../../apiVIP}}}  
+    ingressVIP: {{{../../ingressVIP}}}  
+    network: {{{../../networkType}}}
 {{/case}}
 
 {{/switch}}

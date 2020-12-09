@@ -3,7 +3,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'carbon-components-react'
 import { Tooltip } from 'C:/Users/jswanke/git/temptifly/src' //'temptifly'
-import i18n from 'i18next'
 
 class WrappedImportBareMetalAssetsButton extends React.Component {
   static propTypes = {
@@ -11,12 +10,13 @@ class WrappedImportBareMetalAssetsButton extends React.Component {
   }
 
   render() {
+    const { t } = this.props
     return (
       <div>
-        <Button id={i18n.t('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
-          {i18n.t('modal.import-acmbaremetalasset.button.text')}
+        <Button id={t('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
+          {t('modal.import-acmbaremetalasset.button.text')}
         </Button>
-        <Tooltip control={{tooltip:i18n.t('modal.import-acmbaremetalasset.button.tooltip')}} />
+        <Tooltip control={{tooltip: t('modal.import-acmbaremetalasset.button.tooltip')}} />
       </div>
     )
   }
