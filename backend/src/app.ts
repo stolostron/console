@@ -1,8 +1,10 @@
 /* istanbul ignore file */
 import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
-import { parse as parseUrl } from 'url'
+import { parse as parseUrl, pathToFileURL } from 'url'
 import { parse as parseQueryString, encode as stringifyQuery } from 'querystring'
+import { createReadStream } from 'fs'
+import { extname } from 'path'
 
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
@@ -49,7 +51,9 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         if (process.env.NODE_ENV !== 'production') {
             switch (req.method) {
                 case 'GET':
-                    res.setHeader('Access-Control-Allow-Origin', '*')
+                    if (req.headers['origin']) {
+                        res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
+                    }
                     res.setHeader('Access-Control-Allow-Credentials', 'true')
                     break
                 case 'OPTIONS':
@@ -85,10 +89,12 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
             const token = getToken(req)
-            if (token === undefined) return res.writeHead(401).end()
+            if (token === undefined) {
+                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
+            }
 
-            const options: RequestOptions = parseUrl(process.env.CLUSTER_API_URL)
-            options.path = url
+            const options: RequestOptions = parseUrl(process.env.CLUSTER_API_URL + url)
+            // options.path = url
             options.method = req.method
             options.headers = req.headers
             options.headers.authorization = `Bearer ${token}`
@@ -96,16 +102,43 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
 
             return req.pipe(
                 request(options, (response) => {
-                    res.writeHead(response.statusCode, response.headers)
                     if (req.method === 'GET' && response.statusCode === 403) {
-                        // TODO handle use project query
+                        const projectsRequestOptions: RequestOptions = parseUrl(
+                            process.env.CLUSTER_API_URL + `/apis/project.openshift.io/v1/projects`
+                        )
+                        projectsRequestOptions.method = req.method
+                        projectsRequestOptions.headers = {}
+                        projectsRequestOptions.headers.authorization = `Bearer ${token}`
+                        projectsRequestOptions.agent = agent
+                        request(projectsRequestOptions, (response) => {
+                            if (response.statusCode === 200) {
+                                getBody(response)
+                                    .then((body) => {
+                                        console.log(body)
+                                        const projects: { metadata: { name: string } }[] = body.items
+                                        console.log(
+                                            'PROJECTS',
+                                            projects.map((p) => p.metadata.name)
+                                        )
+                                        res.writeHead(200).end('[]')
+                                    })
+                                    .catch(() => {
+                                        res.writeHead(200).end('[]')
+                                    })
+                            } else {
+                                res.writeHead(200).end('[]')
+                            }
+                        }).end()
                     } else {
+                        res.writeHead(response.statusCode, response.headers)
                         response.pipe(res, { end: true })
                     }
                 }),
                 { end: true }
             )
         }
+
+        console.log('111')
 
         // OAuth Login
         if (url === '/login') {
@@ -184,7 +217,9 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
 
         if (url === '/logout') {
             const token = getToken(req)
-            if (token === undefined) return res.writeHead(401).end()
+            if (token === undefined)
+                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
+
             return oauthAuthorizationServerPromise
                 .then((info) => {
                     request(
@@ -204,19 +239,17 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         // Console Header
         if (process.env.NODE_ENV === 'development') {
             const token = getToken(req)
-            if (token === undefined) return res.writeHead(401).end()
+            if (token === undefined)
+                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
 
             const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
 
             let options: RequestOptions
             if (url.startsWith('/multicloud/header/')) {
-                // TODO CACHE CONtROL
                 options = parseUrl(`${acmUrl}${url}`)
-                // options = parse(req.url)
             }
 
             if (url == '/header') {
-                // TODO CACHE CONtROL
                 const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
                 options = parseUrl(`${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`)
             }
@@ -229,24 +262,85 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
                 options.agent = agent
                 return req.pipe(
                     request(options, (r) => {
-                        if (r.statusCode === 301) {
-                            options = parseUrl(r.headers.location)
-                            options.method = req.method
-                            options.headers = req.headers
-                            // options.headers.host = options.host
-                            options.headers.authorization = `Bearer ${token}`
-                            options.agent = agent
-                            request(options, (r) => r.pipe(res.writeHead(r.statusCode, r.headers), { end: true }))
-                        } else {
-                            r.pipe(res.writeHead(r.statusCode, r.headers), { end: true })
-                        }
-                    }),
-                    { end: true }
+                        const headers: Record<string, string | string[]> = { ...r.headers }
+                        // headers['cache-control'] = 'public, max-age=604800'
+                        // if (r.statusCode === 200 || r.statusCode === 304) {
+                        //     delete headers['set-cookie']
+                        //     delete headers['expires']
+                        //     delete headers['pragma']
+                        // }
+                        r.pipe(res.writeHead(r.statusCode, headers), { end: true })
+                    })
                 )
             }
         }
         if (url === '/livenessProbe') return res.writeHead(200).end()
         if (url === '/readinessProbe') return res.writeHead(200).end()
+
+        // Send frontend files
+        try {
+            const ext = extname(url)
+            let file: string
+            if (ext === '') {
+                file = './public/index.html'
+            } else {
+                file = './public' + url
+            }
+            const readStream = createReadStream(file, { autoClose: true })
+            if (readStream) {
+                readStream
+                    .on('open', () => {
+                        let contentType = ''
+                        let cacheControl = 'public, max-age=604800'
+                        switch (ext) {
+                            case 'html':
+                            case '':
+                                contentType = 'text/html; charset=utf-8'
+                                cacheControl = 'no-store'
+                                break
+                            case '.css':
+                                contentType = 'text/css; charset=UTF-8'
+                                break
+                            case '.js':
+                                contentType = 'application/javascript; charset=UTF-8'
+                                break
+                            case '.map':
+                            case '.json':
+                                contentType = 'application/json; charset=utf-8'
+                                break
+                            case '.svg':
+                                contentType = 'image/svg+xml'
+                                break
+                            case '.png':
+                                contentType = 'image/png'
+                                break
+                            case '.woff':
+                                contentType = 'font/woff'
+                                break
+                            case '.woff2':
+                                contentType = 'font/woff2'
+                                break
+                            default:
+                                console.log('unknown mime type', ext)
+                                break
+                        }
+                        res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
+                    })
+                    .on('error', (err) => {
+                        if (ext === '.json') {
+                            return res.writeHead(200, { 'Cache-Control': 'public, max-age=604800' }).end()
+                        } else {
+                            return res.writeHead(404).end()
+                        }
+                    })
+                    .pipe(res, { end: true })
+            }
+            return
+        } catch (err) {
+            console.error(err)
+            // DO NOTHING
+        }
+
         return res.writeHead(404).end()
     } catch (err) {
         console.error(err)
@@ -275,23 +369,3 @@ function getBody(req: IncomingMessage): Promise<Record<string, unknown>> {
         })
     })
 }
-
-// function parseQueryString(queryString: string): Record<string, string> {
-//     if (queryString.includes('?')) {
-//         queryString = queryString.substr(queryString.indexOf('?') + 1)
-//     }
-//     return queryString.split('&').reduce((query, value) => {
-//         const parts = value.split('=')
-//         if (parts.length === 2) query[parts[0]] = parts[1]
-//         return query
-//     }, {} as Record<string, string>)
-// }
-
-// function encodeQueryString(query: Record<string, string>): string {
-//     return (
-//         '?' +
-//         Object.keys(query)
-//             .map((key) => `${key}=${encodeURIComponent(query[key])}`)
-//             .join('&')
-//     )
-// }

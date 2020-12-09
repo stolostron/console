@@ -20,25 +20,36 @@ process
         void stopServer()
     })
     .on('uncaughtException', (err) => {
-        console.error(err)
+        console.error('process uncaughtException', err)
         void stopServer()
     })
-    // process.on('multipleResolves', (type, promise, reason) => {
-    //     logger.error({ msg: 'process multipleResolves', type })
-    //     void fastify.close()
-    // })
-    // process.on('unhandledRejection', (reason, promise) => {
-    //     logger.error({ msg: 'process unhandledRejection', reason })
-    //     void fastify.close()
-    // })
+    .on('multipleResolves', (type, promise, reason) => {
+        console.error('process multipleResolves', 'type', type, 'reason', reason)
+        void stopServer()
+    })
+    .on('unhandledRejection', (reason, promise) => {
+        console.error('process unhandledRejection', 'reason', reason)
+        void stopServer()
+    })
     .on('exit', function processExit(code) {
         console.info(`process exit${code ? `  code=${code}` : ''}`)
     })
 
 void startServer(requestHandler)
 
-if (global.gc !== undefined) {
-    setInterval(() => {
-        global.gc()
-    }, 1000).unref()
-}
+// if (global.gc !== undefined) {
+//     setInterval(() => {
+//         global.gc()
+//     }, 1000).unref()
+// }
+
+setInterval(() => {
+    const used = process.memoryUsage()
+    process.stdout.write('process memory  ')
+    for (const key in used) {
+        process.stdout.write(
+            `${key} ${Math.round((((used as unknown) as Record<string, number>)[key] / 1024 / 1024) * 100) / 100} MB  `
+        )
+    }
+    process.stdout.write('\n')
+}, 10 * 1000).unref()

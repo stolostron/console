@@ -79,7 +79,13 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
     const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
-    return patchRequest<Resource, ResultType>(url, data, options)
+    let headers: Record<string, string> = {}
+    if (Array.isArray(data)) {
+        headers['Content-Type'] = 'application/json-patch+json'
+    } else {
+        headers['Content-Type'] = 'application/merge-patch+json'
+    }
+    return patchRequest<Resource, ResultType>(url, data, headers, options)
 }
 
 export function deleteResource<Resource extends IResource>(
@@ -204,6 +210,7 @@ function putRequest<ResourceType, ResultType = ResourceType>(
 function patchRequest<ResourceType, ResultType = ResourceType>(
     url: string,
     data: unknown,
+    headers: Record<string, string>,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
     return axiosRequest<ResultType>({
@@ -211,7 +218,7 @@ function patchRequest<ResourceType, ResultType = ResourceType>(
             url,
             method: 'PATCH',
             validateStatus: (status) => true,
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             data,
         },
         ...options,

@@ -29,7 +29,7 @@ export function startServer(
         cert = readFileSync('certs/tls.crt')
         key = readFileSync('certs/tls.key')
     } catch {
-        /**/
+        // Going to use http instead of https
     }
 
     try {
@@ -85,14 +85,6 @@ export function startServer(
                             } else {
                                 console.error(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
                             }
-                            const used = process.memoryUsage()
-                            process.stdout.write('memory  ')
-                            for (const key in used) {
-                                process.stdout.write(
-                                    `${key} ${Math.round(((used as unknown)[key] / 1024 / 1024) * 100) / 100} MB  `
-                                )
-                            }
-                            process.stdout.write('\n')
                         }
                     })
                 })
@@ -120,6 +112,7 @@ export function startServer(
 let isShuttingDown = false
 
 export async function stopServer(): Promise<void> {
+    process.exit(0)
     if (isShuttingDown) return
     isShuttingDown = true
 
