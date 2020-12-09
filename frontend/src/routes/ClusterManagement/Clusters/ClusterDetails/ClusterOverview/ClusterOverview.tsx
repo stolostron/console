@@ -9,7 +9,7 @@ import { HiveNotification } from '../../components/HiveNotification'
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster']) 
+    const { t } = useTranslation(['cluster'])
     return (
         <PageSection>
             <HiveNotification />

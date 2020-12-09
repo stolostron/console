@@ -1,26 +1,28 @@
 import { AcmAlert, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
+import { ActionGroup, Button, ModalVariant, AlertVariant } from '@patternfly/react-core'
 import React, { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { patchResource } from '../lib/resource-request'
 import { IResource } from '../resources/resource'
 import { getErrorInfo } from './ErrorPage'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
+import { Cluster } from '../lib/get-cluster'
 
-export function EditLabelsModal(props: { resource?: IResource; close: () => void }) {
+export function EditLabelsModal(props: { cluster?: Cluster; close: () => void }) {
     const { t } = useTranslation(['labels'])
 
     const [labels, setLabels] = useState<Record<string, string>>({})
     const [error, setError] = useState<{ title: string; subtitle: string } | undefined>()
     useLayoutEffect(() => {
-        const labels = props.resource?.metadata.labels ?? {}
+        const labels = props.cluster?.labels ?? {}
         setLabels({ ...labels })
-    }, [props.resource])
+    }, [props.cluster])
 
     return (
         <AcmModal
             variant={ModalVariant.medium}
             title={t('edit.labels.title')}
-            isOpen={props.resource !== undefined}
+            isOpen={props.cluster !== undefined}
             onClose={props.close}
         >
             <AcmForm style={{ gap: 0 }}>
@@ -28,24 +30,33 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                 &nbsp;
                 <AcmLabelsInput
                     id="labels-input"
-                    label={`${props.resource?.metadata.name} labels`}
+                    label={`${props.cluster?.name} labels`}
                     buttonLabel="Add label"
                     value={labels}
                     onChange={(labels) => setLabels(labels!)}
                 />
-                {error && <AcmAlert {...error} />}
+                {error && <AcmAlert {...error} variant={AlertVariant.danger} isInline style={{ marginTop: '24px' }} />}
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
                         variant="primary"
                         onClick={() => {
                             setError(undefined)
+                            const resource: IResource = {
+                                apiVersion: ManagedClusterApiVersion,
+                                kind: ManagedClusterKind,
+                                metadata: {
+                                    name: props.cluster?.name,
+                                    labels,
+                                },
+                            }
+                            console.log('resource', resource)
                             let patch: { op: string; path: string; value?: unknown }[] = []
                             /* istanbul ignore else */
-                            if (props.resource!.metadata.labels) {
+                            if (resource!.metadata.labels) {
                                 patch = [
                                     ...patch,
-                                    ...Object.keys(props.resource!.metadata.labels).map((key) => ({
+                                    ...Object.keys(resource!.metadata.labels).map((key) => ({
                                         op: 'remove',
                                         path: `/metadata/labels/${key}`,
                                     })),
@@ -59,7 +70,7 @@ export function EditLabelsModal(props: { resource?: IResource; close: () => void
                                     value: labels[key],
                                 })),
                             ]
-                            return patchResource(props.resource!, patch)
+                            return patchResource(resource!, patch)
                                 .promise.then(() => {
                                     props.close()
                                 })
