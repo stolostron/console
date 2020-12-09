@@ -6,6 +6,7 @@ import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
+import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
@@ -13,6 +14,7 @@ export function ClusterOverviewPageContent() {
     return (
         <PageSection>
             <HiveNotification />
+            <ImportCommandContainer />
             <AcmDescriptionList
                 title={t('table.details')}
                 leftItems={[

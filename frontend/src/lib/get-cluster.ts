@@ -246,7 +246,7 @@ export function getClusterStatus(
                     (csr) => csr.metadata?.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
                 ) ?? []
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
-            mcStatus = !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pending
+            mcStatus = !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
         }
     } else {
         mcStatus = clusterAvailable ? ClusterStatus.ready : ClusterStatus.offline
@@ -255,7 +255,7 @@ export function getClusterStatus(
     // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
     // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
     // so this is the case is the cluster is being detached but not destroyed)
-    if ((mcStatus === 'detaching' || !clusterJoined) && cdStatus !== 'detached') {
+    if ((mcStatus === 'detaching' || !clusterJoined) && clusterDeployment && cdStatus !== 'detached') {
         return cdStatus
     } else {
         return mcStatus
