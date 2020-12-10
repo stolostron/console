@@ -78,13 +78,24 @@ export default function CreateClusterPage() {
     const cancelCreate = () => {
         history.push(NavigationPath.clusters)
     }
-    const createControl = {
-      createResource,
-      cancelCreate,
-      //creationStatus: mutateStatus,
-      //creationMsg: mutateErrorMsgs,
+
+    // pause creation to create something else
+    const pauseCreate = () => {
+      debugger
+      //    const {
+      //      history: { location },
+      //      updateFormState,
+      //      savedFormData
+      //    } = this.props
+      //    const { controlData } = this.state
+      //    // persist user selections if they click Add connection
+      //    if (location.search === '?createCluster') {
+      //      updateFormState(controlData)
+      //    } else {
+      //      savedFormData && updateFormState(null)
+      //    }
     }
-  
+    
     // setup translation
     const { t } = useTranslation(['create'])
     const i18n = (key: any, arg: any) => {
@@ -106,7 +117,13 @@ export default function CreateClusterPage() {
                 controlData={controlData}
                 template={hiveTemplate}
                 portals={Portals}
-                createControl={createControl}
+                createControl={{
+                  createResource,
+                  cancelCreate,
+                  pauseCreate,
+                  //creationStatus: mutateStatus,
+                  //creationMsg: mutateErrorMsgs,
+                }}
                 i18n={i18n}
               />
             </PageSection>

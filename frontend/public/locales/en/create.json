@@ -333,6 +333,27 @@
   "success.create.creating": "Creating {{0}} ...",
   "success.create.created": "Created {{0}}. Redirecting to details...",
   "error.create.syntax": "Syntax error: {{0}}",
-  "success.create.generating": "Generating import command ..."
+  "success.create.generating": "Generating import command ...",
+  
+  "formerror.required": "Required field",
+  "formerror.json.required": "JSON required",
+  "formerror.public.key.required": "Public key required",
+  "formerror.private.key.required": "Private key required",
+  "formerror.certificate.required": "Certificate required",
+  "formerror.valid.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
+  "formerror.valid.baseDNSPeriod": "The base DNS domain must not begin with a period.",
+  "formerror.validation.errors": "Fix validation error(s)",
+  "formerror.libvirturi.format": "Provide valid Libvirt URI (driver[+transport]://[username@][hostname][:port]/[path][?extraparameters] )",
+  "formerror.gcProjectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
+
+  "validation.missing.resource": "Missing: {{0}}",
+  "validation.missing.value": "{{0}} is required",
+  "validation.missing.kind": "Missing resource kind: {{0}}",
+  "validation.extra.kind": "Unexpected resource kind: {{0}}",
+  "validation.missing.any.kind": "Resource is missing a kind declaration (ex: kind: {{0}})",
+  "validation.missing.keys": "The '{{0}}' resource is missing these keys: {{1}}",
+  "validation.bad.type": "The '{{0}}' key must point to this value type: {{1}}",
+  "validation.bad.value": "The '{{0}}' key must point to one of these values: {{1}}",
+  "validation.number.value": "Number is not valid"
   
 }

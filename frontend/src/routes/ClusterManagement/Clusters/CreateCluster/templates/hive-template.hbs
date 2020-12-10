@@ -8,12 +8,12 @@
 apiVersion: hive.openshift.io/v1
 kind: ClusterDeployment
 metadata:
-  name: {{{name}}}
+  name: {{{name}}} ##name
   namespace: {{{name}}}
   labels:
     cloud: '{{infrastructure}}'
 {{#if region}}
-    region: '{{{region}}}'
+    region: '{{{region}}}'  ##region
 {{/if}}
     vendor: '{{distribution}}'
 {{#if_eq infrastructure 'BMC'}}
@@ -22,10 +22,11 @@ metadata:
 {{/if_eq}}
 
 spec:
-  baseDomain: {{{baseDomain}}}
+  baseDomain: {{{baseDomain}}}  ##baseDomain
   clusterName: {{{name}}}
   controlPlaneConfig:
     servingCertificates: {}
+  installAttemptsLimit: 2
   installed: false
   platform:
 
@@ -38,17 +39,17 @@ spec:
         name: {{{../name}}}-ssh-private-key
       hosts:
         {{#each ../hosts}}
-        - name: {{{hostName}}}  
-          namespace: {{{hostNamespace}}}  
-          role: {{{role}}}  
+        - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
+          namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
+          role: {{{role}}}  ##hosts.{{@index}}.role
           bmc:
-            address: '{{{bmcAddress}}}'  
+            address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
 {{#if ../../disableCertificateVerification}}
             disableCertificateVerification: true
 {{/if}}
-            username: {{{username}}}  
-            password: {{{password}}}  
-          bootMACAddress: '{{{macAddress}}}'  
+            username: {{{username}}}  ##hosts.{{@index}}.username
+            password: {{{password}}}  ##hosts.{{@index}}.password
+          bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
           hardwareProfile: default
         {{/each}}
   {{/case}}
@@ -69,7 +70,7 @@ spec:
 
   {{#case 'Azure'}}
     azure:
-      baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}} 
+      baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
         name: {{{../name}}}-azure-creds
       region: {{{../region}}}
@@ -235,7 +236,7 @@ metadata:
 spec:
   clusterDeploymentRef:
     name: {{{../name}}}
-  name: {{{workerName}}} 
+  name: {{{workerName}}} ##workerPools.{{@index}}.workerName
 
 {{#switch ../infrastructure}}
 
@@ -244,11 +245,11 @@ spec:
     aws:
       rootVolume:
         iops: 100
-        size: {{{../../workerStorage}}} 
+        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: gp2
-      type: {{{../../workerType}}} 
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
       {{#if ../../workerZones}}
-      zones: 
+      zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - {{{../../region}}}{{{ this }}}
       {{/each}}
@@ -258,7 +259,7 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} 
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -268,7 +269,7 @@ spec:
         diskSizeGB: 128
       type: Standard_D2s_v3
       {{#if ../../workerZones}}
-      zones: 
+      zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - "{{{ this }}}"
       {{/each}}
@@ -286,7 +287,7 @@ spec:
   {{/case}}
 
 {{/switch}}
-  replicas: {{{computeNodeCount}}} 
+  replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
 {{/each}}
 
 {{! ========================================================== }}
