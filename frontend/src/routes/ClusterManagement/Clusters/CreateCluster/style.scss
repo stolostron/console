@@ -18,3 +18,10 @@
     }
   }
 }
+
+.portal-controls {
+  display: flex;
+  >div {
+    margin-left: 10px;
+  }
+}

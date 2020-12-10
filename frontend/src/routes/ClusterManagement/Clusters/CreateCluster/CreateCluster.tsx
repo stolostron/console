@@ -1,10 +1,11 @@
+import React, { useState } from 'react'
 import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import { get, keyBy } from 'lodash-es'
 import './style.scss'
-
 
 // data
 import {controlData} from './controlData/ControlData'
@@ -43,20 +44,60 @@ if (window.monaco) {
 declare function require(module: string): any;
 let hiveTemplate = require('./templates/hive-template.hbs');
 
+// where to put Create/Cancel buttons
+const Portals = Object.freeze({
+  editBtn: 'edit-button-portal-id',
+  createBtn: 'create-button-portal-id',
+  cancelBtn: 'cancel-button-portal-id',
+})
 
 export default function CreateClusterPage() {
+
+    // create portals for buttons in header
+    const portals = 
+      <div className='portal-controls'>
+        <div id={Portals.editBtn} />
+        <div id={Portals.cancelBtn} />
+        <div id={Portals.createBtn} />
+      </div>
+      
+    // create button
+    const [clusterName, setClusterName] = useState<string>()
+    const [clusterNamespace, setClusterNamespace] = useState<string>()
+    const createResource = (resourceJSON: any[]) => {
+      if (resourceJSON) {
+        //handleCreateCluster(resourceJSON)
+        const map =keyBy(resourceJSON, 'kind')
+        setClusterName(get(map, 'ClusterDeployment.metadata.name'))
+        setClusterNamespace(get(map, 'ClusterDeployment.metadata.namespace'))
+      }
+    }
+
+    // cancel button
+    const history = useHistory()
+    const cancelCreate = () => {
+        history.push(NavigationPath.clusters)
+    }
+    const createControl = {
+      createResource,
+      cancelCreate,
+      //creationStatus: mutateStatus,
+      //creationMsg: mutateErrorMsgs,
+    }
+  
+    // setup translation
     const { t } = useTranslation(['create'])
     const i18n = (key: any, arg: any) => {
       return t(key, arg)
     }
 
-//              portals={Portals}
-//              fetchControl={fetchControl}
-//              createControl={createControl}
-
     return (
         <AcmPage>
-            <AcmPageHeader title={t('managed.createCluster')} breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]} />
+            <AcmPageHeader 
+              title={t('managed.createCluster')} 
+              breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
+              actions={portals}
+            />
             <PageSection className="pf-c-content">
               <TemplateEditor
                 type={'cluster'}
@@ -64,6 +105,8 @@ export default function CreateClusterPage() {
                 monacoEditor={<MonacoEditor />}
                 controlData={controlData}
                 template={hiveTemplate}
+                portals={Portals}
+                createControl={createControl}
                 i18n={i18n}
               />
             </PageSection>
