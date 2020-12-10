@@ -1,9 +1,9 @@
 import React from 'react'
-import { queryAllByText, render, wait, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
-import CreateBareMetalAssetPage, {EditBareMetalAssetPageData} from './CreateBareMetalAsset'
+import CreateBareMetalAssetPage, { EditBareMetalAssetPageData } from './CreateBareMetalAsset'
 import { nockList, nockClusterList, nockGet, nockPatch, nockOptions } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
@@ -51,13 +51,13 @@ const patchedBareMetalAsset: BareMetalAsset = {
     kind: 'BareMetalAsset',
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
     metadata: {
-        name: 'test-bare-metal-asset-002',
-        namespace: 'test-bare-metal-asset-new-namespace',
+        name: 'test-bare-metal-asset-001',
+        namespace: 'test-bare-metal-asset-namespace',
     },
     spec: {
         bmc: {
             address: 'example.com:80/patched',
-            credentialsName: 'test-bare-metal-asset-002-bmc-secret-1234',
+            credentialsName: 'secret-test-bare-metal-asset',
         },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
@@ -71,8 +71,24 @@ const bmaSecret: Secret = {
         namespace: 'test-bare-metal-asset-namespace',
     },
     data: {
-        username: 'test-user',
-        password: 'test-pass',
+        username: 'test',
+        password: 'test',
+    },
+}
+const bmaPatchedSecret: Secret = {
+    kind: 'Secret',
+    apiVersion: 'v1',
+    metadata: {
+        name: 'secret-test-bare-metal-asset',
+        namespace: 'test-bare-metal-asset-namespace',
+    },
+    data: {
+        username: 'test',
+        password: 'test',
+    },
+    stringData: {
+        username: '5k-',
+        password: '5k-',
     },
 }
 
@@ -104,7 +120,10 @@ describe('bare metal asset page', () => {
         userEvent.click(getByTestId('namespaceName-button'))
         userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
         await waitFor(() => expect(getByText(mockBareMetalAssets[0].metadata.namespace!)).toBeInTheDocument())
-        userEvent.type(getByTestId('baseboardManagementControllerAddress'), mockNewBareMetalAssets[0].spec?.bmc.address!)
+        userEvent.type(
+            getByTestId('baseboardManagementControllerAddress'),
+            mockNewBareMetalAssets[0].spec?.bmc.address!
+        )
         userEvent.type(getByTestId('username'), 'test')
         userEvent.type(getByTestId('password'), 'test')
         userEvent.type(getByTestId('bootMACAddress'), mockNewBareMetalAssets[0].spec?.bootMACAddress!)
@@ -123,51 +142,61 @@ describe('bare metal asset page', () => {
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
 
         const { getByTestId } = render(
-            <MemoryRouter initialEntries={["/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"]}>
-                <Route path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
-                 render={() => <EditBareMetalAssetPageData editAssetNamespace={'test-bare-metal-asset-namespace'} editAssetName={'test-bare-metal-asset-001'}/>} />
+            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
+                <Route
+                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
+                    render={() => (
+                        <EditBareMetalAssetPageData
+                            editAssetNamespace={'test-bare-metal-asset-namespace'}
+                            editAssetName={'test-bare-metal-asset-001'}
+                        />
+                    )}
+                />
             </MemoryRouter>
         )
 
-        
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) 
-        await waitFor(() => expect(getBMANock.isDone()).toBeTruthy()) 
-        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy()) 
+        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
-        expect(getByTestId("bootMACAddress")).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
-        expect(getByTestId("baseboardManagementControllerAddress")).toHaveValue(bareMetalAsset.spec?.bmc.address)
-        
+        expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
+        expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
     })
 
     test('submit edit to api', async () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
-        //const patchNock = nockPatch(bareMetalAsset, patchedBareMetalAsset)
-        //const optionsNock = nockOptions(bareMetalAsset, bareMetalAsset)
-        const optionsNockSecret = nockOptions(bmaSecret, bmaSecret)
+        const patchNockSecret = nockPatch(bmaPatchedSecret, bmaPatchedSecret)
+        nockOptions(bareMetalAsset, bareMetalAsset)
+        const patchNock = nockPatch(patchedBareMetalAsset, patchedBareMetalAsset)
+        nockOptions(bmaSecret, bmaSecret)
 
         const { getByTestId, getByText, queryAllByText, container } = render(
-            <MemoryRouter initialEntries={["/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"]}>
-                <Route path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
-                 render={() => <EditBareMetalAssetPageData editAssetNamespace={'test-bare-metal-asset-namespace'} editAssetName={'test-bare-metal-asset-001'}/>} />
+            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
+                <Route
+                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
+                    render={() => (
+                        <EditBareMetalAssetPageData
+                            editAssetNamespace={'test-bare-metal-asset-namespace'}
+                            editAssetName={'test-bare-metal-asset-001'}
+                        />
+                    )}
+                />
             </MemoryRouter>
         )
 
-        
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) 
-        await waitFor(() => expect(getBMANock.isDone()).toBeTruthy()) 
-        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy()) 
+        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
-        expect(getByTestId("bootMACAddress")).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
-        expect(getByTestId("baseboardManagementControllerAddress")).toHaveValue(bareMetalAsset.spec?.bmc.address)
+        expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
+        expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
 
-        userEvent.type(getByTestId("baseboardManagementControllerAddress"), '/patched')
+        userEvent.type(getByTestId('baseboardManagementControllerAddress'), '/patched')
         userEvent.click(getByText('editBareMetalAsset.button.submit'))
-        
-        //await waitFor(() => expect(patchNock.isDone()).toBeTruthy()) 
-        await waitFor(()=> expect(queryAllByText('progressbar')).toHaveLength(0))
-        console.log('checking html: ', container.innerHTML)
 
+        await waitFor(() => expect(patchNockSecret.isDone()).toBeTruthy())
+        await waitFor(() => expect(patchNock.isDone()).toBeTruthy())
     })
 })
