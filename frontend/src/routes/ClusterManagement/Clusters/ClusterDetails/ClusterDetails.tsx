@@ -31,7 +31,11 @@ import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-o
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
-    readonly addonsError: Error | undefined
+    readonly addonsError?: Error
+    readonly importCommand?: string
+    readonly importCommandError?: string
+    setImportCommand?: (command: string) => void
+    setImportCommandError?: (error: string) => void
     readonly editModalOpen?: boolean
     setEditModalOpen?: (open: boolean) => void
 }>({
@@ -45,6 +49,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
+    const [importCommand, setImportCommand] = useState<string | undefined>()
+    const [importCommandError, setImportCommandError] = useState<string | undefined>()
     
     // Cluster
     const { data, startPolling, loading, error, refresh } = useQuery(
@@ -132,7 +138,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     return (
         <AcmPage>
-            <ClusterContext.Provider value={{ cluster, addons, addonsError, editModalOpen, setEditModalOpen }}>
+            <ClusterContext.Provider value={{ cluster, addons, addonsError, importCommand, setImportCommand, importCommandError, setImportCommandError, editModalOpen, setEditModalOpen }}>
                 <EditLabelsModal
                     cluster={editModalOpen ? cluster : undefined}
                     close={() => {
