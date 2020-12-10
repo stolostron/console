@@ -12,23 +12,23 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, AlertVariant, Button, Page, SelectOption, Title } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
-import { 
-    validateKubernetesDnsName, 
-    validatePrivateSshKey, 
+import {
+    validateKubernetesDnsName,
+    validatePrivateSshKey,
     validatePublicSshKey,
     validateCertificate,
     validateGCProjectID,
     validateJSON,
     validateLibvirtURI,
     validateBaseDnsName,
-    validateImageMirror
+    validateImageMirror,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProjects, Project } from '../../../resources/project'
@@ -43,7 +43,6 @@ import {
     replaceProviderConnection,
 } from '../../../resources/provider-connection'
 import { getFeatureGate } from '../../../resources/feature-gate'
-
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -190,23 +189,23 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
 
     const [discovery, toggleDiscovery] = useState<Boolean>(false)
     useEffect(() => {
-        if (sessionStorage.getItem("DiscoveryEnabled") === null) {
+        if (sessionStorage.getItem('DiscoveryEnabled') === null) {
             const result = getFeatureGate('open-cluster-management-discovery')
             result.promise
                 .then((featureGate) => {
-                    if (featureGate.spec!.featureSet === "DiscoveryEnabled") {
-                        sessionStorage.setItem("DiscoveryEnabled", "true")
+                    if (featureGate.spec!.featureSet === 'DiscoveryEnabled') {
+                        sessionStorage.setItem('DiscoveryEnabled', 'true')
                         toggleDiscovery(true)
                     }
                 })
                 .catch((err: Error) => {
                     // If error retrieving feature flag, continue
-                    sessionStorage.setItem("DiscoveryEnabled", "false")
+                    sessionStorage.setItem('DiscoveryEnabled', 'false')
                     toggleDiscovery(false)
                 })
-                return result.abort
+            return result.abort
         }
-        toggleDiscovery((sessionStorage.getItem("DiscoveryEnabled") === "true" ? true : false))
+        toggleDiscovery(sessionStorage.getItem('DiscoveryEnabled') === 'true' ? true : false)
     }, [])
 
     const isEditing = () => props.providerConnection.metadata.name !== ''
@@ -225,10 +224,12 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
         setProviderConnection(copy)
     }
 
-
     return (
         <AcmPageCard>
             <AcmForm>
+                <Title headingLevel="h4" size="xl">
+                    Select a provider and enter basic information
+                </Title>
                 <AcmSelect
                     id="providerName"
                     label={t('addConnection.providerName.label')}
@@ -243,17 +244,18 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     isDisabled={isEditing()}
                     isRequired
                 >
-                    {
-                    providers.filter(function(provider) {
-                        if (!discovery && provider.key === ProviderID.CRH) {
-                          return false // skip
-                        }
-                        return true
-                      }).map((provider) => (
-                        <SelectOption key={provider.key} value={provider.key}>
-                            {provider.name}
-                        </SelectOption>
-                    ))}
+                    {providers
+                        .filter(function (provider) {
+                            if (!discovery && provider.key === ProviderID.CRH) {
+                                return false // skip
+                            }
+                            return true
+                        })
+                        .map((provider) => (
+                            <SelectOption key={provider.key} value={provider.key}>
+                                {provider.name}
+                            </SelectOption>
+                        ))}
                 </AcmSelect>
                 <AcmTextInput
                     id="connectionName"
@@ -266,10 +268,9 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             providerConnection.metadata.name = name
                         })
                     }}
-                    validation={(value) => validateKubernetesDnsName(value, 'Connection name',t)}
+                    validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                     isRequired
                     isDisabled={isEditing()}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
                 />
                 <AcmSelect
                     id="namespaceName"
@@ -284,7 +285,6 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     isRequired
                     isDisabled={isEditing()}
-                    hidden={!getProviderConnectionProviderID(providerConnection)}
                 >
                     {props.projects.map((project) => (
                         <SelectOption key={project.metadata.name} value={project.metadata.name}>
@@ -292,6 +292,26 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         </SelectOption>
                     ))}
                 </AcmSelect>
+                <Title headingLevel="h4" size="xl" hidden={!getProviderConnectionProviderID(providerConnection)}>
+                    Configure your provider connection
+                </Title>
+                <AcmTextInput
+                    id="baseDomain"
+                    label={t('addConnection.baseDomain.label')}
+                    placeholder={t('addConnection.baseDomain.placeholder')}
+                    labelHelp={t('addConnection.baseDomain.labelHelp')}
+                    value={providerConnection.spec?.baseDomain}
+                    onChange={(baseDomain) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.baseDomain = baseDomain as string
+                        })
+                    }}
+                    hidden={
+                        !getProviderConnectionProviderID(providerConnection) ||
+                        getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    }
+                    isRequired
+                />
                 <AcmTextInput
                     id="awsAccessKeyID"
                     label={t('addConnection.awsAccessKeyID.label')}
@@ -318,6 +338,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AWS}
+                    type="password"
                     isRequired
                 />
                 <AcmTextInput
@@ -360,6 +381,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
+                    type="password"
                     isRequired
                 />
                 <AcmTextInput
@@ -403,7 +425,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
                     isRequired
-                    validation={(value)=>validateGCProjectID(value,t)}
+                    validation={(value) => validateGCProjectID(value, t)}
                 />
                 <AcmTextArea
                     id="gcServiceAccountKey"
@@ -418,7 +440,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.GCP}
                     isRequired
-                    validation={(value)=>validateJSON(value,t)}
+                    validation={(value) => validateJSON(value, t)}
                 />
                 <AcmTextInput
                     id="vcenter"
@@ -460,6 +482,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
+                    type="password"
                     isRequired
                 />
                 <AcmTextArea
@@ -475,7 +498,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                     isRequired
-                    validation={(value)=>validateCertificate(value,t)}
+                    validation={(value) => validateCertificate(value, t)}
                 />
                 <AcmTextInput
                     id="vmClusterName"
@@ -532,7 +555,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                     isRequired
-                    validation={(value)=>validateLibvirtURI(value,t)}
+                    validation={(value) => validateLibvirtURI(value, t)}
                 />
                 <AcmTextArea
                     id="sshKnownHosts"
@@ -548,6 +571,69 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                     isRequired
                 />
+                <AcmTextArea
+                    id="pullSecret"
+                    label={t('addConnection.pullSecret.label')}
+                    placeholder={t('addConnection.pullSecret.placeholder')}
+                    labelHelp={t('addConnection.pullSecret.labelHelp')}
+                    value={providerConnection.spec?.pullSecret}
+                    onChange={(pullSecret) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.pullSecret = pullSecret as string
+                        })
+                    }}
+                    hidden={
+                        !getProviderConnectionProviderID(providerConnection) ||
+                        getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    }
+                    isRequired
+                    validation={(value) => validateJSON(value, t)}
+                />
+                <AcmTextArea
+                    id="sshPrivateKey"
+                    label={t('addConnection.sshPrivateKey.label')}
+                    placeholder={t('addConnection.sshPrivateKey.placeholder')}
+                    labelHelp={t('addConnection.sshPrivateKey.labelHelp')}
+                    resizeOrientation="vertical"
+                    value={providerConnection.spec?.sshPrivatekey}
+                    onChange={(sshPrivatekey) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.sshPrivatekey = sshPrivatekey as string
+                        })
+                    }}
+                    hidden={
+                        !getProviderConnectionProviderID(providerConnection) ||
+                        getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    }
+                    validation={(value) => validatePrivateSshKey(value, t)}
+                    isRequired
+                />
+                <AcmTextArea
+                    id="sshPublicKey"
+                    label={t('addConnection.sshPublicKey.label')}
+                    placeholder={t('addConnection.sshPublicKey.placeholder')}
+                    labelHelp={t('addConnection.sshPublicKey.labelHelp')}
+                    resizeOrientation="vertical"
+                    value={providerConnection.spec?.sshPublickey}
+                    onChange={(sshPublickey) => {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.spec!.sshPublickey = sshPublickey as string
+                        })
+                    }}
+                    hidden={
+                        !getProviderConnectionProviderID(providerConnection) ||
+                        getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    }
+                    validation={(value) => validatePublicSshKey(value, t)}
+                    isRequired
+                />
+                <Title
+                    headingLevel="h4"
+                    size="xl"
+                    hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
+                >
+                    Configure for disconnected installation
+                </Title>
                 <AcmTextInput
                     id="imageMirror"
                     label={t('addConnection.imageMirror.label')}
@@ -560,7 +646,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
-                    validation={(value)=>validateImageMirror(value,t)}
+                    validation={(value) => validateImageMirror(value, t)}
                 />
                 <AcmTextInput
                     id="bootstrapOSImage"
@@ -600,21 +686,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
-                    validation={(value)=> value? validateCertificate(value,t):undefined}
-                />
-                <AcmTextInput
-                    id="baseDomain"
-                    label={t('addConnection.baseDomain.label')}
-                    placeholder={t('addConnection.baseDomain.placeholder')}
-                    labelHelp={t('addConnection.baseDomain.labelHelp')}
-                    value={providerConnection.spec?.baseDomain}
-                    onChange={(baseDomain) => {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.baseDomain = baseDomain as string
-                        })
-                    }}
-                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
-                    isRequired
+                    validation={(value) => (value ? validateCertificate(value, t) : undefined)}
                 />
                 <AcmTextArea
                     id="ocmAPIToken"
@@ -630,53 +702,6 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
                     isRequired
                     validation={(value) => validateBaseDnsName(value, t)}
-                />
-                <AcmTextArea
-                    id="pullSecret"
-                    label={t('addConnection.pullSecret.label')}
-                    placeholder={t('addConnection.pullSecret.placeholder')}
-                    labelHelp={t('addConnection.pullSecret.labelHelp')}
-                    value={providerConnection.spec?.pullSecret}
-                    onChange={(pullSecret) => {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.pullSecret = pullSecret as string
-                        })
-                    }}
-                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
-                    isRequired
-                    validation={(value)=>validateJSON(value,t)}
-                />
-                <AcmTextArea
-                    id="sshPrivateKey"
-                    label={t('addConnection.sshPrivateKey.label')}
-                    placeholder={t('addConnection.sshPrivateKey.placeholder')}
-                    labelHelp={t('addConnection.sshPrivateKey.labelHelp')}
-                    resizeOrientation="vertical"
-                    value={providerConnection.spec?.sshPrivatekey}
-                    onChange={(sshPrivatekey) => {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.sshPrivatekey = sshPrivatekey as string
-                        })
-                    }}
-                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
-                    validation={(value)=>validatePrivateSshKey(value,t)}
-                    isRequired
-                />
-                <AcmTextArea
-                    id="sshPublicKey"
-                    label={t('addConnection.sshPublicKey.label')}
-                    placeholder={t('addConnection.sshPublicKey.placeholder')}
-                    labelHelp={t('addConnection.sshPublicKey.labelHelp')}
-                    resizeOrientation="vertical"
-                    value={providerConnection.spec?.sshPublickey}
-                    onChange={(sshPublickey) => {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.sshPublickey = sshPublickey as string
-                        })
-                    }}
-                    hidden={!getProviderConnectionProviderID(providerConnection) || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
-                    validation={(value)=>validatePublicSshKey(value,t)}
-                    isRequired
                 />
                 {errors && errors.length > 0 && (
                     <AcmAlertGroup>
@@ -754,8 +779,10 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                                     }
                                 })
                         }}
-                        label={isEditing() ? t('addConnection.editButton.label') : t('addConnection.addButton.label')}
-                        processingLabel={t('addConnection.applyingButton.label')}
+                        label={isEditing() ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')}
+                        processingLabel={
+                            isEditing() ? t('addConnection.savingButton.label') : t('addConnection.addingButton.label')
+                        }
                     />
                     <Button
                         variant="link"

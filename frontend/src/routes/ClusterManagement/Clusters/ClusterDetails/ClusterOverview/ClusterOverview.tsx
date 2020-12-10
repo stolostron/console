@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
 import { LoginCredentials } from '../../components/LoginCredentials'
+import { HiveNotification } from '../../components/HiveNotification'
 
 export function ClusterOverviewPageContent() {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster']) 
     return (
         <PageSection>
+            <HiveNotification />
             <AcmDescriptionList
                 title={t('table.details')}
                 leftItems={[
