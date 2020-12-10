@@ -72,13 +72,10 @@ describe('EditLabelsModal', () => {
     })
 
     test('can add and remove labels without labels on resource', async () => {
-        const resource: IResource = {
-            apiVersion: ManagedClusterApiVersion,
-            kind: ManagedClusterKind,
-            metadata: {},
-        }
         mockCluster.labels = {}
-        const { queryByText, getByTestId, getByText } = render(<EditLabelsModal cluster={mockCluster} close={() => {}} />)
+        const { queryByText, getByTestId, getByText } = render(
+            <EditLabelsModal cluster={mockCluster} close={() => {}} />
+        )
         expect(getByText('labels.edit.title')).toBeInTheDocument()
         getByTestId('label-input-button').click()
         userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
