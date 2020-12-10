@@ -1,39 +1,20 @@
 /* istanbul ignore file */
-import { IncomingMessage, request, RequestOptions, ServerResponse } from 'http'
+import { IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
-import { parse as parseUrl, pathToFileURL } from 'url'
+import { parse as parseUrl } from 'url'
 import { parse as parseQueryString, encode as stringifyQuery } from 'querystring'
 import { createReadStream } from 'fs'
 import { extname } from 'path'
+import { Logs } from './logger'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
-const oauthAuthorizationServerPromise = new Promise<{ authorization_endpoint: string; token_endpoint: string }>(
-    (resolve, reject) => {
-        const options: RequestOptions = parseUrl(
-            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-        )
-        options.method = 'GET'
-        options.agent = agent
-        options.headers = { Accept: 'application/json' }
-        get(options, (response) => {
-            getBody(response)
-                .then((body) => {
-                    resolve(body as { authorization_endpoint: string; token_endpoint: string })
-                })
-                .catch((err) => {
-                    console.error(err)
-                    reject(err)
-                })
-        }).on('error', (err) => {
-            reject(err)
-        })
-    }
-)
-
-export function requestHandler(req: IncomingMessage, res: ServerResponse): unknown {
+export async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
     try {
         let url = req.url
+
+        const logs: Logs = []
+        ;((req as unknown) as { logs: Logs }).logs = logs
 
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
@@ -77,158 +58,143 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
             const token = getToken(req)
-            if (token === undefined) {
-                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
-            }
+            if (!token) return res.writeHead(401).end()
 
             const options: RequestOptions = parseUrl(process.env.CLUSTER_API_URL + url)
-            // options.path = url
             options.method = req.method
             options.headers = req.headers
             options.headers.authorization = `Bearer ${token}`
             options.agent = agent
 
             return req.pipe(
-                request(options, (response) => {
-                    if (req.method === 'GET' && response.statusCode === 403) {
-                        const projectsRequestOptions: RequestOptions = parseUrl(
-                            process.env.CLUSTER_API_URL + `/apis/project.openshift.io/v1/projects`
-                        )
-                        projectsRequestOptions.method = req.method
-                        projectsRequestOptions.headers = {}
-                        projectsRequestOptions.headers.authorization = `Bearer ${token}`
-                        projectsRequestOptions.agent = agent
-                        request(projectsRequestOptions, (response) => {
-                            if (response.statusCode === 200) {
-                                getBody(response)
-                                    .then((body) => {
-                                        console.log(body)
-                                        const projects: { metadata: { name: string } }[] = body.items
-                                        console.log(
-                                            'PROJECTS',
-                                            projects.map((p) => p.metadata.name)
-                                        )
-                                        res.writeHead(200).end('[]')
-                                    })
-                                    .catch(() => {
-                                        res.writeHead(200).end('[]')
-                                    })
-                            } else {
-                                res.writeHead(200).end('[]')
-                            }
-                        }).end()
-                    } else {
-                        res.writeHead(response.statusCode, response.headers)
-                        response.pipe(res, { end: true })
-                    }
+                httpRequest(options, (response) => {
+                    // if (req.method === 'GET' && response.statusCode === 403 && !url.includes('/namespaces/')) {
+                    //     request(
+                    //         'GET',
+                    //         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
+                    //         { authorization: `Bearer ${token}`, accept: 'application/json' },
+                    //         logs
+                    //     )
+                    //         .then(async (response) => {
+                    //             const data = await parseJsonBody<{ items: { metadata: { name: string } }[] }>(response)
+                    //             const projects = data.items as { metadata: { name: string } }[]
+                    //             let items: unknown[] = []
+                    //             await Promise.all(
+                    //                 projects.map((project) => {
+                    //                     let namespacedUrl = url
+                    //                     const parts = namespacedUrl.split('/')
+                    //                     namespacedUrl = parts.slice(0, parts.length - 1).join('/')
+                    //                     namespacedUrl += `/namespaces/${project.metadata.name}/`
+                    //                     namespacedUrl += parts[parts.length - 1]
+                    //                     const projectOptions: RequestOptions = {
+                    //                         ...parseUrl(process.env.CLUSTER_API_URL + namespacedUrl),
+                    //                         ...{
+                    //                             method: 'GET',
+                    //                             headers: {
+                    //                                 authorization: `Bearer ${token}`,
+                    //                                 accept: 'application/json',
+                    //                             },
+                    //                             agent,
+                    //                         },
+                    //                     }
+                    //                     return request(projectOptions)
+                    //                         .then((data) => {
+                    //                             const dataItems = data.items as unknown[]
+                    //                             if (dataItems) {
+                    //                                 items = [...items, ...dataItems]
+                    //                             }
+                    //                         })
+                    //                         .catch((err) => console.error)
+                    //                 })
+                    //             )
+                    //                 .then(() => {
+                    //                     res.writeHead(200, { 'content-type': 'application/json' }).end(
+                    //                         JSON.stringify({
+                    //                             items,
+                    //                         })
+                    //                     )
+                    //                 })
+                    //                 .catch(() => {
+                    //                     res.writeHead(200, { 'content-type': 'application/json' }).end('[]')
+                    //                 })
+                    //         })
+                    //         .catch(() => res.writeHead(200).end('[]'))
+                    // } else {
+                    res.writeHead(response.statusCode, response.headers)
+                    response.pipe(res, { end: true })
+                    // }
                 }),
                 { end: true }
             )
         }
 
-        console.log('111')
-
         // OAuth Login
         if (url === '/login') {
-            return oauthAuthorizationServerPromise
-                .then((info) => {
-                    const query = {
-                        response_type: `code`,
-                        client_id: `multicloudingress`,
-                        redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
-                        scope: `user:full`,
-                        state: '',
-                    }
-                    const queryString = `?${stringifyQuery(query)}`
-                    return res.writeHead(302, { location: `${info.authorization_endpoint}${queryString}` }).end()
-                })
-                .catch((err) => {
-                    console.error(err)
-                    return res.writeHead(500).end()
-                })
+            const oauthInfo = await oauthInfoPromise
+            const queryString = stringifyQuery({
+                response_type: `code`,
+                client_id: process.env.OAUTH2_CLIENT_ID,
+                redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                scope: `user:full`,
+                state: '',
+            })
+            return res.writeHead(302, { location: `${oauthInfo.authorization_endpoint}?${queryString}` }).end()
         }
 
         if (url.startsWith('/login/callback') || url.startsWith('/cluster-management/login/callback')) {
-            return oauthAuthorizationServerPromise
-                .then((info) => {
-                    if (url.includes('?')) {
-                        const queryString = url.substr(url.indexOf('?') + 1)
-                        const query = parseQueryString(queryString)
-                        const code = query.code as string
-                        const state = query.state
+            const oauthInfo = await oauthInfoPromise
+            if (url.includes('?')) {
+                const queryString = url.substr(url.indexOf('?') + 1)
+                const query = parseQueryString(queryString)
+                const code = query.code as string
+                const state = query.state
 
-                        const requestQuery: Record<string, string> = {
-                            grant_type: `authorization_code`,
-                            code: code,
-                            redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
-                            client_id: process.env.OAUTH2_CLIENT_ID,
-                            client_secret: process.env.OAUTH2_CLIENT_SECRET,
-                        }
-                        const requestQueryString = stringifyQuery(requestQuery)
+                const requestQuery: Record<string, string> = {
+                    grant_type: `authorization_code`,
+                    code: code,
+                    redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                    client_id: process.env.OAUTH2_CLIENT_ID,
+                    client_secret: process.env.OAUTH2_CLIENT_SECRET,
+                }
+                const requestQueryString = stringifyQuery(requestQuery)
 
-                        get(
-                            info.token_endpoint + '?' + requestQueryString,
-                            {
-                                agent,
-                                headers: { Accept: 'application/json' },
-                            },
-                            (response) => {
-                                getBody(response)
-                                    .then((body) => {
-                                        const headers = {
-                                            'Set-Cookie': `acm-access-token-cookie=${body.access_token as string}; ${
-                                                process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
-                                            } HttpOnly; Path=/`,
-                                            location: `http://localhost:3000`,
-                                        }
-                                        return res.writeHead(302, headers).end()
-                                    })
-                                    .catch((err) => {
-                                        console.error(err)
-                                        return res.writeHead(500).end()
-                                    })
-                            }
-                        ).on('error', (err) => {
-                            return res.writeHead(500).end()
-                        })
-                    } else {
-                        return res.writeHead(500).end()
+                get(
+                    oauthInfo.token_endpoint + '?' + requestQueryString,
+                    {
+                        agent,
+                        headers: { Accept: 'application/json' },
+                    },
+                    (response) => {
+                        parseJsonBody<{ access_token: string }>(response)
+                            .then((body) => {
+                                const headers = {
+                                    'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
+                                        process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
+                                    } HttpOnly; Path=/`,
+                                    location: `http://localhost:3000`,
+                                }
+                                return res.writeHead(302, headers).end()
+                            })
+                            .catch((err) => {
+                                console.error(err)
+                                return res.writeHead(500).end()
+                            })
                     }
-                })
-                .catch((err) => {
-                    console.error(err)
+                ).on('error', (err) => {
                     return res.writeHead(500).end()
                 })
+            } else {
+                return res.writeHead(500).end()
+            }
+
             // const query =
             // TODO get code...
-        }
-
-        if (url === '/logout') {
-            const token = getToken(req)
-            if (token === undefined)
-                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
-
-            return oauthAuthorizationServerPromise
-                .then((info) => {
-                    request(
-                        info.token_endpoint,
-                        { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } },
-                        (response) => {
-                            return res.writeHead(response.statusCode).end()
-                        }
-                    )
-                })
-                .catch((err) => {
-                    console.error(err)
-                    return res.writeHead(500).end()
-                })
         }
 
         // Console Header
         if (process.env.NODE_ENV === 'development') {
             const token = getToken(req)
-            if (token === undefined)
-                return res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' }).end('{}')
+            if (!token) return res.writeHead(401).end()
 
             const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
 
@@ -249,19 +215,11 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
                 options.headers.authorization = `Bearer ${token}`
                 options.agent = agent
                 return req.pipe(
-                    request(options, (r) => {
-                        const headers: Record<string, string | string[]> = { ...r.headers }
-                        // headers['cache-control'] = 'public, max-age=604800'
-                        // if (r.statusCode === 200 || r.statusCode === 304) {
-                        //     delete headers['set-cookie']
-                        //     delete headers['expires']
-                        //     delete headers['pragma']
-                        // }
-                        r.pipe(res.writeHead(r.statusCode, headers), { end: true })
-                    })
+                    httpRequest(options, (r) => r.pipe(res.writeHead(r.statusCode, r.headers), { end: true }))
                 )
             }
         }
+
         if (url === '/livenessProbe') return res.writeHead(200).end()
         if (url === '/readinessProbe') return res.writeHead(200).end()
 
@@ -325,38 +283,30 @@ export function requestHandler(req: IncomingMessage, res: ServerResponse): unkno
             }
             return
         } catch (err) {
-            console.error(err)
-            // DO NOTHING
+            return res.writeHead(404).end()
         }
-
-        return res.writeHead(404).end()
     } catch (err) {
         console.error(err)
-        if (!res.headersSent) {
-            res.writeHead(500)
-        }
+        if (!res.headersSent) res.writeHead(500)
         return res.end()
     }
 }
 
-function getBody(req: IncomingMessage): Promise<Record<string, unknown>> {
-    return new Promise((resolve, reject) => {
-        let data = ''
-        req.on('data', (chunk) => (data += chunk))
-        req.on('end', () => {
-            try {
-                resolve(JSON.parse(data))
-            } catch (err) {
-                console.error(err)
-                reject()
-            }
-        })
-        req.on('error', (err) => {
-            console.error(err)
-            reject()
-        })
+type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
+const oauthInfoPromise = new Promise<OAuthInfo>((resolve, reject) => {
+    const logs: Logs = []
+    return jsonRequest<OAuthInfo>(
+        'GET',
+        `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
+        { accept: 'application/json' },
+        logs
+    ).finally(() => {
+        console.info('oauth info setup')
+        for (const log of logs) {
+            console.info(log)
+        }
     })
-}
+})
 
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
@@ -368,4 +318,92 @@ function getToken(req: IncomingMessage) {
         }, {} as Record<string, string>)
     }
     return cookies?.['acm-access-token-cookie']
+}
+
+function request(method: string, url: string, headers: Record<string, string>, logs?: Logs): Promise<IncomingMessage> {
+    const start = process.hrtime()
+    const options: RequestOptions = { ...parseUrl(url), ...{ method, headers, agent } }
+    return new Promise((resolve, reject) => {
+        function attempt() {
+            const log = optionsLog(options)
+            logs.push(log)
+            httpRequest(options, (response) => {
+                const diff = process.hrtime(start)
+                const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
+                log.unshift(response.statusCode)
+                log.push(`${time}ms`)
+                switch (response.statusCode) {
+                    case 429:
+                        setTimeout(attempt, 100)
+                        break
+                    default:
+                        resolve(response)
+                        break
+                }
+            })
+                .on('error', (err) => {
+                    reject(err)
+                })
+                .end()
+        }
+        attempt()
+    })
+}
+
+async function jsonRequest<T>(method: string, url: string, headers: Record<string, string>, logs: Logs): Promise<T> {
+    return parseJsonBody<T>(await request(method, url, headers, logs))
+}
+
+function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
+    return new Promise((resolve, reject) => {
+        let data = ''
+        req.on('error', reject)
+        req.on('data', (chunk) => (data += chunk))
+        req.on('end', () => {
+            try {
+                resolve(JSON.parse(data))
+            } catch (err) {
+                reject(err)
+            }
+        })
+    })
+}
+
+function isClusterScope(url: string): boolean {
+    if (url.startsWith('/api/')) {
+        return url.split('/').length === 4
+    } else if (url.startsWith('/apis/')) {
+        return url.split('/').length === 5
+    }
+    return false
+}
+
+function isNamespaceScope(url: string): boolean {
+    if (url.startsWith('/api/')) {
+        return url.split('/').length === 6
+    } else if (url.startsWith('/apis/')) {
+        return url.split('/').length === 7
+    }
+    return false
+}
+
+function isNameScope(url: string): boolean {
+    if (url.startsWith('/api/')) {
+        return url.split('/').length === 7
+    } else if (url.startsWith('/apis/')) {
+        return url.split('/').length === 8
+    }
+    return false
+}
+
+function addNamespace(url: string, namespace: string): string {
+    const parts = url.split('/')
+    let namespacedUrl = parts.slice(0, parts.length - 1).join('/')
+    namespacedUrl += `/namespaces/${namespace}/`
+    namespacedUrl += parts[parts.length - 1]
+    return namespacedUrl
+}
+
+function optionsLog(options: RequestOptions): Log {
+    return [options.method, options.path]
 }

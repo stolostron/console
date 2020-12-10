@@ -5,6 +5,7 @@ import { createServer as createHttpServer, IncomingMessage, Server as HttpServer
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
+import { Logs } from './logger'
 
 export type Server = HttpServer
 export type Request = IncomingMessage
@@ -51,7 +52,6 @@ export function startServer(
                     } else {
                         console.info(`server listening  port=${address.port}`)
                     }
-
                     resolve(server)
                 })
                 .on('connection', (socket) => {
@@ -81,9 +81,14 @@ export function startServer(
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
                             if (res.statusCode < 500) {
-                                console.info(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
+                                console.info(res.statusCode, req.method, req.url, `${time}ms`)
                             } else {
-                                console.error(`${res.statusCode} ${req.method} ${req.url} ${time}ms`)
+                                console.error(res.statusCode, req.method, req.url, `${time}ms`)
+                            }
+
+                            const logs: Logs = ((req as unknown) as { logs: Logs }).logs
+                            for (const log of logs) {
+                                console.info(log)
                             }
                         }
                     })

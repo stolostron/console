@@ -129,15 +129,19 @@ export function listResources<Resource extends IResource>(
     }
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
-        promise: result.promise.then((result) =>
-            (result.items as Resource[]).map((item) => ({
-                ...item,
-                ...{
-                    apiVersion: resource.apiVersion,
-                    kind: resource.kind,
-                },
-            }))
-        ),
+        promise: result.promise.then((result) => {
+            if (Array.isArray(result.items)) {
+                return (result.items as Resource[]).map((item) => ({
+                    ...item,
+                    ...{
+                        apiVersion: resource.apiVersion,
+                        kind: resource.kind,
+                    },
+                }))
+            } else {
+                return []
+            }
+        }),
         abort: result.abort,
     }
 }
