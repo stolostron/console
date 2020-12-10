@@ -20,6 +20,7 @@ import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { EditLabelsModal } from '../../../../components/EditLabelsModal'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
@@ -28,6 +29,8 @@ export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
     readonly addonsError: Error | undefined
+    readonly editModalOpen?: boolean
+    setEditModalOpen?: (open: boolean) => void
 }>({
     cluster: undefined,
     addons: undefined,
@@ -38,9 +41,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
+    const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     
     // Cluster
-    const { data, startPolling, loading, error } = useQuery(
+    const { data, startPolling, loading, error, refresh } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
@@ -121,7 +125,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     return (
         <AcmPage>
-            <ClusterContext.Provider value={{ cluster, addons, addonsError }}>
+            <ClusterContext.Provider value={{ cluster, addons, addonsError, editModalOpen, setEditModalOpen }}>
+                <EditLabelsModal
+                    cluster={editModalOpen ? cluster : undefined}
+                    close={() => {
+                        setEditModalOpen(false)
+                        refresh()
+                    }}
+                />
                 <AcmPageHeader
                     title={match.params.id}
                     breadcrumb={[

@@ -14,9 +14,10 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
     const [labels, setLabels] = useState<Record<string, string>>({})
     const [error, setError] = useState<{ title: string; subtitle: string } | undefined>()
     useLayoutEffect(() => {
+        /* istanbul ignore next */
         const labels = props.cluster?.labels ?? {}
         setLabels({ ...labels })
-    }, [props.cluster])
+    }, [props.cluster?.labels])
 
     return (
         <AcmModal
@@ -47,10 +48,9 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
                                 kind: ManagedClusterKind,
                                 metadata: {
                                     name: props.cluster?.name,
-                                    labels,
+                                    labels: props.cluster?.labels,
                                 },
                             }
-                            console.log('resource', resource)
                             let patch: { op: string; path: string; value?: unknown }[] = []
                             /* istanbul ignore else */
                             if (resource!.metadata.labels) {
