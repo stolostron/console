@@ -1,3 +1,5 @@
+import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation, useHistory } from 'react-router-dom'
 import {
     AcmPageHeader,
     AcmSecondaryNav,
@@ -5,9 +7,9 @@ import {
     AcmSpinnerBackdrop,
     AcmPage,
     AcmButton,
+    AcmActionGroup,
+    AcmLaunchLink
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
@@ -21,24 +23,25 @@ import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
-    readonly addonsError: Error | undefined
+    readonly addonsError?: Error | undefined
 }>({
     cluster: undefined,
     addons: undefined,
-    addonsError: undefined
+    addonsError: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
-    
+
     // Cluster
     const { data, startPolling, loading, error } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
@@ -59,12 +62,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 const resourceError: ResourceError = {
                     code: mciRequest.reason.code as ResourceErrorCode,
                     message: `${mciRequest.reason.message}.  ${cdRequest.reason.message}` as string,
-                    name: ''
+                    name: '',
                 }
                 setClusterError(resourceError)
             } else {
-                const items = results.map((d) => d.status === 'fulfilled' ? d.value : undefined)
-                setCluster(getCluster(items[1] as ManagedClusterInfo, items[0] as ClusterDeployment, items[2] as CertificateSigningRequest[]))
+                const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
+                setCluster(
+                    getCluster(
+                        items[1] as ManagedClusterInfo,
+                        items[0] as ClusterDeployment,
+                        items[2] as CertificateSigningRequest[]
+                    )
+                )
             }
         }
     }, [data, error])
@@ -89,16 +98,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 const cmaRequest = results[0] as PromiseRejectedResult
                 const mcaRequest = results[1] as PromiseRejectedResult
                 const resourceError: ResourceError = {
-                    code: mcaRequest?.reason?.code ?? cmaRequest.reason.code as ResourceErrorCode,
-                    message: mcaRequest?.reason?.message ?? cmaRequest.reason.code as string,
+                    code: mcaRequest?.reason?.code ?? (cmaRequest.reason.code as ResourceErrorCode),
+                    message: mcaRequest?.reason?.message ?? (cmaRequest.reason.code as string),
                     name: '',
                 }
                 setAddonsError(resourceError)
             }
         }
-
     }, [addonData, addonError, setAddonsError])
-
 
     if (loading) {
         return <AcmSpinnerBackdrop />
@@ -128,6 +135,22 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         { text: t('clusters'), to: NavigationPath.clusters },
                         { text: match.params.id, to: '' },
                     ]}
+                    actions={
+                        <Fragment>
+                            <AcmActionGroup>
+                                <AcmLaunchLink
+                                    links={addons
+                                        ?.filter((addon) => addon.launchLink)
+                                        ?.map((addon) => ({
+                                            id: addon.launchLink?.displayText ?? '',
+                                            text: addon.launchLink?.displayText ?? '',
+                                            href: addon.launchLink?.href ?? '',
+                                        }))}
+                                />
+                                <DownloadConfigurationDropdown />
+                            </AcmActionGroup>
+                        </Fragment>
+                    }
                 />
                 <AcmSecondaryNav>
                     <AcmSecondaryNavItem

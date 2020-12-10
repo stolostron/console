@@ -96,7 +96,7 @@ export function LoginCredentials() {
                             } else {
                                 return (
                                     <div className='credentials-toggle'>
-                                        <AcmIcon icon={isVisible ? AcmIconVariant.visibilityon : AcmIconVariant.visibilityoff} />
+                                        <AcmIcon icon={isVisible ? AcmIconVariant.visibilityoff : AcmIconVariant.visibilityon} />
                                         {isVisible ? t('credentials.hide') : t('credentials.show')}
                                     </div>
                                 )
