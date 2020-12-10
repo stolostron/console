@@ -5,7 +5,7 @@ import { createServer as createHttpServer, IncomingMessage, Server as HttpServer
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
-import { Logs } from './logger'
+import { info, Logs } from './logger'
 
 export type Server = HttpServer
 export type Request = IncomingMessage
@@ -79,16 +79,14 @@ export function startServer(
                         const contentType = res.getHeader('content-type')
                         if (contentType !== 'text/event-stream') {
                             const diff = process.hrtime(start)
-                            const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
-                            if (res.statusCode < 500) {
-                                console.info(res.statusCode, req.method, req.url, `${time}ms`)
-                            } else {
-                                console.error(res.statusCode, req.method, req.url, `${time}ms`)
-                            }
+                            const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
 
                             const logs: Logs = ((req as unknown) as { logs: Logs }).logs
-                            for (const log of logs) {
-                                console.info(log)
+                            logs.unshift([res.statusCode, `${time}ms`.padStart(6), req.method.padStart(5), req.url])
+                            if (res.statusCode < 500) {
+                                info(logs)
+                            } else {
+                                info(logs)
                             }
                         }
                     })
