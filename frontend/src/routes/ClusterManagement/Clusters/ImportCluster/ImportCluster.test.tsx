@@ -1,6 +1,6 @@
+import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
 import {
@@ -20,7 +20,6 @@ import {
 import { DiscoveredCluster, DiscoveredClusterApiVersion, DiscoveredClusterKind } from '../../../../resources/discovered-cluster'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
-import { ImportCommandPageContent } from './ImportCluster'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 
 
@@ -195,73 +194,101 @@ describe('ImportCluster', () => {
     }
 
     test('renders', () => {
-        const { getByTestId } = render(<Component />)
+        const { getByTestId, getByText } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
         expect(getByTestId('clusterName-label')).toBeInTheDocument()
         expect(getByTestId('cloudLabel-label')).toBeInTheDocument()
         expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
         // expect(getByTestId('importModeManual')).toBeInTheDocument()
-        expect(getByTestId('submit')).toBeInTheDocument()
+        expect(getByText('import.form.submit')).toBeInTheDocument()
     })
 
-    test('can create resources', async () => {
+    test('can create resources and generate the import command', async () => {
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
-        const { getByTestId, getByText, queryByRole } = render(<Component />)
-        userEvent.type(getByTestId('clusterName'), 'foobar')
-        userEvent.click(getByTestId('cloudLabel-button'))
-        userEvent.click(getByText('AWS'))
-        userEvent.click(getByTestId('environmentLabel-button'))
-        userEvent.click(getByText('dev'))
-        userEvent.click(getByTestId('label-input-button'))
-        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-        userEvent.click(getByTestId('submit'))
+        const importSecretNock = nockGet(mockSecretResponse)
 
-        nockGet(mockSecretResponse)
+        const { getByTestId, getByText } = render(<Component />)
 
-        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
+            userEvent.type(getByTestId('clusterName'), 'foobar')
+            userEvent.click(getByTestId('cloudLabel-button'))
+            await waitFor(() => expect(getByText('AWS')).toBeInTheDocument())
+            userEvent.click(getByText('AWS'))
+            userEvent.click(getByTestId('environmentLabel-button'))
+            await waitFor(() => expect(getByText('dev')).toBeInTheDocument())
+            userEvent.click(getByText('dev'))
+            userEvent.click(getByTestId('label-input-button'))
+            userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+
+            expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
+            userEvent.click(getByText('import.form.submit'))
+
+            await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(importSecretNock.isDone()).toBeTruthy())
+
+            await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
     })
 
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
-        const { getByTestId, getByText, queryByRole } = render(<Component />)
-        userEvent.type(getByTestId('clusterName'), 'foobar')
-        userEvent.click(getByTestId('submit'))
-        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        const { getByTestId, getByText } = render(<Component />)
+            userEvent.type(getByTestId('clusterName'), 'foobar')
+            expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
+            userEvent.click(getByText('import.form.submit'))
+            await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
+            await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
     })
 
     test('handles resource creation errors', async () => {
         const createProjectNock = nockCreate(mockProject, mockProjectResponse)
         const badRequestNock = nockCreate(mockManagedCluster, mockBadRequestStatus)
         const deleteProjectNock = nockDelete(mockProjectResponse)
-        const { getByTestId, getByText, queryByRole } = render(<Component />)
-        userEvent.type(getByTestId('clusterName'), 'foobar')
-        userEvent.click(getByTestId('cloudLabel-button'))
-        userEvent.click(getByText('AWS'))
-        userEvent.click(getByTestId('environmentLabel-button'))
-        userEvent.click(getByText('dev'))
-        userEvent.click(getByTestId('label-input-button'))
-        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-        userEvent.click(getByTestId('submit'))
-        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument())
-        await waitFor(() => expect(createProjectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(queryByRole('progressbar')).toBeNull())
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
-        await waitFor(() => expect(deleteProjectNock.isDone()).toBeTruthy())
+
+        const { getByTestId, getByText } = render(<Component />)
+
+            userEvent.type(getByTestId('clusterName'), 'foobar')
+            userEvent.click(getByTestId('cloudLabel-button'))
+            userEvent.click(getByText('AWS'))
+            userEvent.click(getByTestId('environmentLabel-button'))
+            userEvent.click(getByText('dev'))
+            userEvent.click(getByTestId('label-input-button'))
+            userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+            userEvent.click(getByText('import.form.submit'))
+
+            await waitFor(() => expect(createProjectNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
+            await waitFor(() => expect(deleteProjectNock.isDone()).toBeTruthy())
+
+            await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
     })
 })
 
+let store: Record<string, string> = {}
+
+Object.defineProperty(window, 'sessionStorage', {
+    value: {
+        getItem(key: string) {
+            return store[key] || null
+        },
+        setItem(key: string, value: string | Record<string, string>) {
+            store[key] = value.toString()
+        },
+        removeItem(key: string) {
+            delete store[key]
+        },
+        clear() {
+            store = {}
+        },
+    },
+})
+
 describe('Import Discovered Cluster', () => {
+    window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
     const Component = () => {
         return (
             <MemoryRouter>
@@ -275,22 +302,22 @@ describe('Import Discovered Cluster', () => {
         )
     }
     test('create discovered cluster', async () => {
-        // Allow for Project, ManagedCluster, and KAC to be created
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+        const discoveredClusterNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
+        const importCommandNock = nockGet(mockSecretResponse)
 
-        // Serve Discovered Clusters
-        nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, mockDiscoveredClusters)
+        const { getByTestId, getByText, getAllByLabelText } = render(<Component />) // Render component
 
-        const { getByTestId, getByText, getAllByLabelText, queryByRole } = render(<Component />) // Render component
+        await waitFor(() => expect(discoveredClusterNock.isDone()).toBeTruthy())
 
         await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
-
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+        await waitFor(() => expect(getByText('discovery.import')).toBeInTheDocument())
         userEvent.click(getByText('discovery.import')) // Click Import cluster
 
-        await waitFor(() => expect(getByTestId('submit')).toBeInTheDocument()) // Wait for next page to render
+        await waitFor(() => expect(getByText('import.form.submit')).toBeInTheDocument()) // Wait for next page to render
 
         // Add labels
         userEvent.click(getByTestId('cloudLabel-button'))
@@ -300,38 +327,14 @@ describe('Import Discovered Cluster', () => {
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
 
-        userEvent.click(getByTestId('submit')) // Submit form
+        userEvent.click(getByText('import.form.submit'))
 
-        nockGet(mockSecretResponse) // Allow for import secret to be read
-
-        await waitFor(() => expect(queryByRole('progressbar')).toBeInTheDocument()) // Load
-
-        // Ensure resources are created
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(importCommandNock.isDone()).toBeTruthy())
 
-        // Ensure import command is visible
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
-    })
-})
-
-describe('ImportCommand', () => {
-    const Component = () => {
-        return (
-            <MemoryRouter initialEntries={['/cluster-management/clusters/import/foobar']}>
-                <Route path="/cluster-management/clusters/import/:clusterName">
-                    <ImportCommandPageContent clusterName='foobar' />
-                </Route>
-            </MemoryRouter>
-        )
-    }
-
-    test('renders import command', async () => {
-        const getSecretNock = nockGet(mockSecretResponse)
-        const { getByRole, getByTestId } = render(<Component />)
-        expect(getByRole('progressbar')).toBeInTheDocument()
-        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
+        await waitFor(() => expect(getByTestId('launch-console')).toBeInTheDocument())
     })
 })

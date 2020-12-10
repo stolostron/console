@@ -30,7 +30,11 @@ import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-o
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
-    readonly addonsError?: Error | undefined
+    readonly addonsError?: Error
+    readonly importCommand?: string
+    readonly importCommandError?: string
+    setImportCommand?: (command: string) => void
+    setImportCommandError?: (error: string) => void
 }>({
     cluster: undefined,
     addons: undefined,
@@ -41,7 +45,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
-
+    const [importCommand, setImportCommand] = useState<string | undefined>()
+    const [importCommandError, setImportCommandError] = useState<string | undefined>()
+    
     // Cluster
     const { data, startPolling, loading, error } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
@@ -128,7 +134,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     return (
         <AcmPage>
-            <ClusterContext.Provider value={{ cluster, addons, addonsError }}>
+            <ClusterContext.Provider value={{ cluster, addons, addonsError, importCommand, setImportCommand, importCommandError, setImportCommandError }}>
                 <AcmPageHeader
                     title={match.params.id}
                     breadcrumb={[
