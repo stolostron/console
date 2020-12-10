@@ -159,7 +159,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
-        expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
+        await waitFor(() => expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress))
         expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
     })
 
@@ -190,7 +190,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
-        expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress)
+        await waitFor(() =>  expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress))
         expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
 
         userEvent.type(getByTestId('baseboardManagementControllerAddress'), '/patched')
