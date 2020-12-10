@@ -167,7 +167,7 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         })
 }
 
-export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 200) {
+export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(apiProxyUrl + getResourceNameApiPath(resource))
         .optionally()
