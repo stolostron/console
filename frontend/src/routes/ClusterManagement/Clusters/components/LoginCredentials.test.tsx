@@ -64,7 +64,7 @@ describe('LoginCredentials', () => {
     test('renders', async () => {
         nockGet(mockKubeadminSecret)
         render(
-            <ClusterContext.Provider value={{ cluster: mockCluster }}>
+            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
@@ -79,7 +79,7 @@ describe('LoginCredentials', () => {
     })
     test('renders as a hyphen when secret name is not set', () => {
         render(
-            <ClusterContext.Provider value={{ cluster: undefined }}>
+            <ClusterContext.Provider value={{ cluster: undefined, addons: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
@@ -89,7 +89,7 @@ describe('LoginCredentials', () => {
     test('renders in a failed state', async () => {
         nockGet(mockKubeadminSecret, mockBadRequestStatus)
         render(
-            <ClusterContext.Provider value={{ cluster: mockCluster }}>
+            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
