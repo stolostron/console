@@ -239,14 +239,15 @@ export function getClusterStatus(
     } else if (!clusterJoined) {
         mcStatus = ClusterStatus.pendingimport
 
-        // check for csrs awaiting approval
+        // check for respective csrs awaiting approval
         if (certificateSigningRequests && certificateSigningRequests.length) {
             const clusterCsrs =
-                certificateSigningRequests?.filter(
-                    (csr) => csr.metadata?.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
-                ) ?? []
+                certificateSigningRequests?.filter((csr) => {
+                    return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
+                }) ?? []
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
-            mcStatus = !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
+            mcStatus =
+                activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
         }
     } else {
         mcStatus = clusterAvailable ? ClusterStatus.ready : ClusterStatus.offline

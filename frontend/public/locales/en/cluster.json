@@ -25,6 +25,8 @@
   "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
   "button.backToClusters": "Back to Clusters page",
 
+  "configuration.download": "Download configuration",
+
   "table.name": "Name",
   "table.status": "Status",
   "table.distribution": "Distribution",
