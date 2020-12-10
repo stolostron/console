@@ -170,7 +170,6 @@ describe('bare metal asset page', () => {
         const patchNockSecret = nockPatch(bmaPatchedSecret, bmaPatchedSecret)
         nockOptions(bareMetalAsset, bareMetalAsset)
         const patchNock = nockPatch(patchedBareMetalAsset, patchedBareMetalAsset)
-        nockOptions(bmaSecret, bmaSecret)
 
         const { getByTestId, getByText } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
