@@ -12,14 +12,15 @@
   "createBareMetalAsset.username.placeholder":"Enter a username",
   "createBareMetalAsset.password.label":"Password",
   "createBareMetalAsset.password.placeholder":"Enter a password",
-  "createBareMetalAsset.bootMac.label":"Boot NIC MAC Address",
-  "createBareMetalAsset.bootMac.placeholder":"Enter an address",
+  "createBareMetalAsset.bootMACAddress.label":"Boot NIC MAC Address",
+  "createBareMetalAsset.bootMACAddress.placeholder":"Enter an address",
   "createBareMetalAsset.button.create":"Create",
   "createBareMetalAsset.button.cancel":"Cancel",
   "createBareMetalAsset.form.invalidBmcAddress":"Invalid format of BMC address",
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
-
+  
+  "editBareMetalAsset.button.submit":"Apply",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
   "bareMetalAsset.tableHeader.name":"Name",

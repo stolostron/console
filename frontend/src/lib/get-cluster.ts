@@ -34,7 +34,7 @@ export type Cluster = {
     namespace: string | undefined
     status: ClusterStatus
     distribution: DistributionInfo | undefined
-    labels: { [key: string]: string } | undefined
+    labels: Record<string, string> | undefined
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
     consoleURL: string | undefined
@@ -196,12 +196,22 @@ export function getClusterStatus(
             cdStatus = ClusterStatus.destroying
 
             // provision/deprovision failure
-        } else if (provisionFailed || provisionLaunchError || deprovisionLaunchError) {
+        } else if (provisionLaunchError || deprovisionLaunchError) {
             cdStatus = ClusterStatus.failed
 
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
-            cdStatus = ClusterStatus.creating
+            if (provisionFailed) {
+                const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
+                const currentProvisionRef = clusterDeployment.status?.provisionRef.name ?? ''
+                if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
+                    cdStatus = ClusterStatus.failed
+                } else {
+                    cdStatus = ClusterStatus.creating
+                }
+            } else {
+                cdStatus = ClusterStatus.creating
+            }
         }
     }
 
@@ -229,14 +239,15 @@ export function getClusterStatus(
     } else if (!clusterJoined) {
         mcStatus = ClusterStatus.pendingimport
 
-        // check for csrs awaiting approval
+        // check for respective csrs awaiting approval
         if (certificateSigningRequests && certificateSigningRequests.length) {
             const clusterCsrs =
-                certificateSigningRequests?.filter(
-                    (csr) => csr.metadata?.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
-                ) ?? []
+                certificateSigningRequests?.filter((csr) => {
+                    return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
+                }) ?? []
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
-            mcStatus = !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pending
+            mcStatus =
+                activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
         }
     } else {
         mcStatus = clusterAvailable ? ClusterStatus.ready : ClusterStatus.offline
@@ -245,7 +256,7 @@ export function getClusterStatus(
     // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
     // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
     // so this is the case is the cluster is being detached but not destroyed)
-    if ((mcStatus === 'detaching' || !clusterJoined) && cdStatus !== 'detached') {
+    if ((mcStatus === 'detaching' || !clusterJoined) && clusterDeployment && cdStatus !== 'detached') {
         return cdStatus
     } else {
         return mcStatus

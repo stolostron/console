@@ -65,6 +65,29 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource, options)
 }
 
+export function replaceResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    return putRequest<Resource, ResultType>(url, resource, options)
+}
+
+export function patchResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    data: unknown,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    let headers: Record<string, string> = {}
+    if (Array.isArray(data)) {
+        headers['Content-Type'] = 'application/json-patch+json'
+    } else {
+        headers['Content-Type'] = 'application/merge-patch+json'
+    }
+    return patchRequest<Resource, ResultType>(url, data, headers, options)
+}
+
 export function deleteResource<Resource extends IResource>(
     resource: Resource,
     options?: IRequestOptions
@@ -106,15 +129,19 @@ export function listResources<Resource extends IResource>(
     }
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
-        promise: result.promise.then((result) =>
-            (result.items as Resource[]).map((item) => ({
-                ...item,
-                ...{
-                    apiVersion: resource.apiVersion,
-                    kind: resource.kind,
-                },
-            }))
-        ),
+        promise: result.promise.then((result) => {
+            if (Array.isArray(result.items)) {
+                return (result.items as Resource[]).map((item) => ({
+                    ...item,
+                    ...{
+                        apiVersion: resource.apiVersion,
+                        kind: resource.kind,
+                    },
+                }))
+            } else {
+                return []
+            }
+        }),
         abort: result.abort,
     }
 }
@@ -169,6 +196,35 @@ function postRequest<ResourceType, ResultType = ResourceType>(
 ): IRequestResult<ResultType> {
     return axiosRequest<ResultType>({
         ...{ url, method: 'POST', validateStatus: (status) => true, data },
+        ...options,
+    })
+}
+
+function putRequest<ResourceType, ResultType = ResourceType>(
+    url: string,
+    data: ResourceType,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    return axiosRequest<ResultType>({
+        ...{ url, method: 'PUT', validateStatus: (status) => true, data },
+        ...options,
+    })
+}
+
+function patchRequest<ResourceType, ResultType = ResourceType>(
+    url: string,
+    data: unknown,
+    headers: Record<string, string>,
+    options?: IRequestOptions
+): IRequestResult<ResultType> {
+    return axiosRequest<ResultType>({
+        ...{
+            url,
+            method: 'PATCH',
+            validateStatus: (status) => true,
+            headers,
+            data,
+        },
         ...options,
     })
 }
@@ -251,7 +307,9 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     }
 }
 
-function axiosRetry<ResponseType>(config: AxiosRequestConfig & IRequestOptions): Promise<AxiosResponse<ResponseType>> {
+function axiosRetry<ResponseType>(
+    config: AxiosRequestConfig & IRequestOptions & unknown
+): Promise<AxiosResponse<ResponseType>> {
     const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]
     const retries = config?.retries ?? 0
     const backoff = config?.backoff ?? 300

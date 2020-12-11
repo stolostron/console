@@ -26,10 +26,11 @@ type HeaderAssets = {
 }
 
 export const fetchHeader = async () => {
+    const isLocal: boolean = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     let headerResponse: AxiosResponse
     try {
         headerResponse = await Axios.request({
-            url: '/cluster-management/header',
+            url: isLocal ? '/cluster-management/header' : '/multicloud/header/api/v1/header',
             method: 'GET',
             responseType: 'json',
             withCredentials: true,
@@ -73,6 +74,22 @@ export const fetchHeader = async () => {
                 body?.appendChild(vendorScript)
             }
             head?.appendChild(link)
+
+            // Dependency on console-header to provide the OpenShift console url because
+            // we do not have a service account to query for the url ourselves if the user does not have privileges
+            const appLinks = headerResponse?.data?.state?.uiconfig?.config?.appLinks ?? []
+            const openShiftConsoleApp =
+                appLinks.find((link: { name: string }) => link.name === 'Red Hat OpenShift Container Platform') ?? {}
+            const openShiftConsoleUrl = openShiftConsoleApp.url
+            if (openShiftConsoleUrl) {
+                const input = document.createElement('input')
+                input.id = 'openshift-console-url'
+                input.value = openShiftConsoleUrl
+                input.hidden = true
+                body?.appendChild(input)
+            } else {
+                console.error('OpenShift Console URL not found in console-header response')
+            }
         }
     } catch (err) {
         headerResponse = err

@@ -1,6 +1,6 @@
+import React, { useState } from 'react'
 import {
     AcmAlert,
-    AcmAlertGroup,
     AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
@@ -8,13 +8,12 @@ import {
     AcmPageCard,
     AcmPageHeader,
     AcmSelect,
-    AcmSpinnerBackdrop,
     AcmTextInput,
+    AcmSubmit
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, AlertVariant, Button, Label, SelectOption, Text, TextVariants } from '@patternfly/react-core'
+import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
-import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { deleteResources } from '../../../../lib/delete-resources'
@@ -24,7 +23,7 @@ import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-ad
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
-import { ImportCommandPageContent } from '../ImportCommand/ImportCommand'
+import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -32,7 +31,7 @@ export default function ImportClusterPage() {
         <AcmPage>
             <AcmPageHeader
                 title={t('page.header.import-cluster')}
-                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
+                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('page.header.import-cluster'), to: '' }]}
             />
             <ImportClusterPageContent />
         </AcmPage>
@@ -45,20 +44,25 @@ export function ImportClusterPageContent() {
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
-    const [error, setError] = useState<string>()
+    const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState<boolean>(false)
-    const [submitted, submitForm] = useState<boolean>(false)
+    const [submitted, setSubmitted] = useState<boolean>(false)
+    const [importCommand, setImportCommand] = useState<string | undefined>()
 
     const onReset = () => {
         setClusterName('')
         setCloudLabel('auto-detect')
         setEnvironmentLabel(undefined)
         setAdditionaLabels({})
-        submitForm(false)
+        setSubmitted(false)
+        setError(undefined)
+        setImportCommand(undefined)
     }
 
     const onSubmit = async () => {
+        setSubmitted(true)
         setLoading(true)
+        setError(undefined)
         /* istanbul ignore next */
         const clusterLabels = {
             cloud: cloudLabel ?? '',
@@ -68,54 +72,45 @@ export function ImportClusterPageContent() {
             ...additionalLabels,
         }
         const createdResources: IResource[] = []
-        setError(undefined)
-        try {
+        return new Promise(async (resolve, reject) => {
             try {
-                createdResources.push(await createProject(clusterName).promise)
-            } catch (err) {
-                const resourceError = err as ResourceError
-                if (resourceError.code !== ResourceErrorCode.Conflict) {
-                    throw err
-                }
-            }
-            createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
-            createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
-            setLoading(false)
-            submitForm(true)
-        } catch (err) {
-            if (err instanceof Error) {
-                if (err.name === 'ResourceError') {
+                try {
+                    createdResources.push(await createProject(clusterName).promise)
+                } catch(err) {
                     const resourceError = err as ResourceError
-                    setError(resourceError.message)
-                } else {
-                    setError(err.message)
+                    if (resourceError.code !== ResourceErrorCode.Conflict) {
+                        throw err
+                    }
                 }
-            } else {
-                setError('Unknown error occurred.')
+                createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
+                createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
+
+                setImportCommand(await pollImportYamlSecret(clusterName))
+            } catch (err) {
+                if (err instanceof Error) {
+                    if (err.name === 'ResourceError') {
+                        const resourceError = err as ResourceError
+                        setError(resourceError.message)
+                    } else {
+                        setError(err.message)
+                    }
+                } else {
+                    setError('Unknown error occurred.')
+                }
+                await deleteResources(createdResources).promise
+                setSubmitted(false)
+                reject()
+            } finally {
+                setLoading(false)
+                resolve(undefined)
             }
-            await deleteResources(createdResources).promise
-        } finally {
-            setLoading(false)
-        }
+        })
     }
 
     return (
         <AcmPageCard>
-            {loading && <AcmSpinnerBackdrop />}
             <AcmExpandableSection label={t('import.form.header')} expanded={true}>
                 <AcmForm id="import-cluster-form">
-                    {error && (
-                        <AcmAlertGroup>
-                            <AcmAlert
-                                isInline
-                                variant={AlertVariant.danger}
-                                title={t('common:request.failed')}
-                                subtitle={error}
-                                key={error}
-                            />
-                        </AcmAlertGroup>
-                    )}
-
                     <AcmTextInput
                         id="clusterName"
                         label={t('import.form.clusterName.label')}
@@ -164,39 +159,51 @@ export function ImportClusterPageContent() {
                         onChange={(label) => setAdditionaLabels(label)}
                     />
                     <Text component={TextVariants.small}>{t('import.description')}</Text>
+                    {error && (
+                        <AcmAlert
+                            isInline
+                            variant={AlertVariant.danger}
+                            title={t('common:request.failed')}
+                            subtitle={error}
+                            key={error}
+                        />
+                    )}
                     <ActionGroup>
-                        <Button id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit}>
-                            {submitted ? t('import.form.submitted') : t('import.form.submit')}
-                        </Button>
-                        {submitted ? (
+                        <AcmSubmit id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit} label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')} processingLabel={t('import.generating')} />  
+                        {submitted && !error ? (
                             <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
                                 {t('import.importmode.importsaved')}
                             </Label>
                         ) : (
-                            <Button id="cancel" component="a" variant="link" href={NavigationPath.clusters}>
-                                {t('common:cancel')}
-                            </Button>
+                            <Link to={NavigationPath.clusters} id="cancel">
+                                <Button variant="link">
+                                    {t('common:cancel')}
+                                </Button>
+                            </Link>
                         )}
                     </ActionGroup>
-                    {!loading && submitted ? <ImportCommandPageContent clusterName={clusterName} /> : null}
-                    {!loading && submitted ? (
-                        <ActionGroup>
-                            <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
-                                <Button variant="primary">{t('import.footer.viewcluster')}</Button>
-                            </Link>{' '}
-                            {sessionStorage.getItem('DiscoveredClusterConsoleURL') ? (
-                                <Link to={NavigationPath.discoveredClusters}>
-                                    <Button variant="secondary">{t('import.footer.importanother')}</Button>
-                                </Link>
-                            ) : (
-                                <Link to={NavigationPath.importCluster}>
-                                    <Button onClick={onReset} variant="secondary">
-                                        {t('import.footer.importanother')}
-                                    </Button>
-                                </Link>
-                            )}
-                        </ActionGroup>
-                    ) : null}
+                    {importCommand && (
+                        <React.Fragment>
+                            <ImportCommand importCommand={importCommand}>
+                                {!loading && !error && (
+                                    <ActionGroup>
+                                        <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
+                                            <Button variant="primary">{t('import.footer.viewcluster')}</Button>
+                                        </Link>
+                                        <Link
+                                            to={
+                                                sessionStorage.getItem('DiscoveredClusterConsoleURL')
+                                                    ? NavigationPath.discoveredClusters
+                                                    : NavigationPath.importCluster
+                                            }
+                                        >
+                                            <Button variant="secondary" onClick={() => onReset()}>{t('import.footer.importanother')}</Button>
+                                        </Link>
+                                    </ActionGroup>
+                                )}
+                            </ImportCommand>
+                        </React.Fragment>
+                    )}
                 </AcmForm>
             </AcmExpandableSection>
         </AcmPageCard>

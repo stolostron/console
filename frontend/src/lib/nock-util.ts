@@ -7,13 +7,40 @@ import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
+    statusCode: number = 200,
+    polling: boolean = true
+) {
+    let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
+        join(apiProxyUrl, getResourceNameApiPath(resource))
+    )
+    let finalNockScope = nockScope.reply(statusCode, response ?? resource, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
+    if (polling) {
+        nockScope
+            .optionally()
+            .times(20)
+            .reply(statusCode, response ?? resource, {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true',
+            })
+    }
+    return finalNockScope
+}
+
+export function nockOptions<Resource extends IResource>(
+    resource: Resource,
+    response?: IResource,
     statusCode: number = 200
 ) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .get(join(apiProxyUrl, getResourceNameApiPath(resource)))
+        .options(join(apiProxyUrl, getResourceNameApiPath(resource)))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Methods': '*',
             'Access-Control-Allow-Credentials': 'true',
         })
 }
@@ -24,7 +51,8 @@ export function nockList<Resource extends IResource>(
         kind: string
     },
     resources: Resource[] | IResource,
-    labels?: string[]
+    labels?: string[],
+    query?: object
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(
@@ -39,6 +67,10 @@ export function nockList<Resource extends IResource>(
     if (labels) {
         nockScope = nockScope.query({
             labelSelector: encodeURIComponent(labels.join(',')),
+        })
+    } else if (query) {
+        nockScope = nockScope.query({
+            ...query,
         })
     }
 
@@ -64,8 +96,10 @@ export function nockList<Resource extends IResource>(
 export function nockClusterList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     resources: Resource[] | IResource,
-    labels?: string[]
+    labels?: string[],
+    polling: boolean = true
 ) {
+    const data = Array.isArray(resources) ? { items: resources } : resources
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(apiProxyUrl, getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind }))
     )
@@ -74,30 +108,30 @@ export function nockClusterList<Resource extends IResource>(
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     }
 
-    if (Array.isArray(resources)) {
-        return networkMock.reply(
-            200,
-            { items: resources },
-            {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Credentials': 'true',
-            }
-        )
-    } else {
-        return networkMock.reply(200, resources, {
+    let finalNetworkMock = networkMock.reply(200, data, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
+
+    if (polling) {
+        networkMock.optionally().times(20).reply(200, data, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
     }
+
+    return finalNetworkMock
 }
 
 export function nockNamespacedList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata: { namespace?: string } },
     resources: Resource[] | IResource,
-    labels?: string[]
+    labels?: string[],
+    polling: boolean = true
 ) {
+    const data = Array.isArray(resources) ? { items: resources } : resources
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(apiProxyUrl, getResourceApiPath(resource))
     )
@@ -106,23 +140,21 @@ export function nockNamespacedList<Resource extends IResource>(
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     }
 
-    if (Array.isArray(resources)) {
-        return networkMock.reply(
-            200,
-            { items: resources },
-            {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Credentials': 'true',
-            }
-        )
-    } else {
-        return networkMock.reply(200, resources, {
+    let finalNetworkMock = networkMock.reply(200, data, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
+
+    if (polling) {
+        networkMock.optionally().times(20).reply(200, data, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
     }
+
+    return finalNetworkMock
 }
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
@@ -131,6 +163,40 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
+export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiProxyUrl + getResourceNameApiPath(resource))
+        .optionally()
+        .reply(200, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .patch(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(data))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
+export function nockReplace(resource: IResource, response?: IResource, statusCode: number = 200) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiProxyUrl + getResourceNameApiPath(resource))
+        .optionally()
+        .reply(204, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PUT, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+        .put(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(resource))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
 }

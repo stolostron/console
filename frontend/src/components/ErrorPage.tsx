@@ -10,89 +10,98 @@ import {
 import React, { ReactNode } from 'react'
 import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
-export function ErrorState(props: { error: Error; actions?: ReactNode }) {
-    let errorTitle = 'Error'
-    let errorMessage = props.error.message
-    /* istanbul ignore else */
-    if (props.error instanceof ResourceError) {
+export function getErrorInfo(error: unknown) {
+    let title = 'Error'
+    let message = 'Unknown'
+    if (error instanceof ResourceError) {
         /* istanbul ignore next */
-        switch (props.error.code) {
+        switch (error.code) {
             case ResourceErrorCode.BadGateway:
-                errorTitle = 'Bad gateway'
-                errorMessage = 'Error accessing resources due to a bad gateway.'
+                title = 'Bad gateway'
+                message = 'Error accessing resources due to a bad gateway.'
                 break
             case ResourceErrorCode.BadRequest:
-                errorTitle = 'Bad request'
-                errorMessage = 'There was bad data sent for accessing resources.'
+                title = 'Bad request'
+                message = 'There was bad data sent for accessing resources.'
                 break
             case ResourceErrorCode.Conflict:
-                errorTitle = 'Conflict'
-                errorMessage = 'There was a conflict when updating the resources.'
+                title = 'Conflict'
+                message = 'There was a conflict when updating the resources.'
                 break
             case ResourceErrorCode.ConnectionReset:
-                errorTitle = 'Connection reset'
-                errorMessage = 'The network connection was reset when accessing resources.'
+                title = 'Connection reset'
+                message = 'The network connection was reset when accessing resources.'
                 break
             case ResourceErrorCode.Forbidden:
-                errorTitle = 'Forbidden'
-                errorMessage = 'Access to the resources is forbidden.'
+                title = 'Forbidden'
+                message = 'Access to the resources is forbidden.'
                 break
             case ResourceErrorCode.GatewayTimeout:
-                errorTitle = 'Gateway timeout'
-                errorMessage = 'Error accessing resources due to a gateway timeout.'
+                title = 'Gateway timeout'
+                message = 'Error accessing resources due to a gateway timeout.'
                 break
             case ResourceErrorCode.InternalServerError:
-                errorTitle = 'Internal server error'
-                errorMessage = 'There was an unforseen error when accessing resources.'
+                title = 'Internal server error'
+                message = 'There was an unforseen error when accessing resources.'
                 break
             case ResourceErrorCode.NetworkError:
-                errorTitle = 'Network error'
-                errorMessage = 'There was a network error when accessing resources.'
+                title = 'Network error'
+                message = 'There was a network error when accessing resources.'
                 break
             case ResourceErrorCode.NotFound:
-                errorTitle = 'Not found'
-                errorMessage = 'The resource being accessed was not found.'
+                title = 'Not found'
+                message = 'The resource being accessed was not found.'
                 break
             case ResourceErrorCode.NotImplemented:
-                errorTitle = 'Not implemented'
-                errorMessage = 'The resource access is not implemented.'
+                title = 'Not implemented'
+                message = 'The resource access is not implemented.'
                 break
             case ResourceErrorCode.RequestCancelled:
-                errorTitle = 'Request cancelled'
-                errorMessage = 'The resource access was cancelled.'
+                title = 'Request cancelled'
+                message = 'The resource access was cancelled.'
                 break
             case ResourceErrorCode.ServiceUnavailable:
-                errorTitle = 'Service unavilable'
-                errorMessage = 'Error accessing resources due to the service being unavailable.'
+                title = 'Service unavilable'
+                message = 'Error accessing resources due to the service being unavailable.'
                 break
             case ResourceErrorCode.Timeout:
-                errorTitle = 'Timeout'
-                errorMessage = 'Error accessing resources due to a network timeout.'
+                title = 'Timeout'
+                message = 'Error accessing resources due to a network timeout.'
                 break
             case ResourceErrorCode.TooManyRequests:
-                errorTitle = 'Too many requests'
-                errorMessage = 'Error accessing resources due to too many requests for resources.'
+                title = 'Too many requests'
+                message = 'Error accessing resources due to too many requests for resources.'
                 break
             case ResourceErrorCode.Unauthorized:
-                errorTitle = 'Unauthorized'
-                errorMessage = 'You are not authorized to perform this operation. Authorization needed.'
+                title = 'Unauthorized'
+                message = 'You are not authorized to perform this operation. Authorization needed.'
                 break
             case ResourceErrorCode.Unknown:
-                errorTitle = 'Unknown error'
-                errorMessage = 'An unknown error occurred.'
+                title = 'Unknown error'
+                message = 'An unknown error occurred.'
                 break
             default:
-                errorTitle = 'Unknown error'
-                errorMessage = 'An unknown error occurred.'
+                title = 'Unknown error'
+                message = 'An unknown error occurred.'
                 break
         }
+    } else if (error instanceof Error) {
+        message = error.message
+    } else if (typeof error === 'string') {
+        message = error
     }
+
+    return { title, message }
+}
+
+export function ErrorState(props: { error: Error; actions?: ReactNode }) {
+    const errorInfo = getErrorInfo(props.error)
     return (
         <EmptyState>
             <Title size="lg" headingLevel="h4">
-                {errorTitle}
+                {errorInfo.title}
             </Title>
-            <EmptyStateBody>{errorMessage}</EmptyStateBody>
+            <EmptyStateBody>{errorInfo.message}</EmptyStateBody>
             {props.actions && <EmptyStatePrimary>{props.actions}</EmptyStatePrimary>}
         </EmptyState>
     )

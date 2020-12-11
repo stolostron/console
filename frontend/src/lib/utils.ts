@@ -13,3 +13,14 @@ export function getLatest<T>(items: T[], key: string) {
         return timeA > timeB ? a : b
     })
 }
+
+export const createDownloadFile = (filename: string, content: string, type?: string) => {
+    const a = document.createElement('a')
+    const blob = new Blob([content], { type: type || 'text/plain' })
+    const event = new MouseEvent('click', { view: window, bubbles: true, cancelable: true })
+    const url = window.URL.createObjectURL(blob)
+    a.href = url
+    a.download = filename
+    a.dispatchEvent(event)
+    window.URL.revokeObjectURL(url)
+}

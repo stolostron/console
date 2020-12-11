@@ -1,28 +1,38 @@
 import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
-import { ManagedClusterApiVersion } from '../resources/managed-cluster'
-import { ManagedClusterAddOnKind } from '../resources/managed-cluster-add-on'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
 import { deleteResources } from './delete-resources'
 import { IRequestResult } from './resource-request'
 
-export function deleteCluster(clusterName: string): IRequestResult<PromiseSettledResult<unknown>[]> {
+export function deleteCluster(clusterName: string, destroy?: boolean): IRequestResult<PromiseSettledResult<unknown>[]> {
+    if (destroy) {
+        return deleteResources([
+            {
+                apiVersion: ManagedClusterApiVersion,
+                kind: ManagedClusterKind,
+                metadata: { name: clusterName },
+            },
+            {
+                apiVersion: ClusterDeploymentApiVersion,
+                kind: ClusterDeploymentKind,
+                metadata: { name: clusterName, namespace: clusterName },
+            },
+        ])
+    }
+    // case for detach, no deployment to delete
     return deleteResources([
         {
             apiVersion: ManagedClusterApiVersion,
-            kind: ManagedClusterAddOnKind,
+            kind: ManagedClusterKind,
             metadata: { name: clusterName },
-        },
-        {
-            apiVersion: ClusterDeploymentApiVersion,
-            kind: ClusterDeploymentKind,
-            metadata: { name: clusterName, namespace: clusterName },
         },
     ])
 }
 
 export function deleteClusters(
-    clusterNames: string[]
+    clusterNames: string[],
+    destroy?: boolean
 ): IRequestResult<PromiseSettledResult<PromiseSettledResult<unknown>[]>[]> {
-    const results = clusterNames.map((clusterName) => deleteCluster(clusterName))
+    const results = clusterNames.map((clusterName) => deleteCluster(clusterName, destroy))
     return {
         promise: Promise.allSettled(results.map((result) => result.promise)),
         abort: () => results.forEach((result) => result.abort()),
