@@ -1,11 +1,11 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { mockBadRequestStatus, nockPatch } from '../lib/nock-util'
-import { IResource } from '../resources/resource'
+import { mockBadRequestStatus, nockPatch } from '../../../../lib/nock-util'
+import { IResource } from '../../../../resources/resource'
 import { EditLabelsModal } from './EditLabelsModal'
-import { ClusterStatus, Cluster } from '../lib/get-cluster'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
+import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',

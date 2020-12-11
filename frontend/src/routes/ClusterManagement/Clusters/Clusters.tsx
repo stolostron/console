@@ -23,7 +23,7 @@ import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { StatusField, DistributionField } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { EditLabelsModal } from '../../../components/EditLabelsModal'
+import { EditLabelsModal } from './components/EditLabelsModal'
 
 
 const managedClusterCols: IAcmTableColumn<Cluster>[] = [

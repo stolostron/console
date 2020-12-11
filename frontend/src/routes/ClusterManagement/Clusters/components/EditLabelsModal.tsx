@@ -2,11 +2,11 @@ import { AcmAlert, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit } from '@open-cl
 import { ActionGroup, Button, ModalVariant, AlertVariant } from '@patternfly/react-core'
 import React, { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { patchResource } from '../lib/resource-request'
-import { IResource } from '../resources/resource'
-import { getErrorInfo } from './ErrorPage'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
-import { Cluster } from '../lib/get-cluster'
+import { patchResource } from '../../../../lib/resource-request'
+import { IResource } from '../../../../resources/resource'
+import { getErrorInfo } from '../../../../components/ErrorPage'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
+import { Cluster } from '../../../../lib/get-cluster'
 
 export function EditLabelsModal(props: { cluster?: Cluster; close: () => void }) {
     const { t } = useTranslation(['cluster', 'common'])
