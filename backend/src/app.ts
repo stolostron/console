@@ -3,6 +3,7 @@
 // TODO auth callback
 // TODO STATIC 304 ETAG support
 // TODO /managed-clusters route
+// TODO /upgrade route
 
 /* istanbul ignore file */
 import { createReadStream } from 'fs'
@@ -76,13 +77,41 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
         }
 
+        // Search
+        if (url.startsWith('/search')) {
+            const token = getToken(req)
+            if (!token) return res.writeHead(401).end()
+
+            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+            const headers = req.headers
+            headers.host = parseUrl(acmUrl).host
+            headers.authorization = `Bearer ${token}`
+            const options: RequestOptions = {
+                ...parseUrl(acmUrl + '/multicloud/search/graphql'),
+                ...{ method: req.method, headers, agent },
+            }
+            const log = optionsLog(options)
+            logs?.push(log)
+            const start = process.hrtime()
+            return req.pipe(
+                httpRequest(options, (response) => {
+                    const diff = process.hrtime(start)
+                    const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
+                    log.unshift(`${time}ms`.padStart(6))
+                    log.unshift(response.statusCode)
+                    res.writeHead(response.statusCode, response.headers)
+                    response.pipe(res)
+                })
+            )
+        }
+
         // OAuth Login
         if (url === '/login') {
             const oauthInfo = await oauthInfoPromise
             const queryString = stringifyQuery({
                 response_type: `code`,
                 client_id: process.env.OAUTH2_CLIENT_ID,
-                redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
                 scope: `user:full`,
                 state: '',
             })
@@ -101,7 +130,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 const requestQuery: Record<string, string> = {
                     grant_type: `authorization_code`,
                     code: code,
-                    redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                    redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
                     client_id: process.env.OAUTH2_CLIENT_ID,
                     client_secret: process.env.OAUTH2_CLIENT_SECRET,
                 }
@@ -112,13 +141,18 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     (response) => {
                         parseJsonBody<{ access_token: string }>(response)
                             .then((body) => {
-                                const headers = {
-                                    'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
-                                        process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
-                                    } HttpOnly; Path=/`,
-                                    location: `http://localhost:3000`,
+                                if (body.access_token) {
+                                    const headers = {
+                                        'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
+                                            process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
+                                        } HttpOnly; Path=/`,
+                                        location: process.env.FRONTEND_URL,
+                                    }
+                                    return res.writeHead(302, headers).end()
+                                } else {
+                                    console.error(body)
+                                    return res.writeHead(500).end()
                                 }
-                                return res.writeHead(302, headers).end()
                             })
                             .catch((err) => {
                                 console.error(err)

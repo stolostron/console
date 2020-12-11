@@ -5,7 +5,7 @@ import { createServer as createHttpServer, IncomingMessage, Server as HttpServer
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
-import { logInfo, Logs } from './logger'
+import { logError, logInfo, Logs } from './logger'
 
 export type Server = HttpServer
 export type Request = IncomingMessage
@@ -86,7 +86,7 @@ export function startServer(
                             if (res.statusCode < 500) {
                                 logInfo(logs)
                             } else {
-                                logInfo(logs)
+                                logError(logs)
                             }
                         }
                     })

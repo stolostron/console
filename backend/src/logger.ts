@@ -43,7 +43,7 @@ function writeLogs(logs: Logs, type: string): void {
     let index = 0
     for (const log of logs) {
         if (index++ === 0) {
-            lines += type.padStart(5)
+            lines += type
             lines += ' '
         } else {
             lines += `      ${Dim}`
@@ -58,11 +58,7 @@ function writeLogs(logs: Logs, type: string): void {
         lines += `${Reset}\n`
     }
     lines += '\n'
-    if (type === 'ERROR') {
-        process.stderr.write(lines)
-    } else {
-        process.stdout.write(lines)
-    }
+    process.stdout.write(lines)
 }
 
 export const logInfo: (logs: Logs) => void = infoFunc
@@ -70,13 +66,13 @@ export const logDebug: (logs: Logs) => void = debugFunc
 export const logError: (logs: Logs) => void = errorFunc
 
 function infoFunc(logs: Logs): void {
-    writeLogs(logs, 'INFO')
+    writeLogs(logs, `${FgGreen} INFO${Reset}`)
 }
 
 function debugFunc(logs: Logs): void {
-    writeLogs(logs, 'DEBUG')
+    writeLogs(logs, `${FgBlue}DEBUG${Reset}`)
 }
 
 function errorFunc(logs: Logs): void {
-    writeLogs(logs, 'ERROR')
+    writeLogs(logs, `${FgRed}ERROR${Reset}`)
 }
