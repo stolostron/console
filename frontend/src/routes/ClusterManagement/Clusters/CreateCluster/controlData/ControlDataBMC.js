@@ -13,14 +13,15 @@ import {
   VALIDATE_ALPHANUMERIC,
   VALIDATE_ALPHANUMERIC_PERIOD,
   VALIDATE_MAC_ADDRESS} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
-//import { BareMetalAssets} from '../../../../lib/client/queries'
+import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
+import { withRouter } from "react-router-dom";
 import { withTranslation } from 'react-i18next';
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
 
 const ImportBareMetalAssetsButton = withTranslation(['create'])(WrappedImportBareMetalAssetsButton)
-const CreateBareMetalAssetModal = withTranslation(['create'])(WrappedCreateBareMetalAssetModal)
+const CreateBareMetalAssetModal = withRouter(withTranslation(['create'])(WrappedCreateBareMetalAssetModal))
 
 const VALID_BMC_ADDR_REGEXP = new RegExp('^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
   '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -48,7 +49,7 @@ const getRoleCount = (theRole, control, controlData)=>{
   let count = 0
   const hosts = controlData.find(({id})=>(id==='hosts'))
   if (hosts) {
-    const {active} = hosts
+    const {active=[]} = hosts
     count = active.reduce((total, {role})=>{
       if (role===theRole) {
         total++
@@ -61,8 +62,8 @@ const getRoleCount = (theRole, control, controlData)=>{
 
 const setAvailableBMAs = (control, result) => {
   const { loading } = result
-  const { data={} } = result
-  const { bmas } = data
+  const { data } = result
+  const bmas = data
   if (!control.isLoaded) {
     control.available = []
     control.isLoading = false
@@ -77,6 +78,7 @@ const setAvailableBMAs = (control, result) => {
         .sort(({hostName:a},{hostName:b})=>{
           return a.localeCompare(b)
         })
+      control.setActive([])
     } else {
       control.isLoading = loading
     }
@@ -247,11 +249,11 @@ const bareControlData = [
         mode: ControlMode.PROMPT_ONLY,
       },
     ],
-//    fetchAvailable: {
-//      //query: BareMetalAssets,
-//      loadingDesc: 'table.bma.loading',
-//      setAvailable: setAvailableBMAs,
-//    },
+    fetchAvailable: {
+      query: ()=>{return listBareMetalAssets().promise},
+      loadingDesc: 'table.bma.loading',
+      setAvailable: setAvailableBMAs,
+    },
     active: []
   },
   {

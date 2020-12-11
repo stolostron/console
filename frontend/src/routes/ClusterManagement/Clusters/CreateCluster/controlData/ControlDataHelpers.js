@@ -3,12 +3,13 @@ import {
   VALIDATE_NUMERIC, 
   VALIDATE_BASE_DNS_NAME_REQUIRED} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
 import { listProviderConnections } from '../../../../../resources/provider-connection'
+import { NavigationPath } from '../../../../../NavigationPath'
 import _ from 'lodash'
 
 export const CREATE_CLOUD_CONNECTION = {
   prompt: 'creation.ocp.cloud.add.connection',
   type: 'link',
-  //url: `${config.contextPath}/connections/create?createCluster`,
+  url: NavigationPath.addConnection,
   positionBottomRight: true,
   id: 'add-provider-connection'
 }

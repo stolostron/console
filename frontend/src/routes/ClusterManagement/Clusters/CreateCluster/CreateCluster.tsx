@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
@@ -52,6 +52,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateClusterPage() {
+    const history = useHistory()
 
     // create portals for buttons in header
     const portals = 
@@ -62,19 +63,19 @@ export default function CreateClusterPage() {
       </div>
       
     // create button
-    const [clusterName, setClusterName] = useState<string>()
-    const [clusterNamespace, setClusterNamespace] = useState<string>()
     const createResource = (resourceJSON: any[]) => {
       if (resourceJSON) {
+        
         //handleCreateCluster(resourceJSON)
+
+        // redirect to created cluster
         const map =keyBy(resourceJSON, 'kind')
-        setClusterName(get(map, 'ClusterDeployment.metadata.name'))
-        setClusterNamespace(get(map, 'ClusterDeployment.metadata.namespace'))
+        const clusterName = get(map, 'ClusterDeployment.metadata.name')
+        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
       }
     }
 
     // cancel button
-    const history = useHistory()
     const cancelCreate = () => {
         history.push(NavigationPath.clusters)
     }
