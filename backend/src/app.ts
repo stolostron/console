@@ -1,5 +1,8 @@
 // TODO Request Queue
 // TODO Compression Support
+// TODO auth callback
+// TODO STATIC 304 ETAG support
+// TODO /managed-clusters route
 
 /* istanbul ignore file */
 import { createReadStream } from 'fs'
@@ -65,7 +68,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
             const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data, logs)
-            if (response.statusCode === 403 && req.method === 'GET' && isClusterScope(url)) {
+            if (response.statusCode === 403 && req.method === 'GET') {
                 return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, logs, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
@@ -134,7 +137,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
         }
 
         // Console Header
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
@@ -150,7 +153,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
-            headers.host = parseUrl(process.env.CLUSTER_API_URL).host
+            headers.host = parseUrl(acmUrl).host
             const response = await request(req.method, headerUrl, headers, undefined, logs)
             return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
@@ -174,11 +177,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                         res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
                     })
                     .on('error', (err) => {
-                        // if (ext === '.json') {
-                        //     return res.writeHead(404, { 'Cache-Control': cacheControl }).end()
-                        // } else {
-                        return res.writeHead(404).end()
-                        // }
+                        if (ext === '.json') {
+                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
+                        } else {
+                            return res.writeHead(404).end()
+                        }
                     })
                     .pipe(res, { end: true })
             }
@@ -264,29 +267,41 @@ async function projectsRequest(
     logs: Logs,
     res: ServerResponse
 ): Promise<void> {
+    const namespaceQuery = ''
+    if (url.includes('?')) {
+        const queryString = url.substr(url.indexOf('?') + 1)
+        const query = parseQueryString(queryString)
+        if (query['managedNamespacesOnly'] !== undefined) {
+            // namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
+            url = url.substr(0, url.indexOf('?'))
+        }
+    }
+
     const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
         'GET',
-        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
+        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
         { authorization: headers.authorization, accept: 'application/json' },
         undefined,
         logs
     )
     let items: unknown[] = []
-    await Promise.all(
-        projects.items.map((project) => {
-            const namespacedUrl = addNamespace(url, project.metadata.name)
-            return jsonRequest<{ items: unknown[] }>(method, namespacedUrl, headers, undefined, logs)
-                .then((data) => {
-                    if (data.items) {
-                        items = [...items, data.items]
-                    }
-                })
-                .catch((err) => {
-                    // TODO
-                })
-        })
-    )
-    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(items))
+    if (projects?.items) {
+        await Promise.all(
+            projects.items.map((project) => {
+                const namespacedUrl = addNamespace(url, project.metadata.name)
+                return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers, undefined, logs)
+                    .then((data) => {
+                        if (data.items) {
+                            items = [...items, ...data.items]
+                        }
+                    })
+                    .catch((err) => {
+                        // TODO
+                    })
+            })
+        )
+    }
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
 }
 
 // Handle a request that returns a json object
@@ -316,14 +331,14 @@ async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
     return JSON.parse(body) as T
 }
 
-function isClusterScope(url: string): boolean {
-    if (url.startsWith('/api/')) {
-        return url.split('/').length === 4
-    } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 5
-    }
-    return false
-}
+// function isClusterScope(url: string): boolean {
+//     if (url.startsWith('/api/')) {
+//         return url.split('/').length === 4
+//     } else if (url.startsWith('/apis/')) {
+//         return url.split('/').length === 5
+//     }
+//     return false
+// }
 
 // function isNamespaceScope(url: string): boolean {
 //     if (url.startsWith('/api/')) {
@@ -344,10 +359,18 @@ function isClusterScope(url: string): boolean {
 // }
 
 function addNamespace(url: string, namespace: string): string {
+    let queryString = ''
+    if (url.includes('?')) {
+        queryString = url.substr(url.indexOf('?') + 1)
+        url = url.substr(0, url.indexOf('?'))
+    }
     const parts = url.split('/')
     let namespacedUrl = parts.slice(0, parts.length - 1).join('/')
     namespacedUrl += `/namespaces/${namespace}/`
     namespacedUrl += parts[parts.length - 1]
+    if (queryString) {
+        namespacedUrl += '?' + queryString
+    }
     return namespacedUrl
 }
 
