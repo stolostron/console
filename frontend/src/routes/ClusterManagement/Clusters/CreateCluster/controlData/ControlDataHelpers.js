@@ -1,9 +1,8 @@
-import { Base64 } from 'js-base64'
 import { 
   VALIDATE_CIDR, 
   VALIDATE_NUMERIC, 
   VALIDATE_BASE_DNS_NAME_REQUIRED} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
-//import { ConnectionDetails, ClusterImageSets } from '../../../../lib/client/queries'
+import { listProviderConnections } from '../../../../../resources/provider-connection'
 import _ from 'lodash'
 
 export const CREATE_CLOUD_CONNECTION = {
@@ -16,7 +15,7 @@ export const CREATE_CLOUD_CONNECTION = {
 
 export const LOAD_CLOUD_CONNECTIONS  = (provider)=>{
   return {
-    //query: ConnectionDetails,
+    query: ()=>{return listProviderConnections().promise},
     emptyDesc: 'creation.ocp.cloud.no.connections',
     loadingDesc: 'creation.ocp.cloud.loading.connections',
     setAvailable: setAvailableConnections.bind(null, provider)
@@ -115,8 +114,8 @@ export const setAvailableOCPMap = (control)=>{
 
 export const setAvailableConnections  = (provider, control, result)=>{
   const { loading } = result
-  const { data={} } = result
-  const { connections } = data
+  const { data } = result
+  const connections = data
   control.available = []
   control.availableMap = {}
   control.isLoading = false
@@ -124,25 +123,24 @@ export const setAvailableConnections  = (provider, control, result)=>{
   if (error) {
     control.isFailed = true
   } else if (connections) {
+    control.isLoaded = true
     control.available = []
     control.availableMap = {}
     control.hasReplacements = true
     control.noHandlebarReplacements = true
-    const {encode=[]} = control
-    const encoded = new Set(encode)
     connections
-      .filter(({provider:p})=>{
-        return provider === p
-      })
       .forEach(item=>{
-        const {name, metadata} = item
-        control.available.push(name)
-        const replacements = {}
-        Object.keys(metadata).forEach(key=>{
-          replacements[key] = encoded.has(key) ? Base64.encode(metadata[key]) : metadata[key]
-        })
-        control.availableMap[name] = {
-          replacements
+        const {metadata, spec} = item
+        const {name, labels} = metadata
+        if (provider === labels['cluster.open-cluster-management.io/provider']) {
+          control.available.push(name)
+          const replacements = {}
+          Object.keys(spec).forEach(key=>{
+            replacements[key] = spec[key]
+          })
+          control.availableMap[name] = {
+            replacements
+          }
         }
       })
   } else {

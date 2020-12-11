@@ -35,7 +35,7 @@ const vmwControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
+    fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
     prompts: CREATE_CLOUD_CONNECTION,
     encode: ['cacertificate']
   },

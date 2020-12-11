@@ -81,7 +81,6 @@ export default function CreateClusterPage() {
 
     // pause creation to create something else
     const pauseCreate = () => {
-      debugger
       //    const {
       //      history: { location },
       //      updateFormState,

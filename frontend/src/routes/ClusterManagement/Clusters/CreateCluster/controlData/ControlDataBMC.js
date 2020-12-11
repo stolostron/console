@@ -158,7 +158,7 @@ const bareControlData = [
       notification: 'creation.ocp.cluster.must.select.connection',
       required: true,
     },
-    //fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
+    fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
     prompts: CREATE_CLOUD_CONNECTION,
   },
   ...labelControlData,
