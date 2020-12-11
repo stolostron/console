@@ -65,6 +65,7 @@
   "import.command.configurecluster": "2. Run this command with kubectl configured for your targeted cluster to start the import",
   "import.command.configureclusterdescription": "Log in to the existing cluster in your terminal and run the command.",
   "import.command.configurediscoveredclusterdescription": "Log in to the existing cluster in your terminal and run the command. Because your cluster is OpenShift version 4.5 or higher, you can also run this command in your console's web terminal (tech preview).",
+  "import.command.pendingimport": "Cluster is pending import",
   "import.form.submit": "Save import and generate code",
   "import.form.submitted": "Code generated successfully",
   "import.importmode.header": "2. Select import mode",
