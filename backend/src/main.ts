@@ -1,45 +1,49 @@
 /* istanbul ignore file */
-import { config } from 'dotenv'
-config()
+import { requestHandler } from './app'
+import { startServer, stopServer } from './server'
 
-import { logger, stopLogger } from './lib/logger'
+console.info(`process start  NODE_ENV=${process.env.NODE_ENV}  nodeVersion=${process.versions.node}`)
 
-if (!process.env.CLUSTER_API_URL) throw new Error('CLUSTER_API_URL required')
-logger.debug({ msg: 'environment', CLUSTER_API_URL: process.env.CLUSTER_API_URL })
+for (const variable of ['CLUSTER_API_URL', 'OAUTH2_REDIRECT_URL', 'BACKEND_URL', 'FRONTEND_URL']) {
+    if (!process.env[variable]) throw new Error(`${variable} required`)
+    console.info(`process env  ${variable}=${process.env[variable]}`)
+}
 
-if (!process.env.OAUTH2_REDIRECT_URL) throw new Error('OAUTH2_REDIRECT_URL required')
-logger.debug({ msg: 'environment', OAUTH2_REDIRECT_URL: process.env.OAUTH2_REDIRECT_URL })
+process
+    .on('SIGINT', (signal) => {
+        process.stdout.write('\n')
+        console.info('process ' + signal)
+        void stopServer()
+    })
+    .on('SIGTERM', (signal) => {
+        console.info('process ' + signal)
+        void stopServer()
+    })
+    .on('uncaughtException', (err) => {
+        console.error('process uncaughtException', err)
+        void stopServer()
+    })
+    .on('multipleResolves', (type, promise, reason) => {
+        console.error('process multipleResolves', 'type', type, 'reason', reason)
+        void stopServer()
+    })
+    .on('unhandledRejection', (reason, promise) => {
+        console.error('process unhandledRejection', 'reason', reason)
+        void stopServer()
+    })
+    .on('exit', function processExit(code) {
+        console.info(`process exit${code ? `  code=${code}` : ''}`)
+    })
 
-if (!process.env.BACKEND_URL) throw new Error('BACKEND_URL required')
-logger.debug({ msg: 'environment', BACKEND_URL: process.env.BACKEND_URL })
+void startServer(requestHandler)
 
-if (!process.env.FRONTEND_URL) throw new Error('FRONTEND_URL required')
-logger.debug({ msg: 'environment', FRONTEND_URL: process.env.FRONTEND_URL })
-
-import { cpus, totalmem } from 'os'
-
-logger.debug({
-    msg: `process start`,
-    NODE_ENV: `${process.env.NODE_ENV}`,
-    cpus: `${Object.keys(cpus()).length}`,
-    memory: `${(totalmem() / (1024 * 1024 * 1024)).toPrecision(2).toString()}GB`,
-    nodeVersion: `${process.versions.node}`,
-})
-
-process.on('exit', function processExit(code) {
-    if (code !== 0) {
-        logger.error({ msg: `process exit`, code: code })
-    } else {
-        logger.debug({ msg: `process exit` })
+setInterval(() => {
+    const used = process.memoryUsage()
+    process.stdout.write('process memory  ')
+    for (const key in used) {
+        process.stdout.write(
+            `${key} ${Math.round((((used as unknown) as Record<string, number>)[key] / 1024 / 1024) * 100) / 100} MB  `
+        )
     }
-    stopLogger()
-})
-
-process.on('uncaughtException', (error) => {
-    logger.error({ msg: error.message, name: error.name })
-    // eslint-disable-next-line no-process-exit
-    process.exit(1)
-})
-
-import { startServer } from './server'
-void startServer()
+    process.stdout.write('\n')
+}, 10 * 1000).unref()

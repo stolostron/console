@@ -11,44 +11,27 @@
         "lint:fix": "eslint src test --ext .ts --fix",
         "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
         "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "start": "PORT=4000 NODE_ENV=development LOG_LEVEL=trace ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts | pino-zen --ignore instance,time",
+        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=trace ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
-    "dependencies": {
-        "@kubernetes/client-node": "^0.13.0",
-        "@types/yamljs": "^0.2.31",
-        "axios": "^0.21.0",
-        "dotenv": "^8.2.0",
-        "fastify": "^3.8.0",
-        "fastify-compress": "^3.4.0",
-        "fastify-cookie": "^4.1.0",
-        "fastify-cors": "^5.0.0",
-        "fastify-etag": "^1.0.0",
-        "fastify-helmet": "^5.0.3",
-        "fastify-https-redirect": "^1.0.3",
-        "fastify-oauth2": "^4.2.1",
-        "fastify-reply-from": "^3.4.0",
-        "fastify-static": "^3.3.0",
-        "pino": "^6.7.0",
-        "yamljs": "^0.3.0"
-    },
+    "dependencies": {},
     "devDependencies": {
+        "@types/axios": "^0.14.0",
         "@types/eslint": "^7.2.5",
         "@types/eslint-config-prettier": "^6.11.0",
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.15",
         "@types/node": "^14.x.x",
-        "@types/pino": "^6.3.4",
         "@types/prettier": "^2.1.5",
         "@typescript-eslint/eslint-plugin": "^4.8.2",
         "@typescript-eslint/parser": "^4.8.2",
+        "axios": "^0.21.0",
         "eslint": "^7.14.0",
         "eslint-config-prettier": "^6.15.0",
         "eslint-plugin-prettier": "^3.1.4",
         "jest": "^26.x.x",
         "nock": "^13.0.5",
-        "pino-zen": "^1.0.20",
         "prettier": "^2.2.0",
         "ts-jest": "^26.x.x",
         "ts-node": "^9.0.0",
@@ -127,8 +110,12 @@
                     "ignoreVoid": true
                 }
             ],
-            "no-console": "error",
-            "no-process-exit": "error"
+            "@typescript-eslint/no-misused-promises": [
+                "error",
+                {
+                    "checksVoidReturn": false
+                }
+            ]
         }
     }
 }
