@@ -84,7 +84,7 @@ export function LoginCredentials() {
         } finally {
             setRbacLoading(false)
         }
-    }, [])
+    }, [cluster])
 
     const onClick = async () => {
         /* istanbul ignore next */
