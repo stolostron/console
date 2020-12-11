@@ -31,13 +31,28 @@ export function nockGet<Resource extends IResource>(
     return finalNockScope
 }
 
+export function nockOptions<Resource extends IResource>(
+    resource: Resource,
+    response?: IResource,
+    statusCode: number = 200
+) {
+    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(join(apiProxyUrl, getResourceNameApiPath(resource)))
+        .reply(statusCode, response ?? resource, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+}
+
 export function nockList<Resource extends IResource>(
     resource: {
         apiVersion: string
         kind: string
     },
     resources: Resource[] | IResource,
-    labels?: string[]
+    labels?: string[],
+    query?: object
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(
@@ -52,6 +67,10 @@ export function nockList<Resource extends IResource>(
     if (labels) {
         nockScope = nockScope.query({
             labelSelector: encodeURIComponent(labels.join(',')),
+        })
+    } else if (query) {
+        nockScope = nockScope.query({
+            ...query,
         })
     }
 
@@ -148,7 +167,7 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         })
 }
 
-export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 200) {
+export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(apiProxyUrl + getResourceNameApiPath(resource))
         .optionally()

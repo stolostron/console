@@ -57,5 +57,5 @@ jobs:
               - git config --global user.name "Travis CI"
               - git add -u :/
               - set +e
-              - git commit -m "fix(deps) - upgrade dependencies"
-              - if [ $? -eq 0 ]; then git push origin master; fi
+              - git commit -m "fix(deps) - upgrade dependencies" || COMMIT_RESULT=$?
+              - if [ $COMMIT_RESULT -eq 0 ]; then git push origin master; fi

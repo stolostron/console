@@ -10,11 +10,12 @@
   "managed.launch": "Launch to cluster",
   "managed.editLabels": "Edit labels",
   "managed.detachSelected": "Detach",
-  "managed.upgradeSelected": "Detach",
+  "managed.upgradeSelected": "Upgrade",
   "managed.importCluster": "Import cluster",
   "managed.createCluster": "Create cluster",
   "managed.addCluster": "Add cluster",
   "managed.destroy": "Destroy",
+  "managed.destroySelected": "Destroy cluster",
   "discovered": "Discovered",
   "discovery.disable": "Disable cluster discovery",
   "discovery.edit": "Edit cluster discovery",
@@ -23,6 +24,8 @@
   "discovery.emptyStateHeader": "No clusters are discovered, yet",
   "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
   "button.backToClusters": "Back to Clusters page",
+
+  "configuration.download": "Download configuration",
 
   "table.name": "Name",
   "table.status": "Status",
@@ -73,6 +76,8 @@
   "import.command.launchconsole": "Launch to console",
   "import.footer.viewcluster": "View cluster",
   "import.footer.importanother": "Import another",
+  "import.generating": "Generating",
+  "import.command.fetching": "Loading cluster import command",
   "import.description": "Once you click on \"Save import and generate code\", the information you entered will be used to generate the code and cannot be modified anymore. If you wish to change any information, you will have to delete and re-import this cluster.",
   "status.pending": "Pending",
   "status.destroying": "Destroying",
@@ -91,6 +96,10 @@
   "provision.notification.destroying": "Cluster deprovisioning is in progress:",
   "view.logs": "View logs",
 
+  "modal.destroy.title": "Destroy managed cluster",
+  "modal.detach.title": "Detach managed cluster",
+  "modal.destroy.content": "Destroying {{name}} is irreversible. Are you sure that you want to continue?",
+  "modal.detach.content": "Detaching {{name}} is irreversible. Are you sure that you want to continue?",
   "tab.overview": "Overview",
   "tab.nodes": "Nodes",
   "tab.settings": "Settings"
