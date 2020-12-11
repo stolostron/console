@@ -1,10 +1,11 @@
 import * as axios from 'axios'
 import * as nock from 'nock'
 import { AddressInfo } from 'net'
-import { FastifyInstance } from 'fastify'
-import { startServer } from '../src/server'
+import { startServer, stopServer } from '../src/server'
+import { requestHandler } from '../src/app'
+import { Server } from 'http'
 
-let instance: FastifyInstance
+let server: Server
 
 export let request: axios.AxiosInstance
 
@@ -13,14 +14,14 @@ export async function setupBeforeAll(): Promise<void> {
     nock.enableNetConnect('127.0.0.1')
     nock.enableNetConnect('localhost')
 
-    nock(process.env.CLUSTER_API_URL).get('/.well-known/oauth-authorization-server').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/.well-known/oauth-authorization-server').optionally().reply(200, {
         authorization_endpoint: 'https://example.com/auth',
         token_endpoint: 'https://example.com/token',
     })
 
-    instance = await startServer()
+    server = await startServer(requestHandler)
 
-    const port = (instance.server.address() as AddressInfo).port
+    const port = (server.address() as AddressInfo).port
     request = axios.default.create({
         baseURL: `http://localhost:${port}`,
         validateStatus: () => true,
@@ -34,7 +35,7 @@ export function setupAfterEach(): void {
 }
 
 export async function setupAfterAll(): Promise<void> {
-    await instance.close()
+    await stopServer()
     nock.enableNetConnect()
     nock.restore()
 }

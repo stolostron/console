@@ -17,6 +17,7 @@
     },
     "dependencies": {},
     "devDependencies": {
+        "@types/axios": "^0.14.0",
         "@types/eslint": "^7.2.5",
         "@types/eslint-config-prettier": "^6.11.0",
         "@types/eslint-plugin-prettier": "^3.1.0",
@@ -25,6 +26,7 @@
         "@types/prettier": "^2.1.5",
         "@typescript-eslint/eslint-plugin": "^4.8.2",
         "@typescript-eslint/parser": "^4.8.2",
+        "axios": "^0.21.0",
         "eslint": "^7.14.0",
         "eslint-config-prettier": "^6.15.0",
         "eslint-plugin-prettier": "^3.1.4",
