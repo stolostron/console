@@ -24,13 +24,14 @@ export interface SelfSubjectAccessReview extends IResource {
     }
 }
 export type ResourceAttributes = {
-    group: string
     name: string
     namespace: string
     resource: string
-    subresource: string
     verb: string
-    version: string
+    group?: string
+    version?: string
+    subresource?: string
+
 }
 
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
@@ -43,3 +44,9 @@ export function createSubjectAccessReview(resourceAttributes: ResourceAttributes
         },
     })
 }
+
+// export function getRBACMapping (action:string, resource:string, name:string, namespace:string){
+//     switch(action){
+//         case ''
+//     }
+// }
