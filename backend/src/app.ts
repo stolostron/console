@@ -3,13 +3,20 @@
 // TODO Compression Support
 
 /* istanbul ignore file */
-import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
+import {
+    IncomingHttpHeaders,
+    IncomingMessage,
+    request as httpRequest,
+    RequestOptions,
+    Server,
+    ServerResponse,
+} from 'http'
 import { Agent, get } from 'https'
 import { parse as parseUrl } from 'url'
 import { parse as parseQueryString, encode as stringifyQuery } from 'querystring'
 import { createReadStream } from 'fs'
 import { extname } from 'path'
-import { info, Log, Logs } from './logger'
+import { Log, Logs } from './logger'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
@@ -24,13 +31,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
         if (process.env.NODE_ENV !== 'production') {
             if (req.headers['origin']) {
                 res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
-                res.setHeader('Vary', 'Origin')
+                res.setHeader('Vary', 'Origin, Access-Control-Allow-Origin')
             }
             res.setHeader('Access-Control-Allow-Credentials', 'true')
             switch (req.method) {
                 case 'OPTIONS':
-                    res.setHeader('Vary', 'Origin, Access-Control-Allow-Origin')
-                    res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
                     res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
                     res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
                     return res.writeHead(200).end()
@@ -68,75 +73,12 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
             const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data, logs)
-            res.writeHead(response.statusCode, response.headers)
-            return response.pipe(res)
-
-            // const options: RequestOptions = parseUrl(process.env.CLUSTER_API_URL + url)
-            // options.method = req.method
-            // options.headers = req.headers
-            // options.headers.authorization = `Bearer ${token}`
-            // options.agent = agent
-
-            // return req.pipe(
-            //     httpRequest(options, (response) => {
-            //         // if (req.method === 'GET' && response.statusCode === 403 && !url.includes('/namespaces/')) {
-            //         //     request(
-            //         //         'GET',
-            //         //         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
-            //         //         { authorization: `Bearer ${token}`, accept: 'application/json' },
-            //         //         logs
-            //         //     )
-            //         //         .then(async (response) => {
-            //         //             const data = await parseJsonBody<{ items: { metadata: { name: string } }[] }>(response)
-            //         //             const projects = data.items as { metadata: { name: string } }[]
-            //         //             let items: unknown[] = []
-            //         //             await Promise.all(
-            //         //                 projects.map((project) => {
-            //         //                     let namespacedUrl = url
-            //         //                     const parts = namespacedUrl.split('/')
-            //         //                     namespacedUrl = parts.slice(0, parts.length - 1).join('/')
-            //         //                     namespacedUrl += `/namespaces/${project.metadata.name}/`
-            //         //                     namespacedUrl += parts[parts.length - 1]
-            //         //                     const projectOptions: RequestOptions = {
-            //         //                         ...parseUrl(process.env.CLUSTER_API_URL + namespacedUrl),
-            //         //                         ...{
-            //         //                             method: 'GET',
-            //         //                             headers: {
-            //         //                                 authorization: `Bearer ${token}`,
-            //         //                                 accept: 'application/json',
-            //         //                             },
-            //         //                             agent,
-            //         //                         },
-            //         //                     }
-            //         //                     return request(projectOptions)
-            //         //                         .then((data) => {
-            //         //                             const dataItems = data.items as unknown[]
-            //         //                             if (dataItems) {
-            //         //                                 items = [...items, ...dataItems]
-            //         //                             }
-            //         //                         })
-            //         //                         .catch((err) => console.error)
-            //         //                 })
-            //         //             )
-            //         //                 .then(() => {
-            //         //                     res.writeHead(200, { 'content-type': 'application/json' }).end(
-            //         //                         JSON.stringify({
-            //         //                             items,
-            //         //                         })
-            //         //                     )
-            //         //                 })
-            //         //                 .catch(() => {
-            //         //                     res.writeHead(200, { 'content-type': 'application/json' }).end('[]')
-            //         //                 })
-            //         //         })
-            //         //         .catch(() => res.writeHead(200).end('[]'))
-            //         // } else {
-            //         res.writeHead(response.statusCode, response.headers)
-            //         response.pipe(res, { end: true })
-            //         // }
-            //     }),
-            //     { end: true }
-            // )
+            if (response.statusCode === 403 && req.method === 'GET' && isClusterScope(url)) {
+                return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, logs, res)
+            } else {
+                res.writeHead(response.statusCode, response.headers)
+                return response.pipe(res)
+            }
         }
 
         // OAuth Login
@@ -152,9 +94,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             return res.writeHead(302, { location: `${oauthInfo.authorization_endpoint}?${queryString}` }).end()
         }
 
-        if (url.startsWith('/login/callback') || url.startsWith('/cluster-management/login/callback')) {
-            const oauthInfo = await oauthInfoPromise
+        // OAuth Callback
+        if (url.startsWith('/login/callback')) {
             if (url.includes('?')) {
+                const oauthInfo = await oauthInfoPromise
                 const queryString = url.substr(url.indexOf('?') + 1)
                 const query = parseQueryString(queryString)
                 const code = query.code as string
@@ -220,6 +163,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
+        // Liveness & Readiness
         if (url === '/livenessProbe') return res.writeHead(200).end()
         if (url === '/readinessProbe') return res.writeHead(200).end()
 
@@ -239,7 +183,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     })
                     .on('error', (err) => {
                         // if (ext === '.json') {
-                        //     return res.writeHead(200, { 'Cache-Control': 'public, max-age=604800' }).end()
+                        //     return res.writeHead(404, { 'Cache-Control': cacheControl }).end()
                         // } else {
                         return res.writeHead(404).end()
                         // }
@@ -257,8 +201,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
     }
 }
 
+// Cache control on static files
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 
+// OAuth Server Info
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 const oauthInfoPromise = jsonRequest<OAuthInfo>(
     'GET',
@@ -268,6 +214,7 @@ const oauthInfoPromise = jsonRequest<OAuthInfo>(
     []
 )
 
+// Get User Token from request cookies
 function getToken(req: IncomingMessage) {
     let cookies: Record<string, string>
     if (req.headers.cookie) {
@@ -280,36 +227,8 @@ function getToken(req: IncomingMessage) {
     return cookies?.['acm-access-token-cookie']
 }
 
-async function request(
-    method: string,
-    url: string,
-    headers: IncomingHttpHeaders,
-    data: unknown,
-    logs: Logs
-): Promise<IncomingMessage> {
-    const response = await requestRetry(method, url, headers, data, logs)
-    // if (response.statusCode === 403 && method === 'GET' && isClusterScope(url)) {
-    //     // TODO HANDLE PROJECTS
-    //     const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
-    //         'GET',
-    //         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
-    //         { authorization: headers.authorization, accept: 'application/json' },
-    //         undefined,
-    //         logs
-    //     )
-    //     const items: unknown[] = []
-    //     await Promise.all(
-    //         projects.items.map((project) => {
-    //             const namespacedUrl = addNamespace(url, project.metadata.name)
-    //             return request(method, namespacedUrl, headers, data, logs)
-    //         })
-    //     )
-    //     items
-    // }
-    return response
-}
-
-function requestRetry(
+// Handle a request
+function request(
     method: string,
     url: string,
     headers: IncomingHttpHeaders,
@@ -322,7 +241,7 @@ function requestRetry(
         function attempt() {
             const log = optionsLog(options)
             logs?.push(log)
-            httpRequest(options, (response) => {
+            const clientRequest = httpRequest(options, (response) => {
                 const diff = process.hrtime(start)
                 const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
                 log.unshift(`${time}ms`.padStart(6))
@@ -335,16 +254,50 @@ function requestRetry(
                         resolve(response)
                         break
                 }
+            }).on('error', (err) => {
+                reject(err)
             })
-                .on('error', (err) => {
-                    reject(err)
-                })
-                .end()
+
+            if (data) clientRequest.write(data)
+            clientRequest.end()
         }
         attempt()
     })
 }
 
+async function projectsRequest(
+    method: string,
+    url: string,
+    headers: IncomingHttpHeaders,
+    logs: Logs,
+    res: ServerResponse
+): Promise<void> {
+    const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
+        'GET',
+        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
+        { authorization: headers.authorization, accept: 'application/json' },
+        undefined,
+        logs
+    )
+    let items: unknown[] = []
+    await Promise.all(
+        projects.items.map((project) => {
+            const namespacedUrl = addNamespace(url, project.metadata.name)
+            return jsonRequest<{ items: unknown[] }>(method, namespacedUrl, headers, undefined, logs)
+                .then((data) => {
+                    if (data.items) {
+                        items = [...items, data.items]
+                    }
+                })
+                .catch((err) => {
+                    // TODO
+                })
+        })
+    )
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(items))
+}
+
+// Handle a request that returns a json object
 async function jsonRequest<T>(
     method: string,
     url: string,
@@ -352,7 +305,7 @@ async function jsonRequest<T>(
     data: unknown,
     logs: Logs
 ): Promise<T> {
-    return parseJsonBody<T>(await requestRetry(method, url, headers, data, logs))
+    return parseJsonBody<T>(await request(method, url, headers, data, logs))
 }
 
 function parseBody(req: IncomingMessage): Promise<string> {
@@ -380,23 +333,23 @@ function isClusterScope(url: string): boolean {
     return false
 }
 
-function isNamespaceScope(url: string): boolean {
-    if (url.startsWith('/api/')) {
-        return url.split('/').length === 6
-    } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 7
-    }
-    return false
-}
+// function isNamespaceScope(url: string): boolean {
+//     if (url.startsWith('/api/')) {
+//         return url.split('/').length === 6
+//     } else if (url.startsWith('/apis/')) {
+//         return url.split('/').length === 7
+//     }
+//     return false
+// }
 
-function isNameScope(url: string): boolean {
-    if (url.startsWith('/api/')) {
-        return url.split('/').length === 7
-    } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 8
-    }
-    return false
-}
+// function isNameScope(url: string): boolean {
+//     if (url.startsWith('/api/')) {
+//         return url.split('/').length === 7
+//     } else if (url.startsWith('/apis/')) {
+//         return url.split('/').length === 8
+//     }
+//     return false
+// }
 
 function addNamespace(url: string, namespace: string): string {
     const parts = url.split('/')
