@@ -63,17 +63,17 @@ export function LoginCredentials() {
     const [permissionRestriction, setPermissionRestriction] = useState<boolean>(false)
     const disableButton = loading || error || rbacLoading || permissionRestriction
     const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
-
-    // TODO: consolidate common calls in one place
-    const resource: ResourceAttributes = {
-        name: '',
-        namespace: cluster?.namespace!,
-        resource: 'secret',
-        verb: 'get',
-        version: 'v1',
-    }
-
+    
     useEffect(() => {
+        // TODO: consolidate common calls in one place
+        const resource: ResourceAttributes = {
+            name: '',
+            namespace: cluster?.namespace!,
+            resource: 'secret',
+            verb: 'get',
+            version: 'v1',
+        }
+
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
@@ -84,7 +84,7 @@ export function LoginCredentials() {
         } finally {
             setRbacLoading(false)
         }
-    }, [resource])
+    }, [])
 
     const onClick = async () => {
         /* istanbul ignore next */
