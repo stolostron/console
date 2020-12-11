@@ -5,7 +5,7 @@ import { createServer as createHttpServer, IncomingMessage, Server as HttpServer
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
-import { info, Logs } from './logger'
+import { logInfo, Logs } from './logger'
 
 export type Server = HttpServer
 export type Request = IncomingMessage
@@ -84,9 +84,9 @@ export function startServer(
                             const logs: Logs = ((req as unknown) as { logs: Logs }).logs
                             logs.unshift([res.statusCode, `${time}ms`.padStart(6), req.method.padStart(5), req.url])
                             if (res.statusCode < 500) {
-                                info(logs)
+                                logInfo(logs)
                             } else {
-                                info(logs)
+                                logInfo(logs)
                             }
                         }
                     })
@@ -115,6 +115,10 @@ export function startServer(
 let isShuttingDown = false
 
 export async function stopServer(): Promise<void> {
+    if (process.env.NODE_ENV === 'development') {
+        process.exit(1)
+    }
+
     if (isShuttingDown) return
     isShuttingDown = true
 

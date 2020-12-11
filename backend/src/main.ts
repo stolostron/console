@@ -36,14 +36,3 @@ process
     })
 
 void startServer(requestHandler)
-
-setInterval(() => {
-    const used = process.memoryUsage()
-    process.stdout.write('process memory  ')
-    for (const key in used) {
-        process.stdout.write(
-            `${key} ${Math.round((((used as unknown) as Record<string, number>)[key] / 1024 / 1024) * 100) / 100} MB  `
-        )
-    }
-    process.stdout.write('\n')
-}, 10 * 1000).unref()
