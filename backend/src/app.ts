@@ -1,21 +1,13 @@
-// TODO Rquest Queue
-// TODO ETag Support
+// TODO Request Queue
 // TODO Compression Support
 
 /* istanbul ignore file */
-import {
-    IncomingHttpHeaders,
-    IncomingMessage,
-    request as httpRequest,
-    RequestOptions,
-    Server,
-    ServerResponse,
-} from 'http'
-import { Agent, get } from 'https'
-import { parse as parseUrl } from 'url'
-import { parse as parseQueryString, encode as stringifyQuery } from 'querystring'
 import { createReadStream } from 'fs'
+import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
+import { Agent, get } from 'https'
 import { extname } from 'path'
+import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
+import { parse as parseUrl } from 'url'
 import { Log, Logs } from './logger'
 
 const agent = new Agent({ rejectUnauthorized: false })
