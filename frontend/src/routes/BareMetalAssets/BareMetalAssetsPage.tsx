@@ -108,13 +108,6 @@ export function BareMetalAssetsTable(props: {
                             return BMAStatusMessage(bareMetalAssets, t)
                         },
                     },
-                    {
-                        header: t('bareMetalAsset.tableHeader.labels'),
-                        cell: (bareMetalAssets) => {
-                            const labels = GetLabels(bareMetalAssets)
-                            return <AcmLabels labels={labels} />
-                        },
-                    },
                 ]}
                 keyFn={keyFn}
                 tableActions={[

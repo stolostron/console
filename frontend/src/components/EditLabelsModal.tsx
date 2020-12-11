@@ -9,7 +9,7 @@ import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/manag
 import { Cluster } from '../lib/get-cluster'
 
 export function EditLabelsModal(props: { cluster?: Cluster; close: () => void }) {
-    const { t } = useTranslation()
+    const { t } = useTranslation(['cluster', 'common'])
 
     const [labels, setLabels] = useState<Record<string, string>>({})
     const [error, setError] = useState<{ title: string; subtitle: string } | undefined>()
@@ -79,11 +79,11 @@ export function EditLabelsModal(props: { cluster?: Cluster; close: () => void })
                                     setError({ title: errorInfo.message, subtitle: errorInfo.message })
                                 })
                         }}
-                        label={t('save')}
-                        processingLabel={t('saving')}
+                        label={t('common:save')}
+                        processingLabel={t('common:saving')}
                     />
                     <Button variant="link" onClick={props.close}>
-                        {t('cancel')}
+                        {t('common:cancel')}
                     </Button>
                 </ActionGroup>
             </AcmForm>
