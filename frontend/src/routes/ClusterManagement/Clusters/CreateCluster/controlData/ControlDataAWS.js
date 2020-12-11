@@ -457,7 +457,7 @@ const awsControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    //fetchAvailable: LOAD_OCP_IMAGES('aws'),
+    fetchAvailable: LOAD_OCP_IMAGES('aws'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,

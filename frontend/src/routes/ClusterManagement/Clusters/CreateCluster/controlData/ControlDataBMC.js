@@ -141,7 +141,7 @@ const bareControlData = [
     id: 'imageSet',
     type: 'combobox',
     placeholder: 'creation.ocp.cloud.select.ocp.image',
-    //fetchAvailable: LOAD_OCP_IMAGES('bmc'),
+    fetchAvailable: LOAD_OCP_IMAGES('bmc'),
     validation: {
       notification: 'creation.ocp.cluster.must.select.ocp.image',
       required: true,

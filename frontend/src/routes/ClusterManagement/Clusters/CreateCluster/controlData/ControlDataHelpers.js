@@ -2,6 +2,7 @@ import {
   VALIDATE_CIDR, 
   VALIDATE_NUMERIC, 
   VALIDATE_BASE_DNS_NAME_REQUIRED} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
+import { listClusterImageSets } from '../../../../../resources/cluster-image-set'
 import { listProviderConnections } from '../../../../../resources/provider-connection'
 import { NavigationPath } from '../../../../../NavigationPath'
 import _ from 'lodash'
@@ -25,7 +26,7 @@ export const LOAD_CLOUD_CONNECTIONS  = (provider)=>{
 
 export const LOAD_OCP_IMAGES  = (provider)=>{
   return {
-    //query: ClusterImageSets,
+    query: ()=>{return listClusterImageSets().promise},
     emptyDesc: 'creation.ocp.cloud.no.ocp.images',
     loadingDesc: 'creation.ocp.cloud.loading.ocp.images',
     setAvailable: setAvailableOCPImages.bind(null, provider),
@@ -44,8 +45,8 @@ const getImageVersion  = (image)=>{
 
 export const setAvailableOCPImages  = (provider, control, result)=>{
   const { loading } = result
-  const { data={} } = result
-  const { imageSets } = data
+  const { data } = result
+  const imageSets = data
   control.isLoading = false
   const error = imageSets ? null : result.error
   if (!control.available) {
@@ -58,11 +59,14 @@ export const setAvailableOCPImages  = (provider, control, result)=>{
       control.noHandlebarReplacements = true
       control.isFailed = true
     } else if (imageSets) {
+      control.isLoaded = true
       control.hasReplacements = true
       control.noHandlebarReplacements = true
       imageSets
         .forEach(item=>{
-          const {name, releaseImage, visible} = item
+          const { metadata, spec } = item
+          const { name, visible } = metadata
+          const { releaseImage } = spec
           // We only hide when visible is false. We consider visible the default
           if (visible !== 'false'){
             switch(provider) {
