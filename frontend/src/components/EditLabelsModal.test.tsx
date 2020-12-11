@@ -38,7 +38,7 @@ describe('EditLabelsModal', () => {
         getByTestId('label-input-button').click()
         userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
 
-        getByText('save').click()
+        getByText('common:save').click()
         const nockScope = nockPatch(resource, [
             { op: 'remove', path: `/metadata/labels/abc` },
             { op: 'add', path: `/metadata/labels/abc`, value: '123' },
@@ -66,7 +66,7 @@ describe('EditLabelsModal', () => {
             ],
             mockBadRequestStatus
         )
-        getByText('save').click()
+        getByText('common:save').click()
         await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
         waitFor(() => expect('There was bad data sent for accessing resources.').toBeInTheDocument())
     })
