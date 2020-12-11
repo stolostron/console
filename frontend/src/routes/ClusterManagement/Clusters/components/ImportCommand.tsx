@@ -56,7 +56,12 @@ export function ImportCommandContainer() {
         )
     }
 
-    return <ImportCommand importCommand={importCommand} />
+    return (
+        <>
+            <AcmAlert id="pending-import-notification" isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} style={{ marginBottom: '24px' }} />
+            <ImportCommand importCommand={importCommand} />
+        </>
+    )
 }
 
 type ImportCommandProps = {
