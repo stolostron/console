@@ -13,7 +13,6 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { makeStyles } from '@material-ui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../../../../resources/self-subject-access-review'
-import { resultsSettled } from '../../../../lib/resource-request'
 
 export type LoginCredential = {
     username: string
@@ -85,7 +84,7 @@ export function LoginCredentials() {
         } finally {
             setRbacLoading(false)
         }
-    }, [])
+    }, [resource])
 
     const onClick = async () => {
         /* istanbul ignore next */
