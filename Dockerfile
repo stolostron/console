@@ -15,7 +15,7 @@ COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/nod
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=builder /opt/app-root/src/backend/node_modules ./node_modules
+# COPY --from=builder /opt/app-root/src/backend/node_modules ./node_modules
 COPY --from=builder /opt/app-root/src/backend/build ./
 COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
