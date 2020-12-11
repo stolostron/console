@@ -115,7 +115,6 @@ export function startServer(
 let isShuttingDown = false
 
 export async function stopServer(): Promise<void> {
-    process.exit(0)
     if (isShuttingDown) return
     isShuttingDown = true
 
