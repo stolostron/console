@@ -23,9 +23,8 @@ import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { StatusField, DistributionField } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { EditLabelsModal } from '../../../components/EditLabelsModal'
-import { IResource } from '../../../resources/resource'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources/managed-cluster'
+import { EditLabelsModal } from './components/EditLabelsModal'
+
 
 const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     {
@@ -148,7 +147,7 @@ export function ClustersTable(props: {
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [errors, setErrors] = useState<string[]>([])
 
-    const [editResourceLabels, setEditResourceLabels] = useState<IResource | undefined>()
+    const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -187,9 +186,9 @@ export function ClustersTable(props: {
                 message={confirm.message}
             ></ConfirmModal>
             <EditLabelsModal
-                resource={editResourceLabels}
+                cluster={editClusterLabels}
                 close={() => {
-                    setEditResourceLabels(undefined)
+                    setEditClusterLabels(undefined)
                     props.refresh()
                 }}
             />
@@ -290,16 +289,7 @@ export function ClustersTable(props: {
                     {
                         id: 'editLabels',
                         title: t('managed.editLabels'),
-                        click: (cluster) => {
-                            setEditResourceLabels({
-                                apiVersion: ManagedClusterApiVersion,
-                                kind: ManagedClusterKind,
-                                metadata: {
-                                    name: cluster.name,
-                                    labels: cluster.labels,
-                                },
-                            })
-                        },
+                        click: (cluster) => setEditClusterLabels(cluster),
                     },
                     { id: 'launchToCluster', title: t('managed.launch'), click: (managedCluster) => {} },
                     { id: 'upgradeCluster', title: t('managed.upgrade'), click: (managedCluster) => {} },

@@ -102,5 +102,11 @@
   "modal.detach.content": "Detaching {{name}} is irreversible. Are you sure that you want to continue?",
   "tab.overview": "Overview",
   "tab.nodes": "Nodes",
-  "tab.settings": "Settings"
+  "tab.settings": "Settings",
+
+  "labels.capital": "Labels",
+  "labels.lower": "labels",
+  "labels.button.add": "Add label",
+  "labels.edit.title": "Edit labels",
+  "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels."
 }
