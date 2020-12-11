@@ -28,7 +28,7 @@ const useStyles = makeStyles({
         paddingLeft: '0 !important',
         '& svg': {
             width: '24px',
-            fill: (props: LoginCredentialStyle) => (props.disabled ? '#000' : undefined),
+            fill: (props: LoginCredentialStyle) => (props.disabled ? '#000' : '#06C'),
         },
         '& span': {
             color: (props: LoginCredentialStyle) => (props.disabled ? '#000' : undefined),
