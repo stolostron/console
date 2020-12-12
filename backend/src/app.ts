@@ -203,11 +203,30 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 ext = '.html'
                 url = '/index.html'
             }
-            const readStream = createReadStream('./public' + url, { autoClose: true })
-            if (readStream) {
+            const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
+            const contentType = contentTypes[ext]
+            if (/\bgzip\b/.test(acceptEncoding)) {
+                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
                 readStream
                     .on('open', () => {
-                        const contentType = contentTypes[ext]
+                        res.writeHead(200, {
+                            'Content-Encoding': 'gzip',
+                            'Content-Type': contentType,
+                            'Cache-Control': cacheControl,
+                        })
+                    })
+                    .on('error', (err) => {
+                        if (ext === '.json') {
+                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
+                        } else {
+                            return res.writeHead(404).end()
+                        }
+                    })
+                    .pipe(res, { end: true })
+            } else {
+                const readStream = createReadStream('./public' + url, { autoClose: true })
+                readStream
+                    .on('open', () => {
                         res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
                     })
                     .on('error', (err) => {
