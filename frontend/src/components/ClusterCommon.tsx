@@ -40,11 +40,14 @@ export function DistributionField(props: { data: DistributionInfo | undefined })
     if (props.data.ocp?.availableUpdates && props.data.ocp.availableUpdates.length > 0) {
         return (
             <span>
-                {props.data.displayVersion} (
-                <AcmButton variant={ButtonVariant.link} style={{ padding: 0, margin: 0, fontSize: '14px' }}>
-                    {t('upgrade.available')}
-                </AcmButton>
-                )
+                {props.data.displayVersion}{' '}
+                <span style={{ whiteSpace: 'nowrap' }}>
+                    (
+                    <AcmButton variant={ButtonVariant.link} style={{ padding: 0, margin: 0, fontSize: '14px' }}>
+                        {t('upgrade.available')}
+                    </AcmButton>
+                    )
+                </span>
             </span>
         )
     } else {
