@@ -189,7 +189,7 @@ function getRequest<ResourceType, ResultType = ResourceType>(
     })
 }
 
-function postRequest<ResourceType, ResultType = ResourceType>(
+export function postRequest<ResourceType, ResultType = ResourceType>(
     url: string,
     data: ResourceType,
     options?: IRequestOptions
@@ -236,7 +236,7 @@ function deleteRequest(url: string, options?: IRequestOptions): IRequestResult {
     })
 }
 
-function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions): IRequestResult<ResultType> {
+export function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions): IRequestResult<ResultType> {
     const cancelTokenSource = Axios.CancelToken.source()
     return {
         promise: axiosRetry<ResultType>({
@@ -307,7 +307,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     }
 }
 
-function axiosRetry<ResponseType>(
+export function axiosRetry<ResponseType>(
     config: AxiosRequestConfig & IRequestOptions & unknown
 ): Promise<AxiosResponse<ResponseType>> {
     const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]

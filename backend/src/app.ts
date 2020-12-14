@@ -79,15 +79,17 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
         // Search
         if (url.startsWith('/search')) {
+            console.log('MADE IT HERE')
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
-            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+            const searchUrl = process.env.SEARCH_API_URL || 'https://search-search-api:4010'
+            console.log('searchUrl', searchUrl)
             const headers = req.headers
-            headers.host = parseUrl(acmUrl).host
+            headers.host = parseUrl(searchUrl).host
             headers.authorization = `Bearer ${token}`
             const options: RequestOptions = {
-                ...parseUrl(acmUrl + '/multicloud/search/graphql'),
+                ...parseUrl(searchUrl + '/searchapi/graphql'),
                 ...{ method: req.method, headers, agent },
             }
             const log = optionsLog(options)
