@@ -16,6 +16,7 @@ import {
 import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
 import { withRouter } from "react-router-dom";
 import { withTranslation } from 'react-i18next';
+import { getSecret } from '../../../../../resources/secret'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
@@ -72,13 +73,14 @@ const setAvailableBMAs = (control, result) => {
       control.isFailed = true
     } else if (bmas) {
       control.isLoaded = true
+      control.active = []
       control.available = bmas
-        .filter(bma => !_.get(bma, 'clusterDeployment.name'))
         .map(formatBMA)
         .sort(({hostName:a},{hostName:b})=>{
           return a.localeCompare(b)
         })
-      control.setActive([])
+      control.available
+         .forEach(getCreds)
     } else {
       control.isLoading = loading
     }
@@ -87,13 +89,24 @@ const setAvailableBMAs = (control, result) => {
 
 const formatBMA = (bma) => ({
   id: bma.metadata.uid,
-  macAddress: bma.bootMACAddress,
-  username: bma.bmc.username,
-  password: bma.bmc.password,
-  bmcAddress: bma.bmc.address,
+  macAddress: bma.spec.bootMACAddress,
+  credName: bma.spec.bmc.credentialsName,
+  credNamespace: bma.metadata.namespace,
+  bmcAddress: bma.spec.bmc.address,
   hostName: bma.metadata.name,
   hostNamespace: bma.metadata.namespace,
 })
+
+
+async function getCreds(available) {
+  getSecret({ namespace: available.credNamespace, name: available.credName })
+      .promise.then(({data}) => {
+        available.username = Buffer.from(data.username, 'base64').toString('ascii')
+        available.password = Buffer.from(data.password, 'base64').toString('ascii')
+        delete available.credName
+        delete available.credNamespace
+      })
+};
 
 const sortTable = (items, selectedKey, sortDirection, active)=>{
   if (selectedKey==='role' && active.length>0) {
