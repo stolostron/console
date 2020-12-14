@@ -8,11 +8,11 @@
 
     .creation-view-split-container {
       &.showEditor {
-        height: calc(100vh - 200px);
+        height: calc(100vh - 220px);
 
         .creation-view-controls-container {
           padding-top: 1.0rem;
-          height: calc(100vh - 205px);
+          height: calc(100vh - 225px);
         }
       }
     }

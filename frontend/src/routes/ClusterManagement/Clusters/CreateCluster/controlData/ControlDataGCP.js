@@ -1,7 +1,7 @@
 
 import {
   VALIDATE_ALPHANUMERIC, 
-  VALIDATE_NUMERIC} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
+  VALIDATE_NUMERIC} from 'temptifly'
 import {CREATE_CLOUD_CONNECTION, LOAD_CLOUD_CONNECTIONS, LOAD_OCP_IMAGES,
   networkingControlData, labelControlData} from './ControlDataHelpers'
 

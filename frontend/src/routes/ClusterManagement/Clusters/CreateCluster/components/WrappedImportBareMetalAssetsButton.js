@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from 'carbon-components-react'
-import { Tooltip } from 'C:/Users/jswanke/git/temptifly/src' //'temptifly'
+import { Tooltip } from 'temptifly'
 
 class WrappedImportBareMetalAssetsButton extends React.Component {
   static propTypes = {

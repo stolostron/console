@@ -12,7 +12,7 @@ import {
   VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
   VALIDATE_ALPHANUMERIC,
   VALIDATE_ALPHANUMERIC_PERIOD,
-  VALIDATE_MAC_ADDRESS} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
+  VALIDATE_MAC_ADDRESS} from 'temptifly'
 import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
 import { withRouter } from "react-router-dom";
 import { withTranslation } from 'react-i18next';

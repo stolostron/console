@@ -1,5 +1,5 @@
 
-import { VALID_DNS_LABEL } from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
+import { VALID_DNS_LABEL } from 'temptifly'
 import installConfig from '../templates/install-config.hbs'
 
 import awsControlData from './ControlDataAWS'

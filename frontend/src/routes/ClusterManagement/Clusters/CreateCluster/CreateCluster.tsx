@@ -10,8 +10,8 @@ import './style.scss'
 // data
 import {controlData} from './controlData/ControlData'
 
-//import TemplateEditor from 'temptifly'
-import TemplateEditor from 'C:/Users/jswanke/git/temptifly/src'
+import TemplateEditor from 'temptifly'
+import 'temptifly/dist/styles.css'
 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'

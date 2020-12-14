@@ -2,7 +2,7 @@ import {
   VALIDATE_NUMERIC,
   VALIDATE_IP,
   VALIDATE_BASE_DNS_NAME_REQUIRED
-} from 'C:/Users/jswanke/git/temptifly/src'//'temptifly'
+} from 'temptifly'
 import {CREATE_CLOUD_CONNECTION, LOAD_CLOUD_CONNECTIONS, LOAD_OCP_IMAGES,
   labelControlData} from './ControlDataHelpers'
 
