@@ -1,6 +1,6 @@
 import { AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@open-cluster-management/ui-components'
-import { Nav, NavItem, NavList, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
-import React, { Fragment, lazy, Suspense, useContext, useState, useEffect } from 'react'
+import { Page } from '@patternfly/react-core'
+import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
