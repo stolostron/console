@@ -1,7 +1,6 @@
 import {
     AcmButton,
     AcmEmptyState,
-    AcmLabels,
     AcmPageCard,
     AcmPageHeader,
     AcmTable,
@@ -10,7 +9,7 @@ import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { BareMetalAsset, BMAStatusMessage, GetLabels, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
 import { ErrorPage } from '../../components/ErrorPage'
 import { deleteResources } from '../../lib/delete-resources'
@@ -106,13 +105,6 @@ export function BareMetalAssetsTable(props: {
                         header: t('bareMetalAsset.tableHeader.status'),
                         cell: (bareMetalAssets) => {
                             return BMAStatusMessage(bareMetalAssets, t)
-                        },
-                    },
-                    {
-                        header: t('bareMetalAsset.tableHeader.labels'),
-                        cell: (bareMetalAssets) => {
-                            const labels = GetLabels(bareMetalAssets)
-                            return <AcmLabels labels={labels} />
                         },
                     },
                 ]}

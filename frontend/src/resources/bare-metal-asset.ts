@@ -30,7 +30,6 @@ export interface BareMetalAsset {
 }
 
 export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation: Function) {
-    GetLabels(bareMetalAssets)
     if (bareMetalAssets.status) {
         let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
         let mostCurrentStatus = bareMetalAssets.status!.conditions[0].type
@@ -65,15 +64,6 @@ function GetStatusMessage(status: string) {
         default:
             return ''
     }
-}
-
-export function GetLabels(bareMetalAssets: BareMetalAsset) {
-    const labels = []
-    const labelDict = bareMetalAssets.metadata.labels
-    for (let key in labelDict) {
-        labels.push(key + '=' + labelDict[key])
-    }
-    return labels
 }
 
 export interface BMASecret extends V1Secret {

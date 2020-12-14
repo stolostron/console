@@ -79,7 +79,13 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
     const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
-    return patchRequest<Resource, ResultType>(url, data, options)
+    let headers: Record<string, string> = {}
+    if (Array.isArray(data)) {
+        headers['Content-Type'] = 'application/json-patch+json'
+    } else {
+        headers['Content-Type'] = 'application/merge-patch+json'
+    }
+    return patchRequest<Resource, ResultType>(url, data, headers, options)
 }
 
 export function deleteResource<Resource extends IResource>(
@@ -123,15 +129,19 @@ export function listResources<Resource extends IResource>(
     }
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
-        promise: result.promise.then((result) =>
-            (result.items as Resource[]).map((item) => ({
-                ...item,
-                ...{
-                    apiVersion: resource.apiVersion,
-                    kind: resource.kind,
-                },
-            }))
-        ),
+        promise: result.promise.then((result) => {
+            if (Array.isArray(result.items)) {
+                return (result.items as Resource[]).map((item) => ({
+                    ...item,
+                    ...{
+                        apiVersion: resource.apiVersion,
+                        kind: resource.kind,
+                    },
+                }))
+            } else {
+                return []
+            }
+        }),
         abort: result.abort,
     }
 }
@@ -204,6 +214,7 @@ function putRequest<ResourceType, ResultType = ResourceType>(
 function patchRequest<ResourceType, ResultType = ResourceType>(
     url: string,
     data: unknown,
+    headers: Record<string, string>,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
     return axiosRequest<ResultType>({
@@ -211,7 +222,7 @@ function patchRequest<ResourceType, ResultType = ResourceType>(
             url,
             method: 'PATCH',
             validateStatus: (status) => true,
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             data,
         },
         ...options,

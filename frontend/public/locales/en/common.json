@@ -1,6 +1,8 @@
 {
     "cancel": "Cancel",
     "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving",
     "clipboardCopy": "Copy to clipboard",
     "copied": "Copied",
     "label.add": "Add label",
