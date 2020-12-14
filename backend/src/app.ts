@@ -87,7 +87,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 ...parseUrl(acmUrl + '/multicloud/search/graphql'),
                 ...{ method: req.method, headers, agent },
             }
-            const start = process.hrtime()
             return req.pipe(
                 httpRequest(options, (response) => {
                     res.writeHead(response.statusCode, response.headers)

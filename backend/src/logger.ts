@@ -25,6 +25,6 @@ switch (process.env.LOG_LEVEL) {
         break
 }
 
-function noop(...args: any[]): void {
+function noop(...args: unknown[]): void {
     // Do Nothing
 }
