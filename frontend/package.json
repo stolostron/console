@@ -6,7 +6,7 @@
     "proxy": "http://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.13.0",
-        "@open-cluster-management/ui-components": "^0.1.116",
+        "@open-cluster-management/ui-components": "^0.1.118",
         "@patternfly/react-core": "^4.84.3",
         "@patternfly/react-table": "^4.19.44",
         "@types/moment": "^2.13.0",
@@ -33,7 +33,7 @@
         "@testing-library/user-event": "^12.6.0",
         "@types/get-value": "^3.0.1",
         "@types/jest": "^26.0.19",
-        "@types/node": "^14.14.13",
+        "@types/node": "^14.14.14",
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "jest-junit": "^12.0.0",
         "nock": "^13.0.5",
