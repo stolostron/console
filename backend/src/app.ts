@@ -34,10 +34,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
         }
 
-        if (url.startsWith('/cluster-management')) {
-            url = url.substr('/cluster-management'.length)
-        }
-
         if (url.startsWith('/namespaced')) {
             url = url.substr('/namespaced'.length)
         }
