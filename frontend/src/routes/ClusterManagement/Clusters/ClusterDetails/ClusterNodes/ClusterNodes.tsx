@@ -1,5 +1,5 @@
 import React, { ReactNode, useContext } from 'react'
-import { AcmPageCard, AcmTable, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import { AcmPageCard, AcmTable, compareNumbers, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
@@ -50,25 +50,25 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
         return roleA.localeCompare(roleB)
     }
 
-    function memorySortFn(node: NodeInfo): number {
+    function getNodeMemory(node: NodeInfo): number {
         try {
             const memory = parseInt(node.capacity!.memory)
+            if (memory === 0) return 0
             if (isNaN(memory)) return 0
             return memory
         } catch (err) {
             return 0
         }
     }
-    function memoryCellFn(node: NodeInfo): ReactNode {
-        try {
-            const memory = parseInt(node.capacity!.memory)
-            if (isNaN(memory)) return '-'
-            if (memory === 0) return '-'
-            return formatFileSize(memory)
-        } catch (err) {
-            return ''
-        }
+    function memorySortFn(a: NodeInfo, b: NodeInfo): number {
+        return compareNumbers(getNodeMemory(a), getNodeMemory(b))
     }
+    function memoryCellFn(node: NodeInfo): ReactNode {
+        const memory = getNodeMemory(node)
+        if (memory === 0 || memory === undefined) return '-'
+        return formatFileSize(memory)
+    }
+
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
             header: t('table.name'),
