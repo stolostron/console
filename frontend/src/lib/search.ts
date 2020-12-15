@@ -1,6 +1,6 @@
-import { IRequestResult, postRequest } from './resource-request'
+import { IRequestResult, postRequest, baseUrl } from './resource-request'
 
-export const apiSearchUrl = '/cluster-management/proxy/search'
+export const apiSearchUrl = '/cluster-management/search'
 
 export type ISearchResult = {
     data: {
@@ -26,7 +26,7 @@ export type SearchQuery = {
 }
 
 export function queryStatusCount(cluster: string): IRequestResult<ISearchResult> {
-    return postRequest<SearchQuery, ISearchResult>(apiSearchUrl, {
+    return postRequest<SearchQuery, ISearchResult>(baseUrl + apiSearchUrl, {
         operationName: 'searchResult',
         variables: {
             input: [

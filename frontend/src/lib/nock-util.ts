@@ -225,6 +225,15 @@ export function nockSearch(
     statusCode: number = 201,
     polling: boolean = true
 ) {
+    nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiSearchUrl)
+        .optionally()
+        .reply(204, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+
     let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).post(
         apiSearchUrl,
         JSON.stringify(query)

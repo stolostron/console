@@ -8,7 +8,7 @@ import {
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
 
-const baseUrl = process.env.REACT_APP_BACKEND ?? ''
+export const baseUrl = process.env.REACT_APP_BACKEND ?? ''
 export const apiProxyUrl = `/cluster-management/proxy`
 export const apiNamespacedUrl = `/cluster-management/namespaced`
 
