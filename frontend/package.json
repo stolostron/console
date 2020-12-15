@@ -41,7 +41,7 @@
         "ts-jest": "^26.4.4"
     },
     "scripts": {
-        "start": "REACT_APP_BACKEND=http://localhost:4000 react-scripts start",
+        "start": "REACT_APP_BACKEND='' react-scripts start",
         "build": "REACT_APP_BACKEND='' react-scripts build",
         "test": "JEST_JUNIT_OUTPUT_DIR=coverage react-scripts test --all --watchAll=false --ci --coverage --reporters=default --reporters=jest-junit --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen",
         "test:watch": "react-scripts test",
