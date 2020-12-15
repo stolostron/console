@@ -62,8 +62,8 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     function memoryCellFn(node: NodeInfo): ReactNode {
         try {
             const memory = parseInt(node.capacity!.memory)
-            if (isNaN(memory)) return 0
-            if (memory === 0) return '' //
+            if (isNaN(memory)) return '-'
+            if (memory === 0) return '-'
             return formatFileSize(memory)
         } catch (err) {
             return ''
@@ -99,7 +99,7 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
         {
             header: t('table.cpu'),
             sort: 'capacity.cpu',
-            cell: 'capacity.cpu',
+            cell: (node) => node.capacity?.cpu ?? '-',
         },
         {
             header: t('table.memory'),
