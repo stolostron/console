@@ -48,7 +48,7 @@ const AddConnectionBtn = () => {
 export function ProviderConnectionsPageContent() {
     const { error, data, startPolling, refresh } = useQuery(listProviderConnections)
     useEffect(startPolling, [startPolling])
-    usePageContext(data !== undefined && !!data, AddConnectionBtn)
+    usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
     if (error) return <ErrorState error={error} />
     return <ProviderConnectionsTable providerConnections={data} refresh={refresh} />
 }
@@ -97,7 +97,13 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                 message={confirm.message}
             ></ConfirmModal>
             <AcmTable<ProviderConnection>
-                emptyState={<AcmEmptyState title={t('empty.title')} />}
+                emptyState={
+                    <AcmEmptyState
+                        title={t('empty.title')}
+                        message={t('empty.subtitle')}
+                        action={<AddConnectionBtn />}
+                    />
+                }
                 plural="connections"
                 items={props.providerConnections}
                 columns={[
@@ -115,28 +121,28 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         cell: (item: ProviderConnection) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             let provider
-                            switch(label) {
-                            case ProviderID.GCP:
-                                provider = Provider.gcp
-                                break
-                            case ProviderID.AWS:
-                                provider = Provider.aws
-                                break
-                            case ProviderID.AZR:
-                                provider = Provider.azure
-                                break
-                            case ProviderID.VMW:
-                                provider = Provider.vmware
-                                break
-                            case ProviderID.BMC:
-                                provider = Provider.baremetal
-                                break
-                            case ProviderID.CRH:
-                                provider = Provider.redhatcloud
-                                break
-                            case ProviderID.UKN:
-                            default:
-                                provider = Provider.other
+                            switch (label) {
+                                case ProviderID.GCP:
+                                    provider = Provider.gcp
+                                    break
+                                case ProviderID.AWS:
+                                    provider = Provider.aws
+                                    break
+                                case ProviderID.AZR:
+                                    provider = Provider.azure
+                                    break
+                                case ProviderID.VMW:
+                                    provider = Provider.vmware
+                                    break
+                                case ProviderID.BMC:
+                                    provider = Provider.baremetal
+                                    break
+                                case ProviderID.CRH:
+                                    provider = Provider.redhatcloud
+                                    break
+                                case ProviderID.UKN:
+                                default:
+                                    provider = Provider.other
                             }
                             return <AcmInlineProvider provider={provider} />
                         },
