@@ -5,7 +5,7 @@ import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
-import { get, keyBy } from 'lodash-es'
+import { get, keyBy } from 'lodash'
 import './style.css'
 
 // data

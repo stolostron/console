@@ -4,7 +4,7 @@ import {
     replaceResource,
 } from './resource-request'
 import { createProject } from '../resources/project'
-import { keyBy } from 'lodash-es'
+import { keyBy } from 'lodash'
 
 export async function createCluster(resources: JsonArray) {
 
