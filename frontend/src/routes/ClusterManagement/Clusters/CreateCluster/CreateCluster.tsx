@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { get, keyBy } from 'lodash-es'
-import './style.scss'
+import './style.css'
 
 // data
 import {controlData} from './controlData/ControlData'
