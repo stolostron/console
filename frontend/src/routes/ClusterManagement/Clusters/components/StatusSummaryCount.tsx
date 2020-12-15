@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Card, CardBody, Skeleton } from '@patternfly/react-core'
 import { AcmCountCardSection } from '@open-cluster-management/ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { IRequestResult, postRequest } from '../../../../lib/resource-request'
+import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 
@@ -18,11 +18,13 @@ export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
-    const { data, loading, startPolling } = useQuery(
+    const { data, loading, startPolling, error } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
 
     useEffect(startPolling, [startPolling])
+
+    console.log('loading', loading, 'data', data, 'error', error)
 
     if (loading) {
         return (
@@ -42,6 +44,7 @@ export function StatusSummaryCount() {
         return (
             <div style={{ marginTop: '24px' }}>
                 <AcmCountCardSection
+                    id='summary-status'
                     title={t('summary.status')}
                     cards={[
                         {
@@ -88,54 +91,4 @@ export function StatusSummaryCount() {
     }
 
     return null
-}
-
-type ISearchResult = {
-    data: {
-        searchResult: {
-            count: number
-            related: {
-                count: number
-                kind: string
-            }[]
-        }[]
-    }
-}
-
-type SearchQuery = {
-    operationName: string
-    variables: {
-        input: {
-            filters: { property: string; values: string[] | string }[]
-            relatedKinds?: string[]
-        }[]
-    }
-    query: string
-}
-
-function queryStatusCount(cluster: string): IRequestResult<ISearchResult> {
-    return postRequest<SearchQuery, ISearchResult>('/cluster-management/proxy/search', {
-        operationName: 'searchResult',
-        variables: {
-            input: [
-                {
-                    filters: [
-                        { property: 'kind', values: ['subscription'] },
-                        { property: 'cluster', values: [cluster] },
-                    ],
-                    relatedKinds: ['application'],
-                },
-                {
-                    filters: [
-                        { property: 'compliant', values: ['!Compliant'] },
-                        { property: 'kind', values: ['policy'] },
-                        { property: 'namespace', values: [cluster] },
-                        { property: 'cluster', values: 'local-cluster' },
-                    ],
-                },
-            ],
-        },
-        query:
-            'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
-    })
 }
