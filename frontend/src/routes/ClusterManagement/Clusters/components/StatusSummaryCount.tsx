@@ -19,7 +19,7 @@ export function StatusSummaryCount() {
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
     /* istanbul ignore next */
-    const { data, loading, startPolling, error } = useQuery(
+    const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
 
