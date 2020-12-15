@@ -54,7 +54,7 @@ const managedClusterCols: IAcmTableColumn<Cluster>[] = [
     },
     {
         header: 'Labels',
-        // search: 'labels',
+        search: (cluster) => Object.keys(cluster.labels ?? {}).map((key) => `${key}=${cluster.labels![key]}`),
         cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
     },
     {
