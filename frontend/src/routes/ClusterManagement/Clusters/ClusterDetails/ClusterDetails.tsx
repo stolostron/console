@@ -8,7 +8,7 @@ import {
     AcmPage,
     AcmButton,
     AcmActionGroup,
-    AcmLaunchLink
+    AcmLaunchLink,
 } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -51,7 +51,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
-    
+
     // Cluster
     const { data, startPolling, loading, error, refresh } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
@@ -138,7 +138,19 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     return (
         <AcmPage>
-            <ClusterContext.Provider value={{ cluster, addons, addonsError, importCommand, setImportCommand, importCommandError, setImportCommandError, editModalOpen, setEditModalOpen }}>
+            <ClusterContext.Provider
+                value={{
+                    cluster,
+                    addons,
+                    addonsError,
+                    importCommand,
+                    setImportCommand,
+                    importCommandError,
+                    setImportCommandError,
+                    editModalOpen,
+                    setEditModalOpen,
+                }}
+            >
                 <EditLabelsModal
                     cluster={editModalOpen ? cluster : undefined}
                     close={() => {
@@ -147,11 +159,42 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     }}
                 />
                 <AcmPageHeader
-                    title={match.params.id}
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
                         { text: match.params.id, to: '' },
                     ]}
+                    title={match.params.id}
+                    navigation={
+                        <AcmSecondaryNav>
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    location.pathname === NavigationPath.clusterOverview.replace(':id', match.params.id)
+                                }
+                            >
+                                <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
+                                    {t('tab.overview')}
+                                </Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    location.pathname === NavigationPath.clusterNodes.replace(':id', match.params.id)
+                                }
+                            >
+                                <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>
+                                    {t('tab.nodes')}
+                                </Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    location.pathname === NavigationPath.clusterSettings.replace(':id', match.params.id)
+                                }
+                            >
+                                <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
+                                    {t('tab.settings')}
+                                </Link>
+                            </AcmSecondaryNavItem>
+                        </AcmSecondaryNav>
+                    }
                     actions={
                         <Fragment>
                             <AcmActionGroup>
@@ -169,27 +212,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </Fragment>
                     }
                 />
-                <AcmSecondaryNav>
-                    <AcmSecondaryNavItem
-                        isActive={location.pathname === NavigationPath.clusterOverview.replace(':id', match.params.id)}
-                    >
-                        <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
-                            {t('tab.overview')}
-                        </Link>
-                    </AcmSecondaryNavItem>
-                    <AcmSecondaryNavItem
-                        isActive={location.pathname === NavigationPath.clusterNodes.replace(':id', match.params.id)}
-                    >
-                        <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>{t('tab.nodes')}</Link>
-                    </AcmSecondaryNavItem>
-                    <AcmSecondaryNavItem
-                        isActive={location.pathname === NavigationPath.clusterSettings.replace(':id', match.params.id)}
-                    >
-                        <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
-                            {t('tab.settings')}
-                        </Link>
-                    </AcmSecondaryNavItem>
-                </AcmSecondaryNav>
+
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusterOverview}>
