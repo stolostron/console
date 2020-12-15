@@ -118,5 +118,5 @@
   "summary.nodes.inactive": "{{number}} nodes inactive",
   "summary.applications.launch": "Go to Applications",
   "summary.violations.launch": "Go to Policies",
-  "summary.status.loading": "Loading application and aiolation status"
+  "summary.status.loading": "Loading application and violation status"
 }
