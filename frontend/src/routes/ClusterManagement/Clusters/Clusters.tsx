@@ -6,7 +6,6 @@ import {
     AcmPageCard,
     AcmTable,
     AcmDropdown,
-    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { AlertActionCloseButton, AlertVariant, Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
