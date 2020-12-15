@@ -264,7 +264,7 @@ export function ClustersTable(props: {
                                             message: `You are about to destroy ${cluster.name}. This action is irreversible.`,
                                             open: true,
                                             confirm: () => {
-                                                deleteCluster(cluster.name!, false).promise.then((results) => {
+                                                deleteCluster(cluster.name!, true).promise.then((results) => {
                                                     results.forEach((result) => {
                                                         if (result.status === 'rejected') {
                                                             setErrors([
