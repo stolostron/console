@@ -52,7 +52,7 @@
     "addConnection.tenantid.label": "Tenant ID",
     "addConnection.tenantid.placeholder": "Enter your Tenant ID",
     "addConnection.tenantid.labelHelp": "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'",
-    "addConnection.gcProjectID.label": "Google cloud platform project ID",
+    "addConnection.gcProjectID.label": "Google Cloud Platform project ID",
     "addConnection.gcProjectID.placeholder": "Enter your Google Cloud Platform project ID",
     "addConnection.gcProjectID.labelHelp": "A project organizes all your Google Cloud resources. A project consists of a set of users; a set of APIs; and billing, authentication, and monitoring settings for those APIs. So, for example, all of your Cloud Storage buckets and objects, along with user permissions for accessing them, reside in a project.",
     "addConnection.gcServiceAccountKey.label": "Google cloud platform service account JSON key",
@@ -109,7 +109,7 @@
     "addConnection.sshPublicKey.label": "SSH public key",
     "addConnection.sshPublicKey.placeholder": "Enter your SSH Public Key",
     "addConnection.sshPublicKey.labelHelp": "The public SSH key to use to access your cluster machines.",
-    "addConnection.ocmapitoken.label": "OpenShift cluster manager API token",
+    "addConnection.ocmapitoken.label": "OpenShift Cluster Manager API token",
     "addConnection.ocmapitoken.placeholder": "Enter the OpenShift Cluster Manager API Token",
     "addConnection.ocmapitoken.labelHelp": "The OpenShift Cluster Manager API Token can be retrieved from - https://cloud.redhat.com/openshift/token",
 
