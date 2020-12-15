@@ -5,7 +5,6 @@
 // TODO /managed-clusters route
 // TODO /upgrade route
 
-/* istanbul ignore file */
 import { createReadStream } from 'fs'
 import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
