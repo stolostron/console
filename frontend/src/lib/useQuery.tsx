@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { IRequestResult } from './resource-request'
 
-export function useQuery<T>(restFunc: () => IRequestResult<T[]>) {
+export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>) {
     const [data, setData] = useState<T[]>()
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
@@ -12,7 +12,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T[]>) {
             const result = restFunc()
             result.promise
                 .then((data) => {
-                    setData(data)
+                    setData(Array.isArray(data) ? data : [data])
                     setLoading(false)
                     setError(undefined)
                 })

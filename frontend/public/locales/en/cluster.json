@@ -111,5 +111,14 @@
   "labels.lower": "labels",
   "labels.button.add": "Add label",
   "labels.edit.title": "Edit labels",
-  "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels."
+  "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.",
+
+  "summary.status": "Status",
+  "summary.nodes": "Nodes",
+  "summary.applications": "Applications",
+  "summary.violations": "Policy violations",
+  "summary.nodes.inactive": "{{number}} nodes inactive",
+  "summary.applications.launch": "Go to Applications",
+  "summary.violations.launch": "Go to Policies",
+  "summary.status.loading": "Loading application and violation status"
 }

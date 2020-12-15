@@ -3,6 +3,7 @@ import { join } from 'path'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
+import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -216,6 +217,43 @@ export function nockDelete(resource: IResource, response?: IResource) {
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
+}
+
+export function nockSearch(
+    query: SearchQuery,
+    response?: ISearchResult,
+    statusCode: number = 201,
+    polling: boolean = true
+) {
+    nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+        .options(apiSearchUrl)
+        .optionally()
+        .reply(204, undefined, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+
+    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).post(
+        apiSearchUrl,
+        JSON.stringify(query)
+    )
+
+    let finalNetworkMock = networkMock.reply(statusCode, response, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    })
+
+    if (polling) {
+        networkMock.optionally().times(20).reply(201, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
+    }
+
+    return finalNetworkMock
 }
 
 export const mockBadRequestStatus = {
