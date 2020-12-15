@@ -1,10 +1,13 @@
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { nockSearch } from '../../../../lib/nock-util'
+
+window.open = jest.fn()
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -129,7 +132,7 @@ const mockSearchQuery = {
 const mockSearchResponse = {
     data: {
         searchResult: [
-            { count: 14, related: [], __typename: 'SearchResult' },
+            { count: 14, related: [{ kind: 'application', count: 4 }], __typename: 'SearchResult' },
             {
                 count: 1,
                 related: [
@@ -158,8 +161,21 @@ describe('StatusSummaryCount', () => {
             await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
             await waitFor(() => expect(search.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
-            console.log(screen.debug())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+            userEvent.click(screen.getByText(4))
+            expect(window.open).toHaveBeenCalled()
+
+            userEvent.click(screen.getByText('summary.applications.launch'))
+            expect(window.open).toHaveBeenCalled()
+
+            userEvent.click(screen.getByText(1))
+            expect(window.open).toHaveBeenCalled()
+
+            userEvent.click(screen.getByText('summary.violations.launch'))
+            expect(window.open).toHaveBeenCalled()
+
+            userEvent.click(screen.getByText(6))
             await new Promise((resolve) => setTimeout(resolve, 1500))
         })
     })

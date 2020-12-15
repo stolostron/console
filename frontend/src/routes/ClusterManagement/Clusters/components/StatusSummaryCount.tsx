@@ -18,13 +18,12 @@ export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
+    /* istanbul ignore next */
     const { data, loading, startPolling, error } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
 
     useEffect(startPolling, [startPolling])
-
-    console.log('loading', loading, 'data', data, 'error', error)
 
     if (loading) {
         return (
@@ -36,11 +35,23 @@ export function StatusSummaryCount() {
         )
     }
 
+    /* istanbul ignore else */
     if (data) {
         const applicationQuery = data?.[0].data.searchResult[0]
         const violationQuery = data?.[0].data.searchResult[1]
+        /* istanbul ignore next */
         const appCount = applicationQuery?.related[0]?.count ?? 0
+        /* istanbul ignore next */
         const violationCount = violationQuery?.count ?? 0
+
+        /* istanbul ignore next */
+        const clusterName = cluster?.name ?? ''
+        /* istanbul ignore next */
+        const clusterNamespace = cluster?.namespace ?? ''
+        /* istanbul ignore next */
+        const nodeCount = cluster?.nodes?.nodeList?.length ?? 0
+        /* istanbul ignore next */
+        const inactiveNodeCount = cluster?.nodes?.inactive
         return (
             <div style={{ marginTop: '24px' }}>
                 <AcmCountCardSection
@@ -49,17 +60,17 @@ export function StatusSummaryCount() {
                     cards={[
                         {
                             id: 'nodes',
-                            count: cluster?.nodes?.nodeList?.length ?? 0,
-                            countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name ?? '')),
+                            count: nodeCount,
+                            countClick: () => push(NavigationPath.clusterNodes.replace(':id', clusterName)),
                             title: t('summary.nodes'),
-                            description: <Trans i18nKey="cluster:summary.nodes.inactive" values={{ number: cluster?.nodes?.inactive }} />,
+                            description: <Trans i18nKey="cluster:summary.nodes.inactive" values={{ number: inactiveNodeCount }} />,
                         },
                         {
                             id: 'applications',
                             count: appCount,
                             countClick: () =>
                                 window.open(
-                                    buildSearchLink({ cluster: cluster?.name ?? '', kind: 'subscription' }, 'application'),
+                                    buildSearchLink({ cluster: clusterName, kind: 'subscription' }, 'application'),
                                     '_self'
                                 ),
                             title: t('summary.applications'),
@@ -74,7 +85,7 @@ export function StatusSummaryCount() {
                                     buildSearchLink({
                                         cluster: 'local-cluster',
                                         kind: 'policy',
-                                        namespace: cluster?.namespace ?? '',
+                                        namespace: clusterNamespace,
                                         compliant: '!Compliant',
                                     }),
                                     '_self'
@@ -89,6 +100,6 @@ export function StatusSummaryCount() {
             </div>
         )
     }
-
+    /* istanbul ignore next */
     return null
 }
