@@ -5,23 +5,19 @@
 // TODO /managed-clusters route
 // TODO /upgrade route
 
-/* istanbul ignore file */
 import { createReadStream } from 'fs'
 import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
 import { extname } from 'path'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { parse as parseUrl } from 'url'
-import { Log, Logs } from './logger'
+import { logger } from './logger'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
 export async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
     try {
         let url = req.url
-
-        const logs: Logs = []
-        ;((req as unknown) as { logs: Logs }).logs = logs
 
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
@@ -68,9 +64,9 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
-            const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data, logs)
+            const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data)
             if (response.statusCode === 403 && req.method === 'GET') {
-                return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, logs, res)
+                return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
                 return response.pipe(res)
@@ -90,15 +86,8 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 ...parseUrl(acmUrl + '/multicloud/search/graphql'),
                 ...{ method: req.method, headers, agent },
             }
-            const log = optionsLog(options)
-            logs?.push(log)
-            const start = process.hrtime()
             return req.pipe(
                 httpRequest(options, (response) => {
-                    const diff = process.hrtime(start)
-                    const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
-                    log.unshift(`${time}ms`.padStart(6))
-                    log.unshift(response.statusCode)
                     res.writeHead(response.statusCode, response.headers)
                     response.pipe(res)
                 })
@@ -150,12 +139,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                                     }
                                     return res.writeHead(302, headers).end()
                                 } else {
-                                    console.error(body)
                                     return res.writeHead(500).end()
                                 }
                             })
                             .catch((err) => {
-                                console.error(err)
+                                logger.error(err)
                                 return res.writeHead(500).end()
                             })
                     }
@@ -168,6 +156,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             // const query =
             // TODO get code...
+        }
+
+        if (url.startsWith('/managed-clusters')) {
+            // managedClusters
         }
 
         // Console Header
@@ -188,7 +180,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
             headers.host = parseUrl(acmUrl).host
-            const response = await request(req.method, headerUrl, headers, undefined, logs)
+            const response = await request(req.method, headerUrl, headers)
             return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
@@ -243,7 +235,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             return res.writeHead(404).end()
         }
     } catch (err) {
-        console.error(err)
+        logger.error(err)
         if (!res.headersSent) res.writeHead(500)
         return res.end()
     }
@@ -257,9 +249,7 @@ type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 const oauthInfoPromise = jsonRequest<OAuthInfo>(
     'GET',
     `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
-    { accept: 'application/json' },
-    undefined,
-    []
+    { accept: 'application/json' }
 )
 
 // Get User Token from request cookies
@@ -276,24 +266,14 @@ function getToken(req: IncomingMessage) {
 }
 
 // Handle a request
-function request(
-    method: string,
-    url: string,
-    headers: IncomingHttpHeaders,
-    data: unknown,
-    logs: Logs
-): Promise<IncomingMessage> {
+function request(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<IncomingMessage> {
     const start = process.hrtime()
     const options: RequestOptions = { ...parseUrl(url), ...{ method, headers, agent } }
     return new Promise((resolve, reject) => {
         function attempt() {
-            const log = optionsLog(options)
-            logs?.push(log)
             const clientRequest = httpRequest(options, (response) => {
                 const diff = process.hrtime(start)
                 const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
-                log.unshift(`${time}ms`.padStart(6))
-                log.unshift(response.statusCode)
                 switch (response.statusCode) {
                     case 429:
                         setTimeout(attempt, 100)
@@ -313,11 +293,11 @@ function request(
     })
 }
 
+// TODO make this stream the results
 async function projectsRequest(
     method: string,
     url: string,
     headers: IncomingHttpHeaders,
-    logs: Logs,
     res: ServerResponse
 ): Promise<void> {
     const namespaceQuery = ''
@@ -333,16 +313,14 @@ async function projectsRequest(
     const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
         'GET',
         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
-        { authorization: headers.authorization, accept: 'application/json' },
-        undefined,
-        logs
+        { authorization: headers.authorization, accept: 'application/json' }
     )
     let items: unknown[] = []
     if (projects?.items) {
         await Promise.all(
             projects.items.map((project) => {
                 const namespacedUrl = addNamespace(url, project.metadata.name)
-                return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers, undefined, logs)
+                return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers)
                     .then((data) => {
                         if (data.items) {
                             items = [...items, ...data.items]
@@ -357,15 +335,39 @@ async function projectsRequest(
     res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
 }
 
+async function managedClusters(token: string, res: ServerResponse): Promise<void> {
+    const namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
+    const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
+        'GET',
+        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
+        { authorization: `Bearer ${token}`, accept: 'application/json' }
+    )
+    const items: unknown[] = []
+    if (projects?.items) {
+        await Promise.all(
+            projects.items.map(async (project) => {
+                const managedCluster = await jsonRequest<{ kind: string }>(
+                    'GET',
+                    `cluster.open-cluster-management.io/v1/managedclusters/${project.metadata.name}`,
+                    { authorization: `Bearer ${token}`, accept: 'application/json' }
+                )
+                    .then((data) => {
+                        if (data?.kind === 'ManagedCluster') {
+                            items.push(data)
+                        }
+                    })
+                    .catch((err) => {
+                        // TODO
+                    })
+            })
+        )
+    }
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
+}
+
 // Handle a request that returns a json object
-async function jsonRequest<T>(
-    method: string,
-    url: string,
-    headers: IncomingHttpHeaders,
-    data: unknown,
-    logs: Logs
-): Promise<T> {
-    return parseJsonBody<T>(await request(method, url, headers, data, logs))
+async function jsonRequest<T>(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<T> {
+    return parseJsonBody<T>(await request(method, url, headers, data))
 }
 
 function parseBody(req: IncomingMessage): Promise<string> {
@@ -425,10 +427,6 @@ function addNamespace(url: string, namespace: string): string {
         namespacedUrl += '?' + queryString
     }
     return namespacedUrl
-}
-
-function optionsLog(options: RequestOptions): Log {
-    return [options.method.padStart(5), options.path]
 }
 
 const contentTypes: Record<string, string> = {

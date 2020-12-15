@@ -6,12 +6,12 @@
         "build": "npm run clean && tsc --sourceMap false --declaration false",
         "clean": "rm -rf coverage build",
         "test": "jest --verbose",
-        "test:update": "npm test -- -u",
+        "test:update": "LOG_LEVEL=NONE npm test -- -u",
         "lint": "eslint src test --ext .ts --max-warnings=0",
         "lint:fix": "eslint src test --ext .ts --fix",
         "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
         "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=trace ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts",
+        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=DEBUG ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
@@ -48,26 +48,6 @@
         "preset": "ts-jest",
         "testEnvironment": "node",
         "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-        "collectCoverage": true,
-        "coverageThreshold": {
-            "global": {
-                "statements": 80,
-                "branches": 40,
-                "functions": 50,
-                "lines": 70
-            }
-        },
-        "coverageReporters": [
-            "text",
-            "text-summary",
-            "html",
-            "lcov"
-        ],
-        "collectCoverageFrom": [
-            "src/**/*.ts",
-            "!**/node_modules/**",
-            "!<rootDir>/src/typings.d.ts"
-        ],
         "moduleFileExtensions": [
             "ts",
             "tsx",
