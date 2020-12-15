@@ -12,8 +12,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>) {
             const result = restFunc()
             result.promise
                 .then((data) => {
-                    const Data = Array.isArray(data) ? data : [data]
-                    setData(Data)
+                    setData(Array.isArray(data) ? data : [data])
                     setLoading(false)
                     setError(undefined)
                 })
