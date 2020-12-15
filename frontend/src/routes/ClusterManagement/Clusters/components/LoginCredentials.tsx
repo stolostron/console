@@ -13,6 +13,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { makeStyles } from '@material-ui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../../../../resources/self-subject-access-review'
+import { WarningModal, IWarningModalProps, ClosedWarningModalProps } from '../../../../components/WarningModal'
 
 export type LoginCredential = {
     username: string
@@ -54,14 +55,15 @@ const useStyles = makeStyles({
 
 export function LoginCredentials() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [rbacLoading, setRbacLoading] = useState<boolean>(true)
     const [error, setError] = useState<boolean>(false)
     const [credentials, setCredentials] = useState<LoginCredential | undefined>(undefined)
     const [permissionRestriction, setPermissionRestriction] = useState<boolean>(false)
-    const disableButton = loading || error || rbacLoading || permissionRestriction
+    const [warning, setWarning] = useState<IWarningModalProps>(ClosedWarningModalProps)
+    const disableButton = loading || error || rbacLoading
     const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
     
     useEffect(() => {
@@ -91,7 +93,7 @@ export function LoginCredentials() {
         const namespace = cluster?.namespace ?? ''
         /* istanbul ignore next */
         const name = cluster?.hiveSecrets?.kubeadmin ?? ''
-        if (!credentials && !isVisible && cluster?.hiveSecrets?.kubeadmin) {
+        if (!credentials && !isVisible && cluster?.hiveSecrets?.kubeadmin && !permissionRestriction) {
             setLoading(true)
             try {
                 const secret = await getSecret({ name, namespace }).promise
@@ -103,6 +105,13 @@ export function LoginCredentials() {
             } finally {
                 setLoading(false)
             }
+        } else if (permissionRestriction){
+            setWarning({
+                open:true,
+                confirm:()=>{setWarning(ClosedWarningModalProps)},
+                title:t("common:request.failed"),
+                message: t("common:rbac.unauthorized")
+            })
         } else {
             setVisible(!isVisible)
         }
@@ -111,6 +120,12 @@ export function LoginCredentials() {
     if (cluster?.hiveSecrets?.kubeadmin) {
         return (
             <Fragment>
+                <WarningModal
+                    open={warning.open}
+                    confirm={warning.confirm}
+                    title={warning.title}
+                    message={warning.message}
+                ></WarningModal>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
                 {isVisible && (
                     <div className={classes.credentialsContainer}>
@@ -132,7 +147,7 @@ export function LoginCredentials() {
                     isDisabled={disableButton}
                     id="login-credentials"
                 >
-                    <Fragment>
+                    <Fragment> 
                         {(() => {
                             if (error) {
                                 return <AcmInlineStatus type={StatusType.danger} status={t('credentials.failed')} />
