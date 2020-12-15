@@ -5,25 +5,15 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
 import CreateClusterPage from './CreateCluster'
 
-const mockProject: ProjectRequest = {
-    apiVersion: ProjectRequestApiVersion,
-    kind: ProjectRequestKind,
-    metadata: { name: 'foobar' },
-}
-
-
-const mockSecretResponse: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-        name: 'foobar-import',
-        namespace: 'foobar',
-    },
-    data: {
-        'crds.yaml': 'test',
-        'import.yaml': 'test',
-    },
-}
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+      t: (key: string) => key,
+  }),
+  withTranslation: () => Component => {
+    Component.defaultProps = { ...Component.defaultProps, t: () => "" };
+    return Component;
+  },
+}));
 
 describe('CreateCluster', () => {
     const Component = () => {

@@ -97,6 +97,12 @@
             "html",
             "lcov"
         ],
+        "transform": {
+           "^.+\\.js$": "babel-jest"
+        },
+        "moduleNameMapper": {
+          "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"
+        },
         "watchPathIgnorePatterns": [
             "node_modules",
             "coverage"
