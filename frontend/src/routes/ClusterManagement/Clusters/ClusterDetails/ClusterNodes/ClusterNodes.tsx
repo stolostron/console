@@ -55,16 +55,23 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
         return roleA.localeCompare(roleB)
     }
 
-    function capacityCellFn(node: NodeInfo): ReactNode {
+    function cpuCellFn(node: NodeInfo): ReactNode {
         if (!node.capacity) {
             return <span></span>
         }
         const cpu = node.capacity!['cpu'] || ''
+       
+        return <span>{`${cpu}`}</span>
+    }
+    function memoryCellFn(node: NodeInfo): ReactNode {
+        if (!node.capacity) {
+            return <span></span>
+        }
         let memory = node.capacity!['memory'] || ''
         if (memory.length > 0 && parseInt(memory, 10) > 0) {
             memory = formatFileSize(parseInt(memory, 10))
         }
-        return <span>{`${cpu}/${memory}`}</span>
+        return <span>{`${memory}`}</span>
     }
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
@@ -94,8 +101,12 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
             cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
         },
         {
-            header: t('table.size'),
-            cell: capacityCellFn,
+            header: t('table.cpu'),
+            cell: cpuCellFn,
+        },
+        {
+            header: t('table.memory'),
+            cell: memoryCellFn,
         },
     ]
     function keyFn(node: NodeInfo) {

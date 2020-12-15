@@ -40,7 +40,8 @@
   "table.region": "Region",
   "table.zone": "Zone",
   "table.instanceType": "Instance type",
-  "table.size": "Size - Core and memory",
+  "table.cpu": "CPU",
+  "table.memory": "RAM",
   "table.credentials": "Username/password",
 
   "credentials.show": "Reveal credentials",
