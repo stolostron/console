@@ -1,8 +1,9 @@
 import React from 'react'
+import { AcmDropdown } from '@open-cluster-management/ui-components'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import i18n from '../../../../lib/i18n'
 
-export enum ClusterActions {
+export enum Actions {
     editLabels = 'edit-labels',
     launchCluster = 'launch-cluster',
     upgradeCluster = 'upgrade-cluster',
@@ -11,18 +12,18 @@ export enum ClusterActions {
     destroyCluster = 'destroy-cluster'
 }
 
-export function clusterActions(cluster: Cluster) {
+export function ClusterMenu(cluster: Cluster) {
     let actions = [
         {
-            id: ClusterActions.editLabels,
+            id: Actions.editLabels,
             title: i18n.t('managed.editLabels'),
             click: (cluster) => setEditClusterLabels(cluster),
         },
-        { id: ClusterActions.launchCluster, title: i18n.t('managed.launch'), click: (managedCluster) => window.open(managedCluster.consoleURL, '_blank') },
-        { id: ClusterActions.upgradeCluster, title: i18n.t('managed.upgrade'), click: (managedCluster) => {} },
-        { id: ClusterActions.searchCluster, title: i18n.t('managed.search'), click: (managedCluster) => {} },
+        { id: Actions.launchCluster, title: i18n.t('managed.launch'), click: (managedCluster) => window.open(managedCluster.consoleURL, '_blank') },
+        { id: Actions.upgradeCluster, title: i18n.t('managed.upgrade'), click: (managedCluster) => {} },
+        { id: Actions.searchCluster, title: i18n.t('managed.search'), click: (managedCluster) => {} },
         {
-            id: ClusterActions.detachCluster,
+            id: Actions.detachCluster,
             title: i18n.t('managed.detached'),
             click: (managedCluster) => {
                 setConfirm({
@@ -49,7 +50,7 @@ export function clusterActions(cluster: Cluster) {
             },
         },
         {
-            id: ClusterActions.destroyCluster,
+            id: Actions.destroyCluster,
             title: i18n.t('managed.destroySelected'),
             click: (managedCluster) => {
                 setConfirm({
@@ -90,7 +91,7 @@ export function clusterActions(cluster: Cluster) {
     }
 
     if (cluster.status === ClusterStatus.detached) {
-        actions = actions.filter((a) => a.id !== ClusterActions.detachCluster)
+        actions = actions.filter((a) => a.id !== Actions.detachCluster)
     }
 
     if (!cluster.isHive) {

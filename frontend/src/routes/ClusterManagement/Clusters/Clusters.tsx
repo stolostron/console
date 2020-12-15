@@ -24,6 +24,7 @@ import { CertificateSigningRequest } from '../../../resources/certificate-signin
 import { StatusField, DistributionField } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { EditLabelsModal } from './components/EditLabelsModal'
+import { ClusterMenu } from './components/ClusterMenu'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -198,6 +199,10 @@ export function ClustersTable(props: {
                             return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
                         },
                     },
+                    {
+                        header: '',
+                        cell: (cluster) =>
+                    }
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
@@ -286,70 +291,71 @@ export function ClustersTable(props: {
                     },
                     { id: 'upgradeClusters', title: t('managed.upgradeSelected'), click: (managedClusters) => {} },
                 ]}
-                rowActions={[
-                    {
-                        id: 'editLabels',
-                        title: t('managed.editLabels'),
-                        click: (cluster) => setEditClusterLabels(cluster),
-                    },
-                    { id: 'launchToCluster', title: t('managed.launch'), click: (managedCluster) => {} },
-                    { id: 'upgradeCluster', title: t('managed.upgrade'), click: (managedCluster) => {} },
-                    { id: 'searchCluster', title: t('managed.search'), click: (managedCluster) => {} },
-                    {
-                        id: 'detachCluster',
-                        title: t('managed.detached'),
-                        click: (managedCluster) => {
-                            setConfirm({
-                                title: t('modal.detach.title'),
-                                message: `You are about to detach ${managedCluster.name}. This action is irreversible.`,
-                                open: true,
-                                confirm: () => {
-                                    deleteCluster(managedCluster.name!, false).promise.then((results) => {
-                                        results.forEach((result) => {
-                                            if (result.status === 'rejected') {
-                                                setErrors([
-                                                    `Failed to detach managed cluster ${managedCluster.name}. ${result.reason}`,
-                                                ])
-                                            }
-                                        })
-                                    })
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                            })
-                            props.refresh()
-                        },
-                    },
-                    {
-                        id: 'destroyCluster',
-                        title: t('managed.destroySelected'),
-                        click: (managedCluster) => {
-                            setConfirm({
-                                title: t('modal.destroy.title'),
-                                message: `You are about to destroy ${managedCluster.name}. This action is irreversible.`,
-                                open: true,
-                                confirm: () => {
-                                    deleteCluster(managedCluster.name!, false).promise.then((results) => {
-                                        results.forEach((result) => {
-                                            if (result.status === 'rejected') {
-                                                setErrors([
-                                                    `Failed to destroy managed cluster ${managedCluster.name}. ${result.reason}`,
-                                                ])
-                                            }
-                                        })
-                                    })
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                            })
-                            props.refresh()
-                        },
-                    },
-                ]}
+                rowActions={[]}
+                // rowActions={[
+                //     {
+                //         id: 'editLabels',
+                //         title: t('managed.editLabels'),
+                //         click: (cluster) => setEditClusterLabels(cluster),
+                //     },
+                //     { id: 'launchToCluster', title: t('managed.launch'), click: (managedCluster) => {} },
+                //     { id: 'upgradeCluster', title: t('managed.upgrade'), click: (managedCluster) => {} },
+                //     { id: 'searchCluster', title: t('managed.search'), click: (managedCluster) => {} },
+                //     {
+                //         id: 'detachCluster',
+                //         title: t('managed.detached'),
+                //         click: (managedCluster) => {
+                //             setConfirm({
+                //                 title: t('modal.detach.title'),
+                //                 message: `You are about to detach ${managedCluster.name}. This action is irreversible.`,
+                //                 open: true,
+                //                 confirm: () => {
+                //                     deleteCluster(managedCluster.name!, false).promise.then((results) => {
+                //                         results.forEach((result) => {
+                //                             if (result.status === 'rejected') {
+                //                                 setErrors([
+                //                                     `Failed to detach managed cluster ${managedCluster.name}. ${result.reason}`,
+                //                                 ])
+                //                             }
+                //                         })
+                //                     })
+                //                     setConfirm(ClosedConfirmModalProps)
+                //                 },
+                //                 cancel: () => {
+                //                     setConfirm(ClosedConfirmModalProps)
+                //                 },
+                //             })
+                //             props.refresh()
+                //         },
+                //     },
+                //     {
+                //         id: 'destroyCluster',
+                //         title: t('managed.destroySelected'),
+                //         click: (managedCluster) => {
+                //             setConfirm({
+                //                 title: t('modal.destroy.title'),
+                //                 message: `You are about to destroy ${managedCluster.name}. This action is irreversible.`,
+                //                 open: true,
+                //                 confirm: () => {
+                //                     deleteCluster(managedCluster.name!, false).promise.then((results) => {
+                //                         results.forEach((result) => {
+                //                             if (result.status === 'rejected') {
+                //                                 setErrors([
+                //                                     `Failed to destroy managed cluster ${managedCluster.name}. ${result.reason}`,
+                //                                 ])
+                //                             }
+                //                         })
+                //                     })
+                //                     setConfirm(ClosedConfirmModalProps)
+                //                 },
+                //                 cancel: () => {
+                //                     setConfirm(ClosedConfirmModalProps)
+                //                 },
+                //             })
+                //             props.refresh()
+                //         },
+                //     },
+                // ]}
                 emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
             />
         </Fragment>

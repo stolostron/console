@@ -5,7 +5,7 @@ import { createServer as createHttpServer, IncomingMessage, Server as HttpServer
 import { createServer as createHttpsServer } from 'https'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
-import { logError, logInfo, Logs } from './logger'
+import { logger } from './logger'
 
 export type Server = HttpServer
 export type Request = IncomingMessage
@@ -35,10 +35,10 @@ export function startServer(
 
     try {
         if (cert && key) {
-            console.info(`server start  https=true`)
+            logger.debug('server start', 'https=true')
             server = createHttpsServer({ cert, key }, requestHandler)
         } else {
-            console.info(`server start  https=false`)
+            logger.debug('server start', 'https=false')
             server = createHttpServer(requestHandler)
         }
         return new Promise((resolve, reject) => {
@@ -46,11 +46,11 @@ export function startServer(
                 .listen(process.env.PORT, () => {
                     const address = server.address()
                     if (address === null) {
-                        console.info(`server listening`)
+                        logger.debug(`server listening`)
                     } else if (typeof address === 'string') {
-                        console.info(`server listening  ${address}`)
+                        logger.debug(`server listening`, address)
                     } else {
-                        console.info(`server listening  port=${address.port}`)
+                        logger.debug(`server listening`, `port=${address.port}`)
                     }
                     resolve(server)
                 })
@@ -81,31 +81,34 @@ export function startServer(
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
 
-                            const logs: Logs = ((req as unknown) as { logs: Logs }).logs
-                            logs.unshift([res.statusCode, `${time}ms`.padStart(6), req.method.padStart(5), req.url])
                             if (res.statusCode < 500) {
-                                logInfo(logs)
+                                logger.info(res.statusCode, `${time}ms`.padStart(6), req.method.padStart(5), req.url)
                             } else {
-                                logError(logs)
+                                logger.error(res.statusCode, `${time}ms`.padStart(6), req.method.padStart(5), req.url)
                             }
                         }
                     })
                 })
                 .on('error', (err: NodeJS.ErrnoException) => {
                     if (err.code === 'EADDRINUSE') {
-                        console.error(`server error  error=address already in use`)
+                        logger.error(`server error`, `error=address already in use`)
                         reject(undefined)
                     } else {
-                        console.error(`server error  name=${err.name}  error=${err.message}  code=${err.code}`)
+                        logger.error(
+                            `server error`,
+                            `name="${err.name}"`,
+                            `error="${err.message}"`,
+                            `code="${err.code}"`
+                        )
                     }
                     if (server.listening) server.close()
                 })
         })
     } catch (err) {
         if (err instanceof Error) {
-            console.error(`server start error  name=${err.name}  error=${err.message}`)
+            logger.error(`server start error`, `name="${err.name}"`, `error="${err.message}"`)
         } else {
-            console.error(`server start error`)
+            logger.error(`server start error`)
         }
         void stopServer()
         return Promise.resolve<undefined>(undefined)
@@ -132,13 +135,13 @@ export async function stopServer(): Promise<void> {
     }
 
     if (server?.listening) {
-        console.info(`server closing`)
+        logger.info(`server closing`)
         await new Promise<undefined>((resolve) =>
             server.close((err: Error | undefined) => {
                 if (err) {
-                    console.error(`server close error  name=${err.name}  error=${err.message}`)
+                    logger.error(`server close error`, `name="${err.name}"`, `error="${err.message}"`)
                 } else {
-                    console.info(`server closed`)
+                    logger.info(`server closed`)
                 }
                 resolve(undefined)
             })
