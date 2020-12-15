@@ -79,12 +79,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
         // Search
         if (url.startsWith('/search')) {
-            console.log('MADE IT HERE')
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
             const searchUrl = process.env.SEARCH_API_URL || 'https://search-search-api:4010'
-            console.log('searchUrl', searchUrl)
             const headers = req.headers
             headers.host = parseUrl(searchUrl).host
             headers.authorization = `Bearer ${token}`
