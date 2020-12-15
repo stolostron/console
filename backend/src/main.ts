@@ -20,7 +20,7 @@ import { startServer, stopServer } from './server'
 
 console.info(`process start  NODE_ENV=${process.env.NODE_ENV}  nodeVersion=${process.versions.node}`)
 
-for (const variable of ['CLUSTER_API_URL', 'OAUTH2_REDIRECT_URL', 'BACKEND_URL', 'FRONTEND_URL']) {
+for (const variable of ['CLUSTER_API_URL', 'BACKEND_URL', 'FRONTEND_URL']) {
     if (!process.env[variable]) throw new Error(`${variable} required`)
     console.info(`process env  ${variable}=${process.env[variable]}`)
 }
