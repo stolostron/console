@@ -1,11 +1,10 @@
-import { AcmPageHeader } from '@open-cluster-management/ui-components'
-import { Nav, NavItem, NavList, Page, PageSection, PageSectionVariants } from '@patternfly/react-core'
-import React, { Fragment, lazy, Suspense, useContext, useState, useEffect } from 'react'
+import { AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@open-cluster-management/ui-components'
+import { Page } from '@patternfly/react-core'
+import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import { getFeatureGate } from '../../resources/feature-gate'
-
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -38,25 +37,24 @@ export const usePageContext = (showActions: boolean, Component: React.ElementTyp
 export default function ClusterManagementPage() {
     const [discovery, toggleDiscovery] = useState<Boolean>(false)
     useEffect(() => {
-        if (sessionStorage.getItem("DiscoveryEnabled") === null) {
+        if (sessionStorage.getItem('DiscoveryEnabled') === null) {
             const result = getFeatureGate('open-cluster-management-discovery')
             result.promise
                 .then((featureGate) => {
-                    if (featureGate.spec!.featureSet === "DiscoveryEnabled") {
-                        sessionStorage.setItem("DiscoveryEnabled", "true")
+                    if (featureGate.spec!.featureSet === 'DiscoveryEnabled') {
+                        sessionStorage.setItem('DiscoveryEnabled', 'true')
                         toggleDiscovery(true)
                     }
                 })
                 .catch((err: Error) => {
                     // If error retrieving feature flag, continue
-                    sessionStorage.setItem("DiscoveryEnabled", "false")
+                    sessionStorage.setItem('DiscoveryEnabled', 'false')
                     toggleDiscovery(false)
                 })
-                return result.abort
+            return result.abort
         }
-        toggleDiscovery((sessionStorage.getItem("DiscoveryEnabled") === "true" ? true : false))
+        toggleDiscovery(sessionStorage.getItem('DiscoveryEnabled') === 'true' ? true : false)
     }, [])
-
 
     const [actions, setActions] = useState<undefined | React.ReactNode>(undefined)
     const location = useLocation()
@@ -64,23 +62,29 @@ export default function ClusterManagementPage() {
     return (
         <Page>
             <PageContext.Provider value={{ actions, setActions }}>
-                <AcmPageHeader title={t('page.header.cluster-management')} actions={actions} />
-                <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
-                    <Nav variant="tertiary" style={{ paddingLeft: '12px' }}>
-                        <NavList>
-                            <NavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
+                <AcmPageHeader
+                    title={t('page.header.cluster-management')}
+                    navigation={
+                        <AcmSecondaryNav>
+                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
                                 <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
-                            </NavItem>
+                            </AcmSecondaryNavItem>
                             {discovery === true ? (
-                                <NavItem isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}>
+                                <AcmSecondaryNavItem
+                                    isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
+                                >
                                     <Link to={NavigationPath.discoveredClusters}>{'Discovered Clusters'}</Link>
-                                </NavItem>) : null }
-                            <NavItem isActive={location.pathname.startsWith(NavigationPath.providerConnections)}>
+                                </AcmSecondaryNavItem>
+                            ) : null}
+                            <AcmSecondaryNavItem
+                                isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
+                            >
                                 <Link to={NavigationPath.providerConnections}>{'Provider Connections'}</Link>
-                            </NavItem>
-                        </NavList>
-                    </Nav>
-                </PageSection>
+                            </AcmSecondaryNavItem>
+                        </AcmSecondaryNav>
+                    }
+                    actions={actions}
+                />
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
