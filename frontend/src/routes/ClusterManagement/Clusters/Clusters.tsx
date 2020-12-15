@@ -25,47 +25,6 @@ import { StatusField, DistributionField } from '../../../components/ClusterCommo
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
-const managedClusterCols: IAcmTableColumn<Cluster>[] = [
-    {
-        header: 'Name',
-        sort: 'name',
-        search: 'name',
-        cell: (cluster) => (
-            <span style={{ whiteSpace: 'nowrap' }}>
-                <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>{cluster.name}</Link>
-            </span>
-        ),
-    },
-    {
-        header: 'Status',
-        sort: 'status',
-        search: 'status',
-        cell: (cluster) => (
-            <span style={{ whiteSpace: 'nowrap' }}>
-                <StatusField status={cluster.status} />
-            </span>
-        ),
-    },
-    {
-        header: 'Distribution',
-        sort: 'distribution.displayVersion',
-        search: 'distribution.displayVersion',
-        cell: (cluster) => <DistributionField data={cluster.distribution} />,
-    },
-    {
-        header: 'Labels',
-        // search: 'labels',
-        cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
-    },
-    {
-        header: 'Nodes',
-        // sort: 'info.status.nodeList.length',
-        cell: (cluster) => {
-            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
-        },
-    },
-]
-
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
@@ -200,7 +159,46 @@ export function ClustersTable(props: {
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
-                columns={managedClusterCols}
+                columns={[
+                    {
+                        header: 'Name',
+                        sort: 'name',
+                        search: 'name',
+                        cell: (cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>{cluster.name}</Link>
+                            </span>
+                        ),
+                    },
+                    {
+                        header: 'Status',
+                        sort: 'status',
+                        search: 'status',
+                        cell: (cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <StatusField status={cluster.status} />
+                            </span>
+                        ),
+                    },
+                    {
+                        header: 'Distribution',
+                        sort: 'distribution.displayVersion',
+                        search: 'distribution.displayVersion',
+                        cell: (cluster) => <DistributionField data={cluster.distribution} />,
+                    },
+                    {
+                        header: 'Labels',
+                        // search: 'labels',
+                        cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
+                    },
+                    {
+                        header: 'Nodes',
+                        // sort: 'info.status.nodeList.length',
+                        cell: (cluster) => {
+                            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
+                        },
+                    },
+                ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
                 tableActions={[]}
