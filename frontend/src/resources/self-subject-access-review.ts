@@ -18,14 +18,14 @@ export interface SelfSubjectAccessReview extends IResource {
     }
     status?: {
         allowed: boolean
-        denied: boolean
-        evaluationError: string
-        reason: string
+        denied?: boolean
+        evaluationError?: string
+        reason?: string
     }
 }
 export type ResourceAttributes = {
-    name: string
-    namespace: string
+    name?: string
+    namespace?: string
     resource: string
     verb: string
     group?: string

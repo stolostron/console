@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { LoginCredentials } from './LoginCredentials'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockGet, mockBadRequestStatus } from '../../../../lib/nock-util'
+import { nockGet, mockBadRequestStatus, nockCreate } from '../../../../lib/nock-util'
+import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -60,9 +61,56 @@ const mockKubeadminSecret = {
     type: 'Opaque',
 }
 
+const mockSelfSubjectAccessRequest:SelfSubjectAccessReview = {
+    apiVersion:"authorization.k8s.io/v1",
+    kind:"SelfSubjectAccessReview",
+    metadata:{},
+    spec:{
+        resourceAttributes: {
+            name:"",
+            namespace:"test-cluster",
+            resource: "secret",
+            verb:"get",
+            version:"v1"
+        }
+    }
+}
+const mockSelfSubjectAccessResponse:SelfSubjectAccessReview = {
+    apiVersion:"authorization.k8s.io/v1",
+    kind:"SelfSubjectAccessReview",
+    metadata:{},
+    spec:{
+        resourceAttributes: {
+            name:"",
+            namespace:"test-cluster",
+            resource: "secret",
+            verb:"get",
+            version:"v1"
+        }
+    },
+    status:{
+        allowed: true,
+    }
+}
+
+const mockSelfSubjectAccessRequestii:SelfSubjectAccessReview = {
+    apiVersion:"authorization.k8s.io/v1",
+    kind:"SelfSubjectAccessReview",
+    metadata:{},
+    spec:{
+        resourceAttributes: {
+            name:"",
+            resource: "secret",
+            verb:"get",
+            version:"v1"
+        }
+    }
+}
+
 describe('LoginCredentials', () => {
     test('renders', async () => {
         nockGet(mockKubeadminSecret)
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials />
@@ -70,6 +118,7 @@ describe('LoginCredentials', () => {
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         await waitFor(() => screen.getByText('credentials.show'))
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
         await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
@@ -88,12 +137,16 @@ describe('LoginCredentials', () => {
     })
     test('renders in a failed state', async () => {
         nockGet(mockKubeadminSecret, mockBadRequestStatus)
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const nockRbacII = nockCreate(mockSelfSubjectAccessRequestii, mockSelfSubjectAccessResponse)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbacII.isDone()).toBeTruthy())
         await waitFor(() => screen.getByText('credentials.show'))
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
