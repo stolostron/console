@@ -9,6 +9,7 @@ import {
     AcmButton,
     AcmActionGroup,
     AcmLaunchLink,
+    AcmDropdown,
 } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -16,13 +17,15 @@ import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { useQuery } from '../../../../lib/useQuery'
-import { getSingleCluster, getCluster, Cluster } from '../../../../lib/get-cluster'
+import { getSingleCluster, getCluster, Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { getAllAddons, mapAddons, Addon } from '../../../../lib/get-addons'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { EditLabelsModal } from '../components/EditLabelsModal'
+import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
+import { deleteCluster } from '../../../../lib/delete-cluster'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
@@ -48,6 +51,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
+    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
@@ -158,6 +162,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         refresh()
                     }}
                 />
+                <ConfirmModal
+                    open={confirm.open}
+                    confirm={confirm.confirm}
+                    cancel={confirm.cancel}
+                    title={confirm.title}
+                    message={confirm.message}
+                />
                 <AcmPageHeader
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
@@ -208,6 +219,118 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         }))}
                                 />
                                 <DownloadConfigurationDropdown />
+                                {(() => {
+                                    const onSelect = (id: string) => {
+                                        const action = actions.find((a) => a.id === id)
+                                        return action?.click(cluster!)
+                                    }
+                                    let actions = [
+                                        {
+                                            id: 'edit-labels',
+                                            text: t('managed.editLabels'),
+                                            click: (cluster: Cluster) => setEditModalOpen(true),
+                                        },
+                                        {
+                                            id: 'launch-cluster',
+                                            text: t('managed.launch'),
+                                            click: (cluster: Cluster) => window.open(cluster?.consoleURL, '_blank'),
+                                        },
+                                        {
+                                            id: 'upgrade-cluster',
+                                            text: t('managed.upgrade'),
+                                            click: (cluster: Cluster) => {},
+                                        },
+                                        {
+                                            id: 'search-cluster',
+                                            text: t('managed.search'),
+                                            click: (cluster: Cluster) => {},
+                                        },
+                                        {
+                                            id: 'detach-cluster',
+                                            text: t('managed.detached'),
+                                            click: (cluster: Cluster) => {
+                                                setConfirm({
+                                                    title: t('modal.detach.title'),
+                                                    message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                                    open: true,
+                                                    confirm: () => {
+                                                        deleteCluster(cluster?.name!, false).promise.then((results) => {
+                                                            results.forEach((result) => {
+                                                                if (result.status === 'rejected') {
+                                                                    // setErrors([
+                                                                    //     `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
+                                                                    // ])
+                                                                }
+                                                            })
+                                                        })
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                    },
+                                                    cancel: () => {
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                    },
+                                                })
+                                                // props.refresh()
+                                            },
+                                        },
+                                        {
+                                            id: 'destroy-cluster',
+                                            text: t('managed.destroySelected'),
+                                            click: (cluster: Cluster) => {
+                                                setConfirm({
+                                                    title: t('modal.destroy.title'),
+                                                    message: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                                    open: true,
+                                                    confirm: () => {
+                                                        deleteCluster(cluster.name!, false).promise.then((results) => {
+                                                            results.forEach((result) => {
+                                                                if (result.status === 'rejected') {
+                                                                    // setErrors([
+                                                                    //     `Failed to destroy managed cluster ${cluster.name}. ${result.reason}`,
+                                                                    // ])
+                                                                }
+                                                            })
+                                                        })
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                    },
+                                                    cancel: () => {
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                    },
+                                                })
+                                                // props.refresh()
+                                            },
+                                        },
+                                    ]
+
+                                    if (!cluster?.consoleURL) {
+                                        actions = actions.filter((a) => a.id !== 'launch-cluster')
+                                    }
+
+                                    if (!cluster?.distribution?.ocp?.availableUpdates) {
+                                        actions = actions.filter((a) => a.id !== 'upgrade-cluster')
+                                    }
+
+                                    if (!cluster?.isManaged) {
+                                        actions = actions.filter((a) => a.id !== 'search-cluster')
+                                    }
+
+                                    if (cluster?.status === ClusterStatus.detached) {
+                                        actions = actions.filter((a) => a.id !== 'detach-cluster')
+                                    }
+
+                                    if (!cluster?.isHive) {
+                                        actions = actions.filter((a) => a.id !== 'destroy-cluster')
+                                    }
+
+                                    return (
+                                        <AcmDropdown
+                                            id={`${cluster?.name}-actions`}
+                                            onSelect={onSelect}
+                                            text={t('actions')}
+                                            dropdownItems={actions}
+                                            isKebab={false}
+                                        />
+                                    )
+                                })()}
                             </AcmActionGroup>
                         </Fragment>
                     }
