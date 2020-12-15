@@ -346,6 +346,15 @@
   "formerror.libvirturi.format": "Provide valid Libvirt URI (driver[+transport]://[username@][hostname][:port]/[path][?extraparameters] )",
   "formerror.gcProjectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
 
+  "creation.invalid.url": "Value must be a valid URL format.",
+  "creation.valid.alphanumeric": "Value must be alphanumeric.",
+  "creation.valid.numeric": "Value must be integer.",
+  "creation.missing.input": "This value is required: '{{0}}'",
+  "creation.missing.timeWindow.days": "Select at least one day to create a time window.",
+  "creation.missing.timeWindow.timezone": "Select a timezone to create a time window.",
+  "creation.must.select.resource.type": "Must select resource type",
+  "import.form.invalid.dns.label": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
+
   "validation.missing.resource": "Missing: {{0}}",
   "validation.missing.value": "{{0}} is required",
   "validation.missing.kind": "Missing resource kind: {{0}}",

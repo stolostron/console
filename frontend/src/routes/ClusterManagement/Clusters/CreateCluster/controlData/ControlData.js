@@ -27,7 +27,7 @@ export const getActiveCardID = (control, fetchData = {}) => {
 export const getDistributionTitle = (ctrlData, groupData, i18n) => {
   const activeObject = groupData.find(object => object.id === 'distribution')
   const active = activeObject['active']
-  if (active) {
+  if (active && activeObject['availableMap']) {
     const title = activeObject['availableMap'][active].title
     return i18n('creation.ocp.choose.infrastructure', [title])
   }

@@ -245,10 +245,10 @@ spec:
     aws:
       rootVolume:
         iops: 100
-        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        size: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: gp2
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
-      {{#if ../../workerZones}}
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      {{#if ../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - {{{../../region}}}{{{ this }}}
@@ -259,7 +259,7 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -268,7 +268,7 @@ spec:
       osDisk:
         diskSizeGB: 128
       type: Standard_D2s_v3
-      {{#if ../../workerZones}}
+      {{#if ../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - "{{{ this }}}"
@@ -279,11 +279,11 @@ spec:
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      coresPerSocket: {{../../coresPerSocket}}
-      cpus: {{../../cpus}}
-      memoryMB: {{../../memoryMB}}
+      coresPerSocket: {{../coresPerSocket}}
+      cpus: {{../cpus}}
+      memoryMB: {{../memoryMB}}
       osDisk:
-        diskSizeGB: {{../../diskSizeGB}}
+        diskSizeGB: {{../diskSizeGB}}
   {{/case}}
 
 {{/switch}}

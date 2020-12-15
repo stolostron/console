@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -63,15 +64,23 @@ export default function CreateClusterPage() {
       </div>
       
     // create button
-    const createResource = (resourceJSON: any[]) => {
+    const [creationStatus, setCreationStatus] = useState({})
+    const createResource = async(resourceJSON: any[]) => {
       if (resourceJSON) {
         
-        //handleCreateCluster(resourceJSON)
+        setCreationStatus({status: 'IN_PROGRESS'})
+        const {status, messages} = await createCluster(resourceJSON);
+        setCreationStatus({status, messages})
 
         // redirect to created cluster
-        const map =keyBy(resourceJSON, 'kind')
-        const clusterName = get(map, 'ClusterDeployment.metadata.name')
-        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+        if (status === 'DONE') {
+            setTimeout(() => {
+              const map =keyBy(resourceJSON, 'kind')
+              const clusterName = get(map, 'ClusterDeployment.metadata.name')
+              history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+            }, 2000)
+          
+        }
       }
     }
 
@@ -82,18 +91,6 @@ export default function CreateClusterPage() {
 
     // pause creation to create something else
     const pauseCreate = () => {
-      //    const {
-      //      history: { location },
-      //      updateFormState,
-      //      savedFormData
-      //    } = this.props
-      //    const { controlData } = this.state
-      //    // persist user selections if they click Add connection
-      //    if (location.search === '?createCluster') {
-      //      updateFormState(controlData)
-      //    } else {
-      //      savedFormData && updateFormState(null)
-      //    }
     }
     
     // setup translation
@@ -121,8 +118,8 @@ export default function CreateClusterPage() {
                   createResource,
                   cancelCreate,
                   pauseCreate,
-                  //creationStatus: mutateStatus,
-                  //creationMsg: mutateErrorMsgs,
+                  creationStatus: creationStatus.status,
+                  creationMsg: creationStatus.messages,
                 }}
                 i18n={i18n}
               />
