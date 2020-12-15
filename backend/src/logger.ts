@@ -1,34 +1,31 @@
-export type LogEntry = string | number | Error
-export type Log = LogEntry[]
-export type Logs = Log[]
+/* istanbul ignore file */
 
-function writeLogEntry(logEntry: unknown) {
-    if (typeof logEntry === 'string') {
-        return logEntry
-    } else if (typeof logEntry === 'number') {
-        return logEntry.toString()
-    } else {
-        return 'UNKNOWN'
-    }
+export const logger = {
+    debug: noop,
+    info: noop,
+    warn: noop,
+    error: console.error,
 }
 
-export function info(logs: Logs): void {
-    let index = 0
-    for (const log of logs) {
-        let line = ''
-        if (index++ === 0) {
-            line += ' INFO '
-        } else {
-            line += '      '
-        }
-        let index2 = 0
-        for (const logEntry of log) {
-            if (index2++ !== 0) {
-                line += ' '
-            }
-            line += writeLogEntry(logEntry)
-        }
-        line += '\n'
-        process.stdout.write(line)
-    }
+switch (process.env.LOG_LEVEL) {
+    case 'DEBUG':
+        logger.debug = console.debug
+        logger.info = console.info
+        logger.warn = console.warn
+        break
+    case 'INFO':
+    default:
+        logger.info = console.info
+        logger.warn = console.warn
+        break
+    case 'WARN':
+        logger.warn = console.warn
+        break
+    case 'NONE':
+        logger.error = noop
+        break
+}
+
+function noop(...args: unknown[]): void {
+    // Do Nothing
 }

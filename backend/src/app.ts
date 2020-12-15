@@ -1,23 +1,23 @@
 // TODO Request Queue
 // TODO Compression Support
+// TODO auth callback
+// TODO STATIC 304 ETAG support
+// TODO /managed-clusters route
+// TODO /upgrade route
 
-/* istanbul ignore file */
 import { createReadStream } from 'fs'
 import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
 import { extname } from 'path'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { parse as parseUrl } from 'url'
-import { Log, Logs } from './logger'
+import { logger } from './logger'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
 export async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
     try {
         let url = req.url
-
-        const logs: Logs = []
-        ;((req as unknown) as { logs: Logs }).logs = logs
 
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
@@ -64,13 +64,34 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
-            const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data, logs)
-            if (response.statusCode === 403 && req.method === 'GET' && isClusterScope(url)) {
-                return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, logs, res)
+            const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data)
+            if (response.statusCode === 403 && req.method === 'GET') {
+                return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
                 return response.pipe(res)
             }
+        }
+
+        // Search
+        if (url.startsWith('/search')) {
+            const token = getToken(req)
+            if (!token) return res.writeHead(401).end()
+
+            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+            const headers = req.headers
+            headers.host = parseUrl(acmUrl).host
+            headers.authorization = `Bearer ${token}`
+            const options: RequestOptions = {
+                ...parseUrl(acmUrl + '/multicloud/search/graphql'),
+                ...{ method: req.method, headers, agent },
+            }
+            return req.pipe(
+                httpRequest(options, (response) => {
+                    res.writeHead(response.statusCode, response.headers)
+                    response.pipe(res)
+                })
+            )
         }
 
         // OAuth Login
@@ -79,7 +100,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const queryString = stringifyQuery({
                 response_type: `code`,
                 client_id: process.env.OAUTH2_CLIENT_ID,
-                redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
                 scope: `user:full`,
                 state: '',
             })
@@ -98,7 +119,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 const requestQuery: Record<string, string> = {
                     grant_type: `authorization_code`,
                     code: code,
-                    redirect_uri: `http://localhost:4000/cluster-management/login/callback`,
+                    redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
                     client_id: process.env.OAUTH2_CLIENT_ID,
                     client_secret: process.env.OAUTH2_CLIENT_SECRET,
                 }
@@ -109,16 +130,20 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     (response) => {
                         parseJsonBody<{ access_token: string }>(response)
                             .then((body) => {
-                                const headers = {
-                                    'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
-                                        process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
-                                    } HttpOnly; Path=/`,
-                                    location: `http://localhost:3000`,
+                                if (body.access_token) {
+                                    const headers = {
+                                        'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
+                                            process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
+                                        } HttpOnly; Path=/`,
+                                        location: process.env.FRONTEND_URL,
+                                    }
+                                    return res.writeHead(302, headers).end()
+                                } else {
+                                    return res.writeHead(500).end()
                                 }
-                                return res.writeHead(302, headers).end()
                             })
                             .catch((err) => {
-                                console.error(err)
+                                logger.error(err)
                                 return res.writeHead(500).end()
                             })
                     }
@@ -133,8 +158,12 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             // TODO get code...
         }
 
+        if (url.startsWith('/managed-clusters')) {
+            // managedClusters
+        }
+
         // Console Header
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
@@ -150,8 +179,8 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             const headers = req.headers
             headers.authorization = `Bearer ${token}`
-            headers.host = parseUrl(process.env.CLUSTER_API_URL).host
-            const response = await request(req.method, headerUrl, headers, undefined, logs)
+            headers.host = parseUrl(acmUrl).host
+            const response = await request(req.method, headerUrl, headers)
             return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
@@ -166,19 +195,38 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 ext = '.html'
                 url = '/index.html'
             }
-            const readStream = createReadStream('./public' + url, { autoClose: true })
-            if (readStream) {
+            const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
+            const contentType = contentTypes[ext]
+            if (/\bgzip\b/.test(acceptEncoding)) {
+                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
                 readStream
                     .on('open', () => {
-                        const contentType = contentTypes[ext]
+                        res.writeHead(200, {
+                            'Content-Encoding': 'gzip',
+                            'Content-Type': contentType,
+                            'Cache-Control': cacheControl,
+                        })
+                    })
+                    .on('error', (err) => {
+                        if (ext === '.json') {
+                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
+                        } else {
+                            return res.writeHead(404).end()
+                        }
+                    })
+                    .pipe(res, { end: true })
+            } else {
+                const readStream = createReadStream('./public' + url, { autoClose: true })
+                readStream
+                    .on('open', () => {
                         res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
                     })
                     .on('error', (err) => {
-                        // if (ext === '.json') {
-                        //     return res.writeHead(404, { 'Cache-Control': cacheControl }).end()
-                        // } else {
-                        return res.writeHead(404).end()
-                        // }
+                        if (ext === '.json') {
+                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
+                        } else {
+                            return res.writeHead(404).end()
+                        }
                     })
                     .pipe(res, { end: true })
             }
@@ -187,7 +235,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             return res.writeHead(404).end()
         }
     } catch (err) {
-        console.error(err)
+        logger.error(err)
         if (!res.headersSent) res.writeHead(500)
         return res.end()
     }
@@ -201,9 +249,7 @@ type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 const oauthInfoPromise = jsonRequest<OAuthInfo>(
     'GET',
     `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
-    { accept: 'application/json' },
-    undefined,
-    []
+    { accept: 'application/json' }
 )
 
 // Get User Token from request cookies
@@ -220,24 +266,14 @@ function getToken(req: IncomingMessage) {
 }
 
 // Handle a request
-function request(
-    method: string,
-    url: string,
-    headers: IncomingHttpHeaders,
-    data: unknown,
-    logs: Logs
-): Promise<IncomingMessage> {
+function request(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<IncomingMessage> {
     const start = process.hrtime()
     const options: RequestOptions = { ...parseUrl(url), ...{ method, headers, agent } }
     return new Promise((resolve, reject) => {
         function attempt() {
-            const log = optionsLog(options)
-            logs?.push(log)
             const clientRequest = httpRequest(options, (response) => {
                 const diff = process.hrtime(start)
                 const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
-                log.unshift(`${time}ms`.padStart(6))
-                log.unshift(response.statusCode)
                 switch (response.statusCode) {
                     case 429:
                         setTimeout(attempt, 100)
@@ -257,47 +293,81 @@ function request(
     })
 }
 
+// TODO make this stream the results
 async function projectsRequest(
     method: string,
     url: string,
     headers: IncomingHttpHeaders,
-    logs: Logs,
     res: ServerResponse
 ): Promise<void> {
+    const namespaceQuery = ''
+    if (url.includes('?')) {
+        const queryString = url.substr(url.indexOf('?') + 1)
+        const query = parseQueryString(queryString)
+        if (query['managedNamespacesOnly'] !== undefined) {
+            // namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
+            url = url.substr(0, url.indexOf('?'))
+        }
+    }
+
     const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
         'GET',
-        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects`,
-        { authorization: headers.authorization, accept: 'application/json' },
-        undefined,
-        logs
+        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
+        { authorization: headers.authorization, accept: 'application/json' }
     )
     let items: unknown[] = []
-    await Promise.all(
-        projects.items.map((project) => {
-            const namespacedUrl = addNamespace(url, project.metadata.name)
-            return jsonRequest<{ items: unknown[] }>(method, namespacedUrl, headers, undefined, logs)
-                .then((data) => {
-                    if (data.items) {
-                        items = [...items, data.items]
-                    }
-                })
-                .catch((err) => {
-                    // TODO
-                })
-        })
+    if (projects?.items) {
+        await Promise.all(
+            projects.items.map((project) => {
+                const namespacedUrl = addNamespace(url, project.metadata.name)
+                return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers)
+                    .then((data) => {
+                        if (data.items) {
+                            items = [...items, ...data.items]
+                        }
+                    })
+                    .catch((err) => {
+                        // TODO
+                    })
+            })
+        )
+    }
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
+}
+
+async function managedClusters(token: string, res: ServerResponse): Promise<void> {
+    const namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
+    const projects = await jsonRequest<{ items: { metadata: { name: string } }[] }>(
+        'GET',
+        `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
+        { authorization: `Bearer ${token}`, accept: 'application/json' }
     )
-    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(items))
+    const items: unknown[] = []
+    if (projects?.items) {
+        await Promise.all(
+            projects.items.map(async (project) => {
+                const managedCluster = await jsonRequest<{ kind: string }>(
+                    'GET',
+                    `cluster.open-cluster-management.io/v1/managedclusters/${project.metadata.name}`,
+                    { authorization: `Bearer ${token}`, accept: 'application/json' }
+                )
+                    .then((data) => {
+                        if (data?.kind === 'ManagedCluster') {
+                            items.push(data)
+                        }
+                    })
+                    .catch((err) => {
+                        // TODO
+                    })
+            })
+        )
+    }
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
 }
 
 // Handle a request that returns a json object
-async function jsonRequest<T>(
-    method: string,
-    url: string,
-    headers: IncomingHttpHeaders,
-    data: unknown,
-    logs: Logs
-): Promise<T> {
-    return parseJsonBody<T>(await request(method, url, headers, data, logs))
+async function jsonRequest<T>(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<T> {
+    return parseJsonBody<T>(await request(method, url, headers, data))
 }
 
 function parseBody(req: IncomingMessage): Promise<string> {
@@ -316,14 +386,14 @@ async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
     return JSON.parse(body) as T
 }
 
-function isClusterScope(url: string): boolean {
-    if (url.startsWith('/api/')) {
-        return url.split('/').length === 4
-    } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 5
-    }
-    return false
-}
+// function isClusterScope(url: string): boolean {
+//     if (url.startsWith('/api/')) {
+//         return url.split('/').length === 4
+//     } else if (url.startsWith('/apis/')) {
+//         return url.split('/').length === 5
+//     }
+//     return false
+// }
 
 // function isNamespaceScope(url: string): boolean {
 //     if (url.startsWith('/api/')) {
@@ -344,15 +414,19 @@ function isClusterScope(url: string): boolean {
 // }
 
 function addNamespace(url: string, namespace: string): string {
+    let queryString = ''
+    if (url.includes('?')) {
+        queryString = url.substr(url.indexOf('?') + 1)
+        url = url.substr(0, url.indexOf('?'))
+    }
     const parts = url.split('/')
     let namespacedUrl = parts.slice(0, parts.length - 1).join('/')
     namespacedUrl += `/namespaces/${namespace}/`
     namespacedUrl += parts[parts.length - 1]
+    if (queryString) {
+        namespacedUrl += '?' + queryString
+    }
     return namespacedUrl
-}
-
-function optionsLog(options: RequestOptions): Log {
-    return [options.method.padStart(5), options.path]
 }
 
 const contentTypes: Record<string, string> = {

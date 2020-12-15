@@ -7,8 +7,9 @@ COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN npm run postinstall
 COPY ./ ./
 RUN npm run build
-RUN rm -rf backend/node_modules
-RUN cd backend && npm ci --only=production --no-optional
+RUN cd frontend/build && gzip * -k -r --best
+# RUN rm -rf backend/node_modules
+# RUN cd backend && npm ci --only=production --no-optional
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
