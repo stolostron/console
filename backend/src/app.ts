@@ -38,14 +38,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             url = url.substr('/cluster-management'.length)
         }
 
-        if (url.startsWith('/namespaced')) {
-            url = url.substr('/namespaced'.length)
-        }
-
-        if (url.startsWith('/proxy')) {
-            url = url.substr('/proxy'.length)
-        }
-
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
             const token = getToken(req)

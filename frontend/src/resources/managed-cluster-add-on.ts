@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { listNamespacedResources } from '../lib/resource-request'
+import { listResources } from '../lib/resource-request'
 import { IResource } from './resource'
 
 export const ManagedClusterAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
@@ -33,7 +33,7 @@ export interface ManagedClusterAddOn extends IResource {
 }
 
 export function listManagedClusterAddOns(namespace: string) {
-    return listNamespacedResources<ManagedClusterAddOn>({
+    return listResources<ManagedClusterAddOn>({
         apiVersion: ManagedClusterAddOnApiVersion,
         kind: ManagedClusterAddOnKind,
         metadata: { namespace },

@@ -1,5 +1,5 @@
 import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
-import { listNamespacedResources } from '../lib/resource-request'
+import { listResources } from '../lib/resource-request'
 import { IResource } from './resource'
 import { getLatest } from '../lib/utils'
 import { ClusterStatus } from '../lib/get-cluster'
@@ -29,7 +29,7 @@ export interface PodList extends IResource {
 }
 
 export function listHivePods(namespace: string, labels?: string[]) {
-    return listNamespacedResources<Pod>(
+    return listResources<Pod>(
         {
             apiVersion: PodApiVersion,
             kind: PodKind,

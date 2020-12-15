@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { createResource, listClusterResources } from '../lib/resource-request'
+import { createResource, listResources } from '../lib/resource-request'
 import { IResource } from './resource'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
@@ -36,7 +36,7 @@ export const createProject = (name: string | undefined) => {
 }
 
 export function listProjects() {
-    return listClusterResources<Project>({
+    return listResources<Project>({
         apiVersion: ProjectApiVersion,
         kind: ProjectKind,
     })

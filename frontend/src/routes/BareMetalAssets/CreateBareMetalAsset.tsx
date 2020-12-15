@@ -11,22 +11,22 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ErrorPage } from '../../components/ErrorPage'
-import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import {
     createResource,
-    patchResource,
     getResource,
     IRequestResult,
-    listClusterResources,
+    listResources,
+    patchResource,
 } from '../../../src/lib/resource-request'
-import { Project, listProjects } from '../../resources/project'
-import { Secret, unpackSecret } from '../../resources/secret'
-import { NavigationPath } from '../../NavigationPath'
+import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
+import { ErrorPage } from '../../components/ErrorPage'
 import { useQuery } from '../../lib/useQuery'
+import { NavigationPath } from '../../NavigationPath'
+import { listProjects, Project } from '../../resources/project'
+import { Secret, unpackSecret } from '../../resources/secret'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
 const VALID_BMC_ADDR_REGEXP = new RegExp(
@@ -126,7 +126,7 @@ export function EditBareMetalAssetPageData(props: {
         let secret: Secret
         let resultSecret: Promise<Secret>
 
-        const resultProjects = listClusterResources<Project>({ kind: 'Project', apiVersion: 'project.openshift.io/v1' })
+        const resultProjects = listResources<Project>({ kind: 'Project', apiVersion: 'project.openshift.io/v1' })
         resultProjects.promise
             .then((r) => {
                 projects = r

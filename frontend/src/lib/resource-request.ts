@@ -9,8 +9,7 @@ import {
 import { Status, StatusKind } from '../resources/status'
 
 const baseUrl = process.env.REACT_APP_BACKEND ?? ''
-export const apiProxyUrl = `/cluster-management/proxy`
-export const apiNamespacedUrl = `/cluster-management/namespaced`
+export const apiProxyUrl = `/cluster-management`
 
 export interface IRequestOptions {
     retries?: number
@@ -109,12 +108,12 @@ export function getResource<Resource extends IResource>(
 }
 
 export function listResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace: string } },
     options?: IRequestOptions,
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
-    let url = baseUrl + apiNamespacedUrl + getResourceApiPath(resource)
+    let url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
         if (query)
@@ -142,38 +141,6 @@ export function listResources<Resource extends IResource>(
                 return []
             }
         }),
-        abort: result.abort,
-    }
-}
-
-export function listClusterResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
-    options?: IRequestOptions,
-    labels?: string[]
-): IRequestResult<Resource[]> {
-    let url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
-    if (labels) url += '?labelSelector=' + labels.join(',')
-    const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
-    return {
-        promise: result.promise.then((result) => result.items as Resource[]),
-        abort: result.abort,
-    }
-}
-
-export function listNamespacedResources<Resource extends IResource>(
-    resource: {
-        apiVersion: string
-        kind: string
-        metadata: { namespace: string }
-    },
-    options?: IRequestOptions,
-    labels?: string[]
-): IRequestResult<Resource[]> {
-    let url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
-    if (labels) url += '?labelSelector=' + labels.join(',')
-    const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
-    return {
-        promise: result.promise.then((result) => result.items as Resource[]),
         abort: result.abort,
     }
 }

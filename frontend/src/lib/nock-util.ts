@@ -2,7 +2,7 @@ import nock from 'nock'
 import { join } from 'path'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
-import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
+import { apiProxyUrl } from './resource-request'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -56,7 +56,7 @@ export function nockList<Resource extends IResource>(
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
         join(
-            apiNamespacedUrl,
+            apiProxyUrl,
             getResourceApiPath({
                 apiVersion: resource.apiVersion,
                 kind: resource.kind,
