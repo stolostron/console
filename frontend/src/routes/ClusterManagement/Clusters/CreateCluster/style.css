@@ -1,0 +1,18 @@
+
+.pf-c-content .creation-view.showEditor {
+   margin: -24px 0 -3.125rem 0;
+}
+ .pf-c-content .creation-view .creation-view-split-container.showEditor {
+   height: calc(100vh - 220px);
+}
+ .pf-c-content .creation-view .creation-view-split-container.showEditor .creation-view-controls-container {
+   padding-top: 1rem;
+   height: calc(100vh - 225px);
+}
+ .portal-controls {
+   display: flex;
+}
+ .portal-controls > div {
+   margin-left: 10px;
+}
+ 

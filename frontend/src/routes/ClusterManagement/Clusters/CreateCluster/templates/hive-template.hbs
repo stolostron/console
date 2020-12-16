@@ -1,0 +1,423 @@
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================ClusterDeployment======================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: {{{name}}} ##name
+  namespace: {{{name}}}
+  labels:
+    cloud: '{{infrastructure}}'
+{{#if region}}
+    region: '{{{region}}}'  ##region
+{{/if}}
+    vendor: '{{distribution}}'
+{{#if_eq infrastructure 'BMC'}}
+  annotations:
+    hive.openshift.io/try-install-once: "true"
+{{/if_eq}}
+
+spec:
+  baseDomain: {{{baseDomain}}}  ##baseDomain
+  clusterName: {{{name}}}
+  controlPlaneConfig:
+    servingCertificates: {}
+  installAttemptsLimit: 2
+  installed: false
+  platform:
+
+{{! ==================platform======================= }}
+{{#switch infrastructure}}
+
+  {{#case 'BMC'}}
+    baremetal:
+      libvirtSSHPrivateKeySecretRef:
+        name: {{{../name}}}-ssh-private-key
+      hosts:
+        {{#each ../hosts}}
+        - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
+          namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
+          role: {{{role}}}  ##hosts.{{@index}}.role
+          bmc:
+            address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
+{{#if ../../disableCertificateVerification}}
+            disableCertificateVerification: true
+{{/if}}
+            username: {{{username}}}  ##hosts.{{@index}}.username
+            password: {{{password}}}  ##hosts.{{@index}}.password
+          bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
+          hardwareProfile: default
+        {{/each}}
+  {{/case}}
+
+  {{#case 'AWS'}}
+    aws:
+      credentialsSecretRef:
+        name: {{{../name}}}-aws-creds
+      region: {{{../region}}}
+  {{/case}}
+
+  {{#case 'GCP'}}
+    gcp:
+      credentialsSecretRef:
+        name: {{{../name}}}-gcp-creds
+      region: {{{../region}}}
+  {{/case}}
+
+  {{#case 'Azure'}}
+    azure:
+      baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}} ##resourceGroupName
+      credentialsSecretRef:
+        name: {{{../name}}}-azure-creds
+      region: {{{../region}}}
+  {{/case}}
+
+  {{#case 'vSphere'}}
+    vsphere:
+      cluster: {{{../vmClusterName}}}
+      certificatesSecretRef:
+        name: {{{../name}}}-vsphere-certs
+      credentialsSecretRef:
+        name: {{{../name}}}-vsphere-creds
+      vCenter: {{{../vcenter}}}
+      datacenter: {{{../datacenter}}}
+      defaultDatastore: {{{../datastore}}}
+      network: {{{../networkType}}}
+  {{/case}}
+
+{{/switch}}
+
+{{! ==================provisioning======================= }}
+
+  provisioning:
+    installConfigSecretRef:
+      name: {{{name}}}-install-config
+    sshPrivateKeySecretRef:
+      name: {{{name}}}-ssh-private-key
+
+{{#if releaseImage}}
+    imageSet:
+      name: {{{releaseImage}}}
+{{/if}}
+{{#if releaseImageReference}}
+    imageSetRef:
+       #{{{clusterImageSetComment}}}
+      name: {{{releaseImageReference}}}
+{{/if}}
+{{#if clusterReleaseImage}}
+    imageSetRef:
+      name: {{{clusterImageSetName}}}
+{{/if}}
+
+{{#if_eq infrastructure 'BMC'}}
+{{#if ../configMap}}
+    manifestsConfigMapRef:
+      name: {{{../../name}}}-install-manifests
+{{/if}}
+    sshKnownHosts:
+{{#each ../sshKnownHosts}}
+    -  "{{{.}}}"
+{{/each}}
+{{/if_eq}}
+  pullSecretRef:
+    name: {{{name}}}-pull-secret
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! =======================Cluster============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+{{#switch infrastructure}}
+  {{#case 'AWS'}}
+    cloud: Amazon
+    region: {{{../region}}}
+  {{/case}}
+  {{#case 'GCP'}}
+    cloud: Google
+    region: {{{../region}}}
+  {{/case}}
+  {{#case 'Azure'}}
+    cloud: Azure
+    region: {{{../region}}}
+  {{/case}}
+  {{#case 'BMC'}}
+    cloud: Bare-Metal
+  {{/case}}
+  {{#case 'vSphere'}}
+    cloud: vSphere
+  {{/case}}
+{{/switch}}
+    name: {{{name}}}
+    vendor: {{{distribution}}}
+    {{#each additional}}
+    {{{key}}}: '{{{value}}}'
+    {{/each}}
+  name: {{{name}}}
+spec:
+  hubAcceptsClient: true
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================ClusterImageSet========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if clusterReleaseImage}}
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterImageSet
+metadata:
+  name: {{{clusterImageSetName}}}
+spec:
+  releaseImage: {{{clusterReleaseImage}}}
+{{/if}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================ConfigMap=============================== }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#if_eq infrastructure 'BMC'}}
+{{#if ../configMap}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{{../../name}}}-install-manifests
+  namespace: hive
+data:
+  99_metal3-config.yaml: |
+    kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: metal3-config
+      namespace: openshift-machine-api
+    data:
+      http_port: "6180"
+      provisioning_interface: "enp1s0"
+      provisioning_ip: "172.22.0.3/24"
+      dhcp_range: "172.22.0.10,172.22.0.100"
+      deploy_kernel_url: "http://172.22.0.3:6180/images/ironic-python-agent.kernel"
+      deploy_ramdisk_url: "http://172.22.0.3:6180/images/ironic-python-agent.initramfs"
+      ironic_endpoint: "http://172.22.0.3:6385/v1/"
+      ironic_inspector_endpoint: "http://172.22.0.3:5050/v1/"
+      cache_url: "http://192.168.111.1/images"
+      rhcos_image_url: "https://releases-art-rhcos.svc.ci.openshift.org/art/storage/releases/rhcos-4.3/43.81.201911192044.0/x86_64/rhcos-43.81.201911192044.0-openstack.x86_64.qcow2.gz"
+{{/if}}
+{{/if_eq}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================MachinePool ============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{! bare metal has no workerPools data so this part isn't added }}
+{{#each workerPools}}
+---
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: {{{../name}}}-{{{workerName}}}
+  namespace: {{{../name}}}
+spec:
+  clusterDeploymentRef:
+    name: {{{../name}}}
+  name: {{{workerName}}} ##workerPools.{{@index}}.workerName
+
+{{#switch ../infrastructure}}
+
+  {{#case 'AWS'}}
+  platform:
+    aws:
+      rootVolume:
+        iops: 100
+        size: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        type: gp2
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      {{#if ../workerZones}}
+      zones: ##workerPools.{{@index}}.workerZones
+      {{#each ../../workerZones}}
+      - {{{../../region}}}{{{ this }}}
+      {{/each}}
+      {{/if}}
+  {{/case}}
+
+  {{#case 'GCP'}}
+  platform:
+    gcp:
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+  {{/case}}
+
+  {{#case 'Azure'}}
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: 128
+      type: Standard_D2s_v3
+      {{#if ../workerZones}}
+      zones: ##workerPools.{{@index}}.workerZones
+      {{#each ../../workerZones}}
+      - "{{{ this }}}"
+      {{/each}}
+      {{/if}}
+  {{/case}}
+
+  {{#case 'vSphere'}}
+  platform:
+    vsphere:
+      coresPerSocket: {{../coresPerSocket}}
+      cpus: {{../cpus}}
+      memoryMB: {{../memoryMB}}
+      osDisk:
+        diskSizeGB: {{../diskSizeGB}}
+  {{/case}}
+
+{{/switch}}
+  replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
+{{/each}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Secrets ================================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if pullSecret}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{{name}}}-pull-secret
+  namespace: {{{name}}}
+stringData:
+{{#if showSecrets}}
+  .dockerconfigjson: |-
+    {{{pullSecret}}}
+{{else}}
+  .dockerconfigjson: # injected on create
+{{/if}}
+type: kubernetes.io/dockerconfigjson
+{{/if}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{{name}}}-install-config
+  namespace: {{{name}}}
+type: Opaque
+data:
+  # Base64 encoding of install-config yaml
+  install-config.yaml: {{{install-config}}}
+{{#if sshPrivatekey}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{{name}}}-ssh-private-key
+  namespace: {{{name}}}
+stringData:
+{{#if showSecrets}}
+  ssh-privatekey: |-
+{{#each sshPrivatekey}}
+    {{{.}}}
+{{/each}}
+{{else}}
+  ssh-privatekey: # injected on create
+{{/if}}
+type: Opaque
+{{/if}}
+
+{{#if_ne infrastructure 'BMC'}}
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+{{/if_ne}}
+
+{{#switch infrastructure}}
+
+{{#case 'AWS'}}
+metadata:
+  name: {{{../name}}}-aws-creds
+  namespace: {{{../name}}}
+stringData:
+  aws_access_key_id: {{{../awsAccessKeyID}}}
+{{#if ../showSecrets}}
+  aws_secret_access_key: {{{../../awsSecretAccessKeyID}}}
+{{else}}
+  aws_secret_access_key: # injected on create
+{{/if}}
+{{/case}}
+
+{{#case 'GCP'}}
+metadata:
+  name: {{{../name}}}-gcp-creds
+  namespace: {{{../name}}}
+stringData:
+{{#if ../showSecrets}}
+  osServiceAccount.json: |-
+{{#each ../../gcServiceAccountKey}}
+    {{{.}}}
+{{/each}}
+{{else}}
+  osServiceAccount.json: # injected on create
+{{/if}}
+{{/case}}
+
+{{#case 'Azure'}}
+metadata:
+  name: {{{../name}}}-azure-creds
+  namespace: {{{../name}}}
+stringData:
+{{#if ../showSecrets}}
+  osServicePrincipal.json: |-
+    {"clientId": "{{{../../clientId}}}", "clientSecret": "{{{../../clientSecret}}}", "tenantId": "{{{../../tenantId}}}", "subscriptionId": "{{{../../subscriptionId}}}"}
+{{else}}
+  osServicePrincipal.json: # injected on create
+{{/if}}
+{{/case}}
+
+{{#case 'vSphere'}}
+metadata:
+  name: {{{../name}}}-vsphere-creds
+  namespace: {{{../name}}}
+stringData:
+  username: {{{../username}}}
+  password: {{{../password}}}
+
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{{../name}}}-vsphere-certs
+  namespace: {{{../name}}}
+data:
+
+{{#if ../showSecrets}}
+  .cacert: {{{../../cacertificate}}}
+{{else}}
+  .cacert: # injected on create
+{{/if}}
+
+{{/case}}
+
+{{/switch}}
+
+
+{{>endpoints}}
