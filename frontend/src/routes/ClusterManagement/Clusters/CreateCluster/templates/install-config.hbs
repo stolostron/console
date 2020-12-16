@@ -1,0 +1,262 @@
+
+apiVersion: v1
+metadata:
+  name: {{{name}}}
+baseDomain: {{{baseDomain}}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Master Nodes============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_eq infrastructure 'BMC'}}
+controlPlane:
+  name: master
+  replicas: {{{../masterNodeCount}}}
+  platform:
+    baremetal: {}
+{{/if_eq}}
+
+{{#each masterPool}}
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+
+{{#switch ../infrastructure}}
+
+  {{#case 'AWS'}}
+  platform:
+    aws:
+{{#if ../masterZones}}
+      zones: ##masterPool.{{@index}}.masterZones
+      {{#each ../../masterZones}}
+      - {{{../../region}}}{{{ this }}}
+      {{/each}}
+{{/if}}
+      rootVolume:
+        iops: 4000
+        size: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        type: io1
+      type: {{{../masterType}}} ##masterPool.{{@index}}.masterType
+  {{/case}}
+
+  {{#case 'GCP'}}
+  platform:
+    gcp:
+      type: {{{../masterType}}} ##masterPool.{{@index}}.masterType
+  {{/case}}
+
+  {{#case 'Azure'}}
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+      type:  {{{../masterType}}} ##masterPool.{{@index}}.masterType
+  {{/case}}
+
+  {{#case 'vSphere'}}
+  {{/case}}
+
+{{/switch}}
+
+{{/each}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Worker Nodes============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_eq infrastructure 'BMC'}}
+compute:
+- name: worker
+  replicas: {{{../computeNodeCount}}}
+{{/if_eq}}
+
+{{#each workerPools}}
+{{#if @first}}
+compute:
+- hyperthreading: Enabled
+  name: {{{workerName}}}
+  replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
+{{#switch ../infrastructure}}
+
+  {{#case 'AWS'}}
+  platform:
+    aws:
+      rootVolume:
+        iops: 2000
+        size: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        type: io1
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+{{#if ../workerZones}}
+      zones: ##workerPools.{{@index}}.workerZones
+      {{#each ../../workerZones}}
+      - {{{../../region}}}{{{ this }}}
+      {{/each}}
+{{/if}}
+
+  {{/case}}
+
+  {{#case 'GCP'}}
+  platform:
+    gcp:
+      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+  {{/case}}
+
+  {{#case 'Azure'}}
+  platform:
+    azure:
+      type:  {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      osDisk:
+        diskSizeGB: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+      {{#if ../workerZones}}
+      zones: ##workerPools.{{@index}}.workerZones
+      {{#each ../../workerZones}}
+      - "{{{ this }}}"
+      {{/each}}
+      {{/if}}
+  {{/case}}
+
+  {{#case 'vSphere'}}
+  {{/case}}
+
+{{/switch}}
+{{/if}}
+{{/each}}
+
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Networks================================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#if_ne infrastructure 'vSphere'}}
+networking:
+  clusterNetwork:
+  - cidr: {{{../clusterNetwork}}} ##clusterNetwork
+    hostPrefix: {{{../hostPrefix}}} ##hostPrefix
+  machineCIDR: {{{../machineCIDR}}} ##machineCIDR
+  networkType: {{{../networkType}}} ##networkType
+  serviceNetwork:
+  - {{{../serviceNetwork}}} ##serviceNetwork
+{{/if_ne}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Platform================================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+
+platform:
+{{#switch infrastructure}}
+
+{{#case 'BMC'}}
+  baremetal:
+    libvirtURI: {{{../libvirtURI}}}
+    provisioningNetworkCIDR: {{{../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
+    provisioningNetworkInterface: {{{../provisioningNetworkInterface}}} ##provisioningNetworkInterface
+    provisioningBridge: {{{../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+    externalBridge: {{{../externalNetworkBridge }}}  ##externalNetworkBridge
+    {{#if_gt '4.5.0' ../releaseImageVersion}}
+    dnsVIP: {{{../dnsVIP}}} ##dnsVIP
+    {{/if_gt}}
+    apiVIP: {{{../apiVIP}}} ##apiVIP
+    ingressVIP: {{{../ingressVIP}}} ##ingressVIP
+{{! ==================Disconnected BMC================================ }}
+{{#if ../bootstrapOSImage}}
+    bootstrapOSImage: >-
+      {{{../../bootstrapOSImage}}}
+{{/if}}
+{{#if ../clusterOSImage}}
+    clusterOSImage: >-
+      {{{../../clusterOSImage}}}
+{{/if}}
+    hosts:
+{{#each ../hosts}}
+      - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
+        namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
+        role: {{{role}}}  ##hosts.{{@index}}.role
+        bmc:
+          address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
+{{#if ../../disableCertificateVerification}}
+          disableCertificateVerification: true
+{{/if}}
+          username: {{{username}}}  ##hosts.{{@index}}.username
+          password: {{{password}}}  ##hosts.{{@index}}.password
+        bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
+        hardwareProfile: default
+{{/each}}
+{{/case}}
+
+{{#case 'AWS'}}
+  aws:
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'GCP'}}
+  gcp:
+    projectID: {{{../gcProjectID}}} ##gcProjectID
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'Azure'}}
+  azure:
+    baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}}
+    region: {{{../region}}}
+{{/case}}
+
+{{#case 'vSphere'}}
+  vsphere:
+    vCenter: {{{../vcenter}}}
+    username: {{{../username}}}
+    password: {{{../password}}}
+    datacenter: {{{../datacenter}}}
+    defaultDatastore: {{{../datastore}}}
+    cluster: {{{../vmClusterName}}}
+    apiVIP: {{{../apiVIP}}}    ##apiVIP
+    ingressVIP: {{{../ingressVIP}}}  ##ingressVIP
+    network: {{{../networkType}}}
+{{/case}}
+
+{{/switch}}
+
+pullSecret: "" # skip, hive will inject based on it's secrets
+{{#if sshPublickey}}
+sshKey: |-
+{{#each sshPublickey}}
+    {{{.}}}
+{{/each}}
+{{/if}}
+
+{{! ==================Disconnected BMC================================ }}
+{{#if additionalTrustBundle}}
+additionalTrustBundle: |-
+{{#each additionalTrustBundle}}
+    {{{.}}}
+{{/each}}
+{{/if}}
+
+
+{{#if imageMirror}}
+{{#if imageMirror.[0]}}
+imageContentSources:
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-release-nightly
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - {{{imageMirror}}}
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+{{/if}}
+{{/if}}

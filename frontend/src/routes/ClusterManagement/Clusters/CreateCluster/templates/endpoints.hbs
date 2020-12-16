@@ -1,0 +1,39 @@
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: {{{name}}}
+  namespace: {{{name}}}
+spec:
+  clusterName: {{{name}}}
+  clusterNamespace: {{{name}}}
+  clusterLabels:
+{{#switch infrastructure}}
+  {{#case 'AWS'}}
+    cloud: Amazon
+  {{/case}}
+  {{#case 'GCP'}}
+    cloud: Google
+  {{/case}}
+  {{#case 'Azure'}}
+    cloud: Azure
+  {{/case}}
+  {{#case 'BMC'}}
+    cloud: Bare-Metal
+  {{/case}}
+  {{#case 'vSphere'}}
+    cloud: vSphere
+  {{/case}}
+{{/switch}}
+    vendor: {{{distribution}}}
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+  version: 2.1.0
