@@ -37,6 +37,7 @@ export function nockOptions<Resource extends IResource>(
 ) {
     return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
+        .optionally()
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': '*',
