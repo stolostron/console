@@ -14,10 +14,8 @@ export type ClusterImageSet = {
 }
 
 export function listClusterImageSets() {
-    return listResources<ClusterImageSet>(
-        {
-            apiVersion: ClusterImageSetApiVersion,
-            kind: ClusterImageSetKind,
-        }
-    )
+    return listResources<ClusterImageSet>({
+        apiVersion: ClusterImageSetApiVersion,
+        kind: ClusterImageSetKind,
+    })
 }

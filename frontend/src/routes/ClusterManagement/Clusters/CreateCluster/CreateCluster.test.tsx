@@ -4,14 +4,14 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import CreateClusterPage from './CreateCluster'
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-      t: (key: string) => key,
-  }),
-  withTranslation: () => Component => {
-    Component.defaultProps = { ...Component.defaultProps, t: () => "" };
-    return Component;
-  },
-}));
+    useTranslation: () => ({
+        t: (key: string) => key,
+    }),
+    withTranslation: () => (Component) => {
+        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
+        return Component
+    },
+}))
 
 describe('CreateCluster', () => {
     const Component = () => {
