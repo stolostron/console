@@ -30,7 +30,7 @@ export const fetchHeader = async () => {
     let headerResponse: AxiosResponse
     try {
         headerResponse = await Axios.request({
-            url: isLocal ? '/cluster-management/header' : '/multicloud/header/api/v1/header',
+            url: isLocal ? '/header' : '/multicloud/header/api/v1/header',
             method: 'GET',
             responseType: 'json',
             withCredentials: true,

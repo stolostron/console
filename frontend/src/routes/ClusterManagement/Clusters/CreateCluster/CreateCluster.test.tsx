@@ -1,13 +1,14 @@
 import { render } from '@testing-library/react'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { NavigationPath } from '../../../../NavigationPath'
 import CreateClusterPage from './CreateCluster'
 
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => key,
     }),
-    withTranslation: () => (Component) => {
+    withTranslation: () => (Component: any) => {
         Component.defaultProps = { ...Component.defaultProps, t: () => '' }
         return Component
     },
@@ -16,8 +17,8 @@ jest.mock('react-i18next', () => ({
 describe('CreateCluster', () => {
     const Component = () => {
         return (
-            <MemoryRouter initialEntries={['/cluster-management/cluster-management/create-cluster']}>
-                <Route path="/cluster-management/cluster-management/create-cluster">
+            <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                <Route path={NavigationPath.createCluster}>
                     <CreateClusterPage />
                 </Route>
             </MemoryRouter>

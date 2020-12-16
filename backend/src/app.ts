@@ -34,16 +34,8 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
         }
 
-        if (url.startsWith('/cluster-management')) {
-            url = url.substr('/cluster-management'.length)
-        }
-
-        if (url.startsWith('/namespaced')) {
-            url = url.substr('/namespaced'.length)
-        }
-
-        if (url.startsWith('/proxy')) {
-            url = url.substr('/proxy'.length)
+        if (url.startsWith('/console')) {
+            url = url.substr('/console'.length)
         }
 
         // Kubernetes Proxy
@@ -100,7 +92,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const queryString = stringifyQuery({
                 response_type: `code`,
                 client_id: process.env.OAUTH2_CLIENT_ID,
-                redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
+                redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
                 scope: `user:full`,
                 state: '',
             })
@@ -119,7 +111,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 const requestQuery: Record<string, string> = {
                     grant_type: `authorization_code`,
                     code: code,
-                    redirect_uri: `${process.env.BACKEND_URL}/cluster-management/login/callback`,
+                    redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
                     client_id: process.env.OAUTH2_CLIENT_ID,
                     client_secret: process.env.OAUTH2_CLIENT_SECRET,
                 }
@@ -184,8 +176,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
-        // Liveness & Readiness
-        if (url === '/livenessProbe') return res.writeHead(200).end()
+        // Readiness
         if (url === '/readinessProbe') return res.writeHead(200).end()
 
         // Send frontend files
