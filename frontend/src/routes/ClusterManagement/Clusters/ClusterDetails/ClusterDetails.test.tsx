@@ -428,37 +428,6 @@ const mockSelfSubjectAccessRequest:SelfSubjectAccessReview = {
         }
     }
 }
-const mockSelfSubjectAccessResponse:SelfSubjectAccessReview = {
-    apiVersion:"authorization.k8s.io/v1",
-    kind:"SelfSubjectAccessReview",
-    metadata:{},
-    spec:{
-        resourceAttributes: {
-            name:"",
-            namespace:"test-cluster",
-            resource: "secret",
-            verb:"get",
-            version:"v1"
-        }
-    },
-    status:{
-        allowed: true,
-    }
-}
-
-const mockSelfSubjectAccessRequestii:SelfSubjectAccessReview = {
-    apiVersion:"authorization.k8s.io/v1",
-    kind:"SelfSubjectAccessReview",
-    metadata:{},
-    spec:{
-        resourceAttributes: {
-            name:"",
-            resource: "secret",
-            verb:"get",
-            version:"v1"
-        }
-    }
-}
 
 const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnApp,
