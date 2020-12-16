@@ -190,16 +190,16 @@ export function getClusterStatus(
         // deprovisioning
         if (clusterDeployment.metadata.deletionTimestamp) {
             cdStatus = ClusterStatus.destroying
-        
-        // provision/deprovision failure
+
+            // provision/deprovision failure
         } else if (provisionLaunchError || deprovisionLaunchError) {
             cdStatus = ClusterStatus.failed
 
-        // provision success    
+            // provision success
         } else if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
 
-        // provisioning - default
+            // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
