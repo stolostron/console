@@ -5,11 +5,13 @@ import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import './style.css'
 
-// data
+// template/data
 import {controlData} from './controlData/ControlData'
+import hiveTemplate from './templates/hive-template.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -40,10 +42,6 @@ if (window.monaco) {
     },
   })
 }
-
-// template
-declare function require(module: string): any;
-let hiveTemplate = require('./templates/hive-template.hbs');
 
 // where to put Create/Cancel buttons
 const Portals = Object.freeze({
@@ -99,6 +97,7 @@ export default function CreateClusterPage() {
       return t(key, arg)
     }
 
+    const template = typeof hiveTemplate === 'string' ? Handlebars.compile(hiveTemplate) : hiveTemplate
     return (
         <AcmPage>
             <AcmPageHeader 
@@ -112,7 +111,7 @@ export default function CreateClusterPage() {
                 title={'Cluster YAML'}
                 monacoEditor={<MonacoEditor />}
                 controlData={controlData}
-                template={hiveTemplate}
+                template={template}
                 portals={Portals}
                 createControl={{
                   createResource,
