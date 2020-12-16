@@ -8,6 +8,8 @@ import { StatusField, DistributionField } from '../../../../../components/Cluste
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
+import { StatusSummaryCount } from '../../components/StatusSummaryCount'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
 
 export function ClusterOverviewPageContent() {
     const { cluster, setEditModalOpen } = useContext(ClusterContext)
@@ -54,6 +56,7 @@ export function ClusterOverviewPageContent() {
                     { key: t('table.credentials'), value: <LoginCredentials /> },
                 ]}
             />
+            {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
         </PageSection>
     )
 }

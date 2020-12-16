@@ -8,7 +8,7 @@ import {
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
 
-const baseUrl = process.env.REACT_APP_BACKEND ?? ''
+export const baseUrl = process.env.REACT_APP_BACKEND ?? ''
 export const apiProxyUrl = `/cluster-management/proxy`
 export const apiNamespacedUrl = `/cluster-management/namespaced`
 
@@ -189,7 +189,7 @@ function getRequest<ResourceType, ResultType = ResourceType>(
     })
 }
 
-function postRequest<ResourceType, ResultType = ResourceType>(
+export function postRequest<ResourceType, ResultType = ResourceType>(
     url: string,
     data: ResourceType,
     options?: IRequestOptions
