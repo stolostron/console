@@ -1,6 +1,7 @@
 import {
-    AcmAlert,
+    AcmAlertContext,
     AcmAlertGroup,
+    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
     AcmForm,
@@ -12,25 +13,26 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, AlertVariant, Button, Page, SelectOption, Title } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
+import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
 import {
-    validateKubernetesDnsName,
-    validatePrivateSshKey,
-    validatePublicSshKey,
+    validateBaseDnsName,
     validateCertificate,
     validateGCProjectID,
-    validateJSON,
-    validateLibvirtURI,
-    validateBaseDnsName,
     validateImageMirror,
+    validateJSON,
+    validateKubernetesDnsName,
+    validateLibvirtURI,
+    validatePrivateSshKey,
+    validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import { getFeatureGate } from '../../../resources/feature-gate'
 import { listProjects, Project } from '../../../resources/project'
 import {
     createProviderConnection,
@@ -39,28 +41,29 @@ import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-    setProviderConnectionProviderID,
     replaceProviderConnection,
+    setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
-import { getFeatureGate } from '../../../resources/feature-gate'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
     return (
-        <Page>
-            {match?.params.namespace ? (
-                <AcmPageHeader
-                    title={t('editConnection.title')}
-                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
-                />
-            ) : (
-                <AcmPageHeader
-                    title={t('addConnection.title')}
-                    breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
-                />
-            )}
-            <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
-        </Page>
+        <AcmAlertProvider>
+            <Page>
+                {match?.params.namespace ? (
+                    <AcmPageHeader
+                        title={t('editConnection.title')}
+                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                    />
+                ) : (
+                    <AcmPageHeader
+                        title={t('addConnection.title')}
+                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                    />
+                )}
+                <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+            </Page>
+        </AcmAlertProvider>
     )
 }
 
@@ -209,8 +212,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
     }, [])
 
     const isEditing = () => props.providerConnection.metadata.name !== ''
-
-    const [errors, setErrors] = useState<string[]>([])
+    const alertContext = useContext(AcmAlertContext)
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
@@ -703,19 +705,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     isRequired
                     validation={(value) => validateBaseDnsName(value, t)}
                 />
-                {errors && errors.length > 0 && (
-                    <AcmAlertGroup>
-                        {errors.map((error) => (
-                            <AcmAlert
-                                isInline
-                                variant={AlertVariant.danger}
-                                title={t('common:request.failed')}
-                                subtitle={error}
-                                key={error}
-                            />
-                        ))}
-                    </AcmAlertGroup>
-                )}
+                <AcmAlertGroup isInline canClose />
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
@@ -760,8 +750,7 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                             }
                             delete data.data
 
-                            setErrors([])
-
+                            alertContext.clearAlerts()
                             let result: IRequestResult<ProviderConnection>
                             if (isEditing()) {
                                 result = replaceProviderConnection(data)
@@ -775,7 +764,11 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                                 .catch((err) => {
                                     /* istanbul ignore else */
                                     if (err instanceof Error) {
-                                        setErrors([err.message])
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: t('common:request.failed'),
+                                            message: err.message,
+                                        })
                                     }
                                 })
                         }}
