@@ -20,7 +20,7 @@ ENV NODE_ENV production
 COPY --from=builder /opt/app-root/src/backend/build ./
 COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
-CMD ["node", "main.js"]
+CMD ["node", "--max-old-space-size=32", "main.js"]
 
 ARG VCS_REF
 ARG VCS_URL
