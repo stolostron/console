@@ -1,21 +1,21 @@
-import React, { useEffect, useState, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AcmCodeSnippet, AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton, AcmCodeSnippet } from '@open-cluster-management/ui-components'
 import {
+    AlertVariant,
     Card,
     CardBody,
-    CardTitle,
     CardFooter,
-    Tabs,
+    CardTitle,
+    Skeleton,
     Tab,
+    Tabs,
     TabTitleText,
-    AlertVariant,
-    Skeleton
 } from '@patternfly/react-core'
+import React, { useContext, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { getSecret } from '../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus } from '../../../../lib/get-cluster'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation(['cluster', 'common'])
@@ -24,7 +24,14 @@ export function ImportCommandContainer() {
     const [loading, setLoading] = useState<boolean>(false)
 
     useEffect(() => {
-        if (cluster?.name && !cluster?.isHive && !error && !loading && !importCommand && cluster?.status === ClusterStatus.pendingimport) {
+        if (
+            cluster?.name &&
+            !cluster?.isHive &&
+            !error &&
+            !loading &&
+            !importCommand &&
+            cluster?.status === ClusterStatus.pendingimport
+        ) {
             setLoading(true)
             pollImportYamlSecret(cluster?.name)
                 .then((command: string) => {
@@ -51,23 +58,19 @@ export function ImportCommandContainer() {
     }
 
     if (error) {
-        return (
-            <AcmAlert isInline variant={AlertVariant.danger} title={t('common:request.failed')} subtitle={error} style={{ marginBottom: '24px' }} />
-        )
+        return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
     }
 
     if (cluster?.status === ClusterStatus.pendingimport) {
         return (
             <>
-                <AcmAlert id="pending-import-notification" isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} style={{ marginBottom: '24px' }} />
+                <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
                 <ImportCommand importCommand={importCommand} />
             </>
         )
     }
 
-    return (
-        null
-    )
+    return null
 }
 
 type ImportCommandProps = {
@@ -108,7 +111,11 @@ export function ImportCommand(props: ImportCommandProps) {
                                         id="launch-console"
                                         variant="secondary"
                                         component="a"
-                                        href={/* istanbul ignore next */ sessionStorage.getItem('DiscoveredClusterConsoleURL') ?? ''}
+                                        href={
+                                            /* istanbul ignore next */ sessionStorage.getItem(
+                                                'DiscoveredClusterConsoleURL'
+                                            ) ?? ''
+                                        }
                                         target="_blank"
                                         rel="noreferrer"
                                     >
@@ -132,7 +139,9 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
             .promise.then((secret) => {
                 const klusterletCRD = secret.data?.['crds.yaml']
                 const importYaml = secret.data?.['import.yaml']
-                resolve(`echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`)
+                resolve(
+                    `echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`
+                )
             })
             .catch((err) => {
                 if (retries-- > 0) {

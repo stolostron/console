@@ -1,9 +1,5 @@
 import React, { ReactNode, useContext } from 'react'
-import {
-    AcmPageCard,
-    AcmTable,
-    IAcmTableColumn
-} from '@open-cluster-management/ui-components'
+import { AcmPageCard, AcmTable, compareNumbers, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
@@ -46,26 +42,33 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     }
     function rolesCellFn(node: NodeInfo): ReactNode {
         const roles = getRoles(node)
-        return <span>{roles.join(',')}</span>
+        return <span>{roles.join(', ')}</span>
     }
-
     function rolesSortFn(a: NodeInfo, b: NodeInfo): number {
-        const roleA = getRoles(a).join(',')
-        const roleB = getRoles(b).join(',')
+        const roleA = getRoles(a).join(', ')
+        const roleB = getRoles(b).join(', ')
         return roleA.localeCompare(roleB)
     }
 
-    function capacityCellFn(node: NodeInfo): ReactNode {
-        if (!node.capacity) {
-            return <span></span>
+    function getNodeMemory(node: NodeInfo): number {
+        try {
+            const memory = parseInt(node.capacity!.memory)
+            if (memory === 0) return 0
+            if (isNaN(memory)) return 0
+            return memory
+        } catch (err) {
+            return 0
         }
-        const cpu = node.capacity!['cpu'] || ''
-        let memory = node.capacity!['memory'] || ''
-        if (memory.length > 0 && parseInt(memory, 10) > 0) {
-            memory = formatFileSize(parseInt(memory, 10))
-        }
-        return <span>{`${cpu}/${memory}`}</span>
     }
+    function memorySortFn(a: NodeInfo, b: NodeInfo): number {
+        return compareNumbers(getNodeMemory(a), getNodeMemory(b))
+    }
+    function memoryCellFn(node: NodeInfo): ReactNode {
+        const memory = getNodeMemory(node)
+        if (memory === 0 || memory === undefined) return '-'
+        return formatFileSize(memory)
+    }
+
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
             header: t('table.name'),
@@ -94,8 +97,14 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
             cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
         },
         {
-            header: t('table.size'),
-            cell: capacityCellFn,
+            header: t('table.cpu'),
+            sort: 'capacity.cpu',
+            cell: (node) => node.capacity?.cpu ?? '-',
+        },
+        {
+            header: t('table.memory'),
+            sort: memorySortFn,
+            cell: memoryCellFn,
         },
     ]
     function keyFn(node: NodeInfo) {

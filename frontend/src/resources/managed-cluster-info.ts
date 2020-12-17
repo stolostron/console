@@ -11,7 +11,7 @@ export type ManagedClusterInfoKindType = 'ManagedClusterInfo'
 export interface NodeInfo {
     name?: string
     labels?: { [key: string]: string }
-    capacity?: { [key: string]: string }
+    capacity?: { cpu: string; memory: string }
     conditions?: {
         status: string
         type: string

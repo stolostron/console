@@ -8,6 +8,8 @@ import { StatusField, DistributionField } from '../../../../../components/Cluste
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
+import { StatusSummaryCount } from '../../components/StatusSummaryCount'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
 
 export function ClusterOverviewPageContent(props:{
     accessRestriction?: boolean
@@ -56,6 +58,7 @@ export function ClusterOverviewPageContent(props:{
                     { key: t('table.credentials'), value: <LoginCredentials accessRestriction={props.accessRestriction} /> },
                 ]}
             />
+            {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
         </PageSection>
     )
 }

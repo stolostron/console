@@ -1,6 +1,7 @@
 import {
-    AcmAlert,
+    AcmAlertContext,
     AcmAlertGroup,
+    AcmAlertProvider,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -10,23 +11,23 @@ import {
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, AlertVariant, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useState, useEffect } from 'react'
+import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ErrorPage } from '../../components/ErrorPage'
-import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import {
     createResource,
-    patchResource,
     getResource,
     IRequestResult,
     listClusterResources,
+    patchResource,
 } from '../../../src/lib/resource-request'
-import { Project, listProjects } from '../../resources/project'
-import { Secret, unpackSecret } from '../../resources/secret'
-import { NavigationPath } from '../../NavigationPath'
+import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
+import { ErrorPage } from '../../components/ErrorPage'
 import { useQuery } from '../../lib/useQuery'
+import { NavigationPath } from '../../NavigationPath'
+import { listProjects, Project } from '../../resources/project'
+import { Secret, unpackSecret } from '../../resources/secret'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
 const VALID_BMC_ADDR_REGEXP = new RegExp(
@@ -87,19 +88,23 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
 
         return (
             <Page>
-                <AcmPageHeader title={t('createBareMetalAsset.title')} />
-                <EditBareMetalAssetPageData
-                    bmaSecretID={props.bmaSecretID}
-                    editAssetName={editAssetName}
-                    editAssetNamespace={editAssetNamespace}
-                />
+                <AcmAlertProvider>
+                    <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                    <EditBareMetalAssetPageData
+                        bmaSecretID={props.bmaSecretID}
+                        editAssetName={editAssetName}
+                        editAssetNamespace={editAssetNamespace}
+                    />
+                </AcmAlertProvider>
             </Page>
         )
     }
     return (
         <Page>
-            <AcmPageHeader title={t('createBareMetalAsset.title')} />
-            <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
+            <AcmAlertProvider>
+                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
+            </AcmAlertProvider>
         </Page>
     )
 }
@@ -215,10 +220,11 @@ export function CreateBareMetalAssetPageContent(props: {
 }) {
     const { t } = useTranslation(['bma'])
     const history = useHistory()
+    const alertContext = useContext(AcmAlertContext)
+
     let isEdit = props.editBareMetalAsset ? true : false
     let secretName = ''
 
-    const [errors, setErrors] = useState<string[]>([])
     let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: 'BareMetalAsset',
         apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -370,25 +376,13 @@ export function CreateBareMetalAssetPageContent(props: {
                     isRequired
                     validation={(value) => ValidateField(value, 'bootMACAddress', t)}
                 />
-                {errors && errors.length > 0 && (
-                    <AcmAlertGroup>
-                        {errors.map((error) => (
-                            <AcmAlert
-                                isInline
-                                variant={AlertVariant.danger}
-                                title={t('common:request.failed')}
-                                subtitle={error}
-                                key={error}
-                            />
-                        ))}
-                    </AcmAlertGroup>
-                )}
+                <AcmAlertGroup isInline canClose />
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
                         variant="primary"
                         onClick={() => {
-                            setErrors([])
+                            alertContext.clearAlerts()
                             if (isEdit) {
                                 return patchResource(bmaSecret as BMASecret, bmaSecret)
                                     .promise.then(() => {
@@ -399,14 +393,22 @@ export function CreateBareMetalAssetPageContent(props: {
                                             .catch((e) => {
                                                 /* istanbul ignore else */
                                                 if (e instanceof Error) {
-                                                    setErrors([e.message])
+                                                    alertContext.addAlert({
+                                                        type: 'danger',
+                                                        title: t('common:request.failed'),
+                                                        message: e.message,
+                                                    })
                                                 }
                                             })
                                     })
                                     .catch((e) => {
                                         /* istanbul ignore else */
                                         if (e instanceof Error) {
-                                            setErrors([e.message])
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: t('common:request.failed'),
+                                                message: e.message,
+                                            })
                                         }
                                     })
                             } else {
@@ -419,7 +421,11 @@ export function CreateBareMetalAssetPageContent(props: {
                                         .catch((e) => {
                                             /* istanbul ignore else */
                                             if (e instanceof Error) {
-                                                setErrors([e.message])
+                                                alertContext.addAlert({
+                                                    type: 'danger',
+                                                    title: t('common:request.failed'),
+                                                    message: e.message,
+                                                })
                                             }
                                         })
                                 })
