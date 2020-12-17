@@ -8,9 +8,7 @@ import {
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
 
-export const baseUrl = process.env.REACT_APP_BACKEND ?? ''
-export const apiProxyUrl = `/cluster-management/proxy`
-export const apiNamespacedUrl = `/cluster-management/namespaced`
+export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export interface IRequestOptions {
     retries?: number
@@ -61,7 +59,7 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
-    const url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
+    const url = backendUrl + getResourceApiPath(resource)
     return postRequest<Resource, ResultType>(url, resource, options)
 }
 
@@ -69,7 +67,7 @@ export function replaceResource<Resource extends IResource, ResultType = Resourc
     resource: Resource,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
-    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    const url = backendUrl + getResourceNameApiPath(resource)
     return putRequest<Resource, ResultType>(url, resource, options)
 }
 
@@ -78,7 +76,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     data: unknown,
     options?: IRequestOptions
 ): IRequestResult<ResultType> {
-    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    const url = backendUrl + getResourceNameApiPath(resource)
     let headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
@@ -94,7 +92,7 @@ export function deleteResource<Resource extends IResource>(
 ): IRequestResult {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    const url = backendUrl + getResourceNameApiPath(resource)
     return deleteRequest(url, options)
 }
 
@@ -104,7 +102,7 @@ export function getResource<Resource extends IResource>(
 ): IRequestResult<Resource> {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    const url = baseUrl + apiProxyUrl + getResourceNameApiPath(resource)
+    const url = backendUrl + getResourceNameApiPath(resource)
     return getRequest<Resource>(url, { ...{ retries: 2 }, ...options })
 }
 
@@ -114,7 +112,7 @@ export function listResources<Resource extends IResource>(
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
-    let url = baseUrl + apiNamespacedUrl + getResourceApiPath(resource)
+    let url = backendUrl + getResourceApiPath(resource)
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
         if (query)
@@ -151,7 +149,7 @@ export function listClusterResources<Resource extends IResource>(
     options?: IRequestOptions,
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
+    let url = backendUrl + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
@@ -169,7 +167,7 @@ export function listNamespacedResources<Resource extends IResource>(
     options?: IRequestOptions,
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = baseUrl + apiProxyUrl + getResourceApiPath(resource)
+    let url = backendUrl + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
     return {
@@ -252,7 +250,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                     } else {
                         if (status.code === 401) {
                             // 401 is returned from kubernetes in a Status object if token is not valid
-                            window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                             throw new ResourceError(status.message as string, status.code as number)
                         } else if (ResourceErrorCodes.includes(status.code as number)) {
                             throw new ResourceError(status.message as string, status.code as number)
@@ -263,7 +261,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                 } else if (response.status >= 400) {
                     if (response.status === 401) {
                         // 401 is returned from the backend if no token cookie is on request
-                        window.location.href = `${process.env.REACT_APP_BACKEND}/cluster-management/login`
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                     } else if (ResourceErrorCodes.includes(response.status)) {
                         throw new ResourceError(response.statusText, response.status)
                     } else {

@@ -7,7 +7,7 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
   render() {
     const { t, history } = this.props
     const onClick = () => {
-      history.push(NavigationPath.createBareMetalAssets)
+      history.push(NavigationPath.createBareMetalAsset)
     }
     return (
       <div>

@@ -1,10 +1,4 @@
-import {
-    AcmButton,
-    AcmEmptyState,
-    AcmPageCard,
-    AcmPageHeader,
-    AcmTable,
-} from '@open-cluster-management/ui-components'
+import { AcmButton, AcmEmptyState, AcmPageCard, AcmPageHeader, AcmTable } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -69,7 +63,7 @@ export function BareMetalAssetsTable(props: {
                             <AcmButton
                                 variant="primary"
                                 onClick={() => {
-                                    history.push(NavigationPath.createBareMetalAssets)
+                                    history.push(NavigationPath.createBareMetalAsset)
                                 }}
                             >
                                 {t('createBareMetalAsset.title')}
@@ -114,7 +108,7 @@ export function BareMetalAssetsTable(props: {
                         id: 'createAsset',
                         title: t('bareMetalAsset.bulkAction.createAsset'),
                         click: () => {
-                            history.push(NavigationPath.createBareMetalAssets)
+                            history.push(NavigationPath.createBareMetalAsset)
                         },
                     },
                 ]}
@@ -154,7 +148,7 @@ export function BareMetalAssetsTable(props: {
                         title: t('bareMetalAsset.rowAction.editAsset.title'),
                         click: (bareMetalAsset: BareMetalAsset) => {
                             history.push(
-                                NavigationPath.editBareMetalAssets.replace(
+                                NavigationPath.editBareMetalAsset.replace(
                                     ':namespace/:name',
                                     `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string
                                 )

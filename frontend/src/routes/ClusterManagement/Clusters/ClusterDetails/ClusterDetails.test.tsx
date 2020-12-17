@@ -20,8 +20,16 @@ import {
     CertificateSigningRequestKind,
 } from '../../../../resources/certificate-signing-requests'
 import { PodList, PodApiVersion, PodKind } from '../../../../resources/pod'
-import { ClusterManagementAddOn, ClusterManagementAddOnKind,  ClusterManagementAddOnApiVersion} from '../../../../resources/cluster-management-add-on'
-import { ManagedClusterAddOn, ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind } from '../../../../resources/managed-cluster-add-on'
+import {
+    ClusterManagementAddOn,
+    ClusterManagementAddOnKind,
+    ClusterManagementAddOnApiVersion,
+} from '../../../../resources/cluster-management-add-on'
+import {
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+} from '../../../../resources/managed-cluster-add-on'
 import { nockGet, nockClusterList, nockNamespacedList, mockBadRequestStatus } from '../../../../lib/nock-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
@@ -200,7 +208,7 @@ const mockHiveProvisionPods: PodList = {
 const mockclusterManagementAddOnApp: ClusterManagementAddOn = {
     apiVersion: ClusterManagementAddOnApiVersion,
     kind: ClusterManagementAddOnKind,
-    metadata: { name: 'application-manager'},
+    metadata: { name: 'application-manager' },
     spec: {},
 }
 const mockclusterManagementAddOnWork: ClusterManagementAddOn = {
@@ -257,13 +265,13 @@ const mockclusterManagementAddOns: ClusterManagementAddOn[] = [
 ]
 
 const mockmanagedClusterAddOn: ManagedClusterAddOn = {
-        apiVersion: ManagedClusterAddOnApiVersion,
-        kind: ManagedClusterAddOnKind,
-        metadata: {
-            name: 'application-manager',
-            namespace: 'test-cluster',
-        },
-        spec: {}
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'application-manager',
+        namespace: 'test-cluster',
+    },
+    spec: {},
 }
 
 const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
@@ -423,7 +431,12 @@ const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
 
 const nockManagedClusterInfo = () => nockGet(mockManagedClusterInfo, undefined, 200, true)
 const nockClusterDeployment = () => nockGet(mockClusterDeployment)
-const nockCertificateSigningRequestList = () => nockClusterList({ apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind }, mockCertificateSigningRequestList, ['open-cluster-management.io/cluster-name=test-cluster'])
+const nockCertificateSigningRequestList = () =>
+    nockClusterList(
+        { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
+        mockCertificateSigningRequestList,
+        ['open-cluster-management.io/cluster-name=test-cluster']
+    )
 const nockClusterManagementAddons = () => nockClusterList(mockclusterManagementAddOnApp, mockclusterManagementAddOns)
 const nockManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
 const nockHiveProvisionJob = () =>
@@ -439,7 +452,7 @@ const nockClusterManagementAddonsError = () => nockClusterList(mockclusterManage
 const nockManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
 
 const Component = () => (
-    <MemoryRouter initialEntries={['/cluster-management/cluster-management/clusters/test-cluster']}>
+    <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', 'test-cluster')]}>
         <Switch>
             <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
         </Switch>
@@ -513,11 +526,17 @@ describe('ClusterDetails - nodes page', () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('tab.nodes')).toBeInTheDocument())
             userEvent.click(screen.getByText('tab.nodes'))
-            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+            await waitFor(() =>
+                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
+            )
             userEvent.click(screen.getByText('table.role'))
-            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+            await waitFor(() =>
+                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
+            )
             userEvent.click(screen.getByText('table.region'))
-            await waitFor(() => expect(screen.getByText( mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument())
+            await waitFor(() =>
+                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
+            )
         })
     })
 })
@@ -541,7 +560,9 @@ describe('ClusterDetails - settings page', () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
             userEvent.click(screen.getByText('tab.settings'))
-            await waitFor(() => expect(screen.getByText(mockmanagedClusterAddOns[0].metadata.name!)).toBeInTheDocument())
+            await waitFor(() =>
+                expect(screen.getByText(mockmanagedClusterAddOns[0].metadata.name!)).toBeInTheDocument()
+            )
         })
     })
     test('should show error if the ManagedClusterAddons fail to query', async () => {
