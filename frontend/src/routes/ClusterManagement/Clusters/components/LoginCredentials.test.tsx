@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { LoginCredentials } from './LoginCredentials'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockGet, mockBadRequestStatus, nockCreate } from '../../../../lib/nock-util'
-import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
+import { nockGet, mockBadRequestStatus } from '../../../../lib/nock-util'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
