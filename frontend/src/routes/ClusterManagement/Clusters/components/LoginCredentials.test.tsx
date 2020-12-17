@@ -61,52 +61,6 @@ const mockKubeadminSecret = {
     type: 'Opaque',
 }
 
-const mockSelfSubjectAccessRequest:SelfSubjectAccessReview = {
-    apiVersion:"authorization.k8s.io/v1",
-    kind:"SelfSubjectAccessReview",
-    metadata:{},
-    spec:{
-        resourceAttributes: {
-            name:"",
-            namespace:"test-cluster",
-            resource: "secret",
-            verb:"get",
-            version:"v1"
-        }
-    }
-}
-const mockSelfSubjectAccessResponse:SelfSubjectAccessReview = {
-    apiVersion:"authorization.k8s.io/v1",
-    kind:"SelfSubjectAccessReview",
-    metadata:{},
-    spec:{
-        resourceAttributes: {
-            name:"",
-            namespace:"test-cluster",
-            resource: "secret",
-            verb:"get",
-            version:"v1"
-        }
-    },
-    status:{
-        allowed: true,
-    }
-}
-
-const mockSelfSubjectAccessRequestii:SelfSubjectAccessReview = {
-    apiVersion:"authorization.k8s.io/v1",
-    kind:"SelfSubjectAccessReview",
-    metadata:{},
-    spec:{
-        resourceAttributes: {
-            name:"",
-            resource: "secret",
-            verb:"get",
-            version:"v1"
-        }
-    }
-}
-
 describe('LoginCredentials', () => {
     test('renders', async () => {
         nockGet(mockKubeadminSecret)
@@ -123,6 +77,18 @@ describe('LoginCredentials', () => {
         await waitFor(() => screen.getByText('credentials.hide'))
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.show'))
+    })
+    test('renders disabeld toggle', async () => {
+        nockGet(mockKubeadminSecret)
+        render(
+            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+                <LoginCredentials accessRestriction={true}/>
+            </ClusterContext.Provider>
+        )
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
+        await waitFor(() => screen.getByText('credentials.show'))
+        userEvent.click(screen.getByTestId('login-credentials'))
+        expect(screen.getByText('credentials.show')).toBeInTheDocument()
     })
     test('renders as a hyphen when secret name is not set', () => {
         render(
