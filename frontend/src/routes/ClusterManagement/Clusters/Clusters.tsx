@@ -40,7 +40,6 @@ const PageActions = () => {
     const { t } = useTranslation(['cluster'])
     const { clusterManagementAddons } = useContext(AppContext)
     const addons = mapAddons(clusterManagementAddons)
-    console.log('addons', addons)
     return (
         <AcmActionGroup>
             <AcmLaunchLink
