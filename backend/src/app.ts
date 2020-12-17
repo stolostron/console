@@ -5,7 +5,7 @@
 // TODO /managed-clusters route
 // TODO /upgrade route
 
-import { createReadStream } from 'fs'
+import { createReadStream, stat, Stats } from 'fs'
 import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
 import { Agent, get } from 'https'
 import { extname } from 'path'
@@ -34,10 +34,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
         }
 
-        if (url.startsWith('/console')) {
-            url = url.substr('/console'.length)
-        }
-
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
             const token = getToken(req)
@@ -58,6 +54,9 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             headers.authorization = `Bearer ${token}`
             const response = await request(req.method, process.env.CLUSTER_API_URL + url, headers, data)
             if (response.statusCode === 403 && req.method === 'GET') {
+                if (url === '/apis/cluster.open-cluster-management.io/v1/managedclusters') {
+                    return managedClusters(token, res)
+                }
                 return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
@@ -150,10 +149,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             // TODO get code...
         }
 
-        if (url.startsWith('/managed-clusters')) {
-            // managedClusters
-        }
-
         // Console Header
         if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
             const token = getToken(req)
@@ -189,36 +184,35 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
             const contentType = contentTypes[ext]
             if (/\bgzip\b/.test(acceptEncoding)) {
-                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
-                readStream
-                    .on('open', () => {
-                        res.writeHead(200, {
-                            'Content-Encoding': 'gzip',
-                            'Content-Type': contentType,
-                            'Cache-Control': cacheControl,
+                try {
+                    const stats = await new Promise<Stats>((resolve, reject) =>
+                        stat('./public' + url + '.gz', (err, stats) => {
+                            if (err) return reject(err)
+                            return resolve(stats)
                         })
-                    })
-                    .on('error', (err) => {
-                        if (ext === '.json') {
-                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
-                        } else {
-                            return res.writeHead(404).end()
-                        }
-                    })
-                    .pipe(res, { end: true })
+                    )
+                    const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
+                    readStream
+                        .on('open', () => {
+                            res.writeHead(200, {
+                                'Content-Encoding': 'gzip',
+                                'Content-Type': contentType,
+                                'Cache-Control': cacheControl,
+                                'Content-Length': stats.size.toString(),
+                            })
+                        })
+                        .on('error', (err) => res.writeHead(404).end())
+                        .pipe(res, { end: true })
+                } catch (err) {
+                    return res.writeHead(404).end()
+                }
             } else {
                 const readStream = createReadStream('./public' + url, { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
                     })
-                    .on('error', (err) => {
-                        if (ext === '.json') {
-                            return res.writeHead(200, { 'Cache-Control': cacheControl }).end()
-                        } else {
-                            return res.writeHead(404).end()
-                        }
-                    })
+                    .on('error', (err) => res.writeHead(404).end())
                     .pipe(res, { end: true })
             }
             return
@@ -291,12 +285,12 @@ async function projectsRequest(
     headers: IncomingHttpHeaders,
     res: ServerResponse
 ): Promise<void> {
-    const namespaceQuery = ''
+    let namespaceQuery = ''
     if (url.includes('?')) {
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         if (query['managedNamespacesOnly'] !== undefined) {
-            // namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
+            namespaceQuery = '?labelSelector=cluster.open-cluster-management.io/managedCluster'
             url = url.substr(0, url.indexOf('?'))
         }
     }
@@ -306,24 +300,31 @@ async function projectsRequest(
         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
         { authorization: headers.authorization, accept: 'application/json' }
     )
-    let items: unknown[] = []
+    res.writeHead(200, { 'content-type': 'application/json' })
+    res.write('{"items":[')
+    let first = true
     if (projects?.items) {
         await Promise.all(
             projects.items.map((project) => {
+                console.log(project.metadata.name)
                 const namespacedUrl = addNamespace(url, project.metadata.name)
                 return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers)
                     .then((data) => {
-                        if (data.items) {
-                            items = [...items, ...data.items]
+                        if (data?.items) {
+                            for (const item of data.items) {
+                                if (first) first = false
+                                else res.write(',')
+                                res.write(JSON.stringify(item))
+                            }
                         }
                     })
                     .catch((err) => {
-                        // TODO
+                        // Do Nothing
                     })
             })
         )
     }
-    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
+    res.end(']}')
 }
 
 async function managedClusters(token: string, res: ServerResponse): Promise<void> {
@@ -333,27 +334,31 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
         `${process.env.CLUSTER_API_URL}/apis/project.openshift.io/v1/projects${namespaceQuery}`,
         { authorization: `Bearer ${token}`, accept: 'application/json' }
     )
-    const items: unknown[] = []
+    res.writeHead(200, { 'content-type': 'application/json' })
+    res.write('{"items":[')
+    let first = true
     if (projects?.items) {
         await Promise.all(
             projects.items.map(async (project) => {
-                const managedCluster = await jsonRequest<{ kind: string }>(
+                await jsonRequest<{ kind: string }>(
                     'GET',
-                    `cluster.open-cluster-management.io/v1/managedclusters/${project.metadata.name}`,
+                    `${process.env.CLUSTER_API_URL}/apis/cluster.open-cluster-management.io/v1/managedclusters/${project.metadata.name}`,
                     { authorization: `Bearer ${token}`, accept: 'application/json' }
                 )
                     .then((data) => {
                         if (data?.kind === 'ManagedCluster') {
-                            items.push(data)
+                            if (first) first = false
+                            else res.write(',')
+                            res.write(JSON.stringify(data))
                         }
                     })
                     .catch((err) => {
-                        // TODO
+                        // Do Nothing
                     })
             })
         )
     }
-    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ items: items }))
+    res.end(']}')
 }
 
 // Handle a request that returns a json object
