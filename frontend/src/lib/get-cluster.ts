@@ -7,6 +7,7 @@ import {
     NodeInfo,
     OpenShiftDistributionInfo,
 } from '../resources/managed-cluster-info'
+import { ManagedCluster, listManagedClusters, getManagedCluster } from '../resources/managed-cluster'
 import {
     listCertificateSigningRequests,
     CertificateSigningRequest,
@@ -64,11 +65,14 @@ export type Nodes = {
 export function getSingleCluster(
     namespace: string,
     name: string
-): IRequestResult<PromiseSettledResult<ClusterDeployment | ManagedClusterInfo | CertificateSigningRequest[]>[]> {
+): IRequestResult<
+    PromiseSettledResult<ClusterDeployment | ManagedClusterInfo | CertificateSigningRequest[] | ManagedCluster>[]
+> {
     const results = [
         getClusterDeployment(namespace, name),
         getManagedClusterInfo(namespace, name),
         listCertificateSigningRequests(name),
+        getManagedCluster(name),
     ]
 
     return {
@@ -78,9 +82,9 @@ export function getSingleCluster(
 }
 
 export function getAllClusters(): IRequestResult<
-    PromiseSettledResult<ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[]>[]
+    PromiseSettledResult<ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[] | ManagedCluster[]>[]
 > {
-    const results = [listClusterDeployments(), listMCIs(), listCertificateSigningRequests()]
+    const results = [listClusterDeployments(), listMCIs(), listCertificateSigningRequests(), listManagedClusters()]
     return {
         promise: Promise.allSettled(results.map((result) => result.promise)),
         abort: () => results.forEach((result) => result.abort()),
@@ -90,7 +94,8 @@ export function getAllClusters(): IRequestResult<
 export function mapClusters(
     clusterDeployments: ClusterDeployment[] = [],
     managedClusterInfos: ManagedClusterInfo[] = [],
-    certificateSigningRequests: CertificateSigningRequest[] = []
+    certificateSigningRequests: CertificateSigningRequest[] = [],
+    managedClusters: ManagedCluster[] = []
 ) {
     const uniqueClusterNames = Array.from(
         new Set([
@@ -101,37 +106,62 @@ export function mapClusters(
     return uniqueClusterNames.map((cluster) => {
         const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
         const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
-        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests)
+        const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
+        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster)
     })
 }
 
 export function getCluster(
     managedClusterInfo: ManagedClusterInfo | undefined,
     clusterDeployment: ClusterDeployment | undefined,
-    certificateSigningRequests: CertificateSigningRequest[] | undefined
+    certificateSigningRequests: CertificateSigningRequest[] | undefined,
+    managedCluster: ManagedCluster | undefined
 ): Cluster {
     return {
-        name: clusterDeployment?.metadata.name ?? managedClusterInfo?.metadata.name,
+        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
-        status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests),
-        distribution: getDistributionInfo(managedClusterInfo),
-        labels: managedClusterInfo?.metadata.labels,
+        status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
+        distribution: getDistributionInfo(managedClusterInfo, managedCluster),
+        labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
-        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo),
+        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
         hiveSecrets: getHiveSecrets(clusterDeployment),
         isHive: !!clusterDeployment,
-        isManaged: !!managedClusterInfo,
+        isManaged: !!managedCluster || !!managedClusterInfo,
     }
 }
 
-export function getDistributionInfo(managedClusterInfo: ManagedClusterInfo | undefined) {
-    if (!managedClusterInfo) return undefined
+export function getDistributionInfo(
+    managedClusterInfo: ManagedClusterInfo | undefined,
+    managedCluster: ManagedCluster | undefined
+) {
+    let k8sVersion: string | undefined
+    let ocp: OpenShiftDistributionInfo | undefined
+    let displayVersion: string | undefined
 
-    const k8sVersion = managedClusterInfo.status?.version
-    const ocp = managedClusterInfo.status?.distributionInfo?.ocp
-    const displayVersion = ocp?.version ? `OpenShift ${ocp.version}` : k8sVersion
-    return { k8sVersion, ocp, displayVersion }
+    if (managedCluster) {
+        let k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
+            (cc) => cc.name === 'kubeversion.open-cluster-management.io'
+        )
+        if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
+        let versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
+        if (versionClaim) displayVersion = `OpenShift ${versionClaim}`
+    }
+
+    if (managedClusterInfo) {
+        k8sVersion = managedClusterInfo.status?.version
+        ocp = managedClusterInfo.status?.distributionInfo?.ocp
+        if (displayVersion === undefined) {
+            displayVersion = ocp?.version ? `OpenShift ${ocp.version}` : k8sVersion
+        }
+    }
+
+    if (k8sVersion && ocp && displayVersion) {
+        return { k8sVersion, ocp, displayVersion }
+    }
+
+    return undefined
 }
 
 export function getKubeApiServer(
@@ -143,8 +173,13 @@ export function getKubeApiServer(
 
 export function getConsoleUrl(
     clusterDeployment: ClusterDeployment | undefined,
-    managedClusterInfo: ManagedClusterInfo | undefined
+    managedClusterInfo: ManagedClusterInfo | undefined,
+    managedCluster: ManagedCluster | undefined
 ) {
+    let consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
+        (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
+    )
+    if (consoleUrlClaim) return consoleUrlClaim.value
     return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
 }
 
@@ -174,7 +209,8 @@ export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined)
 export function getClusterStatus(
     clusterDeployment: ClusterDeployment | undefined,
     managedClusterInfo: ManagedClusterInfo | undefined,
-    certificateSigningRequests: CertificateSigningRequest[] | undefined
+    certificateSigningRequests: CertificateSigningRequest[] | undefined,
+    managedCluster: ManagedCluster | undefined
 ) {
     const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
         conditions.find((c) => c.type === condition)?.status === 'True'
@@ -216,19 +252,21 @@ export function getClusterStatus(
     }
 
     // if mc doesn't exist, default to cd status
-    if (!managedClusterInfo) {
+    if (!managedClusterInfo && !managedCluster) {
         return cdStatus
     }
 
+    let mc = managedCluster ?? managedClusterInfo!
+
     // ManagedCluster status
     let mcStatus = ClusterStatus.pending
-    const mcConditions: V1CustomResourceDefinitionCondition[] = managedClusterInfo.status?.conditions ?? []
+    const mcConditions: V1CustomResourceDefinitionCondition[] = mc.status?.conditions ?? []
     const clusterAccepted = checkForCondition('HubAcceptedManagedCluster', mcConditions)
     const clusterJoined = checkForCondition('ManagedClusterJoined', mcConditions)
     const clusterAvailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions)
 
     // detaching
-    if (managedClusterInfo.metadata.deletionTimestamp) {
+    if (mc.metadata.deletionTimestamp) {
         mcStatus = ClusterStatus.detaching
 
         // not accepted
@@ -243,7 +281,7 @@ export function getClusterStatus(
         if (certificateSigningRequests && certificateSigningRequests.length) {
             const clusterCsrs =
                 certificateSigningRequests?.filter((csr) => {
-                    return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === managedClusterInfo.metadata.name
+                    return csr.metadata.labels?.[CSR_CLUSTER_LABEL] === mc.metadata.name
                 }) ?? []
             const activeCsr = getLatest<CertificateSigningRequest>(clusterCsrs, 'metadata.creationTimestamp')
             mcStatus =
