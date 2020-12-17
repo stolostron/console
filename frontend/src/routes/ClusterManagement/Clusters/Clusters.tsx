@@ -17,7 +17,6 @@ import { DistributionField, StatusField } from '../../../components/ClusterCommo
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
-// import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'

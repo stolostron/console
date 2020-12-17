@@ -36,6 +36,7 @@ export interface ManagedCluster extends IResource {
         version: {
             kubernetes: string
         }
+        clusterClaims: { name: string; value: string }[]
     }
 }
 

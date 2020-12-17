@@ -28,8 +28,12 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             res.setHeader('Access-Control-Allow-Credentials', 'true')
             switch (req.method) {
                 case 'OPTIONS':
-                    res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
-                    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
+                    if (req.headers['access-control-request-method']) {
+                        res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
+                    }
+                    if (req.headers['access-control-request-headers']) {
+                        res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
+                    }
                     return res.writeHead(200).end()
             }
         }
@@ -79,7 +83,13 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
             return req.pipe(
                 httpRequest(options, (response) => {
-                    res.writeHead(response.statusCode, response.headers)
+                    const headers = { ...response.headers }
+                    if (process.env.NODE_ENV === 'development') {
+                        if (req.headers['origin']) {
+                            headers['Access-Control-Allow-Origin'] = req.headers['origin']
+                        }
+                    }
+                    res.writeHead(response.statusCode, headers)
                     response.pipe(res)
                 })
             )
