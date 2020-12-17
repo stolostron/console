@@ -43,7 +43,7 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
-import { AppContext } from '../../../App'
+import { AppContext } from '../../../components/AppContext'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])

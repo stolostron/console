@@ -1,7 +1,8 @@
 {
-  "page.header.cluster-management": "Cluster Management",
+  "page.header.cluster-management": "Cluster management",
   "page.header.import-cluster": "Import an existing cluster",
   "clusters": "Clusters",
+  "clusters.discovered": "Discovered clusters",
   "managed": "Managed",
   "managed.emptyStateHeader": "No managed clusters found",
   "managed.detached": "Detach cluster",

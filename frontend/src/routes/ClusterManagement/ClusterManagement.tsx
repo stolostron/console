@@ -4,7 +4,7 @@ import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
-import { AppContext } from '../../App'
+import { AppContext } from '../../components/AppContext'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -53,13 +53,13 @@ export default function ClusterManagementPage() {
                                 <AcmSecondaryNavItem
                                     isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                                 >
-                                    <Link to={NavigationPath.discoveredClusters}>{'Discovered Clusters'}</Link>
+                                    <Link to={NavigationPath.discoveredClusters}>{t('cluster:clusters.discovered')}</Link>
                                 </AcmSecondaryNavItem>
                             )}
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
                             >
-                                <Link to={NavigationPath.providerConnections}>{'Provider Connections'}</Link>
+                                <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }

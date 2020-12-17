@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockClusterList, nockCreate, nockGet } from '../../../lib/nock-util'
+import { nockClusterList, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { FeatureGate } from '../../../resources/feature-gate'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
@@ -13,6 +13,7 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import AddConnectionPage from './AddConnection'
+import { AppContext } from '../../../components/AppContext'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -31,20 +32,17 @@ const mockProjects: Project[] = [mockProject]
 
 function TestAddConnectionPage() {
     return (
-        <MemoryRouter>
-            <Route
-                render={(props: any) => {
-                    return <AddConnectionPage {...props} />
-                }}
-            />
-        </MemoryRouter>
+        <AppContext.Provider value={{ featureGates: { 'open-cluster-management-discovery': mockFeatureGate }, clusterManagementAddons: [] }}>
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        return <AddConnectionPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </AppContext.Provider>
     )
 }
-
-beforeEach(() => {
-    sessionStorage.clear()
-    nockGet(mockFeatureGate, undefined, 200, true)
-})
 
 describe('add connection page', () => {
     it('should create azr provider connection', async () => {
