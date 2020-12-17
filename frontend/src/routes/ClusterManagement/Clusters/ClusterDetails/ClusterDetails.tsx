@@ -63,7 +63,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
-    const [getRbacError, setGetRbacError] = useState<Error | undefined>(undefined)
     const [accessRestriction, setRestriction] = useState<boolean>(true)
     useEffect(startPolling, [startPolling])
     useEffect(() => {
@@ -113,7 +112,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 }
             })
         } catch (err) {
-            setGetRbacError(err)
             console.error(err)
         }
     }, [cluster])
