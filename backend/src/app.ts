@@ -28,8 +28,12 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             res.setHeader('Access-Control-Allow-Credentials', 'true')
             switch (req.method) {
                 case 'OPTIONS':
-                    res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
-                    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
+                    if (req.headers['access-control-request-method']) {
+                        res.setHeader('Access-Control-Allow-Methods', req.headers['access-control-request-method'])
+                    }
+                    if (req.headers['access-control-request-headers']) {
+                        res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
+                    }
                     return res.writeHead(200).end()
             }
         }
