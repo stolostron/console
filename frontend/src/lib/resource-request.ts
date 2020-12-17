@@ -8,7 +8,7 @@ import {
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
 
-export const backendUrl = process.env.REACT_APP_BACKEND ?? ''
+export const backendUrl = process.env.REACT_APP_BACKEND_HOST ?? '' + process.env.REACT_APP_BACKEND_PATH ?? ''
 
 export interface IRequestOptions {
     retries?: number
@@ -250,7 +250,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                     } else {
                         if (status.code === 401) {
                             // 401 is returned from kubernetes in a Status object if token is not valid
-                            window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                             throw new ResourceError(status.message as string, status.code as number)
                         } else if (ResourceErrorCodes.includes(status.code as number)) {
                             throw new ResourceError(status.message as string, status.code as number)
@@ -261,7 +261,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                 } else if (response.status >= 400) {
                     if (response.status === 401) {
                         // 401 is returned from the backend if no token cookie is on request
-                        window.location.href = `${process.env.REACT_APP_BACKEND}/login`
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                     } else if (ResourceErrorCodes.includes(response.status)) {
                         throw new ResourceError(response.statusText, response.status)
                     } else {
