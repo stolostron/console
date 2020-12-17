@@ -1,16 +1,17 @@
 import {
-    AcmAlert,
+    AcmAlertContext,
     AcmAlertGroup,
+    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmInlineProvider,
     AcmPageCard,
     AcmTable,
-    AcmInlineProvider,
-    Provider,
     compareStrings,
+    Provider,
 } from '@open-cluster-management/ui-components'
-import { AlertActionCloseButton, AlertVariant, Page } from '@patternfly/react-core'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Page } from '@patternfly/react-core'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
@@ -26,9 +27,11 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 export default function ProviderConnectionsPage() {
     return (
         <Page>
-            <AcmPageCard>
-                <ProviderConnectionsPageContent />
-            </AcmPageCard>
+            <AcmAlertProvider>
+                <AcmPageCard>
+                    <ProviderConnectionsPageContent />
+                </AcmPageCard>
+            </AcmAlertProvider>
         </Page>
     )
 }
@@ -62,33 +65,11 @@ function getProvider(labels: Record<string, string> | undefined) {
 export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
     const { t } = useTranslation(['connection', 'common'])
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    const [errors, setErrors] = useState<string[]>([])
     const history = useHistory()
+    const alertContext = useContext(AcmAlertContext)
     return (
         <Fragment>
-            {errors && (
-                <AcmAlertGroup>
-                    {errors.map((error, index) => (
-                        <AcmAlert
-                            isInline
-                            isLiveRegion
-                            variant={AlertVariant.danger}
-                            title={error}
-                            key={index.toString()}
-                            actionClose={
-                                <AlertActionCloseButton
-                                    title={error}
-                                    variantLabel={`${AlertVariant.danger} alert`}
-                                    onClose={
-                                        /* istanbul ignore next */ () =>
-                                            setErrors([...errors.filter((e) => e !== error)])
-                                    }
-                                />
-                            }
-                        />
-                    ))}
-                </AcmAlertGroup>
-            )}
+            <AcmAlertGroup isInline canClose />
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -171,6 +152,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 message: `You are about to delete ${providerConnections.length} provider connections. The provider connections will no longer be available for creating new clusters, but clusters that were previously created using the connections are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: async () => {
+                                    alertContext.clearAlerts()
                                     const promiseResults = await deleteResources(providerConnections).promise
                                     const resultErrors: string[] = []
                                     for (let index = 0; index < promiseResults.length; index++) {
@@ -181,7 +163,13 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             )
                                         }
                                     }
-                                    setErrors([...errors, ...resultErrors])
+                                    resultErrors.forEach((error) => {
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: 'Delete error',
+                                            message: error,
+                                        })
+                                    })
                                     props.refresh()
                                     setConfirm(ClosedConfirmModalProps)
                                 },
@@ -213,13 +201,15 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 message: `You are about to delete ${providerConnection.metadata?.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
                                 open: true,
                                 confirm: () => {
+                                    alertContext.clearAlerts()
                                     deleteResource(providerConnection)
                                         .promise.then(props.refresh)
                                         .catch(() => {
-                                            setErrors([
-                                                ...errors,
-                                                `Failed to delete provider connection named ${providerConnection.metadata.name}`,
-                                            ])
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Delete error',
+                                                message: `Failed to delete provider connection named ${providerConnection.metadata.name}`,
+                                            })
                                         })
                                     setConfirm(ClosedConfirmModalProps)
                                 },

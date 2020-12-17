@@ -14,9 +14,6 @@ echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
 OAUTH2_REDIRECT_URL=http://localhost:4000/cluster-management/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
-NODE_TLS_REJECT_UNAUTHORIZED=0
-echo NODE_TLS_REJECT_UNAUTHORIZED=$NODE_TLS_REJECT_UNAUTHORIZED >> ./backend/.env
-
 BACKEND_URL=http://localhost:4000
 echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
 
