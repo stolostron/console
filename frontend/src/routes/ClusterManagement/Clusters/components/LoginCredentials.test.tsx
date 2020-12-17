@@ -110,15 +110,13 @@ const mockSelfSubjectAccessRequestii:SelfSubjectAccessReview = {
 describe('LoginCredentials', () => {
     test('renders', async () => {
         nockGet(mockKubeadminSecret)
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <LoginCredentials />
+                <LoginCredentials accessRestriction={false}/>
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         await waitFor(() => screen.getByText('credentials.show'))
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
         await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
@@ -137,16 +135,12 @@ describe('LoginCredentials', () => {
     })
     test('renders in a failed state', async () => {
         nockGet(mockKubeadminSecret, mockBadRequestStatus)
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        const nockRbacII = nockCreate(mockSelfSubjectAccessRequestii, mockSelfSubjectAccessResponse)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <LoginCredentials />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbacII.isDone()).toBeTruthy())
         await waitFor(() => screen.getByText('credentials.show'))
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.loading'))
