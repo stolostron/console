@@ -141,7 +141,7 @@ export function DistributionField(props: { clusterName: string; data: Distributi
                                 <AcmSubmit
                                     onClick={() => {
                                         setUpgradeError('')
-                                        const url = '/cluster-management/upgrade-1-2'
+                                        const url = '/console/upgrade'
                                         Axios.post(url, {
                                             clusterName: props.clusterName,
                                             version: selectVersion,
