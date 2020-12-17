@@ -51,7 +51,7 @@
     },
     "scripts": {
         "start": "react-app-rewired start",
-        "build": "react-app-rewired build",
+        "build": "react-app-rewired build && cd build && gzip * -k -r --best",
         "test": "JEST_JUNIT_OUTPUT_DIR=coverage react-app-rewired test --all --watchAll=false --ci --coverage --reporters=default --reporters=jest-junit --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen",
         "test2": "react-app-rewired test \"CreateCluster\\.test\\.tsx\"",
         "test:watch": "react-app-rewired test",
