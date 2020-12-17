@@ -9,7 +9,9 @@ import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 
-export function ClusterOverviewPageContent() {
+export function ClusterOverviewPageContent(props:{
+    accessRestriction?: boolean
+}) {
     const { cluster, setEditModalOpen } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster'])
     return (
@@ -51,7 +53,7 @@ export function ClusterOverviewPageContent() {
                             </a>
                         ),
                     },
-                    { key: t('table.credentials'), value: <LoginCredentials /> },
+                    { key: t('table.credentials'), value: <LoginCredentials accessRestriction={props.accessRestriction} /> },
                 ]}
             />
         </PageSection>
