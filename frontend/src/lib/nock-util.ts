@@ -1,8 +1,6 @@
 import nock from 'nock'
-import { join } from 'path'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
-import { apiNamespacedUrl, apiProxyUrl } from './resource-request'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export function nockGet<Resource extends IResource>(
@@ -11,8 +9,8 @@ export function nockGet<Resource extends IResource>(
     statusCode: number = 200,
     polling: boolean = true
 ) {
-    let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        join(apiProxyUrl, getResourceNameApiPath(resource))
+    let nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+        getResourceNameApiPath(resource)
     )
     let finalNockScope = nockScope.reply(statusCode, response ?? resource, {
         'Access-Control-Allow-Origin': '*',
@@ -37,8 +35,8 @@ export function nockOptions<Resource extends IResource>(
     response?: IResource,
     statusCode: number = 200
 ) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .options(join(apiProxyUrl, getResourceNameApiPath(resource)))
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
@@ -56,14 +54,11 @@ export function nockList<Resource extends IResource>(
     labels?: string[],
     query?: object
 ) {
-    let nockScope = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        join(
-            apiNamespacedUrl,
-            getResourceApiPath({
-                apiVersion: resource.apiVersion,
-                kind: resource.kind,
-            })
-        )
+    let nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+        getResourceApiPath({
+            apiVersion: resource.apiVersion,
+            kind: resource.kind,
+        })
     )
 
     if (labels) {
@@ -102,8 +97,8 @@ export function nockClusterList<Resource extends IResource>(
     polling: boolean = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        join(apiProxyUrl, getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind }))
+    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
     )
 
     if (labels) {
@@ -134,8 +129,8 @@ export function nockNamespacedList<Resource extends IResource>(
     polling: boolean = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).get(
-        join(apiProxyUrl, getResourceApiPath(resource))
+    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+        getResourceApiPath(resource)
     )
 
     if (labels) {
@@ -160,8 +155,8 @@ export function nockNamespacedList<Resource extends IResource>(
 }
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .post(apiProxyUrl + getResourceApiPath(resource), JSON.stringify(resource))
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .post(getResourceApiPath(resource), JSON.stringify(resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -170,15 +165,15 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
 }
 
 export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .options(apiProxyUrl + getResourceNameApiPath(resource))
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(200, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(data))
+        .patch(getResourceNameApiPath(resource), JSON.stringify(data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
@@ -187,15 +182,15 @@ export function nockPatch(resource: IResource, data: unknown, response?: IResour
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode: number = 200) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .options(apiProxyUrl + getResourceNameApiPath(resource))
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(apiProxyUrl + getResourceNameApiPath(resource), JSON.stringify(resource))
+        .put(getResourceNameApiPath(resource), JSON.stringify(resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
@@ -204,15 +199,15 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
 }
 
 export function nockDelete(resource: IResource, response?: IResource) {
-    return nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
-        .options(apiProxyUrl + getResourceNameApiPath(resource))
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(204, undefined, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .delete(apiProxyUrl + getResourceNameApiPath(resource))
+        .delete(getResourceNameApiPath(resource))
         .reply(response ? 200 : 204, response, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
@@ -226,7 +221,7 @@ export function nockSearch(
     statusCode: number = 201,
     polling: boolean = true
 ) {
-    nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true })
+    nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
         .reply(204, undefined, {
@@ -235,7 +230,7 @@ export function nockSearch(
             'Access-Control-Allow-Credentials': 'true',
         })
 
-    let networkMock = nock(process.env.REACT_APP_BACKEND as string, { encodedQueryParams: true }).post(
+    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).post(
         apiSearchUrl,
         JSON.stringify(query)
     )

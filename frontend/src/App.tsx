@@ -25,11 +25,11 @@ function App() {
                 <Route exact path={NavigationPath.addConnection} component={AddConnectionPage} />
                 <Route exact path={NavigationPath.editConnection} component={AddConnectionPage} />
                 <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
-                <Route exact path={NavigationPath.editBareMetalAssets} component={EditBareMetalAssetPage} />
-                <Route exact path={NavigationPath.createBareMetalAssets} component={CreateBareMetalAssetPage} />
-                <Route path={NavigationPath.clusterManagement} component={ClusterManagementPage} />
+                <Route exact path={NavigationPath.editBareMetalAsset} component={EditBareMetalAssetPage} />
+                <Route exact path={NavigationPath.createBareMetalAsset} component={CreateBareMetalAssetPage} />
+                <Route path={NavigationPath.console} component={ClusterManagementPage} />
                 <Route exact path="*">
-                    <Redirect to={NavigationPath.clusterManagement} />
+                    <Redirect to={NavigationPath.console} />
                 </Route>
             </Switch>
         </Router>

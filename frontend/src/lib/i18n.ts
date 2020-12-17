@@ -8,7 +8,7 @@ i18n.use(initReactI18next)
     .use(HttpApi)
     .init({
         backend: {
-            loadPath: '/cluster-management/locales/{{lng}}/{{ns}}.json',
+            loadPath: '/console/locales/{{lng}}/{{ns}}.json',
         },
 
         keySeparator: false, // this repo will use single level json

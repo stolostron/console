@@ -2,7 +2,7 @@
     "name": "@open-cluster-management/console-frontend",
     "version": "0.0.1",
     "private": true,
-    "homepage": "/cluster-management/",
+    "homepage": "/console/",
     "proxy": "http://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.13.0",
@@ -50,8 +50,8 @@
         "ts-jest": "^26.4.4"
     },
     "scripts": {
-        "start": "REACT_APP_BACKEND='http://localhost:4000' react-app-rewired start",
-        "build": "REACT_APP_BACKEND='' react-app-rewired build",
+        "start": "react-app-rewired start",
+        "build": "react-app-rewired build",
         "test": "JEST_JUNIT_OUTPUT_DIR=coverage react-app-rewired test --all --watchAll=false --ci --coverage --reporters=default --reporters=jest-junit --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen",
         "test2": "react-app-rewired test \"CreateCluster\\.test\\.tsx\"",
         "test:watch": "react-app-rewired test",

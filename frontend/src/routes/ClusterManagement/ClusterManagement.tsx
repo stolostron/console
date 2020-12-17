@@ -92,7 +92,7 @@ export default function ClusterManagementPage() {
                         <Route exact path={NavigationPath.providerConnections} component={ProviderConnectionsPage} />
                         <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
 
-                        <Route exact path={NavigationPath.clusterManagement}>
+                        <Route exact path={NavigationPath.console}>
                             <Redirect to={NavigationPath.clusters} />
                         </Route>
                     </Switch>
