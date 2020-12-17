@@ -226,6 +226,13 @@ export function ClustersTable(props: {
                                                             })
                                                         }
                                                     })
+                                                }).catch((err)=>{
+                                                    setConfirm(ClosedConfirmModalProps)
+                                                    alertContext.addAlert({
+                                                        type: 'danger',
+                                                        title: 'Detach error',
+                                                        message: err,
+                                                    })
                                                 })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
@@ -255,6 +262,13 @@ export function ClustersTable(props: {
                                                                 message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
                                                             })
                                                         }
+                                                    })
+                                                }).catch((err)=>{
+                                                    setConfirm(ClosedConfirmModalProps)
+                                                    alertContext.addAlert({
+                                                        type: 'danger',
+                                                        title: 'Destroy error',
+                                                        message: err,
                                                     })
                                                 })
                                                 setConfirm(ClosedConfirmModalProps)
@@ -315,27 +329,39 @@ export function ClustersTable(props: {
                                 confirm: async () => {
                                     alertContext.clearAlerts()
                                     const clusterNames = clusters.map((cluster) => cluster.name) as Array<string>
-                                    const promiseResults = await deleteClusters(clusterNames, true)
-                                    const resultErrors: string[] = []
-                                    let i = 0
-                                    promiseResults.promise.then((results) => {
-                                        results.forEach((result) => {
-                                            if (result.status === 'rejected') {
-                                                resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
-                                            } else {
-                                                result.value.forEach((result) => {
-                                                    if (result.status === 'rejected') {
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: 'Destroy error',
-                                                            message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
-                                                        })
-                                                    }
-                                                })
-                                                i++
+                                    
+                                        const promiseResults = await deleteClusters(clusterNames, true)
+                                        const resultErrors: string[] = []
+                                        let i = 0
+                                        promiseResults.promise
+                                        .catch((err)=>{
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: 'Encountered error: ' + err,
+                                            })
+                                        })
+                                        .then((results) => {
+                                            if(results){
+                                                results.forEach((result) => {
+                                                if (result.status === 'rejected') {
+                                                    resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
+                                                } else {
+                                                    result.value.forEach((result) => {
+                                                        if (result.status === 'rejected') {
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: 'Destroy error',
+                                                                message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
+                                                            })
+                                                        }
+                                                    })
+                                                    i++
+                                                }
+                                            })
                                             }
                                         })
-                                    })
+                                    
                                     setConfirm(ClosedConfirmModalProps)
                                     props.refresh()
                                 },
@@ -360,25 +386,34 @@ export function ClustersTable(props: {
                                         (managedCluster) => managedCluster.name
                                     ) as Array<string>
                                     const promiseResults = deleteClusters(managedClusterNames, false)
-                                    const resultErrors: string[] = []
-                                    let i = 0
-                                    promiseResults.promise.then((results) => {
-                                        results.forEach((result) => {
-                                            if (result.status === 'rejected') {
-                                                resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
-                                            } else {
-                                                result.value.forEach((result) => {
-                                                    if (result.status === 'rejected') {
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: 'detach error',
-                                                            message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
-                                                        })
-                                                    }
-                                                })
-                                                i++
-                                            }
+                                    promiseResults.promise
+                                    .catch((err)=>{
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: 'Detach error',
+                                            message: 'Encountered error: ' + err,
                                         })
+                                    }).then((results)=>{
+                                        const resultErrors: string[] = []
+                                        let i = 0
+                                        if(results){
+                                            results.forEach((result) => {
+                                                if (result.status === 'rejected') {
+                                                    resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
+                                                } else {
+                                                    result.value.forEach((result) => {
+                                                        if (result.status === 'rejected') {
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: 'detach error',
+                                                                message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
+                                                            })
+                                                        }
+                                                    })
+                                                    i++
+                                                }
+                                            })
+                                        }
                                     })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
