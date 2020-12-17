@@ -12,7 +12,6 @@ import { encode as stringifyQuery, parse as parseQueryString } from 'querystring
 import { parse as parseUrl } from 'url'
 import { logger } from './logger'
 import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requestException } from './lib/utils'
-import { get as _get, set as _set } from 'lodash'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
@@ -88,7 +87,14 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     res.writeHead(503)
                     return res.end('{"message":"requires clusterName and version"}')
                 }
-                const remoteVersion = await getRemoteResource<Record<string, unknown>>(
+                const remoteVersion = await getRemoteResource<{
+                    status: {
+                        availableUpdates: Record<string, unknown>[]
+                    }
+                    spec: {
+                        desiredUpdate: Record<string, unknown>
+                    }
+                }>(
                     host,
                     token,
                     agent,
@@ -102,13 +108,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     2000,
                     10
                 )
-                console.log('after version get')
-                // create managedclusteraction
-                const desiredUpdate = (_get(remoteVersion, ['status', 'availableUpdates']) as Array<
-                    Record<string, unknown>
-                >).filter((u) => u.version && u.version == reqBody.version)[0]
 
-                _set(remoteVersion, ['spec', 'desiredUpdate'], desiredUpdate)
+                const desiredUpdate = remoteVersion?.status?.availableUpdates.filter(
+                    (u) => u.version && u.version == reqBody.version
+                )[0]
+                remoteVersion.spec.desiredUpdate = desiredUpdate
                 await updateRemoteResource(
                     host,
                     token,

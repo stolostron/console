@@ -1,27 +1,23 @@
-import { parse as parseUrl } from 'url'
-import { IncomingMessage, request as httpRequest, RequestOptions } from 'http'
-
-import { Agent } from 'https'
 import { createHash } from 'crypto'
-
-import {
-    ManagedClusterView,
-    ManagedClusterViewVersion,
-    ManagedClusterViewResources,
-    ManagedClusterViewApiGroup,
-    ManagedClusterViewApiVersion,
-    ManagedClusterViewKind,
-} from './managedclusterview'
+import { IncomingMessage, request as httpRequest, RequestOptions } from 'http'
+import { Agent } from 'https'
+import { parse as parseUrl } from 'url'
 import {
     ManagedClusterAction,
-    ManagedClusterActionVersion,
-    ManagedClusterActionResources,
     ManagedClusterActionApiGroup,
     ManagedClusterActionApiVersion,
     ManagedClusterActionKind,
+    ManagedClusterActionResources,
+    ManagedClusterActionVersion,
 } from './managedclusteraction'
-import { promises } from 'fs'
-import { get as _get, set as _set } from 'lodash'
+import {
+    ManagedClusterView,
+    ManagedClusterViewApiGroup,
+    ManagedClusterViewApiVersion,
+    ManagedClusterViewKind,
+    ManagedClusterViewResources,
+    ManagedClusterViewVersion,
+} from './managedclusterview'
 
 interface KubernetesGVR {
     apiGroup: string
@@ -213,9 +209,9 @@ async function createPollHelper<TRet, TPoll>(
         // create if not found
         const createRes = await createResource<TPoll>(opt, gvr, nsn, obj)
         if (createRes.statusCode == 409) {
-            const createResponse = await parseJsonBody<Record<string, unknown>>(createRes)
+            const createResponse = await parseJsonBody<{ reason: string }>(createRes)
             // if existed, will keep progress
-            if ('AlreadyExists' !== _get(createResponse, ['reason'], '')) {
+            if ('AlreadyExists' !== createResponse.reason) {
                 console.log('unexpected error')
                 throw { code: 409, msg: JSON.stringify(createResponse) }
             }
@@ -296,11 +292,8 @@ export async function getRemoteResource<T>(
         try {
             const viewObj = await parseJsonBody<ManagedClusterView>(response)
             if (response.statusCode >= 200 && response.statusCode < 300) {
-                if (
-                    (_get(viewObj, ['status', 'conditions', '0', 'type'], '') as string) === 'Processing' &&
-                    viewObj.status
-                ) {
-                    const retData = _get(viewObj, ['status', 'result'], undefined) as T
+                if (viewObj.status.conditions[0].type === 'Processing' && viewObj.status) {
+                    const retData = viewObj.status.result as T
                     return {
                         isValid: true,
                         isRetryRequired: false,
@@ -377,8 +370,8 @@ export async function updateRemoteResource(
         try {
             if (response.statusCode >= 200 && response.statusCode < 300) {
                 const actionObj = await parseJsonBody<ManagedClusterAction>(response)
-                if (_get(actionObj, ['status', 'conditions', '0', 'type']) === 'Completed') {
-                    const status = _get(actionObj, ['status', 'conditions', '0', 'status'], '') as string
+                if (actionObj.status.conditions[0].type === 'Completed') {
+                    const status = actionObj.status.conditions[0].status
                     // only accept type=completed & status=true
                     if (status.toLocaleLowerCase() === 'true') {
                         return { isValid: true, isRetryRequired: false }
@@ -388,11 +381,7 @@ export async function updateRemoteResource(
                             isValid: false,
                             isRetryRequired: false,
                             code: 500,
-                            msg: _get(
-                                actionObj,
-                                ['status', 'conditions', '0', 'message'],
-                                'failed to apply resource update'
-                            ) as string,
+                            msg: actionObj.status.conditions[0].message ?? 'failed to apply resource update',
                         }
                     }
                 } else {
