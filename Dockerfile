@@ -1,22 +1,15 @@
 FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/nodejs-12 as builder
 USER root
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY backend/package.json backend/package-lock.json ./backend/
-COPY frontend/package.json frontend/package-lock.json ./frontend/
-RUN npm run postinstall
 COPY ./ ./
+RUN npm ci
+RUN npm run postinstall
 RUN npm run build
-RUN cd frontend/build && gzip * -k -r --best
-# RUN rm -rf backend/node_modules
-# RUN cd backend && npm ci --only=production --no-optional
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
-# COPY --from=builder /opt/app-root/src/backend/node_modules ./node_modules
 COPY --from=builder /opt/app-root/src/backend/build ./
 COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
