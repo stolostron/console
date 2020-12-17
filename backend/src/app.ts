@@ -188,6 +188,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
             const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
             const contentType = contentTypes[ext]
+            if (contentType === undefined) {
+                logger.debug('unknown content type', `ext=${ext}`)
+                return res.writeHead(404).end()
+            }
             if (/\bgzip\b/.test(acceptEncoding)) {
                 const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
                 readStream
