@@ -14,6 +14,7 @@ import {
 } from '../../../resources/provider-connection'
 import AddConnectionPage from './AddConnection'
 import { AppContext } from '../../../components/AppContext'
+import { NavigationPath } from '../../../NavigationPath'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -30,12 +31,15 @@ const mockFeatureGate: FeatureGate = {
 
 const mockProjects: Project[] = [mockProject]
 
+let location: Location
+
 function TestAddConnectionPage() {
     return (
         <AppContext.Provider value={{ featureGates: { 'open-cluster-management-discovery': mockFeatureGate }, clusterManagementAddons: [] }}>
             <MemoryRouter>
                 <Route
                     render={(props: any) => {
+                        location = props.location
                         return <AddConnectionPage {...props} />
                     }}
                 />
@@ -70,9 +74,8 @@ describe('add connection page', () => {
                 sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
-
-        const projectsNock = nockClusterList(mockProject, mockProjects)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const projectsNock = nockClusterList(mockProject, mockProjects)
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() =>
@@ -104,5 +107,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))
     })
 })

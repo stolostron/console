@@ -10,14 +10,14 @@ export const AppContext = React.createContext<{
     clusterManagementAddons: [],
 })
 
-export function AppContextContainer(props: { children: React.ReactNode[] }) {
+export function AppContextContainer(props: { children: React.ReactNode[] | React.ReactNode }) {
     const [featureGates, setFeatureGates] = useState<Record<string, FeatureGate>>({})
     const [clusterManagementAddons, setClusterManagementAddons] = useState<ClusterManagementAddOn[]>([])
 
     useEffect(() => {
         // TODO change discovery FG to use a label
         // i.e. console.open-cluster-management.io/feature-gate
-        (async () => {
+        ;(async () => {
             const calls = [listClusterManagementAddOns(), listFeatureGates()]
             const results = await Promise.allSettled(calls.map((call) => call.promise))
             if (results[0].status === 'fulfilled') {
@@ -28,7 +28,9 @@ export function AppContextContainer(props: { children: React.ReactNode[] }) {
 
             if (results[1].status === 'fulfilled') {
                 const featureGates = results[1].value as FeatureGate[]
-                const discoveryFeature = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
+                const discoveryFeature = featureGates.find(
+                    (fg) => fg.metadata.name === 'open-cluster-management-discovery'
+                )
                 discoveryFeature && setFeatureGates({ 'open-cluster-management-discovery': discoveryFeature })
             } else {
                 console.error(results[1])

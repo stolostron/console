@@ -18,9 +18,9 @@ const EditBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/Creat
 
 export default function App() {
     return (
-        <Router>
-            <Switch>
-                <AppContextContainer>
+        <AppContextContainer>
+            <Router>
+                <Switch>
                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                     <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
                     <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
@@ -33,8 +33,8 @@ export default function App() {
                     <Route exact path="*">
                         <Redirect to={NavigationPath.console} />
                     </Route>
-                </AppContextContainer>
-            </Switch>
-        </Router>
+                </Switch>
+            </Router>
+        </AppContextContainer>
     )
 }

@@ -3,10 +3,7 @@ import { render, waitFor, screen } from '@testing-library/react'
 import { AppContextContainer, AppContext } from './AppContext'
 import { nockClusterList, mockBadRequestStatus } from '../lib/nock-util'
 import { FeatureGateKind, FeatureGateApiVersion } from '../resources/feature-gate'
-import {
-    ClusterManagementAddOnKind,
-    ClusterManagementAddOnApiVersion,
-} from '../resources/cluster-management-add-on'
+import { ClusterManagementAddOnKind, ClusterManagementAddOnApiVersion } from '../resources/cluster-management-add-on'
 
 const mockFeatureGates = {
     apiVersion: 'config.openshift.io/v1',

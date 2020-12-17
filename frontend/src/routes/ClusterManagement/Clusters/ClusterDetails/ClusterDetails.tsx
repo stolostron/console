@@ -101,12 +101,11 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const { clusterManagementAddons } = useContext(AppContext)
     useEffect(addonStartPolling, [addonStartPolling])
     useEffect(() => {
-        const results = addonData ?? []
-        if (results.length > 0) {
-            if (addonError) {
-                return setAddonsError(addonError)
-            }
-            setAddons(mapAddons(clusterManagementAddons, results))
+        if (addonError) {
+            return setAddonsError(addonError)
+        }
+        if (addonData) {
+            setAddons(mapAddons(clusterManagementAddons, addonData))
         }
     }, [addonData, addonError, clusterManagementAddons])
 
