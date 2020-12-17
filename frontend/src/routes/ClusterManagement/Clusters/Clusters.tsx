@@ -66,7 +66,7 @@ const PageActions = () => {
                 dropdownItems={[
                     <DropdownItem
                         key="create"
-                        component={Link}
+                        component="a"
                         onClick={() => push(NavigationPath.createCluster)}
                         id="create-cluster"
                     >
@@ -74,7 +74,7 @@ const PageActions = () => {
                     </DropdownItem>,
                     <DropdownItem
                         key="import"
-                        component={Link}
+                        component="a"
                         onClick={() => push(NavigationPath.importCluster)}
                         id="import-cluster"
                     >
