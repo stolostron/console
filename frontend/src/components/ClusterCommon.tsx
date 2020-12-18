@@ -9,7 +9,7 @@ import {
     AcmForm,
     AcmSubmit,
     AcmSelect,
-    AcmAlert
+    AcmAlert,
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
