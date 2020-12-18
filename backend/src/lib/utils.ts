@@ -191,6 +191,13 @@ function pollResource<T>(
                     })
             }, pollInterval)
         }
+        // calling poll
+        oneRequest().then(() => {
+            logger.debug('Done polling.')
+        })
+        .catch((err) => {
+            logger.error(err)
+        })
     })
 
     return poll
