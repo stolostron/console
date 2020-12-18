@@ -462,13 +462,27 @@ export function ClustersTable(props: {
                         id: 'upgradeClusters',
                         title: t('managed.upgradeSelected'),
                         click: (managedClusters: Array<Cluster>) => {
-                            console.log(managedClusters)
-                            if(!managedClusters){return}
-                            const clusters = managedClusters.filter(c=>c.distribution?.ocp?.availableUpdates && c.distribution?.ocp?.availableUpdates.length > 0)
-                            if(clusters.length === 1){
-                                setUpgradeSingleCluster(clusters[0])
-                            }else if (clusters.length >1 ){
-                                console.log('multiple select')
+                            if (!managedClusters) {
+                                return
+                            }
+                            const clusters = managedClusters.filter(
+                                (c) =>
+                                    c.distribution?.ocp?.availableUpdates &&
+                                    c.distribution?.ocp?.availableUpdates.length > 0
+                            )
+                            if (clusters.length === 1) {
+                                const cluster = clusters[0]
+                                if (
+                                    cluster.distribution?.ocp?.availableUpdates &&
+                                    cluster.distribution?.ocp?.availableUpdates.length > 0 &&
+                                    !(
+                                        cluster.distribution?.ocp?.desiredVersion &&
+                                        cluster.distribution?.ocp?.version &&
+                                        cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion
+                                    )
+                                ) {
+                                    setUpgradeSingleCluster(clusters[0])
+                                }
                             }
                         },
                     },
