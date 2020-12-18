@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockClusterList, nockCreate, nockGet } from '../../../lib/nock-util'
+import { nockClusterList, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { FeatureGate } from '../../../resources/feature-gate'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
@@ -13,6 +13,8 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import AddConnectionPage from './AddConnection'
+import { AppContext } from '../../../components/AppContext'
+import { NavigationPath } from '../../../NavigationPath'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -29,22 +31,22 @@ const mockFeatureGate: FeatureGate = {
 
 const mockProjects: Project[] = [mockProject]
 
+let location: Location
+
 function TestAddConnectionPage() {
     return (
-        <MemoryRouter>
-            <Route
-                render={(props: any) => {
-                    return <AddConnectionPage {...props} />
-                }}
-            />
-        </MemoryRouter>
+        <AppContext.Provider value={{ featureGates: { 'open-cluster-management-discovery': mockFeatureGate }, clusterManagementAddons: [] }}>
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        location = props.location
+                        return <AddConnectionPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </AppContext.Provider>
     )
 }
-
-beforeEach(() => {
-    sessionStorage.clear()
-    nockGet(mockFeatureGate, undefined, 200, true)
-})
 
 describe('add connection page', () => {
     it('should create cloud.redhat.com provider connection', async () => {
@@ -93,5 +95,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))
     })
 })

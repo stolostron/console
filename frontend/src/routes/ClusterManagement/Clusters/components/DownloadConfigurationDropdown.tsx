@@ -36,7 +36,7 @@ export function DownloadConfigurationDropdown() {
             { id: 'kubeconfig', text: 'kubeconfig' }
         ]
         return (
-            <AcmDropdown dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
+            <AcmDropdown isPlain={true} dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
         )
 
     } else {

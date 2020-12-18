@@ -4,7 +4,7 @@ import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
-import { getFeatureGate } from '../../resources/feature-gate'
+import { AppContext } from '../../components/AppContext'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -35,30 +35,10 @@ export const usePageContext = (showActions: boolean, Component: React.ElementTyp
 }
 
 export default function ClusterManagementPage() {
-    const [discovery, toggleDiscovery] = useState<Boolean>(false)
-    useEffect(() => {
-        if (sessionStorage.getItem('DiscoveryEnabled') === null) {
-            const result = getFeatureGate('open-cluster-management-discovery')
-            result.promise
-                .then((featureGate) => {
-                    if (featureGate.spec!.featureSet === 'DiscoveryEnabled') {
-                        sessionStorage.setItem('DiscoveryEnabled', 'true')
-                        toggleDiscovery(true)
-                    }
-                })
-                .catch((err: Error) => {
-                    // If error retrieving feature flag, continue
-                    sessionStorage.setItem('DiscoveryEnabled', 'false')
-                    toggleDiscovery(false)
-                })
-            return result.abort
-        }
-        toggleDiscovery(sessionStorage.getItem('DiscoveryEnabled') === 'true' ? true : false)
-    }, [])
-
     const [actions, setActions] = useState<undefined | React.ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'connection', 'bma'])
+    const { featureGates } = useContext(AppContext)
     return (
         <Page>
             <PageContext.Provider value={{ actions, setActions }}>
@@ -69,17 +49,17 @@ export default function ClusterManagementPage() {
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
                                 <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
                             </AcmSecondaryNavItem>
-                            {discovery === true ? (
+                            {featureGates['open-cluster-management-discovery'] && (
                                 <AcmSecondaryNavItem
                                     isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                                 >
-                                    <Link to={NavigationPath.discoveredClusters}>{'Discovered Clusters'}</Link>
+                                    <Link to={NavigationPath.discoveredClusters}>{t('cluster:clusters.discovered')}</Link>
                                 </AcmSecondaryNavItem>
-                            ) : null}
+                            )}
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
                             >
-                                <Link to={NavigationPath.providerConnections}>{'Provider Connections'}</Link>
+                                <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
@@ -88,7 +68,7 @@ export default function ClusterManagementPage() {
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
-                        <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
+                        {featureGates['open-cluster-management-discovery'] && <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />}
                         <Route exact path={NavigationPath.providerConnections} component={ProviderConnectionsPage} />
                         <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
 
