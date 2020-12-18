@@ -30,8 +30,6 @@ import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-reque
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { AppContext } from '../../../../components/AppContext'
-import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
 import { UpgradeModal } from '../../../../components/ClusterCommon'
 
 export const ClusterContext = React.createContext<{
