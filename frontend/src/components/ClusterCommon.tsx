@@ -113,6 +113,7 @@ export function UpgradeModal(props: {
             onClose={() => {
                 setLoading(false)
                 setSelectVersion('')
+                setUpgradeError('')
                 props.close()
             }}
             title={t('upgrade.title') + ' ' + props.clusterName}
@@ -133,7 +134,6 @@ export function UpgradeModal(props: {
                             subtitle={upgradeError}
                             variant={AlertVariant.danger}
                             isInline
-                            style={{ marginTop: '24px' }}
                         />
                     )}
                     <Title headingLevel="h5" size="md">
@@ -203,8 +203,8 @@ export function UpgradeModal(props: {
                             onClick={() => {
                                 setLoading(false)
                                 setSelectVersion('')
-                                props.close()
                                 setUpgradeError('')
+                                props.close()
                             }}
                             variant={ButtonVariant.link}
                         >
