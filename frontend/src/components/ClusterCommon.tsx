@@ -24,6 +24,7 @@ import {
     Spinner,
 } from '@patternfly/react-core'
 import { ClusterStatus, DistributionInfo } from '../lib/get-cluster'
+export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function StatusField(props: { status: ClusterStatus }) {
     const { t } = useTranslation(['cluster'])
@@ -175,7 +176,7 @@ export function UpgradeModal(props: {
                             onClick={() => {
                                 setLoading(true)
                                 setUpgradeError('')
-                                const url = '/upgrade'
+                                const url = backendUrl + '/upgrade'
                                 Axios.post(url, {
                                     clusterName: props.clusterName,
                                     version: selectVersion,
