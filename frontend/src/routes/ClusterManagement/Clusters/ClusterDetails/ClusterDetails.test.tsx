@@ -434,7 +434,6 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
             resource: 'secret',
             verb: 'get',
             version: 'v1',
@@ -464,7 +463,6 @@ const mockSelfSubjectAccessRequestii: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
             namespace: 'test-cluster',
             resource: 'secret',
             verb: 'get',
