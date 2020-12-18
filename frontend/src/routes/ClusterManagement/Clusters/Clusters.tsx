@@ -1,4 +1,5 @@
 import {
+    AcmAlert,
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
@@ -14,9 +15,10 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DistributionField, StatusField } from '../../../components/ClusterCommon'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { ClosedConfirmModalProps, ConfirmModal, AlertProps, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
+// import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
@@ -24,6 +26,11 @@ import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
+import {
+    createSubjectAccessReview,
+    rbacMapping,
+    ResourceAttributes,
+} from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -209,31 +216,54 @@ export function ClustersTable(props: {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
+                                        let allowed = false
+                                        try {
+                                            rbacMapping('cluster.detach', cluster.name).forEach((definition: ResourceAttributes) => {
+                                                createSubjectAccessReview(
+                                                    definition as ResourceAttributes
+                                                ).promise.then((result) => {
+                                                    allowed = result.status?.allowed!
+                                                })
+                                            })
+                                        } catch (err) {
+                                            // do something if access review request fails?
+                                            console.error(err)
+                                        }
                                         setConfirm({
                                             title: t('modal.detach.title'),
                                             message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
                                             open: true,
                                             confirm: () => {
-                                                alertContext.clearAlerts()
-                                                deleteCluster(cluster?.name!, false).promise.then((results) => {
-                                                    results.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Detach error',
-                                                                message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                            })
-                                                        }
+                                                if (allowed) {
+                                                    alertContext.clearAlerts()
+                                                    deleteCluster(cluster?.name!, false).promise.then((results) => {
+                                                        results.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'Detach error',
+                                                                    message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
+                                                                })
+                                                            }
+                                                        })
                                                     })
-                                                }).catch((err)=>{
+                                                    .catch((err)=>{
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                        alertContext.addAlert({
+                                                            type: 'danger',
+                                                            title: 'Detach error',
+                                                            message: err,
+                                                    }) 
+                                                })
+                                                    setConfirm(ClosedConfirmModalProps)
+                                                } else {
                                                     setConfirm(ClosedConfirmModalProps)
                                                     alertContext.addAlert({
                                                         type: 'danger',
                                                         title: 'Detach error',
-                                                        message: err,
+                                                        message: t('common:rbac.unauthorized'),
                                                     })
-                                                })
-                                                setConfirm(ClosedConfirmModalProps)
+                                                }
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
