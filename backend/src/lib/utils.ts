@@ -18,9 +18,7 @@ import {
     ManagedClusterViewResources,
     ManagedClusterViewVersion,
 } from './managedclusterview'
-import {
-    logger
-} from '../logger'
+import { logger } from '../logger'
 interface KubernetesGVR {
     apiGroup: string
     version: string
@@ -236,9 +234,9 @@ async function createPollHelper<TRet, TPoll>(
     //delete, the result doesn't matter for users
     deleteResource(opt, gvr, nsn)
         .then(() => {
-            logger.debug('deleted',nsn)
+            logger.debug('deleted', nsn)
         })
-        .catch((err) => logger.error('failed to delete',nsn,err))
+        .catch((err) => logger.error('failed to delete', nsn, err))
     return retData
 }
 
@@ -313,7 +311,7 @@ export async function getRemoteResource<T>(
                 }
             }
         } catch (err) {
-            logger.debug('failed to verify poll return',err)
+            logger.debug('failed to verify poll return', err)
             throw { code: 500, msg: '' } as requestException
         }
     }
@@ -399,7 +397,7 @@ export async function updateRemoteResource(
                 msg: msg,
             }
         } catch (err) {
-            logger.debug('failed to verify poll return',err)
+            logger.debug('failed to verify poll return', err)
             throw { code: 500, msg: '' } as requestException
         }
     }

@@ -111,6 +111,7 @@ export function UpgradeModal(props: {
             isOpen={props.open}
             onClose={() => {
                 setLoading(false)
+                setSelectVersion('')
                 props.close()
             }}
             title={t('upgrade.title') + ' ' + props.clusterName}
@@ -181,10 +182,12 @@ export function UpgradeModal(props: {
                                 })
                                     .then(() => {
                                         setLoading(false)
+                                        setSelectVersion('')
                                         props.close()
                                     })
                                     .catch((reason: AxiosError) => {
                                         setLoading(false)
+                                        setSelectVersion('')
                                         setUpgradeError(reason.message)
                                     })
                             }}
@@ -194,6 +197,7 @@ export function UpgradeModal(props: {
                         <AcmButton
                             onClick={() => {
                                 setLoading(false)
+                                setSelectVersion('')
                                 props.close()
                                 setUpgradeError('')
                             }}
