@@ -71,7 +71,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
         if (url.startsWith('/upgrade')) {
             // will always create new managedcluster-view for upgrade
             const token = getToken(req)
-            if (!token) return res.writeHead(401).end()
+            if (!token) {
+                logger.info('no token provided')
+                return res.writeHead(401).end()
+            }
             if (req.method != 'POST') {
                 logger.info('wrong method for upgrade')
                 res.writeHead(503)

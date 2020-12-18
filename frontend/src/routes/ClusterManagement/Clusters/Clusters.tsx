@@ -316,7 +316,10 @@ export function ClustersTable(props: {
                             }
 
                             if (
-                                !cluster.distribution?.ocp?.availableUpdates ||
+                                !(
+                                    cluster.distribution?.ocp?.availableUpdates &&
+                                    cluster.distribution?.ocp?.availableUpdates.length > 0
+                                ) ||
                                 (cluster.distribution?.ocp?.version &&
                                     cluster.distribution?.ocp?.desiredVersion &&
                                     cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion)

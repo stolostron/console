@@ -47,7 +47,8 @@ export interface requestException {
     msg: string
 }
 
-const pollInterval = 2000
+// singleRequestTimeout sets limit to all http.requests in this file
+const singleRequestTimeout = 30000
 
 const gvrManagedClusterView: KubernetesGVR = {
     apiGroup: ManagedClusterViewApiGroup,
@@ -85,6 +86,7 @@ export function getResource(opt: requestOptions, gvr: KubernetesGVR, nsn: namesp
             `${process.env.CLUSTER_API_URL}/apis/${gvr.apiGroup}/${gvr.version}/namespaces/${nsn.namespace}/${gvr.resources}/${nsn.name}`
         ),
         ...{ method: 'GET', headers, agent: opt.agent },
+        timeout: singleRequestTimeout,
     }
 
     return new Promise<IncomingMessage>((resolve) => {
@@ -102,6 +104,7 @@ export function deleteResource(opt: requestOptions, gvr: KubernetesGVR, nsn: nam
             `${process.env.CLUSTER_API_URL}/apis/${gvr.apiGroup}/${gvr.version}/namespaces/${nsn.namespace}/${gvr.resources}/${nsn.name}`
         ),
         ...{ method: 'DELETE', headers, agent: opt.agent },
+        timeout: singleRequestTimeout,
     }
 
     return new Promise<IncomingMessage>((resolve) => {
@@ -129,6 +132,7 @@ function createResource<T>(
             'Content-Type': 'application/json; charset=utf-8',
             'Content-Length': Buffer.byteLength(postData),
         },
+        timeout: singleRequestTimeout,
     }
 
     return new Promise<IncomingMessage>((resolve) => {
@@ -150,44 +154,40 @@ function pollResource<T>(
     pollInterval: number,
     verifyStatus: verifyStatusFn<T>,
     maxPollTimes: number
-): { poll: Promise<T>; cancel: () => void } {
+): Promise<T> {
     if (maxPollTimes < 1) {
         maxPollTimes = 1
     }
     let currPoll = 0
-    let pollVersions: NodeJS.Timeout
-    const cancel = () => {
-        if (pollVersions) {
-            clearInterval(pollVersions)
-            pollVersions = undefined
-        }
-    }
     const poll = new Promise<T>((resolve, reject) => {
-        pollVersions = setInterval(async () => {
+        const oneRequest = async () => {
             logger.debug('polling:', nsn)
             try {
                 const resGet = await getResource(opt, gvr, nsn)
-
                 const { isValid, isRetryRequired, retData, code, msg } = await verifyStatus(resGet)
                 if (isValid) {
                     resolve(retData)
-                    cancel()
+                    return
                 } else if (!isRetryRequired) {
                     reject({ code, msg })
-                    cancel()
+                    return
                 }
             } catch (err) {
                 reject(err)
-                cancel()
+                return
             }
             currPoll++
             if (currPoll > maxPollTimes) {
                 reject({ code: 500, msg: '{"message":"request timeout"}' })
+                return
             }
-        }, pollInterval)
+            setTimeout(() => {
+                oneRequest()
+            }, pollInterval)
+        }
     })
 
-    return { poll, cancel }
+    return poll
 }
 
 // createPollHelper does get->create->poll->verify->delete operation on a resource
@@ -220,23 +220,25 @@ async function createPollHelper<TRet, TPoll>(
         }
     }
     //polling & return
-    const { poll, cancel } = pollResource(opt, gvr, nsn, pollInterval, verifyStatus, maxPollTimes)
+    const poll = pollResource(opt, gvr, nsn, pollInterval, verifyStatus, maxPollTimes)
 
     let retData = undefined
+    const deleteCreatedresource = () => {
+        //delete, the result doesn't matter for users
+        deleteResource(opt, gvr, nsn)
+            .then(() => {
+                logger.debug('deleted', nsn)
+            })
+            .catch((err) => logger.error('failed to delete', nsn, err))
+    }
     // when failed, poll will throw error in requestException format
     try {
         retData = await poll
+        deleteCreatedresource()
     } catch (err) {
-        cancel()
+        deleteCreatedresource()
         throw err
     }
-    cancel()
-    //delete, the result doesn't matter for users
-    deleteResource(opt, gvr, nsn)
-        .then(() => {
-            logger.debug('deleted', nsn)
-        })
-        .catch((err) => logger.error('failed to delete', nsn, err))
     return retData
 }
 

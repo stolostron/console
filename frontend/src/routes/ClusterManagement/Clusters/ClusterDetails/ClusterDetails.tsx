@@ -30,6 +30,9 @@ import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-reque
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { AppContext } from '../../../../components/AppContext'
+import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
+import { UpgradeModal } from '../../../../components/ClusterCommon'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -55,7 +58,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
-
+    const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     // Cluster
     const { data, startPolling, loading, error, refresh } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
@@ -157,6 +160,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     title={confirm.title}
                     message={confirm.message}
                 />
+                <UpgradeModal
+                    data={upgradeSingleCluster?.distribution}
+                    open={!!upgradeSingleCluster}
+                    clusterName={upgradeSingleCluster?.name || ''}
+                    close={() => {
+                        setUpgradeSingleCluster()
+                    }}
+                />
                 <AcmPageHeader
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
@@ -226,7 +237,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'upgrade-cluster',
                                             text: t('managed.upgrade'),
-                                            click: (cluster: Cluster) => {},
+                                            click: (cluster: Cluster) => {
+                                                setUpgradeSingleCluster(cluster)
+                                            },
                                         },
                                         {
                                             id: 'search-cluster',
@@ -293,7 +306,16 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         actions = actions.filter((a) => a.id !== 'launch-cluster')
                                     }
 
-                                    if (!cluster?.distribution?.ocp?.availableUpdates) {
+                                    if (
+                                        !(
+                                            cluster.distribution?.ocp?.availableUpdates &&
+                                            cluster.distribution?.ocp?.availableUpdates.length > 0
+                                        ) ||
+                                        (cluster.distribution?.ocp?.version &&
+                                            cluster.distribution?.ocp?.desiredVersion &&
+                                            cluster.distribution?.ocp?.version !==
+                                                cluster.distribution?.ocp?.desiredVersion)
+                                    ) {
                                         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
                                     }
 
