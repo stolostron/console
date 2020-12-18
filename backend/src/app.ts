@@ -87,7 +87,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             try {
                 const reqBody: { clusterName: string; version: string } = await parseJsonBody(req)
                 if (!reqBody || !reqBody.clusterName || !reqBody.version) {
-                    res.writeHead(503)
+                    res.writeHead(400)
                     logger.info('wrong body for the upgrade request')
                     return res.end('{"message":"requires clusterName and version"}')
                 }
@@ -113,9 +113,14 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     10
                 )
 
-                const desiredUpdate = remoteVersion?.status?.availableUpdates.filter(
+                const desiredUpdates = remoteVersion?.status?.availableUpdates.filter(
                     (u) => u.version && u.version == reqBody.version
-                )[0]
+                )
+                if (!desiredUpdates || desiredUpdates.length === 0) {
+                    console.debug('cannot find version')
+                    throw { code: 400, msg: '{"message":"selected version is not available"}' } as requestException
+                }
+                const desiredUpdate = desiredUpdates[0]
                 remoteVersion.spec.desiredUpdate = desiredUpdate
                 await updateRemoteResource(
                     host,
