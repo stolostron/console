@@ -177,10 +177,14 @@ export function UpgradeModal(props: {
                                 setLoading(true)
                                 setUpgradeError('')
                                 const url = backendUrl + '/upgrade'
-                                Axios.post(url, {
-                                    clusterName: props.clusterName,
-                                    version: selectVersion,
-                                })
+                                Axios.post(
+                                    url,
+                                    {
+                                        clusterName: props.clusterName,
+                                        version: selectVersion,
+                                    },
+                                    { withCredentials: true }
+                                )
                                     .then(() => {
                                         setLoading(false)
                                         setSelectVersion('')

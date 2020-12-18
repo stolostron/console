@@ -307,8 +307,13 @@ export async function getRemoteResource<T>(
         try {
             const viewObj = await parseJsonBody<ManagedClusterView>(response)
             if (response.statusCode >= 200 && response.statusCode < 300) {
-                if (viewObj.status.conditions[0].type === 'Processing' && viewObj.status) {
-                    const retData = viewObj.status.result as T
+                if (
+                    viewObj.status?.conditions &&
+                    viewObj.status?.conditions[0] &&
+                    viewObj.status?.conditions[0].type === 'Processing' &&
+                    viewObj.status
+                ) {
+                    const retData = viewObj.status?.result as T
                     return {
                         isValid: true,
                         isRetryRequired: false,
@@ -385,7 +390,11 @@ export async function updateRemoteResource(
         try {
             if (response.statusCode >= 200 && response.statusCode < 300) {
                 const actionObj = await parseJsonBody<ManagedClusterAction>(response)
-                if (actionObj.status.conditions[0].type === 'Completed') {
+                if (
+                    actionObj.status?.conditions &&
+                    actionObj.status?.conditions[0] &&
+                    actionObj.status?.conditions[0].type === 'Completed'
+                ) {
                     const status = actionObj.status.conditions[0].status
                     // only accept type=completed & status=true
                     if (status.toLocaleLowerCase() === 'true') {
