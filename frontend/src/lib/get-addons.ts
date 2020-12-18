@@ -34,7 +34,7 @@ export function getAllAddons(
 
 export function mapAddons(
     clusterManagementAddons: ClusterManagementAddOn[],
-    managedClusterAddons: ManagedClusterAddOn[]
+    managedClusterAddons: ManagedClusterAddOn[] = []
 ) {
     const addons: Addon[] = clusterManagementAddons.map((cma) => ({
         name: cma.metadata.name as string,
@@ -117,20 +117,27 @@ function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[])
     const pathKey = 'console.open-cluster-management.io/launch-link'
     const textKey = 'console.open-cluster-management.io/launch-link-text'
     const mca = mcas.find((mca) => mca.metadata.name === cma.metadata.name)
+    const cmaAnnotations = Object.keys(cma.metadata.annotations ?? {})
+    const cmaHasLaunchLink = cmaAnnotations.includes(pathKey) && cmaAnnotations.includes(textKey)
     if (mca) {
-        const mcaAnnotations = Object.keys(mca.metadata.annotations ?? {})
+        const mcaAnnotations = Object.keys(mca.metadata.annotations ?? [])
         const mcaHasLaunchLink = mcaAnnotations.includes(pathKey) && mcaAnnotations.includes(textKey)
-        const cmaAnnotations = Object.keys(cma.metadata.annotations ?? {})
-        const cmaHasLaunchLink = cmaAnnotations.includes(pathKey) && cmaAnnotations.includes(textKey)
-        if (mcaHasLaunchLink || cmaHasLaunchLink) {
+        if (mcaHasLaunchLink) {
             return {
-                displayText: mca?.metadata?.annotations?.[textKey] ?? cma?.metadata?.annotations?.[textKey] ?? '',
-                href: mca?.metadata?.annotations?.[pathKey] ?? cma?.metadata?.annotations?.[pathKey] ?? '',
+                displayText: mca?.metadata?.annotations?.[textKey] ?? '',
+                href: mca?.metadata?.annotations?.[pathKey] ?? '',
             }
         } else {
             return undefined
         }
     } else {
-        return undefined
+        if (cmaHasLaunchLink) {
+            return {
+                displayText: cma?.metadata?.annotations?.[textKey] ?? '',
+                href: cma?.metadata?.annotations?.[pathKey] ?? '',
+            }
+        } else {
+            return undefined
+        }
     }
 }

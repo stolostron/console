@@ -1,4 +1,4 @@
-import React, { Fragment, Suspense, useEffect, useCallback, useState } from 'react'
+import React, { Fragment, Suspense, useEffect, useCallback, useState, useContext } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation, useHistory } from 'react-router-dom'
 import {
     AcmPageHeader,
@@ -18,7 +18,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { useQuery } from '../../../../lib/useQuery'
 import { getSingleCluster, getCluster, Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { getAllAddons, mapAddons, Addon } from '../../../../lib/get-addons'
+import { mapAddons, Addon } from '../../../../lib/get-addons'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
@@ -28,8 +28,8 @@ import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../..
 import { deleteCluster } from '../../../../lib/delete-cluster'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
+import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
+import { AppContext } from '../../../../components/AppContext'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -94,32 +94,20 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     // Addons
     const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
-        useCallback(() => getAllAddons(match.params.id), [match.params.id])
+        useCallback(() => listManagedClusterAddOns(match.params.id), [match.params.id])
     )
     const [addons, setAddons] = useState<Addon[] | undefined>(undefined)
     const [addonsError, setAddonsError] = useState<Error | undefined>(undefined)
+    const { clusterManagementAddons } = useContext(AppContext)
     useEffect(addonStartPolling, [addonStartPolling])
     useEffect(() => {
-        const results = addonData ?? []
-        if (results.length > 0) {
-            if (addonError) {
-                return setAddonsError(addonError)
-            }
-            if (results.every((result) => result.status === 'fulfilled')) {
-                const items = results.map((result) => (result.status === 'fulfilled' ? result.value : []))
-                setAddons(mapAddons(items[0] as ClusterManagementAddOn[], items[1] as ManagedClusterAddOn[]))
-            } else {
-                const cmaRequest = results[0] as PromiseRejectedResult
-                const mcaRequest = results[1] as PromiseRejectedResult
-                const resourceError: ResourceError = {
-                    code: mcaRequest?.reason?.code ?? (cmaRequest.reason.code as ResourceErrorCode),
-                    message: mcaRequest?.reason?.message ?? (cmaRequest.reason.code as string),
-                    name: '',
-                }
-                setAddonsError(resourceError)
-            }
+        if (addonError) {
+            return setAddonsError(addonError)
         }
-    }, [addonData, addonError, setAddonsError])
+        if (addonData) {
+            setAddons(mapAddons(clusterManagementAddons, addonData))
+        }
+    }, [addonData, addonError, clusterManagementAddons])
 
     if (loading) {
         return <AcmSpinnerBackdrop />

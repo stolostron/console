@@ -7,6 +7,8 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
+    AcmActionGroup,
+    AcmLaunchLink
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
@@ -24,54 +26,69 @@ import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
+import { AppContext } from '../../../components/AppContext'
+import { mapAddons } from '../../../lib/get-addons'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
-const ClusterActions = () => {
+const PageActions = () => {
     const [open, setOpen] = useState<boolean>(false)
     const { push } = useHistory()
     const { t } = useTranslation(['cluster'])
+    const { clusterManagementAddons } = useContext(AppContext)
+    const addons = mapAddons(clusterManagementAddons)
     return (
-        <Dropdown
-            isOpen={open}
-            toggle={
-                <DropdownToggle
-                    onToggle={() => setOpen(!open)}
-                    toggleIndicator={CaretDownIcon}
-                    isPrimary
-                    id="cluster-actions"
-                >
-                    {t('managed.addCluster')}
-                </DropdownToggle>
-            }
-            dropdownItems={[
-                <DropdownItem
-                    key="create"
-                    component={Link}
-                    onClick={() => push(NavigationPath.createCluster)}
-                    id="create-cluster"
-                >
-                    {t('managed.createCluster')}
-                </DropdownItem>,
-                <DropdownItem
-                    key="import"
-                    component={Link}
-                    onClick={() => push(NavigationPath.importCluster)}
-                    id="import-cluster"
-                >
-                    {t('managed.importCluster')}
-                </DropdownItem>,
-            ]}
-        />
+        <AcmActionGroup>
+            <AcmLaunchLink
+                links={addons
+                    ?.filter((addon) => addon.launchLink)
+                    ?.map((addon) => ({
+                        id: addon.launchLink?.displayText ?? '',
+                        text: addon.launchLink?.displayText ?? '',
+                        href: addon.launchLink?.href ?? '',
+                    }))}
+            />
+            <Dropdown
+                isOpen={open}
+                toggle={
+                    <DropdownToggle
+                        onToggle={() => setOpen(!open)}
+                        toggleIndicator={CaretDownIcon}
+                        isPrimary
+                        id="cluster-actions"
+                    >
+                        {t('managed.addCluster')}
+                    </DropdownToggle>
+                }
+                dropdownItems={[
+                    <DropdownItem
+                        key="create"
+                        component="a"
+                        onClick={() => push(NavigationPath.createCluster)}
+                        id="create-cluster"
+                    >
+                        {t('managed.createCluster')}
+                    </DropdownItem>,
+                    <DropdownItem
+                        key="import"
+                        component="a"
+                        onClick={() => push(NavigationPath.importCluster)}
+                        id="import-cluster"
+                    >
+                        {t('managed.importCluster')}
+                    </DropdownItem>,
+                ]}
+            />
+        </AcmActionGroup>
     )
 }
 
 export function ClustersPageContent() {
     const { data, startPolling, refresh } = useQuery(getAllClusters)
     useEffect(startPolling, [startPolling])
-    usePageContext(!!data, ClusterActions)
+    usePageContext(!!data, PageActions)
 
     const items = data?.map((d) => {
         if (d.status === 'fulfilled') {

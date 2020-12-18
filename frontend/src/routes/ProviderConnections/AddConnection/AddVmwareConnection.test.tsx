@@ -125,6 +125,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
-        expect(location.pathname).toBe(NavigationPath.providerConnections)
+        await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))
     })
 })

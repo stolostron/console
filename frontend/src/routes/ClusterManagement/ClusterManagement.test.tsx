@@ -1,9 +1,9 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import React from 'react'
-import { nockGet, mockNotFoundStatus } from '../../lib/nock-util'
 import { FeatureGate } from '../../resources/feature-gate'
 import ClusterManagementPage from './ClusterManagement'
+import { AppContext } from '../../components/AppContext'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -17,30 +17,39 @@ const mockFeatureGate: FeatureGate = {
 }
 
 describe('Cluster Management', () => {
-    const Component = () => {
-        return (
-            <MemoryRouter>
-                <ClusterManagementPage />
-            </MemoryRouter>
-        )
-    }
-
     test('Discovery Feature Flag Enabled', async () => {
-        sessionStorage.clear()
-        const { getByText } = render(<Component />)
-        nockGet(mockFeatureGate)
-        await waitFor(() => expect(getByText('cluster:clusters')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Provider Connections')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Discovered Clusters')).toBeInTheDocument())
+        render(
+            <AppContext.Provider
+                value={{
+                    featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
+                    clusterManagementAddons: [],
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterManagementPage />
+                </MemoryRouter>
+            </AppContext.Provider>
+        )
+        await waitFor(() => expect(screen.getByText('cluster:clusters')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('connection:connections')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('cluster:clusters.discovered')).toBeInTheDocument())
     })
 
     test('No Discovery Feature Flag', async () => {
-        sessionStorage.clear()
-        const nockScope = nockGet(mockFeatureGate, mockNotFoundStatus)
-        const { getByText, queryByText } = render(<Component />)
-        await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('cluster:clusters')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Provider Connections')).toBeInTheDocument())
-        await waitFor(() => expect(queryByText('Discovered Clusters')).toBeNull())
+        render(
+            <AppContext.Provider
+                value={{
+                    featureGates: {},
+                    clusterManagementAddons: [],
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterManagementPage />
+                </MemoryRouter>
+            </AppContext.Provider>
+        )
+        await waitFor(() => expect(screen.getByText('cluster:clusters')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('connection:connections')).toBeInTheDocument())
+        await waitFor(() => expect(screen.queryByText('cluster:clusters.discovered')).toBeNull())
     })
 })

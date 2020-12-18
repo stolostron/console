@@ -21,18 +21,15 @@ import {
 } from '../../../../resources/certificate-signing-requests'
 import { PodList, PodApiVersion, PodKind } from '../../../../resources/pod'
 import {
-    ClusterManagementAddOn,
-    ClusterManagementAddOnKind,
-    ClusterManagementAddOnApiVersion,
-} from '../../../../resources/cluster-management-add-on'
-import {
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
 } from '../../../../resources/managed-cluster-add-on'
+import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { nockGet, nockClusterList, nockNamespacedList, mockBadRequestStatus } from '../../../../lib/nock-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
+import { AppContext } from '../../../../components/AppContext'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -205,65 +202,6 @@ const mockHiveProvisionPods: PodList = {
     ],
 }
 
-const mockclusterManagementAddOnApp: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: { name: 'application-manager' },
-    spec: {},
-}
-const mockclusterManagementAddOnWork: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: {
-        name: 'work-manager',
-    },
-    spec: {},
-}
-
-const mockclusterManagementAddOnCert: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: {
-        name: 'cert-policy-controller',
-    },
-    spec: {},
-}
-
-const mockclusterManagementAddOnIAM: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: {
-        name: 'iam-policy-controller',
-    },
-    spec: {},
-}
-
-const mockclusterManagementAddOnPolicy: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: {
-        name: 'policy-controller',
-    },
-    spec: {},
-}
-
-const mockclusterManagementAddOnSearch: ClusterManagementAddOn = {
-    apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind,
-    metadata: {
-        name: 'search-collector',
-    },
-    spec: {},
-}
-const mockclusterManagementAddOns: ClusterManagementAddOn[] = [
-    mockclusterManagementAddOnApp,
-    mockclusterManagementAddOnWork,
-    mockclusterManagementAddOnCert,
-    mockclusterManagementAddOnIAM,
-    mockclusterManagementAddOnPolicy,
-    mockclusterManagementAddOnSearch,
-]
-
 const mockmanagedClusterAddOn: ManagedClusterAddOn = {
     apiVersion: ManagedClusterAddOnApiVersion,
     kind: ManagedClusterAddOnKind,
@@ -421,6 +359,127 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     },
 }
 
+const mockClusterManagementAddons: ClusterManagementAddOn[] = [
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            annotations: {
+                'console.open-cluster-management.io/launch-link': '/cma/grafana',
+                'console.open-cluster-management.io/launch-link-text': 'Grafana',
+            },
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'application-manager',
+            resourceVersion: '72535245',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/application-manager',
+            uid: '9b3fa615-7bf3-49d0-a7e4-40ea80e157f9',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Processes events and other requests to managed resources.',
+                displayName: 'Application Manager',
+            },
+        },
+    },
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'cert-policy-controller',
+            resourceVersion: '72429629',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/cert-policy-controller',
+            uid: '690d53b8-7b74-4687-8532-86e80ab5b51e',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Monitors certificate expiration based on distributed policies.',
+                displayName: 'Cert Policy Controller',
+            },
+        },
+    },
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'iam-policy-controller',
+            resourceVersion: '72429630',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/iam-policy-controller',
+            uid: '764be62d-4ee5-40ee-be92-6404dbd8619e',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Monitors identity controls based on distributed policies.',
+                displayName: 'IAM Policy Controller',
+            },
+        },
+    },
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'policy-controller',
+            resourceVersion: '72429631',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/policy-controller',
+            uid: 'c5b2e5f2-df96-4cff-ac07-b6ae61ff0a70',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Distributes configured policies and monitors Kubernetes-based policies.',
+                displayName: 'Policy Controller',
+            },
+        },
+    },
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'search-collector',
+            resourceVersion: '72429633',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/search-collector',
+            uid: 'ba1fdc6f-b6ed-4c6d-9d6f-a0f6c7551eeb',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Collects cluster data to be indexed by search components on the hub cluster.',
+                displayName: 'Search Collector',
+            },
+        },
+    },
+    {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ClusterManagementAddOn',
+        metadata: {
+            creationTimestamp: '2020-12-17T15:57:43Z',
+            generation: 1,
+            name: 'work-manager',
+            resourceVersion: '72429634',
+            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/work-manager',
+            uid: '4d08adc0-ea0c-4de2-8bf3-640f436ee52d',
+        },
+        spec: {
+            addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
+            addOnMeta: {
+                description: 'Handles endpoint work requests and managed cluster status.',
+                displayName: 'Work Manager',
+            },
+        },
+    },
+]
+
 const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnApp,
     mockManagedClusterAddOnWork,
@@ -437,7 +496,6 @@ const nockCertificateSigningRequestList = () =>
         mockCertificateSigningRequestList,
         ['open-cluster-management.io/cluster-name=test-cluster']
     )
-const nockClusterManagementAddons = () => nockClusterList(mockclusterManagementAddOnApp, mockclusterManagementAddOns)
 const nockManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
 const nockHiveProvisionJob = () =>
     nockNamespacedList(
@@ -448,14 +506,15 @@ const nockHiveProvisionJob = () =>
 
 const nockManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
 const nockClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
-const nockClusterManagementAddonsError = () => nockClusterList(mockclusterManagementAddOnApp, mockBadRequestStatus)
 const nockManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
 
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', 'test-cluster')]}>
-        <Switch>
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-        </Switch>
+        <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
+            <Switch>
+                <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+            </Switch>
+        </AppContext.Provider>
     </MemoryRouter>
 )
 
@@ -464,14 +523,12 @@ describe('ClusterDetails page', () => {
         const mciScope = nockManagedClusterInfoError()
         const cdScope = nockClusterDeploymentError()
         const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddons()
         const mcaScope = nockManagedClusterAddons()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await act(async () => {
             await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument(), { timeout: 2000 })
@@ -485,14 +542,12 @@ describe('ClusterDetails - overview page', () => {
         const mciScope = nockManagedClusterInfo()
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddons()
         const mcaScope = nockManagedClusterAddons()
         const hiveScope = nockHiveProvisionJob()
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(hiveScope.isDone()).toBeTruthy())
         await act(async () => {
@@ -512,14 +567,12 @@ describe('ClusterDetails - nodes page', () => {
         const mciScope = nockManagedClusterInfo()
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddons()
         const mcaScope = nockManagedClusterAddons()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
 
         await act(async () => {
@@ -546,14 +599,12 @@ describe('ClusterDetails - settings page', () => {
         const mciScope = nockManagedClusterInfo()
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddons()
         const mcaScope = nockManagedClusterAddons()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
 
         await act(async () => {
@@ -569,42 +620,20 @@ describe('ClusterDetails - settings page', () => {
         const mciScope = nockManagedClusterInfo()
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddons()
         const mcaScope = nockManagedClusterAddonsError()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
             userEvent.click(screen.getByText('tab.settings'))
-            await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument())
-        })
-    })
-    test('should show error if the ClusterManagementAddons fail to query', async () => {
-        const mciScope = nockManagedClusterInfo()
-        const cdScope = nockClusterDeployment()
-        const csrScope = nockCertificateSigningRequestList()
-        const cmaScope = nockClusterManagementAddonsError()
-        const mcaScope = nockManagedClusterAddons()
-
-        render(<Component />)
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cmaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-
-        await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
-            await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
-            userEvent.click(screen.getByText('tab.settings'))
-            await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument())
+            await waitFor(() => expect(screen.queryByText('Loading')).toBeNull(), { timeout: 10000 })
+            await waitFor(() => expect(screen.getByText('Bad request')).toBeInTheDocument())
         })
     })
 })
