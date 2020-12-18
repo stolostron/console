@@ -1,3 +1,4 @@
+import React, { useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
     AcmAlertGroup,
@@ -14,7 +15,6 @@ import {
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
-import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -32,7 +32,6 @@ import {
     validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
-import { getFeatureGate } from '../../../resources/feature-gate'
 import { listProjects, Project } from '../../../resources/project'
 import {
     createProviderConnection,
@@ -44,6 +43,7 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
+import { AppContext } from '../../../components/AppContext'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -189,27 +189,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
 export function AddConnectionPageContent(props: { projects: Project[]; providerConnection: ProviderConnection }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
-
-    const [discovery, toggleDiscovery] = useState<Boolean>(false)
-    useEffect(() => {
-        if (sessionStorage.getItem('DiscoveryEnabled') === null) {
-            const result = getFeatureGate('open-cluster-management-discovery')
-            result.promise
-                .then((featureGate) => {
-                    if (featureGate.spec!.featureSet === 'DiscoveryEnabled') {
-                        sessionStorage.setItem('DiscoveryEnabled', 'true')
-                        toggleDiscovery(true)
-                    }
-                })
-                .catch((err: Error) => {
-                    // If error retrieving feature flag, continue
-                    sessionStorage.setItem('DiscoveryEnabled', 'false')
-                    toggleDiscovery(false)
-                })
-            return result.abort
-        }
-        toggleDiscovery(sessionStorage.getItem('DiscoveryEnabled') === 'true' ? true : false)
-    }, [])
+    const { featureGates } = useContext(AppContext)
 
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
@@ -247,8 +227,8 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     isRequired
                 >
                     {providers
-                        .filter(function (provider) {
-                            if (!discovery && provider.key === ProviderID.CRH) {
+                        .filter((provider) => {
+                            if (!featureGates['open-cluster-management-discovery'] && provider.key === ProviderID.CRH) {
                                 return false // skip
                             }
                             return true
