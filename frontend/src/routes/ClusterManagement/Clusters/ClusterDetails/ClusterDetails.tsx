@@ -30,7 +30,7 @@ import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-reque
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
-import { createSubjectAccessReview, ResourceAttributes } from '../../../../resources/self-subject-access-review'
+import { createSubjectAccessReview, ResourceAttributes, rbacMapping } from '../../../../resources/self-subject-access-review'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -96,14 +96,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     useEffect(() => {
         // TODO: consolidate common calls in one place
-        const resource: ResourceAttributes = {
-            name: '',
-            namespace: cluster?.namespace!,
-            resource: 'secret',
-            verb: 'get',
-            version: 'v1',
-        }
-
+        const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
+        
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
