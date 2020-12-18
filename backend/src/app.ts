@@ -69,11 +69,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
         }
         // Upgrade
         if (url.startsWith('/upgrade')) {
-            console.log('upgrade!!!')
             // will always create new managedcluster-view for upgrade
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
             if (req.method != 'POST') {
+                logger.info('wrong method for upgrade')
                 res.writeHead(503)
                 return res.end()
             }
@@ -85,6 +85,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 const reqBody: { clusterName: string; version: string } = await parseJsonBody(req)
                 if (!reqBody || !reqBody.clusterName || !reqBody.version) {
                     res.writeHead(503)
+                    logger.info('wrong body for the upgrade request')
                     return res.end('{"message":"requires clusterName and version"}')
                 }
                 const remoteVersion = await getRemoteResource<{
@@ -138,7 +139,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 if (formattedErr.msg) {
                     msg = formattedErr.msg
                 }
-                console.log('failed:', err)
+                logger.error('failed to upgrade:', err)
                 res.writeHead(code)
                 return res.end(msg)
             }

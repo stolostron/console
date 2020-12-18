@@ -18,7 +18,9 @@ import {
     ManagedClusterViewResources,
     ManagedClusterViewVersion,
 } from './managedclusterview'
-
+import {
+    logger
+} from '../logger'
 interface KubernetesGVR {
     apiGroup: string
     version: string
@@ -164,9 +166,8 @@ function pollResource<T>(
     }
     const poll = new Promise<T>((resolve, reject) => {
         pollVersions = setInterval(async () => {
-            console.log('waiting for interval setting')
+            logger.debug('polling:', nsn)
             try {
-                console.log('before get')
                 const resGet = await getResource(opt, gvr, nsn)
 
                 const { isValid, isRetryRequired, retData, code, msg } = await verifyStatus(resGet)
@@ -212,7 +213,7 @@ async function createPollHelper<TRet, TPoll>(
             const createResponse = await parseJsonBody<{ reason: string }>(createRes)
             // if existed, will keep progress
             if ('AlreadyExists' !== createResponse.reason) {
-                console.log('unexpected error')
+                logger.debug('unexpected error for 409')
                 throw { code: 409, msg: JSON.stringify(createResponse) }
             }
         } else if (!(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
@@ -235,9 +236,9 @@ async function createPollHelper<TRet, TPoll>(
     //delete, the result doesn't matter for users
     deleteResource(opt, gvr, nsn)
         .then(() => {
-            console.log('deleted')
+            logger.debug('deleted',nsn)
         })
-        .catch((err) => console.log(err))
+        .catch((err) => logger.error('failed to delete',nsn,err))
     return retData
 }
 
@@ -312,7 +313,7 @@ export async function getRemoteResource<T>(
                 }
             }
         } catch (err) {
-            console.log(err)
+            logger.debug('failed to verify poll return',err)
             throw { code: 500, msg: '' } as requestException
         }
     }
@@ -398,7 +399,7 @@ export async function updateRemoteResource(
                 msg: msg,
             }
         } catch (err) {
-            console.log(err)
+            logger.debug('failed to verify poll return',err)
             throw { code: 500, msg: '' } as requestException
         }
     }
