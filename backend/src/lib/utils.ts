@@ -183,6 +183,12 @@ function pollResource<T>(
             }
             setTimeout(() => {
                 oneRequest()
+                    .then(() => {
+                        logger.debug('Done polling.')
+                    })
+                    .catch((err) => {
+                        logger.error(err)
+                    })
             }, pollInterval)
         }
     })
