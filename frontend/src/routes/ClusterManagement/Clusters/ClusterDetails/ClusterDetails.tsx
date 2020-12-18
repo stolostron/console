@@ -30,7 +30,7 @@ import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-reque
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
-import { createSubjectAccessReview, ResourceAttributes, rbacMapping } from '../../../../resources/self-subject-access-review'
+import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
