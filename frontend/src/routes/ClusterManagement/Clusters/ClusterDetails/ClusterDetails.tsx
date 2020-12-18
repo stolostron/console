@@ -328,6 +328,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             text={t('actions')}
                                             dropdownItems={actions}
                                             isKebab={false}
+                                            isPlain={true}
                                         />
                                     )
                                 })()}
