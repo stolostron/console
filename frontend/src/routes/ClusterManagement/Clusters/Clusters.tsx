@@ -8,7 +8,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmActionGroup,
-    AcmLaunchLink,
+    AcmLaunchLink
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
@@ -24,11 +24,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
-import {
-    createSubjectAccessReview,
-    rbacMapping,
-    ResourceAttributes,
-} from '../../../resources/self-subject-access-review'
+import { createSubjectAccessReview, rbacMapping, ResourceAttributes } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
@@ -231,57 +227,31 @@ export function ClustersTable(props: {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
-                                        let allowed = false
-                                        try {
-                                            rbacMapping('cluster.detach', cluster.name).forEach(
-                                                (definition: ResourceAttributes) => {
-                                                    createSubjectAccessReview(
-                                                        definition as ResourceAttributes
-                                                    ).promise.then((result) => {
-                                                        allowed = result.status?.allowed!
-                                                    })
-                                                }
-                                            )
-                                        } catch (err) {
-                                            // do something if access review request fails?
-                                            console.error(err)
-                                        }
                                         setConfirm({
                                             title: t('modal.detach.title'),
                                             message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
                                             open: true,
                                             confirm: () => {
-                                                if (!allowed) {
-                                                    alertContext.clearAlerts()
-                                                    deleteCluster(cluster?.name!, false)
-                                                        .promise.then((results) => {
-                                                            results.forEach((result) => {
-                                                                if (result.status === 'rejected') {
-                                                                    alertContext.addAlert({
-                                                                        type: 'danger',
-                                                                        title: 'Detach error',
-                                                                        message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                    })
-                                                                }
-                                                            })
-                                                        })
-                                                        .catch((err) => {
-                                                            setConfirm(ClosedConfirmModalProps)
+                                                alertContext.clearAlerts()
+                                                deleteCluster(cluster?.name!, false).promise.then((results) => {
+                                                    results.forEach((result) => {
+                                                        if (result.status === 'rejected') {
                                                             alertContext.addAlert({
                                                                 type: 'danger',
                                                                 title: 'Detach error',
-                                                                message: err,
+                                                                message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
                                                             })
-                                                        })
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                } else {
+                                                        }
+                                                    })
+                                                }).catch((err)=>{
                                                     setConfirm(ClosedConfirmModalProps)
                                                     alertContext.addAlert({
                                                         type: 'danger',
                                                         title: 'Detach error',
-                                                        message: t('common:rbac.unauthorized'),
+                                                        message: err,
                                                     })
-                                                }
+                                                })
+                                                setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
@@ -296,15 +266,13 @@ export function ClustersTable(props: {
                                     click: (cluster: Cluster) => {
                                         let allowed = false
                                         try {
-                                            rbacMapping('cluster.destroy', cluster.name).forEach(
-                                                (definition: ResourceAttributes) => {
-                                                    createSubjectAccessReview(
-                                                        definition as ResourceAttributes
-                                                    ).promise.then((result) => {
-                                                        allowed = result.status?.allowed!
-                                                    })
-                                                }
-                                            )
+                                            rbacMapping('cluster.delete', cluster.name).forEach((definition: ResourceAttributes) => {
+                                                createSubjectAccessReview(
+                                                    definition as ResourceAttributes
+                                                ).promise.then((result) => {
+                                                    allowed = result.status?.allowed!
+                                                })
+                                            })
                                         } catch (err) {
                                             // do something if access review request fails?
                                             console.error(err)
@@ -316,32 +284,31 @@ export function ClustersTable(props: {
                                             confirm: () => {
                                                 if (allowed) {
                                                     alertContext.clearAlerts()
-                                                    deleteCluster(cluster?.name!, false)
-                                                        .promise.then((results) => {
-                                                            results.forEach((result) => {
-                                                                if (result.status === 'rejected') {
-                                                                    alertContext.addAlert({
-                                                                        type: 'danger',
-                                                                        title: 'Destroy error',
-                                                                        message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                    })
-                                                                }
-                                                            })
+                                                    deleteCluster(cluster?.name!, false).promise.then((results) => {
+                                                        results.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'Destroy error',
+                                                                    message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
+                                                                })
+                                                            }
                                                         })
-                                                        .catch((err) => {
-                                                            setConfirm(ClosedConfirmModalProps)
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Destroy error',
-                                                                message: err,
-                                                            })
-                                                        })
+                                                    })
+                                                    .catch((err)=>{
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                        alertContext.addAlert({
+                                                            type: 'danger',
+                                                            title: 'Destroy error',
+                                                            message: err,
+                                                    }) 
+                                                })
                                                     setConfirm(ClosedConfirmModalProps)
                                                 } else {
                                                     setConfirm(ClosedConfirmModalProps)
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: 'Destroy error',
+                                                        title: 'Detach error',
                                                         message: t('common:rbac.unauthorized'),
                                                     })
                                                 }
@@ -395,89 +362,75 @@ export function ClustersTable(props: {
                         id: 'destroyCluster',
                         title: t('managed.destroy'),
                         click: (clusters) => {
-                            let allowed = false
-                            let restrictedClusters: Array<string> = []
-                            clusters.forEach((cluster) => {
+                            let allowed = true
+                            const restrictedClusters: Array<string> = []
+                            clusters.forEach((cluster)=>{
                                 try {
-                                    console.log('checking status')
-                                    rbacMapping('cluster.destroy', cluster.name).forEach(
-                                        (definition: ResourceAttributes) => {
-                                            createSubjectAccessReview(definition as ResourceAttributes).promise.then(
-                                                (result) => {
-                                                    allowed = allowed && result.status?.allowed!
-                                                    console.log('checking status',result.status?.allowed!)
-                                                    if (!result.status?.allowed!) {
-                                                        restrictedClusters.push(cluster.name!)
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    )
-                                    console.log('restricted clusters: ', restrictedClusters)
+                                    rbacMapping('cluster.delete', cluster.name).forEach((definition: ResourceAttributes) => {
+                                        createSubjectAccessReview(
+                                            definition as ResourceAttributes
+                                        ).promise.then((result) => {
+                                            allowed = allowed && result.status?.allowed!
+                                            if (!result.status?.allowed!){
+                                                restrictedClusters.push(cluster.name!)
+                                            }
+                                        })
+                                    })
                                 } catch (err) {
                                     // do something if access review request fails?
                                     console.error(err)
                                 }
                             })
-
+                            
                             setConfirm({
                                 title: t('modal.destroy.title'),
                                 message: `You are about to destroy ${clusters.length} managed clusters. This action is irreversible.`,
                                 open: true,
                                 confirm: async () => {
-                                    console.log('checking allowed: ', allowed)
-                                    if (!allowed) {
+                                    if(allowed){
                                         alertContext.clearAlerts()
                                         const clusterNames = clusters.map((cluster) => cluster.name) as Array<string>
                                         const promiseResults = await deleteClusters(clusterNames, true)
                                         const resultErrors: string[] = []
                                         let i = 0
                                         promiseResults.promise
-                                            .catch((err) => {
-                                                alertContext.addAlert({
-                                                    type: 'danger',
-                                                    title: 'Destroy error',
-                                                    message: 'Encountered error: ' + err,
-                                                })
+                                        .catch((err)=>{
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: 'Encountered error: ' + err,
                                             })
-                                            .then((results) => {
-                                                if (results) {
-                                                    results.forEach((result) => {
-                            
+                                        })
+                                        .then((results) => {
+                                            if(results){
+                                                results.forEach((result) => {
+                                                if (result.status === 'rejected') {
+                                                    resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
+                                                } else {
+                                                    result.value.forEach((result) => {
                                                         if (result.status === 'rejected') {
-                                                            resultErrors.push(
-                                                                `Failed to destroy managed cluster. ${result.reason}`
-                                                            )
-                                                        } else {
-                                                            result.value.forEach((result) => {
-                                                                console.log('checking response: ', result.status)
-                                                                if (result.status === 'rejected') {
-                                                                    console.log('result code: ', result.reason.code!)
-                                                                    alertContext.addAlert({
-                                                                        type: 'danger',
-                                                                        title: 'Destroy error',
-                                                                        message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
-                                                                    })
-                                                                }
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: 'Destroy error',
+                                                                message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
                                                             })
-                                                            i++
                                                         }
                                                     })
+                                                    i++
                                                 }
                                             })
+                                            }
+                                        })
                                         setConfirm(ClosedConfirmModalProps)
                                     } else {
                                         setConfirm(ClosedConfirmModalProps)
-                                        alertContext.addAlert({
-                                            type: 'danger',
-                                            title: 'Destroy error',
-                                            message:
-                                                t('common:rbac.unauthorized') +
-                                                ' Restricted clusters: ' +
-                                                restrictedClusters,
-                                        })
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: t('common:rbac.unauthorized') + ' Restricted clusters: '+ restrictedClusters,
+                                            })
                                     }
-
+                                    
                                     props.refresh()
                                 },
                                 cancel: () => {
@@ -502,37 +455,34 @@ export function ClustersTable(props: {
                                     ) as Array<string>
                                     const promiseResults = deleteClusters(managedClusterNames, false)
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Detach error',
-                                                message: 'Encountered error: ' + err,
+                                    .catch((err)=>{
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: 'Detach error',
+                                            message: 'Encountered error: ' + err,
+                                        })
+                                    }).then((results)=>{
+                                        const resultErrors: string[] = []
+                                        let i = 0
+                                        if(results){
+                                            results.forEach((result) => {
+                                                if (result.status === 'rejected') {
+                                                    resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
+                                                } else {
+                                                    result.value.forEach((result) => {
+                                                        if (result.status === 'rejected') {
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: 'detach error',
+                                                                message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
+                                                            })
+                                                        }
+                                                    })
+                                                    i++
+                                                }
                                             })
-                                        })
-                                        .then((results) => {
-                                            const resultErrors: string[] = []
-                                            let i = 0
-                                            if (results) {
-                                                results.forEach((result) => {
-                                                    if (result.status === 'rejected') {
-                                                        resultErrors.push(
-                                                            `Failed to detach managed cluster. ${result.reason}`
-                                                        )
-                                                    } else {
-                                                        result.value.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'detach error',
-                                                                    message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
-                                                        i++
-                                                    }
-                                                })
-                                            }
-                                        })
+                                        }
+                                    })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
