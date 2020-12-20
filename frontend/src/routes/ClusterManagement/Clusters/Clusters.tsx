@@ -1,5 +1,4 @@
 import {
-    AcmAlert,
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
@@ -8,6 +7,8 @@ import {
     AcmLabels,
     AcmPageCard,
     AcmTable,
+    AcmActionGroup,
+    AcmLaunchLink
 } from '@open-cluster-management/ui-components'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
@@ -15,10 +16,9 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DistributionField, StatusField } from '../../../components/ClusterCommon'
-import { ClosedConfirmModalProps, ConfirmModal, AlertProps, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
-// import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
@@ -26,59 +26,69 @@ import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
-import {
-    createSubjectAccessReview,
-    rbacMapping,
-    ResourceAttributes,
-} from '../../../resources/self-subject-access-review'
+import { AppContext } from '../../../components/AppContext'
+import { mapAddons } from '../../../lib/get-addons'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
-const ClusterActions = () => {
+const PageActions = () => {
     const [open, setOpen] = useState<boolean>(false)
     const { push } = useHistory()
     const { t } = useTranslation(['cluster'])
+    const { clusterManagementAddons } = useContext(AppContext)
+    const addons = mapAddons(clusterManagementAddons)
     return (
-        <Dropdown
-            isOpen={open}
-            toggle={
-                <DropdownToggle
-                    onToggle={() => setOpen(!open)}
-                    toggleIndicator={CaretDownIcon}
-                    isPrimary
-                    id="cluster-actions"
-                >
-                    {t('managed.addCluster')}
-                </DropdownToggle>
-            }
-            dropdownItems={[
-                <DropdownItem
-                    key="create"
-                    component={Link}
-                    onClick={() => push(NavigationPath.createCluster)}
-                    id="create-cluster"
-                >
-                    {t('managed.createCluster')}
-                </DropdownItem>,
-                <DropdownItem
-                    key="import"
-                    component={Link}
-                    onClick={() => push(NavigationPath.importCluster)}
-                    id="import-cluster"
-                >
-                    {t('managed.importCluster')}
-                </DropdownItem>,
-            ]}
-        />
+        <AcmActionGroup>
+            <AcmLaunchLink
+                links={addons
+                    ?.filter((addon) => addon.launchLink)
+                    ?.map((addon) => ({
+                        id: addon.launchLink?.displayText ?? '',
+                        text: addon.launchLink?.displayText ?? '',
+                        href: addon.launchLink?.href ?? '',
+                    }))}
+            />
+            <Dropdown
+                isOpen={open}
+                toggle={
+                    <DropdownToggle
+                        onToggle={() => setOpen(!open)}
+                        toggleIndicator={CaretDownIcon}
+                        isPrimary
+                        id="cluster-actions"
+                    >
+                        {t('managed.addCluster')}
+                    </DropdownToggle>
+                }
+                dropdownItems={[
+                    <DropdownItem
+                        key="create"
+                        component="a"
+                        onClick={() => push(NavigationPath.createCluster)}
+                        id="create-cluster"
+                    >
+                        {t('managed.createCluster')}
+                    </DropdownItem>,
+                    <DropdownItem
+                        key="import"
+                        component="a"
+                        onClick={() => push(NavigationPath.importCluster)}
+                        id="import-cluster"
+                    >
+                        {t('managed.importCluster')}
+                    </DropdownItem>,
+                ]}
+            />
+        </AcmActionGroup>
     )
 }
 
 export function ClustersPageContent() {
     const { data, startPolling, refresh } = useQuery(getAllClusters)
     useEffect(startPolling, [startPolling])
-    usePageContext(!!data, ClusterActions)
+    usePageContext(!!data, PageActions)
 
     const items = data?.map((d) => {
         if (d.status === 'fulfilled') {
@@ -216,54 +226,31 @@ export function ClustersTable(props: {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
-                                        let allowed = false
-                                        try {
-                                            rbacMapping('cluster.detach', cluster.name).forEach((definition: ResourceAttributes) => {
-                                                createSubjectAccessReview(
-                                                    definition as ResourceAttributes
-                                                ).promise.then((result) => {
-                                                    allowed = result.status?.allowed!
-                                                })
-                                            })
-                                        } catch (err) {
-                                            // do something if access review request fails?
-                                            console.error(err)
-                                        }
                                         setConfirm({
                                             title: t('modal.detach.title'),
                                             message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
                                             open: true,
                                             confirm: () => {
-                                                if (allowed) {
-                                                    alertContext.clearAlerts()
-                                                    deleteCluster(cluster?.name!, false).promise.then((results) => {
-                                                        results.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'Detach error',
-                                                                    message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
+                                                alertContext.clearAlerts()
+                                                deleteCluster(cluster?.name!, false).promise.then((results) => {
+                                                    results.forEach((result) => {
+                                                        if (result.status === 'rejected') {
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: 'Detach error',
+                                                                message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
+                                                            })
+                                                        }
                                                     })
-                                                    .catch((err)=>{
-                                                        setConfirm(ClosedConfirmModalProps)
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: 'Detach error',
-                                                            message: err,
-                                                    }) 
-                                                })
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                } else {
+                                                }).catch((err)=>{
                                                     setConfirm(ClosedConfirmModalProps)
                                                     alertContext.addAlert({
                                                         type: 'danger',
                                                         title: 'Detach error',
-                                                        message: t('common:rbac.unauthorized'),
+                                                        message: err,
                                                     })
-                                                }
+                                                })
+                                                setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)

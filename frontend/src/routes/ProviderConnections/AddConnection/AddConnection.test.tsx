@@ -6,6 +6,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { FeatureGate } from '../../../resources/feature-gate'
 import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
 import AddConnectionPage from './AddConnection'
+import { AppContext } from '../../../components/AppContext'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -22,13 +23,15 @@ const mockFeatureGate: FeatureGate = {
 
 function TestAddConnectionPage() {
     return (
-        <MemoryRouter>
-            <Route
-                render={(props: any) => {
-                    return <AddConnectionPage {...props} />
-                }}
-            />
-        </MemoryRouter>
+        <AppContext.Provider value={{ featureGates: { 'open-cluster-management-discovery': mockFeatureGate }, clusterManagementAddons: [] }}>
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        return <AddConnectionPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </AppContext.Provider>
     )
 }
 
