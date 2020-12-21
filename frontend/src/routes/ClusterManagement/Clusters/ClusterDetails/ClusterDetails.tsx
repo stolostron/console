@@ -220,7 +220,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             href: addon.launchLink?.href ?? '',
                                         }))}
                                 />
-                                <DownloadConfigurationDropdown accessRestriction={accessRestriction}/>
+                                <DownloadConfigurationDropdown accessRestriction={accessRestriction} />
                                 {(() => {
                                     const onSelect = (id: string) => {
                                         const action = actions.find((a) => a.id === id)
