@@ -7,6 +7,7 @@ import {
     AcmSubmit,
     AcmAlertContext,
     IAlertContext,
+    AcmTable,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import React, { useContext, useLayoutEffect, useState } from 'react'
@@ -57,6 +58,21 @@ export function DeleteResourceModal(props: {
             <AcmAlertProvider>
                 <AcmForm style={{ gap: 0 }}>
                     <div>{props.description ? props.description : undefined}</div>
+                    <AcmTable<IResource>
+                        plural={props.plural}
+                        items={props.resources}
+                        columns={[
+                            {
+                                header: t(props.plural),
+                                cell: 'metadata.name',
+                                sort: 'metadata.name',
+                            },
+                        ]}
+                        keyFn={(resource:IResource)=>resource.metadata.name!}
+                        tableActions={[]}
+                        rowActions={[]}
+                        bulkActions={[]}
+                    />
                     <AcmAlertGroup isInline canClose />
                     <ActionGroup>
                         <AcmSubmit

@@ -166,7 +166,7 @@ export function ClustersTable(props: {
                 }}
             />
             <DeleteResourceModal
-                resources={deleteModalProps.resources}
+                resources={deleteModalProps.resources!}
                 action={deleteModalProps.action}
                 title={deleteModalProps.title}
                 plural={deleteModalProps.plural}
@@ -270,7 +270,7 @@ export function ClustersTable(props: {
                                             action:'detach',
                                             plural:'clusters',
                                             title:t('modal.detach.title'),
-                                            description:t('modal.detach.content', {name:cluster.name}),
+                                            description:t('modal.detach.content'),
                                             close:() => {
                                                 setDeleteModalProps(ClosedDeleteModalProps)
                                                 props.refresh()
@@ -288,7 +288,7 @@ export function ClustersTable(props: {
                                             action:'destroy',
                                             plural:'clusters',
                                             title:t('modal.destroy.title'),
-                                            description:t('modal.destroy.content', {name:cluster.name}),
+                                            description:t('modal.destroy.content'),
                                             close:() => {
                                                 setDeleteModalProps(ClosedDeleteModalProps)
                                                 props.refresh()
