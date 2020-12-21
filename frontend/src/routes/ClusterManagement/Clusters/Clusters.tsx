@@ -27,6 +27,7 @@ import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
 import { mapAddons } from '../../../lib/get-addons'
 import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
+import { ClosedDeleteModalProps, DeleteResourceModal, getIResourceClusters, IDeleteModalProps} from './components/DeleteResourceModal'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -141,6 +142,7 @@ export function ClustersTable(props: {
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
+    const [deleteModalProps, setDeleteModalProps] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -160,6 +162,17 @@ export function ClustersTable(props: {
                 cluster={editClusterLabels}
                 close={() => {
                     setEditClusterLabels(undefined)
+                    props.refresh()
+                }}
+            />
+            <DeleteResourceModal
+                resources={deleteModalProps.resources}
+                action={deleteModalProps.action}
+                title={deleteModalProps.title}
+                plural={deleteModalProps.plural}
+                description={deleteModalProps.description}
+                close={() => {
+                    setDeleteModalProps(ClosedDeleteModalProps)
                     props.refresh()
                 }}
             />
@@ -251,74 +264,36 @@ export function ClustersTable(props: {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
-                                        setConfirm({
-                                            title: t('modal.detach.title'),
-                                            message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
-                                            open: true,
-                                            confirm: () => {
-                                                alertContext.clearAlerts()
-                                                deleteCluster(cluster?.name!, false).promise.then((results) => {
-                                                    results.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Detach error',
-                                                                message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                }).catch((err)=>{
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: 'Detach error',
-                                                        message: err,
-                                                    })
-                                                })
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
-                                            cancel: () => {
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
+                                        const iResourceClusterlist = getIResourceClusters([cluster])
+                                        setDeleteModalProps({
+                                            resources:iResourceClusterlist,
+                                            action:'detach',
+                                            plural:'clusters',
+                                            title:t('modal.detach.title'),
+                                            description:t('modal.detach.content', {name:cluster.name}),
+                                            close:() => {
+                                                setDeleteModalProps(ClosedDeleteModalProps)
+                                                props.refresh()
+                                            }
                                         })
-                                        props.refresh()
                                     },
                                 },
                                 {
                                     id: 'destroy-cluster',
                                     text: t('managed.destroySelected'),
                                     click: (cluster: Cluster) => {
-                                        setConfirm({
-                                            title: t('modal.destroy.title'),
-                                            message: `You are about to destroy ${cluster.name}. This action is irreversible.`,
-                                            open: true,
-                                            confirm: () => {
-                                                alertContext.clearAlerts()
-                                                deleteCluster(cluster.name!, true).promise.then((results) => {
-                                                    results.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Destroy error',
-                                                                message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                }).catch((err)=>{
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: 'Destroy error',
-                                                        message: err,
-                                                    })
-                                                })
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
-                                            cancel: () => {
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
+                                        const iResourceClusterlist = getIResourceClusters([cluster])
+                                        setDeleteModalProps({
+                                            resources:iResourceClusterlist,
+                                            action:'destroy',
+                                            plural:'clusters',
+                                            title:t('modal.destroy.title'),
+                                            description:t('modal.destroy.content', {name:cluster.name}),
+                                            close:() => {
+                                                setDeleteModalProps(ClosedDeleteModalProps)
+                                                props.refresh()
+                                            }
                                         })
-                                        props.refresh()
                                     },
                                 },
                             ]
@@ -372,106 +347,36 @@ export function ClustersTable(props: {
                         id: 'destroyCluster',
                         title: t('managed.destroy'),
                         click: (clusters) => {
-                            setConfirm({
-                                title: t('modal.destroy.title'),
-                                message: `You are about to destroy ${clusters.length} managed clusters. This action is irreversible.`,
-                                open: true,
-                                confirm: async () => {
-                                    alertContext.clearAlerts()
-                                    const clusterNames = clusters.map((cluster) => cluster.name) as Array<string>
-                                    
-                                        const promiseResults = await deleteClusters(clusterNames, true)
-                                        const resultErrors: string[] = []
-                                        let i = 0
-                                        promiseResults.promise
-                                        .catch((err)=>{
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Destroy error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
-                                        .then((results) => {
-                                            if(results){
-                                                results.forEach((result) => {
-                                                if (result.status === 'rejected') {
-                                                    resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
-                                                } else {
-                                                    result.value.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Destroy error',
-                                                                message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                    i++
-                                                }
-                                            })
-                                            }
-                                        })
-                                    
-                                    setConfirm(ClosedConfirmModalProps)
+                            const iResourceClusterlist = getIResourceClusters(clusters)
+                            setDeleteModalProps({
+                                resources:iResourceClusterlist,
+                                action:'destroy',
+                                plural:'clusters',
+                                title:t('modal.destroy.title'),
+                                description:t('modal.destroy.batch', {num:clusters.length}),
+                                close:() => {
+                                    setDeleteModalProps(ClosedDeleteModalProps)
                                     props.refresh()
-                                },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
+                                }
                             })
-                            props.refresh()
                         },
                     },
                     {
                         id: 'detachCluster',
                         title: t('managed.detachSelected'),
-                        click: (managedClusters) => {
-                            setConfirm({
-                                title: t('modal.detach.title'),
-                                message: `You are about to detach ${managedClusters.length} managed clusters. This action is irreversible.`,
-                                open: true,
-                                confirm: () => {
-                                    alertContext.clearAlerts()
-                                    const managedClusterNames = managedClusters.map(
-                                        (managedCluster) => managedCluster.name
-                                    ) as Array<string>
-                                    const promiseResults = deleteClusters(managedClusterNames, false)
-                                    promiseResults.promise
-                                    .catch((err)=>{
-                                        alertContext.addAlert({
-                                            type: 'danger',
-                                            title: 'Detach error',
-                                            message: 'Encountered error: ' + err,
-                                        })
-                                    }).then((results)=>{
-                                        const resultErrors: string[] = []
-                                        let i = 0
-                                        if(results){
-                                            results.forEach((result) => {
-                                                if (result.status === 'rejected') {
-                                                    resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
-                                                } else {
-                                                    result.value.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'detach error',
-                                                                message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                    i++
-                                                }
-                                            })
-                                        }
-                                    })
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
+                        click: (clusters) => {
+                            const iResourceClusterlist = getIResourceClusters(clusters)
+                            setDeleteModalProps({
+                                resources:iResourceClusterlist,
+                                action:'detach',
+                                plural:'clusters',
+                                title:t('modal.detach.title'),
+                                description:t('modal.detach.batch', {num:clusters.length}),
+                                close:() => {
+                                    setDeleteModalProps(ClosedDeleteModalProps)
+                                    props.refresh()
+                                }
                             })
-                            props.refresh()
                         },
                     },
                     {

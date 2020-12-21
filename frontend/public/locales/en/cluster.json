@@ -107,9 +107,16 @@
   "view.logs": "View logs",
 
   "modal.destroy.title": "Destroy managed cluster",
+  "modal.destroy.action": "Destroy",
+  "modal.destroy.processing": "destroying",
+  "modal.destroy.content": "Destroying managed cluster {{name}} is irreversible. Are you sure that you want to continue?",
+  "modal.destroy.batch": "You are about to destroy {{num}} cluster(s). This action is irreversible.",
   "modal.detach.title": "Detach managed cluster",
-  "modal.destroy.content": "Destroying {{name}} is irreversible. Are you sure that you want to continue?",
-  "modal.detach.content": "Detaching {{name}} is irreversible. Are you sure that you want to continue?",
+  "modal.detach.action": "Detach",
+  "modal.detach.processing": "detaching",
+  "modal.detach.content": "Detaching managed cluster {{name}} is irreversible. Are you sure that you want to continue?",
+  "modal.detach.batch": "You are about to detach {{num}} cluster(s). This action is irreversible.",
+ 
   "tab.overview": "Overview",
   "tab.nodes": "Nodes",
   "tab.settings": "Settings",
