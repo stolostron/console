@@ -28,8 +28,6 @@ import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../..
 import { deleteCluster } from '../../../../lib/delete-cluster'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
 import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { AppContext } from '../../../../components/AppContext'
