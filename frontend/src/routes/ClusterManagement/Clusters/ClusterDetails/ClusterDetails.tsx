@@ -95,15 +95,11 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [data, error])
 
     useEffect(() => {
-        // TODO: consolidate common calls in one place
         const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
-        
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
-                if(result.status?.allowed){
-                    setRestriction(false)
-                }
+                setRestriction(!result.status?.allowed!)
             })
         } catch (err) {
             console.error(err)

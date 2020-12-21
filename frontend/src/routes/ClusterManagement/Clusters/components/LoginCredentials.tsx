@@ -33,7 +33,7 @@ const useStyles = makeStyles({
         },
         '&:hover': {
             '& .credentials-toggle svg': {
-                fill: 'var(--pf-c-button--m-link--hover--Color)'
+                fill: (props: LoginCredentialStyle) => props.disabled ? '#000' : 'var(--pf-c-button--m-link--hover--Color)'
             }
         }
     },
