@@ -2,7 +2,6 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmForm,
-    AcmLabelsInput,
     AcmModal,
     AcmSubmit,
     AcmAlertContext,
@@ -10,13 +9,13 @@ import {
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
-import React, { useContext, useLayoutEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { IResource } from '../../../../resources/resource'
 import { ManagedClusterKind } from '../../../../resources/managed-cluster'
 import { ManagedClusterInfoApiVersion } from '../../../../resources/managed-cluster-info'
-import {  deleteClusters } from '../../../../lib/delete-cluster'
+import { deleteClusters } from '../../../../lib/delete-cluster'
 import { Cluster } from '../../../../lib/get-cluster'
 
 export interface IDeleteModalProps {
@@ -68,7 +67,7 @@ export function DeleteResourceModal(props: {
                                 sort: 'metadata.name',
                             },
                         ]}
-                        keyFn={(resource:IResource)=>resource.metadata.name!}
+                        keyFn={(resource: IResource) => resource.metadata.name!}
                         tableActions={[]}
                         rowActions={[]}
                         bulkActions={[]}
@@ -119,8 +118,8 @@ export function getIResourceClusters(clusters: Array<Cluster>) {
 
 export async function detachManagedClusterResource(clusters: Array<IResource>, alertContext: IAlertContext) {
     const clusterNames = clusters.map((cluster) => cluster.metadata.name) as Array<string>
-    return deleteClusters(clusterNames, false).promise
-        .catch((err) => {
+    return deleteClusters(clusterNames, false)
+        .promise.catch((err) => {
             alertContext.addAlert({
                 type: 'danger',
                 title: 'Detach error',
@@ -153,8 +152,8 @@ export async function detachManagedClusterResource(clusters: Array<IResource>, a
 
 export async function destroyManagedClusterResource(clusters: Array<IResource>, alertContext: IAlertContext) {
     const clusterNames = clusters.map((cluster) => cluster.metadata.name) as Array<string>
-    return deleteClusters(clusterNames, true).promise
-        .catch((err) => {
+    return deleteClusters(clusterNames, true)
+        .promise.catch((err) => {
             alertContext.addAlert({
                 type: 'danger',
                 title: 'Destroy error',

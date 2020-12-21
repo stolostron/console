@@ -1,5 +1,4 @@
 import {
-    AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmDropdown,
@@ -8,14 +7,12 @@ import {
     AcmPageCard,
     AcmTable,
     AcmActionGroup,
-    AcmLaunchLink
+    AcmLaunchLink,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -27,7 +24,12 @@ import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
 import { mapAddons } from '../../../lib/get-addons'
 import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
-import { ClosedDeleteModalProps, DeleteResourceModal, getIResourceClusters, IDeleteModalProps} from './components/DeleteResourceModal'
+import {
+    ClosedDeleteModalProps,
+    DeleteResourceModal,
+    getIResourceClusters,
+    IDeleteModalProps,
+} from './components/DeleteResourceModal'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -40,39 +42,41 @@ const PageActions = () => {
     const { clusterManagementAddons } = useContext(AppContext)
     const addons = mapAddons(clusterManagementAddons)
 
-    useEffect(()=>{
+    useEffect(() => {
         const resourceList = rbacMapping('cluster.create')
         const promiseResult = createSubjectAccessReviews(resourceList)
         let allowed = true
-        promiseResult.promise.catch((err)=>{
-            // send err to console
-            console.error(err)
-        }).then((results)=>{
-            if(results){
-                results.forEach((result)=>{
-                    if(result.status === 'fulfilled'){
-                        allowed = allowed && result.value.status?.allowed!
-                    }
-                })
-            }
-            setAccessRestriction(!allowed)
-        })
+        promiseResult.promise
+            .catch((err) => {
+                // send err to console
+                console.error(err)
+            })
+            .then((results) => {
+                if (results) {
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled') {
+                            allowed = allowed && result.value.status?.allowed!
+                        }
+                    })
+                }
+                setAccessRestriction(!allowed)
+            })
     }, [])
     const dropdownItems = [
         { id: 'create-cluster', text: t('managed.createCluster') },
         { id: 'import-cluster', text: t('managed.importCluster') },
     ]
-    const onSelect = (id:string) => {
-        switch(id) {
+    const onSelect = (id: string) => {
+        switch (id) {
             case 'create-cluster':
                 push(NavigationPath.createCluster)
                 break
             case 'import-cluster':
                 push(NavigationPath.importCluster)
                 break
-        }       
+        }
     }
-    
+
     return (
         <AcmActionGroup>
             <AcmLaunchLink
@@ -84,13 +88,13 @@ const PageActions = () => {
                         href: addon.launchLink?.href ?? '',
                     }))}
             />
-            <AcmDropdown 
+            <AcmDropdown
                 dropdownItems={dropdownItems}
                 text={t('managed.addCluster')}
                 isDisabled={accessRestriction}
                 tooltip={t('common:rbac.unauthorized')}
                 onSelect={onSelect}
-                id='cluster-actions'
+                id="cluster-actions"
                 isKebab={false}
                 isPrimary={true}
             />
@@ -135,11 +139,9 @@ export function ClustersTable(props: {
     deleteCluster?: (managedCluster: Cluster) => void
     refresh: () => void
 }) {
-    const alertContext = useContext(AcmAlertContext)
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [deleteModalProps, setDeleteModalProps] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -151,13 +153,6 @@ export function ClustersTable(props: {
     return (
         <Fragment>
             <AcmAlertGroup isInline canClose />
-            <ConfirmModal
-                open={confirm.open}
-                confirm={confirm.confirm}
-                cancel={confirm.cancel}
-                title={confirm.title}
-                message={confirm.message}
-            ></ConfirmModal>
             <EditLabelsModal
                 cluster={editClusterLabels}
                 close={() => {
@@ -266,15 +261,15 @@ export function ClustersTable(props: {
                                     click: (cluster: Cluster) => {
                                         const iResourceClusterlist = getIResourceClusters([cluster])
                                         setDeleteModalProps({
-                                            resources:iResourceClusterlist,
-                                            action:'detach',
-                                            plural:'clusters',
-                                            title:t('modal.detach.title'),
-                                            description:t('modal.detach.content'),
-                                            close:() => {
+                                            resources: iResourceClusterlist,
+                                            action: 'detach',
+                                            plural: 'clusters',
+                                            title: t('modal.detach.title'),
+                                            description: t('modal.detach.content'),
+                                            close: () => {
                                                 setDeleteModalProps(ClosedDeleteModalProps)
                                                 props.refresh()
-                                            }
+                                            },
                                         })
                                     },
                                 },
@@ -284,15 +279,15 @@ export function ClustersTable(props: {
                                     click: (cluster: Cluster) => {
                                         const iResourceClusterlist = getIResourceClusters([cluster])
                                         setDeleteModalProps({
-                                            resources:iResourceClusterlist,
-                                            action:'destroy',
-                                            plural:'clusters',
-                                            title:t('modal.destroy.title'),
-                                            description:t('modal.destroy.content'),
-                                            close:() => {
+                                            resources: iResourceClusterlist,
+                                            action: 'destroy',
+                                            plural: 'clusters',
+                                            title: t('modal.destroy.title'),
+                                            description: t('modal.destroy.content'),
+                                            close: () => {
                                                 setDeleteModalProps(ClosedDeleteModalProps)
                                                 props.refresh()
-                                            }
+                                            },
                                         })
                                     },
                                 },
@@ -349,15 +344,15 @@ export function ClustersTable(props: {
                         click: (clusters) => {
                             const iResourceClusterlist = getIResourceClusters(clusters)
                             setDeleteModalProps({
-                                resources:iResourceClusterlist,
-                                action:'destroy',
-                                plural:'clusters',
-                                title:t('modal.destroy.title'),
-                                description:t('modal.destroy.batch', {num:clusters.length}),
-                                close:() => {
+                                resources: iResourceClusterlist,
+                                action: 'destroy',
+                                plural: 'clusters',
+                                title: t('modal.destroy.title'),
+                                description: t('modal.destroy.batch', { num: clusters.length }),
+                                close: () => {
                                     setDeleteModalProps(ClosedDeleteModalProps)
                                     props.refresh()
-                                }
+                                },
                             })
                         },
                     },
@@ -367,15 +362,15 @@ export function ClustersTable(props: {
                         click: (clusters) => {
                             const iResourceClusterlist = getIResourceClusters(clusters)
                             setDeleteModalProps({
-                                resources:iResourceClusterlist,
-                                action:'detach',
-                                plural:'clusters',
-                                title:t('modal.detach.title'),
-                                description:t('modal.detach.batch', {num:clusters.length}),
-                                close:() => {
+                                resources: iResourceClusterlist,
+                                action: 'detach',
+                                plural: 'clusters',
+                                title: t('modal.detach.title'),
+                                description: t('modal.detach.batch', { num: clusters.length }),
+                                close: () => {
                                     setDeleteModalProps(ClosedDeleteModalProps)
                                     props.refresh()
-                                }
+                                },
                             })
                         },
                     },
