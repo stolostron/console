@@ -5,9 +5,12 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
 
-export function DownloadConfigurationDropdown() {
+export function DownloadConfigurationDropdown(props:{
+        accessRestriction:boolean
+    }
+) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
 
     const downloadConfig = async (id: string) => {
         /* istanbul ignore next */
@@ -36,7 +39,7 @@ export function DownloadConfigurationDropdown() {
             { id: 'kubeconfig', text: 'kubeconfig' }
         ]
         return (
-            <AcmDropdown isPlain={true} dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
+            <AcmDropdown isPlain={true} isDisabled={props.accessRestriction} tooltip={props.accessRestriction ? t('common:rbac.unauthorized') : undefined} dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
         )
 
     } else {
