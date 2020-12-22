@@ -122,7 +122,7 @@ export function UpgradeModal(props: {
                 <EmptyState>
                     <EmptyStateIcon variant="container" component={Spinner} />
                     <Title size="lg" headingLevel="h4">
-                        Loading
+                        {t('upgrade.loading')}
                     </Title>
                 </EmptyState>
             )}
@@ -197,7 +197,7 @@ export function UpgradeModal(props: {
                                     })
                             }}
                         >
-                            submit
+                            {t('upgrade.submit')}
                         </AcmSubmit>
                         <AcmButton
                             onClick={() => {
@@ -208,7 +208,7 @@ export function UpgradeModal(props: {
                             }}
                             variant={ButtonVariant.link}
                         >
-                            cancel
+                            {t('upgrade.cancel')}
                         </AcmButton>
                     </ActionGroup>
                 </AcmForm>

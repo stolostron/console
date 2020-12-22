@@ -35,6 +35,7 @@ import {
     rbacMapping,
     ClustersTableActionsRbac,
 } from '../../../resources/self-subject-access-review'
+import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -190,6 +191,7 @@ export function ClustersTable(props: {
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
+    const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -255,6 +257,13 @@ export function ClustersTable(props: {
                 clusterName={upgradeSingleCluster?.name || ''}
                 close={() => {
                     setUpgradeSingleCluster(undefined)
+                }}
+            />
+            <BatchUpgradeModal
+                clusters={upgradeMultipleClusters}
+                open={!!upgradeMultipleClusters}
+                close={() => {
+                    setUpgradeMultipleClusters(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -616,21 +625,17 @@ export function ClustersTable(props: {
                             const clusters = managedClusters.filter(
                                 (c) =>
                                     c.distribution?.ocp?.availableUpdates &&
-                                    c.distribution?.ocp?.availableUpdates.length > 0
+                                    c.distribution?.ocp?.availableUpdates.length > 0 &&
+                                    !(
+                                        c.distribution?.ocp?.desiredVersion &&
+                                        c.distribution?.ocp?.version &&
+                                        c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
+                                    )
                             )
                             if (clusters.length === 1) {
-                                const cluster = clusters[0]
-                                if (
-                                    cluster.distribution?.ocp?.availableUpdates &&
-                                    cluster.distribution?.ocp?.availableUpdates.length > 0 &&
-                                    !(
-                                        cluster.distribution?.ocp?.desiredVersion &&
-                                        cluster.distribution?.ocp?.version &&
-                                        cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion
-                                    )
-                                ) {
-                                    setUpgradeSingleCluster(clusters[0])
-                                }
+                                setUpgradeSingleCluster(clusters[0])
+                            } else if (clusters.length > 0) {
+                                setUpgradeMultipleClusters(clusters)
                             }
                         },
                     },
