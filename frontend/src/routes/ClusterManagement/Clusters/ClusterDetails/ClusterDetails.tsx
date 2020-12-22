@@ -65,6 +65,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
     const [accessRestriction, setRestriction] = useState<boolean>(true)
+    const [clusterName, setClusterName] = useState<string>('')
     useEffect(startPolling, [startPolling])
     useEffect(() => {
         if (error) {
@@ -84,28 +85,35 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 setClusterError(resourceError)
             } else {
                 const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
-                setCluster(
-                    getCluster(
-                        items[1] as ManagedClusterInfo,
-                        items[0] as ClusterDeployment,
-                        items[2] as CertificateSigningRequest[]
-                    )
+                const clusterObject = getCluster(
+                    items[1] as ManagedClusterInfo,
+                    items[0] as ClusterDeployment,
+                    items[2] as CertificateSigningRequest[]
                 )
+
+                if (cluster === undefined) {
+                    setClusterName(clusterObject.name!)
+                } else if (cluster.name !== clusterObject.name) {
+                        setClusterName(clusterObject.name!)
+                }
+                setCluster(clusterObject)
             }
         }
     }, [data, error])
 
     useEffect(() => {
-        const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
-        try {
-            const promiseResult = createSubjectAccessReview(resource).promise
-            promiseResult.then((result) => {
-                setRestriction(!result.status?.allowed!)
-            })
-        } catch (err) {
-            console.error(err)
-        }
-    }, [cluster])
+        const resource = rbacMapping('secret.get', '', clusterName)[0]
+        if(clusterName !== ''){
+            try {
+                const promiseResult = createSubjectAccessReview(resource).promise
+                promiseResult.then((result) => {
+                    setRestriction(!result.status?.allowed!)
+                })
+            } catch (err) {
+                console.error(err)
+            }
+        }  
+    }, [clusterName])
 
     // Addons
     const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
