@@ -28,6 +28,7 @@ import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../..
 import { deleteCluster } from '../../../../lib/delete-cluster'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
+import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { AppContext } from '../../../../components/AppContext'
 import { UpgradeModal } from '../../../../components/ClusterCommon'
@@ -63,6 +64,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
+    const [accessRestriction, setRestriction] = useState<boolean>(true)
     useEffect(startPolling, [startPolling])
     useEffect(() => {
         if (error) {
@@ -92,6 +94,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
         }
     }, [data, error])
+
+    useEffect(() => {
+        const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
+        try {
+            const promiseResult = createSubjectAccessReview(resource).promise
+            promiseResult.then((result) => {
+                setRestriction(!result.status?.allowed!)
+            })
+        } catch (err) {
+            console.error(err)
+        }
+    }, [cluster])
 
     // Addons
     const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
@@ -215,7 +229,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             href: addon.launchLink?.href ?? '',
                                         }))}
                                 />
-                                <DownloadConfigurationDropdown />
+                                <DownloadConfigurationDropdown accessRestriction={accessRestriction} />
                                 {(() => {
                                     const onSelect = (id: string) => {
                                         const action = actions.find((a) => a.id === id)
@@ -348,7 +362,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusterOverview}>
-                            <ClusterOverviewPageContent />
+                            <ClusterOverviewPageContent accessRestriction={accessRestriction} />
                         </Route>
                         <Route exact path={NavigationPath.clusterNodes}>
                             <NodePoolsPageContent />

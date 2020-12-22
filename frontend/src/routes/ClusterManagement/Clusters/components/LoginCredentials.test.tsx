@@ -65,7 +65,7 @@ describe('LoginCredentials', () => {
         nockGet(mockKubeadminSecret)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <LoginCredentials />
+                <LoginCredentials accessRestriction={false}/>
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
@@ -76,6 +76,18 @@ describe('LoginCredentials', () => {
         await waitFor(() => screen.getByText('credentials.hide'))
         userEvent.click(screen.getByTestId('login-credentials'))
         await waitFor(() => screen.getByText('credentials.show'))
+    })
+    test('renders disabeld toggle', async () => {
+        nockGet(mockKubeadminSecret)
+        render(
+            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+                <LoginCredentials accessRestriction={true}/>
+            </ClusterContext.Provider>
+        )
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
+        await waitFor(() => screen.getByText('credentials.show'))
+        userEvent.click(screen.getByTestId('login-credentials'))
+        expect(screen.getByText('credentials.show')).toBeInTheDocument()
     })
     test('renders as a hyphen when secret name is not set', () => {
         render(

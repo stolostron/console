@@ -25,10 +25,17 @@ import {
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
 } from '../../../../resources/managed-cluster-add-on'
-import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { nockGet, nockClusterList, nockNamespacedList, mockBadRequestStatus } from '../../../../lib/nock-util'
+import {
+    nockGet,
+    nockClusterList,
+    nockNamespacedList,
+    mockBadRequestStatus,
+    nockCreate,
+} from '../../../../lib/nock-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
+import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
+import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { AppContext } from '../../../../components/AppContext'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
@@ -359,6 +366,48 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     },
 }
 
+const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'secret',
+            verb: 'get',
+            version: 'v1',
+        },
+    },
+}
+const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '',
+            resource: 'secret',
+            verb: 'get',
+            version: 'v1',
+        },
+    },
+    status: {
+        allowed: true,
+    },
+}
+
+const mockSelfSubjectAccessRequestii: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            namespace: 'test-cluster',
+            resource: 'secret',
+            verb: 'get',
+            version: 'v1',
+        },
+    },
+}
 const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     {
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
@@ -524,12 +573,14 @@ describe('ClusterDetails page', () => {
         const cdScope = nockClusterDeploymentError()
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await act(async () => {
             await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument(), { timeout: 2000 })
         })
@@ -544,12 +595,16 @@ describe('ClusterDetails - overview page', () => {
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
         const hiveScope = nockHiveProvisionJob()
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest)
+        nockCreate(mockSelfSubjectAccessRequestii)
+
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(hiveScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 2000 })
             await waitFor(() => expect(screen.getByText('tab.overview')).toBeInTheDocument())
@@ -568,12 +623,15 @@ describe('ClusterDetails - nodes page', () => {
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
@@ -600,12 +658,15 @@ describe('ClusterDetails - settings page', () => {
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
@@ -621,12 +682,15 @@ describe('ClusterDetails - settings page', () => {
         const cdScope = nockClusterDeployment()
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddonsError()
+        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })

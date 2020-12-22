@@ -10,8 +10,6 @@ import {
     AcmActionGroup,
     AcmLaunchLink
 } from '@open-cluster-management/ui-components'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
-import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -28,17 +26,52 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
 import { mapAddons } from '../../../lib/get-addons'
+import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
 const PageActions = () => {
-    const [open, setOpen] = useState<boolean>(false)
+    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
     const { push } = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     const { clusterManagementAddons } = useContext(AppContext)
     const addons = mapAddons(clusterManagementAddons)
+
+    useEffect(()=>{
+        const resourceList = rbacMapping('cluster.create')
+        const promiseResult = createSubjectAccessReviews(resourceList)
+        let allowed = true
+        promiseResult.promise.catch((err)=>{
+            // send err to console
+            console.error(err)
+        }).then((results)=>{
+            if(results){
+                results.forEach((result)=>{
+                    if(result.status === 'fulfilled'){
+                        allowed = allowed && result.value.status?.allowed!
+                    }
+                })
+            }
+            setAccessRestriction(!allowed)
+        })
+    }, [])
+    const dropdownItems = [
+        { id: 'create-cluster', text: t('managed.createCluster') },
+        { id: 'import-cluster', text: t('managed.importCluster') },
+    ]
+    const onSelect = (id:string) => {
+        switch(id) {
+            case 'create-cluster':
+                push(NavigationPath.createCluster)
+                break
+            case 'import-cluster':
+                push(NavigationPath.importCluster)
+                break
+        }       
+    }
+    
     return (
         <AcmActionGroup>
             <AcmLaunchLink
@@ -50,36 +83,15 @@ const PageActions = () => {
                         href: addon.launchLink?.href ?? '',
                     }))}
             />
-            <Dropdown
-                isOpen={open}
-                toggle={
-                    <DropdownToggle
-                        onToggle={() => setOpen(!open)}
-                        toggleIndicator={CaretDownIcon}
-                        isPrimary
-                        id="cluster-actions"
-                    >
-                        {t('managed.addCluster')}
-                    </DropdownToggle>
-                }
-                dropdownItems={[
-                    <DropdownItem
-                        key="create"
-                        component="a"
-                        onClick={() => push(NavigationPath.createCluster)}
-                        id="create-cluster"
-                    >
-                        {t('managed.createCluster')}
-                    </DropdownItem>,
-                    <DropdownItem
-                        key="import"
-                        component="a"
-                        onClick={() => push(NavigationPath.importCluster)}
-                        id="import-cluster"
-                    >
-                        {t('managed.importCluster')}
-                    </DropdownItem>,
-                ]}
+            <AcmDropdown 
+                dropdownItems={dropdownItems}
+                text={t('managed.addCluster')}
+                isDisabled={accessRestriction}
+                tooltip={t('common:rbac.unauthorized')}
+                onSelect={onSelect}
+                id='cluster-actions'
+                isKebab={false}
+                isPrimary={true}
             />
         </AcmActionGroup>
     )
@@ -346,6 +358,7 @@ export function ClustersTable(props: {
                                     text={t('actions')}
                                     dropdownItems={actions}
                                     isKebab={true}
+                                    isPlain={true}
                                 />
                             )
                         },

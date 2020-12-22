@@ -18,19 +18,20 @@ export interface SelfSubjectAccessReview extends IResource {
     }
     status?: {
         allowed: boolean
-        denied: boolean
-        evaluationError: string
-        reason: string
+        denied?: boolean
+        evaluationError?: string
+        reason?: string
     }
 }
+
 export type ResourceAttributes = {
-    group: string
-    name: string
-    namespace: string
+    name?: string
+    namespace?: string
     resource: string
-    subresource: string
     verb: string
-    version: string
+    group?: string
+    version?: string
+    subresource?: string
 }
 
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
@@ -42,4 +43,78 @@ export function createSubjectAccessReview(resourceAttributes: ResourceAttributes
             resourceAttributes,
         },
     })
+}
+
+export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {
+    const results = resourceAttributes.map((resource) => createSubjectAccessReview(resource))
+    return {
+        promise: Promise.allSettled(results.map((result) => result.promise)),
+        abort: () => results.forEach((result) => result.abort()),
+    }
+}
+
+export function rbacMapping(action: string, name?: string, namespace?: string) {
+    switch (action) {
+        case 'cluster.create':
+        case 'cluster.import':
+            return [
+                {
+                    resource: 'managedclusters',
+                    verb: 'create',
+                    group: 'cluster.open-cluster-management.io',
+                },
+            ]
+        case 'cluster.detach':
+            return [
+                {
+                    resource: 'managedclusters',
+                    verb: 'delete',
+                    group: 'cluster.open-cluster-management.io',
+                    name,
+                },
+            ]
+
+        case 'cluster.destroy':
+            return [
+                {
+                    resource: 'managedclusters',
+                    verb: 'delete',
+                    group: 'cluster.open-cluster-management.io',
+                    name,
+                },
+                {
+                    resource: 'clusterdeployments',
+                    verb: 'delete',
+                    group: 'hive.openshift.io',
+                    name,
+                    namespace,
+                },
+                {
+                    resource: 'machinepools',
+                    verb: 'delete',
+                    group: 'hive.openshift.io',
+                    namespace,
+                },
+            ]
+        case 'cluster.edit.labels':
+            return [
+                {
+                    resource: 'managedclusters',
+                    verb: 'patch',
+                    group: 'cluster.open-cluster-management.io',
+                    name,
+                },
+            ]
+        case 'secret.get':
+            return [
+                {
+                    namespace,
+                    resource: 'secret',
+                    verb: 'get',
+                    version: 'v1',
+                },
+            ]
+        default:
+            return []
+    }
 }
