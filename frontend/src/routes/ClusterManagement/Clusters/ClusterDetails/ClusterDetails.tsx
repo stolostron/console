@@ -96,7 +96,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [data, error])
 
     useEffect(() => {
-        const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
+        const resource = rbacMapping('secret.get', match.params.id, match.params.id)[0]
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
@@ -105,7 +105,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         } catch (err) {
             console.error(err)
         }
-    }, [cluster])
+    }, [match.params.id])
 
     // Addons
     const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
