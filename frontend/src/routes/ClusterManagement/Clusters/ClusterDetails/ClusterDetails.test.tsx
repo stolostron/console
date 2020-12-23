@@ -366,18 +366,6 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     },
 }
 
-const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'secret',
-            verb: 'get',
-            version: 'v1',
-        },
-    },
-}
 const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
@@ -395,7 +383,7 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     },
 }
 
-const mockSelfSubjectAccessRequestii: SelfSubjectAccessReview = {
+const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
@@ -596,7 +584,6 @@ describe('ClusterDetails - overview page', () => {
         const mcaScope = nockManagedClusterAddons()
         const hiveScope = nockHiveProvisionJob()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest)
-        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
@@ -624,7 +611,6 @@ describe('ClusterDetails - nodes page', () => {
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
@@ -659,7 +645,6 @@ describe('ClusterDetails - settings page', () => {
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddons()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
@@ -683,7 +668,6 @@ describe('ClusterDetails - settings page', () => {
         const csrScope = nockCertificateSigningRequestList()
         const mcaScope = nockManagedClusterAddonsError()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        nockCreate(mockSelfSubjectAccessRequestii)
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
