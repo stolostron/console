@@ -96,20 +96,16 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [data, error])
 
     useEffect(() => {
-        // TODO: consolidate common calls in one place
-        const resource = rbacMapping('secret.get', cluster?.name, cluster?.namespace)[0]
-        
+        const resource = rbacMapping('secret.get', match.params.id, match.params.id)[0]
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
-                if(result.status?.allowed){
-                    setRestriction(false)
-                }
+                setRestriction(!result.status?.allowed!)
             })
         } catch (err) {
             console.error(err)
         }
-    }, [cluster])
+    }, [match.params.id])
 
     // Addons
     const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
@@ -233,7 +229,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             href: addon.launchLink?.href ?? '',
                                         }))}
                                 />
-                                <DownloadConfigurationDropdown accessRestriction={accessRestriction}/>
+                                <DownloadConfigurationDropdown accessRestriction={accessRestriction} />
                                 {(() => {
                                     const onSelect = (id: string) => {
                                         const action = actions.find((a) => a.id === id)
