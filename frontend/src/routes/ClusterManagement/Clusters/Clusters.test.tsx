@@ -66,6 +66,8 @@ describe('Cluster Page', () => {
             managedNamespacesOnly: '',
         })
 
+        nockList(mockManagedCluster, mockManagedCluster)
+
         const { getByText } = render(
             <MemoryRouter>
                 <ClustersPage />
@@ -106,10 +108,11 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
+        nockList(mockManagedCluster, mockManagedCluster)
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
 
-        const { getByText, queryByText, getAllByLabelText } = render(
+        const { getByText, queryByText, getAllByLabelText, getByTestId } = render(
             <MemoryRouter>
                 <ClustersPage />
             </MemoryRouter>
@@ -120,8 +123,9 @@ describe('Cluster Page', () => {
         await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-        userEvent.click(getByText('managed.destroySelected')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        await waitFor(()=> expect(getByTestId('destroy-cluster')).toBeInTheDocument())
+        userEvent.click(getByTestId('destroy-cluster')) // click confirm on the delete dialog
+        userEvent.click(getByText('modal.destroy.action')) // click confirm on the delete dialog
 
         await waitFor(() => expect(listdeployNockii.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNockInfoii.isDone()).toBeTruthy())
@@ -141,10 +145,7 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
-        const listdeployNock = nockList(mockClusterDeployment, [mockClusterDeployment], undefined, {
-            managedNamespacesOnly: '',
-        })
-        const listdeployNockii = nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
+
         const listNockInfoii = nockList(
             { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
             [],
@@ -160,9 +161,6 @@ describe('Cluster Page', () => {
 
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
-        nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
-            managedNamespacesOnly: '',
-        })
         nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
         nockClusterList(
             { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
@@ -175,16 +173,14 @@ describe('Cluster Page', () => {
                 <ClustersPage />
             </MemoryRouter>
         )
-        await waitFor(() => expect(listdeployNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNockInfo.isDone()).toBeTruthy())
         await waitFor(() => expect(listNockCert.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
 
         userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.destroy')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('modal.destroy.action')) // click confirm on the delete dialog
 
-        await waitFor(() => expect(listdeployNockii.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNockInfoii.isDone()).toBeTruthy())
         await waitFor(() => expect(listNockCertii.isDone()).toBeTruthy())
         await waitFor(() => expect(deleteNockDeployment.isDone()).toBeTruthy())
@@ -226,7 +222,7 @@ describe('Cluster Page', () => {
 
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.detached')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('modal.detach.action')) // click confirm on the delete dialog
 
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeNull())
     })
@@ -267,48 +263,7 @@ describe('Cluster Page', () => {
 
         userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.detachSelected')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeNull())
-    })
-    test('batch action detaches cluster', async () => {
-        nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            mockManagedClusterInfos,
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        const listNockCert = nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-        nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
-            managedNamespacesOnly: '',
-        })
-        nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockOptions(mockManagedCluster, mockManagedCluster)
-        nockDelete(mockManagedCluster)
-
-        const { getByText, queryByText, getAllByLabelText } = render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
-        )
-
-        await waitFor(() => expect(listNockCert.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
-
-        userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
-        userEvent.click(getByText('managed.detachSelected')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('modal.detach.action')) // click confirm on the delete dialog
 
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeNull())
     })
@@ -325,11 +280,6 @@ describe('Cluster Page', () => {
             ['open-cluster-management.io/cluster-name']
         )
         nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-        nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
-            managedNamespacesOnly: '',
-        })
         nockClusterList(
             { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
             mockCerts,
@@ -346,7 +296,10 @@ describe('Cluster Page', () => {
 
         userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.detachSelected')) // click the delete action
-        userEvent.click(getByText('Cancel')) // click confirm on the delete dialog
+
+        // TODO: Add id for Cancel button in ACM Modal and add to test
+        // userEvent.click(getByText('Cancel')) 
+        userEvent.click(getAllByLabelText('Close')[0]) // click close on the delete modal
 
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeInTheDocument)
     })
@@ -384,7 +337,10 @@ describe('Cluster Page', () => {
 
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.detached')) // click the delete action
-        userEvent.click(getByText('Cancel')) // click confirm on the delete dialog
+
+        // TODO: Add id for Cancel button in ACM Modal and add to test
+        // userEvent.click(getByText('Cancel')) 
+        userEvent.click(getAllByLabelText('Close')[0]) // click close on the delete modal
 
         await waitFor(() => expect(queryByText(mockManagedCluster.metadata.name!)).toBeInTheDocument)
     })
