@@ -111,6 +111,9 @@ describe('Cluster Page', () => {
         nockList(mockManagedCluster, mockManagedCluster)
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
+        nockOptions(mockClusterDeployment)
+        nockDelete(mockClusterDeployment)
+        nockList(mockManagedCluster, [], undefined)
 
         const { getByText, queryByText, getAllByLabelText, getByTestId } = render(
             <MemoryRouter>
@@ -161,12 +164,16 @@ describe('Cluster Page', () => {
 
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
+        nockOptions(mockClusterDeployment)
         nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
         nockClusterList(
             { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
+        nockList(mockManagedCluster, mockManagedCluster)
+        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
+        nockList(mockManagedCluster, [])
 
         const { getByText, queryByText, getAllByLabelText } = render(
             <MemoryRouter>
@@ -211,6 +218,8 @@ describe('Cluster Page', () => {
         )
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
+        nockList(mockManagedCluster, [])
+        nockList(mockManagedCluster, [])
 
         const { getByText, queryByText, getAllByLabelText } = render(
             <MemoryRouter>
@@ -252,6 +261,9 @@ describe('Cluster Page', () => {
         nockOptions(mockManagedCluster, mockManagedCluster)
         nockDelete(mockManagedCluster)
 
+        nockList(mockManagedCluster, [])
+        nockList(mockManagedCluster, [])
+
         const { getByText, queryByText, getAllByLabelText } = render(
             <MemoryRouter>
                 <ClustersPage />
@@ -285,6 +297,15 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
+        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
+        nockList(
+            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
+            [],
+            undefined,
+            { managedNamespacesOnly: '' }
+        )
+        nockList(mockManagedCluster, [])
+        nockList(mockManagedCluster, [])
 
         const { getByText, queryByText, getAllByLabelText } = render(
             <MemoryRouter>
@@ -326,6 +347,8 @@ describe('Cluster Page', () => {
             mockCerts,
             ['open-cluster-management.io/cluster-name']
         )
+        nockList(mockManagedCluster, mockManagedCluster)
+        nockList(mockManagedCluster, mockManagedCluster)
 
         const { getByText, queryByText, getAllByLabelText } = render(
             <MemoryRouter>
