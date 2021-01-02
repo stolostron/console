@@ -13,7 +13,7 @@ import {
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { DistributionField, StatusField } from '../../../components/ClusterCommon'
+import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
@@ -140,6 +140,7 @@ export function ClustersTable(props: {
     const { t } = useTranslation(['cluster'])
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
+    const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -160,6 +161,14 @@ export function ClustersTable(props: {
                 close={() => {
                     setEditClusterLabels(undefined)
                     props.refresh()
+                }}
+            />
+            <UpgradeModal
+                data={upgradeSingleCluster?.distribution}
+                open={!!upgradeSingleCluster}
+                clusterName={upgradeSingleCluster?.name || ''}
+                close={() => {
+                    setUpgradeSingleCluster()
                 }}
             />
             <AcmTable<Cluster>
@@ -192,7 +201,9 @@ export function ClustersTable(props: {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
-                        cell: (cluster) => <DistributionField data={cluster.distribution} />,
+                        cell: (cluster) => (
+                            <DistributionField data={cluster.distribution} clusterName={cluster?.name || ''} />
+                        ),
                     },
                     {
                         header: t('table.labels'),
@@ -227,7 +238,9 @@ export function ClustersTable(props: {
                                 {
                                     id: 'upgrade-cluster',
                                     text: t('managed.upgrade'),
-                                    click: (cluster: Cluster) => {},
+                                    click: (cluster: Cluster) => {
+                                        setUpgradeSingleCluster(cluster)
+                                    },
                                 },
                                 {
                                     id: 'search-cluster',
@@ -314,7 +327,15 @@ export function ClustersTable(props: {
                                 actions = actions.filter((a) => a.id !== 'launch-cluster')
                             }
 
-                            if (!cluster.distribution?.ocp?.availableUpdates) {
+                            if (
+                                !(
+                                    cluster.distribution?.ocp?.availableUpdates &&
+                                    cluster.distribution?.ocp?.availableUpdates.length > 0
+                                ) ||
+                                (cluster.distribution?.ocp?.version &&
+                                    cluster.distribution?.ocp?.desiredVersion &&
+                                    cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion)
+                            ) {
                                 actions = actions.filter((a) => a.id !== 'upgrade-cluster')
                             }
 
@@ -453,7 +474,34 @@ export function ClustersTable(props: {
                             props.refresh()
                         },
                     },
-                    { id: 'upgradeClusters', title: t('managed.upgradeSelected'), click: (managedClusters) => {} },
+                    {
+                        id: 'upgradeClusters',
+                        title: t('managed.upgradeSelected'),
+                        click: (managedClusters: Array<Cluster>) => {
+                            if (!managedClusters) {
+                                return
+                            }
+                            const clusters = managedClusters.filter(
+                                (c) =>
+                                    c.distribution?.ocp?.availableUpdates &&
+                                    c.distribution?.ocp?.availableUpdates.length > 0
+                            )
+                            if (clusters.length === 1) {
+                                const cluster = clusters[0]
+                                if (
+                                    cluster.distribution?.ocp?.availableUpdates &&
+                                    cluster.distribution?.ocp?.availableUpdates.length > 0 &&
+                                    !(
+                                        cluster.distribution?.ocp?.desiredVersion &&
+                                        cluster.distribution?.ocp?.version &&
+                                        cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion
+                                    )
+                                ) {
+                                    setUpgradeSingleCluster(clusters[0])
+                                }
+                            }
+                        },
+                    },
                 ]}
                 rowActions={[]}
                 emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}

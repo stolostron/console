@@ -53,37 +53,6 @@ export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAtt
     }
 }
 
-export async function rbacNamespaceFilter(action:string, namespaces:Array<string>){
-    const resourceList:Array<ResourceAttributes> = []
-    const filteredNamespaces = namespaces
-    namespaces.forEach((namespace)=>{
-        resourceList.push(...rbacMapping(action, '', namespace))
-    })
-    const promiseResult = createSubjectAccessReviews(resourceList)
-
-    promiseResult.promise.catch((err)=>{
-        console.error(err)
-    }).then((results)=>{
-        let i = 0
-        let namespace = filteredNamespaces[i]
-        if(results){
-            results.forEach((result)=>{
-                if(result.status === 'fulfilled'){
-                    if(namespace != result.value.metadata.namespace){
-                        namespace = filteredNamespaces[++i]
-                    }
-                    if(!result.value.status?.allowed){
-                        filteredNamespaces.slice(i, 1)
-                        namespace = filteredNamespaces[i]
-                    }
-                }
-            })
-        }
-        return filteredNamespaces
-    })
-
-}
-
 export function rbacMapping(action: string, name?: string, namespace?: string) {
     switch (action) {
         case 'cluster.create':

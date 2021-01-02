@@ -28,7 +28,7 @@ export function ClusterOverviewPageContent(props:{
                     {
                         key: t('table.distribution'),
                         value: cluster?.distribution?.displayVersion && (
-                            <DistributionField data={cluster?.distribution} />
+                            <DistributionField data={cluster?.distribution} clusterName={cluster?.name || ''}/>
                         ),
                     },
                     {

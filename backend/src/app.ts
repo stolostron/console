@@ -3,7 +3,6 @@
 // TODO auth callback
 // TODO STATIC 304 ETAG support
 // TODO /managed-clusters route
-// TODO /upgrade route
 
 import { createReadStream, stat, Stats } from 'fs'
 import { IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions, ServerResponse } from 'http'
@@ -12,6 +11,7 @@ import { extname } from 'path'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { parse as parseUrl } from 'url'
 import { logger } from './logger'
+import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requestException } from './lib/utils'
 
 const agent = new Agent({ rejectUnauthorized: false })
 
@@ -65,6 +65,91 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             } else {
                 res.writeHead(response.statusCode, response.headers)
                 return response.pipe(res)
+            }
+        }
+        // Upgrade
+        if (url.startsWith('/upgrade')) {
+            // will always create new managedcluster-view for upgrade
+            const token = getToken(req)
+            if (!token) {
+                logger.info('no token provided')
+                return res.writeHead(401).end()
+            }
+            if (req.method != 'POST') {
+                logger.info('wrong method for upgrade')
+                res.writeHead(503)
+                return res.end()
+            }
+            req.setTimeout(120 * 1000)
+            const host = parseUrl(process.env.CLUSTER_API_URL).host
+
+            // reuse managedclusterview
+            try {
+                const reqBody: { clusterName: string; version: string } = await parseJsonBody(req)
+                if (!reqBody || !reqBody.clusterName || !reqBody.version) {
+                    res.writeHead(400)
+                    logger.info('wrong body for the upgrade request')
+                    return res.end('{"message":"requires clusterName and version"}')
+                }
+                const remoteVersion = await getRemoteResource<{
+                    status: {
+                        availableUpdates: Record<string, unknown>[]
+                    }
+                    spec: {
+                        desiredUpdate: Record<string, unknown>
+                    }
+                }>(
+                    host,
+                    token,
+                    agent,
+                    reqBody.clusterName,
+                    'config.openshift.io',
+                    'v1',
+                    'clusterversions',
+                    'ClusterVersion',
+                    'version',
+                    '',
+                    2000,
+                    10
+                )
+
+                const desiredUpdates = remoteVersion?.status?.availableUpdates.filter(
+                    (u) => u.version && u.version == reqBody.version
+                )
+                if (!desiredUpdates || desiredUpdates.length === 0) {
+                    console.debug('cannot find version')
+                    throw { code: 400, msg: '{"message":"selected version is not available"}' } as requestException
+                }
+                const desiredUpdate = desiredUpdates[0]
+                remoteVersion.spec.desiredUpdate = desiredUpdate
+                await updateRemoteResource(
+                    host,
+                    token,
+                    agent,
+                    reqBody.clusterName,
+                    'clusterversions',
+                    'version',
+                    '',
+                    remoteVersion,
+                    2000,
+                    10
+                )
+                res.writeHead(200)
+                return res.end()
+            } catch (err) {
+                // handle error messages
+                let code = 500
+                let msg = '{"message":"failed to upgrade"}'
+                const formattedErr = err as requestException
+                if (formattedErr.code > 0 && (formattedErr.code >= 300 || formattedErr.code < 200)) {
+                    code = formattedErr.code
+                }
+                if (formattedErr.msg) {
+                    msg = formattedErr.msg
+                }
+                logger.error('failed to upgrade:', err)
+                res.writeHead(code)
+                return res.end(msg)
             }
         }
 
@@ -378,22 +463,6 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
 // Handle a request that returns a json object
 async function jsonRequest<T>(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<T> {
     return parseJsonBody<T>(await request(method, url, headers, data))
-}
-
-function parseBody(req: IncomingMessage): Promise<string> {
-    return new Promise((resolve, reject) => {
-        let data = ''
-        req.on('error', reject)
-        req.on('data', (chunk) => (data += chunk))
-        req.on('end', () => {
-            resolve(data)
-        })
-    })
-}
-
-async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
-    const body = await parseBody(req)
-    return JSON.parse(body) as T
 }
 
 // function isClusterScope(url: string): boolean {
