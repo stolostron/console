@@ -56,16 +56,16 @@ export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAtt
 export async function rbacNamespaceFilter(action: string, namespaces: Array<string>) {
     const resourceList: Array<ResourceAttributes> = []
     let filteredNamespaces: Array<string> = []
-    namespaces.forEach((namespace) => {
-        resourceList.push(...rbacMapping(action, '', namespace))
-    })
-
+    // check for admin access before checking namespaces individually
     let adminAccess = await checkAdminAccess()
 
     if (adminAccess) {
-        console.log('admin level access')
         return namespaces
     }
+
+    namespaces.forEach((namespace) => {
+        resourceList.push(...rbacMapping(action, '', namespace))
+    })
 
     const promiseResult = createSubjectAccessReviews(resourceList)
     return promiseResult.promise
@@ -74,12 +74,10 @@ export async function rbacNamespaceFilter(action: string, namespaces: Array<stri
         })
         .then((results) => {
             if (results) {
-                console.log('access review result: ', results)
                 results.forEach((result) => {
                     if (result.status === 'fulfilled') {
                         if (result.value.status?.allowed) {
                             filteredNamespaces.push(result.value.spec.resourceAttributes.namespace!)
-                            console.log('checking namespace: ', result.value.spec.resourceAttributes.namespace!)
                         }
                     }
                 })

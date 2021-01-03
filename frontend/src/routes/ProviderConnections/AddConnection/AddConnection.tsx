@@ -196,7 +196,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
                 />
             </AcmPageCard>
         )
-    } else if (projects.length > 0 && filteredProjects.length === 0) {
+    } else if (projects.length > 0 && filteredProjects.length === 0) { // returns empty state when user cannot create secret in any namespace
         return (
             <AcmPageCard>
                 <AcmEmptyState
