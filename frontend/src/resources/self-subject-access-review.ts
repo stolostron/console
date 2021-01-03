@@ -53,6 +53,70 @@ export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAtt
     }
 }
 
+export async function rbacNamespaceFilter(action: string, namespaces: Array<string>) {
+    const resourceList: Array<ResourceAttributes> = []
+    let filteredNamespaces: Array<string> = []
+    namespaces.forEach((namespace) => {
+        resourceList.push(...rbacMapping(action, '', namespace))
+    })
+
+    let adminAccess = await checkAdminAccess()
+
+    if (adminAccess) {
+        console.log('admin level access')
+        return namespaces
+    }
+
+    const promiseResult = createSubjectAccessReviews(resourceList)
+    return promiseResult.promise
+        .catch((err) => {
+            console.error(err)
+        })
+        .then((results) => {
+            if (results) {
+                console.log('access review result: ', results)
+                results.forEach((result) => {
+                    if (result.status === 'fulfilled') {
+                        if (result.value.status?.allowed) {
+                            filteredNamespaces.push(result.value.spec.resourceAttributes.namespace!)
+                            console.log('checking namespace: ', result.value.spec.resourceAttributes.namespace!)
+                        }
+                    }
+                })
+                // remove duplicates from filtered list
+                filteredNamespaces = filteredNamespaces.filter((value, index) => {
+                    return filteredNamespaces.indexOf(value) === index
+                })
+            }
+            return filteredNamespaces
+        })
+}
+
+export async function checkAdminAccess() {
+    let adminAccess = false
+    const resourceAttribute: ResourceAttributes = {
+        name: '*',
+        namespace: '*',
+        resource: '*',
+        verb: '*',
+    }
+    const promiseResult = createSubjectAccessReviews([resourceAttribute]).promise
+    await promiseResult
+        .catch((err) => {
+            console.error(err)
+        })
+        .then((results) => {
+            if (results) {
+                results.forEach((result) => {
+                    if (result.status === 'fulfilled') {
+                        adminAccess = result.value.status?.allowed!
+                    }
+                })
+            }
+        })
+    return adminAccess
+}
+
 export function rbacMapping(action: string, name?: string, namespace?: string) {
     switch (action) {
         case 'cluster.create':
@@ -111,6 +175,15 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     namespace,
                     resource: 'secret',
                     verb: 'get',
+                    version: 'v1',
+                },
+            ]
+        case 'secret.create':
+            return [
+                {
+                    namespace,
+                    resource: 'secret',
+                    verb: 'create',
                     version: 'v1',
                 },
             ]

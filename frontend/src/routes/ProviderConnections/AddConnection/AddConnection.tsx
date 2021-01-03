@@ -44,6 +44,7 @@ import {
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
 import { AppContext } from '../../../components/AppContext'
+import { rbacNamespaceFilter } from '../../../resources/self-subject-access-review'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -68,8 +69,9 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
 }
 
 export function AddConnectionPageData(props: { namespace: string; name: string }) {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['connection', 'common'])
     const [projects, setProjects] = useState<Project[]>()
+    const [filteredProjects, setFilteredProjects] = useState<string[]>()
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
 
@@ -130,6 +132,19 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     }, [retry])
 
     useEffect(() => {
+        if (projects?.length! > 0) {
+            const namespaces = projects!.map((project) => project.metadata.name!)
+            rbacNamespaceFilter('secret.create', namespaces)
+                .catch(setError)
+                .then((result) => {
+                    if (result) {
+                        setFilteredProjects(result)
+                    }
+                })
+        }
+    }, [projects])
+
+    useEffect(() => {
         if (props.name) {
             const result = getProviderConnection(props)
             result.promise
@@ -157,7 +172,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
             />
         )
     }
-    if (!projects) {
+    if (!projects || !filteredProjects) {
         return <AcmLoadingPage />
     }
     if (props.name && providerConnection.metadata.name === '') {
@@ -181,12 +196,30 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
                 />
             </AcmPageCard>
         )
+    } else if (projects.length > 0 && filteredProjects.length === 0) {
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('addConnection.error.noNamespacesFound')}
+                    message={t('common:rbac.unauthorized')}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
+            </AcmPageCard>
+        )
     }
 
-    return <AddConnectionPageContent projects={projects} providerConnection={providerConnection} />
+    return <AddConnectionPageContent providerConnection={providerConnection} projects={filteredProjects} />
 }
 
-export function AddConnectionPageContent(props: { projects: Project[]; providerConnection: ProviderConnection }) {
+export function AddConnectionPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
     const { featureGates } = useContext(AppContext)
@@ -269,8 +302,8 @@ export function AddConnectionPageContent(props: { projects: Project[]; providerC
                     isDisabled={isEditing()}
                 >
                     {props.projects.map((project) => (
-                        <SelectOption key={project.metadata.name} value={project.metadata.name}>
-                            {project.metadata.name}
+                        <SelectOption key={project} value={project}>
+                            {project}
                         </SelectOption>
                     ))}
                 </AcmSelect>
