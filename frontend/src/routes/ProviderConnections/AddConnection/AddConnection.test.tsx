@@ -209,6 +209,7 @@ describe('add connection page', () => {
     })
     it('should load page and namespace for non-admin', async () => {
         const projectsNock = nockClusterList(mockProject, [mockProject])
+        nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseTrue)
         const { getByText, container } = render(
             <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
