@@ -132,16 +132,20 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     }, [retry])
 
     useEffect(() => {
-        if (projects?.length! > 0) {
-            const namespaces = projects!.map((project) => project.metadata.name!)
-            rbacNamespaceFilter('secret.create', namespaces)
-                .catch(setError)
-                .then((result) => {
-                    if (result) {
-                        setFilteredProjects(result)
-                    }
-                })
-        }
+        if(projects){
+            if (projects.length! > 0) {
+                const namespaces = projects!.map((project) => project.metadata.name!)
+                rbacNamespaceFilter('secret.create', namespaces)
+                    .catch(setError)
+                    .then((result) => {
+                        if (result) {
+                            setFilteredProjects(result)
+                        }
+                    })
+            } else {
+                setFilteredProjects([])
+            }
+        } 
     }, [projects])
 
     useEffect(() => {

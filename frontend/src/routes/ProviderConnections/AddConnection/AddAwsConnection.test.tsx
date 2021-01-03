@@ -15,6 +15,7 @@ import {
 import AddConnectionPage from './AddConnection'
 import { AppContext } from '../../../components/AppContext'
 import { NavigationPath } from '../../../NavigationPath'
+import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -27,6 +28,38 @@ const mockFeatureGate: FeatureGate = {
     kind: 'FeatureGate',
     metadata: { name: 'open-cluster-management-discovery' },
     spec: { featureSet: 'DiscoveryEnabled' },
+}
+
+const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            namespace: 'test-cluster',
+            resource: 'secret',
+            verb: 'get',
+            version: 'v1',
+        },
+    },
+}
+
+const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '',
+            namespace: 'test-cluster',
+            resource: 'secret',
+            verb: 'create',
+            version: 'v1',
+        },
+    },
+    status: {
+        allowed: true,
+    },
 }
 
 const mockProjects: Project[] = [mockProject]
