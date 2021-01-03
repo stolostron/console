@@ -30,31 +30,30 @@ const mockFeatureGate: FeatureGate = {
     spec: { featureSet: 'DiscoveryEnabled' },
 }
 
-const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
     spec: {
         resourceAttributes: {
-            namespace: 'test-cluster',
-            resource: 'secret',
-            verb: 'get',
-            version: 'v1',
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
         },
     },
 }
 
-const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
-            namespace: 'test-cluster',
-            resource: 'secret',
-            verb: 'create',
-            version: 'v1',
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
         },
     },
     status: {
@@ -105,10 +104,12 @@ describe('add connection page', () => {
         }
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
+        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
