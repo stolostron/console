@@ -132,6 +132,7 @@ describe('add connection page', () => {
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))
