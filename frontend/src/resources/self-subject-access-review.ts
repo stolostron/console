@@ -68,22 +68,21 @@ export async function rbacNamespaceFilter(action: string, namespaces: Array<stri
     })
 
     const promiseResult = createSubjectAccessReviews(resourceList)
-    return promiseResult.promise
-        .then((results) => {
-            results.forEach((result) => {
-                if (result.status === 'fulfilled') {
-                    if (result.value.status?.allowed) {
-                        filteredNamespaces.push(result.value.spec.resourceAttributes.namespace!)
-                    }
+    return promiseResult.promise.then((results) => {
+        results.forEach((result) => {
+            if (result.status === 'fulfilled') {
+                if (result.value.status?.allowed) {
+                    filteredNamespaces.push(result.value.spec.resourceAttributes.namespace!)
                 }
-            })
-            // remove duplicates from filtered list
-            filteredNamespaces = filteredNamespaces.filter((value, index) => {
-                return filteredNamespaces.indexOf(value) === index
-            })
-        
-            return filteredNamespaces
+            }
         })
+        // remove duplicates from filtered list
+        filteredNamespaces = filteredNamespaces.filter((value, index) => {
+            return filteredNamespaces.indexOf(value) === index
+        })
+
+        return filteredNamespaces
+    })
 }
 
 export async function checkAdminAccess() {
