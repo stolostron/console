@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react'
+import React, { Fragment, useContext, useEffect, useState, useCallback } from 'react'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -7,6 +7,9 @@ import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { getHivePod } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useQuery } from '../../../../lib/useQuery'
+import { getLatest } from '../../../../lib/utils'
+import { ClusterProvision, listClusterProvisions } from '../../../../resources/cluster-provision'
 
 const useStyles = makeStyles({
     logsButton: {
@@ -24,25 +27,30 @@ export function HiveNotification() {
     const { t } = useTranslation(['cluster'])
     const classes = useStyles()
 
-    const onClick = () => {
-        const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector('#openshift-console-url')
-        /* istanbul ignore next */
-        const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
-        /* istanbul ignore next */
-        const name = cluster?.name ?? ''
-        /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
-        /* istanbul ignore next */
-        const status = cluster?.status ?? ''
-        /* istanbul ignore else */
-        if (name && namespace) {
-            const response = getHivePod(namespace, name, status)
-            response.then((job) => {
-                const podName = job?.metadata.name
-                podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
-            })
+    const { data, startPolling, stopPolling } = useQuery(
+        useCallback(() => listClusterProvisions(/* istanbul ignore next */ cluster?.namespace ?? ''), [cluster?.namespace])
+    )
+
+    const [clusterProvisionStatus, setClusterProvisionStatus] = useState<string | undefined>()
+    useEffect(() => {
+        if (cluster?.status === ClusterStatus.failed) {
+            startPolling()
+            /* istanbul ignore else */
+            if (data) {
+                const latestProvision = getLatest<ClusterProvision>(data, 'metadata.creationTimestamp')
+                const provisionFailedCondition = latestProvision?.status?.conditions.find(
+                    (c) => c.type === 'ClusterProvisionFailed'
+                )
+                /* istanbul ignore else */
+                if (provisionFailedCondition?.status === 'True') {
+                    setClusterProvisionStatus(provisionFailedCondition.message)
+                }
+            }
+        } else {
+            stopPolling()
+            setClusterProvisionStatus(undefined)
         }
-    }
+    }, [cluster?.status, data, startPolling, stopPolling, clusterProvisionStatus])
 
     const provisionStatuses: string[] = [ClusterStatus.creating, ClusterStatus.destroying, ClusterStatus.failed]
 
@@ -59,7 +67,30 @@ export function HiveNotification() {
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
                         <AcmButton
-                            onClick={onClick}
+                            onClick={() => {
+                                const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector(
+                                    '#openshift-console-url'
+                                )
+                                /* istanbul ignore next */
+                                const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
+                                /* istanbul ignore next */
+                                const name = cluster?.name ?? ''
+                                /* istanbul ignore next */
+                                const namespace = cluster?.namespace ?? ''
+                                /* istanbul ignore next */
+                                const status = cluster?.status ?? ''
+                                /* istanbul ignore else */
+                                if (name && namespace) {
+                                    const response = getHivePod(namespace, name, status)
+                                    response.then((job) => {
+                                        const podName = job?.metadata.name
+                                        podName &&
+                                            window.open(
+                                                `${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`
+                                            )
+                                    })
+                                }
+                            }}
                             variant={ButtonVariant.link}
                             role="link"
                             id="view-logs"
@@ -70,6 +101,7 @@ export function HiveNotification() {
                         </AcmButton>
                     </Fragment>
                 }
+                message={clusterProvisionStatus}
             />
         </div>
     )
