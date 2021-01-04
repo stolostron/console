@@ -15,6 +15,7 @@ import {
 import AddConnectionPage from './AddConnection'
 import { AppContext } from '../../../components/AppContext'
 import { NavigationPath } from '../../../NavigationPath'
+import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
@@ -27,6 +28,37 @@ const mockFeatureGate: FeatureGate = {
     kind: 'FeatureGate',
     metadata: { name: 'open-cluster-management-discovery' },
     spec: { featureSet: 'DiscoveryEnabled' },
+}
+
+const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
+        },
+    },
+}
+
+const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
+        },
+    },
+    status: {
+        allowed: true,
+    },
 }
 
 const mockProjects: Project[] = [mockProject]
@@ -72,10 +104,12 @@ describe('add connection page', () => {
         }
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
+        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
@@ -98,6 +132,7 @@ describe('add connection page', () => {
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))

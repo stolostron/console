@@ -15,11 +15,43 @@ import {
 import AddConnectionPage from './AddConnection'
 import { AppContext } from '../../../components/AppContext'
 import { NavigationPath } from '../../../NavigationPath'
+import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 
 const mockProject: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
     metadata: { name: 'test-namespace' },
+}
+
+const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
+        },
+    },
+}
+
+const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            name: '*',
+            namespace: '*',
+            resource: '*',
+            verb: '*',
+        },
+    },
+    status: {
+        allowed: true,
+    },
 }
 
 const mockFeatureGate: FeatureGate = {
@@ -72,9 +104,11 @@ describe('add connection page', () => {
         }
 
         const projectsNock = nockClusterList(mockProject, mockProjects)
+        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
