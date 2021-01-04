@@ -8,6 +8,6 @@
     "label.add": "Add label",
 
     "request.failed": "Request failed",
-
+    "rbac.title.unauthorized": "Unauthorized",
     "rbac.unauthorized": "You are not authorized to complete this action. See your cluster administrator for role-based access control information."
 }

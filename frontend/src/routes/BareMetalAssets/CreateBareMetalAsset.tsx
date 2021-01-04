@@ -177,7 +177,7 @@ export function EditBareMetalAssetPageData(props: {
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={BMAObjects.projects}
+            projects={BMAObjects.projects.map((project)=>project.metadata.name!)}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
             editBareMetalAsset={BMAObjects.bareMetalAsset}
@@ -188,7 +188,7 @@ export function EditBareMetalAssetPageData(props: {
 
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     const projectsQuery = useQuery(listProjects)
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation(['bma', 'common'])
     const [projects, setProjects] = useState<Project[]>()
     const [filteredProjects, setFilteredProjects] = useState<string[]>()
     const [error, setError] = useState<Error>()
@@ -253,15 +253,16 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
         return (
         <AcmPageCard>
             <AcmEmptyState
-                title={t('createBareMetalAsset.emptyState.Namespaces.title')}
-                message={t('rbac.unauthorized')}
+                title={t('common:rbac.title.unauthorized')}
+                message={t('common:rbac.unauthorized')}
+                showIcon={false}
             />
         </AcmPageCard>)
     }
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={projects}
+            projects={filteredProjects}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
         />
@@ -269,7 +270,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
 }
 
 export function CreateBareMetalAssetPageContent(props: {
-    projects: Project[]
+    projects: string[]
     bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
     editBareMetalAsset?: BareMetalAsset
@@ -377,8 +378,8 @@ export function CreateBareMetalAssetPageContent(props: {
                     isDisabled={isEdit}
                 >
                     {props.projects.map((project) => (
-                        <SelectOption key={project.metadata.name} value={project.metadata.name}>
-                            {project.metadata.name}
+                        <SelectOption key={project} value={project}>
+                            {project}
                         </SelectOption>
                     ))}
                 </AcmSelect>
