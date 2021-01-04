@@ -18,7 +18,19 @@ async function setupBeforeAll(): Promise<void> {
     nock.enableNetConnect('localhost')
 }
 
+let noMatches: string[]
+function setupBeforeEach(): void {
+    noMatches = []
+    nock.emitter.on('no match', (req) => {
+        if (noMatches.length === 0) {
+            noMatches.push('No match for requests')
+        }
+        noMatches.push(`${req.method} ${req.path}`)
+    })
+}
+
 function setupAfterEach(): void {
+    expect(noMatches).toEqual([])
     const error = nock.isDone() ? undefined : `Pending Nocks: ${nock.pendingMocks().join(',')}`
     expect(error).toBeUndefined()
     nock.cleanAll()
@@ -30,6 +42,7 @@ async function setupAfterAll(): Promise<void> {
 }
 
 beforeAll(setupBeforeAll)
+beforeEach(setupBeforeEach)
 afterEach(setupAfterEach)
 afterAll(setupAfterAll)
 
