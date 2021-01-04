@@ -25,7 +25,6 @@ import {
 } from '../../../src/lib/resource-request'
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
-import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
 import { Secret, unpackSecret } from '../../resources/secret'
@@ -187,7 +186,6 @@ export function EditBareMetalAssetPageData(props: {
 }
 
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
-    const projectsQuery = useQuery(listProjects)
     const { t } = useTranslation(['bma', 'common'])
     const [projects, setProjects] = useState<Project[]>()
     const [filteredProjects, setFilteredProjects] = useState<string[]>()

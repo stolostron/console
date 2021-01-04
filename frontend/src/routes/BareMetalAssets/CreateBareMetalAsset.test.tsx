@@ -46,23 +46,6 @@ const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
     },
 }
 
-const mockSelfSubjectAccessResponseTrue: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: 'test-bare-metal-asset-new-namespace',
-            resource: 'secret',
-            verb: 'create',
-            version: 'v1',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
 const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
@@ -198,7 +181,7 @@ describe('bare metal asset creation page', () => {
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
-        const { getByText, getAllByText, getByTestId } = render(
+        const { getByText } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
                     path="/cluster-management/baremetal-assets/create"
