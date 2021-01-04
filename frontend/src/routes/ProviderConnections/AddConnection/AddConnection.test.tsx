@@ -187,7 +187,7 @@ describe('add connection page', () => {
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('common:rbac.unauthorized')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())
     })
     it('should load page and namespace when admin', async () => {
         const projectsNock = nockClusterList(mockProject, [mockProject])
