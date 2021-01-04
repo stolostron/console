@@ -26,14 +26,14 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
 import { mapAddons } from '../../../lib/get-addons'
-import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
+import { createSubjectAccessReviews, rbacMapping, ClustersTableActionsRbac } from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
 const PageActions = () => {
-    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
+    const [clusterCreationRbacRestriction, setclusterCreationRbacRestriction] = useState<boolean>(true)
     const { push } = useHistory()
     const { t } = useTranslation(['cluster', 'common'])
     const { clusterManagementAddons } = useContext(AppContext)
@@ -43,19 +43,21 @@ const PageActions = () => {
         const resourceList = rbacMapping('cluster.create')
         const promiseResult = createSubjectAccessReviews(resourceList)
         let allowed = true
-        promiseResult.promise.catch((err)=>{
-            // send err to console
-            console.error(err)
-        }).then((results)=>{
-            if(results){
-                results.forEach((result)=>{
-                    if(result.status === 'fulfilled'){
-                        allowed = allowed && result.value.status?.allowed!
-                    }
-                })
-            }
-            setAccessRestriction(!allowed)
-        })
+        promiseResult.promise
+            .catch((err) => {
+                // send err to console
+                console.error(err)
+            })
+            .then((results) => {
+                if (results) {
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled') {
+                            allowed = allowed && result.value.status?.allowed!
+                        }
+                    })
+                }
+                setclusterCreationRbacRestriction(!allowed)
+            })
     }, [])
     const dropdownItems = [
         { id: 'create-cluster', text: t('managed.createCluster') },
@@ -86,7 +88,7 @@ const PageActions = () => {
             <AcmDropdown 
                 dropdownItems={dropdownItems}
                 text={t('managed.addCluster')}
-                isDisabled={accessRestriction}
+                isDisabled={clusterCreationRbacRestriction}
                 tooltip={t('common:rbac.unauthorized')}
                 onSelect={onSelect}
                 id='cluster-actions'
@@ -138,12 +140,37 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
+    const defaultTableRbacValues:ClustersTableActionsRbac = {'cluster.edit.labels':false, 'cluster.detach':false, 'cluster.destroy': false, 'cluster.upgrade':false}
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
-
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
+    
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
+    }
+
+    function checkRbacAccess(cluster: Cluster){
+        let currentRbacValues = defaultTableRbacValues
+        Object.keys(defaultTableRbacValues).forEach((action)=>{
+            createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
+            .promise
+            .catch((err)=>console.error(err))
+            .then((results)=>{
+                if(results){
+                    let rbacQueryResults:boolean[] = []
+                    results.forEach((result)=>{
+                        if(result.status === 'fulfilled'){
+                            rbacQueryResults.push(result.value.status?.allowed!)
+                        }
+                    })
+                    if(!rbacQueryResults.includes(false)){
+                        currentRbacValues[action as 'cluster.edit.labels' | 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'] = true
+                    }
+                }
+            })
+        })
+        setTableActionRbacValues(currentRbacValues)
     }
 
     return (
@@ -229,6 +256,7 @@ export function ClustersTable(props: {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
                                     click: (cluster: Cluster) => setEditClusterLabels(cluster),
+                                    isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                 },
                                 {
                                     id: 'launch-cluster',
@@ -241,6 +269,7 @@ export function ClustersTable(props: {
                                     click: (cluster: Cluster) => {
                                         setUpgradeSingleCluster(cluster)
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.upgrade'],
                                 },
                                 {
                                     id: 'search-cluster',
@@ -283,6 +312,7 @@ export function ClustersTable(props: {
                                         })
                                         props.refresh()
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.detach'],
                                 },
                                 {
                                     id: 'destroy-cluster',
@@ -320,6 +350,7 @@ export function ClustersTable(props: {
                                         })
                                         props.refresh()
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.destroy']
                                 },
                             ]
 
@@ -359,6 +390,7 @@ export function ClustersTable(props: {
                                     dropdownItems={actions}
                                     isKebab={true}
                                     isPlain={true}
+                                    onHover={()=>{checkRbacAccess(cluster)}}
                                 />
                             )
                         },
