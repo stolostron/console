@@ -2,6 +2,7 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
+    AcmButton,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -28,6 +29,7 @@ import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
 import { Secret, unpackSecret } from '../../resources/secret'
+import { rbacNamespaceFilter } from '../../resources/self-subject-access-review'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
 const VALID_BMC_ADDR_REGEXP = new RegExp(
@@ -187,11 +189,62 @@ export function EditBareMetalAssetPageData(props: {
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     const projectsQuery = useQuery(listProjects)
     const { t } = useTranslation(['bma'])
-    if (projectsQuery.loading) {
+    const [projects, setProjects] = useState<Project[]>()
+    const [filteredProjects, setFilteredProjects] = useState<string[]>()
+    const [error, setError] = useState<Error>()
+    const [retry, setRetry] = useState(0)
+
+    useEffect(() => {
+        setError(undefined)
+    }, [retry])
+
+    useEffect(() => {
+        const result = listProjects()
+        result.promise
+            .then((projects) => {
+                setProjects(projects)
+            })
+            .catch(setError)
+        return result.abort
+    }, [retry])
+
+    useEffect(() => {
+        if(projects){
+            if (projects.length! > 0) {
+                const namespaces = projects!.map((project) => project.metadata.name!)
+                rbacNamespaceFilter('secret.create', namespaces)
+                    .catch(setError)
+                    .then((result) => {
+                        if (result) {
+                            setFilteredProjects(result)
+                        }
+                    })
+            } else {
+                setFilteredProjects([])
+            }
+        } 
+    }, [projects])
+
+
+    if (error) {
+        return (
+            <ErrorPage
+                error={error}
+                actions={
+                    <AcmButton
+                        onClick={() => {
+                            setRetry(retry + 1)
+                        }}
+                    >
+                        Retry
+                    </AcmButton>
+                }
+            />
+        )
+    }
+    if (!projects || !filteredProjects) {
         return <AcmLoadingPage />
-    } else if (projectsQuery.error) {
-        return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
+    } else if (projects.length === 0) {
         return (
             <AcmPageCard>
                 <AcmEmptyState
@@ -200,11 +253,19 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
                 />
             </AcmPageCard>
         )
+    } else if (projects.length > 0 && filteredProjects.length === 0) { // returns empty state when user cannot create secret in any namespace
+        return (
+        <AcmPageCard>
+            <AcmEmptyState
+                title={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                message={t('rbac.unauthorized')}
+            />
+        </AcmPageCard>)
     }
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={projectsQuery.data}
+            projects={projects}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
         />
