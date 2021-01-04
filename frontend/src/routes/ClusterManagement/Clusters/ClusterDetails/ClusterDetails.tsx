@@ -1,37 +1,38 @@
-import React, { Fragment, Suspense, useEffect, useCallback, useState, useContext } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation, useHistory } from 'react-router-dom'
 import {
+    AcmActionGroup,
+    AcmButton,
+    AcmDropdown,
+    AcmLaunchLink,
+    AcmPage,
     AcmPageHeader,
+    AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
-    AcmPage,
-    AcmButton,
-    AcmActionGroup,
-    AcmLaunchLink,
-    AcmDropdown,
 } from '@open-cluster-management/ui-components'
+import React, { Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavigationPath } from '../../../../NavigationPath'
-import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
-import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
-import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import { useQuery } from '../../../../lib/useQuery'
-import { getSingleCluster, getCluster, Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { mapAddons, Addon } from '../../../../lib/get-addons'
-import { ClusterDeployment } from '../../../../resources/cluster-deployment'
-import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
-import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
-import { ErrorPage } from '../../../../components/ErrorPage'
-import { EditLabelsModal } from '../components/EditLabelsModal'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
-import { deleteCluster } from '../../../../lib/delete-cluster'
-import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
-import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
-import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
 import { UpgradeModal } from '../../../../components/ClusterCommon'
+import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { deleteCluster } from '../../../../lib/delete-cluster'
+import { Addon, mapAddons } from '../../../../lib/get-addons'
+import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
+import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { useQuery } from '../../../../lib/useQuery'
+import { NavigationPath } from '../../../../NavigationPath'
+import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
+import { ClusterDeployment } from '../../../../resources/cluster-deployment'
+import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
+import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
+import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
+import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
+import { EditLabelsModal } from '../components/EditLabelsModal'
+import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
+import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
+import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -358,23 +359,24 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </Fragment>
                     }
                 />
-
-                <Suspense fallback={<Fragment />}>
-                    <Switch>
-                        <Route exact path={NavigationPath.clusterOverview}>
-                            <ClusterOverviewPageContent accessRestriction={accessRestriction} />
-                        </Route>
-                        <Route exact path={NavigationPath.clusterNodes}>
-                            <NodePoolsPageContent />
-                        </Route>
-                        <Route exact path={NavigationPath.clusterSettings}>
-                            <ClustersSettingsPageContent />
-                        </Route>
-                        <Route exact path={NavigationPath.clusterDetails}>
-                            <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
-                        </Route>
-                    </Switch>
-                </Suspense>
+                <AcmScrollable>
+                    <Suspense fallback={<Fragment />}>
+                        <Switch>
+                            <Route exact path={NavigationPath.clusterOverview}>
+                                <ClusterOverviewPageContent accessRestriction={accessRestriction} />
+                            </Route>
+                            <Route exact path={NavigationPath.clusterNodes}>
+                                <NodePoolsPageContent />
+                            </Route>
+                            <Route exact path={NavigationPath.clusterSettings}>
+                                <ClustersSettingsPageContent />
+                            </Route>
+                            <Route exact path={NavigationPath.clusterDetails}>
+                                <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
+                            </Route>
+                        </Switch>
+                    </Suspense>
+                </AcmScrollable>
             </ClusterContext.Provider>
         </AcmPage>
     )
