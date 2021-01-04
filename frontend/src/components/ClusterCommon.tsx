@@ -62,7 +62,7 @@ export function DistributionField(props: { clusterName: string; data: Distributi
     const toggle = () => toggleOpen(!open)
 
     if (!props.data) return <>-</>
-    if (props.data.ocp?.upgradeFailed) {
+    if (props.data.ocp?.upgradeFailed && props.data.ocp?.desiredVersion !== props.data.ocp?.version) {
         return <AcmInlineStatus type={StatusType.danger} status={t(`upgrade.upgradefailed`)} />
     } else if (
         props.data.ocp?.desiredVersion &&
