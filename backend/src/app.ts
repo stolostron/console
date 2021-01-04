@@ -256,7 +256,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 headerUrl = `${acmUrl}${url}`
             } else if (url == '/header') {
                 const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
-                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=mcm-ui&dev=${isDevelopment}`
+                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=console&dev=${isDevelopment}`
             }
 
             const headers = req.headers
