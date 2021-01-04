@@ -257,6 +257,7 @@ export function ClustersTable(props: {
                                     text: t('managed.editLabels'),
                                     click: (cluster: Cluster) => setEditClusterLabels(cluster),
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
+                                    tooltip:t('common:rbac.unauthorized'),
                                 },
                                 {
                                     id: 'launch-cluster',
@@ -270,6 +271,7 @@ export function ClustersTable(props: {
                                         setUpgradeSingleCluster(cluster)
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
+                                    tooltip:t('common:rbac.unauthorized'),
                                 },
                                 {
                                     id: 'search-cluster',
@@ -313,6 +315,7 @@ export function ClustersTable(props: {
                                         props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
+                                    tooltip:t('common:rbac.unauthorized'),
                                 },
                                 {
                                     id: 'destroy-cluster',
@@ -350,7 +353,8 @@ export function ClustersTable(props: {
                                         })
                                         props.refresh()
                                     },
-                                    isDisabled: !tableActionRbacValues['cluster.destroy']
+                                    isDisabled: !tableActionRbacValues['cluster.destroy'],
+                                    tooltip:t('common:rbac.unauthorized'),
                                 },
                             ]
 
