@@ -119,6 +119,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
 
     useEffect(() => {
         setError(undefined)
+        setFilteredProjects(undefined)
     }, [retry])
 
     useEffect(() => {
@@ -199,8 +200,9 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
         return (
             <AcmPageCard>
                 <AcmEmptyState
-                    title={t('addConnection.error.noNamespacesFound')}
-                    message={t('common:rbac.unauthorized')}
+                    title={t('common:rbac.title.unauthorized')}
+                    message={t('common:rbac.namespaces.unauthorized')}
+                    showIcon={false}
                     action={
                         <AcmButton
                             onClick={() => {
