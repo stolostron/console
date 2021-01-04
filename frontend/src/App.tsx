@@ -2,7 +2,8 @@
 
 import '@patternfly/react-core/dist/styles/base.css'
 import React, { lazy } from 'react'
-import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom'
+import { Router, Redirect, Route, Switch } from 'react-router-dom'
+import createBrowserHistory from 'history/createBrowserHistory'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { AppContextContainer } from './components/AppContext'
@@ -16,10 +17,18 @@ const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/Cre
 const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
 const EditBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 
+declare global {
+    interface Window {
+        SHARED_HISTORY: any
+    }
+}
+
+window.SHARED_HISTORY = window.SHARED_HISTORY ?? createBrowserHistory()
+
 export default function App() {
     return (
         <AppContextContainer>
-            <Router>
+            <Router history={window.SHARED_HISTORY}>
                 <Switch>
                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                     <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
