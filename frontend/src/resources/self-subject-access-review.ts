@@ -69,9 +69,6 @@ export async function rbacNamespaceFilter(action: string, namespaces: Array<stri
 
     const promiseResult = createSubjectAccessReviews(resourceList)
     return promiseResult.promise
-        .catch((err) => {
-            console.error(err)
-        })
         .then((results) => {
             if (results) {
                 results.forEach((result) => {
@@ -87,6 +84,9 @@ export async function rbacNamespaceFilter(action: string, namespaces: Array<stri
                 })
             }
             return filteredNamespaces
+        })
+        .catch((err) => {
+            console.error(err)
         })
 }
 
