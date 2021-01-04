@@ -213,12 +213,8 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
             if (projects.length! > 0) {
                 const namespaces = projects!.map((project) => project.metadata.name!)
                 rbacNamespaceFilter('secret.create', namespaces)
+                    .then(setFilteredProjects)
                     .catch(setError)
-                    .then((result) => {
-                        if (result) {
-                            setFilteredProjects(result)
-                        }
-                    })
             } else {
                 setFilteredProjects([])
             }
