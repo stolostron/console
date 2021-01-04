@@ -177,7 +177,7 @@ export function EditBareMetalAssetPageData(props: {
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={BMAObjects.projects.map((project)=>project.metadata.name!)}
+            projects={BMAObjects.projects.map((project) => project.metadata.name!)}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
             editBareMetalAsset={BMAObjects.bareMetalAsset}
@@ -196,6 +196,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
 
     useEffect(() => {
         setError(undefined)
+        setFilteredProjects(undefined)
     }, [retry])
 
     useEffect(() => {
@@ -209,18 +210,15 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     }, [retry])
 
     useEffect(() => {
-        if(projects){
+        if (projects) {
             if (projects.length! > 0) {
                 const namespaces = projects!.map((project) => project.metadata.name!)
-                rbacNamespaceFilter('secret.create', namespaces)
-                    .then(setFilteredProjects)
-                    .catch(setError)
+                rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
             } else {
                 setFilteredProjects([])
             }
-        } 
+        }
     }, [projects])
-
 
     if (error) {
         return (
@@ -246,18 +244,38 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
                 <AcmEmptyState
                     title={t('createBareMetalAsset.emptyState.Namespaces.title')}
                     message={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
                 />
             </AcmPageCard>
         )
-    } else if (projects.length > 0 && filteredProjects.length === 0) { // returns empty state when user cannot create secret in any namespace
+    } else if (projects.length > 0 && filteredProjects.length === 0) {
+        // returns empty state when user cannot create secret in any namespace
         return (
-        <AcmPageCard>
-            <AcmEmptyState
-                title={t('common:rbac.title.unauthorized')}
-                message={t('common:rbac.unauthorized')}
-                showIcon={false}
-            />
-        </AcmPageCard>)
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('common:rbac.title.unauthorized')}
+                    message={t('common:rbac.namespaces.unauthorized')}
+                    showIcon={false}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
+            </AcmPageCard>
+        )
     }
 
     return (
