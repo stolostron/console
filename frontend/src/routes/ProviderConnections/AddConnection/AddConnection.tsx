@@ -132,16 +132,14 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     }, [retry])
 
     useEffect(() => {
-        if(projects){
+        if (projects) {
             if (projects.length! > 0) {
                 const namespaces = projects!.map((project) => project.metadata.name!)
-                rbacNamespaceFilter('secret.create', namespaces)
-                    .then(setFilteredProjects)
-                    .catch(setError)
+                rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
             } else {
                 setFilteredProjects([])
             }
-        } 
+        }
     }, [projects])
 
     useEffect(() => {
@@ -196,7 +194,8 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
                 />
             </AcmPageCard>
         )
-    } else if (projects.length > 0 && filteredProjects.length === 0) { // returns empty state when user cannot create secret in any namespace
+    } else if (projects.length > 0 && filteredProjects.length === 0) {
+        // returns empty state when user cannot create secret in any namespace
         return (
             <AcmPageCard>
                 <AcmEmptyState
