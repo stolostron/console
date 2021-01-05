@@ -78,11 +78,13 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     useEffect(refresh, [refresh])
 
     const startPolling = useCallback(
-        function startPolling() {
-            stopPolling()
-            dataRef.current.polling = 5 * 1000
-            refresh()
-            return stopPolling
+        function startPolling(interval: number = 5 * 1000) {
+            if (process.env.NODE_ENV !== 'test') {
+                stopPolling()
+                dataRef.current.polling = interval
+                refresh()
+                return stopPolling
+            }
         },
         [refresh, stopPolling]
     )

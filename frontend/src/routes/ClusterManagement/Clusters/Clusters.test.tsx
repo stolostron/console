@@ -1,4 +1,4 @@
-import { Matcher, render, SelectorMatcherOptions, waitFor } from '@testing-library/react'
+import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
@@ -24,13 +24,13 @@ import ClustersPage from './Clusters'
 const mockManagedCluster1: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-1' },
     spec: { hubAcceptsClient: true },
 }
 const mockManagedCluster2: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-2' },
     spec: { hubAcceptsClient: true },
 }
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
@@ -40,15 +40,20 @@ function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     )
 }
 
-const mockManagedClusterInfo: ManagedClusterInfo = {
+const mockManagedClusterInfo0: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name', namespace: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
+}
+const mockManagedClusterInfo1: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'managed-cluster-name-2', namespace: 'managed-cluster-name-2' },
 }
 function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
     return nockList(
         { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-        managedClusterInfos ?? [mockManagedClusterInfo],
+        managedClusterInfos ?? [mockManagedClusterInfo0, mockManagedClusterInfo1],
         undefined,
         { managedNamespacesOnly: '' }
     )
@@ -57,7 +62,7 @@ function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[])
 const mockClusterDeployment: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
-    metadata: { name: 'managed-cluster-name', namespace: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
 }
 function nockListClusterDeployments(clusterDeployments?: ClusterDeployment[]) {
     return nockList(mockClusterDeployment, clusterDeployments ?? [mockClusterDeployment], undefined, {
@@ -68,7 +73,7 @@ function nockListClusterDeployments(clusterDeployments?: ClusterDeployment[]) {
 const mockCertifigate: CertificateSigningRequest = {
     apiVersion: CertificateSigningRequestApiVersion,
     kind: CertificateSigningRequestKind,
-    metadata: { name: 'managed-cluster-name', namespace: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
 }
 function nockListCertificateSigningRequests(certificateSigningRequest?: CertificateSigningRequest[]) {
     return nockList(
@@ -81,6 +86,7 @@ function nockListCertificateSigningRequests(certificateSigningRequest?: Certific
 let getByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement
 let queryByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement | null
 let getAllByLabelText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement[]
+let getAllByRole: (role: ByRoleMatcher, options?: ByRoleOptions) => HTMLElement[]
 
 describe('Cluster page', () => {
     beforeEach(async () => {
@@ -96,6 +102,7 @@ describe('Cluster page', () => {
         getByText = renderResult.getByText
         queryByText = renderResult.queryByText
         getAllByLabelText = renderResult.getAllByLabelText
+        getAllByRole = renderResult.getAllByRole
         await waitFor(() => expect(listClusterDeploymentsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
@@ -129,7 +136,7 @@ describe('Cluster page', () => {
         const listCertificateSigningRequestsNock = nockListCertificateSigningRequests([])
         const listClusterDeploymentsNock = nockListClusterDeployments([])
         const listManagedClustersNock = nockListManagedClusters([])
-        userEvent.click(getAllByLabelText('Select row 0')[0]) // select row 0
+        userEvent.click(getAllByRole('checkbox')[1]) // select row 1
         userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
@@ -142,8 +149,7 @@ describe('Cluster page', () => {
     })
 
     it('detaches cluster', async () => {
-        const deleteManagedClusterNock = nockDelete(mockManagedCluster1)
-        const deleteClusterDeploymentNock = nockDelete(mockClusterDeployment)
+        const deleteManagedClusterNock = nockDelete(mockManagedCluster2)
         const listManagedClusterInfosNock = nockListManagedClusterInfos([])
         const listCertificateSigningRequestsNock = nockListCertificateSigningRequests([])
         const listClusterDeploymentsNock = nockListClusterDeployments([])
@@ -152,7 +158,6 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.detached')) // click the delete action
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(deleteClusterDeploymentNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterDeploymentsNock.isDone()).toBeTruthy())
@@ -161,17 +166,15 @@ describe('Cluster page', () => {
     })
 
     it('bulk detaches cluster', async () => {
-        const deleteManagedClusterNock = nockDelete(mockManagedCluster1)
-        const deleteClusterDeploymentNock = nockDelete(mockClusterDeployment)
+        const deleteManagedClusterNock = nockDelete(mockManagedCluster2)
         const listManagedClusterInfosNock = nockListManagedClusterInfos([])
         const listCertificateSigningRequestsNock = nockListCertificateSigningRequests([])
         const listClusterDeploymentsNock = nockListClusterDeployments([])
         const listManagedClustersNock = nockListManagedClusters([])
-        userEvent.click(getAllByLabelText('Select row 1')[1]) // select row 1
-        userEvent.click(getByText('managed.detachSelected')) // click the bulk destroy button
+        userEvent.click(getAllByRole('checkbox')[2]) // select row 2
+        userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
         userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(deleteClusterDeploymentNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterDeploymentsNock.isDone()).toBeTruthy())

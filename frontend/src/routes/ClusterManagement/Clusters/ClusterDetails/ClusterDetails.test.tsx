@@ -1,47 +1,51 @@
-import { render, waitFor, screen, act } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { MemoryRouter, Switch, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { AppContext } from '../../../../components/AppContext'
 import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../../../../resources/managed-cluster-info'
+    mockBadRequestStatus,
+    nockClusterList,
+    nockCreate,
+    nockGet,
+    nockNamespacedList,
+} from '../../../../lib/nock-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import {
+    CertificateSigningRequestApiVersion,
+    CertificateSigningRequestKind,
+    CertificateSigningRequestList,
+    CertificateSigningRequestListApiVersion,
+    CertificateSigningRequestListKind,
+} from '../../../../resources/certificate-signing-requests'
 import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
 } from '../../../../resources/cluster-deployment'
-import {
-    CertificateSigningRequestList,
-    CertificateSigningRequestListApiVersion,
-    CertificateSigningRequestListKind,
-    CertificateSigningRequestApiVersion,
-    CertificateSigningRequestKind,
-} from '../../../../resources/certificate-signing-requests'
-import { PodList, PodApiVersion, PodKind } from '../../../../resources/pod'
+import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
+import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 import {
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
 } from '../../../../resources/managed-cluster-add-on'
 import {
-    nockGet,
-    nockClusterList,
-    nockNamespacedList,
-    mockBadRequestStatus,
-    nockCreate,
-} from '../../../../lib/nock-util'
-import { NavigationPath } from '../../../../NavigationPath'
-import ClusterDetails from './ClusterDetails'
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+} from '../../../../resources/managed-cluster-info'
+import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
 import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
-import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { AppContext } from '../../../../components/AppContext'
+import ClusterDetails from './ClusterDetails'
+
+const clusterName = 'test-cluster'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'test-cluster', namespace: 'test-cluster' },
+    metadata: { name: clusterName, namespace: clusterName },
     status: {
         conditions: [
             {
@@ -111,6 +115,14 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
         ],
     },
 }
+
+const mockManagedCluster: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: clusterName },
+    spec: { hubAcceptsClient: true },
+}
+
 const mockClusterDeployment: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
@@ -122,15 +134,15 @@ const mockClusterDeployment: ClusterDeployment = {
             region: 'us-east-1',
             vendor: 'OpenShift',
         },
-        name: 'test-cluster',
-        namespace: 'test-cluster',
+        name: clusterName,
+        namespace: clusterName,
         resourceVersion: '47731421',
         selfLink: '/apis/hive.openshift.io/v1/namespaces/test-cluster/clusterdeployments/test-cluster',
         uid: 'f8014b27-4756-4c0e-83ea-42833be4bf52',
     },
     spec: {
         baseDomain: 'dev02.test-chesterfield.com',
-        clusterName: 'test-cluster',
+        clusterName: clusterName,
         installed: false,
         platform: {
             aws: {
@@ -186,14 +198,14 @@ const mockHiveProvisionPods: PodList = {
             metadata: {
                 name: 'test-cluster-0-92r2t-provision-wtsph',
                 generateName: 'test-cluster-0-92r2t-provision-',
-                namespace: 'test-cluster',
+                namespace: clusterName,
                 selfLink: '/api/v1/namespaces/test-cluster/pods/test-cluster-0-92r2t-provision-wtsph',
                 uid: '4facb96d-9737-407d-ac32-0b50bf66cc45',
                 resourceVersion: '50084255',
                 labels: {
                     cloud: 'AWS',
                     'controller-uid': 'a399648b-429b-4a96-928e-0396a335c3af',
-                    'hive.openshift.io/cluster-deployment-name': 'test-cluster',
+                    'hive.openshift.io/cluster-deployment-name': clusterName,
                     'hive.openshift.io/cluster-platform': 'aws',
                     'hive.openshift.io/cluster-provision': 'test-cluster-0-92r2t',
                     'hive.openshift.io/cluster-provision-name': 'test-cluster-0-92r2t',
@@ -214,7 +226,7 @@ const mockmanagedClusterAddOn: ManagedClusterAddOn = {
     kind: ManagedClusterAddOnKind,
     metadata: {
         name: 'application-manager',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
 }
@@ -224,7 +236,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     kind: ManagedClusterAddOnKind,
     metadata: {
         name: 'application-manager',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
     status: {
@@ -243,7 +255,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
         },
         addOnConfiguration: {
             crdName: 'klusterletaddonconfig',
-            crName: 'test-cluster',
+            crName: clusterName,
         },
     },
 }
@@ -253,7 +265,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
     kind: 'ManagedClusterAddOn',
     metadata: {
         name: 'work-manager',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
     status: {
@@ -272,7 +284,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
         },
         addOnConfiguration: {
             crdName: 'klusterletaddonconfig',
-            crName: 'test-cluster',
+            crName: clusterName,
         },
     },
 }
@@ -282,7 +294,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
     kind: 'ManagedClusterAddOn',
     metadata: {
         name: 'cert-policy-controller',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
     status: {
@@ -301,7 +313,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
         },
         addOnConfiguration: {
             crdName: 'klusterletaddonconfig',
-            crName: 'test-cluster',
+            crName: clusterName,
         },
     },
 }
@@ -312,7 +324,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
     metadata: {
         uid: '',
         name: 'policy-controller',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
     status: {
@@ -331,7 +343,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
         },
         addOnConfiguration: {
             crdName: 'klusterletaddonconfig',
-            crName: 'test-cluster',
+            crName: clusterName,
         },
     },
 }
@@ -342,7 +354,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     metadata: {
         uid: '',
         name: 'search-collector',
-        namespace: 'test-cluster',
+        namespace: clusterName,
     },
     spec: {},
     status: {
@@ -361,7 +373,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
         },
         addOnConfiguration: {
             crdName: 'klusterletaddonconfig',
-            crName: 'test-cluster',
+            crName: clusterName,
         },
     },
 }
@@ -389,7 +401,7 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            namespace: 'test-cluster',
+            namespace: clusterName,
             resource: 'secret',
             verb: 'get',
             version: 'v1',
@@ -401,16 +413,11 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
+            name: 'application-manager',
             annotations: {
                 'console.open-cluster-management.io/launch-link': '/cma/grafana',
                 'console.open-cluster-management.io/launch-link-text': 'Grafana',
             },
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
-            name: 'application-manager',
-            resourceVersion: '72535245',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/application-manager',
-            uid: '9b3fa615-7bf3-49d0-a7e4-40ea80e157f9',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -424,12 +431,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
             name: 'cert-policy-controller',
-            resourceVersion: '72429629',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/cert-policy-controller',
-            uid: '690d53b8-7b74-4687-8532-86e80ab5b51e',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -443,12 +445,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
             name: 'iam-policy-controller',
-            resourceVersion: '72429630',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/iam-policy-controller',
-            uid: '764be62d-4ee5-40ee-be92-6404dbd8619e',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -462,12 +459,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
             name: 'policy-controller',
-            resourceVersion: '72429631',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/policy-controller',
-            uid: 'c5b2e5f2-df96-4cff-ac07-b6ae61ff0a70',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -481,12 +473,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
             name: 'search-collector',
-            resourceVersion: '72429633',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/search-collector',
-            uid: 'ba1fdc6f-b6ed-4c6d-9d6f-a0f6c7551eeb',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -500,12 +487,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
         kind: 'ClusterManagementAddOn',
         metadata: {
-            creationTimestamp: '2020-12-17T15:57:43Z',
-            generation: 1,
             name: 'work-manager',
-            resourceVersion: '72429634',
-            selfLink: '/apis/addon.open-cluster-management.io/v1alpha1/clustermanagementaddons/work-manager',
-            uid: '4d08adc0-ea0c-4de2-8bf3-640f436ee52d',
         },
         spec: {
             addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
@@ -525,28 +507,93 @@ const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnSearch,
 ]
 
-const nockManagedClusterInfo = () => nockGet(mockManagedClusterInfo, undefined, 200, true)
-const nockClusterDeployment = () => nockGet(mockClusterDeployment)
-const nockCertificateSigningRequestList = () =>
+const mockClusterProvisionList = {
+    apiVersion: 'hive.openshift.io/v1',
+    items: [
+        {
+            apiVersion: 'hive.openshift.io/v1',
+            kind: 'ClusterProvision',
+            metadata: {
+                creationTimestamp: '2021-01-04T18:23:30Z',
+                labels: {
+                    cloud: 'GCP',
+                    'hive.openshift.io/cluster-deployment-name': 'test-cluster',
+                    'hive.openshift.io/cluster-platform': 'gcp',
+                    'hive.openshift.io/cluster-region': 'us-east1',
+                    region: 'us-east1',
+                    vendor: 'OpenShift',
+                },
+                name: 'test-cluster-0-hmd44',
+                namespace: 'test-cluster',
+            },
+            spec: {
+                attempt: 0,
+                clusterDeploymentRef: { name: 'test-cluster' },
+                installLog:
+                    'level=info msg="Credentials loaded from environment variable \\"GOOGLE_CREDENTIALS\\", file \\"/.gcp/osServiceAccount.json\\""\nlevel=fatal msg="failed to fetch Master Machines: failed to load asset \\"Install Config\\": platform.gcp.project: Invalid value: \\"gc-acm-dev-fake\\": invalid project ID"\n',
+            },
+            status: {
+                conditions: [
+                    {
+                        lastProbeTime: '2021-01-04T18:23:30Z',
+                        lastTransitionTime: '2021-01-04T18:23:30Z',
+                        message: 'Install job has been created',
+                        reason: 'JobCreated',
+                        status: 'True',
+                        type: 'ClusterProvisionJobCreated',
+                    },
+                    {
+                        lastProbeTime: '2021-01-04T18:23:37Z',
+                        lastTransitionTime: '2021-01-04T18:23:37Z',
+                        message: 'Invalid GCP project ID',
+                        reason: 'GCPInvalidProjectID',
+                        status: 'True',
+                        type: 'ClusterProvisionFailed',
+                    },
+                ],
+            },
+        },
+    ],
+    kind: 'ClusterProvisionList',
+    metadata: {
+        selfLink: '/apis/hive.openshift.io/v1/namespaces/test-cluster/clusterprovisions',
+    },
+}
+
+const nockGetManagedClusterInfo = () => nockGet(mockManagedClusterInfo, undefined, 200, true)
+const nockGetClusterDeployment = () => nockGet(mockClusterDeployment)
+const nockListCertificateSigningRequests = () =>
     nockClusterList(
         { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
         mockCertificateSigningRequestList,
         ['open-cluster-management.io/cluster-name=test-cluster']
     )
-const nockManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
-const nockHiveProvisionJob = () =>
+const nockGetManagedCluster = () => nockGet(mockManagedCluster)
+const nockListClusterProvision = () =>
     nockNamespacedList(
-        { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: 'test-cluster' } },
+        {
+            apiVersion: ClusterProvisionApiVersion,
+            kind: ClusterProvisionKind,
+            metadata: { namespace: 'test-cluster' },
+        },
+        mockClusterProvisionList
+    )
+
+const nockGetManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
+const nockListHiveProvisionJobs = () =>
+    nockNamespacedList(
+        { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
         mockHiveProvisionPods,
         ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
     )
 
-const nockManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
-const nockClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
-const nockManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
+const nockGetManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
+const nockGetClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
+const nockListManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
+// const nockManagedClusterError = () => nockGet(mockManagedCluster, mockBadRequestStatus, 400)
 
 const Component = () => (
-    <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', 'test-cluster')]}>
+    <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
             <Switch>
                 <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
@@ -555,45 +602,47 @@ const Component = () => (
     </MemoryRouter>
 )
 
-describe('ClusterDetails page', () => {
-    test('renders error state', async () => {
-        const mciScope = nockManagedClusterInfoError()
-        const cdScope = nockClusterDeploymentError()
-        const csrScope = nockCertificateSigningRequestList()
-        const mcaScope = nockManagedClusterAddons()
+describe('ClusterDetails', () => {
+    test('page renders error state', async () => {
+        const mciScope = nockGetManagedClusterInfoError()
+        const cdScope = nockGetClusterDeploymentError()
+        const csrScope = nockListCertificateSigningRequests()
+        const mcaScope = nockGetManagedClusterAddons()
+        const managedClusterNock = nockGetManagedCluster()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await act(async () => {
             await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument(), { timeout: 2000 })
         })
     })
-})
 
-describe('ClusterDetails - overview page', () => {
-    test('renders', async () => {
+    test('overview page renders', async () => {
         window.open = jest.fn()
-        const mciScope = nockManagedClusterInfo()
-        const cdScope = nockClusterDeployment()
-        const csrScope = nockCertificateSigningRequestList()
-        const mcaScope = nockManagedClusterAddons()
-        const hiveScope = nockHiveProvisionJob()
+        const mciScope = nockGetManagedClusterInfo()
+        const cdScope = nockGetClusterDeployment()
+        const csrScope = nockListCertificateSigningRequests()
+        const mcaScope = nockGetManagedClusterAddons()
+        const managedClusterNock = nockGetManagedCluster()
+        const hiveScope = nockListHiveProvisionJobs()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest)
-
+        const listClusterProvisionsNock = nockListClusterProvision()
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(hiveScope.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
+        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
         await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 2000 })
+            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 2000 })
             await waitFor(() => expect(screen.getByText('tab.overview')).toBeInTheDocument())
             await waitFor(() => expect(screen.getByText('table.details')).toBeInTheDocument())
             await waitFor(() => expect(screen.getByText('view.logs')).toBeInTheDocument())
@@ -602,25 +651,27 @@ describe('ClusterDetails - overview page', () => {
             expect(window.open).toHaveBeenCalled()
         })
     })
-})
 
-describe('ClusterDetails - nodes page', () => {
-    test('renders', async () => {
-        const mciScope = nockManagedClusterInfo()
-        const cdScope = nockClusterDeployment()
-        const csrScope = nockCertificateSigningRequestList()
-        const mcaScope = nockManagedClusterAddons()
+    test('nodes page renders', async () => {
+        const mciScope = nockGetManagedClusterInfo()
+        const cdScope = nockGetClusterDeployment()
+        const csrScope = nockListCertificateSigningRequests()
+        const mcaScope = nockGetManagedClusterAddons()
+        const managedClusterNock = nockGetManagedCluster()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const listClusterProvisionsNock = nockListClusterProvision()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
+        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
+            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('tab.nodes')).toBeInTheDocument())
             userEvent.click(screen.getByText('tab.nodes'))
             await waitFor(() =>
@@ -636,25 +687,27 @@ describe('ClusterDetails - nodes page', () => {
             )
         })
     })
-})
 
-describe('ClusterDetails - settings page', () => {
-    test('renders', async () => {
-        const mciScope = nockManagedClusterInfo()
-        const cdScope = nockClusterDeployment()
-        const csrScope = nockCertificateSigningRequestList()
-        const mcaScope = nockManagedClusterAddons()
+    test('settings page renders', async () => {
+        const mciScope = nockGetManagedClusterInfo()
+        const cdScope = nockGetClusterDeployment()
+        const csrScope = nockListCertificateSigningRequests()
+        const mcaScope = nockGetManagedClusterAddons()
+        const managedClusterNock = nockGetManagedCluster()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const listClusterProvisionsNock = nockListClusterProvision()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
+        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
+            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
             userEvent.click(screen.getByText('tab.settings'))
             await waitFor(() =>
@@ -663,18 +716,22 @@ describe('ClusterDetails - settings page', () => {
         })
     })
     test('should show error if the ManagedClusterAddons fail to query', async () => {
-        const mciScope = nockManagedClusterInfo()
-        const cdScope = nockClusterDeployment()
-        const csrScope = nockCertificateSigningRequestList()
-        const mcaScope = nockManagedClusterAddonsError()
+        const mciScope = nockGetManagedClusterInfo()
+        const cdScope = nockGetClusterDeployment()
+        const csrScope = nockListCertificateSigningRequests()
+        const mcaScope = nockListManagedClusterAddonsError()
+        const managedClusterNock = nockGetManagedCluster()
         const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const listClusterProvisionsNock = nockListClusterProvision()
 
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
+        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })

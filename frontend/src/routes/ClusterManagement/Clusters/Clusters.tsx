@@ -108,7 +108,10 @@ let lastData:
 let lastTime: number = 0
 
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(getAllClusters)
+    const { data, startPolling, refresh } = useQuery(
+        getAllClusters,
+        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
+    )
     useEffect(startPolling, [startPolling])
     usePageContext(!!data, PageActions)
 
