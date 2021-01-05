@@ -6,7 +6,12 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
 
-    const dataRef = useRef<{ timeout?: NodeJS.Timeout; polling: number; promise?: Promise<T | T[]> }>({ polling: 0 })
+    const dataRef = useRef<{
+        timeout?: NodeJS.Timeout
+        polling: number
+        promise?: Promise<T | T[]>
+        aborted?: boolean
+    }>({ polling: 0 })
     function stopPolling() {
         dataRef.current.polling = 0
         if (dataRef.current.timeout) {
@@ -28,16 +33,16 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                     setError(undefined)
                 })
                 .catch((err: Error) => {
-                    // TODO check for
                     if (err.name === 'AbortError') {
-                        setError(err)
+                        dataRef.current.aborted = true
                     } else {
                         setError(err)
+                        setLoading(false)
+                        setData(undefined)
                     }
-                    setLoading(false)
-                    setData(undefined)
                 })
                 .finally(() => {
+                    if (dataRef.current.aborted) return
                     dataRef.current.promise = undefined
                     if (dataRef.current.timeout) {
                         clearTimeout(dataRef.current.timeout)
