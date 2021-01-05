@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'

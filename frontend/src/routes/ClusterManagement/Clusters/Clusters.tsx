@@ -185,7 +185,7 @@ export function ClustersTable(props: {
                 open={!!upgradeSingleCluster}
                 clusterName={upgradeSingleCluster?.name || ''}
                 close={() => {
-                    setUpgradeSingleCluster()
+                    setUpgradeSingleCluster(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -294,13 +294,15 @@ export function ClustersTable(props: {
                                                             message: err,
                                                         })
                                                     })
+                                                    .finally(() => {
+                                                        props.refresh()
+                                                    })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                         })
-                                        props.refresh()
                                     },
                                 },
                                 {
@@ -333,13 +335,15 @@ export function ClustersTable(props: {
                                                             message: err,
                                                         })
                                                     })
+                                                    .finally(() => {
+                                                        props.refresh()
+                                                    })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                         })
-                                        props.refresh()
                                     },
                                 },
                             ]
@@ -405,13 +409,6 @@ export function ClustersTable(props: {
                                     const resultErrors: string[] = []
                                     let i = 0
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Destroy error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
                                         .then((results) => {
                                             if (results) {
                                                 results.forEach((result) => {
@@ -434,15 +431,23 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: 'Encountered error: ' + err,
+                                            })
+                                        })
+                                        .finally(() => {
+                                            props.refresh()
+                                        })
 
                                     setConfirm(ClosedConfirmModalProps)
-                                    props.refresh()
                                 },
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                             })
-                            props.refresh()
                         },
                     },
                     {
@@ -491,13 +496,15 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
+                                        .finally(() => {
+                                            props.refresh()
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                             })
-                            props.refresh()
                         },
                     },
                     {
