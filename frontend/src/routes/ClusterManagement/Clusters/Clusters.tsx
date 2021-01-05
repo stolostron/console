@@ -145,15 +145,22 @@ export function ClustersTable(props: {
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
+    const [isOpen, setIsOpen] = useState<boolean>(false)
     
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
 
     function checkRbacAccess(cluster: Cluster){
-        let currentRbacValues = defaultTableRbacValues
+        let currentRbacValues = {...defaultTableRbacValues}
+        if(!cluster.isHive){
+            delete currentRbacValues['cluster.destroy']
+        }
+        if(cluster?.status === ClusterStatus.detached){
+            delete currentRbacValues['cluster.detach']
+        }
         Object.keys(defaultTableRbacValues).forEach((action)=>{
-            createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
+            const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
             .promise
             .catch((err)=>console.error(err))
             .then((results)=>{
@@ -257,7 +264,7 @@ export function ClustersTable(props: {
                                     text: t('managed.editLabels'),
                                     click: (cluster: Cluster) => setEditClusterLabels(cluster),
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
-                                    tooltip:t('common:rbac.unauthorized'),
+                                    tooltip: !tableActionRbacValues['cluster.edit.labels'] ? t('common:rbac.unauthorized'): '',
                                 },
                                 {
                                     id: 'launch-cluster',
@@ -271,7 +278,7 @@ export function ClustersTable(props: {
                                         setUpgradeSingleCluster(cluster)
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
-                                    tooltip:t('common:rbac.unauthorized'),
+                                    tooltip:!tableActionRbacValues['cluster.upgrade'] ? t('common:rbac.unauthorized'): '',
                                 },
                                 {
                                     id: 'search-cluster',
@@ -315,7 +322,7 @@ export function ClustersTable(props: {
                                         props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
-                                    tooltip:t('common:rbac.unauthorized'),
+                                    tooltip:!tableActionRbacValues['cluster.detach'] ? t('common:rbac.unauthorized'): '',
                                 },
                                 {
                                     id: 'destroy-cluster',
@@ -354,7 +361,7 @@ export function ClustersTable(props: {
                                         props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
-                                    tooltip:t('common:rbac.unauthorized'),
+                                    tooltip:!tableActionRbacValues['cluster.destroy'] ? t('common:rbac.unauthorized'): '',
                                 },
                             ]
 
@@ -394,7 +401,10 @@ export function ClustersTable(props: {
                                     dropdownItems={actions}
                                     isKebab={true}
                                     isPlain={true}
-                                    onHover={()=>{checkRbacAccess(cluster)}}
+                                    onToggle={()=>{
+                                        if(!isOpen)checkRbacAccess(cluster)
+                                        setIsOpen(!isOpen)
+                                    }}
                                 />
                             )
                         },

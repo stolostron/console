@@ -36,9 +36,9 @@ export type ResourceAttributes = {
 
 export type ClustersTableActionsRbac = {
     'cluster.edit.labels': boolean
-    'cluster.detach': boolean
-    'cluster.destroy': boolean
-    'cluster.upgrade': boolean
+    'cluster.detach'?: boolean
+    'cluster.destroy'?: boolean
+    'cluster.upgrade'?: boolean
 }
 
 // TODO: Add support for bma and provider connections
