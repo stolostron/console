@@ -35,7 +35,7 @@ jobs:
               - npm run lint
               - npm run check
               - npm test
-              - make sonar/js
+              - sonar-scanner --debug
 
         - stage: fast forward commits to release branch
           if: type = push AND branch =~ /^master$/
