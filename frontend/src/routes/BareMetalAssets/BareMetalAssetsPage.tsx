@@ -1,22 +1,31 @@
-import { AcmButton, AcmEmptyState, AcmPageCard, AcmPageHeader, AcmTable } from '@open-cluster-management/ui-components'
+import {
+    AcmButton,
+    AcmEmptyState,
+    AcmPageCard,
+    AcmPageHeader,
+    AcmScrollable,
+    AcmTable,
+} from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
 import { ErrorPage } from '../../components/ErrorPage'
 import { deleteResources } from '../../lib/delete-resources'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
+import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma'])
     return (
         <Page>
             <AcmPageHeader title={t('bmas')} />
-            <BareMetalAssets />
+            <AcmScrollable>
+                <BareMetalAssets />
+            </AcmScrollable>
         </Page>
     )
 }

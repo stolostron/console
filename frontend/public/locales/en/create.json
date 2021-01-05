@@ -233,7 +233,7 @@
   "tooltip.creation.ocp.choose.aws.infrastructure": "The provider to host the control plane and compute plane machines. Cannot be changed after creation.",
   "tooltip.creation.ocp.choose.gcp.infrastructure": "The provider to host the control plane and compute plane machines. Cannot be changed after creation.",
   "tooltip.creation.ocp.choose.azr.infrastructure": "The provider to host the control plane and compute plane machines. Cannot be changed after creation.",
-  "tooltip.creation.ocp.cluster.network.type": "The pod network provider plug-in to deploy. Only the OpenShiftSDN plug-in is supported on OpenShift Container Platform 4.3. The OVNKubernetes plug-in is available as a Technology Preview on OpenShift Container Platform 4.3.",
+  "tooltip.creation.ocp.cluster.network.type": "The pod network provider plug-in to deploy. Only the OpenShiftSDN plug-in is supported on OpenShift Container Platform 4.3. The OVNKubernetes plug-in is available as a Technology Preview on OpenShift Container Platform 4.3, 4.4 & 4.5. It is generally avaialble on openShift Container Platform 4.6",
   "tooltip.creation.ocp.cluster.vmw.network.type": "The name of the vSphere network to use.",
   "tooltip.creation.ocp.machine.cidr": "A block of IP addresses used by the OpenShift Container Platform hosts.The address block must not overlap any other network block. The default value is 10.0.0.0/16.",
   "tooltip.creation.ocp.cluster.network.host.prefix": "The subnet prefix length to assign to each individual node. For example, if hostPrefix is set to 23, then each node is assigned a /23 subnet out of the given CIDR, allowing for 510 (2^(32 - 23) - 2) pod IP addresses. The default is 23.",
