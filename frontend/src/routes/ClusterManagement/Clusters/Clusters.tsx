@@ -8,7 +8,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmActionGroup,
-    AcmLaunchLink
+    AcmLaunchLink,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -26,7 +26,11 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 import { AppContext } from '../../../components/AppContext'
 import { mapAddons } from '../../../lib/get-addons'
-import { createSubjectAccessReviews, rbacMapping, ClustersTableActionsRbac } from '../../../resources/self-subject-access-review'
+import {
+    createSubjectAccessReviews,
+    rbacMapping,
+    ClustersTableActionsRbac,
+} from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
@@ -39,7 +43,7 @@ const PageActions = () => {
     const { clusterManagementAddons } = useContext(AppContext)
     const addons = mapAddons(clusterManagementAddons)
 
-    useEffect(()=>{
+    useEffect(() => {
         const resourceList = rbacMapping('cluster.create')
         const promiseResult = createSubjectAccessReviews(resourceList)
         let allowed = true
@@ -63,17 +67,17 @@ const PageActions = () => {
         { id: 'create-cluster', text: t('managed.createCluster') },
         { id: 'import-cluster', text: t('managed.importCluster') },
     ]
-    const onSelect = (id:string) => {
-        switch(id) {
+    const onSelect = (id: string) => {
+        switch (id) {
             case 'create-cluster':
                 push(NavigationPath.createCluster)
                 break
             case 'import-cluster':
                 push(NavigationPath.importCluster)
                 break
-        }       
+        }
     }
-    
+
     return (
         <AcmActionGroup>
             <AcmLaunchLink
@@ -85,13 +89,13 @@ const PageActions = () => {
                         href: addon.launchLink?.href ?? '',
                     }))}
             />
-            <AcmDropdown 
+            <AcmDropdown
                 dropdownItems={dropdownItems}
                 text={t('managed.addCluster')}
                 isDisabled={clusterCreationRbacRestriction}
                 tooltip={t('common:rbac.unauthorized')}
                 onSelect={onSelect}
-                id='cluster-actions'
+                id="cluster-actions"
                 isKebab={false}
                 isPrimary={true}
             />
@@ -140,44 +144,57 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const defaultTableRbacValues:ClustersTableActionsRbac = {'cluster.edit.labels':false, 'cluster.detach':false, 'cluster.destroy': false, 'cluster.upgrade':false}
+    const defaultTableRbacValues: ClustersTableActionsRbac = {
+        'cluster.edit.labels': false,
+        'cluster.detach': false,
+        'cluster.destroy': false,
+        'cluster.upgrade': false,
+    }
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
-    
+    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
+
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
 
-    function checkRbacAccess(cluster: Cluster){
-        let currentRbacValues = {...defaultTableRbacValues}
-        if(!cluster.isHive){
+    function abortRbacPromises(){
+        abortRbacCheck?.forEach((abort)=>abort())
+    }
+
+    function checkRbacAccess(cluster: Cluster) {
+        let currentRbacValues = { ...defaultTableRbacValues }
+        let abortArray:Array<Function> = []
+        if (!cluster.isHive) {
             delete currentRbacValues['cluster.destroy']
         }
-        if(cluster?.status === ClusterStatus.detached){
+        if (cluster?.status === ClusterStatus.detached) {
             delete currentRbacValues['cluster.detach']
         }
-        Object.keys(defaultTableRbacValues).forEach((action)=>{
+        Object.keys(currentRbacValues).forEach((action) => {
             const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
-            .promise
-            .catch((err)=>console.error(err))
-            .then((results)=>{
-                if(results){
-                    let rbacQueryResults:boolean[] = []
-                    results.forEach((result)=>{
-                        if(result.status === 'fulfilled'){
-                            rbacQueryResults.push(result.value.status?.allowed!)
+                request.promise.then((results) => {
+                    if (results) {
+                        let rbacQueryResults: boolean[] = []
+                        results.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                rbacQueryResults.push(result.value.status?.allowed!)
+                            }
+                        })
+                        if (!rbacQueryResults.includes(false)) {
+                            setTableActionRbacValues((current) => {
+                                return { ...current, ...{ [action]: true } }
+                            })
                         }
-                    })
-                    if(!rbacQueryResults.includes(false)){
-                        currentRbacValues[action as 'cluster.edit.labels' | 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'] = true
                     }
-                }
-            })
+                })
+                .catch((err) => console.error(err))
+                abortArray.push(request.abort)
         })
-        setTableActionRbacValues(currentRbacValues)
+        setRbacAborts(abortArray)
     }
 
     return (
@@ -264,7 +281,9 @@ export function ClustersTable(props: {
                                     text: t('managed.editLabels'),
                                     click: (cluster: Cluster) => setEditClusterLabels(cluster),
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
-                                    tooltip: !tableActionRbacValues['cluster.edit.labels'] ? t('common:rbac.unauthorized'): '',
+                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'launch-cluster',
@@ -278,7 +297,9 @@ export function ClustersTable(props: {
                                         setUpgradeSingleCluster(cluster)
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
-                                    tooltip:!tableActionRbacValues['cluster.upgrade'] ? t('common:rbac.unauthorized'): '',
+                                    tooltip: !tableActionRbacValues['cluster.upgrade']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'search-cluster',
@@ -295,24 +316,26 @@ export function ClustersTable(props: {
                                             open: true,
                                             confirm: () => {
                                                 alertContext.clearAlerts()
-                                                deleteCluster(cluster?.name!, false).promise.then((results) => {
-                                                    results.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Detach error',
-                                                                message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                            })
-                                                        }
+                                                deleteCluster(cluster?.name!, false)
+                                                    .promise.then((results) => {
+                                                        results.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'Detach error',
+                                                                    message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
+                                                                })
+                                                            }
+                                                        })
                                                     })
-                                                }).catch((err)=>{
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: 'Detach error',
-                                                        message: err,
+                                                    .catch((err) => {
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                        alertContext.addAlert({
+                                                            type: 'danger',
+                                                            title: 'Detach error',
+                                                            message: err,
+                                                        })
                                                     })
-                                                })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
@@ -322,7 +345,9 @@ export function ClustersTable(props: {
                                         props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
-                                    tooltip:!tableActionRbacValues['cluster.detach'] ? t('common:rbac.unauthorized'): '',
+                                    tooltip: !tableActionRbacValues['cluster.detach']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'destroy-cluster',
@@ -334,24 +359,26 @@ export function ClustersTable(props: {
                                             open: true,
                                             confirm: () => {
                                                 alertContext.clearAlerts()
-                                                deleteCluster(cluster.name!, true).promise.then((results) => {
-                                                    results.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Destroy error',
-                                                                message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
-                                                            })
-                                                        }
+                                                deleteCluster(cluster.name!, true)
+                                                    .promise.then((results) => {
+                                                        results.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'Destroy error',
+                                                                    message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
+                                                                })
+                                                            }
+                                                        })
                                                     })
-                                                }).catch((err)=>{
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: 'Destroy error',
-                                                        message: err,
+                                                    .catch((err) => {
+                                                        setConfirm(ClosedConfirmModalProps)
+                                                        alertContext.addAlert({
+                                                            type: 'danger',
+                                                            title: 'Destroy error',
+                                                            message: err,
+                                                        })
                                                     })
-                                                })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
@@ -361,7 +388,9 @@ export function ClustersTable(props: {
                                         props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
-                                    tooltip:!tableActionRbacValues['cluster.destroy'] ? t('common:rbac.unauthorized'): '',
+                                    tooltip: !tableActionRbacValues['cluster.destroy']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                             ]
 
@@ -401,8 +430,9 @@ export function ClustersTable(props: {
                                     dropdownItems={actions}
                                     isKebab={true}
                                     isPlain={true}
-                                    onToggle={()=>{
-                                        if(!isOpen)checkRbacAccess(cluster)
+                                    onToggle={() => {
+                                        if (!isOpen) checkRbacAccess(cluster)
+                                        else abortRbacPromises()
                                         setIsOpen(!isOpen)
                                     }}
                                 />
@@ -425,12 +455,12 @@ export function ClustersTable(props: {
                                 confirm: async () => {
                                     alertContext.clearAlerts()
                                     const clusterNames = clusters.map((cluster) => cluster.name) as Array<string>
-                                    
-                                        const promiseResults = await deleteClusters(clusterNames, true)
-                                        const resultErrors: string[] = []
-                                        let i = 0
-                                        promiseResults.promise
-                                        .catch((err)=>{
+
+                                    const promiseResults = await deleteClusters(clusterNames, true)
+                                    const resultErrors: string[] = []
+                                    let i = 0
+                                    promiseResults.promise
+                                        .catch((err) => {
                                             alertContext.addAlert({
                                                 type: 'danger',
                                                 title: 'Destroy error',
@@ -438,26 +468,28 @@ export function ClustersTable(props: {
                                             })
                                         })
                                         .then((results) => {
-                                            if(results){
+                                            if (results) {
                                                 results.forEach((result) => {
-                                                if (result.status === 'rejected') {
-                                                    resultErrors.push(`Failed to destroy managed cluster. ${result.reason}`)
-                                                } else {
-                                                    result.value.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'Destroy error',
-                                                                message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                    i++
-                                                }
-                                            })
+                                                    if (result.status === 'rejected') {
+                                                        resultErrors.push(
+                                                            `Failed to destroy managed cluster. ${result.reason}`
+                                                        )
+                                                    } else {
+                                                        result.value.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'Destroy error',
+                                                                    message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
+                                                                })
+                                                            }
+                                                        })
+                                                        i++
+                                                    }
+                                                })
                                             }
                                         })
-                                    
+
                                     setConfirm(ClosedConfirmModalProps)
                                     props.refresh()
                                 },
@@ -483,34 +515,37 @@ export function ClustersTable(props: {
                                     ) as Array<string>
                                     const promiseResults = deleteClusters(managedClusterNames, false)
                                     promiseResults.promise
-                                    .catch((err)=>{
-                                        alertContext.addAlert({
-                                            type: 'danger',
-                                            title: 'Detach error',
-                                            message: 'Encountered error: ' + err,
-                                        })
-                                    }).then((results)=>{
-                                        const resultErrors: string[] = []
-                                        let i = 0
-                                        if(results){
-                                            results.forEach((result) => {
-                                                if (result.status === 'rejected') {
-                                                    resultErrors.push(`Failed to detach managed cluster. ${result.reason}`)
-                                                } else {
-                                                    result.value.forEach((result) => {
-                                                        if (result.status === 'rejected') {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: 'detach error',
-                                                                message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
-                                                            })
-                                                        }
-                                                    })
-                                                    i++
-                                                }
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Detach error',
+                                                message: 'Encountered error: ' + err,
                                             })
-                                        }
-                                    })
+                                        })
+                                        .then((results) => {
+                                            const resultErrors: string[] = []
+                                            let i = 0
+                                            if (results) {
+                                                results.forEach((result) => {
+                                                    if (result.status === 'rejected') {
+                                                        resultErrors.push(
+                                                            `Failed to detach managed cluster. ${result.reason}`
+                                                        )
+                                                    } else {
+                                                        result.value.forEach((result) => {
+                                                            if (result.status === 'rejected') {
+                                                                alertContext.addAlert({
+                                                                    type: 'danger',
+                                                                    title: 'detach error',
+                                                                    message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
+                                                                })
+                                                            }
+                                                        })
+                                                        i++
+                                                    }
+                                                })
+                                            }
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
