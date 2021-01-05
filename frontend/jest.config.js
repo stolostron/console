@@ -2,6 +2,7 @@ module.exports = {
     "preset": "ts-jest",
     "testEnvironment": "jsdom",
     "rootDir": "./src",
+    "testResultsProcessor": "jest-sonar-reporter",
     "setupFilesAfterEnv": [
         "<rootDir>/setupTests.ts"
     ],

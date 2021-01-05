@@ -9,6 +9,12 @@ branches:
 before_script:
     - travis_retry timeout 2m make init
 
+addons:
+  sonarcloud:
+    organization: "open-cluster-management"
+    token:
+      secure: "ENCRYPTED_TOKEN"
+
 jobs:
     include:
         - stage: build test lint check push
@@ -31,6 +37,7 @@ jobs:
               - npm run lint
               - npm run check
               - npm test
+              - make sonar/js
 
         - stage: fast forward commits to release branch
           if: type = push AND branch =~ /^master$/
