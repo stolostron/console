@@ -1,15 +1,26 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { IRequestResult } from './resource-request'
 
 export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData?: T[]) {
     const [data, setData] = useState<T[] | undefined>(initialData)
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
-    const [polling, setPolling] = useState(0)
+
+    const dataRef = useRef<{ timeout?: NodeJS.Timeout; polling: number; promise?: Promise<T | T[]> }>({ polling: 0 })
+    function stopPolling() {
+        dataRef.current.polling = 0
+        if (dataRef.current.timeout) {
+            clearTimeout(dataRef.current.timeout)
+            dataRef.current.timeout = undefined
+        }
+    }
+    useEffect(() => stopPolling, [])
 
     const refresh = useCallback(
         function refresh() {
+            if (dataRef.current.promise) return
             const result = restFunc()
+            dataRef.current.promise = result.promise
             result.promise
                 .then((data) => {
                     setData(Array.isArray(data) ? data : [data])
@@ -26,6 +37,19 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                     setLoading(false)
                     setData(undefined)
                 })
+                .finally(() => {
+                    dataRef.current.promise = undefined
+                    if (dataRef.current.timeout) {
+                        clearTimeout(dataRef.current.timeout)
+                        dataRef.current.timeout = undefined
+                    }
+                    if (dataRef.current.polling > 0) {
+                        dataRef.current.timeout = setTimeout(() => {
+                            dataRef.current.timeout = undefined
+                            refresh()
+                        }, dataRef.current.polling)
+                    }
+                })
             return result.abort
         },
         [restFunc]
@@ -33,19 +57,10 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
 
     useEffect(refresh, [refresh])
 
-    useEffect(() => {
-        if (polling > 0) {
-            const interval = setInterval(refresh, polling)
-            return () => clearInterval(interval)
-        }
-    }, [refresh, polling])
-
-    function stopPolling() {
-        setPolling(0)
-    }
-
     function startPolling() {
-        setPolling(5 * 1000)
+        stopPolling()
+        dataRef.current.polling = 5 * 1000
+        refresh()
         return stopPolling
     }
 
