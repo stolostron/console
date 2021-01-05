@@ -271,6 +271,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                         })
+                                        props.refresh()
                                     },
                                 },
                                 {
@@ -289,6 +290,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                         })
+                                        props.refresh()
                                     },
                                 },
                             ]
@@ -354,6 +356,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                             })
+                            props.refresh()
                         },
                     },
                     {
@@ -372,6 +375,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                             })
+                            props.refresh()
                         },
                     },
                     {
