@@ -175,7 +175,7 @@ export const networkingControlData = [
     name: 'creation.ocp.cluster.network.type',
     tooltip: 'tooltip.creation.ocp.cluster.network.type',
     type: 'singleselect',
-    active: 'OVNKubernetes',
+    active: 'OpenShiftSDN',
     available: ['OpenShiftSDN', 'OVNKubernetes'],
     validation: {
       notification: 'creation.ocp.cluster.valid.key',
