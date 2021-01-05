@@ -1,32 +1,32 @@
 import {
+    AcmActionGroup,
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmDropdown,
     AcmEmptyState,
     AcmLabels,
+    AcmLaunchLink,
     AcmPageCard,
     AcmTable,
-    AcmActionGroup,
-    AcmLaunchLink,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { AppContext } from '../../../components/AppContext'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
-import { Cluster, ClusterStatus, ClusterType, getAllClusters, mapClusters } from '../../../lib/get-cluster'
+import { mapAddons } from '../../../lib/get-addons'
+import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
+import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
-import { AppContext } from '../../../components/AppContext'
-import { mapAddons } from '../../../lib/get-addons'
-import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
