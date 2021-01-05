@@ -12,14 +12,14 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
         promise?: Promise<T | T[]>
         aborted?: boolean
     }>({ polling: 0 })
-    function stopPolling() {
+    const stopPolling = useCallback(function stopPolling() {
         dataRef.current.polling = 0
         if (dataRef.current.timeout) {
             clearTimeout(dataRef.current.timeout)
             dataRef.current.timeout = undefined
         }
-    }
-    useEffect(() => stopPolling, [])
+    }, [])
+    useEffect(() => stopPolling, [stopPolling])
 
     const refresh = useCallback(
         function refresh() {
@@ -62,12 +62,15 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
 
     useEffect(refresh, [refresh])
 
-    function startPolling() {
-        stopPolling()
-        dataRef.current.polling = 5 * 1000
-        refresh()
-        return stopPolling
-    }
+    const startPolling = useCallback(
+        function startPolling() {
+            stopPolling()
+            dataRef.current.polling = 5 * 1000
+            refresh()
+            return stopPolling
+        },
+        [refresh, stopPolling]
+    )
 
     return { error, loading, data, startPolling, stopPolling, refresh }
 }
