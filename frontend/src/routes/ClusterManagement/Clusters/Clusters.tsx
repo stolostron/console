@@ -23,6 +23,7 @@ import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
+import { ManagedCluster } from '../../../resources/managed-cluster'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
@@ -107,16 +108,15 @@ let lastData:
 let lastTime: number = 0
 
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(
-        getAllClusters,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
+    const { data, startPolling, refresh } = useQuery(getAllClusters)
     useEffect(startPolling, [startPolling])
     usePageContext(!!data, PageActions)
 
     useEffect(() => {
-        lastData = data
-        lastTime = Date.now()
+        if (process.env.NODE_ENV === 'production') {
+            lastData = data
+            lastTime = Date.now()
+        }
     }, [data])
 
     const items = data?.map((d) => {

@@ -30,8 +30,10 @@ export function BareMetalAssets() {
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
     useEffect(() => {
-        lastData = data
-        lastTime = Date.now()
+        if (process.env.NODE_ENV === 'production') {
+            lastData = data
+            lastTime = Date.now()
+        }
     }, [data])
     useEffect(startPolling, [startPolling])
     if (error) {

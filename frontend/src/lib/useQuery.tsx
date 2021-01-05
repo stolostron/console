@@ -52,13 +52,12 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                         }
                     } else if (err.name === 'AbortError') {
                         dataRef.current.aborted = true
-                    } else {
-                        setError(err)
                     }
+                    setError(err)
                 })
                 .finally(() => {
-                    setLoading(false)
                     if (dataRef.current.aborted) return
+                    setLoading(false)
                     dataRef.current.promise = undefined
                     if (dataRef.current.timeout) {
                         clearTimeout(dataRef.current.timeout)
