@@ -39,7 +39,7 @@ export function BareMetalAssets() {
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
     useEffect(() => {
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV !== 'test') {
             lastData = data
             lastTime = Date.now()
         }
