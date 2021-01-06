@@ -2,7 +2,7 @@ import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, 
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockList, nockClusterList, nockDelete } from '../../../lib/nock-util'
+import { nockList, nockDelete } from '../../../lib/nock-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
@@ -33,10 +33,34 @@ const mockManagedCluster2: ManagedCluster = {
     metadata: { name: 'managed-cluster-name-2' },
     spec: { hubAcceptsClient: true },
 }
+const mockManagedCluster3: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-name-3-no-upgrade' },
+    spec: { hubAcceptsClient: true },
+}
+const mockManagedCluster4: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-name-4-upgrade-available' },
+    spec: { hubAcceptsClient: true },
+}
+const mockManagedCluster5: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-name-5-upgrading' },
+    spec: { hubAcceptsClient: true },
+}
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
-        managedClusters ?? [mockManagedCluster1, mockManagedCluster2]
+        managedClusters ?? [
+            mockManagedCluster1,
+            mockManagedCluster2,
+            mockManagedCluster3,
+            mockManagedCluster4,
+            mockManagedCluster5,
+        ]
     )
 }
 
@@ -50,18 +74,31 @@ const mockManagedClusterInfo1: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'managed-cluster-name-2', namespace: 'managed-cluster-name-2' },
 }
-function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
-    return nockList(
-        { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-        managedClusterInfos ?? [mockManagedClusterInfo0, mockManagedClusterInfo1],
-        undefined,
-        { managedNamespacesOnly: '' }
-    )
-}
-const mockManagedClusterInfoUpgradeAvailable: ManagedClusterInfo = {
+const mockManagedClusterInfo3: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name', namespace: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-3-no-upgrade', namespace: 'managed-cluster-name-3-no-upgrade' },
+    status: {
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: [],
+                desiredVersion: '1.2.3',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
+
+const mockManagedClusterInfo4: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: 'managed-cluster-name-4-upgrade-available',
+        namespace: 'anaged-cluster-name-4-upgrade-available',
+    },
     status: {
         version: '1.17',
         distributionInfo: {
@@ -75,10 +112,10 @@ const mockManagedClusterInfoUpgradeAvailable: ManagedClusterInfo = {
         },
     },
 }
-const mockManagedClusterInfoUpgrading: ManagedClusterInfo = {
+const mockManagedClusterInfo5: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name', namespace: 'managed-cluster-name' },
+    metadata: { name: 'managed-cluster-name-5-upgrading', namespace: 'managed-cluster-name-5-upgrading' },
     status: {
         version: '1.17',
         distributionInfo: {
@@ -91,6 +128,20 @@ const mockManagedClusterInfoUpgrading: ManagedClusterInfo = {
             },
         },
     },
+}
+function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
+    return nockList(
+        { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
+        managedClusterInfos ?? [
+            mockManagedClusterInfo0,
+            mockManagedClusterInfo1,
+            mockManagedClusterInfo3,
+            mockManagedClusterInfo4,
+            mockManagedClusterInfo5,
+        ],
+        undefined,
+        { managedNamespacesOnly: '' }
+    )
 }
 
 const mockClusterDeployment: ClusterDeployment = {
@@ -216,119 +267,36 @@ describe('Cluster page', () => {
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
     })
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
-        const mockManagedClusterInfoList: ManagedClusterInfo[] = [mockManagedClusterInfo]
-
-        nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            mockManagedClusterInfoList,
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        const { getByText, queryAllByText, getAllByLabelText } = render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
-        )
-
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
-        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-        expect(queryAllByText('managed.upgrade').length).toBe(0)
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
+        const name = mockManagedCluster3.metadata.name!
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Actions')[2]) // Click the action button on the 3rd table row
+        expect(queryByText('managed.upgrade')).toBeFalsy()
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
-
     test('overflow menu should hide upgrade option if currently upgrading', async () => {
-        const mockManagedClusterInfoList: ManagedClusterInfo[] = [mockManagedClusterInfoUpgrading]
-
-        nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            mockManagedClusterInfoList,
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        const { getByText, queryAllByText, getAllByLabelText } = render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
-        )
-
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
-        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-        expect(queryAllByText('managed.upgrade').length).toBe(0)
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
+        const name = mockManagedCluster5.metadata.name!
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Actions')[4]) // Click the action button on the 5th table row
+        expect(queryByText('managed.upgrade')).toBeFalsy()
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
     test('overflow menu should allow upgrade if has available upgrade', async () => {
-        const mockManagedClusterInfoList: ManagedClusterInfo[] = [mockManagedClusterInfoUpgradeAvailable]
-
-        nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            mockManagedClusterInfoList,
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        const { getByText, queryAllByText, getAllByLabelText } = render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
-        )
-
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
-        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-        expect(getByText('managed.upgrade'))
-        expect(queryAllByText('managed.upgrade').length).toBeGreaterThan(0)
-        userEvent.click(getByText('managed.upgrade')) // click the delete action
-        expect(getByText('upgrade.title managed-cluster-name')).toBeTruthy()
-        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
+        const name = mockManagedCluster4.metadata.name!
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Actions')[3]) // Click the action button on the 4th table row
+        expect(getByText('managed.upgrade')).toBeTruthy()
+        userEvent.click(getByText('managed.upgrade')) 
+        expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
+        userEvent.click(getByText('cancel')) 
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
     test('batch upgrade support when upgrading single cluster', async () => {
-        const mockManagedClusterInfoList: ManagedClusterInfo[] = [mockManagedClusterInfoUpgradeAvailable]
-
-        nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            mockManagedClusterInfoList,
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        nockClusterList(
-            { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-            mockCerts,
-            ['open-cluster-management.io/cluster-name']
-        )
-        nockList(mockClusterDeployment, [], undefined, { managedNamespacesOnly: '' })
-
-        const { getByText, getAllByLabelText } = render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
-        )
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
-
-        userEvent.click(getAllByLabelText('Select row 0')[0]) // Click the action button on the first table row
-        userEvent.click(getByText('managed.upgradeSelected')) // click the delete action
-        expect(getByText('upgrade.title managed-cluster-name')).toBeTruthy()
-        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(getByText(mockManagedCluster.metadata.name!)).toBeInTheDocument())
+        const name = mockManagedCluster4.metadata.name!
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Select row 3')[0]) 
+        userEvent.click(getByText('managed.upgradeSelected')) 
+        expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
+        userEvent.click(getByText('cancel')) 
+        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
 })
