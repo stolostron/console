@@ -649,6 +649,13 @@ describe('ClusterDetails', () => {
             userEvent.click(screen.getByText('view.logs'))
             await new Promise((resolve) => setTimeout(resolve, 500))
             expect(window.open).toHaveBeenCalled()
+
+            // open edit labels modal
+            expect(screen.getByLabelText('common:labels.edit.title')).toBeInTheDocument()
+            userEvent.click(screen.getByLabelText('common:labels.edit.title'))
+            await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+            userEvent.click(screen.getByText('common:cancel'))
+            await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
         })
     })
 
