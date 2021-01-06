@@ -79,7 +79,7 @@ describe('DownloadConfigurationDropdown', () => {
     test('renders', () => {
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown accessRestriction={false}/>
+                <DownloadConfigurationDropdown accessRestriction={false} />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('download-configuration')).toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('DownloadConfigurationDropdown', () => {
         // nockGet(mockInstallConfig)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown accessRestriction={false}/>
+                <DownloadConfigurationDropdown accessRestriction={false} />
             </ClusterContext.Provider>
         )
         userEvent.click(screen.getByTestId('download-configuration'))
@@ -102,7 +102,7 @@ describe('DownloadConfigurationDropdown', () => {
         // nockGet(mockKubeconfig)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown accessRestriction={false}/>
+                <DownloadConfigurationDropdown accessRestriction={false} />
             </ClusterContext.Provider>
         )
         userEvent.click(screen.getByTestId('download-configuration'))
@@ -115,7 +115,7 @@ describe('DownloadConfigurationDropdown', () => {
     test('renders null when secrets are not available', () => {
         render(
             <ClusterContext.Provider value={{ cluster: undefined, addons: undefined }}>
-                <DownloadConfigurationDropdown accessRestriction={true}/>
+                <DownloadConfigurationDropdown accessRestriction={true} />
             </ClusterContext.Provider>
         )
         expect(screen.queryByTestId('download-configuration')).toBeNull()

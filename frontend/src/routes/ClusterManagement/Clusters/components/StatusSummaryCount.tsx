@@ -8,7 +8,7 @@ import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 
-const buildSearchLink = (filters: Record<string, string>, relatedKind?: string)  => {
+const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
     Object.keys(filters).forEach((key) => (query += `${query ? '%20' : ''}${key}:${filters[key]}`))
     return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
@@ -55,7 +55,7 @@ export function StatusSummaryCount() {
         return (
             <div style={{ marginTop: '24px' }}>
                 <AcmCountCardSection
-                    id='summary-status'
+                    id="summary-status"
                     title={t('summary.status')}
                     cards={[
                         {
@@ -63,7 +63,12 @@ export function StatusSummaryCount() {
                             count: nodeCount,
                             countClick: () => push(NavigationPath.clusterNodes.replace(':id', clusterName)),
                             title: t('summary.nodes'),
-                            description: <Trans i18nKey="cluster:summary.nodes.inactive" values={{ number: inactiveNodeCount }} />,
+                            description: (
+                                <Trans
+                                    i18nKey="cluster:summary.nodes.inactive"
+                                    values={{ number: inactiveNodeCount }}
+                                />
+                            ),
                         },
                         {
                             id: 'applications',

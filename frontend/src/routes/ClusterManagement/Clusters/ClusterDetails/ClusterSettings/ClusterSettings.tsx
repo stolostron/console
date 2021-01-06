@@ -10,10 +10,7 @@ export function ClustersSettingsPageContent() {
     return <ClusterSettingsTable addons={addons} addonsError={addonsError} />
 }
 
-export function ClusterSettingsTable(props: {
-    addons: Addon[] | undefined
-    addonsError: Error | undefined
-}) {
+export function ClusterSettingsTable(props: { addons: Addon[] | undefined; addonsError: Error | undefined }) {
     const { t } = useTranslation(['cluster'])
 
     if (props.addonsError) {
@@ -36,20 +33,20 @@ export function ClusterSettingsTable(props: {
                         header: t('table.status'),
                         cell: (item: Addon) => {
                             let type
-                            switch(item.status) {
-                            case AddonStatus.Available:
-                                type = StatusType.healthy
-                                break
-                            case AddonStatus.Degraded:
-                                type = StatusType.danger
-                                break
-                            case AddonStatus.Progressing:
-                                type = StatusType.progress
-                                break
-                            case AddonStatus.Disabled:
-                            case AddonStatus.Unknown:
-                            default:
-                                type = StatusType.unknown
+                            switch (item.status) {
+                                case AddonStatus.Available:
+                                    type = StatusType.healthy
+                                    break
+                                case AddonStatus.Degraded:
+                                    type = StatusType.danger
+                                    break
+                                case AddonStatus.Progressing:
+                                    type = StatusType.progress
+                                    break
+                                case AddonStatus.Disabled:
+                                case AddonStatus.Unknown:
+                                default:
+                                    type = StatusType.unknown
                             }
                             return <AcmInlineStatus type={type} status={item.status} />
                         },
@@ -57,7 +54,7 @@ export function ClusterSettingsTable(props: {
                     },
                     {
                         header: t('table.message'),
-                        cell: 'message'
+                        cell: 'message',
                     },
                 ]}
                 keyFn={(addon: Addon) => addon.name}
