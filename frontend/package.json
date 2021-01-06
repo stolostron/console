@@ -57,8 +57,8 @@
         "test:watch": "react-app-rewired test",
         "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
         "lint:fix": "eslint src --ext .ts,.tsx --fix",
-        "check": "prettier --check src/**/*.tsx src/**/*.ts",
-        "check:fix": "prettier --write src/**/*.tsx src/**/*.ts",
+        "check": "prettier --check src",
+        "check:fix": "prettier --write src",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u && npm install && npm audit fix && npm dedup && npm test && npm run lint && npm run check",
         "clean": "rm -rf coverage build"
     },

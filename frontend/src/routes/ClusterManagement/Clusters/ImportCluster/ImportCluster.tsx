@@ -9,7 +9,7 @@ import {
     AcmPageHeader,
     AcmSelect,
     AcmTextInput,
-    AcmSubmit
+    AcmSubmit,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -31,7 +31,10 @@ export default function ImportClusterPage() {
         <AcmPage>
             <AcmPageHeader
                 title={t('page.header.import-cluster')}
-                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('page.header.import-cluster'), to: '' }]}
+                breadcrumb={[
+                    { text: t('clusters'), to: NavigationPath.clusters },
+                    { text: t('page.header.import-cluster'), to: '' },
+                ]}
             />
             <ImportClusterPageContent />
         </AcmPage>
@@ -76,7 +79,7 @@ export function ImportClusterPageContent() {
             try {
                 try {
                     createdResources.push(await createProject(clusterName).promise)
-                } catch(err) {
+                } catch (err) {
                     const resourceError = err as ResourceError
                     if (resourceError.code !== ResourceErrorCode.Conflict) {
                         throw err
@@ -169,16 +172,21 @@ export function ImportClusterPageContent() {
                         />
                     )}
                     <ActionGroup>
-                        <AcmSubmit id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit} label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')} processingLabel={t('import.generating')} />  
+                        <AcmSubmit
+                            id="submit"
+                            variant="primary"
+                            isDisabled={!clusterName || submitted}
+                            onClick={onSubmit}
+                            label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')}
+                            processingLabel={t('import.generating')}
+                        />
                         {submitted && !error ? (
                             <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
                                 {t('import.importmode.importsaved')}
                             </Label>
                         ) : (
                             <Link to={NavigationPath.clusters} id="cancel">
-                                <Button variant="link">
-                                    {t('common:cancel')}
-                                </Button>
+                                <Button variant="link">{t('common:cancel')}</Button>
                             </Link>
                         )}
                     </ActionGroup>
@@ -197,7 +205,9 @@ export function ImportClusterPageContent() {
                                                     : NavigationPath.importCluster
                                             }
                                         >
-                                            <Button variant="secondary" onClick={() => onReset()}>{t('import.footer.importanother')}</Button>
+                                            <Button variant="secondary" onClick={() => onReset()}>
+                                                {t('import.footer.importanother')}
+                                            </Button>
                                         </Link>
                                     </ActionGroup>
                                 )}

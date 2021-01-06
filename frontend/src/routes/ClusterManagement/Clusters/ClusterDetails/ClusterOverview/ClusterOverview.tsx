@@ -11,9 +11,7 @@ import { ImportCommandContainer } from '../../../Clusters/components/ImportComma
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 
-export function ClusterOverviewPageContent(props:{
-    accessRestriction?: boolean
-}) {
+export function ClusterOverviewPageContent(props: { accessRestriction?: boolean }) {
     const { cluster, setEditModalOpen } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster'])
     return (
@@ -28,7 +26,7 @@ export function ClusterOverviewPageContent(props:{
                     {
                         key: t('table.distribution'),
                         value: cluster?.distribution?.displayVersion && (
-                            <DistributionField data={cluster?.distribution} clusterName={cluster?.name || ''}/>
+                            <DistributionField data={cluster?.distribution} clusterName={cluster?.name || ''} />
                         ),
                     },
                     {
@@ -55,7 +53,10 @@ export function ClusterOverviewPageContent(props:{
                             </a>
                         ),
                     },
-                    { key: t('table.credentials'), value: <LoginCredentials accessRestriction={props.accessRestriction} /> },
+                    {
+                        key: t('table.credentials'),
+                        value: <LoginCredentials accessRestriction={props.accessRestriction} />,
+                    },
                 ]}
             />
             {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}

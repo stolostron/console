@@ -5,10 +5,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
 
-export function DownloadConfigurationDropdown(props:{
-        accessRestriction:boolean
-    }
-) {
+export function DownloadConfigurationDropdown(props: { accessRestriction: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
 
@@ -16,7 +13,7 @@ export function DownloadConfigurationDropdown(props:{
         /* istanbul ignore next */
         const map: { [key: string]: string } = {
             'install-config.yaml': cluster?.hiveSecrets?.installConfig ?? '',
-            'kubeconfig': cluster?.hiveSecrets?.kubeconfig ?? ''
+            kubeconfig: cluster?.hiveSecrets?.kubeconfig ?? '',
         }
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
@@ -28,7 +25,7 @@ export function DownloadConfigurationDropdown(props:{
             /* istanbul ignore next */
             const yaml = stringData?.[`${id}`] ?? ''
             createDownloadFile(`${clusterName}-${id}.yaml`, yaml)
-        } catch(err) {
+        } catch (err) {
             console.error(err)
         }
     }
@@ -36,12 +33,19 @@ export function DownloadConfigurationDropdown(props:{
     if (cluster?.hiveSecrets) {
         const dropdownItems = [
             { id: 'install-config.yaml', text: 'install-config' },
-            { id: 'kubeconfig', text: 'kubeconfig' }
+            { id: 'kubeconfig', text: 'kubeconfig' },
         ]
         return (
-            <AcmDropdown isPlain={true} isDisabled={props.accessRestriction} tooltip={props.accessRestriction ? t('common:rbac.unauthorized') : undefined} dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
+            <AcmDropdown
+                isPlain={true}
+                isDisabled={props.accessRestriction}
+                tooltip={props.accessRestriction ? t('common:rbac.unauthorized') : undefined}
+                dropdownItems={dropdownItems}
+                onSelect={(id: string) => downloadConfig(id)}
+                text={t('configuration.download')}
+                id="download-configuration"
+            />
         )
-
     } else {
         return null
     }

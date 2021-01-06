@@ -28,7 +28,9 @@ export function HiveNotification() {
     const classes = useStyles()
 
     const { data, startPolling, stopPolling } = useQuery(
-        useCallback(() => listClusterProvisions(/* istanbul ignore next */ cluster?.namespace ?? ''), [cluster?.namespace])
+        useCallback(() => listClusterProvisions(/* istanbul ignore next */ cluster?.namespace ?? ''), [
+            cluster?.namespace,
+        ])
     )
 
     const [clusterProvisionStatus, setClusterProvisionStatus] = useState<string | undefined>()

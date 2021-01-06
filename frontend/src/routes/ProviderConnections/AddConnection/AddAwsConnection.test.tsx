@@ -67,7 +67,12 @@ let location: Location
 
 function TestAddConnectionPage() {
     return (
-        <AppContext.Provider value={{ featureGates: { 'open-cluster-management-discovery': mockFeatureGate }, clusterManagementAddons: [] }}>
+        <AppContext.Provider
+            value={{
+                featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
+                clusterManagementAddons: [],
+            }}
+        >
             <MemoryRouter>
                 <Route
                     render={(props: any) => {
