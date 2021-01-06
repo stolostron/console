@@ -30,8 +30,20 @@ export default function BareMetalAssetsPage() {
     )
 }
 
+let lastData: BareMetalAsset[] | undefined
+let lastTime: number = 0
+
 export function BareMetalAssets() {
-    const { data, error, startPolling } = useQuery(listBareMetalAssets)
+    const { data, error, startPolling } = useQuery(
+        listBareMetalAssets,
+        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
+    )
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'production') {
+            lastData = data
+            lastTime = Date.now()
+        }
+    }, [data])
     useEffect(startPolling, [startPolling])
     if (error) {
         return <ErrorPage error={error} />

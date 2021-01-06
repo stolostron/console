@@ -48,8 +48,20 @@ const AddConnectionBtn = () => {
     )
 }
 
+let lastData: ProviderConnection[] | undefined
+let lastTime: number = 0
+
 export function ProviderConnectionsPageContent() {
-    const { error, data, startPolling, refresh } = useQuery(listProviderConnections)
+    const { error, data, startPolling, refresh } = useQuery(
+        listProviderConnections,
+        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
+    )
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'production') {
+            lastData = data
+            lastTime = Date.now()
+        }
+    }, [data])
     useEffect(startPolling, [startPolling])
     usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
     if (error) return <ErrorState error={error} />

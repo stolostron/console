@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
@@ -46,29 +48,19 @@ export function nockOptions<Resource extends IResource>(
 }
 
 export function nockList<Resource extends IResource>(
-    resource: {
-        apiVersion: string
-        kind: string
-    },
+    resource: { apiVersion: string; kind: string },
     resources: Resource[] | IResource,
     labels?: string[],
     query?: object
 ) {
     let nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({
-            apiVersion: resource.apiVersion,
-            kind: resource.kind,
-        })
+        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
     )
 
     if (labels) {
-        nockScope = nockScope.query({
-            labelSelector: encodeURIComponent(labels.join(',')),
-        })
+        nockScope = nockScope.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     } else if (query) {
-        nockScope = nockScope.query({
-            ...query,
-        })
+        nockScope = nockScope.query({ ...query })
     }
 
     if (Array.isArray(resources)) {
