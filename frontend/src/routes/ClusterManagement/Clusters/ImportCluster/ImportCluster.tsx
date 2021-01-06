@@ -9,7 +9,8 @@ import {
     AcmPageHeader,
     AcmSelect,
     AcmTextInput,
-    AcmSubmit
+    AcmSubmit,
+    AcmButton
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -24,6 +25,7 @@ import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
+import { useHistory } from 'react-router-dom'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -40,6 +42,7 @@ export default function ImportClusterPage() {
 
 export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
+    const history = useHistory()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
@@ -190,15 +193,9 @@ export function ImportClusterPageContent() {
                                         <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
                                             <Button variant="primary">{t('import.footer.viewcluster')}</Button>
                                         </Link>
-                                        <Link
-                                            to={
-                                                sessionStorage.getItem('DiscoveredClusterConsoleURL')
-                                                    ? NavigationPath.discoveredClusters
-                                                    : NavigationPath.importCluster
-                                            }
-                                        >
-                                            <Button variant="secondary" onClick={() => onReset()}>{t('import.footer.importanother')}</Button>
-                                        </Link>
+                                        <AcmButton variant="secondary" component="a" onClick={() => {
+                                            sessionStorage.getItem('DiscoveredClusterConsoleURL') ? history.push(NavigationPath.discoveredClusters) : onReset()
+                                        }}>{t('import.footer.importanother')}</AcmButton>
                                     </ActionGroup>
                                 )}
                             </ImportCommand>
