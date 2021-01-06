@@ -38,6 +38,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
         }
 
+        if (process.env.DELAY) {
+            await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+        }
+
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
             const token = getToken(req)
