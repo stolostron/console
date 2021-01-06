@@ -39,7 +39,7 @@ export function DownloadConfigurationDropdown(props: { accessRestriction: boolea
             <AcmDropdown
                 isPlain={true}
                 isDisabled={props.accessRestriction}
-                tooltip={props.accessRestriction ? t('common:rbac.unauthorized') : undefined}
+                tooltip={/* istanbul ignore next */ props.accessRestriction ? t('common:rbac.unauthorized') : undefined}
                 dropdownItems={dropdownItems}
                 onSelect={(id: string) => downloadConfig(id)}
                 text={t('configuration.download')}
