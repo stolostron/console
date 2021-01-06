@@ -285,18 +285,18 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[3]) // Click the action button on the 4th table row
         expect(getByText('managed.upgrade')).toBeTruthy()
-        userEvent.click(getByText('managed.upgrade')) 
+        userEvent.click(getByText('managed.upgrade'))
         expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
-        userEvent.click(getByText('cancel')) 
+        userEvent.click(getByText('cancel'))
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
     test('batch upgrade support when upgrading single cluster', async () => {
         const name = mockManagedCluster4.metadata.name!
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
-        userEvent.click(getAllByLabelText('Select row 3')[0]) 
-        userEvent.click(getByText('managed.upgradeSelected')) 
+        userEvent.click(getAllByLabelText('Select row 3')[0])
+        userEvent.click(getByText('managed.upgradeSelected'))
         expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
-        userEvent.click(getByText('cancel')) 
+        userEvent.click(getByText('cancel'))
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
 })
