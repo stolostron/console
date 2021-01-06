@@ -36,7 +36,15 @@ export function DownloadConfigurationDropdown(props: { accessRestriction: boolea
             { id: 'kubeconfig', text: 'kubeconfig' },
         ]
         return (
-            <AcmDropdown isPlain={true} isDisabled={props.accessRestriction} tooltip={/* istanbul ignore next */ props.accessRestriction ? t('common:rbac.unauthorized') : undefined} dropdownItems={dropdownItems} onSelect={(id: string) => downloadConfig(id)} text={t('configuration.download')} id='download-configuration' />
+            <AcmDropdown
+                isPlain={true}
+                isDisabled={props.accessRestriction}
+                tooltip={/* istanbul ignore next */ props.accessRestriction ? t('common:rbac.unauthorized') : undefined}
+                dropdownItems={dropdownItems}
+                onSelect={(id: string) => downloadConfig(id)}
+                text={t('configuration.download')}
+                id="download-configuration"
+            />
         )
     } else {
         return null

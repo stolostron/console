@@ -10,7 +10,7 @@ import {
     AcmSelect,
     AcmTextInput,
     AcmSubmit,
-    AcmButton
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -201,9 +201,17 @@ export function ImportClusterPageContent() {
                                         <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
                                             <Button variant="primary">{t('import.footer.viewcluster')}</Button>
                                         </Link>
-                                        <AcmButton variant="secondary" component="a" onClick={() => {
-                                            sessionStorage.getItem('DiscoveredClusterConsoleURL') ? history.push(NavigationPath.discoveredClusters) : onReset()
-                                        }}>{t('import.footer.importanother')}</AcmButton>
+                                        <AcmButton
+                                            variant="secondary"
+                                            component="a"
+                                            onClick={() => {
+                                                sessionStorage.getItem('DiscoveredClusterConsoleURL')
+                                                    ? history.push(NavigationPath.discoveredClusters)
+                                                    : onReset()
+                                            }}
+                                        >
+                                            {t('import.footer.importanother')}
+                                        </AcmButton>
                                     </ActionGroup>
                                 )}
                             </ImportCommand>

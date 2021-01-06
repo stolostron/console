@@ -8,7 +8,7 @@ import { nockGet, mockBadRequestStatus } from '../../../../lib/nock-util'
 import { createDownloadFile } from '../../../../lib/utils'
 
 jest.mock('../../../../lib/utils', () => ({
-    createDownloadFile: jest.fn()
+    createDownloadFile: jest.fn(),
 }))
 
 const mockCluster: Cluster = {

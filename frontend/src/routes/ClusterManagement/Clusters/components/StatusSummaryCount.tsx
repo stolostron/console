@@ -41,7 +41,10 @@ export function StatusSummaryCount() {
                         countClick: () => push(NavigationPath.clusterNodes.replace(':id', clusterName)),
                         title: t('summary.nodes'),
                         description: (
-                            <Trans i18nKey="cluster:summary.nodes.inactive" values={{ number: /* istanbul ignore next */ cluster?.nodes?.inactive }} />
+                            <Trans
+                                i18nKey="cluster:summary.nodes.inactive"
+                                values={{ number: /* istanbul ignore next */ cluster?.nodes?.inactive }}
+                            />
                         ),
                     },
                     {
