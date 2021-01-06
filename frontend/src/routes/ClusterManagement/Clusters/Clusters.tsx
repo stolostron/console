@@ -48,10 +48,6 @@ const PageActions = () => {
         const promiseResult = createSubjectAccessReviews(resourceList)
         let allowed = true
         promiseResult.promise
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
             .then((results) => {
                 if (results) {
                     results.forEach((result) => {
@@ -61,6 +57,10 @@ const PageActions = () => {
                     })
                 }
                 setclusterCreationRbacRestriction(!allowed)
+            })
+            .catch((err) => {
+                // send err to console
+                console.error(err)
             })
     }, [])
     const dropdownItems = [
