@@ -158,7 +158,7 @@ describe('StatusSummaryCount', () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(<Component />)
         await act(async () => {
-            await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
+            await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
