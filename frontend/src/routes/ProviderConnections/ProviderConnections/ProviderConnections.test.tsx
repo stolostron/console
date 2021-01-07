@@ -179,11 +179,11 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
-        expect(queryAllByText('modal.delete.title.batch')).toHaveLength(0)
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
         userEvent.click(getByText('delete.batch')) // click the delete action
-        expect(queryAllByText('modal.delete.title.batch')).toHaveLength(1)
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(1)
         userEvent.click(getByText('cancel')) // click confirm on the delete dialog
-        expect(queryAllByText('modal.delete.title.batch')).toHaveLength(0)
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
     })
 
     test('should show error if the connections fail to query', async () => {
