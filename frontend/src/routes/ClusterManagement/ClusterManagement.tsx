@@ -44,6 +44,7 @@ export default function ClusterManagementPage() {
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'connection', 'bma'])
     const { featureGates } = useContext(AppContext)
+
     return (
         <Page>
             <PageContext.Provider value={{ actions, setActions }}>
