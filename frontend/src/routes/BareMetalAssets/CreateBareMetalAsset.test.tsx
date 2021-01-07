@@ -4,10 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
 import CreateBareMetalAssetPage, { EditBareMetalAssetPageData } from './CreateBareMetalAsset'
-import { nockList, nockClusterList, nockGet, nockPatch, nockOptions } from '../../lib/nock-util'
+import { nockList, nockClusterList, nockGet, nockPatch, nockOptions, nockCreate } from '../../lib/nock-util'
 import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 import { Secret } from '../../resources/secret'
+import { SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
 
 const testProject: Project = {
     apiVersion: 'project.openshift.io/v1',
@@ -92,6 +93,34 @@ const bmaPatchedSecret: Secret = {
     },
 }
 
+const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+}
+const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+    status: {
+        allowed: true,
+    },
+}
+
 const mockBareMetalAssets = [bareMetalAsset]
 const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
 const bmaProjects = [testProject]
@@ -100,6 +129,7 @@ describe('bare metal asset page', () => {
     test('can create asset', async () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
+        const clusterNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
 
         const { getByText, getAllByText, getByTestId } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
@@ -111,6 +141,7 @@ describe('bare metal asset page', () => {
             </MemoryRouter>
         )
 
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(getByTestId('bareMetalAssetName'))) // expect asset name form to exist in doc
