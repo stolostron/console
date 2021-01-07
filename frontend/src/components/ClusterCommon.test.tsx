@@ -83,11 +83,10 @@ describe('DistributionField', () => {
     })
 
     it('should show failed when failed upgrade', () => {
-        const { getAllByText, container } = render(
+        const { getAllByText } = render(
             <DistributionField clusterName="clusterName" data={mockDistributionInfoFailedUpgrade} />
         )
         expect(getAllByText('upgrade.upgradefailed')).toBeTruthy()
-        expect(container.querySelectorAll('.inline-status-danger').length).toBeGreaterThan(0)
     })
     it('should not show failed when there is no upgrade running', () => {
         const { queryAllByText, getAllByText } = render(
