@@ -10,7 +10,7 @@ i18n.use(initReactI18next)
     .use(HttpApi)
     .init({
         backend: {
-            loadPath: '/console/locales/{{lng}}/{{ns}}.json',
+            loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
         },
 
         keySeparator: false, // this repo will use single level json
