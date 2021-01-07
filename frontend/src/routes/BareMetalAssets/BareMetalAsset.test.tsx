@@ -51,8 +51,8 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         userEvent.click(getByLabelText('Select all rows')) // Click the action button on the first table row
         userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset')) // click the delete action
-        expect(getByText('Confirm')).toBeInTheDocument()
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        expect(getByText('confirm')).toBeInTheDocument()
+        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })
@@ -72,8 +72,8 @@ describe('bare metal asset page', () => {
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
         userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset'))
-        expect(getByText('Confirm')).toBeInTheDocument()
-        userEvent.click(getByText('Confirm'))
+        expect(getByText('confirm')).toBeInTheDocument()
+        userEvent.click(getByText('confirm'))
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })

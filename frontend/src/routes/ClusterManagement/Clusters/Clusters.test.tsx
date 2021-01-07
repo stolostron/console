@@ -204,7 +204,7 @@ describe('Cluster page', () => {
         const listManagedClustersNock = nockListManagedClusters([])
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('managed.destroySelected')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(deleteClusterDeploymentNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
@@ -223,7 +223,7 @@ describe('Cluster page', () => {
         const listManagedClustersNock = nockListManagedClusters([])
         userEvent.click(getAllByRole('checkbox')[1]) // select row 1
         userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(deleteClusterDeploymentNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
@@ -241,7 +241,7 @@ describe('Cluster page', () => {
         const listManagedClustersNock = nockListManagedClusters([])
         userEvent.click(getAllByLabelText('Actions')[1]) // Click the action button on row
         userEvent.click(getByText('managed.detached')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
@@ -258,7 +258,7 @@ describe('Cluster page', () => {
         const listManagedClustersNock = nockListManagedClusters([])
         userEvent.click(getAllByRole('checkbox')[2]) // select row 2
         userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteManagedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
