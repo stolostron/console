@@ -180,7 +180,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
         expect(queryAllByText('modal.delete.title')).toHaveLength(0)
-        userEvent.click(getByText('Delete connections')) // click the delete action
+        userEvent.click(getByText('delete.batch')) // click the delete action
         expect(queryAllByText('modal.delete.title')).toHaveLength(1)
         userEvent.click(getByText('cancel')) // click confirm on the delete dialog
         expect(queryAllByText('modal.delete.title')).toHaveLength(0)
