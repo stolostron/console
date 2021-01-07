@@ -70,8 +70,8 @@ describe('DistributionField', () => {
         expect(getAllByText('upgrade.available')).toBeTruthy()
         userEvent.click(getAllByText('upgrade.available')[0])
         expect(getAllByText('upgrade.title clusterName').length).toBeGreaterThan(0)
-        expect(getAllByText('cancel')).toBeTruthy()
-        userEvent.click(getAllByText('cancel')[0])
+        expect(getAllByText('upgrade.cancel')).toBeTruthy()
+        userEvent.click(getAllByText('upgrade.cancel')[0])
         expect(queryAllByText('upgrade.title clusterName').length).toBe(0)
     })
     it('should show upgrading with loader when upgrading', () => {
@@ -129,8 +129,8 @@ describe('UpgradeModal', () => {
 
         // click cancel
         isClosed = false
-        expect(getByText('cancel')).toBeTruthy()
-        const buttonCancel = getByText('cancel')
+        expect(getByText('upgrade.cancel')).toBeTruthy()
+        const buttonCancel = getByText('upgrade.cancel')
         if (buttonCancel) {
             userEvent.click(buttonCancel)
             expect(isClosed).toBeTruthy()
@@ -158,10 +158,10 @@ describe('UpgradeModal', () => {
         expect(versionButton).toBeTruthy()
         userEvent.click(versionButton)
         // click submit and wait for loader to show
-        const submitButton = getByText('submit')
+        const submitButton = getByText('upgrade.submit')
         expect(submitButton).toBeTruthy()
         userEvent.click(submitButton)
-        await waitFor(() => expect(queryByText('Loading')).toBeTruthy())
+        await waitFor(() => expect(queryByText('upgrade.loading')).toBeTruthy())
         // wait for modal to be closed
         await waitFor(() => expect(isClosed).toBeTruthy())
     })
@@ -188,11 +188,11 @@ describe('UpgradeModal', () => {
         expect(versionButton).toBeTruthy()
         userEvent.click(versionButton)
         // click submit and wait for loader to show
-        const submitButton = getByText('submit')
+        const submitButton = getByText('upgrade.submit')
         expect(submitButton).toBeTruthy()
         userEvent.click(submitButton)
-        await waitFor(() => expect(queryByText('Loading')).toBeTruthy())
-        await waitFor(() => expect(queryByText('Loading')).toBeFalsy())
+        await waitFor(() => expect(queryByText('upgrade.loading')).toBeTruthy())
+        await waitFor(() => expect(queryByText('upgrade.loading')).toBeFalsy())
 
         // wait for modal to show alert
         expect(isClosed).toBe(false)
