@@ -19,6 +19,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
     try {
         let url = req.url
 
+        if (url.startsWith('/multicloud')) {
+            url = url.substr('/multicloud'.length)
+        }
+
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
             if (req.headers['origin']) {
