@@ -62,8 +62,8 @@ const PageActions = () => {
             })
     }, [])
     const dropdownItems:AcmDropdownItems[] = [
-        { id: 'create-cluster', text: t('managed.createCluster'), isDisabled: accessRestriction, tooltip:t('common:rbac.unauthorized')},
-        { id: 'import-cluster', text: t('managed.importCluster'), isDisabled: accessRestriction, tooltip:t('common:rbac.unauthorized')},
+        { id: 'create-cluster', text: t('managed.createCluster'), isDisabled: accessRestriction, tooltip: accessRestriction ? t('common:rbac.unauthorized'): ''},
+        { id: 'import-cluster', text: t('managed.importCluster'), isDisabled: accessRestriction, tooltip: accessRestriction ? t('common:rbac.unauthorized'): ''},
     ]
     const onSelect = (id: string) => {
         switch (id) {
