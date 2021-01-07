@@ -2,7 +2,7 @@
     "name": "@open-cluster-management/console-frontend",
     "version": "0.0.1",
     "private": true,
-    "homepage": "/console/",
+    "homepage": "/multicloud/",
     "proxy": "http://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.13.2",
