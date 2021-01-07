@@ -57,12 +57,18 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                 {match?.params.namespace ? (
                     <AcmPageHeader
                         title={t('editConnection.title')}
-                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }, { text: t('editConnection.title'), to: '' }]}
+                        breadcrumb={[
+                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('editConnection.title'), to: '' },
+                        ]}
                     />
                 ) : (
                     <AcmPageHeader
                         title={t('addConnection.title')}
-                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }, { text: t('addConnection.title'), to: '' }]}
+                        breadcrumb={[
+                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('addConnection.title'), to: '' },
+                        ]}
                     />
                 )}
                 <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
