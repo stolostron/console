@@ -81,7 +81,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
             if (req.method != 'POST') {
                 logger.info('wrong method for upgrade')
-                res.writeHead(503)
+                res.writeHead(405)
                 return res.end()
             }
             req.setTimeout(120 * 1000)
