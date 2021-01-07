@@ -134,7 +134,7 @@ export function ImportClusterPageContent() {
                         value={cloudLabel}
                         onChange={(label) => setCloudLabel(label as string)}
                     >
-                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(
+                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMware', 'Datacenter', 'Baremetal'].map(
                             (key) => (
                                 <SelectOption key={key} value={key}>
                                     {key}
