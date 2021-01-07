@@ -32,7 +32,11 @@ export function ConfirmModal(props: IConfirmModalProps) {
             isOpen={props.open}
             onClose={() => props.cancel()}
             actions={[
-                <AcmButton key="confirm" variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary} onClick={() => props.confirm()}>
+                <AcmButton
+                    key="confirm"
+                    variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
+                    onClick={() => props.confirm()}
+                >
                     {props.confirmText ?? t('confirm')}
                 </AcmButton>,
                 <AcmButton key="cancel" variant="link" onClick={() => props.cancel()}>

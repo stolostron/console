@@ -227,8 +227,8 @@ const useStyles = makeStyles({
     providerSelect: {
         '& .pf-c-select__toggle-text': {
             padding: '4px 0',
-        }
-    }
+        },
+    },
 })
 
 export function AddConnectionPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
