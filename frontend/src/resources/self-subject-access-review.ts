@@ -35,7 +35,7 @@ export type ResourceAttributes = {
 }
 
 export type ClustersTableActionsRbac = {
-    'cluster.edit.labels': boolean
+    'cluster.edit.labels'?: boolean
     'cluster.detach'?: boolean
     'cluster.destroy'?: boolean
     'cluster.upgrade'?: boolean

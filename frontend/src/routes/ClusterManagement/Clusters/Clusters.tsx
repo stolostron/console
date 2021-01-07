@@ -156,18 +156,26 @@ export function ClustersTable(props: {
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
+    const [abortBatchRbacCheck, setBatchRbacAbort] = useState<abortDictionary>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
 
-    function abortRbacPromises(){
-        abortRbacCheck?.forEach((abort)=>abort())
+    interface abortDictionary {
+        [key: string]: Function[] | undefined
+    }
+
+    function abortRbacPromises() {
+        abortRbacCheck?.forEach((abort) => abort())
+    }
+    function abortBatchRbacPromises(cluster: Cluster) {
+        if (abortBatchRbacCheck) abortBatchRbacCheck[cluster.name!]?.forEach((abort) => abort)
     }
 
     function checkRbacAccess(cluster: Cluster) {
         let currentRbacValues = { ...defaultTableRbacValues }
-        let abortArray:Array<Function> = []
+        let abortArray: Array<Function> = []
         if (!cluster.isHive) {
             delete currentRbacValues['cluster.destroy']
         }
@@ -176,7 +184,8 @@ export function ClustersTable(props: {
         }
         Object.keys(currentRbacValues).forEach((action) => {
             const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
-                request.promise.then((results) => {
+            request.promise
+                .then((results) => {
                     if (results) {
                         let rbacQueryResults: boolean[] = []
                         results.forEach((result) => {
@@ -192,9 +201,71 @@ export function ClustersTable(props: {
                     }
                 })
                 .catch((err) => console.error(err))
-                abortArray.push(request.abort)
+            abortArray.push(request.abort)
         })
         setRbacAborts(abortArray)
+    }
+
+    function checkRbacAccessBatchAction(clusters: Cluster[]) {
+        if (clusters.length === 0) {
+            setTableActionRbacValues(defaultTableRbacValues)
+        } else {
+            let rbacValues: ClustersTableActionsRbac = {
+                'cluster.detach': true,
+                'cluster.destroy': true,
+                'cluster.upgrade': true,
+            }
+
+            let abortArray: Array<Function> = []
+            let abortDictionary: abortDictionary = {}
+
+            let promiseArray = Promise.allSettled(
+                clusters.map((cluster) => {
+                    let newRbacPromise = Promise.allSettled(
+                        Object.keys(rbacValues).map((action: string) => {
+                            const request = createSubjectAccessReviews(
+                                rbacMapping(action, cluster.name, cluster.namespace)
+                            )
+                            abortArray.push(request.abort)
+                            return request.promise
+                                .then((results) => {
+                                    if (results) {
+                                        let rbacQueryResults: boolean[] = []
+                                        results.forEach((result) => {
+                                            if (result.status === 'fulfilled') {
+                                                rbacQueryResults.push(result.value.status?.allowed!)
+                                                console.log('checking rbac out ', result)
+                                            }
+                                        })
+
+                                        if (!rbacQueryResults.includes(false)) {
+                                            // evaluates current rbacValue, if false value remains false
+                                            let actionValue =
+                                                rbacValues[
+                                                    action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
+                                                ] && true
+                                            rbacValues[
+                                                action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
+                                            ] = actionValue
+                                        } else {
+                                            rbacValues[
+                                                action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
+                                            ] = false
+                                        }
+                                    }
+                                })
+                                .catch((err) => console.error(err))
+                        })
+                    )
+                    abortDictionary[cluster.name!] = abortArray
+                    return newRbacPromise
+                })
+            )
+            promiseArray.then(() => {
+                setTableActionRbacValues(rbacValues)
+            })
+            setBatchRbacAbort(abortDictionary)
+        }
     }
 
     return (
@@ -225,6 +296,7 @@ export function ClustersTable(props: {
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
+                onSelect={(clusters) => checkRbacAccessBatchAction(clusters)}
                 columns={[
                     {
                         header: t('table.name'),
@@ -432,8 +504,11 @@ export function ClustersTable(props: {
                                     isPlain={true}
                                     onToggle={() => {
                                         if (!isOpen) checkRbacAccess(cluster)
-                                        else abortRbacPromises()
-                                        setIsOpen(!isOpen)
+                                        else {
+                                            abortRbacPromises()
+                                            setTableActionRbacValues(defaultTableRbacValues)
+                                            setIsOpen(!isOpen)
+                                        }
                                     }}
                                 />
                             )
@@ -447,6 +522,7 @@ export function ClustersTable(props: {
                     {
                         id: 'destroyCluster',
                         title: t('managed.destroy'),
+                        isDisabled: !tableActionRbacValues['cluster.destroy'],
                         click: (clusters) => {
                             setConfirm({
                                 title: t('modal.destroy.title'),
@@ -460,13 +536,6 @@ export function ClustersTable(props: {
                                     const resultErrors: string[] = []
                                     let i = 0
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Destroy error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
                                         .then((results) => {
                                             if (results) {
                                                 results.forEach((result) => {
@@ -489,7 +558,13 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
-
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: 'Encountered error: ' + err,
+                                            })
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                     props.refresh()
                                 },
@@ -503,6 +578,7 @@ export function ClustersTable(props: {
                     {
                         id: 'detachCluster',
                         title: t('managed.detachSelected'),
+                        isDisabled: !tableActionRbacValues['cluster.detach'],
                         click: (managedClusters) => {
                             setConfirm({
                                 title: t('modal.detach.title'),
@@ -515,13 +591,6 @@ export function ClustersTable(props: {
                                     ) as Array<string>
                                     const promiseResults = deleteClusters(managedClusterNames, false)
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Detach error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
                                         .then((results) => {
                                             const resultErrors: string[] = []
                                             let i = 0
@@ -546,6 +615,13 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Detach error',
+                                                message: 'Encountered error: ' + err,
+                                            })
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
@@ -558,6 +634,7 @@ export function ClustersTable(props: {
                     {
                         id: 'upgradeClusters',
                         title: t('managed.upgradeSelected'),
+                        isDisabled: !tableActionRbacValues['cluster.upgrade'],
                         click: (managedClusters: Array<Cluster>) => {
                             if (!managedClusters) {
                                 return
