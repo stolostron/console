@@ -7,10 +7,10 @@ import {
     AcmInlineProvider,
     AcmPageCard,
     AcmTable,
+    AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -26,13 +26,13 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
-        <Page>
-            <AcmAlertProvider>
-                <AcmPageCard>
+        <AcmAlertProvider>
+            <AcmPageCard>
+                <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
                     <ProviderConnectionsPageContent />
-                </AcmPageCard>
-            </AcmAlertProvider>
-        </Page>
+                </AcmTablePaginationContextProvider>
+            </AcmPageCard>
+        </AcmAlertProvider>
     )
 }
 
