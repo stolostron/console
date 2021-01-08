@@ -9,7 +9,8 @@ import {
     AcmPageHeader,
     AcmSelect,
     AcmTextInput,
-    AcmSubmit
+    AcmSubmit,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -24,6 +25,7 @@ import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
+import { useHistory } from 'react-router-dom'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -31,7 +33,10 @@ export default function ImportClusterPage() {
         <AcmPage>
             <AcmPageHeader
                 title={t('page.header.import-cluster')}
-                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }, { text: t('page.header.import-cluster'), to: '' }]}
+                breadcrumb={[
+                    { text: t('clusters'), to: NavigationPath.clusters },
+                    { text: t('page.header.import-cluster'), to: '' },
+                ]}
             />
             <ImportClusterPageContent />
         </AcmPage>
@@ -40,6 +45,7 @@ export default function ImportClusterPage() {
 
 export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
+    const history = useHistory()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
     const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
     const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
@@ -76,7 +82,7 @@ export function ImportClusterPageContent() {
             try {
                 try {
                     createdResources.push(await createProject(clusterName).promise)
-                } catch(err) {
+                } catch (err) {
                     const resourceError = err as ResourceError
                     if (resourceError.code !== ResourceErrorCode.Conflict) {
                         throw err
@@ -128,7 +134,7 @@ export function ImportClusterPageContent() {
                         value={cloudLabel}
                         onChange={(label) => setCloudLabel(label as string)}
                     >
-                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMWare', 'Datacenter', 'Baremetal'].map(
+                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMware', 'Datacenter', 'Baremetal'].map(
                             (key) => (
                                 <SelectOption key={key} value={key}>
                                     {key}
@@ -169,16 +175,21 @@ export function ImportClusterPageContent() {
                         />
                     )}
                     <ActionGroup>
-                        <AcmSubmit id="submit" variant="primary" isDisabled={!clusterName || submitted} onClick={onSubmit} label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')} processingLabel={t('import.generating')} />  
+                        <AcmSubmit
+                            id="submit"
+                            variant="primary"
+                            isDisabled={!clusterName || submitted}
+                            onClick={onSubmit}
+                            label={submitted && !error ? t('import.form.submitted') : t('import.form.submit')}
+                            processingLabel={t('import.generating')}
+                        />
                         {submitted && !error ? (
                             <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
                                 {t('import.importmode.importsaved')}
                             </Label>
                         ) : (
                             <Link to={NavigationPath.clusters} id="cancel">
-                                <Button variant="link">
-                                    {t('common:cancel')}
-                                </Button>
+                                <Button variant="link">{t('common:cancel')}</Button>
                             </Link>
                         )}
                     </ActionGroup>
@@ -190,15 +201,17 @@ export function ImportClusterPageContent() {
                                         <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
                                             <Button variant="primary">{t('import.footer.viewcluster')}</Button>
                                         </Link>
-                                        <Link
-                                            to={
+                                        <AcmButton
+                                            variant="secondary"
+                                            component="a"
+                                            onClick={() => {
                                                 sessionStorage.getItem('DiscoveredClusterConsoleURL')
-                                                    ? NavigationPath.discoveredClusters
-                                                    : NavigationPath.importCluster
-                                            }
+                                                    ? history.push(NavigationPath.discoveredClusters)
+                                                    : onReset()
+                                            }}
                                         >
-                                            <Button variant="secondary" onClick={() => onReset()}>{t('import.footer.importanother')}</Button>
-                                        </Link>
+                                            {t('import.footer.importanother')}
+                                        </AcmButton>
                                     </ActionGroup>
                                 )}
                             </ImportCommand>

@@ -1,31 +1,34 @@
 import {
+    AcmActionGroup,
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmDropdown,
+    AcmDropdownItems,
     AcmEmptyState,
     AcmLabels,
+    AcmLaunchLink,
     AcmPageCard,
     AcmTable,
-    AcmActionGroup,
-    AcmLaunchLink,
+    AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { AppContext } from '../../../components/AppContext'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
+import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
+import { ManagedCluster } from '../../../resources/managed-cluster'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
-import { AppContext } from '../../../components/AppContext'
-import { mapAddons } from '../../../lib/get-addons'
 import {
     createSubjectAccessReviews,
     rbacMapping,
@@ -63,9 +66,19 @@ const PageActions = () => {
                 console.error(err)
             })
     }, [])
-    const dropdownItems = [
-        { id: 'create-cluster', text: t('managed.createCluster') },
-        { id: 'import-cluster', text: t('managed.importCluster') },
+    const dropdownItems: AcmDropdownItems[] = [
+        {
+            id: 'create-cluster',
+            text: t('managed.createCluster'),
+            isDisabled: clusterCreationRbacRestriction,
+            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
+        },
+        {
+            id: 'import-cluster',
+            text: t('managed.importCluster'),
+            isDisabled: clusterCreationRbacRestriction,
+            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
+        },
     ]
     const onSelect = (id: string) => {
         switch (id) {
@@ -103,10 +116,27 @@ const PageActions = () => {
     )
 }
 
+let lastData:
+    | PromiseSettledResult<
+          ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[] | ManagedCluster[]
+      >[]
+    | undefined
+let lastTime: number = 0
+
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(getAllClusters)
+    const { data, startPolling, refresh } = useQuery(
+        getAllClusters,
+        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
+    )
     useEffect(startPolling, [startPolling])
     usePageContext(!!data, PageActions)
+
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'test') {
+            lastData = data
+            lastTime = Date.now()
+        }
+    }, [data])
 
     const items = data?.map((d) => {
         if (d.status === 'fulfilled') {
@@ -122,16 +152,19 @@ export function ClustersPageContent() {
         clusters = mapClusters(
             items[0] as ClusterDeployment[],
             items[1] as ManagedClusterInfo[],
-            items[2] as CertificateSigningRequest[]
+            items[2] as CertificateSigningRequest[],
+            items[3] as ManagedCluster[]
         )
     }
 
     return (
-        <AcmPageCard>
-            <AcmAlertProvider>
-                <ClustersTable clusters={clusters} refresh={refresh} />
-            </AcmAlertProvider>
-        </AcmPageCard>
+        <AcmAlertProvider>
+            <AcmPageCard>
+                <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                    <ClustersTable clusters={clusters} refresh={refresh} />
+                </AcmTablePaginationContextProvider>
+            </AcmPageCard>
+        </AcmAlertProvider>
     )
 }
 
@@ -219,7 +252,7 @@ export function ClustersTable(props: {
                 open={!!upgradeSingleCluster}
                 clusterName={upgradeSingleCluster?.name || ''}
                 close={() => {
-                    setUpgradeSingleCluster()
+                    setUpgradeSingleCluster(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -336,13 +369,15 @@ export function ClustersTable(props: {
                                                             message: err,
                                                         })
                                                     })
+                                                    .finally(() => {
+                                                        props.refresh()
+                                                    })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                         })
-                                        props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
                                     tooltip: !tableActionRbacValues['cluster.detach']
@@ -379,13 +414,15 @@ export function ClustersTable(props: {
                                                             message: err,
                                                         })
                                                     })
+                                                    .finally(() => {
+                                                        props.refresh()
+                                                    })
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                             cancel: () => {
                                                 setConfirm(ClosedConfirmModalProps)
                                             },
                                         })
-                                        props.refresh()
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
                                     tooltip: !tableActionRbacValues['cluster.destroy']
@@ -460,13 +497,6 @@ export function ClustersTable(props: {
                                     const resultErrors: string[] = []
                                     let i = 0
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Destroy error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
                                         .then((results) => {
                                             if (results) {
                                                 results.forEach((result) => {
@@ -489,15 +519,19 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
-
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Destroy error',
+                                                message: 'Encountered error: ' + err,
+                                            })
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
-                                    props.refresh()
                                 },
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                             })
-                            props.refresh()
                         },
                     },
                     {
@@ -546,13 +580,15 @@ export function ClustersTable(props: {
                                                 })
                                             }
                                         })
+                                        .finally(() => {
+                                            props.refresh()
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                             })
-                            props.refresh()
                         },
                     },
                     {

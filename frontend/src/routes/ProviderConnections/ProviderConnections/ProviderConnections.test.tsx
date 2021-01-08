@@ -89,7 +89,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('delete')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
     })
@@ -108,7 +108,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         userEvent.click(getByText('delete')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() =>
             expect(
@@ -129,11 +129,11 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-        expect(queryAllByText('modal.delete.title')).toHaveLength(0)
+        expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
         userEvent.click(getByText('delete')) // click the delete action
-        expect(queryAllByText('modal.delete.title')).toHaveLength(1)
-        userEvent.click(getByText('Cancel')) // click confirm on the delete dialog
-        expect(queryAllByText('modal.delete.title')).toHaveLength(0)
+        expect(queryAllByText('modal.delete.title.single')).toHaveLength(1)
+        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
+        expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
     })
 
     test('should be able to bulk delete provider connections', async () => {
@@ -154,8 +154,8 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
-        userEvent.click(getByText('Delete connections')) // click the delete action
-        userEvent.click(getByText('Confirm')) // click confirm on the delete dialog
+        userEvent.click(getByText('delete.batch')) // click the delete action
+        userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock1.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
@@ -179,11 +179,11 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
-        expect(queryAllByText('modal.delete.title')).toHaveLength(0)
-        userEvent.click(getByText('Delete connections')) // click the delete action
-        expect(queryAllByText('modal.delete.title')).toHaveLength(1)
-        userEvent.click(getByText('Cancel')) // click confirm on the delete dialog
-        expect(queryAllByText('modal.delete.title')).toHaveLength(0)
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
+        userEvent.click(getByText('delete.batch')) // click the delete action
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(1)
+        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
+        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
     })
 
     test('should show error if the connections fail to query', async () => {

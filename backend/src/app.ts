@@ -15,9 +15,19 @@ import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requ
 
 const agent = new Agent({ rejectUnauthorized: false })
 
+function getRandomInt(min: number, max: number) {
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
     try {
         let url = req.url
+
+        if (url.startsWith('/multicloud')) {
+            url = url.substr('/multicloud'.length)
+        }
 
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
@@ -35,6 +45,20 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                         res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
                     }
                     return res.writeHead(200).end()
+            }
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+            if (process.env.DELAY) {
+                await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+            }
+            if (process.env.RANDOM_DELAY) {
+                await new Promise((resolve) => setTimeout(resolve, getRandomInt(0, Number(process.env.RANDOM_DELAY))))
+            }
+            if (process.env.RANDOM_ERROR) {
+                if (getRandomInt(0, 100) < Number(process.env.RANDOM_ERROR)) {
+                    return res.destroy()
+                }
             }
         }
 
@@ -77,7 +101,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
             if (req.method != 'POST') {
                 logger.info('wrong method for upgrade')
-                res.writeHead(503)
+                res.writeHead(405)
                 return res.end()
             }
             req.setTimeout(120 * 1000)

@@ -7,12 +7,12 @@ import {
     AcmInlineProvider,
     AcmPageCard,
     AcmTable,
+    AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorState } from '../../../components/ErrorPage'
@@ -26,13 +26,13 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
-        <Page>
-            <AcmAlertProvider>
-                <AcmPageCard>
+        <AcmAlertProvider>
+            <AcmPageCard>
+                <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
                     <ProviderConnectionsPageContent />
-                </AcmPageCard>
-            </AcmAlertProvider>
-        </Page>
+                </AcmTablePaginationContextProvider>
+            </AcmPageCard>
+        </AcmAlertProvider>
     )
 }
 
@@ -48,8 +48,20 @@ const AddConnectionBtn = () => {
     )
 }
 
+let lastData: ProviderConnection[] | undefined
+let lastTime: number = 0
+
 export function ProviderConnectionsPageContent() {
-    const { error, data, startPolling, refresh } = useQuery(listProviderConnections)
+    const { error, data, startPolling, refresh } = useQuery(
+        listProviderConnections,
+        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
+    )
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'test') {
+            lastData = data
+            lastTime = Date.now()
+        }
+    }, [data])
     useEffect(startPolling, [startPolling])
     usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
     if (error) return <ErrorState error={error} />
@@ -70,13 +82,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
     return (
         <Fragment>
             <AcmAlertGroup isInline canClose />
-            <ConfirmModal
-                open={confirm.open}
-                confirm={confirm.confirm}
-                cancel={confirm.cancel}
-                title={confirm.title}
-                message={confirm.message}
-            ></ConfirmModal>
+            <ConfirmModal {...confirm} />
             <AcmTable<ProviderConnection>
                 emptyState={
                     <AcmEmptyState
@@ -145,11 +151,16 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                 bulkActions={[
                     {
                         id: 'deleteConnection',
-                        title: 'Delete connections',
+                        title: t('delete.batch'),
                         click: (providerConnections: ProviderConnection[]) => {
                             setConfirm({
-                                title: t('modal.delete.title'),
-                                message: `You are about to delete ${providerConnections.length} provider connections. The provider connections will no longer be available for creating new clusters, but clusters that were previously created using the connections are not affected. This action is irreversible.`,
+                                title: (
+                                    <Trans
+                                        i18nKey="connection:modal.delete.title.batch"
+                                        values={{ number: providerConnections.length }}
+                                    />
+                                ),
+                                message: t('modal.delete.content.batch'),
                                 open: true,
                                 confirm: async () => {
                                     alertContext.clearAlerts()
@@ -173,6 +184,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                     props.refresh()
                                     setConfirm(ClosedConfirmModalProps)
                                 },
+                                confirmText: t('common:delete'),
+                                isDanger: true,
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },
@@ -197,8 +210,14 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
                             setConfirm({
-                                title: t('modal.delete.title'),
-                                message: `You are about to delete ${providerConnection.metadata?.name}. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. This action is irreversible.`,
+                                title: t('modal.delete.title.single'),
+                                message: (
+                                    <Trans
+                                        i18nKey="connection:modal.delete.content.single"
+                                        values={{ name: providerConnection?.metadata.name }}
+                                        components={{ bold: <strong /> }}
+                                    />
+                                ),
                                 open: true,
                                 confirm: () => {
                                     alertContext.clearAlerts()
@@ -213,6 +232,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                         })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
+                                confirmText: t('common:delete'),
+                                isDanger: true,
                                 cancel: () => {
                                     setConfirm(ClosedConfirmModalProps)
                                 },

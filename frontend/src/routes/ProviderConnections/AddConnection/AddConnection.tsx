@@ -12,6 +12,8 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
+    AcmInlineProvider,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
@@ -45,6 +47,7 @@ import {
 } from '../../../resources/provider-connection'
 import { AppContext } from '../../../components/AppContext'
 import { rbacNamespaceFilter } from '../../../resources/self-subject-access-review'
+import { makeStyles } from '@material-ui/styles'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -54,12 +57,18 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                 {match?.params.namespace ? (
                     <AcmPageHeader
                         title={t('editConnection.title')}
-                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                        breadcrumb={[
+                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('editConnection.title'), to: '' },
+                        ]}
                     />
                 ) : (
                     <AcmPageHeader
                         title={t('addConnection.title')}
-                        breadcrumb={[{ text: t('connections'), to: NavigationPath.providerConnections }]}
+                        breadcrumb={[
+                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('addConnection.title'), to: '' },
+                        ]}
                     />
                 )}
                 <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
@@ -220,6 +229,14 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     return <AddConnectionPageContent providerConnection={providerConnection} projects={filteredProjects} />
 }
 
+const useStyles = makeStyles({
+    providerSelect: {
+        '& .pf-c-select__toggle-text': {
+            padding: '4px 0',
+        },
+    },
+})
+
 export function AddConnectionPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
@@ -240,6 +257,8 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
         setProviderConnection(copy)
     }
 
+    const classes = useStyles()
+
     return (
         <AcmPageCard>
             <AcmForm>
@@ -247,6 +266,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     Select a provider and enter basic information
                 </Title>
                 <AcmSelect
+                    className={classes.providerSelect}
                     id="providerName"
                     label={t('addConnection.providerName.label')}
                     placeholder={t('addConnection.providerName.placeholder')}
@@ -267,11 +287,38 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                             }
                             return true
                         })
-                        .map((provider) => (
-                            <SelectOption key={provider.key} value={provider.key}>
-                                {provider.name}
-                            </SelectOption>
-                        ))}
+                        .map((provider) => {
+                            let mappedProvider
+                            switch (provider.key) {
+                                case ProviderID.GCP:
+                                    mappedProvider = Provider.gcp
+                                    break
+                                case ProviderID.AWS:
+                                    mappedProvider = Provider.aws
+                                    break
+                                case ProviderID.AZR:
+                                    mappedProvider = Provider.azure
+                                    break
+                                case ProviderID.VMW:
+                                    mappedProvider = Provider.vmware
+                                    break
+                                case ProviderID.BMC:
+                                    mappedProvider = Provider.baremetal
+                                    break
+                                case ProviderID.CRH:
+                                    mappedProvider = Provider.redhatcloud
+                                    break
+                                case ProviderID.UKN:
+                                default:
+                                    mappedProvider = Provider.other
+                            }
+                            return (
+                                <SelectOption key={provider.key} value={provider.key}>
+                                    {/* {provider.name} */}
+                                    <AcmInlineProvider provider={mappedProvider} />
+                                </SelectOption>
+                            )
+                        })}
                 </AcmSelect>
                 <AcmTextInput
                     id="connectionName"

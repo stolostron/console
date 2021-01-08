@@ -82,7 +82,7 @@ export interface ClusterDeployment {
         conditions: V1CustomResourceDefinitionCondition[]
         installedTimestamp?: string
         installerImage: string
-        provisionRef: {
+        provisionRef?: {
             name: string
         }
         webConsoleURL?: string
