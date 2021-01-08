@@ -526,6 +526,9 @@ export function ClustersTable(props: {
                                                 message: 'Encountered error: ' + err,
                                             })
                                         })
+                                        .finally(() => {
+                                            props.refresh()
+                                        })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
