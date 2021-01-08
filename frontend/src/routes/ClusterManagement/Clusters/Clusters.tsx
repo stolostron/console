@@ -235,7 +235,8 @@ export function ClustersTable(props: {
                         header: t('table.provider'),
                         sort: 'provider',
                         search: 'provider',
-                        cell: (cluster) => cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                        cell: (cluster) =>
+                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
                     },
                     {
                         header: t('table.distribution'),

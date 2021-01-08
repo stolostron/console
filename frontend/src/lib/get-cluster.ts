@@ -136,50 +136,54 @@ export function getCluster(
     }
 }
 
-export function getProvider(managedClusterInfo?: ManagedClusterInfo, managedCluster?: ManagedCluster, clusterDeployment?: ClusterDeployment) {
+export function getProvider(
+    managedClusterInfo?: ManagedClusterInfo,
+    managedCluster?: ManagedCluster,
+    clusterDeployment?: ClusterDeployment
+) {
     const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
-    const platformClusterClaim = managedCluster?.status?.clusterClaims?.find((claim) => claim.name === 'platform.open-cluster-management.io')
+    const platformClusterClaim = managedCluster?.status?.clusterClaims?.find(
+        (claim) => claim.name === 'platform.open-cluster-management.io'
+    )
     const hivePlatformLabel = clusterDeployment?.metadata?.labels?.['hive.openshift.io/cluster-platform']
 
     if (!cloudLabel && !platformClusterClaim && !hivePlatformLabel) {
         return undefined
     }
 
-    let providerLabel = hivePlatformLabel ?? platformClusterClaim?.value ?? cloudLabel
-console.log('providerLabel', providerLabel)
     let provider: Provider | undefined
-    switch (providerLabel) {
-    case 'Amazon':
-    case 'AWS':
-    case 'aws':
-        provider = Provider.aws
-        break
-    case 'Google':
-    case 'GCP':
-    case 'GCE':
-    case 'gcp':
-        provider = Provider.gcp
-        break
-    case 'Azure':
-    case 'azure':
-        provider = Provider.azure
-        break
-    case 'IBM':
-        provider = Provider.ibm
-        break
-    case 'baremetal':
-        provider = Provider.baremetal
-        break
-    case 'vsphere':
-        provider = Provider.vmware
-        break
-    case 'auto-detect':
-        provider = undefined
-        break
-    case 'other':
-    case 'unknown':
-    default:
-        provider = Provider.other
+    switch (hivePlatformLabel ?? platformClusterClaim?.value ?? cloudLabel) {
+        case 'Amazon':
+        case 'AWS':
+        case 'aws':
+            provider = Provider.aws
+            break
+        case 'Google':
+        case 'GCP':
+        case 'GCE':
+        case 'gcp':
+            provider = Provider.gcp
+            break
+        case 'Azure':
+        case 'azure':
+            provider = Provider.azure
+            break
+        case 'IBM':
+            provider = Provider.ibm
+            break
+        case 'baremetal':
+            provider = Provider.baremetal
+            break
+        case 'vsphere':
+            provider = Provider.vmware
+            break
+        case 'auto-detect':
+            provider = undefined
+            break
+        case 'other':
+        case 'unknown':
+        default:
+            provider = Provider.other
     }
     return provider
 }
