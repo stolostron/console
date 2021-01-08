@@ -27,16 +27,20 @@ import { CertificateSigningRequest } from '../../../resources/certificate-signin
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedCluster } from '../../../resources/managed-cluster'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
-import { createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
+import {
+    createSubjectAccessReviews,
+    rbacMapping,
+    ClustersTableActionsRbac,
+} from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
     return <ClustersPageContent />
 }
 
 const PageActions = () => {
-    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
+    const [clusterCreationRbacRestriction, setclusterCreationRbacRestriction] = useState<boolean>(true)
     const { push } = useHistory()
     const { t } = useTranslation(['cluster', 'common'])
     const { clusterManagementAddons } = useContext(AppContext)
@@ -47,10 +51,6 @@ const PageActions = () => {
         const promiseResult = createSubjectAccessReviews(resourceList)
         let allowed = true
         promiseResult.promise
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
             .then((results) => {
                 if (results) {
                     results.forEach((result) => {
@@ -59,21 +59,25 @@ const PageActions = () => {
                         }
                     })
                 }
-                setAccessRestriction(!allowed)
+                setclusterCreationRbacRestriction(!allowed)
+            })
+            .catch((err) => {
+                // send err to console
+                console.error(err)
             })
     }, [])
     const dropdownItems: AcmDropdownItems[] = [
         {
             id: 'create-cluster',
             text: t('managed.createCluster'),
-            isDisabled: accessRestriction,
-            tooltip: accessRestriction ? t('common:rbac.unauthorized') : '',
+            isDisabled: clusterCreationRbacRestriction,
+            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
         },
         {
             id: 'import-cluster',
             text: t('managed.importCluster'),
-            isDisabled: accessRestriction,
-            tooltip: accessRestriction ? t('common:rbac.unauthorized') : '',
+            isDisabled: clusterCreationRbacRestriction,
+            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
         },
     ]
     const onSelect = (id: string) => {
@@ -101,6 +105,8 @@ const PageActions = () => {
             <AcmDropdown
                 dropdownItems={dropdownItems}
                 text={t('managed.addCluster')}
+                isDisabled={clusterCreationRbacRestriction}
+                tooltip={t('common:rbac.unauthorized')}
                 onSelect={onSelect}
                 id="cluster-actions"
                 isKebab={false}
@@ -171,12 +177,58 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
+    const defaultTableRbacValues: ClustersTableActionsRbac = {
+        'cluster.edit.labels': false,
+        'cluster.detach': false,
+        'cluster.destroy': false,
+        'cluster.upgrade': false,
+    }
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
+    const [isOpen, setIsOpen] = useState<boolean>(false)
+    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
+    }
+
+    function abortRbacPromises() {
+        abortRbacCheck?.forEach((abort) => abort())
+    }
+
+    function checkRbacAccess(cluster: Cluster) {
+        let currentRbacValues = { ...defaultTableRbacValues }
+        let abortArray: Array<Function> = []
+        if (!cluster.isHive) {
+            delete currentRbacValues['cluster.destroy']
+        }
+        if (cluster?.status === ClusterStatus.detached) {
+            delete currentRbacValues['cluster.detach']
+        }
+        Object.keys(currentRbacValues).forEach((action) => {
+            const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
+            request.promise
+                .then((results) => {
+                    if (results) {
+                        let rbacQueryResults: boolean[] = []
+                        results.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                rbacQueryResults.push(result.value.status?.allowed!)
+                            }
+                        })
+                        if (!rbacQueryResults.includes(false)) {
+                            setTableActionRbacValues((current) => {
+                                return { ...current, ...{ [action]: true } }
+                            })
+                        }
+                    }
+                })
+                .catch((err) => console.error(err))
+            abortArray.push(request.abort)
+        })
+        setRbacAborts(abortArray)
     }
 
     return (
@@ -262,6 +314,10 @@ export function ClustersTable(props: {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
                                     click: (cluster: Cluster) => setEditClusterLabels(cluster),
+                                    isDisabled: !tableActionRbacValues['cluster.edit.labels'],
+                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'launch-cluster',
@@ -274,6 +330,10 @@ export function ClustersTable(props: {
                                     click: (cluster: Cluster) => {
                                         setUpgradeSingleCluster(cluster)
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.upgrade'],
+                                    tooltip: !tableActionRbacValues['cluster.upgrade']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'search-cluster',
@@ -320,6 +380,10 @@ export function ClustersTable(props: {
                                             },
                                         })
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.detach'],
+                                    tooltip: !tableActionRbacValues['cluster.detach']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                                 {
                                     id: 'destroy-cluster',
@@ -361,6 +425,10 @@ export function ClustersTable(props: {
                                             },
                                         })
                                     },
+                                    isDisabled: !tableActionRbacValues['cluster.destroy'],
+                                    tooltip: !tableActionRbacValues['cluster.destroy']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
                                 },
                             ]
 
@@ -400,6 +468,11 @@ export function ClustersTable(props: {
                                     dropdownItems={actions}
                                     isKebab={true}
                                     isPlain={true}
+                                    onToggle={() => {
+                                        if (!isOpen) checkRbacAccess(cluster)
+                                        else abortRbacPromises()
+                                        setIsOpen(!isOpen)
+                                    }}
                                 />
                             )
                         },
@@ -457,7 +530,6 @@ export function ClustersTable(props: {
                                         .finally(() => {
                                             props.refresh()
                                         })
-
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
