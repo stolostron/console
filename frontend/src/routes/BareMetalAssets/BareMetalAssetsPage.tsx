@@ -18,6 +18,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma'])
@@ -61,8 +62,30 @@ export function BareMetalAssetsTable(props: {
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
 }) {
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
+    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
     const history = useHistory()
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation(['bma', 'common'])
+
+    useEffect(() => {
+        const resourceList = rbacMapping('cluster.create')
+        const promiseResult = createSubjectAccessReviews(resourceList)
+        let allowed = true
+        promiseResult.promise
+            .catch((err) => {
+                // send err to console
+                console.error(err)
+            })
+            .then((results) => {
+                if (results) {
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled') {
+                            allowed = allowed && result.value.status?.allowed!
+                        }
+                    })
+                }
+                setAccessRestriction(!allowed)
+            })
+    }, [])
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
         return bareMetalAsset.metadata.uid as string
@@ -88,6 +111,8 @@ export function BareMetalAssetsTable(props: {
                                     onClick={() => {
                                         history.push(NavigationPath.createBareMetalAsset)
                                     }}
+                                    isDisabled={accessRestriction}
+                                    tooltip={accessRestriction ? t('common:rbac.unauthorized') : ''}
                                 >
                                     {t('createBareMetalAsset.title')}
                                 </AcmButton>
@@ -133,6 +158,8 @@ export function BareMetalAssetsTable(props: {
                             click: () => {
                                 history.push(NavigationPath.createBareMetalAsset)
                             },
+                            isDisabled: accessRestriction,
+                            tooltip: accessRestriction ? t('common:rbac.unauthorized') : '',
                         },
                     ]}
                     bulkActions={[
