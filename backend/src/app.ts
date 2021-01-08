@@ -25,10 +25,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
     try {
         let url = req.url
 
-        if (url.startsWith('/multicloud')) {
-            url = url.substr('/multicloud'.length)
-        }
-
         // CORS Headers
         if (process.env.NODE_ENV !== 'production') {
             if (req.headers['origin']) {
@@ -60,6 +56,32 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     return res.destroy()
                 }
             }
+        }
+
+        // Console Header
+        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
+            const token = getToken(req)
+            if (!token) return res.writeHead(401).end()
+
+            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+
+            let headerUrl: string
+            if (url.startsWith('/multicloud/header/')) {
+                headerUrl = `${acmUrl}${url}`
+            } else if (url == '/header') {
+                const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
+                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=console&dev=${isDevelopment}`
+            }
+
+            const headers = req.headers
+            headers.authorization = `Bearer ${token}`
+            headers.host = parseUrl(acmUrl).host
+            const response = await request(req.method, headerUrl, headers)
+            return response.pipe(res.writeHead(response.statusCode, response.headers))
+        }
+
+        if (url.startsWith('/multicloud')) {
+            url = url.substr('/multicloud'.length)
         }
 
         // Kubernetes Proxy
@@ -266,28 +288,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             // const query =
             // TODO get code...
-        }
-
-        // Console Header
-        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
-            const token = getToken(req)
-            if (!token) return res.writeHead(401).end()
-
-            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
-
-            let headerUrl: string
-            if (url.startsWith('/multicloud/header/')) {
-                headerUrl = `${acmUrl}${url}`
-            } else if (url == '/header') {
-                const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
-                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=console&dev=${isDevelopment}`
-            }
-
-            const headers = req.headers
-            headers.authorization = `Bearer ${token}`
-            headers.host = parseUrl(acmUrl).host
-            const response = await request(req.method, headerUrl, headers)
-            return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
         // Readiness
