@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { AcmDescriptionList, AcmLabels, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmDescriptionList, AcmLabels, AcmButton, AcmInlineProvider } from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +23,10 @@ export function ClusterOverviewPageContent(props: { accessRestriction?: boolean 
                 leftItems={[
                     { key: t('table.name'), value: cluster?.name },
                     { key: t('table.status'), value: cluster?.status && <StatusField status={cluster?.status} /> },
+                    {
+                        key: t('table.provider'),
+                        value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
+                    },
                     {
                         key: t('table.distribution'),
                         value: cluster?.distribution?.displayVersion && (

@@ -31,6 +31,7 @@
 
   "table.name": "Name",
   "table.status": "Status",
+  "table.provider": "Provider",
   "table.distribution": "Distribution",
   "table.labels": "Labels",
   "table.nodes": "Nodes",
