@@ -151,8 +151,13 @@ export function getProvider(
         return undefined
     }
 
+    let providerLabel =
+        hivePlatformLabel && hivePlatformLabel !== 'unknown'
+            ? hivePlatformLabel
+            : platformClusterClaim?.value ?? cloudLabel
+
     let provider: Provider | undefined
-    switch (hivePlatformLabel ?? platformClusterClaim?.value ?? cloudLabel) {
+    switch (providerLabel) {
         case 'Amazon':
         case 'AWS':
         case 'aws':
@@ -181,7 +186,6 @@ export function getProvider(
             provider = undefined
             break
         case 'other':
-        case 'unknown':
         default:
             provider = Provider.other
     }

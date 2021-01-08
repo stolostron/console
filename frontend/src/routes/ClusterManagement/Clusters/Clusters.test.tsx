@@ -31,7 +31,7 @@ const mockManagedCluster1: ManagedCluster = {
         capacity: { cpu: '', memory: '' },
         clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'AWS' }],
         conditions: [],
-        version: { kubernetes: '' }
+        version: { kubernetes: '' },
     },
 }
 const mockManagedCluster2: ManagedCluster = {
