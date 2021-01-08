@@ -169,31 +169,31 @@ function nockListCertificateSigningRequests(certificateSigningRequest?: Certific
     )
 }
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes:ResourceAttributes, allowed:boolean){
+function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean) {
     return nockCreate(
         {
             apiVersion: 'authorization.k8s.io/v1',
             kind: 'SelfSubjectAccessReview',
             metadata: {},
             spec: {
-                resourceAttributes
-        }
-        } as SelfSubjectAccessReview, 
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
         {
             apiVersion: 'authorization.k8s.io/v1',
             kind: 'SelfSubjectAccessReview',
             metadata: {},
             spec: {
-                resourceAttributes
-        },
-        status: {
-            allowed
-        }
-        } as SelfSubjectAccessReview, 
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
     )
 }
 
-function getCreateClusterResourceAttributes(name:string){
+function getCreateClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
         verb: 'create',
@@ -201,7 +201,7 @@ function getCreateClusterResourceAttributes(name:string){
         name,
     } as ResourceAttributes
 }
-function getPatchClusterResourceAttributes(name:string){
+function getPatchClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
         verb: 'patch',
@@ -209,7 +209,7 @@ function getPatchClusterResourceAttributes(name:string){
         name,
     } as ResourceAttributes
 }
-function getDeleteClusterResourceAttributes(name:string){
+function getDeleteClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
         verb: 'delete',
@@ -217,7 +217,7 @@ function getDeleteClusterResourceAttributes(name:string){
         name: name,
     } as ResourceAttributes
 }
-function getDeleteDeploymentResourceAttributes(name:string){
+function getDeleteDeploymentResourceAttributes(name: string) {
     return {
         resource: 'clusterdeployments',
         verb: 'delete',
@@ -226,7 +226,7 @@ function getDeleteDeploymentResourceAttributes(name:string){
         namespace: name,
     } as ResourceAttributes
 }
-function getDeleteMachinePoolsResourceAttributes(name:string){
+function getDeleteMachinePoolsResourceAttributes(name: string) {
     return {
         resource: 'machinepools',
         verb: 'delete',
@@ -234,7 +234,7 @@ function getDeleteMachinePoolsResourceAttributes(name:string){
         namespace: name,
     } as ResourceAttributes
 }
-function getCreateClusterViewResourceAttributes(name:string){
+function getCreateClusterViewResourceAttributes(name: string) {
     return {
         resource: 'managedclusterviews',
         verb: 'create',
@@ -242,7 +242,7 @@ function getCreateClusterViewResourceAttributes(name:string){
         namespace: name,
     } as ResourceAttributes
 }
-function getClusterActionsResourceAttributes(name:string){
+function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
         verb: 'create',
@@ -288,13 +288,34 @@ describe('Cluster page', () => {
         const listClusterDeploymentsNock = nockListClusterDeployments([])
         const listManagedClustersNock = nockListManagedClusters([])
 
-        const rbacNock = nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!), true)
+        const rbacNock = nockcreateSelfSubjectAccesssRequest(
+            getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
 
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
@@ -338,13 +359,34 @@ describe('Cluster page', () => {
         const listClusterDeploymentsNock = nockListClusterDeployments([])
         const listManagedClustersNock = nockListManagedClusters([])
 
-        const rbacNock = nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!), true)
+        const rbacNock = nockcreateSelfSubjectAccesssRequest(
+            getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!),
+            true
+        )
 
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on row
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
@@ -377,10 +419,22 @@ describe('Cluster page', () => {
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
     })
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
-        const rbacNock = nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes(mockManagedCluster3.metadata.name!), true)
+        const rbacNock = nockcreateSelfSubjectAccesssRequest(
+            getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes(mockManagedCluster3.metadata.name!),
+            true
+        )
 
         const name = mockManagedCluster3.metadata.name!
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
@@ -390,10 +444,22 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
     test('overflow menu should hide upgrade option if currently upgrading', async () => {
-        const rbacNock = nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes(mockManagedCluster5.metadata.name!), true)
+        const rbacNock = nockcreateSelfSubjectAccesssRequest(
+            getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes(mockManagedCluster5.metadata.name!),
+            true
+        )
 
         const name = mockManagedCluster5.metadata.name!
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
@@ -403,10 +469,22 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
     test('overflow menu should allow upgrade if has available upgrade', async () => {
-        const rbacNock = nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes(mockManagedCluster4.metadata.name!), true)
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!), true)
+        const rbacNock = nockcreateSelfSubjectAccesssRequest(
+            getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes(mockManagedCluster4.metadata.name!),
+            true
+        )
+        nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!),
+            true
+        )
 
         const name = mockManagedCluster4.metadata.name!
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())

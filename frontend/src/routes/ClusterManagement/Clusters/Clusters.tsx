@@ -194,13 +194,13 @@ export function ClustersTable(props: {
         return cluster.name!
     }
 
-    function abortRbacPromises(){
-        abortRbacCheck?.forEach((abort)=>abort())
+    function abortRbacPromises() {
+        abortRbacCheck?.forEach((abort) => abort())
     }
 
     function checkRbacAccess(cluster: Cluster) {
         let currentRbacValues = { ...defaultTableRbacValues }
-        let abortArray:Array<Function> = []
+        let abortArray: Array<Function> = []
         if (!cluster.isHive) {
             delete currentRbacValues['cluster.destroy']
         }
@@ -209,7 +209,8 @@ export function ClustersTable(props: {
         }
         Object.keys(currentRbacValues).forEach((action) => {
             const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
-                request.promise.then((results) => {
+            request.promise
+                .then((results) => {
                     if (results) {
                         let rbacQueryResults: boolean[] = []
                         results.forEach((result) => {
@@ -225,7 +226,7 @@ export function ClustersTable(props: {
                     }
                 })
                 .catch((err) => console.error(err))
-                abortArray.push(request.abort)
+            abortArray.push(request.abort)
         })
         setRbacAborts(abortArray)
     }
