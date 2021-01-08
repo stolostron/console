@@ -553,13 +553,6 @@ export function ClustersTable(props: {
                                     ) as Array<string>
                                     const promiseResults = deleteClusters(managedClusterNames, false)
                                     promiseResults.promise
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Detach error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
                                         .then((results) => {
                                             const resultErrors: string[] = []
                                             let i = 0
@@ -583,6 +576,13 @@ export function ClustersTable(props: {
                                                     }
                                                 })
                                             }
+                                        })
+                                        .catch((err) => {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: 'Detach error',
+                                                message: 'Encountered error: ' + err,
+                                            })
                                         })
                                         .finally(() => {
                                             props.refresh()
