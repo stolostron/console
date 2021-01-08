@@ -2,7 +2,7 @@ import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, 
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockList, nockDelete, nockClusterList, nockOptions, nockCreate } from '../../../lib/nock-util'
+import { nockList, nockDelete, nockOptions, nockCreate } from '../../../lib/nock-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
@@ -193,14 +193,6 @@ function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttribu
     )
 }
 
-function getCreateClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'create',
-        group: 'cluster.open-cluster-management.io',
-        name,
-    } as ResourceAttributes
-}
 function getPatchClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
@@ -255,7 +247,6 @@ let getByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement
 let queryByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement | null
 let getAllByLabelText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement[]
 let getAllByRole: (role: ByRoleMatcher, options?: ByRoleOptions) => HTMLElement[]
-let container: Element
 
 describe('Cluster page', () => {
     beforeEach(async () => {
@@ -272,7 +263,6 @@ describe('Cluster page', () => {
         queryByText = renderResult.queryByText
         getAllByLabelText = renderResult.getAllByLabelText
         getAllByRole = renderResult.getAllByRole
-        container = renderResult.container
         await waitFor(() => expect(listClusterDeploymentsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listManagedClusterInfosNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listCertificateSigningRequestsNock.isDone()).toBeTruthy())
