@@ -187,15 +187,14 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     resource: 'managedclusterviews',
                     verb: 'create',
                     group: 'view.open-cluster-management.io',
-                    namespace               
-                }, 
+                    namespace,
+                },
                 {
                     resource: 'managedclusteractions',
                     verb: 'create',
                     group: 'action.open-cluster-management.io',
-                    namespace
-                }
-            
+                    namespace,
+                },
             ]
         case 'secret.get':
             return [
