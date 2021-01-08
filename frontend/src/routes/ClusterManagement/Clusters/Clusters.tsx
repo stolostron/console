@@ -10,6 +10,7 @@ import {
     AcmLaunchLink,
     AcmPageCard,
     AcmTable,
+    AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -145,16 +146,19 @@ export function ClustersPageContent() {
         clusters = mapClusters(
             items[0] as ClusterDeployment[],
             items[1] as ManagedClusterInfo[],
-            items[2] as CertificateSigningRequest[]
+            items[2] as CertificateSigningRequest[],
+            items[3] as ManagedCluster[]
         )
     }
 
     return (
-        <AcmPageCard>
-            <AcmAlertProvider>
-                <ClustersTable clusters={clusters} refresh={refresh} />
-            </AcmAlertProvider>
-        </AcmPageCard>
+        <AcmAlertProvider>
+            <AcmPageCard>
+                <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                    <ClustersTable clusters={clusters} refresh={refresh} />
+                </AcmTablePaginationContextProvider>
+            </AcmPageCard>
+        </AcmAlertProvider>
     )
 }
 

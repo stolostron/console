@@ -14,7 +14,6 @@ import { NavigationPath } from '../../NavigationPath'
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
-const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
 export const PageContext = React.createContext<{
     readonly actions: null | React.ReactNode
@@ -89,8 +88,6 @@ export default function ClusterManagementPage() {
                                 path={NavigationPath.providerConnections}
                                 component={ProviderConnectionsPage}
                             />
-                            <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
-
                             <Route exact path={NavigationPath.console}>
                                 <Redirect to={NavigationPath.clusters} />
                             </Route>

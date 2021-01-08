@@ -101,6 +101,7 @@ export function mapClusters(
         new Set([
             ...clusterDeployments.map((cd) => cd.metadata.name),
             ...managedClusterInfos.map((mc) => mc.metadata.name),
+            ...managedClusters.map((mc) => mc.metadata.name),
         ])
     )
     return uniqueClusterNames.map((cluster) => {
