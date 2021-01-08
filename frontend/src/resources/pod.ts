@@ -72,6 +72,7 @@ export async function getLatestHivePod(namespace: string, name: string) {
 
 export async function getHivePod(namespace: string, name: string, status: string) {
     let hiveJob: Pod | undefined
+    /* istanbul ignore else */
     if (status === ClusterStatus.creating) {
         hiveJob = await getProvisionPod(namespace, name)
     } else if (status === ClusterStatus.failed) {

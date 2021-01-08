@@ -65,7 +65,7 @@ describe('LoginCredentials', () => {
         nockGet(mockKubeadminSecret)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <LoginCredentials accessRestriction={false}/>
+                <LoginCredentials accessRestriction={false} />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
@@ -81,7 +81,7 @@ describe('LoginCredentials', () => {
         nockGet(mockKubeadminSecret)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <LoginCredentials accessRestriction={true}/>
+                <LoginCredentials accessRestriction={true} />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()

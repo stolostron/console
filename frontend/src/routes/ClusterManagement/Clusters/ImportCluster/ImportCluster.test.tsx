@@ -197,6 +197,10 @@ describe('ImportCluster', () => {
         )
     }
 
+    beforeEach(() => {
+        window.sessionStorage.clear()
+    })
+
     test('renders', () => {
         const { getByTestId, getByText } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
@@ -214,7 +218,7 @@ describe('ImportCluster', () => {
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const importSecretNock = nockGet(mockSecretResponse)
 
-        const { getByTestId, getByText } = render(<Component />)
+        const { getByTestId, getByText, queryByTestId } = render(<Component />)
 
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('cloudLabel-button'))
@@ -235,6 +239,12 @@ describe('ImportCluster', () => {
         await waitFor(() => expect(importSecretNock.isDone()).toBeTruthy())
 
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
+
+        // reset form
+        expect(getByText('import.footer.importanother')).toBeInTheDocument()
+        userEvent.click(getByText('import.footer.importanother'))
+        await waitFor(() => expect(queryByTestId('import-command')).toBeNull())
+        expect(getByTestId('clusterName')).toHaveValue('')
     })
 
     test('handles project creation error', async () => {

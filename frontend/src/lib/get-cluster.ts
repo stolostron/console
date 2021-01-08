@@ -101,6 +101,7 @@ export function mapClusters(
         new Set([
             ...clusterDeployments.map((cd) => cd.metadata.name),
             ...managedClusterInfos.map((mc) => mc.metadata.name),
+            ...managedClusters.map((mc) => mc.metadata.name),
         ])
     )
     return uniqueClusterNames.map((cluster) => {
@@ -239,7 +240,7 @@ export function getClusterStatus(
         } else if (!clusterDeployment.spec?.installed) {
             if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
-                const currentProvisionRef = clusterDeployment.status?.provisionRef.name ?? ''
+                const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
                     cdStatus = ClusterStatus.failed
                 } else {
