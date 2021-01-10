@@ -27,7 +27,10 @@ import { CertificateSigningRequest } from '../../../resources/certificate-signin
 import { ClusterDeployment } from '../../../resources/cluster-deployment'
 import { ManagedCluster } from '../../../resources/managed-cluster'
 import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
-import { ClustersTableActionsRbac, createSubjectAccessReviews, rbacMapping } from '../../../resources/self-subject-access-review'
+import {
+    ClustersTableActionsRbac,
+    createSubjectAccessReviews,
+    rbacMapping,
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
