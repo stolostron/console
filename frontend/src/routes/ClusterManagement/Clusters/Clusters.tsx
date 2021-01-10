@@ -31,6 +31,7 @@ import {
     ClustersTableActionsRbac,
     createSubjectAccessReviews,
     rbacMapping,
+} from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
