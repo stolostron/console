@@ -263,7 +263,6 @@ export function ClustersTable(props: {
                                         results.forEach((result) => {
                                             if (result.status === 'fulfilled') {
                                                 rbacQueryResults.push(result.value.status?.allowed!)
-                                                console.log('checking rbac out ', result)
                                             }
                                         })
 
@@ -658,6 +657,9 @@ export function ClustersTable(props: {
                                                 title: 'Detach error',
                                                 message: 'Encountered error: ' + err,
                                             })
+                                        })
+                                        .finally(() => {
+                                            props.refresh()
                                         })
                                     setConfirm(ClosedConfirmModalProps)
                                 },
