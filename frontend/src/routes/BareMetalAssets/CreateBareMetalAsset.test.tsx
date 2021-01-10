@@ -95,6 +95,35 @@ const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
     },
 }
 
+const mockCreateClusterSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+}
+
+const mockCreateClusterSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        },
+    },
+    status: {
+        allowed: true,
+    },
+}
+
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
     kind: 'BareMetalAsset',
@@ -181,6 +210,7 @@ describe('bare metal asset creation page', () => {
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
+        nockCreate(mockCreateClusterSelfSubjectAccessRequest, mockCreateClusterSelfSubjectAccessResponse)
         const { getByText } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
@@ -202,6 +232,10 @@ describe('bare metal asset creation page', () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
+        const clusterNock = nockCreate(
+            mockCreateClusterSelfSubjectAccessRequest,
+            mockCreateClusterSelfSubjectAccessResponse
+        )
 
         const { getByText, getAllByText, getByTestId } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
@@ -213,6 +247,8 @@ describe('bare metal asset creation page', () => {
             </MemoryRouter>
         )
 
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        // await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
