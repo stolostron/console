@@ -248,7 +248,6 @@ describe('bare metal asset creation page', () => {
         )
 
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
-        // await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
