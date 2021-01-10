@@ -1,6 +1,12 @@
 language: minimal
 services: docker
 
+addons:
+  sonarcloud:
+    organization: "open-cluster-management"
+    token:
+      secure: "k6DjbsQ/5vFIs59XeFvG4h/7Exhk8SQZfl3SwzyLv4dSAeKiaYhnSCsnIUa7pi6RXE79tfevwx8zGfTKVp1ohOZvztreLIqxzOnlM3pmfG2O4wa3+EtkH9IeBo0yYgNePBZUygrrVzERXwJOjLLwOsPachyAMEdMTUjPnw7xg4rjLIXH7xLnCic6GlS5+kYtsygtvIgH21NktnUWTYM4ZtyPK9li627h4ae+3524tJKkKFqdRZGHvPfj/dnTIEaXKy2QiCehVn7GaLyVS9mcqNNfwB+3jhmTDHZjNQPKUgE02rl2dWEpqiMKc0dQALhwURGMLuljCN6KcpojCLm/vOSgTMDFOQ7xJgpa1/7dB9qb6fcGfWvv4a1Il6DjGuUbuVETsJdEJIWQl1U78qshP/tSSNsELlv5Tmj+hzroBiY3TlgrHkqvZOCngWz3aeUlunjNwJtbebh9+jKPZwLiwY3Zlb0L1/SlAFAhCTpzoCKjm23jsDu0FhRx7MHi+YPhr85d9WrQjFG5BmSjq2T82Rmjceg/VTRSmr8AJVOjQhyw2uCmxX0/qQJKPz8Tg1QauIuA+f1NB9ilHhrH/Qbjl/uNOkVU9oxh6l8cRcIE7zy3QETtIBK0P3LKTbWbvUSmpfjzQLbonNm4SEB6GsPjUGdGp0t7E/2DDNTKGs+jptQ="
+
 branches:
     only:
         - master
@@ -31,6 +37,7 @@ jobs:
               - npm run lint
               - npm run check
               - npm test
+              - make sonar/js
 
         - stage: fast forward commits to release branch
           if: type = push AND branch =~ /^master$/

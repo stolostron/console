@@ -25,6 +25,7 @@ import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
+import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
@@ -89,7 +90,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     getCluster(
                         items[1] as ManagedClusterInfo,
                         items[0] as ClusterDeployment,
-                        items[2] as CertificateSigningRequest[]
+                        items[2] as CertificateSigningRequest[],
+                        items[3] as ManagedCluster
                     )
                 )
             }
@@ -178,7 +180,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     open={!!upgradeSingleCluster}
                     clusterName={upgradeSingleCluster?.name || ''}
                     close={() => {
-                        setUpgradeSingleCluster()
+                        setUpgradeSingleCluster(undefined)
                     }}
                 />
                 <AcmPageHeader
@@ -321,13 +323,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
                                     if (
                                         !(
-                                            cluster.distribution?.ocp?.availableUpdates &&
-                                            cluster.distribution?.ocp?.availableUpdates.length > 0
+                                            cluster?.distribution?.ocp?.availableUpdates &&
+                                            cluster?.distribution?.ocp?.availableUpdates.length > 0
                                         ) ||
-                                        (cluster.distribution?.ocp?.version &&
-                                            cluster.distribution?.ocp?.desiredVersion &&
-                                            cluster.distribution?.ocp?.version !==
-                                                cluster.distribution?.ocp?.desiredVersion)
+                                        (cluster?.distribution?.ocp?.version &&
+                                            cluster?.distribution?.ocp?.desiredVersion &&
+                                            cluster?.distribution?.ocp?.version !==
+                                                cluster?.distribution?.ocp?.desiredVersion)
                                     ) {
                                         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
                                     }

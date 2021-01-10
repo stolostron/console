@@ -15,6 +15,12 @@ import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requ
 
 const agent = new Agent({ rejectUnauthorized: false })
 
+function getRandomInt(min: number, max: number) {
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export async function requestHandler(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
     try {
         let url = req.url
@@ -36,6 +42,46 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                     }
                     return res.writeHead(200).end()
             }
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+            if (process.env.DELAY) {
+                await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+            }
+            if (process.env.RANDOM_DELAY) {
+                await new Promise((resolve) => setTimeout(resolve, getRandomInt(0, Number(process.env.RANDOM_DELAY))))
+            }
+            if (process.env.RANDOM_ERROR) {
+                if (getRandomInt(0, 100) < Number(process.env.RANDOM_ERROR)) {
+                    return res.destroy()
+                }
+            }
+        }
+
+        // Console Header
+        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
+            const token = getToken(req)
+            if (!token) return res.writeHead(401).end()
+
+            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+
+            let headerUrl: string
+            if (url.startsWith('/multicloud/header/')) {
+                headerUrl = `${acmUrl}${url}`
+            } else if (url == '/header') {
+                const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
+                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=console&dev=${isDevelopment}`
+            }
+
+            const headers = req.headers
+            headers.authorization = `Bearer ${token}`
+            headers.host = parseUrl(acmUrl).host
+            const response = await request(req.method, headerUrl, headers)
+            return response.pipe(res.writeHead(response.statusCode, response.headers))
+        }
+
+        if (url.startsWith('/multicloud')) {
+            url = url.substr('/multicloud'.length)
         }
 
         // Kubernetes Proxy
@@ -77,7 +123,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             }
             if (req.method != 'POST') {
                 logger.info('wrong method for upgrade')
-                res.writeHead(503)
+                res.writeHead(405)
                 return res.end()
             }
             req.setTimeout(120 * 1000)
@@ -242,28 +288,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
             // const query =
             // TODO get code...
-        }
-
-        // Console Header
-        if (process.env.NODE_ENV === 'development' && (url.startsWith('/multicloud/header/') || url == '/header')) {
-            const token = getToken(req)
-            if (!token) return res.writeHead(401).end()
-
-            const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
-
-            let headerUrl: string
-            if (url.startsWith('/multicloud/header/')) {
-                headerUrl = `${acmUrl}${url}`
-            } else if (url == '/header') {
-                const isDevelopment = process.env.NODE_ENV === 'development' ? 'true' : 'false'
-                headerUrl = `${acmUrl}/multicloud/header/api/v1/header?serviceId=console&dev=${isDevelopment}`
-            }
-
-            const headers = req.headers
-            headers.authorization = `Bearer ${token}`
-            headers.host = parseUrl(acmUrl).host
-            const response = await request(req.method, headerUrl, headers)
-            return response.pipe(res.writeHead(response.statusCode, response.headers))
         }
 
         // Readiness

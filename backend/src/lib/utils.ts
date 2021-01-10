@@ -33,7 +33,7 @@ interface requestOptions {
     token: string
     agent: Agent
 }
-type verifyStatusFn<T> = (
+export type verifyStatusFn<T> = (
     response: IncomingMessage
 ) => Promise<{
     isValid: boolean
@@ -178,6 +178,7 @@ function pollResource<T>(
             }
             currPoll++
             if (currPoll > maxPollTimes) {
+                logger.debug('Timeout polling.')
                 reject({ code: 500, msg: '{"message":"request timeout"}' })
                 return
             }
@@ -207,7 +208,7 @@ function pollResource<T>(
 // createPollHelper does get->create->poll->verify->delete operation on a resource
 // if object exist, will not create but poll directly
 // if something goes wrong when doing requests, will thow an error in requestException format
-async function createPollHelper<TRet, TPoll>(
+export async function createPollHelper<TRet, TPoll>(
     opt: requestOptions,
     gvr: KubernetesGVR,
     nsn: namespacedName,
@@ -237,20 +238,21 @@ async function createPollHelper<TRet, TPoll>(
     const poll = pollResource(opt, gvr, nsn, pollInterval, verifyStatus, maxPollTimes)
 
     let retData = undefined
-    const deleteCreatedresource = () => {
+    const deleteCreatedresource = async () => {
         //delete, the result doesn't matter for users
-        deleteResource(opt, gvr, nsn)
-            .then(() => {
-                logger.debug('deleted', nsn)
-            })
-            .catch((err) => logger.error('failed to delete', nsn, err))
+        try {
+            await deleteResource(opt, gvr, nsn)
+            logger.debug('deleted', nsn)
+        } catch (err) {
+            logger.error('failed to delete', nsn, err)
+        }
     }
     // when failed, poll will throw error in requestException format
     try {
         retData = await poll
-        deleteCreatedresource()
+        await deleteCreatedresource()
     } catch (err) {
-        deleteCreatedresource()
+        await deleteCreatedresource()
         throw err
     }
     return retData
@@ -274,8 +276,6 @@ export async function getRemoteResource<T>(
     maxPollTimes: number
 ): Promise<T> {
     const opt: requestOptions = { host, token, agent }
-    const gvr: KubernetesGVR = { apiGroup, version, resources }
-    const nsn: namespacedName = { name, namespace }
     const viewName = createHash('sha1')
         .update(`${clusterName}-${resources}-${namespace}-${name}`)
         .digest('hex')

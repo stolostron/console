@@ -14,6 +14,7 @@ export function getLatest<T>(items: T[], key: string) {
     })
 }
 
+/* istanbul ignore next */
 export const createDownloadFile = (filename: string, content: string, type?: string) => {
     const a = document.createElement('a')
     const blob = new Blob([content], { type: type || 'text/plain' })

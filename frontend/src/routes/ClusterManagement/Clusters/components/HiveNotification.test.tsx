@@ -131,11 +131,15 @@ describe('HiveNotification', () => {
             },
             mockClusterProvisionList
         )
-        const podScope = nockNamespacedList({
-            apiVersion: PodApiVersion,
-            kind: PodKind,
-            metadata: { namespace: 'test-cluster' }
-        }, mockPodList, ['hive.openshift.io/cluster-deployment-name=test-cluster'])
+        const podScope = nockNamespacedList(
+            {
+                apiVersion: PodApiVersion,
+                kind: PodKind,
+                metadata: { namespace: 'test-cluster' },
+            },
+            mockPodList,
+            ['hive.openshift.io/cluster-deployment-name=test-cluster']
+        )
         render(<Component />)
         await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
         await act(async () => {
@@ -160,11 +164,15 @@ describe('HiveNotification', () => {
             },
             mockClusterProvisionList
         )
-        const podScope = nockNamespacedList({
-            apiVersion: PodApiVersion,
-            kind: PodKind,
-            metadata: { namespace: 'test-cluster' }
-        }, mockPodList, ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision'])
+        const podScope = nockNamespacedList(
+            {
+                apiVersion: PodApiVersion,
+                kind: PodKind,
+                metadata: { namespace: 'test-cluster' },
+            },
+            mockPodList,
+            ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
+        )
         render(<Component />)
         await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
         await act(async () => {
@@ -188,11 +196,15 @@ describe('HiveNotification', () => {
             },
             mockClusterProvisionList
         )
-        const podScope = nockNamespacedList({
-            apiVersion: PodApiVersion,
-            kind: PodKind,
-            metadata: { namespace: 'test-cluster' }
-        }, mockPodList, ['hive.openshift.io/cluster-deployment-name=test-cluster', 'job-name=test-cluster-uninstall'])
+        const podScope = nockNamespacedList(
+            {
+                apiVersion: PodApiVersion,
+                kind: PodKind,
+                metadata: { namespace: 'test-cluster' },
+            },
+            mockPodList,
+            ['hive.openshift.io/cluster-deployment-name=test-cluster', 'job-name=test-cluster-uninstall']
+        )
         render(<Component />)
         await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
         await act(async () => {
