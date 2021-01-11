@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockUpgrade } from '../lib/nock-util'
-import { DistributionInfo } from '../lib/get-cluster'
+import { DistributionInfo, ClusterStatus } from '../lib/get-cluster'
 import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
 
@@ -59,13 +59,21 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
 describe('DistributionField', () => {
     it('should not show upgrade button when no available upgrades', () => {
         const { queryAllByText } = render(
-            <DistributionField clusterName="clusterName" data={mockDistributionInfoWithoutUpgrades} />
+            <DistributionField
+                clusterName="clusterName"
+                data={mockDistributionInfoWithoutUpgrades}
+                clusterStatus={ClusterStatus.ready}
+            />
         )
         expect(queryAllByText('upgrade.available').length).toBe(0)
     })
     it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', () => {
         const { getAllByText, queryAllByText } = render(
-            <DistributionField clusterName="clusterName" data={mockDistributionInfo} />
+            <DistributionField
+                clusterName="clusterName"
+                data={mockDistributionInfo}
+                clusterStatus={ClusterStatus.ready}
+            />
         )
         expect(getAllByText('upgrade.available')).toBeTruthy()
         userEvent.click(getAllByText('upgrade.available')[0])
@@ -76,7 +84,11 @@ describe('DistributionField', () => {
     })
     it('should show upgrading with loader when upgrading', () => {
         const { getAllByText, queryByRole } = render(
-            <DistributionField clusterName="cluster" data={mockDistributionInfoUpgrading} />
+            <DistributionField
+                clusterName="cluster"
+                data={mockDistributionInfoUpgrading}
+                clusterStatus={ClusterStatus.ready}
+            />
         )
         expect(getAllByText('upgrade.upgrading ' + mockDistributionInfoUpgrading.ocp?.desiredVersion)).toBeTruthy()
         expect(queryByRole('progressbar')).toBeTruthy()
@@ -84,13 +96,21 @@ describe('DistributionField', () => {
 
     it('should show failed when failed upgrade', () => {
         const { getAllByText } = render(
-            <DistributionField clusterName="clusterName" data={mockDistributionInfoFailedUpgrade} />
+            <DistributionField
+                clusterName="clusterName"
+                data={mockDistributionInfoFailedUpgrade}
+                clusterStatus={ClusterStatus.ready}
+            />
         )
         expect(getAllByText('upgrade.upgradefailed')).toBeTruthy()
     })
     it('should not show failed when there is no upgrade running', () => {
         const { queryAllByText, getAllByText } = render(
-            <DistributionField clusterName="clusterName" data={mockDistributionInfoFailedInstall} />
+            <DistributionField
+                clusterName="clusterName"
+                data={mockDistributionInfoFailedInstall}
+                clusterStatus={ClusterStatus.ready}
+            />
         )
         expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
         expect(getAllByText('upgrade.available')).toBeTruthy()
@@ -161,7 +181,7 @@ describe('UpgradeModal', () => {
         const submitButton = getByText('upgrade.submit')
         expect(submitButton).toBeTruthy()
         userEvent.click(submitButton)
-        await waitFor(() => expect(queryByText('upgrade.loading')).toBeTruthy())
+        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
         // wait for modal to be closed
         await waitFor(() => expect(isClosed).toBeTruthy())
     })
@@ -179,7 +199,7 @@ describe('UpgradeModal', () => {
                 data={mockDistributionInfo}
             />
         )
-        const button = getByTestId('pf-select-toggle-id-19')
+        const button = getByTestId('pf-select-toggle-id-21')
         expect(button).toBeTruthy()
         userEvent.click(button)
         // select a version
@@ -191,8 +211,8 @@ describe('UpgradeModal', () => {
         const submitButton = getByText('upgrade.submit')
         expect(submitButton).toBeTruthy()
         userEvent.click(submitButton)
-        await waitFor(() => expect(queryByText('upgrade.loading')).toBeTruthy())
-        await waitFor(() => expect(queryByText('upgrade.loading')).toBeFalsy())
+        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
+        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
 
         // wait for modal to show alert
         expect(isClosed).toBe(false)

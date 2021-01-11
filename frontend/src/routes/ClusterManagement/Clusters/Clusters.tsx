@@ -304,7 +304,11 @@ export function ClustersTable(props: {
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
                         cell: (cluster) => (
-                            <DistributionField data={cluster.distribution} clusterName={cluster?.name || ''} />
+                            <DistributionField
+                                data={cluster.distribution}
+                                clusterName={cluster?.name || ''}
+                                clusterStatus={cluster?.status || ''}
+                            />
                         ),
                     },
                     {
@@ -457,6 +461,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&
                                     cluster.distribution?.ocp?.availableUpdates.length > 0
@@ -622,6 +627,7 @@ export function ClustersTable(props: {
                             if (!managedClusters) {
                                 return
                             }
+
                             const clusters = managedClusters.filter(
                                 (c) =>
                                     c.distribution?.ocp?.availableUpdates &&
@@ -632,10 +638,10 @@ export function ClustersTable(props: {
                                         c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
                                     )
                             )
-                            if (clusters.length === 1) {
+                            if (clusters.length === 1 && managedClusters.length === 1) {
                                 setUpgradeSingleCluster(clusters[0])
-                            } else if (clusters.length > 0) {
-                                setUpgradeMultipleClusters(clusters)
+                            } else if (managedClusters.length > 0) {
+                                setUpgradeMultipleClusters(managedClusters)
                             }
                         },
                     },

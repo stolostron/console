@@ -41,23 +41,46 @@ const mockManagedCluster2: ManagedCluster = {
     metadata: { name: 'managed-cluster-name-2' },
     spec: { hubAcceptsClient: true },
 }
+const readyManagedClusterConditions = [
+    {type: 'ManagedClusterConditionAvailable',reason: 'ManagedClusterConditionAvailable',status: 'True'},
+    {type: 'ManagedClusterJoined',reason: 'ManagedClusterJoined',status: 'True'},
+    {type: 'HubAcceptedManagedCluster',reason: 'HubAcceptedManagedCluster',status: 'True'}
+]
+const readyManagedClusterStatus = {
+    allocatable: {
+        cpu: '',
+        memory: '',
+    },
+    capacity: {
+        cpu: '',
+        memory: '',
+    },
+    version: {
+        kubernetes: '1.17'
+    },
+    clusterClaims: [],
+    conditions: readyManagedClusterConditions,
+}
 const mockManagedCluster3: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-3-no-upgrade' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus
 }
 const mockManagedCluster4: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-4-upgrade-available' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus
 }
 const mockManagedCluster5: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-5-upgrading' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus
 }
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
@@ -87,6 +110,7 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'managed-cluster-name-3-no-upgrade', namespace: 'managed-cluster-name-3-no-upgrade' },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',
@@ -108,6 +132,7 @@ const mockManagedClusterInfo4: ManagedClusterInfo = {
         namespace: 'managed-cluster-name-4-upgrade-available',
     },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',
@@ -125,6 +150,7 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'managed-cluster-name-5-upgrading', namespace: 'managed-cluster-name-5-upgrading' },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',

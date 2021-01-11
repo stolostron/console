@@ -1,5 +1,6 @@
+import './style.css'
 import React, { useState, useEffect } from 'react'
-import Axios, { AxiosError, AxiosResponse } from 'axios'
+import Axios, { AxiosResponse } from 'axios'
 import { useTranslation } from 'react-i18next'
 import {
     AcmButton,
@@ -16,12 +17,10 @@ import {
     ActionGroup,
     SelectOption,
     AlertVariant,
-    EmptyState,
-    EmptyStateIcon,
-    Title,
-    Spinner,
+    Text,
+    TextVariants,
 } from '@patternfly/react-core'
-import { Cluster } from '../../../../lib/get-cluster'
+import { Cluster,ClusterStatus } from '../../../../lib/get-cluster'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 // compare version
@@ -37,12 +36,20 @@ const compareVersion = (a: string, b: string) => {
     return bVersion.length - aVersion.length
 }
 
+const isUpgradeable = (c: Cluster) => {
+    const hasAvailableUpgrades =
+        c.distribution?.ocp?.availableUpdates && c.distribution?.ocp?.availableUpdates.length > 0
+    const isUpgrading = c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
+    const isReady = c.status === ClusterStatus.ready
+    return (isReady && hasAvailableUpgrades && !isUpgrading) || false
+}
+
 const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((c: Cluster) => {
         if (c.name) {
-            const availableUpdates = c.distribution?.ocp?.availableUpdates.sort(compareVersion)
-            const latestVersion = availableUpdates && availableUpdates.length > 1 ? availableUpdates[0] : ''
+            const availableUpdates = c.distribution?.ocp?.availableUpdates?.sort(compareVersion)
+            const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
             res[c.name] = res[c.name] ? res[c.name] : latestVersion
         }
     })
@@ -56,84 +63,119 @@ export function BatchUpgradeModal(props: {
 }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
-    const [upgradeError, setUpgradeError] = useState<string>()
+    const [upgradeError, setUpgradeError] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
-    // set up latest if not selected
+    const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+    const [upgradeTriggerResults, setUpgradeTriggerResults] = useState<Record<string, boolean>>({}) // map of clustername:isUpgradeTriggered
     useEffect(() => {
-        setSelectVersions(setLatestVersions(props.clusters))
+        // set up latest if not selected
+        const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
+        setSelectVersions(setLatestVersions(newUpgradeableClusters))
+        setUpgradeableClusters(newUpgradeableClusters || [])
     }, [props.clusters])
+    const resetModal = () => {
+        setLoading(false)
+        setUpgradeError(false)
+        setSelectVersions({})
+        setUpgradeTriggerResults({})
+    }
+    const getFailedCount = () => {
+        let passedCount = 0
+        let total = 0
+        for (let k in upgradeTriggerResults) {
+            if (upgradeTriggerResults[k] === true) {
+                passedCount++
+            }
+            total++
+        }
+        return { failedCount: total - passedCount, total }
+    }
 
     return (
         <AcmModal
             variant={ModalVariant.small}
             isOpen={props.open}
             onClose={() => {
-                setLoading(false)
-                setUpgradeError('')
-                setSelectVersions({})
+                resetModal()
                 props.close()
             }}
-            title={t('upgrade.multiple.title').replace('{0}', '' + props.clusters?.length)}
+            title={t('upgrade.multiple.title').replace('{0}', '' + upgradeableClusters.length)}
         >
-            {loading && (
-                <EmptyState>
-                    <EmptyStateIcon variant="container" component={Spinner} />
-                    <Title size="lg" headingLevel="h4">
-                        {t('upgrade.loading')}
-                    </Title>
-                </EmptyState>
-            )}
-            {!loading && (
-                <AcmForm>
-                    {upgradeError && (
-                        <AcmAlert
-                            title={t('upgrade.upgradefailed')}
-                            subtitle={upgradeError}
-                            variant={AlertVariant.danger}
-                            isInline
-                        />
-                    )}
+            <AcmForm>
+                {upgradeError && (
+                    <AcmAlert
+                        title={t('upgrade.multiple.upgradefailed')
+                            .replace('{0}', '' + getFailedCount().failedCount)
+                            .replace('{1}', '' + getFailedCount().total)}
+                        subtitle={t('upgrade.multiple.upgradefailed.details')
+                            .replace('{0}', '' + getFailedCount().failedCount)
+                            .replace('{1}', '' + getFailedCount().total)}
+                        variant={AlertVariant.danger}
+                        isInline
+                    />
+                )}
+                <Text component={TextVariants.small}>{t('upgrade.multiple.note')}</Text>
+                <div style={{ maxHeight: '18em', overflowY: 'scroll' }}>
                     <AcmTable<Cluster>
                         plural={t('upgrade.table.clusterplural')}
-                        items={props.clusters}
+                        items={upgradeableClusters}
                         columns={[
                             {
                                 header: t('upgrade.table.name'),
                                 sort: 'name',
-                                //search: 'name',
                                 cell: 'name',
                             },
                             {
                                 header: t('upgrade.table.currentversion'),
-                                cell: 'distribution.ocp.version',
-                                //search: 'distribution.ocp.version',
-                                sort: 'distribution.ocp.version',
+                                cell: (item: Cluster) => {
+                                    const isUpgradeTriggered = (item.name && upgradeTriggerResults[item.name]) || false
+                                    const currentVersion = item?.distribution?.ocp?.version || ''
+
+                                    return (
+                                        <span>
+                                            {!isUpgradeTriggered && currentVersion}
+                                            {isUpgradeTriggered &&
+                                                t('upgrade.istriggered').replace(
+                                                    '{0}',
+                                                    (item.name && selectVersions[item.name]) || ''
+                                                )}
+                                        </span>
+                                    )
+                                },
                             },
                             {
                                 header: t('upgrade.table.newversion'),
                                 cell: (item: Cluster) => {
-                                    const availableUpdates = item.distribution?.ocp?.availableUpdates.sort(
-                                        compareVersion
-                                    )
+                                    const availableUpdates =
+                                        item.distribution?.ocp?.availableUpdates &&
+                                        item.distribution?.ocp?.availableUpdates.sort(compareVersion)
+                                    const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
+                                    const isUpgradeTriggered = (item.name && upgradeTriggerResults[item.name]) || false
+
                                     return (
-                                        <AcmSelect
-                                            value={selectVersions[item.name || ''] || ''}
-                                            id={`${item.name}-upgrade-selector`}
-                                            label=""
-                                            isRequired
-                                            onChange={(version) => {
-                                                if (item.name && version) {
-                                                    selectVersions[item.name] = version
-                                                    setSelectVersions({ ...selectVersions })
-                                                }
-                                            }}
-                                        >
-                                            {availableUpdates?.map((version) => (
-                                                <SelectOption key={`${item.name}-${version}`} value={version}>
-                                                    {version}
-                                                </SelectOption>
-                                            ))}
-                                        </AcmSelect>
+                                        <div>
+                                            {!isUpgradeTriggered && hasAvailableUpgrades && (
+                                                <AcmSelect
+                                                    value={selectVersions[item.name || ''] || ''}
+                                                    id={`${item.name}-upgrade-selector`}
+                                                    maxHeight={'6em'}
+                                                    label=""
+                                                    isRequired
+                                                    onChange={(version) => {
+                                                        if (item.name && version) {
+                                                            selectVersions[item.name] = version
+                                                            setSelectVersions({ ...selectVersions })
+                                                        }
+                                                    }}
+                                                >
+                                                    {availableUpdates?.map((version) => (
+                                                        <SelectOption key={`${item.name}-${version}`} value={version}>
+                                                            {version}
+                                                        </SelectOption>
+                                                    ))}
+                                                </AcmSelect>
+                                            )}
+                                        </div>
                                     )
                                 },
                             },
@@ -143,20 +185,32 @@ export function BatchUpgradeModal(props: {
                         bulkActions={[]}
                         rowActions={[]}
                     />
+                </div>
+                <ActionGroup>
+                    <AcmSubmit
+                        label={t('upgrade.submit')}
+                        processingLabel={t('upgrade.submit.processing')}
+                        isLoading={loading}
+                        onClick={() => {
+                            if (loading) {
+                                return
+                            }
+                            setLoading(true)
+                            setUpgradeError(false)
+                            const upgradeRequests: Array<Promise<AxiosResponse>> = []
+                            for (const key in selectVersions) {
+                                // cluster name should not be nil & should select one version
+                                if (!key || !selectVersions[key]) {
+                                    continue
+                                }
+                                // if upgrade is triggered, will not upgrade again
+                                if (upgradeTriggerResults[key]) {
+                                    continue
+                                }
+                                const url = backendUrl + '/upgrade'
 
-                    <ActionGroup>
-                        <AcmSubmit
-                            onClick={() => {
-                                setLoading(true)
-                                setUpgradeError('')
-
-                                const upgradeRequests: Array<Promise<AxiosResponse>> = []
-                                for (const key in selectVersions) {
-                                    if (!key || !selectVersions[key]) {
-                                        continue
-                                    }
-                                    const url = backendUrl + '/upgrade'
-                                    upgradeRequests.push(
+                                upgradeRequests.push(
+                                    new Promise<AxiosResponse>((resolve, reject) => {
                                         Axios.post(
                                             url,
                                             {
@@ -165,36 +219,51 @@ export function BatchUpgradeModal(props: {
                                             },
                                             { withCredentials: true }
                                         )
-                                    )
-                                }
-                                Promise.all(upgradeRequests)
-                                    .then(() => {
-                                        setLoading(false)
-                                        setSelectVersions({})
-                                        props.close()
+                                            .then((res) => {
+                                                upgradeTriggerResults[key] = true
+                                                setUpgradeTriggerResults({ ...upgradeTriggerResults })
+                                                resolve(res)
+                                            })
+                                            .catch((err) => {
+                                                // set modal with an error
+                                                upgradeTriggerResults[key] = false
+                                                setUpgradeTriggerResults({ ...upgradeTriggerResults })
+                                                console.error(`Failed to upgrade ${key}:`, err)
+                                                reject(err)
+                                            })
                                     })
-                                    .catch((reason: AxiosError) => {
-                                        setLoading(false)
-                                        setUpgradeError(reason.message)
-                                    })
-                            }}
-                        >
-                            {t('upgrade.submit')}
-                        </AcmSubmit>
-                        <AcmButton
-                            onClick={() => {
+                                )
+                            }
+
+                            return Promise.allSettled(upgradeRequests).then((results) => {
                                 setLoading(false)
-                                setUpgradeError('')
-                                setSelectVersions({})
-                                props.close()
-                            }}
-                            variant={ButtonVariant.link}
-                        >
-                            {t('upgrade.cancel')}
-                        </AcmButton>
-                    </ActionGroup>
-                </AcmForm>
-            )}
+                                let hasError = false
+                                results.forEach((result) => {
+                                    if(result.status==='rejected'){
+                                        hasError = true
+                                    }
+                                })
+                                if (hasError) {
+                                    setUpgradeError(true)
+                                } else {
+                                    resetModal()
+                                    props.close()
+                                }
+                            })
+                        }}
+                    />
+
+                    <AcmButton
+                        onClick={() => {
+                            resetModal()
+                            props.close()
+                        }}
+                        variant={ButtonVariant.link}
+                    >
+                        {t('upgrade.cancel')}
+                    </AcmButton>
+                </ActionGroup>
+            </AcmForm>
         </AcmModal>
     )
 }

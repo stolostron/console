@@ -325,6 +325,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
 
                                     if (
+                                        cluster?.status !== ClusterStatus.ready ||
                                         !(
                                             cluster?.distribution?.ocp?.availableUpdates &&
                                             cluster?.distribution?.ocp?.availableUpdates.length > 0
