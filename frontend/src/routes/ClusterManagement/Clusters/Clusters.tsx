@@ -189,7 +189,7 @@ export function ClustersTable(props: {
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
-    const [abortBatchRbacCheck, setBatchRbacAbort] = useState<abortDictionary>()
+    const [abortBatchRbacCheckDictionary, setBatchRbacAbort] = useState<abortDictionary>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -202,10 +202,13 @@ export function ClustersTable(props: {
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
     }
-    function abortBatchRbacPromises(cluster: Cluster) {
-        if (abortBatchRbacCheck) abortBatchRbacCheck[cluster.name!]?.forEach((abort) => abort)
+    function abortBatchRbacPromises() {
+        if (abortBatchRbacCheckDictionary) {
+            Object.keys(abortBatchRbacCheckDictionary).forEach((clusterName)=>{
+                abortBatchRbacCheckDictionary[clusterName!]?.forEach((abort) => abort)
+            })
+        }
     }
-
     function checkRbacAccess(cluster: Cluster) {
         let currentRbacValues = { ...defaultTableRbacValues }
         let abortArray: Array<Function> = []
