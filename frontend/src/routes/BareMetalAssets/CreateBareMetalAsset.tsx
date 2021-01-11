@@ -14,7 +14,7 @@ import {
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import {
     createResource,
     getResource,
@@ -77,23 +77,23 @@ function getBMASecret(metadata: Object) {
 
 export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma'])
-    let path: Array<string>
-    let editAssetName: string = ''
-    let editAssetNamespace: string = ''
+    const params: { namespace?: string; name?: string } = useParams()
 
-    path = useLocation().pathname.split('/').reverse()
-    if (path[0] === 'edit') {
-        editAssetName = path[1]
-        editAssetNamespace = path[2]
-
+    if (params.namespace && params.name) {
         return (
             <Page>
                 <AcmAlertProvider>
-                    <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                    <AcmPageHeader
+                        title={t('editBareMetalAsset.title')}
+                        breadcrumb={[
+                            { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('editBareMetalAsset.title'), to: '' },
+                        ]}
+                    />
                     <EditBareMetalAssetPageData
                         bmaSecretID={props.bmaSecretID}
-                        editAssetName={editAssetName}
-                        editAssetNamespace={editAssetNamespace}
+                        editAssetName={params.name}
+                        editAssetNamespace={params.namespace}
                     />
                 </AcmAlertProvider>
             </Page>
@@ -102,7 +102,13 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
     return (
         <Page>
             <AcmAlertProvider>
-                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <AcmPageHeader
+                    title={t('createBareMetalAsset.title')}
+                    breadcrumb={[
+                        { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('createBareMetalAsset.title'), to: '' },
+                    ]}
+                />
                 <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
             </AcmAlertProvider>
         </Page>
