@@ -1,8 +1,8 @@
 {
   "bmas": "Bare metal assets",
 
-  "createBareMetalAsset.title": "Create Bare Metal Asset",
-  "createBareMetalAsset.assetName.label": "Bare Metal Asset Name",
+  "createBareMetalAsset.title": "Create bare metal asset",
+  "createBareMetalAsset.assetName.label": "Bare metal asset name",
   "createBareMetalAsset.assetName.placeholder": "Enter the name for the bare metal asset",
   "createBareMetalAsset.namespaceName.label": "Namespace",
   "createBareMetalAsset.namespaceName.placeholder": "Select a namespace to store the bare metal asset in the cluster",
@@ -20,6 +20,7 @@
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
   
+  "editBareMetalAsset.title": "Edit bare metal asset",
   "editBareMetalAsset.button.submit":"Apply",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
@@ -29,19 +30,18 @@
   "bareMetalAsset.tableHeader.role":"Role",
   "bareMetalAsset.tableHeader.status":"Status",
   "bareMetalAsset.tableHeader.labels":"Labels",
-  "bareMetalAsset.bulkAction.createAsset":"Create Asset",
-  "bareMetalAsset.bulkAction.destroyAsset":"Destroy Asset(s)",
-  "bareMetalAsset.bulkAction.createCluster":"Create Cluster",
+  "bareMetalAsset.bulkAction.createAsset":"Create asset",
+  "bareMetalAsset.bulkAction.destroyAsset":"Destroy asset(s)",
+  "bareMetalAsset.bulkAction.createCluster":"Create cluster",
 
   "bareMetalAsset.modal.deleteMultiple.title":"Destroy bare metal assets",
-  "bareMetalAsset.modal.deleteMultiple.message":"You are about to Destroy {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.deleteMultiple.message":"You are about to destroy {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
   "bareMetalAsset.modal.delete.title":"Destroy bare metal asset",
-  "bareMetalAsset.modal.delete.message":"You are about to Destroy {{assetName}}. The bare metal asset will no longer be available. This action is irreversible.",
+  "bareMetalAsset.modal.delete.message":"You are about to destroy <bold>{{assetName}}</bold>. The bare metal asset will no longer be available. This action is irreversible.",
   "bareMetalAsset.modal.edit.title":"Destroy bare metal asset",
 
-  "bareMetalAsset.rowAction.deleteAsset.title":"Destroy Asset",
-  "bareMetalAsset.rowAction.editAsset.title":"Edit Asset",
-  "bareMetalAsset.rowAction.editLabels.title":"Edit Labels",
+  "bareMetalAsset.rowAction.deleteAsset.title":"Destroy asset",
+  "bareMetalAsset.rowAction.editAsset.title":"Edit asset",
 
   "bareMetalAsset.statusMessage.credentialsFound":"No credentials",
   "bareMetalAsset.statusMessage.assetSyncStarted":"Asset syncing",
