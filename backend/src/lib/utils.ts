@@ -431,7 +431,7 @@ export async function updateRemoteResource(
                 isValid: false,
                 isRetryRequired: false,
                 code: response.statusCode,
-                msg: msg,
+                msg: msg.toString(),
             }
         } catch (err) {
             logger.debug('failed to verify poll return', err)
