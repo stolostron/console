@@ -42,9 +42,9 @@ const mockManagedCluster2: ManagedCluster = {
     spec: { hubAcceptsClient: true },
 }
 const readyManagedClusterConditions = [
-    {type: 'ManagedClusterConditionAvailable',reason: 'ManagedClusterConditionAvailable',status: 'True'},
-    {type: 'ManagedClusterJoined',reason: 'ManagedClusterJoined',status: 'True'},
-    {type: 'HubAcceptedManagedCluster',reason: 'HubAcceptedManagedCluster',status: 'True'}
+    { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+    { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+    { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
 ]
 const readyManagedClusterStatus = {
     allocatable: {
@@ -56,7 +56,7 @@ const readyManagedClusterStatus = {
         memory: '',
     },
     version: {
-        kubernetes: '1.17'
+        kubernetes: '1.17',
     },
     clusterClaims: [],
     conditions: readyManagedClusterConditions,
@@ -66,21 +66,21 @@ const mockManagedCluster3: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-3-no-upgrade' },
     spec: { hubAcceptsClient: true },
-    status: readyManagedClusterStatus
+    status: readyManagedClusterStatus,
 }
 const mockManagedCluster4: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-4-upgrade-available' },
     spec: { hubAcceptsClient: true },
-    status: readyManagedClusterStatus
+    status: readyManagedClusterStatus,
 }
 const mockManagedCluster5: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-5-upgrading' },
     spec: { hubAcceptsClient: true },
-    status: readyManagedClusterStatus
+    status: readyManagedClusterStatus,
 }
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(

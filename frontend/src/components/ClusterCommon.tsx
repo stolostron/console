@@ -53,7 +53,11 @@ export function StatusField(props: { status: ClusterStatus }) {
     return <AcmInlineStatus type={type} status={t(`status.${props.status}`)} />
 }
 
-export function DistributionField(props: { clusterName: string; data: DistributionInfo | undefined, clusterStatus: ClusterStatus }) {
+export function DistributionField(props: {
+    clusterName: string
+    data: DistributionInfo | undefined
+    clusterStatus: ClusterStatus
+}) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
@@ -169,7 +173,7 @@ export function UpgradeModal(props: {
                         processingLabel={t('upgrade.submit.processing')}
                         isLoading={loading}
                         onClick={() => {
-                            if(loading){
+                            if (loading) {
                                 return
                             }
                             setLoading(true)

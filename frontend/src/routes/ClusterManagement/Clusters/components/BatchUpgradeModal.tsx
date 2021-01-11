@@ -20,7 +20,7 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { Cluster,ClusterStatus } from '../../../../lib/get-cluster'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 // compare version
@@ -239,7 +239,7 @@ export function BatchUpgradeModal(props: {
                                 setLoading(false)
                                 let hasError = false
                                 results.forEach((result) => {
-                                    if(result.status==='rejected'){
+                                    if (result.status === 'rejected') {
                                         hasError = true
                                     }
                                 })
