@@ -29,7 +29,7 @@ export default function BareMetalAssetsPage() {
                 title={t('bmas')}
                 titleTooltip={
                     <>
-                        {t('bmas.tooltips')}
+                        {t('bmas.tooltip')}
                         <a href={DOC_LINKS.BARE_METAL_ASSETS} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
                             {t('common:learn.more')}
                         </a>

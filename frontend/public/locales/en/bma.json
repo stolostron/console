@@ -1,6 +1,6 @@
 {
   "bmas": "Bare metal assets",
-  "bmas.tooltips": "View all bare metal assets.",
+  "bmas.tooltip": "View all bare metal assets.",
 
   "createBareMetalAsset.title": "Create bare metal asset",
   "createBareMetalAsset.title.tooltip": "Bare metal assets are virtual or physical servers that are configured to run your cloud operations.",
