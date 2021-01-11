@@ -18,5 +18,4 @@ module.exports = override(
    addWebpackPlugin(new MonacoWebpackPlugin({
      languages: ['yaml']
    }))
-  
 );
