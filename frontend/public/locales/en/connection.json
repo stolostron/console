@@ -25,6 +25,7 @@
 
     "editConnection.title": "Edit provider connection",
     "addConnection.title": "Add provider connection",
+    "addConnection.title.tooltip": "A provider connection stores the access credentials and configuration information for creating clusters.",
     "addConnection.connectionName.label": "Connection name",
     "addConnection.connectionName.placeholder": "Enter the name for the provider connection",
     "addConnection.connectionName.labelHelp": "The name for the provider connection.",
