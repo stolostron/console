@@ -26,6 +26,13 @@ const mockManagedCluster1: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-1' },
     spec: { hubAcceptsClient: true },
+    status: {
+        allocatable: { cpu: '', memory: '' },
+        capacity: { cpu: '', memory: '' },
+        clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'AWS' }],
+        conditions: [],
+        version: { kubernetes: '' },
+    },
 }
 const mockManagedCluster2: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
@@ -72,7 +79,7 @@ const mockManagedClusterInfo0: ManagedClusterInfo = {
 const mockManagedClusterInfo1: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name-2', namespace: 'managed-cluster-name-2' },
+    metadata: { name: 'managed-cluster-name-2', namespace: 'managed-cluster-name-2', labels: { cloud: 'Google' } },
 }
 const mockManagedClusterInfo3: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -147,7 +154,11 @@ function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[])
 const mockClusterDeployment: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
-    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
+    metadata: {
+        name: 'managed-cluster-name-1',
+        namespace: 'managed-cluster-name-1',
+        labels: { 'hive.openshift.io/cluster-platform': 'aws' },
+    },
 }
 function nockListClusterDeployments(clusterDeployments?: ClusterDeployment[]) {
     return nockList(mockClusterDeployment, clusterDeployments ?? [mockClusterDeployment], undefined, {

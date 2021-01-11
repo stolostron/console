@@ -11,6 +11,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmInlineProvider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -229,6 +230,13 @@ export function ClustersTable(props: {
                                 <StatusField status={cluster.status} />
                             </span>
                         ),
+                    },
+                    {
+                        header: t('table.provider'),
+                        sort: 'provider',
+                        search: 'provider',
+                        cell: (cluster) =>
+                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
                     },
                     {
                         header: t('table.distribution'),
