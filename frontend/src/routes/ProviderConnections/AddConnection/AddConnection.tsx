@@ -61,7 +61,12 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                         titleTooltip={
                             <>
                                 {t('addConnection.title.tooltip')}
-                                <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                                <a
+                                    href={DOC_LINKS.CREATE_CONNECTION}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
                                     {t('common:learn.more')}
                                 </a>
                             </>
@@ -77,7 +82,12 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                         titleTooltip={
                             <>
                                 {t('addConnection.title.tooltip')}
-                                <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                                <a
+                                    href={DOC_LINKS.CREATE_CONNECTION}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
                                     {t('common:learn.more')}
                                 </a>
                             </>

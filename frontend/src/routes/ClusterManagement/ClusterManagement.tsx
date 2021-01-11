@@ -53,7 +53,12 @@ export default function ClusterManagementPage() {
                     titleTooltip={
                         <>
                             {t('page.header.cluster-management.tooltip')}
-                            <a href={DOC_LINKS.CLUSTERS} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                            <a
+                                href={DOC_LINKS.CLUSTERS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
                                 {t('common:learn.more')}
                             </a>
                         </>

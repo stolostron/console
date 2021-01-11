@@ -30,7 +30,12 @@ export default function BareMetalAssetsPage() {
                 titleTooltip={
                     <>
                         {t('bmas.tooltip')}
-                        <a href={DOC_LINKS.BARE_METAL_ASSETS} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                        <a
+                            href={DOC_LINKS.BARE_METAL_ASSETS}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
                             {t('common:learn.more')}
                         </a>
                     </>

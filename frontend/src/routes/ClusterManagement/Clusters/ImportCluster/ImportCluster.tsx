@@ -41,7 +41,12 @@ export default function ImportClusterPage() {
                 titleTooltip={
                     <>
                         {t('page.header.import-cluster.tooltip')}
-                        <a href={DOC_LINKS.IMPORT_CLUSTER} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                        <a
+                            href={DOC_LINKS.IMPORT_CLUSTER}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
                             {t('common:learn.more')}
                         </a>
                     </>

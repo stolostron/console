@@ -89,7 +89,12 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
                         titleTooltip={
                             <>
                                 {t('bma:createBareMetalAsset.title.tooltip')}
-                                <a href={DOC_LINKS.BARE_METAL_ASSETS} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                                <a
+                                    href={DOC_LINKS.BARE_METAL_ASSETS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
                                     {t('common:learn.more')}
                                 </a>
                             </>
@@ -116,7 +121,12 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
                     titleTooltip={
                         <>
                             {t('bma:createBareMetalAsset.title.tooltip')}
-                            <a href={DOC_LINKS.BARE_METAL_ASSETS} target="_blank" rel="noreferrer" style={{ display: 'block', marginTop: '4px' }}>
+                            <a
+                                href={DOC_LINKS.BARE_METAL_ASSETS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
                                 {t('common:learn.more')}
                             </a>
                         </>
