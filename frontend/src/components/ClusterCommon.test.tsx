@@ -157,7 +157,7 @@ describe('UpgradeModal', () => {
         }
     })
     it('should do upgrade request when click submit and show loading', async () => {
-        nockUpgrade('clusterName', '1.2.6', 'ok', 200, 500)
+        const mockUpgrade = nockUpgrade('clusterName', '1.2.6', 'ok', 200, 500)
         let isClosed = false
         const { getAllByRole, getByTestId, getByText, queryByText } = render(
             <UpgradeModal
@@ -184,10 +184,11 @@ describe('UpgradeModal', () => {
         await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
         // wait for modal to be closed
         await waitFor(() => expect(isClosed).toBeTruthy())
+        await waitFor(() => expect(mockUpgrade.isDone()).toBeTruthy())
     })
 
     it('should show error message when failed upgrading', async () => {
-        nockUpgrade('clusterName', '1.2.6', '', 405, 100)
+        const mockUpgrade = nockUpgrade('clusterName', '1.2.6', '', 405, 100)
         let isClosed = false
         const { getAllByRole, getByTestId, getByText, queryByText } = render(
             <UpgradeModal
@@ -218,5 +219,6 @@ describe('UpgradeModal', () => {
         expect(isClosed).toBe(false)
         expect(getByText('upgrade.upgradefailed')).toBeTruthy()
         expect(getByText('Request failed with status code 405')).toBeTruthy()
+        await waitFor(() => expect(mockUpgrade.isDone()).toBeTruthy())
     })
 })
