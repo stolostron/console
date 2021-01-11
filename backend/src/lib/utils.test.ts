@@ -97,7 +97,7 @@ describe('createPollHelper', () => {
     const agent = new Agent()
     const verifyStatus: verifyStatusFn<string> = async (response: IncomingMessage) => {
         const resData = await parseBody(response)
-        if (resData === newResult) {
+        if (resData.toString() === newResult) {
             return { isValid: true, isRetryRequired: false, retData: newResult }
         }
         return { isValid: false, isRetryRequired: true }
