@@ -42,10 +42,11 @@ export type ClustersTableActionsRbac = {
 }
 
 // TODO: Add support for bma and provider connections
-// export type ProviderConnectionsTableRbacAccess = {
-//     edit: boolean
-//     delete: boolean
-// }
+
+export type ProviderConnectionsTableActionsRbac = {
+    'secret.edit'?: boolean
+    'secret.delete': boolean
+}
 
 // export type BMATableRbacAccess = {
 //     editLabels: boolean
@@ -200,21 +201,39 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
         case 'secret.get':
             return [
                 {
+                    name,
                     namespace,
                     resource: 'secret',
                     verb: 'get',
-                    version: 'v1',
                 },
             ]
         case 'secret.create':
             return [
                 {
+                    name,
                     namespace,
                     resource: 'secret',
                     verb: 'create',
-                    version: 'v1',
                 },
             ]
+        case 'secret.delete':
+            return [
+                {
+                    name,
+                    namespace,
+                    resource: 'secret',
+                    verb: 'delete',
+                },
+            ]
+            case 'secret.edit':
+                return [
+                    {
+                        name,
+                        namespace,
+                        resource: 'secret',
+                        verb: 'patch',
+                    },
+                ]
         default:
             return []
     }
