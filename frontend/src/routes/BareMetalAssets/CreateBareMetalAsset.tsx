@@ -25,6 +25,7 @@ import {
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
 import { useQuery } from '../../lib/useQuery'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
 import { Secret, unpackSecret } from '../../resources/secret'
@@ -76,7 +77,7 @@ function getBMASecret(metadata: Object) {
 }
 
 export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation(['bma, common'])
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
@@ -84,10 +85,23 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
             <Page>
                 <AcmAlertProvider>
                     <AcmPageHeader
-                        title={t('editBareMetalAsset.title')}
+                        title={t('bma:editBareMetalAsset.title')}
+                        titleTooltip={
+                            <>
+                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.BARE_METAL_ASSETS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
                         breadcrumb={[
-                            { text: t('bmas'), to: NavigationPath.bareMetalAssets },
-                            { text: t('editBareMetalAsset.title'), to: '' },
+                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('bma:editBareMetalAsset.title'), to: '' },
                         ]}
                     />
                     <EditBareMetalAssetPageData
@@ -103,10 +117,23 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
         <Page>
             <AcmAlertProvider>
                 <AcmPageHeader
-                    title={t('createBareMetalAsset.title')}
+                    title={t('bma:createBareMetalAsset.title')}
+                    titleTooltip={
+                        <>
+                            {t('bma:createBareMetalAsset.title.tooltip')}
+                            <a
+                                href={DOC_LINKS.BARE_METAL_ASSETS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
                     breadcrumb={[
-                        { text: t('bmas'), to: NavigationPath.bareMetalAssets },
-                        { text: t('createBareMetalAsset.title'), to: '' },
+                        { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('bma:createBareMetalAsset.title'), to: '' },
                     ]}
                 />
                 <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />

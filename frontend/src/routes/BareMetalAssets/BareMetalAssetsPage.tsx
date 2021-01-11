@@ -19,12 +19,28 @@ import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 export default function BareMetalAssetsPage() {
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation(['bma', 'common'])
     return (
         <Page>
-            <AcmPageHeader title={t('bmas')} />
+            <AcmPageHeader
+                title={t('bmas')}
+                titleTooltip={
+                    <>
+                        {t('bmas.tooltip')}
+                        <a
+                            href={DOC_LINKS.BARE_METAL_ASSETS}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('common:learn.more')}
+                        </a>
+                    </>
+                }
+            />
             <AcmScrollable>
                 <BareMetalAssets />
             </AcmScrollable>
