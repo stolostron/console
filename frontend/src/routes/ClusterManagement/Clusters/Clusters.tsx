@@ -30,6 +30,7 @@ import {
     createSubjectAccessReviews,
     rbacMapping,
 } from '../../../resources/self-subject-access-review'
+import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
@@ -177,6 +178,7 @@ export function ClustersTable(props: {
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
+    const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -243,6 +245,13 @@ export function ClustersTable(props: {
                     setUpgradeSingleCluster(undefined)
                 }}
             />
+            <BatchUpgradeModal
+                clusters={upgradeMultipleClusters}
+                open={!!upgradeMultipleClusters}
+                close={() => {
+                    setUpgradeMultipleClusters(undefined)
+                }}
+            />
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
@@ -281,7 +290,11 @@ export function ClustersTable(props: {
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
                         cell: (cluster) => (
-                            <DistributionField data={cluster.distribution} clusterName={cluster?.name || ''} />
+                            <DistributionField
+                                data={cluster.distribution}
+                                clusterName={cluster?.name || ''}
+                                clusterStatus={cluster?.status || ''}
+                            />
                         ),
                     },
                     {
@@ -434,6 +447,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&
                                     cluster.distribution?.ocp?.availableUpdates.length > 0
@@ -599,24 +613,22 @@ export function ClustersTable(props: {
                             if (!managedClusters) {
                                 return
                             }
+
                             const clusters = managedClusters.filter(
                                 (c) =>
+                                    c.status === ClusterStatus.ready &&
                                     c.distribution?.ocp?.availableUpdates &&
-                                    c.distribution?.ocp?.availableUpdates.length > 0
-                            )
-                            if (clusters.length === 1) {
-                                const cluster = clusters[0]
-                                if (
-                                    cluster.distribution?.ocp?.availableUpdates &&
-                                    cluster.distribution?.ocp?.availableUpdates.length > 0 &&
+                                    c.distribution?.ocp?.availableUpdates.length > 0 &&
                                     !(
-                                        cluster.distribution?.ocp?.desiredVersion &&
-                                        cluster.distribution?.ocp?.version &&
-                                        cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion
+                                        c.distribution?.ocp?.desiredVersion &&
+                                        c.distribution?.ocp?.version &&
+                                        c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
                                     )
-                                ) {
-                                    setUpgradeSingleCluster(clusters[0])
-                                }
+                            )
+                            if (clusters.length === 1 && managedClusters.length === 1) {
+                                setUpgradeSingleCluster(clusters[0])
+                            } else if (managedClusters.length > 0) {
+                                setUpgradeMultipleClusters(managedClusters)
                             }
                         },
                     },

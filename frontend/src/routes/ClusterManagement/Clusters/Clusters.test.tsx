@@ -42,23 +42,53 @@ const mockManagedCluster2: ManagedCluster = {
     metadata: { name: 'managed-cluster-name-2' },
     spec: { hubAcceptsClient: true },
 }
+const readyManagedClusterConditions = [
+    { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+    { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+    { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+]
+const readyManagedClusterStatus = {
+    allocatable: {
+        cpu: '',
+        memory: '',
+    },
+    capacity: {
+        cpu: '',
+        memory: '',
+    },
+    version: {
+        kubernetes: '1.17',
+    },
+    clusterClaims: [],
+    conditions: readyManagedClusterConditions,
+}
 const mockManagedCluster3: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-3-no-upgrade' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
 }
 const mockManagedCluster4: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-4-upgrade-available' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
 }
 const mockManagedCluster5: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: { name: 'managed-cluster-name-5-upgrading' },
     spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
+}
+const mockManagedCluster6: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-name-6-upgrade-available' },
+    spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
 }
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
@@ -69,6 +99,7 @@ function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
             mockManagedCluster3,
             mockManagedCluster4,
             mockManagedCluster5,
+            mockManagedCluster6,
         ]
     )
 }
@@ -88,6 +119,7 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'managed-cluster-name-3-no-upgrade', namespace: 'managed-cluster-name-3-no-upgrade' },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',
@@ -109,6 +141,7 @@ const mockManagedClusterInfo4: ManagedClusterInfo = {
         namespace: 'managed-cluster-name-4-upgrade-available',
     },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',
@@ -126,6 +159,7 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: 'managed-cluster-name-5-upgrading', namespace: 'managed-cluster-name-5-upgrading' },
     status: {
+        conditions: readyManagedClusterConditions,
         version: '1.17',
         distributionInfo: {
             type: 'ocp',
@@ -133,6 +167,27 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: ['1.2.4', '1.2.5'],
                 desiredVersion: '1.2.4',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
+const mockManagedClusterInfo6: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: 'managed-cluster-name-6-upgrade-available',
+        namespace: 'anaged-cluster-name-6-upgrade-available',
+    },
+    status: {
+        conditions: readyManagedClusterConditions,
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: ['1.2.4', '1.2.5', '1.2.6'],
+                desiredVersion: '1.2.3',
                 upgradeFailed: false,
             },
         },
@@ -147,6 +202,7 @@ function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[])
             mockManagedClusterInfo3,
             mockManagedClusterInfo4,
             mockManagedClusterInfo5,
+            mockManagedClusterInfo6,
         ],
         undefined,
         { managedNamespacesOnly: '' }
@@ -449,7 +505,7 @@ describe('Cluster page', () => {
         expect(getByText('managed.upgrade')).toBeTruthy()
         userEvent.click(getByText('managed.upgrade'))
         expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
-        userEvent.click(getByText('cancel'))
+        userEvent.click(getByText('upgrade.cancel'))
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
 
@@ -459,7 +515,20 @@ describe('Cluster page', () => {
         userEvent.click(getAllByLabelText('Select row 3')[0])
         userEvent.click(getByText('managed.upgradeSelected'))
         expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
-        userEvent.click(getByText('cancel'))
+        userEvent.click(getByText('upgrade.cancel'))
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+    })
+    test('batch upgrade support when upgrading multiple clusters', async () => {
+        const name1 = mockManagedCluster4.metadata.name!
+        const name2 = mockManagedCluster6.metadata.name!
+        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
+        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Select row 3')[0])
+        userEvent.click(getAllByLabelText('Select row 5')[0])
+        userEvent.click(getByText('managed.upgradeSelected'))
+        expect(getByText(`upgrade.multiple.title`)).toBeTruthy()
+        userEvent.click(getByText('upgrade.cancel'))
+        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
+        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
     })
 })

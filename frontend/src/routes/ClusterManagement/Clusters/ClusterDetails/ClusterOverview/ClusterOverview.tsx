@@ -30,7 +30,11 @@ export function ClusterOverviewPageContent(props: { accessRestriction?: boolean 
                     {
                         key: t('table.distribution'),
                         value: cluster?.distribution?.displayVersion && (
-                            <DistributionField data={cluster?.distribution} clusterName={cluster?.name || ''} />
+                            <DistributionField
+                                data={cluster?.distribution}
+                                clusterName={cluster?.name || ''}
+                                clusterStatus={cluster?.status}
+                            />
                         ),
                     },
                     {
