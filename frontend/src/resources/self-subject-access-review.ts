@@ -75,6 +75,9 @@ export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAtt
 export async function rbacNamespaceFilter(action: string, namespaces: Array<string>) {
     const resourceList: Array<ResourceAttributes> = []
     let filteredNamespaces: Array<string> = []
+
+    if (namespaces.length === 0) return []
+
     // check for admin access before checking namespaces individually
     let adminAccess = await checkAdminAccess()
 

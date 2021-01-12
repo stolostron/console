@@ -220,31 +220,35 @@ export function EditBareMetalAssetPageData(props: {
 
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
     const { t } = useTranslation(['bma', 'common'])
-    const [projects, setProjects] = useState<Project[]>()
     const [filteredProjects, setFilteredProjects] = useState<string[]>()
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [noProjectsFound, setNoProjectsFound] = useState<boolean>(false)
 
     useEffect(() => {
         setError(undefined)
         setFilteredProjects(undefined)
+        setNoProjectsFound(false)
+        setIsLoading(true)
     }, [retry])
 
     useEffect(() => {
         const result = listProjects()
         result.promise
-            .then((projects) => {
-                setProjects(projects)
+            .then(async (projects) => {
                 if (projects) {
-                    if (projects.length! > 0) {
-                        const namespaces = projects!.map((project) => project.metadata.name!)
-                        rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
-                    } else {
-                        setFilteredProjects([])
-                    }
+                    const namespaces = projects!.map((project) => project.metadata.name!)
+                    await rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
+                    if (projects.length === 0) setNoProjectsFound(true)
+                } else {
+                    setFilteredProjects([])
                 }
             })
             .catch(setError)
+            .finally(() => {
+                setIsLoading(false)
+            })
         return result.abort
     }, [retry])
 
@@ -264,9 +268,9 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
             />
         )
     }
-    if (!projects || !filteredProjects) {
+    if (isLoading) {
         return <AcmLoadingPage />
-    } else if (projects.length === 0) {
+    } else if (noProjectsFound) {
         return (
             <AcmPageCard>
                 <AcmEmptyState
@@ -284,7 +288,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
                 />
             </AcmPageCard>
         )
-    } else if (projects.length > 0 && filteredProjects.length === 0) {
+    } else if (filteredProjects!.length === 0) {
         // returns empty state when user cannot create secret in any namespace
         return (
             <AcmPageCard>
@@ -308,7 +312,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={filteredProjects}
+            projects={filteredProjects!}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
         />
