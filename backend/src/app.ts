@@ -13,8 +13,6 @@ import { parse as parseUrl } from 'url'
 import { logger } from './logger'
 import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requestException } from './lib/utils'
 
-const agent = new Agent({ rejectUnauthorized: false })
-
 function getRandomInt(min: number, max: number) {
     min = Math.ceil(min)
     max = Math.floor(max)
@@ -41,20 +39,6 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                         res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
                     }
                     return res.writeHead(200).end()
-            }
-        }
-
-        if (process.env.NODE_ENV === 'development') {
-            if (process.env.DELAY) {
-                await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
-            }
-            if (process.env.RANDOM_DELAY) {
-                await new Promise((resolve) => setTimeout(resolve, getRandomInt(0, Number(process.env.RANDOM_DELAY))))
-            }
-            if (process.env.RANDOM_ERROR) {
-                if (getRandomInt(0, 100) < Number(process.env.RANDOM_ERROR)) {
-                    return res.destroy()
-                }
             }
         }
 
@@ -86,10 +70,26 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
 
         // Kubernetes Proxy
         if (url.startsWith('/api')) {
+            if (process.env.NODE_ENV === 'development') {
+                if (process.env.DELAY) {
+                    await new Promise((resolve) => setTimeout(resolve, Number(process.env.DELAY)))
+                }
+                if (process.env.RANDOM_DELAY) {
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, getRandomInt(0, Number(process.env.RANDOM_DELAY)))
+                    )
+                }
+                if (process.env.RANDOM_ERROR) {
+                    if (getRandomInt(0, 100) < Number(process.env.RANDOM_ERROR)) {
+                        return res.destroy()
+                    }
+                }
+            }
+
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
-            let data: string
+            let data: Buffer
             switch (req.method) {
                 case 'PUT':
                 case 'POST':
@@ -147,7 +147,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 }>(
                     host,
                     token,
-                    agent,
+                    new Agent({ rejectUnauthorized: false }),
                     reqBody.clusterName,
                     'config.openshift.io',
                     'v1',
@@ -171,7 +171,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 await updateRemoteResource(
                     host,
                     token,
-                    agent,
+                    new Agent({ rejectUnauthorized: false }),
                     reqBody.clusterName,
                     'clusterversions',
                     'version',
@@ -210,7 +210,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             headers.authorization = `Bearer ${token}`
             const options: RequestOptions = {
                 ...parseUrl(searchUrl + '/searchapi/graphql'),
-                ...{ method: req.method, headers, agent },
+                ...{ method: req.method, headers, agent: new Agent({ rejectUnauthorized: false }) },
             }
             return req.pipe(
                 httpRequest(options, (response) => {
@@ -258,7 +258,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 const requestQueryString = stringifyQuery(requestQuery)
                 return get(
                     oauthInfo.token_endpoint + '?' + requestQueryString,
-                    { agent, headers: { Accept: 'application/json' } },
+                    { agent: new Agent({ rejectUnauthorized: false }), headers: { Accept: 'application/json' } },
                     (response) => {
                         parseJsonBody<{ access_token: string }>(response)
                             .then((body) => {
@@ -375,13 +375,13 @@ function getToken(req: IncomingMessage) {
 
 // Handle a request
 function request(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<IncomingMessage> {
-    const start = process.hrtime()
-    const options: RequestOptions = { ...parseUrl(url), ...{ method, headers, agent } }
+    const options: RequestOptions = {
+        ...parseUrl(url),
+        ...{ method, headers, agent: new Agent({ rejectUnauthorized: false }) },
+    }
     return new Promise((resolve, reject) => {
         function attempt() {
             const clientRequest = httpRequest(options, (response) => {
-                const diff = process.hrtime(start)
-                const time = Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
                 switch (response.statusCode) {
                     case 429:
                         setTimeout(attempt, 100)
@@ -427,11 +427,12 @@ async function projectsRequest(
     res.write('{"items":[')
     let first = true
     if (projects?.items) {
-        await Promise.all(
-            projects.items.map((project) => {
-                console.log(project.metadata.name)
+        await new Promise<void>((resolve) => {
+            const projectCount = projects?.items.length
+            let projectsComplete = 0
+            projects.items.forEach((project) => {
                 const namespacedUrl = addNamespace(url, project.metadata.name)
-                return jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers)
+                jsonRequest<{ kind: string; items: unknown[] }>(method, namespacedUrl, headers)
                     .then((data) => {
                         if (data?.items) {
                             for (const item of data.items) {
@@ -444,8 +445,14 @@ async function projectsRequest(
                     .catch((err) => {
                         // Do Nothing
                     })
+                    .finally(() => {
+                        projectsComplete++
+                        if (projectsComplete === projectCount) {
+                            resolve()
+                        }
+                    })
             })
-        )
+        })
     }
     res.end(']}')
 }
@@ -461,25 +468,32 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
     res.write('{"items":[')
     let first = true
     if (projects?.items) {
-        await Promise.all(
-            projects.items.map(async (project) => {
-                await jsonRequest<{ kind: string }>(
+        await new Promise<void>((resolve) => {
+            const projectCount = projects?.items.length
+            let projectsComplete = 0
+            projects.items.forEach((project) => {
+                request(
                     'GET',
                     `${process.env.CLUSTER_API_URL}/apis/cluster.open-cluster-management.io/v1/managedclusters/${project.metadata.name}`,
                     { authorization: `Bearer ${token}`, accept: 'application/json' }
                 )
-                    .then((data) => {
-                        if (data?.kind === 'ManagedCluster') {
-                            if (first) first = false
-                            else res.write(',')
-                            res.write(JSON.stringify(data))
-                        }
+                    .then(async (r) => {
+                        const buffer = await parseBody(r)
+                        if (first) first = false
+                        else res.write(',')
+                        res.write(buffer)
                     })
                     .catch((err) => {
                         // Do Nothing
                     })
+                    .finally(() => {
+                        projectsComplete++
+                        if (projectsComplete === projectCount) {
+                            resolve()
+                        }
+                    })
             })
-        )
+        })
     }
     res.end(']}')
 }

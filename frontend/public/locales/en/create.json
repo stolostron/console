@@ -1,4 +1,8 @@
 {
+  "page.header.create-cluster": "Create cluster",
+  "page.header.create-cluster.tooltip": "Create clusters across different providers.",
+  "learn.more": "Learn more",
+  "clusters": "Clusters",
   "managed.createCluster": "Create cluster",
   "cluster.create.title": "Create a cluster",
   "cluster.create.select.cloudprovider": "Select a provider",

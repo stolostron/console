@@ -15,6 +15,7 @@ import {
 } from '../resources/certificate-signing-requests'
 import { IRequestResult } from './resource-request'
 import { getLatest } from './utils'
+import { Provider } from '@open-cluster-management/ui-components'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -34,6 +35,7 @@ export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
+    provider: Provider | undefined
     distribution: DistributionInfo | undefined
     labels: Record<string, string> | undefined
     nodes: Nodes | undefined
@@ -122,6 +124,7 @@ export function getCluster(
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
         status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
+        provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
@@ -131,6 +134,62 @@ export function getCluster(
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
     }
+}
+
+export function getProvider(
+    managedClusterInfo?: ManagedClusterInfo,
+    managedCluster?: ManagedCluster,
+    clusterDeployment?: ClusterDeployment
+) {
+    const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
+    const platformClusterClaim = managedCluster?.status?.clusterClaims?.find(
+        (claim) => claim.name === 'platform.open-cluster-management.io'
+    )
+    const hivePlatformLabel = clusterDeployment?.metadata?.labels?.['hive.openshift.io/cluster-platform']
+
+    if (!cloudLabel && !platformClusterClaim && !hivePlatformLabel) {
+        return undefined
+    }
+
+    let providerLabel =
+        hivePlatformLabel && hivePlatformLabel !== 'unknown'
+            ? hivePlatformLabel
+            : platformClusterClaim?.value ?? cloudLabel
+
+    let provider: Provider | undefined
+    switch (providerLabel) {
+        case 'Amazon':
+        case 'AWS':
+        case 'aws':
+            provider = Provider.aws
+            break
+        case 'Google':
+        case 'GCP':
+        case 'GCE':
+        case 'gcp':
+            provider = Provider.gcp
+            break
+        case 'Azure':
+        case 'azure':
+            provider = Provider.azure
+            break
+        case 'IBM':
+            provider = Provider.ibm
+            break
+        case 'baremetal':
+            provider = Provider.baremetal
+            break
+        case 'vsphere':
+            provider = Provider.vmware
+            break
+        case 'auto-detect':
+            provider = undefined
+            break
+        case 'other':
+        default:
+            provider = Provider.other
+    }
+    return provider
 }
 
 export function getDistributionInfo(
@@ -147,7 +206,7 @@ export function getDistributionInfo(
         )
         if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
         let versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
-        if (versionClaim) displayVersion = `OpenShift ${versionClaim}`
+        if (versionClaim) displayVersion = `OpenShift ${versionClaim.value}`
     }
 
     if (managedClusterInfo) {

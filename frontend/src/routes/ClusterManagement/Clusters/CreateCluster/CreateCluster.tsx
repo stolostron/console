@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
+import { DOC_LINKS } from '../../../../lib/doc-util'
 import './style.css'
 
 // template/data
@@ -99,8 +100,24 @@ export default function CreateClusterPage() {
     return (
         <AcmPage>
             <AcmPageHeader
-                title={t('managed.createCluster')}
-                breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
+                title={t('page.header.create-cluster')}
+                titleTooltip={
+                    <>
+                        {t('page.header.create-cluster.tooltip')}
+                        <a
+                            href={DOC_LINKS.CREATE_CLUSTER}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('learn.more')}
+                        </a>
+                    </>
+                }
+                breadcrumb={[
+                    { text: t('clusters'), to: NavigationPath.clusters },
+                    { text: t('page.header.create-cluster'), to: '' },
+                ]}
                 actions={portals}
             />
             <PageSection className="pf-c-content">

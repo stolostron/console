@@ -259,7 +259,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'search-cluster',
                                             text: t('managed.search'),
-                                            click: (cluster: Cluster) => {},
+                                            click: (cluster: Cluster) =>
+                                                window.location.assign(
+                                                    `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                                                ),
                                         },
                                         {
                                             id: 'detach-cluster',

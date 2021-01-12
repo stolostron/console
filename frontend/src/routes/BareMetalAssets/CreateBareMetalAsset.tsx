@@ -14,7 +14,7 @@ import {
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import {
     createResource,
     getResource,
@@ -25,6 +25,7 @@ import {
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
 import { useQuery } from '../../lib/useQuery'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
 import { Secret, unpackSecret } from '../../resources/secret'
@@ -76,24 +77,37 @@ function getBMASecret(metadata: Object) {
 }
 
 export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
-    const { t } = useTranslation(['bma'])
-    let path: Array<string>
-    let editAssetName: string = ''
-    let editAssetNamespace: string = ''
+    const { t } = useTranslation(['bma, common'])
+    const params: { namespace?: string; name?: string } = useParams()
 
-    path = useLocation().pathname.split('/').reverse()
-    if (path[0] === 'edit') {
-        editAssetName = path[1]
-        editAssetNamespace = path[2]
-
+    if (params.namespace && params.name) {
         return (
             <Page>
                 <AcmAlertProvider>
-                    <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                    <AcmPageHeader
+                        title={t('bma:editBareMetalAsset.title')}
+                        titleTooltip={
+                            <>
+                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.BARE_METAL_ASSETS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
+                        breadcrumb={[
+                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('bma:editBareMetalAsset.title'), to: '' },
+                        ]}
+                    />
                     <EditBareMetalAssetPageData
                         bmaSecretID={props.bmaSecretID}
-                        editAssetName={editAssetName}
-                        editAssetNamespace={editAssetNamespace}
+                        editAssetName={params.name}
+                        editAssetNamespace={params.namespace}
                     />
                 </AcmAlertProvider>
             </Page>
@@ -102,7 +116,26 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
     return (
         <Page>
             <AcmAlertProvider>
-                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <AcmPageHeader
+                    title={t('bma:createBareMetalAsset.title')}
+                    titleTooltip={
+                        <>
+                            {t('bma:createBareMetalAsset.title.tooltip')}
+                            <a
+                                href={DOC_LINKS.BARE_METAL_ASSETS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
+                    breadcrumb={[
+                        { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('bma:createBareMetalAsset.title'), to: '' },
+                    ]}
+                />
                 <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
             </AcmAlertProvider>
         </Page>

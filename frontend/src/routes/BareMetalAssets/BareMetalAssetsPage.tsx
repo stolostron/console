@@ -9,7 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -19,12 +19,28 @@ import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 export default function BareMetalAssetsPage() {
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation(['bma', 'common'])
     return (
         <Page>
-            <AcmPageHeader title={t('bmas')} />
+            <AcmPageHeader
+                title={t('bmas')}
+                titleTooltip={
+                    <>
+                        {t('bmas.tooltip')}
+                        <a
+                            href={DOC_LINKS.BARE_METAL_ASSETS}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('common:learn.more')}
+                        </a>
+                    </>
+                }
+            />
             <AcmScrollable>
                 <BareMetalAssets />
             </AcmScrollable>
@@ -93,13 +109,7 @@ export function BareMetalAssetsTable(props: {
 
     return (
         <AcmPageCard>
-            <ConfirmModal
-                open={confirm.open}
-                confirm={confirm.confirm}
-                cancel={confirm.cancel}
-                title={confirm.title}
-                message={confirm.message}
-            ></ConfirmModal>
+            <ConfirmModal {...confirm} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
                     emptyState={
@@ -135,18 +145,20 @@ export function BareMetalAssetsTable(props: {
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.cluster'),
-                            cell: 'metal3.io/cluster-deployment-name',
+                            cell: (bareMetalAsset: BareMetalAsset) =>
+                                bareMetalAsset.metadata.labels?.['metal3.io/cluster-deployment-name'] || '-',
                             search: 'metal3.io/cluster-deployment-name',
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.role'),
-                            cell: 'metadata.labels.metal3.io/role',
+                            cell: (bareMetalAsset: BareMetalAsset) =>
+                                bareMetalAsset.metadata.labels?.['metadata.labels.metal3.io/role'] || '-',
                             search: 'metadata.labels.metal3.io/role',
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
-                            cell: (bareMetalAssets) => {
-                                return BMAStatusMessage(bareMetalAssets, t)
+                            cell: (bareMetalAsset) => {
+                                return BMAStatusMessage(bareMetalAsset, t)
                             },
                         },
                     ]}
@@ -173,6 +185,8 @@ export function BareMetalAssetsTable(props: {
                                         assetNum: bareMetalAssets.length,
                                     }),
                                     open: true,
+                                    isDanger: true,
+                                    confirmText: t('common:destroy'),
                                     confirm: () => {
                                         void deleteBareMetalAssets(bareMetalAssets)
                                         // TODO refresh
@@ -193,11 +207,6 @@ export function BareMetalAssetsTable(props: {
                     ]}
                     rowActions={[
                         {
-                            id: 'editLabels',
-                            title: t('bareMetalAsset.rowAction.editLabels.title'),
-                            click: (item) => {},
-                        },
-                        {
                             id: 'editAsset',
                             title: t('bareMetalAsset.rowAction.editAsset.title'),
                             click: (bareMetalAsset: BareMetalAsset) => {
@@ -215,9 +224,15 @@ export function BareMetalAssetsTable(props: {
                             click: (bareMetalAsset: BareMetalAsset) => {
                                 setConfirm({
                                     title: t('bareMetalAsset.modal.delete.title'),
-                                    message: t('bareMetalAsset.modal.delete.message', {
-                                        assetName: bareMetalAsset.metadata?.name,
-                                    }),
+                                    message: (
+                                        <Trans
+                                            i18nKey="bma:bareMetalAsset.modal.delete.message"
+                                            values={{ assetName: bareMetalAsset.metadata?.name }}
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    ),
+                                    confirmText: t('common:destroy'),
+                                    isDanger: true,
                                     open: true,
                                     confirm: () => {
                                         props.deleteBareMetalAsset(bareMetalAsset)

@@ -205,7 +205,7 @@ describe('bare metal asset page', () => {
         const { getByTestId, getByText } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
                 <Route
-                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
+                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1"
                     render={() => (
                         <EditBareMetalAssetPageData
                             editAssetNamespace={'test-bare-metal-asset-namespace'}

@@ -62,20 +62,32 @@ const gvrManagedClusterAction: KubernetesGVR = {
     resources: ManagedClusterActionResources,
 }
 
-export function parseBody(req: IncomingMessage): Promise<string> {
+export function parseBody(req: IncomingMessage): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-        let data = ''
+        let data: Buffer | undefined
         req.on('error', reject)
-        req.on('data', (chunk) => (data += chunk))
+        req.on('data', (chunk) => {
+            if (chunk instanceof Buffer) {
+                if (data === undefined) {
+                    data = chunk
+                } else {
+                    data = Buffer.concat([data, chunk])
+                }
+            }
+        })
         req.on('end', () => {
-            resolve(data)
+            if (!data) {
+                reject()
+            } else {
+                resolve(data)
+            }
         })
     })
 }
 
 export async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
-    const body = await parseBody(req)
-    return JSON.parse(body) as T
+    const buffer = await parseBody(req)
+    return JSON.parse(buffer.toString()) as T
 }
 
 // get resources on local cluster
@@ -419,7 +431,7 @@ export async function updateRemoteResource(
                 isValid: false,
                 isRetryRequired: false,
                 code: response.statusCode,
-                msg: msg,
+                msg: msg.toString(),
             }
         } catch (err) {
             logger.debug('failed to verify poll return', err)
