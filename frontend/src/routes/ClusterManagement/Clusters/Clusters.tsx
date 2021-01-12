@@ -630,6 +630,7 @@ export function ClustersTable(props: {
 
                             const clusters = managedClusters.filter(
                                 (c) =>
+                                    c.status === ClusterStatus.ready &&
                                     c.distribution?.ocp?.availableUpdates &&
                                     c.distribution?.ocp?.availableUpdates.length > 0 &&
                                     !(

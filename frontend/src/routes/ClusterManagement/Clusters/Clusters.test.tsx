@@ -82,6 +82,13 @@ const mockManagedCluster5: ManagedCluster = {
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
+const mockManagedCluster6: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-name-6-upgrade-available' },
+    spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
+}
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
@@ -91,6 +98,7 @@ function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
             mockManagedCluster3,
             mockManagedCluster4,
             mockManagedCluster5,
+            mockManagedCluster6,
         ]
     )
 }
@@ -163,6 +171,27 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
         },
     },
 }
+const mockManagedClusterInfo6: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: 'managed-cluster-name-6-upgrade-available',
+        namespace: 'anaged-cluster-name-6-upgrade-available',
+    },
+    status: {
+        conditions: readyManagedClusterConditions,
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: ['1.2.4', '1.2.5', '1.2.6'],
+                desiredVersion: '1.2.3',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
 function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
     return nockList(
         { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
@@ -172,6 +201,7 @@ function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[])
             mockManagedClusterInfo3,
             mockManagedClusterInfo4,
             mockManagedClusterInfo5,
+            mockManagedClusterInfo6,
         ],
         undefined,
         { managedNamespacesOnly: '' }
@@ -533,5 +563,18 @@ describe('Cluster page', () => {
         expect(getByText(`upgrade.title ${name}`)).toBeTruthy()
         userEvent.click(getByText('upgrade.cancel'))
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+    })
+    test('batch upgrade support when upgrading multiple clusters', async () => {
+        const name1 = mockManagedCluster4.metadata.name!
+        const name2 = mockManagedCluster6.metadata.name!
+        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
+        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
+        userEvent.click(getAllByLabelText('Select row 3')[0])
+        userEvent.click(getAllByLabelText('Select row 5')[0])
+        userEvent.click(getByText('managed.upgradeSelected'))
+        expect(getByText(`upgrade.multiple.title`)).toBeTruthy()
+        userEvent.click(getByText('upgrade.cancel'))
+        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
+        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
     })
 })
