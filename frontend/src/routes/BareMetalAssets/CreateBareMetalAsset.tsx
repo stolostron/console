@@ -25,7 +25,6 @@ import {
 } from '../../../src/lib/resource-request'
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
-import { useQuery } from '../../lib/useQuery'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
@@ -236,21 +235,18 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
         result.promise
             .then((projects) => {
                 setProjects(projects)
+                if (projects) {
+                    if (projects.length! > 0) {
+                        const namespaces = projects!.map((project) => project.metadata.name!)
+                        rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
+                    } else {
+                        setFilteredProjects([])
+                    }
+                }
             })
             .catch(setError)
         return result.abort
     }, [retry])
-
-    useEffect(() => {
-        if (projects) {
-            if (projects.length! > 0) {
-                const namespaces = projects!.map((project) => project.metadata.name!)
-                rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
-            } else {
-                setFilteredProjects([])
-            }
-        }
-    }, [projects])
 
     if (error) {
         return (
