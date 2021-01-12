@@ -2,8 +2,8 @@ import React from 'react'
 
 export const RedHatLogo = () => (
     <svg width="54px" height="40px" viewBox="0 0 54 40" version="1.1" role="presentation">
-        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g id="144_Create-Cluster" transform="translate(-129.000000, -361.000000)" fill-rule="nonzero">
+        <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
+            <g id="144_Create-Cluster" transform="translate(-129.000000, -361.000000)" fillRule="nonzero">
                 <g id="Group-23" transform="translate(74.000000, 299.000000)">
                     <g id="Logo-RedHat-D-Reverse-RGB" transform="translate(55.000000, 62.000000)">
                         <path

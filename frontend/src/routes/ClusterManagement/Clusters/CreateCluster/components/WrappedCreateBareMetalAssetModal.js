@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from 'carbon-components-react'
+import { Button } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 class WrappedCreateBareMetalAssetModal extends React.Component {
