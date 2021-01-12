@@ -119,10 +119,10 @@ describe('DistributionField', () => {
 
 describe('UpgradeModal', () => {
     it('should show all available versions in descending order', () => {
-        const { getAllByRole, getByTestId } = render(
+        const { getAllByRole, getByText } = render(
             <UpgradeModal close={() => {}} open={true} clusterName="clusterName" data={mockDistributionInfo} />
         )
-        const selectbox = getByTestId('upgrade.select.placeholder')
+        const selectbox = getByText('upgrade.select.placeholder')
         expect(selectbox).toBeTruthy()
         if (selectbox) {
             userEvent.click(selectbox)
@@ -159,7 +159,7 @@ describe('UpgradeModal', () => {
     it('should do upgrade request when click submit and show loading', async () => {
         const mockUpgrade = nockUpgrade('clusterName', '1.2.6', 'ok', 200, 500)
         let isClosed = false
-        const { getAllByRole, getByTestId, getByText, queryByText } = render(
+        const { getAllByRole, getByText, queryByText } = render(
             <UpgradeModal
                 close={() => {
                     isClosed = true
@@ -169,7 +169,7 @@ describe('UpgradeModal', () => {
                 data={mockDistributionInfo}
             />
         )
-        const selectbox = getByTestId('upgrade.select.placeholder')
+        const selectbox = getByText('upgrade.select.placeholder')
         expect(selectbox).toBeTruthy()
         userEvent.click(selectbox)
         // select a version
@@ -190,7 +190,7 @@ describe('UpgradeModal', () => {
     it('should show error message when failed upgrading', async () => {
         const mockUpgrade = nockUpgrade('clusterName', '1.2.6', '', 405, 100)
         let isClosed = false
-        const { getAllByRole, getByTestId, getByText, queryByText } = render(
+        const { getAllByRole, getByText, queryByText } = render(
             <UpgradeModal
                 close={() => {
                     isClosed = true
@@ -200,7 +200,7 @@ describe('UpgradeModal', () => {
                 data={mockDistributionInfo}
             />
         )
-        const selectbox = getByTestId('upgrade.select.placeholder')
+        const selectbox = getByText('upgrade.select.placeholder')
         expect(selectbox).toBeTruthy()
         userEvent.click(selectbox)
         // select a version
