@@ -238,9 +238,13 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
         result.promise
             .then(async (projects) => {
                 if (projects) {
-                    const namespaces = projects!.map((project) => project.metadata.name!)
-                    await rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
-                    if (projects.length === 0) setNoProjectsFound(true)
+                    if (projects.length === 0) {
+                        setNoProjectsFound(true)
+                        setFilteredProjects([])
+                    } else {
+                        const namespaces = projects!.map((project) => project.metadata.name!)
+                        await rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
+                    }
                 } else {
                     setFilteredProjects([])
                 }
