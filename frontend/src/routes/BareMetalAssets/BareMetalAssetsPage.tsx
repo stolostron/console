@@ -1,4 +1,7 @@
 import {
+    AcmAlertContext,
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
     AcmPageCard,
@@ -8,18 +11,18 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import React, { useContext, useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
-import { ErrorPage } from '../../components/ErrorPage'
+import { getErrorInfo } from '../../components/ErrorPage'
 import { deleteResources } from '../../lib/delete-resources'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
-import { DOC_LINKS } from '../../lib/doc-util'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -42,7 +45,10 @@ export default function BareMetalAssetsPage() {
                 }
             />
             <AcmScrollable>
-                <BareMetalAssets />
+                <AcmAlertProvider>
+                    <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                    <BareMetalAssets />
+                </AcmAlertProvider>
             </AcmScrollable>
         </Page>
     )
@@ -52,20 +58,26 @@ let lastData: BareMetalAsset[] | undefined
 let lastTime: number = 0
 
 export function BareMetalAssets() {
+    const alertContext = useContext(AcmAlertContext)
     const { data, error, startPolling } = useQuery(
         listBareMetalAssets,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
+    useEffect(startPolling, [startPolling])
     useEffect(() => {
         if (process.env.NODE_ENV !== 'test') {
             lastData = data
             lastTime = Date.now()
         }
     }, [data])
-    useEffect(startPolling, [startPolling])
-    if (error) {
-        return <ErrorPage error={error} />
-    }
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (error) {
+            alertContext.addAlert(getErrorInfo(error))
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
+
     return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource}></BareMetalAssetsTable>
 }
 
