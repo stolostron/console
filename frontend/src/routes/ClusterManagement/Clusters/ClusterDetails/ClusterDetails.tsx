@@ -151,7 +151,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 kubeApiServer: undefined,
                 consoleURL: undefined,
             }
-            console.log('testing useEffect: ', tempCluster)
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
         //CheckTableActionsRbacAccess()

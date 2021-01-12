@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
@@ -37,7 +38,7 @@ import {
     ManagedClusterInfoKind,
 } from '../../../../resources/managed-cluster-info'
 import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
-import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
+import { ResourceAttributes, SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
 
 const clusterName = 'test-cluster'
@@ -395,7 +396,7 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     },
 }
 
-const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
@@ -592,6 +593,87 @@ const nockGetClusterDeploymentError = () => nockGet(mockClusterDeployment, mockB
 const nockListManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
 // const nockManagedClusterError = () => nockGet(mockManagedCluster, mockBadRequestStatus, 400)
 
+function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
+    )
+}
+
+function getPatchClusterResourceAttributes(name: string) {
+    return {
+        resource: 'managedclusters',
+        verb: 'patch',
+        group: 'cluster.open-cluster-management.io',
+        name,
+    } as ResourceAttributes
+}
+function getDeleteClusterResourceAttributes(name: string) {
+    return {
+        resource: 'managedclusters',
+        verb: 'delete',
+        group: 'cluster.open-cluster-management.io',
+        name: name,
+    } as ResourceAttributes
+}
+function getDeleteDeploymentResourceAttributes(name: string) {
+    return {
+        resource: 'clusterdeployments',
+        verb: 'delete',
+        group: 'hive.openshift.io',
+        name,
+        namespace: name,
+    } as ResourceAttributes
+}
+function getDeleteMachinePoolsResourceAttributes(name: string) {
+    return {
+        resource: 'machinepools',
+        verb: 'delete',
+        group: 'hive.openshift.io',
+        namespace: name,
+    } as ResourceAttributes
+}
+function getCreateClusterViewResourceAttributes(name: string) {
+    return {
+        resource: 'managedclusterviews',
+        verb: 'create',
+        group: 'view.open-cluster-management.io',
+        namespace: name,
+    } as ResourceAttributes
+}
+function getClusterActionsResourceAttributes(name: string) {
+    return {
+        resource: 'managedclusteractions',
+        verb: 'create',
+        group: 'action.open-cluster-management.io',
+        namespace: name,
+    } as ResourceAttributes
+}
+
+function nocksAreDone(nocks: Scope[]) {
+    for (const nock of nocks) {
+        if (!nock.isDone()) return false
+    }
+    return true
+}
+
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
@@ -609,7 +691,7 @@ describe('ClusterDetails', () => {
         const csrScope = nockListCertificateSigningRequests()
         const mcaScope = nockGetManagedClusterAddons()
         const managedClusterNock = nockGetManagedCluster()
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const nockRbac = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
@@ -630,16 +712,27 @@ describe('ClusterDetails', () => {
         const mcaScope = nockGetManagedClusterAddons()
         const managedClusterNock = nockGetManagedCluster()
         const hiveScope = nockListHiveProvisionJobs()
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest)
         const listClusterProvisionsNock = nockListClusterProvision()
+
+        const rbacNocks: Scope[] = [
+            nockCreate(mockGetSecretSelfSubjectAccessRequest),
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+        ]
+
         render(<Component />)
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(hiveScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 2000 })
@@ -665,16 +758,26 @@ describe('ClusterDetails', () => {
         const csrScope = nockListCertificateSigningRequests()
         const mcaScope = nockGetManagedClusterAddons()
         const managedClusterNock = nockGetManagedCluster()
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         const listClusterProvisionsNock = nockListClusterProvision()
 
+        const rbacNocks: Scope[] = [
+            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+        ]
+
         render(<Component />)
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {
@@ -701,16 +804,26 @@ describe('ClusterDetails', () => {
         const csrScope = nockListCertificateSigningRequests()
         const mcaScope = nockGetManagedClusterAddons()
         const managedClusterNock = nockGetManagedCluster()
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         const listClusterProvisionsNock = nockListClusterProvision()
 
+        const rbacNocks: Scope[] = [
+            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+        ]
+
         render(<Component />)
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {
@@ -728,16 +841,25 @@ describe('ClusterDetails', () => {
         const csrScope = nockListCertificateSigningRequests()
         const mcaScope = nockListManagedClusterAddonsError()
         const managedClusterNock = nockGetManagedCluster()
-        const nockRbac = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         const listClusterProvisionsNock = nockListClusterProvision()
+        const rbacNocks: Scope[] = [
+            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+        ]
 
         render(<Component />)
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
         await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
         await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
         await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
 
         await act(async () => {

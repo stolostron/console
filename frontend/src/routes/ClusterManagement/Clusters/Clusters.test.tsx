@@ -2,7 +2,7 @@ import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, 
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockList, nockDelete, nockOptions, nockCreate } from '../../../lib/nock-util'
+import { nockList, nockDelete, nockCreate } from '../../../lib/nock-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
