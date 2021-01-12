@@ -34,6 +34,8 @@ import {
     createSubjectAccessReviews,
     rbacMapping,
     ClustersTableActionsRbac,
+    CheckTableActionsRbacAccess,
+    defaultTableRbacValues,
 } from '../../../resources/self-subject-access-review'
 
 export default function ClustersPage() {
@@ -178,12 +180,6 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const defaultTableRbacValues: ClustersTableActionsRbac = {
-        'cluster.edit.labels': false,
-        'cluster.detach': false,
-        'cluster.destroy': false,
-        'cluster.upgrade': false,
-    }
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
@@ -199,38 +195,39 @@ export function ClustersTable(props: {
         abortRbacCheck?.forEach((abort) => abort())
     }
 
-    function checkRbacAccess(cluster: Cluster) {
-        let currentRbacValues = { ...defaultTableRbacValues }
-        let abortArray: Array<Function> = []
-        if (!cluster.isHive) {
-            delete currentRbacValues['cluster.destroy']
-        }
-        if (cluster?.status === ClusterStatus.detached) {
-            delete currentRbacValues['cluster.detach']
-        }
-        Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
-            request.promise
-                .then((results) => {
-                    if (results) {
-                        let rbacQueryResults: boolean[] = []
-                        results.forEach((result) => {
-                            if (result.status === 'fulfilled') {
-                                rbacQueryResults.push(result.value.status?.allowed!)
-                            }
-                        })
-                        if (!rbacQueryResults.includes(false)) {
-                            setTableActionRbacValues((current) => {
-                                return { ...current, ...{ [action]: true } }
-                            })
-                        }
-                    }
-                })
-                .catch((err) => console.error(err))
-            abortArray.push(request.abort)
-        })
-        setRbacAborts(abortArray)
-    }
+    // function checkTableActionsRbacAccess(cluster: Cluster, setTableActionRbacValues:React.Dispatch<React.SetStateAction<ClustersTableActionsRbac>>,
+    //     setRbacAborts: React.Dispatch<React.SetStateAction<Function[] | undefined>>) {
+    //     let currentRbacValues = { ...defaultTableRbacValues }
+    //     let abortArray: Array<Function> = []
+    //     if (!cluster.isHive) {
+    //         delete currentRbacValues['cluster.destroy']
+    //     }
+    //     if (cluster?.status === ClusterStatus.detached) {
+    //         delete currentRbacValues['cluster.detach']
+    //     }
+    //     Object.keys(currentRbacValues).forEach((action) => {
+    //         const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
+    //         request.promise
+    //             .then((results) => {
+    //                 if (results) {
+    //                     let rbacQueryResults: boolean[] = []
+    //                     results.forEach((result) => {
+    //                         if (result.status === 'fulfilled') {
+    //                             rbacQueryResults.push(result.value.status?.allowed!)
+    //                         }
+    //                     })
+    //                     if (!rbacQueryResults.includes(false)) {
+    //                         setTableActionRbacValues((current) => {
+    //                             return { ...current, ...{ [action]: true } }
+    //                         })
+    //                     }
+    //                 }
+    //             })
+    //             .catch((err) => console.error(err))
+    //         abortArray.push(request.abort)
+    //     })
+    //     setRbacAborts(abortArray)
+    // }
 
     return (
         <Fragment>
@@ -480,7 +477,12 @@ export function ClustersTable(props: {
                                     isKebab={true}
                                     isPlain={true}
                                     onToggle={() => {
-                                        if (!isOpen) checkRbacAccess(cluster)
+                                        if (!isOpen)
+                                            CheckTableActionsRbacAccess(
+                                                cluster,
+                                                setTableActionRbacValues,
+                                                setRbacAborts
+                                            )
                                         else abortRbacPromises()
                                         setIsOpen(!isOpen)
                                     }}
