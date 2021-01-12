@@ -6,12 +6,12 @@ import {
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
+    AcmInlineProvider,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
-    AcmInlineProvider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -19,25 +19,27 @@ import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
-import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
+import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
-import { ClusterDeployment } from '../../../resources/cluster-deployment'
-import { ManagedCluster } from '../../../resources/managed-cluster'
-import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
-import { usePageContext } from '../../ClusterManagement/ClusterManagement'
-import { EditLabelsModal } from './components/EditLabelsModal'
 import {
+    ClustersTableActionsRbac,
     createSubjectAccessReviews,
     rbacMapping,
-    ClustersTableActionsRbac,
 } from '../../../resources/self-subject-access-review'
+import { usePageContext } from '../../ClusterManagement/ClusterManagement'
+import { EditLabelsModal } from './components/EditLabelsModal'
 
 export default function ClustersPage() {
-    return <ClustersPageContent />
+    return (
+        <AcmAlertProvider>
+            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+            <ClustersPageContent />
+        </AcmAlertProvider>
+    )
 }
 
 const PageActions = () => {
@@ -117,15 +119,13 @@ const PageActions = () => {
     )
 }
 
-let lastData:
-    | PromiseSettledResult<
-          ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[] | ManagedCluster[]
-      >[]
-    | undefined
+let lastData: Cluster[] | undefined
 let lastTime: number = 0
 
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(
+    const alertContext = useContext(AcmAlertContext)
+
+    const { data, error, startPolling, refresh } = useQuery(
         getAllClusters,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
@@ -139,33 +139,20 @@ export function ClustersPageContent() {
         }
     }, [data])
 
-    const items = data?.map((d) => {
-        if (d.status === 'fulfilled') {
-            return d.value
-        } else {
-            console.error(d.reason)
-            return []
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (error) {
+            alertContext.addAlert(getErrorInfo(error))
         }
-    })
-
-    let clusters: Cluster[] | undefined
-    if (items) {
-        clusters = mapClusters(
-            items[0] as ClusterDeployment[],
-            items[1] as ManagedClusterInfo[],
-            items[2] as CertificateSigningRequest[],
-            items[3] as ManagedCluster[]
-        )
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
 
     return (
-        <AcmAlertProvider>
-            <AcmPageCard>
-                <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-                    <ClustersTable clusters={clusters} refresh={refresh} />
-                </AcmTablePaginationContextProvider>
-            </AcmPageCard>
-        </AcmAlertProvider>
+        <AcmPageCard>
+            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                <ClustersTable clusters={data} refresh={refresh} />
+            </AcmTablePaginationContextProvider>
+        </AcmPageCard>
     )
 }
 
@@ -234,7 +221,6 @@ export function ClustersTable(props: {
 
     return (
         <Fragment>
-            <AcmAlertGroup isInline canClose />
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}

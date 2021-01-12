@@ -83,12 +83,27 @@ export function getSingleCluster(
     }
 }
 
-export function getAllClusters(): IRequestResult<
-    PromiseSettledResult<ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[] | ManagedCluster[]>[]
-> {
+export function getAllClusters(): IRequestResult<Cluster[]> {
     const results = [listClusterDeployments(), listMCIs(), listCertificateSigningRequests(), listManagedClusters()]
     return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
+        promise: Promise.allSettled(results.map((result) => result.promise)).then((results) => {
+            const items = results.map((d, i) => {
+                if (d.status === 'fulfilled') {
+                    return d.value
+                } else {
+                    if (d.reason instanceof Error) {
+                        throw d.reason
+                    }
+                    return []
+                }
+            })
+            return mapClusters(
+                items[0] as ClusterDeployment[],
+                items[1] as ManagedClusterInfo[],
+                items[2] as CertificateSigningRequest[],
+                items[3] as ManagedCluster[]
+            )
+        }),
         abort: () => results.forEach((result) => result.abort()),
     }
 }
