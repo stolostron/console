@@ -1,6 +1,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource } from './resource'
 import { createResource } from '../lib/resource-request'
+import { Cluster, ClusterStatus } from '../lib/get-cluster'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
 export type SelfSubjectAccessReviewApiVersionType = 'authorization.k8s.io/v1'
@@ -220,4 +221,48 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
         default:
             return []
     }
+}
+
+export const defaultTableRbacValues: ClustersTableActionsRbac = {
+    'cluster.edit.labels': false,
+    'cluster.detach': false,
+    'cluster.destroy': false,
+    'cluster.upgrade': false,
+}
+
+export function CheckTableActionsRbacAccess(
+    cluster: Cluster,
+    setTableActionRbacValues: React.Dispatch<React.SetStateAction<ClustersTableActionsRbac>>,
+    setRbacAborts?: React.Dispatch<React.SetStateAction<Function[] | undefined>>
+) {
+    let currentRbacValues = { ...defaultTableRbacValues }
+    let abortArray: Array<Function> = []
+    if (!cluster.isHive) {
+        delete currentRbacValues['cluster.destroy']
+    }
+    if (cluster?.status === ClusterStatus.detached) {
+        delete currentRbacValues['cluster.detach']
+    }
+    Object.keys(currentRbacValues).forEach((action) => {
+        const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
+        request.promise
+            .then((results) => {
+                if (results) {
+                    let rbacQueryResults: boolean[] = []
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled') {
+                            rbacQueryResults.push(result.value.status?.allowed!)
+                        }
+                    })
+                    if (!rbacQueryResults.includes(false)) {
+                        setTableActionRbacValues((current) => {
+                            return { ...current, ...{ [action]: true } }
+                        })
+                    }
+                }
+            })
+            .catch((err) => console.error(err))
+        abortArray.push(request.abort)
+    })
+    if (setRbacAborts) setRbacAborts(abortArray)
 }

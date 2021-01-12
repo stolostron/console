@@ -28,7 +28,13 @@ import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
-import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'
+import {
+    createSubjectAccessReview,
+    rbacMapping,
+    ClustersTableActionsRbac,
+    defaultTableRbacValues,
+    CheckTableActionsRbacAccess,
+} from '../../../../resources/self-subject-access-review'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { EditLabelsModal } from '../components/EditLabelsModal'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
@@ -66,7 +72,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
-    const [accessRestriction, setRestriction] = useState<boolean>(true)
+    const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
     useEffect(startPolling, [startPolling])
     useEffect(() => {
         if (error) {
@@ -103,7 +109,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         try {
             const promiseResult = createSubjectAccessReview(resource).promise
             promiseResult.then((result) => {
-                setRestriction(!result.status?.allowed!)
+                setSecretAccessRestriction(!result.status?.allowed!)
             })
         } catch (err) {
             console.error(err)
@@ -117,6 +123,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [addons, setAddons] = useState<Addon[] | undefined>(undefined)
     const [addonsError, setAddonsError] = useState<Error | undefined>(undefined)
     const { clusterManagementAddons } = useContext(AppContext)
+
     useEffect(addonStartPolling, [addonStartPolling])
     useEffect(() => {
         if (addonError) {
@@ -126,6 +133,28 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             setAddons(mapAddons(clusterManagementAddons, addonData))
         }
     }, [addonData, addonError, clusterManagementAddons])
+
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
+    useEffect(() => {
+        if (cluster?.status && cluster?.isHive && cluster?.isManaged) {
+            const tempCluster: Cluster = {
+                name: '',
+                namespace: '',
+                status: cluster?.status,
+                isHive: cluster?.isHive,
+                isManaged: cluster?.isManaged,
+                provider: undefined,
+                distribution: undefined,
+                labels: undefined,
+                nodes: undefined,
+                hiveSecrets: undefined,
+                kubeApiServer: undefined,
+                consoleURL: undefined,
+            }
+            CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
+        }
+        //CheckTableActionsRbacAccess()
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
 
     if (loading) {
         return <AcmSpinnerBackdrop />
@@ -232,7 +261,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             href: addon.launchLink?.href ?? '',
                                         }))}
                                 />
-                                <DownloadConfigurationDropdown accessRestriction={accessRestriction} />
+                                <DownloadConfigurationDropdown
+                                    getSecretAccessRestriction={getSecretAccessRestriction}
+                                />
                                 {(() => {
                                     const onSelect = (id: string) => {
                                         const action = actions.find((a) => a.id === id)
@@ -243,6 +274,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             id: 'edit-labels',
                                             text: t('managed.editLabels'),
                                             click: (cluster: Cluster) => setEditModalOpen(true),
+                                            isDisabled: !tableActionRbacValues['cluster.edit.labels'],
+                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                ? t('common:rbac.unauthorized')
+                                                : '',
                                         },
                                         {
                                             id: 'launch-cluster',
@@ -255,6 +290,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             click: (cluster: Cluster) => {
                                                 setUpgradeSingleCluster(cluster)
                                             },
+                                            isDisabled: !tableActionRbacValues['cluster.upgrade'],
+                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                ? t('common:rbac.unauthorized')
+                                                : '',
                                         },
                                         {
                                             id: 'search-cluster',
@@ -267,6 +306,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'detach-cluster',
                                             text: t('managed.detached'),
+                                            isDisabled: !tableActionRbacValues['cluster.detach'],
+                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                ? t('common:rbac.unauthorized')
+                                                : '',
                                             click: (cluster: Cluster) => {
                                                 setConfirm({
                                                     title: t('modal.detach.title'),
@@ -294,6 +337,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'destroy-cluster',
                                             text: t('managed.destroySelected'),
+                                            isDisabled: !tableActionRbacValues['cluster.destroy'],
+                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                ? t('common:rbac.unauthorized')
+                                                : '',
                                             click: (cluster: Cluster) => {
                                                 setConfirm({
                                                     title: t('modal.destroy.title'),
@@ -369,7 +416,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     <Suspense fallback={<Fragment />}>
                         <Switch>
                             <Route exact path={NavigationPath.clusterOverview}>
-                                <ClusterOverviewPageContent accessRestriction={accessRestriction} />
+                                <ClusterOverviewPageContent
+                                    getSecretAccessRestriction={getSecretAccessRestriction}
+                                    editLabelAccessRestriction={!tableActionRbacValues['cluster.edit.labels']}
+                                />
                             </Route>
                             <Route exact path={NavigationPath.clusterNodes}>
                                 <NodePoolsPageContent />
