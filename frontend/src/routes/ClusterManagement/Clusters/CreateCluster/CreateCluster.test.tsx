@@ -29,7 +29,7 @@ describe('CreateCluster', () => {
         const { getByTestId, getByText } = render(<Component />)
         expect(getByTestId('notifications')).toBeInTheDocument()
         expect(getByTestId('create-button-portal-id')).toBeInTheDocument()
-        expect(getByTestId('name')).toBeInTheDocument()
+        expect(getByTestId('eman')).toBeInTheDocument()
         expect(getByText('creation.ocp.cluster.details')).toBeInTheDocument()
         expect(getByTestId('main-creation.ocp.cluster.details')).toBeInTheDocument()
     })

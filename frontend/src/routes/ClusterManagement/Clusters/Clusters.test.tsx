@@ -1,8 +1,9 @@
 import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockList, nockDelete, nockCreate } from '../../../lib/nock-util'
+import { nockCreate, nockDelete, nockList } from '../../../lib/nock-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
@@ -19,9 +20,8 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
-import ClustersPage from './Clusters'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
-import { Scope } from 'nock/types'
+import ClustersPage from './Clusters'
 
 const mockManagedCluster1: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
