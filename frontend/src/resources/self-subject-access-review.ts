@@ -34,6 +34,25 @@ export type ResourceAttributes = {
     subresource?: string
 }
 
+export type ClustersTableActionsRbac = {
+    'cluster.edit.labels': boolean
+    'cluster.detach'?: boolean
+    'cluster.destroy'?: boolean
+    'cluster.upgrade'?: boolean
+}
+
+// TODO: Add support for bma and provider connections
+// export type ProviderConnectionsTableRbacAccess = {
+//     edit: boolean
+//     delete: boolean
+// }
+
+// export type BMATableRbacAccess = {
+//     editLabels: boolean
+//     editAsset: boolean
+//     destroy: boolean
+// }
+
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
     return createResource<SelfSubjectAccessReview>({
         apiVersion: SelfSubjectAccessReviewApiVersion,
@@ -160,6 +179,21 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     verb: 'patch',
                     group: 'cluster.open-cluster-management.io',
                     name,
+                },
+            ]
+        case 'cluster.upgrade':
+            return [
+                {
+                    resource: 'managedclusterviews',
+                    verb: 'create',
+                    group: 'view.open-cluster-management.io',
+                    namespace,
+                },
+                {
+                    resource: 'managedclusteractions',
+                    verb: 'create',
+                    group: 'action.open-cluster-management.io',
+                    namespace,
                 },
             ]
         case 'secret.get':
