@@ -1,12 +1,12 @@
-.pf-c-content .creation-view.showEditor {
+.pf-c-content .temptifly.showEditor {
     margin: -24px 0 -3.125rem 0;
 }
-.pf-c-content .creation-view .creation-view-split-container.showEditor {
-    height: calc(100vh - 220px);
+.pf-c-content .temptifly .creation-view-split-container.showEditor {
+    height: calc(100vh - 200px);
 }
-.pf-c-content .creation-view .creation-view-split-container.showEditor .creation-view-controls-container {
+.pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container {
     padding-top: 1rem;
-    height: calc(100vh - 225px);
+    height: calc(100vh - 205px);
 }
 .portal-controls {
     display: flex;

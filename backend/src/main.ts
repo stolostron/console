@@ -52,3 +52,23 @@ process
     })
 
 void startServer(requestHandler)
+
+// function logMemory() {
+//     const used = process.memoryUsage()
+//     logger.debug(
+//         Object.keys(used)
+//             .map((key) => {
+//                 return `${key}:${Math.round(((used as unknown) as Record<string, number>)[key] / 1024 / 1024)} MB`
+//             })
+//             .join('  ')
+//     )
+//     setTimeout(logMemory, 5000).unref()
+
+//     try {
+//         global.gc()
+//     } catch (e) {
+//         console.log('`node --expose-gc index.js`')
+//         process.exit()
+//     }
+// }
+// setTimeout(logMemory, 5000).unref()

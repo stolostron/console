@@ -1,4 +1,8 @@
 {
+  "page.header.create-cluster": "Create cluster",
+  "page.header.create-cluster.tooltip": "Create clusters across different providers.",
+  "learn.more": "Learn more",
+  "clusters": "Clusters",
   "managed.createCluster": "Create cluster",
   "cluster.create.title": "Create a cluster",
   "cluster.create.select.cloudprovider": "Select a provider",
@@ -334,6 +338,8 @@
   "success.create.created": "Created {{0}}. Redirecting to details...",
   "error.create.syntax": "Syntax error: {{0}}",
   "success.create.generating": "Generating import command ...",
+  "overview.error.default": "An unexpected error occurred. Try again.",
+
   
   "formerror.required": "Required field",
   "formerror.json.required": "JSON required",

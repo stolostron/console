@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
 import { NavigationPath } from '../../NavigationPath'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -49,6 +50,19 @@ export default function ClusterManagementPage() {
             <PageContext.Provider value={{ actions, setActions }}>
                 <AcmPageHeader
                     title={t('page.header.cluster-management')}
+                    titleTooltip={
+                        <>
+                            {t('page.header.cluster-management.tooltip')}
+                            <a
+                                href={DOC_LINKS.CLUSTERS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>

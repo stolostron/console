@@ -101,7 +101,7 @@ export const controlData = [
                 change: {
                     insertControlData: awsControlData,
                     replacements: {
-                        'install-config': { template: installConfig, encode: true },
+                        'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
             },
@@ -112,7 +112,7 @@ export const controlData = [
                 change: {
                     insertControlData: gcpControlData,
                     replacements: {
-                        'install-config': { template: installConfig, encode: true },
+                        'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
             },
@@ -123,7 +123,7 @@ export const controlData = [
                 change: {
                     insertControlData: azrControlData,
                     replacements: {
-                        'install-config': { template: installConfig, encode: true },
+                        'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
             },
@@ -134,7 +134,7 @@ export const controlData = [
                 change: {
                     insertControlData: vmwControlData,
                     replacements: {
-                        'install-config': { template: installConfig, encode: true },
+                        'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
             },
@@ -145,7 +145,7 @@ export const controlData = [
                 change: {
                     insertControlData: bmcControlData,
                     replacements: {
-                        'install-config': { template: installConfig, encode: true },
+                        'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
             },
