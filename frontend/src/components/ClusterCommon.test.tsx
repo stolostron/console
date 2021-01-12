@@ -122,10 +122,10 @@ describe('UpgradeModal', () => {
         const { getAllByRole, getByTestId } = render(
             <UpgradeModal close={() => {}} open={true} clusterName="clusterName" data={mockDistributionInfo} />
         )
-        const button = getByTestId('pf-select-toggle-id-3')
-        expect(button).toBeTruthy()
-        if (button) {
-            userEvent.click(button)
+        const selectbox = getByTestId('upgrade.select.placeholder')
+        expect(selectbox).toBeTruthy()
+        if (selectbox) {
+            userEvent.click(selectbox)
             expect(
                 getAllByRole('option').map((elem) => {
                     return elem.textContent
@@ -169,9 +169,9 @@ describe('UpgradeModal', () => {
                 data={mockDistributionInfo}
             />
         )
-        const button = getByTestId('pf-select-toggle-id-10')
-        expect(button).toBeTruthy()
-        userEvent.click(button)
+        const selectbox = getByTestId('upgrade.select.placeholder')
+        expect(selectbox).toBeTruthy()
+        userEvent.click(selectbox)
         // select a version
         expect(getAllByRole('option').length).toBeGreaterThan(0)
         const versionButton = getAllByRole('option')[0]
@@ -200,9 +200,9 @@ describe('UpgradeModal', () => {
                 data={mockDistributionInfo}
             />
         )
-        const button = getByTestId('pf-select-toggle-id-21')
-        expect(button).toBeTruthy()
-        userEvent.click(button)
+        const selectbox = getByTestId('upgrade.select.placeholder')
+        expect(selectbox).toBeTruthy()
+        userEvent.click(selectbox)
         // select a version
         expect(getAllByRole('option').length).toBeGreaterThan(0)
         const versionButton = getAllByRole('option')[0]
