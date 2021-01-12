@@ -9,8 +9,8 @@
     height: calc(100vh - 205px);
 }
 .portal-controls {
-   display: flex;
+    display: flex;
 }
- .portal-controls > div {
-   margin-left: 10px;
+.portal-controls > div {
+    margin-left: 10px;
 }
