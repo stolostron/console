@@ -12,10 +12,10 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { ErrorState } from '../../../components/ErrorPage'
+import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResources } from '../../../lib/delete-resources'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource } from '../../../lib/resource-request'
@@ -27,6 +27,7 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 export default function ProviderConnectionsPage() {
     return (
         <AcmAlertProvider>
+            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
             <AcmPageCard>
                 <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
                     <ProviderConnectionsPageContent />
@@ -52,6 +53,7 @@ let lastData: ProviderConnection[] | undefined
 let lastTime: number = 0
 
 export function ProviderConnectionsPageContent() {
+    const alertContext = useContext(AcmAlertContext)
     const { error, data, startPolling, refresh } = useQuery(
         listProviderConnections,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
@@ -64,7 +66,14 @@ export function ProviderConnectionsPageContent() {
     }, [data])
     useEffect(startPolling, [startPolling])
     usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
-    if (error) return <ErrorState error={error} />
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (error) {
+            alertContext.addAlert(getErrorInfo(error))
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
+
     return <ProviderConnectionsTable providerConnections={data} refresh={refresh} />
 }
 
@@ -81,7 +90,6 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
     const alertContext = useContext(AcmAlertContext)
     return (
         <Fragment>
-            <AcmAlertGroup isInline canClose />
             <ConfirmModal {...confirm} />
             <AcmTable<ProviderConnection>
                 emptyState={

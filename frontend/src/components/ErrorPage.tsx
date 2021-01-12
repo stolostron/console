@@ -1,3 +1,4 @@
+import { AcmAlertInfo } from '@open-cluster-management/ui-components'
 import {
     Card,
     CardBody,
@@ -10,7 +11,7 @@ import {
 import React, { ReactNode } from 'react'
 import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
-export function getErrorInfo(error: unknown) {
+export function getErrorInfo(error: unknown): AcmAlertInfo {
     let title = 'Error'
     let message = 'Unknown'
     if (error instanceof ResourceError) {
@@ -18,39 +19,40 @@ export function getErrorInfo(error: unknown) {
         switch (error.code) {
             case ResourceErrorCode.BadGateway:
                 title = 'Bad gateway'
-                message = 'Error accessing resources due to a bad gateway.'
+                message = 'Unable to communicate with the server because of a bad gateway.'
                 break
             case ResourceErrorCode.BadRequest:
                 title = 'Bad request'
-                message = 'There was bad data sent for accessing resources.'
+                message = 'Could not process request because of invalid data.'
                 break
             case ResourceErrorCode.Conflict:
                 title = 'Conflict'
-                message = 'There was a conflict when updating the resources.'
+                message = 'Unable to update the resource because of a resource conflict.'
                 break
             case ResourceErrorCode.ConnectionReset:
                 title = 'Connection reset'
-                message = 'The network connection was reset when accessing resources.'
+                message = 'Unable to communicate with the server because the network connection was reset.'
                 break
             case ResourceErrorCode.Forbidden:
                 title = 'Forbidden'
-                message = 'Access to the resources is forbidden.'
+                message =
+                    'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
                 break
             case ResourceErrorCode.GatewayTimeout:
                 title = 'Gateway timeout'
-                message = 'Error accessing resources due to a gateway timeout.'
+                message = 'Unable to communicate with the server due to a gateway timeout.'
                 break
             case ResourceErrorCode.InternalServerError:
                 title = 'Internal server error'
-                message = 'There was an unforseen error when accessing resources.'
+                message = 'Unable to communicate with the server because of an unforseen error.'
                 break
             case ResourceErrorCode.NetworkError:
                 title = 'Network error'
-                message = 'There was a network error when accessing resources.'
+                message = 'Unable to communicate with the server because of a network error.'
                 break
             case ResourceErrorCode.NotFound:
                 title = 'Not found'
-                message = 'The resource being accessed was not found.'
+                message = 'The resource was not found.'
                 break
             case ResourceErrorCode.NotImplemented:
                 title = 'Not implemented'
@@ -58,23 +60,23 @@ export function getErrorInfo(error: unknown) {
                 break
             case ResourceErrorCode.RequestCancelled:
                 title = 'Request cancelled'
-                message = 'The resource access was cancelled.'
+                message = 'The request was cancelled.'
                 break
             case ResourceErrorCode.ServiceUnavailable:
                 title = 'Service unavilable'
-                message = 'Error accessing resources due to the service being unavailable.'
+                message = 'Unable to communicate with the server because the service is unavailable.'
                 break
             case ResourceErrorCode.Timeout:
                 title = 'Timeout'
-                message = 'Error accessing resources due to a network timeout.'
+                message = 'Failed to communicate with the server because of a network timeout.'
                 break
             case ResourceErrorCode.TooManyRequests:
                 title = 'Too many requests'
-                message = 'Error accessing resources due to too many requests for resources.'
+                message = 'Request failed because of too many requests. Please retry.'
                 break
             case ResourceErrorCode.Unauthorized:
                 title = 'Unauthorized'
-                message = 'You are not authorized to perform this operation. Authorization needed.'
+                message = 'You are not authorized to perform this operation.'
                 break
             case ResourceErrorCode.Unknown:
                 title = 'Unknown error'
@@ -91,7 +93,7 @@ export function getErrorInfo(error: unknown) {
         message = error
     }
 
-    return { title, message }
+    return { type: 'danger', title, message }
 }
 
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {
