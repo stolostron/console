@@ -1,6 +1,6 @@
 import { IRequestResult, postRequest, backendUrl } from './resource-request'
 
-export const apiSearchUrl = '/search-api'
+export const apiSearchUrl = '/search-query'
 
 export type ISearchResult = {
     data: {
