@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button } from 'carbon-components-react'
+import { Button } from '@patternfly/react-core'
 import { Tooltip } from 'temptifly'
 
 class WrappedImportBareMetalAssetsButton extends React.Component {

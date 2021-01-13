@@ -5,7 +5,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
 
-export function DownloadConfigurationDropdown(props: { accessRestriction: boolean }) {
+export function DownloadConfigurationDropdown(props: { getSecretAccessRestriction: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
 
@@ -32,14 +32,22 @@ export function DownloadConfigurationDropdown(props: { accessRestriction: boolea
 
     if (cluster?.hiveSecrets) {
         const dropdownItems = [
-            { id: 'install-config.yaml', text: 'install-config' },
-            { id: 'kubeconfig', text: 'kubeconfig' },
+            {
+                id: 'install-config.yaml',
+                text: 'install-config',
+                isDisabled: props.getSecretAccessRestriction,
+                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
+            },
+            {
+                id: 'kubeconfig',
+                text: 'kubeconfig',
+                isDisabled: props.getSecretAccessRestriction,
+                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
+            },
         ]
         return (
             <AcmDropdown
                 isPlain={true}
-                isDisabled={props.accessRestriction}
-                tooltip={/* istanbul ignore next */ props.accessRestriction ? t('common:rbac.unauthorized') : undefined}
                 dropdownItems={dropdownItems}
                 onSelect={(id: string) => downloadConfig(id)}
                 text={t('configuration.download')}

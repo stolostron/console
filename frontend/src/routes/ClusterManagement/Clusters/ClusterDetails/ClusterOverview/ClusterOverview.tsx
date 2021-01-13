@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { AcmDescriptionList, AcmLabels, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmDescriptionList, AcmLabels, AcmButton, AcmInlineProvider } from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
@@ -11,9 +11,12 @@ import { ImportCommandContainer } from '../../../Clusters/components/ImportComma
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 
-export function ClusterOverviewPageContent(props: { accessRestriction?: boolean }) {
+export function ClusterOverviewPageContent(props: {
+    getSecretAccessRestriction?: boolean
+    editLabelAccessRestriction?: boolean
+}) {
     const { cluster, setEditModalOpen } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     return (
         <PageSection>
             <HiveNotification />
@@ -24,9 +27,17 @@ export function ClusterOverviewPageContent(props: { accessRestriction?: boolean 
                     { key: t('table.name'), value: cluster?.name },
                     { key: t('table.status'), value: cluster?.status && <StatusField status={cluster?.status} /> },
                     {
+                        key: t('table.provider'),
+                        value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
+                    },
+                    {
                         key: t('table.distribution'),
                         value: cluster?.distribution?.displayVersion && (
-                            <DistributionField data={cluster?.distribution} clusterName={cluster?.name || ''} />
+                            <DistributionField
+                                data={cluster?.distribution}
+                                clusterName={cluster?.name || ''}
+                                clusterStatus={cluster?.status}
+                            />
                         ),
                     },
                     {
@@ -37,8 +48,16 @@ export function ClusterOverviewPageContent(props: { accessRestriction?: boolean 
                                 onClick={() => setEditModalOpen?.(true)}
                                 variant={ButtonVariant.plain}
                                 aria-label={t('common:labels.edit.title')}
+                                isDisabled={props.editLabelAccessRestriction}
+                                tooltip={props.editLabelAccessRestriction ? t('common:rbac.unauthorized') : ''}
                             >
-                                <PencilAltIcon color="var(--pf-global--primary-color--100)" />
+                                <PencilAltIcon
+                                    color={
+                                        props.editLabelAccessRestriction
+                                            ? 'var(--pf-global--disabled-color--200)'
+                                            : 'var(--pf-global--primary-color--100)'
+                                    }
+                                />
                             </AcmButton>
                         ),
                     },
@@ -55,7 +74,7 @@ export function ClusterOverviewPageContent(props: { accessRestriction?: boolean 
                     },
                     {
                         key: t('table.credentials'),
-                        value: <LoginCredentials accessRestriction={props.accessRestriction} />,
+                        value: <LoginCredentials accessRestriction={props.getSecretAccessRestriction} />,
                     },
                 ]}
             />

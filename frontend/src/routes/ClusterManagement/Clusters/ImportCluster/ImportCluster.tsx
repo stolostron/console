@@ -26,6 +26,7 @@ import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { useHistory } from 'react-router-dom'
+import { DOC_LINKS } from '../../../../lib/doc-util'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -37,6 +38,19 @@ export default function ImportClusterPage() {
                     { text: t('clusters'), to: NavigationPath.clusters },
                     { text: t('page.header.import-cluster'), to: '' },
                 ]}
+                titleTooltip={
+                    <>
+                        {t('page.header.import-cluster.tooltip')}
+                        <a
+                            href={DOC_LINKS.IMPORT_CLUSTER}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('common:learn.more')}
+                        </a>
+                    </>
+                }
             />
             <ImportClusterPageContent />
         </AcmPage>

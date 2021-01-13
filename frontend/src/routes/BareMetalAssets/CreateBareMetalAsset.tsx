@@ -2,6 +2,7 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
+    AcmButton,
     AcmEmptyState,
     AcmForm,
     AcmLoadingPage,
@@ -14,7 +15,7 @@ import {
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import {
     createResource,
     getResource,
@@ -24,10 +25,11 @@ import {
 } from '../../../src/lib/resource-request'
 import { BareMetalAsset, BMASecret, MakeId, unpackBareMetalAsset } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
-import { useQuery } from '../../lib/useQuery'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { listProjects, Project } from '../../resources/project'
 import { Secret, unpackSecret } from '../../resources/secret'
+import { rbacNamespaceFilter } from '../../resources/self-subject-access-review'
 
 const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
 const VALID_BMC_ADDR_REGEXP = new RegExp(
@@ -76,24 +78,37 @@ function getBMASecret(metadata: Object) {
 }
 
 export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }) {
-    const { t } = useTranslation(['bma'])
-    let path: Array<string>
-    let editAssetName: string = ''
-    let editAssetNamespace: string = ''
+    const { t } = useTranslation(['bma, common'])
+    const params: { namespace?: string; name?: string } = useParams()
 
-    path = useLocation().pathname.split('/').reverse()
-    if (path[0] === 'edit') {
-        editAssetName = path[1]
-        editAssetNamespace = path[2]
-
+    if (params.namespace && params.name) {
         return (
             <Page>
                 <AcmAlertProvider>
-                    <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                    <AcmPageHeader
+                        title={t('bma:editBareMetalAsset.title')}
+                        titleTooltip={
+                            <>
+                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.BARE_METAL_ASSETS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
+                        breadcrumb={[
+                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('bma:editBareMetalAsset.title'), to: '' },
+                        ]}
+                    />
                     <EditBareMetalAssetPageData
                         bmaSecretID={props.bmaSecretID}
-                        editAssetName={editAssetName}
-                        editAssetNamespace={editAssetNamespace}
+                        editAssetName={params.name}
+                        editAssetNamespace={params.namespace}
                     />
                 </AcmAlertProvider>
             </Page>
@@ -102,7 +117,26 @@ export default function CreateBareMetalAssetPage(props: { bmaSecretID?: string }
     return (
         <Page>
             <AcmAlertProvider>
-                <AcmPageHeader title={t('createBareMetalAsset.title')} />
+                <AcmPageHeader
+                    title={t('bma:createBareMetalAsset.title')}
+                    titleTooltip={
+                        <>
+                            {t('bma:createBareMetalAsset.title.tooltip')}
+                            <a
+                                href={DOC_LINKS.BARE_METAL_ASSETS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
+                    breadcrumb={[
+                        { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('bma:createBareMetalAsset.title'), to: '' },
+                    ]}
+                />
                 <CreateBareMetalAssetPageData bmaSecretID={props.bmaSecretID} />
             </AcmAlertProvider>
         </Page>
@@ -175,7 +209,7 @@ export function EditBareMetalAssetPageData(props: {
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={BMAObjects.projects}
+            projects={BMAObjects.projects.map((project) => project.metadata.name!)}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
             editBareMetalAsset={BMAObjects.bareMetalAsset}
@@ -185,18 +219,96 @@ export function EditBareMetalAssetPageData(props: {
 }
 
 export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
-    const projectsQuery = useQuery(listProjects)
-    const { t } = useTranslation(['bma'])
-    if (projectsQuery.loading) {
+    const { t } = useTranslation(['bma', 'common'])
+    const [filteredProjects, setFilteredProjects] = useState<string[]>()
+    const [error, setError] = useState<Error>()
+    const [retry, setRetry] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [noProjectsFound, setNoProjectsFound] = useState<boolean>(false)
+
+    useEffect(() => {
+        setError(undefined)
+        setFilteredProjects(undefined)
+        setNoProjectsFound(false)
+        setIsLoading(true)
+    }, [retry])
+
+    useEffect(() => {
+        const result = listProjects()
+        result.promise
+            .then(async (projects) => {
+                if (projects) {
+                    if (projects.length === 0) {
+                        setNoProjectsFound(true)
+                        setFilteredProjects([])
+                    } else {
+                        const namespaces = projects!.map((project) => project.metadata.name!)
+                        await rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
+                    }
+                } else {
+                    setFilteredProjects([])
+                }
+            })
+            .catch(setError)
+            .finally(() => {
+                setIsLoading(false)
+            })
+        return result.abort
+    }, [retry])
+
+    if (error) {
+        return (
+            <ErrorPage
+                error={error}
+                actions={
+                    <AcmButton
+                        onClick={() => {
+                            setRetry(retry + 1)
+                        }}
+                    >
+                        Retry
+                    </AcmButton>
+                }
+            />
+        )
+    }
+    if (isLoading) {
         return <AcmLoadingPage />
-    } else if (projectsQuery.error) {
-        return <ErrorPage error={projectsQuery.error} />
-    } else if (!projectsQuery.data || projectsQuery.data.length === 0) {
+    } else if (noProjectsFound) {
         return (
             <AcmPageCard>
                 <AcmEmptyState
                     title={t('createBareMetalAsset.emptyState.Namespaces.title')}
                     message={t('createBareMetalAsset.emptyState.Namespaces.title')}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
+                />
+            </AcmPageCard>
+        )
+    } else if (filteredProjects!.length === 0) {
+        // returns empty state when user cannot create secret in any namespace
+        return (
+            <AcmPageCard>
+                <AcmEmptyState
+                    title={t('common:rbac.title.unauthorized')}
+                    message={t('common:rbac.namespaces.unauthorized')}
+                    showIcon={false}
+                    action={
+                        <AcmButton
+                            onClick={() => {
+                                setRetry(retry + 1)
+                            }}
+                        >
+                            Retry
+                        </AcmButton>
+                    }
                 />
             </AcmPageCard>
         )
@@ -204,7 +316,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
 
     return (
         <CreateBareMetalAssetPageContent
-            projects={projectsQuery.data}
+            projects={filteredProjects!}
             createBareMetalAsset={(bareMetalAsset: BareMetalAsset) => createResource(bareMetalAsset)}
             bmaSecretID={props.bmaSecretID}
         />
@@ -212,7 +324,7 @@ export function CreateBareMetalAssetPageData(props: { bmaSecretID?: string }) {
 }
 
 export function CreateBareMetalAssetPageContent(props: {
-    projects: Project[]
+    projects: string[]
     bmaSecretID?: string
     createBareMetalAsset: (input: BareMetalAsset) => IRequestResult
     editBareMetalAsset?: BareMetalAsset
@@ -320,8 +432,8 @@ export function CreateBareMetalAssetPageContent(props: {
                     isDisabled={isEdit}
                 >
                     {props.projects.map((project) => (
-                        <SelectOption key={project.metadata.name} value={project.metadata.name}>
-                            {project.metadata.name}
+                        <SelectOption key={project} value={project}>
+                            {project}
                         </SelectOption>
                     ))}
                 </AcmSelect>

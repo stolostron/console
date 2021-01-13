@@ -48,6 +48,7 @@ import {
 import { AppContext } from '../../../components/AppContext'
 import { rbacNamespaceFilter } from '../../../resources/self-subject-access-review'
 import { makeStyles } from '@material-ui/styles'
+import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection'])
@@ -57,6 +58,19 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                 {match?.params.namespace ? (
                     <AcmPageHeader
                         title={t('editConnection.title')}
+                        titleTooltip={
+                            <>
+                                {t('addConnection.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.CREATE_CONNECTION}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
                         breadcrumb={[
                             { text: t('connections'), to: NavigationPath.providerConnections },
                             { text: t('editConnection.title'), to: '' },
@@ -65,6 +79,19 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                 ) : (
                     <AcmPageHeader
                         title={t('addConnection.title')}
+                        titleTooltip={
+                            <>
+                                {t('addConnection.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.CREATE_CONNECTION}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
                         breadcrumb={[
                             { text: t('connections'), to: NavigationPath.providerConnections },
                             { text: t('addConnection.title'), to: '' },

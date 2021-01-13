@@ -1,11 +1,11 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/nodejs-12 as builder
+FROM registry.access.redhat.com/ubi8/nodejs-12 as builder
 USER root
 COPY ./ ./
 RUN npm ci
 RUN npm run postinstall
 RUN npm run build
 
-FROM --platform=${BUILDPLATFORM:-linux/amd64} registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
 RUN mkdir -p /app
 WORKDIR /app
@@ -13,7 +13,7 @@ ENV NODE_ENV production
 COPY --from=builder /opt/app-root/src/backend/build ./
 COPY --from=builder /opt/app-root/src/frontend/build ./public
 USER 1001
-CMD ["node", "--max-old-space-size=32", "main.js"]
+CMD ["node", "main.js"]
 
 ARG VCS_REF
 ARG VCS_URL

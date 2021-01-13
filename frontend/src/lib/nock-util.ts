@@ -251,7 +251,7 @@ export function nockUpgrade(
     statusCode: number = 201,
     delay: number = 0
 ) {
-    nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post('/upgrade', JSON.stringify({ clusterName, version }))
         .delay(delay)
         .reply(statusCode, response, {

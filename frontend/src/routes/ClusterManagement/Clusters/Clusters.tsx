@@ -6,6 +6,7 @@ import {
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
+    AcmInlineProvider,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
@@ -18,25 +19,30 @@ import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
-import { Cluster, ClusterStatus, getAllClusters, mapClusters } from '../../../lib/get-cluster'
+import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { CertificateSigningRequest } from '../../../resources/certificate-signing-requests'
-import { ClusterDeployment } from '../../../resources/cluster-deployment'
-import { ManagedCluster } from '../../../resources/managed-cluster'
-import { ManagedClusterInfo } from '../../../resources/managed-cluster-info'
 import {
     ClustersTableActionsRbac,
     createSubjectAccessReviews,
     rbacMapping,
+    CheckTableActionsRbacAccess,
+    defaultTableRbacValues,
 } from '../../../resources/self-subject-access-review'
+import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
 export default function ClustersPage() {
-    return <ClustersPageContent />
+    return (
+        <AcmAlertProvider>
+            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+            <ClustersPageContent />
+        </AcmAlertProvider>
+    )
 }
 
 const PageActions = () => {
@@ -116,15 +122,13 @@ const PageActions = () => {
     )
 }
 
-let lastData:
-    | PromiseSettledResult<
-          ClusterDeployment[] | ManagedClusterInfo[] | CertificateSigningRequest[] | ManagedCluster[]
-      >[]
-    | undefined
+let lastData: Cluster[] | undefined
 let lastTime: number = 0
 
 export function ClustersPageContent() {
-    const { data, startPolling, refresh } = useQuery(
+    const alertContext = useContext(AcmAlertContext)
+
+    const { data, error, startPolling, refresh } = useQuery(
         getAllClusters,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
@@ -138,33 +142,20 @@ export function ClustersPageContent() {
         }
     }, [data])
 
-    const items = data?.map((d) => {
-        if (d.status === 'fulfilled') {
-            return d.value
-        } else {
-            console.error(d.reason)
-            return []
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (error) {
+            alertContext.addAlert(getErrorInfo(error))
         }
-    })
-
-    let clusters: Cluster[] | undefined
-    if (items) {
-        clusters = mapClusters(
-            items[0] as ClusterDeployment[],
-            items[1] as ManagedClusterInfo[],
-            items[2] as CertificateSigningRequest[],
-            items[3] as ManagedCluster[]
-        )
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [error])
 
     return (
-        <AcmAlertProvider>
-            <AcmPageCard>
-                <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-                    <ClustersTable clusters={clusters} refresh={refresh} />
-                </AcmTablePaginationContextProvider>
-            </AcmPageCard>
-        </AcmAlertProvider>
+        <AcmPageCard>
+            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                <ClustersTable clusters={data} refresh={refresh} />
+            </AcmTablePaginationContextProvider>
+        </AcmPageCard>
     )
 }
 
@@ -177,132 +168,24 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const defaultTableRbacValues: ClustersTableActionsRbac = {
-        'cluster.edit.labels': false,
-        'cluster.detach': false,
-        'cluster.destroy': false,
-        'cluster.upgrade': false,
-    }
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
-    const [abortBatchRbacCheck, setBatchRbacAbort] = useState<abortDictionary>()
+    const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
 
-    interface abortDictionary {
-        [key: string]: Function[] | undefined
-    }
-
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
-    }
-    function abortBatchRbacPromises(cluster: Cluster) {
-        if (abortBatchRbacCheck) abortBatchRbacCheck[cluster.name!]?.forEach((abort) => abort)
-    }
-
-    function checkRbacAccess(cluster: Cluster) {
-        let currentRbacValues = { ...defaultTableRbacValues }
-        let abortArray: Array<Function> = []
-        if (!cluster.isHive) {
-            delete currentRbacValues['cluster.destroy']
-        }
-        if (cluster?.status === ClusterStatus.detached) {
-            delete currentRbacValues['cluster.detach']
-        }
-        Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(rbacMapping(action, cluster.name, cluster.namespace))
-            request.promise
-                .then((results) => {
-                    if (results) {
-                        let rbacQueryResults: boolean[] = []
-                        results.forEach((result) => {
-                            if (result.status === 'fulfilled') {
-                                rbacQueryResults.push(result.value.status?.allowed!)
-                            }
-                        })
-                        if (!rbacQueryResults.includes(false)) {
-                            setTableActionRbacValues((current) => {
-                                return { ...current, ...{ [action]: true } }
-                            })
-                        }
-                    }
-                })
-                .catch((err) => console.error(err))
-            abortArray.push(request.abort)
-        })
-        setRbacAborts(abortArray)
-    }
-
-    function checkRbacAccessBatchAction(clusters: Cluster[]) {
-        if (clusters.length === 0) {
-            setTableActionRbacValues(defaultTableRbacValues)
-        } else {
-            let rbacValues: ClustersTableActionsRbac = {
-                'cluster.detach': true,
-                'cluster.destroy': true,
-                'cluster.upgrade': true,
-            }
-
-            let abortArray: Array<Function> = []
-            let abortDictionary: abortDictionary = {}
-
-            let promiseArray = Promise.allSettled(
-                clusters.map((cluster) => {
-                    let newRbacPromise = Promise.allSettled(
-                        Object.keys(rbacValues).map((action: string) => {
-                            const request = createSubjectAccessReviews(
-                                rbacMapping(action, cluster.name, cluster.namespace)
-                            )
-                            abortArray.push(request.abort)
-                            return request.promise
-                                .then((results) => {
-                                    if (results) {
-                                        let rbacQueryResults: boolean[] = []
-                                        results.forEach((result) => {
-                                            if (result.status === 'fulfilled') {
-                                                rbacQueryResults.push(result.value.status?.allowed!)
-                                            }
-                                        })
-
-                                        if (!rbacQueryResults.includes(false)) {
-                                            // evaluates current rbacValue, if false value remains false
-                                            let actionValue =
-                                                rbacValues[
-                                                    action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
-                                                ] && true
-                                            rbacValues[
-                                                action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
-                                            ] = actionValue
-                                        } else {
-                                            rbacValues[
-                                                action as 'cluster.detach' | 'cluster.destroy' | 'cluster.upgrade'
-                                            ] = false
-                                        }
-                                    }
-                                })
-                                .catch((err) => console.error(err))
-                        })
-                    )
-                    abortDictionary[cluster.name!] = abortArray
-                    return newRbacPromise
-                })
-            )
-            promiseArray.then(() => {
-                setTableActionRbacValues(rbacValues)
-            })
-            setBatchRbacAbort(abortDictionary)
-        }
     }
 
     return (
         <Fragment>
-            <AcmAlertGroup isInline canClose />
             <ConfirmModal
                 open={confirm.open}
                 confirm={confirm.confirm}
@@ -325,10 +208,16 @@ export function ClustersTable(props: {
                     setUpgradeSingleCluster(undefined)
                 }}
             />
+            <BatchUpgradeModal
+                clusters={upgradeMultipleClusters}
+                open={!!upgradeMultipleClusters}
+                close={() => {
+                    setUpgradeMultipleClusters(undefined)
+                }}
+            />
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
-                onSelect={(clusters) => checkRbacAccessBatchAction(clusters)}
                 columns={[
                     {
                         header: t('table.name'),
@@ -353,11 +242,22 @@ export function ClustersTable(props: {
                         ),
                     },
                     {
+                        header: t('table.provider'),
+                        sort: 'provider',
+                        search: 'provider',
+                        cell: (cluster) =>
+                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                    },
+                    {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
                         cell: (cluster) => (
-                            <DistributionField data={cluster.distribution} clusterName={cluster?.name || ''} />
+                            <DistributionField
+                                data={cluster.distribution}
+                                clusterName={cluster?.name || ''}
+                                clusterStatus={cluster?.status || ''}
+                            />
                         ),
                     },
                     {
@@ -408,7 +308,10 @@ export function ClustersTable(props: {
                                 {
                                     id: 'search-cluster',
                                     text: t('managed.search'),
-                                    click: (cluster: Cluster) => {},
+                                    click: (cluster: Cluster) =>
+                                        window.location.assign(
+                                            `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                                        ),
                                 },
                                 {
                                     id: 'detach-cluster',
@@ -507,6 +410,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&
                                     cluster.distribution?.ocp?.availableUpdates.length > 0
@@ -539,12 +443,14 @@ export function ClustersTable(props: {
                                     isKebab={true}
                                     isPlain={true}
                                     onToggle={() => {
-                                        if (!isOpen) checkRbacAccess(cluster)
-                                        else {
-                                            abortRbacPromises()
-                                            setTableActionRbacValues(defaultTableRbacValues)
-                                            setIsOpen(!isOpen)
-                                        }
+                                        if (!isOpen)
+                                            CheckTableActionsRbacAccess(
+                                                cluster,
+                                                setTableActionRbacValues,
+                                                setRbacAborts
+                                            )
+                                        else abortRbacPromises()
+                                        setIsOpen(!isOpen)
                                     }}
                                 />
                             )
@@ -558,8 +464,6 @@ export function ClustersTable(props: {
                     {
                         id: 'destroyCluster',
                         title: t('managed.destroy'),
-                        isDisabled: !tableActionRbacValues['cluster.destroy'],
-                        tooltip: !tableActionRbacValues['cluster.destroy'] ? t('common:rbac.unauthorized') : '',
                         click: (clusters) => {
                             setConfirm({
                                 title: t('modal.destroy.title'),
@@ -605,7 +509,6 @@ export function ClustersTable(props: {
                                         .finally(() => {
                                             props.refresh()
                                         })
-
                                     setConfirm(ClosedConfirmModalProps)
                                 },
                                 cancel: () => {
@@ -617,8 +520,6 @@ export function ClustersTable(props: {
                     {
                         id: 'detachCluster',
                         title: t('managed.detachSelected'),
-                        isDisabled: !tableActionRbacValues['cluster.detach'],
-                        tooltip: !tableActionRbacValues['cluster.destroy'] ? t('common:rbac.unauthorized') : '',
                         click: (managedClusters) => {
                             setConfirm({
                                 title: t('modal.detach.title'),
@@ -676,30 +577,26 @@ export function ClustersTable(props: {
                     {
                         id: 'upgradeClusters',
                         title: t('managed.upgradeSelected'),
-                        isDisabled: !tableActionRbacValues['cluster.upgrade'],
-                        tooltip: !tableActionRbacValues['cluster.destroy'] ? t('common:rbac.unauthorized') : '',
                         click: (managedClusters: Array<Cluster>) => {
                             if (!managedClusters) {
                                 return
                             }
+
                             const clusters = managedClusters.filter(
                                 (c) =>
+                                    c.status === ClusterStatus.ready &&
                                     c.distribution?.ocp?.availableUpdates &&
-                                    c.distribution?.ocp?.availableUpdates.length > 0
-                            )
-                            if (clusters.length === 1) {
-                                const cluster = clusters[0]
-                                if (
-                                    cluster.distribution?.ocp?.availableUpdates &&
-                                    cluster.distribution?.ocp?.availableUpdates.length > 0 &&
+                                    c.distribution?.ocp?.availableUpdates.length > 0 &&
                                     !(
-                                        cluster.distribution?.ocp?.desiredVersion &&
-                                        cluster.distribution?.ocp?.version &&
-                                        cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion
+                                        c.distribution?.ocp?.desiredVersion &&
+                                        c.distribution?.ocp?.version &&
+                                        c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
                                     )
-                                ) {
-                                    setUpgradeSingleCluster(clusters[0])
-                                }
+                            )
+                            if (clusters.length === 1 && managedClusters.length === 1) {
+                                setUpgradeSingleCluster(clusters[0])
+                            } else if (managedClusters.length > 0) {
+                                setUpgradeMultipleClusters(managedClusters)
                             }
                         },
                     },
