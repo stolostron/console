@@ -139,7 +139,6 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
         setRbacAborts(abortArray)
     }
 
-  
     return (
         <Fragment>
             <BulkActionModel<ProviderConnection> {...modalProps} />
