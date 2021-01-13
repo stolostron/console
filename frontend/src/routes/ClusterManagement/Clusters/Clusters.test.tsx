@@ -373,7 +373,8 @@ describe('Cluster page', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('managed.destroySelected')) // click the delete action
-        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
+        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.click(getByText('destroy')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
@@ -389,7 +390,8 @@ describe('Cluster page', () => {
         ]
         userEvent.click(getAllByRole('checkbox')[1]) // select row 1
         userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
-        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
+        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.click(getByText('destroy')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
@@ -424,7 +426,8 @@ describe('Cluster page', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on row
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('managed.detached')) // click the delete action
-        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
+        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.click(getByText('detach')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
@@ -440,7 +443,8 @@ describe('Cluster page', () => {
         ]
         userEvent.click(getAllByRole('checkbox')[2]) // select row 2
         userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
-        userEvent.click(getByText('confirm')) // click confirm on the delete dialog
+        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.click(getByText('detach')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
         await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())

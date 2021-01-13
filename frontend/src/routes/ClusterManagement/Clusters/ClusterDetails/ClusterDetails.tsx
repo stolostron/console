@@ -136,7 +136,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     useEffect(() => {
-        if (cluster?.status && cluster?.isHive && cluster?.isManaged) {
+        if (cluster?.status) {
             const tempCluster: Cluster = {
                 name: '',
                 namespace: '',
@@ -153,7 +153,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
-        //CheckTableActionsRbacAccess()
     }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
 
     if (loading) {
