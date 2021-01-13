@@ -23,7 +23,13 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { BMATableRbacAccess, ClustersTableActionsRbac, createSubjectAccessReviews, defaultTableRbacValues, rbacMapping } from '../../resources/self-subject-access-review'
+import {
+    BMATableRbacAccess,
+    ClustersTableActionsRbac,
+    createSubjectAccessReviews,
+    defaultTableRbacValues,
+    rbacMapping,
+} from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -95,7 +101,7 @@ export function BareMetalAssetsTable(props: {
     const history = useHistory()
     const defaultTableBmaValues: BMATableRbacAccess = {
         'bma.delete': false,
-        'bma.edit': false
+        'bma.edit': false,
     }
     const [tableActionRbacValues, setTableActionRbacValues] = useState<BMATableRbacAccess>(defaultTableBmaValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -127,13 +133,13 @@ export function BareMetalAssetsTable(props: {
         abortRbacCheck?.forEach((abort) => abort())
     }
 
-    function CheckTableActionsRbacAccess(
-        bareMetalAsset: BareMetalAsset
-    ) {
+    function CheckTableActionsRbacAccess(bareMetalAsset: BareMetalAsset) {
         let currentRbacValues = { ...defaultTableBmaValues }
         let abortArray: Array<Function> = []
         Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(rbacMapping(action, bareMetalAsset.metadata.name, bareMetalAsset.metadata.namespace))
+            const request = createSubjectAccessReviews(
+                rbacMapping(action, bareMetalAsset.metadata.name, bareMetalAsset.metadata.namespace)
+            )
             request.promise
                 .then((results) => {
                     if (results) {
@@ -216,7 +222,7 @@ export function BareMetalAssetsTable(props: {
                         },
                         {
                             header: '',
-                            cell: (bareMetalAsset)=> {
+                            cell: (bareMetalAsset) => {
                                 const onSelect = (id: string) => {
                                     const action = actions.find((a) => a.id === id)
                                     return action?.click(bareMetalAsset)
@@ -226,7 +232,9 @@ export function BareMetalAssetsTable(props: {
                                         id: 'editAsset',
                                         text: t('bareMetalAsset.rowAction.editAsset.title'),
                                         isDisabled: !tableActionRbacValues['bma.edit'],
-                                        tooltip: !tableActionRbacValues['bma.edit'] ? t('common:rbac.unauthorized') : '',
+                                        tooltip: !tableActionRbacValues['bma.edit']
+                                            ? t('common:rbac.unauthorized')
+                                            : '',
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             history.push(
                                                 NavigationPath.editBareMetalAsset.replace(
@@ -240,7 +248,9 @@ export function BareMetalAssetsTable(props: {
                                         id: 'deleteAsset',
                                         text: t('bareMetalAsset.rowAction.deleteAsset.title'),
                                         isDisabled: !tableActionRbacValues['bma.delete'],
-                                        tooltip: !tableActionRbacValues['bma.delete'] ? t('common:rbac.unauthorized') : '',
+                                        tooltip: !tableActionRbacValues['bma.delete']
+                                            ? t('common:rbac.unauthorized')
+                                            : '',
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             setConfirm({
                                                 title: t('bareMetalAsset.modal.delete.title'),
@@ -274,10 +284,7 @@ export function BareMetalAssetsTable(props: {
                                         isKebab={true}
                                         isPlain={true}
                                         onToggle={() => {
-                                            if (!isOpen)
-                                                CheckTableActionsRbacAccess(
-                                                    bareMetalAsset
-                                                )
+                                            if (!isOpen) CheckTableActionsRbacAccess(bareMetalAsset)
                                             else abortRbacPromises()
                                             setIsOpen(!isOpen)
                                         }}
