@@ -13,27 +13,27 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { getErrorInfo } from '../../../components/ErrorPage'
-import { deleteCluster, deleteClusters } from '../../../lib/delete-cluster'
+import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    CheckTableActionsRbacAccess,
     ClustersTableActionsRbac,
     createSubjectAccessReviews,
-    rbacMapping,
-    CheckTableActionsRbacAccess,
     defaultTableRbacValues,
+    rbacMapping,
 } from '../../../resources/self-subject-access-review'
-import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
+import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { EditLabelsModal } from './components/EditLabelsModal'
 
 export default function ClustersPage() {
@@ -162,18 +162,18 @@ export function ClustersTable(props: {
     deleteCluster?: (managedCluster: Cluster) => void
     refresh: () => void
 }) {
-    const alertContext = useContext(AcmAlertContext)
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
-
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+        open: false,
+    })
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
@@ -182,15 +182,35 @@ export function ClustersTable(props: {
         abortRbacCheck?.forEach((abort) => abort())
     }
 
+    const modalColumns = useMemo(
+        () => [
+            {
+                header: t('table.name'),
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
+                sort: 'name',
+            },
+            {
+                header: t('table.status'),
+                sort: 'status',
+                cell: (cluster: Cluster) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <StatusField status={cluster.status} />
+                    </span>
+                ),
+            },
+            {
+                header: t('table.provider'),
+                sort: 'provider',
+                cell: (cluster: Cluster) =>
+                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            },
+        ],
+        [t]
+    )
+
     return (
         <Fragment>
-            <ConfirmModal
-                open={confirm.open}
-                confirm={confirm.confirm}
-                cancel={confirm.cancel}
-                title={confirm.title}
-                message={confirm.message}
-            ></ConfirmModal>
+            <BulkActionModel<Cluster> {...modalProps} />
             <EditLabelsModal
                 cluster={editClusterLabels}
                 close={() => {
@@ -315,40 +335,23 @@ export function ClustersTable(props: {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
-                                        setConfirm({
-                                            title: t('modal.detach.title'),
-                                            message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                        setModalProps({
                                             open: true,
-                                            confirm: () => {
-                                                alertContext.clearAlerts()
-                                                deleteCluster(cluster?.name!, false)
-                                                    .promise.then((results) => {
-                                                        results.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'Detach error',
-                                                                    message: `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
-                                                    })
-                                                    .catch((err) => {
-                                                        setConfirm(ClosedConfirmModalProps)
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: 'Detach error',
-                                                            message: err,
-                                                        })
-                                                    })
-                                                    .finally(() => {
-                                                        props.refresh()
-                                                    })
-                                                setConfirm(ClosedConfirmModalProps)
+                                            singular: t('cluster'),
+                                            plural: t('clusters'),
+                                            action: t('detach'),
+                                            processing: t('detaching'),
+                                            resources: [cluster],
+                                            description: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                            columns: modalColumns,
+                                            keyFn: (cluster) => cluster.name as string,
+                                            actionFn: (cluster) => detachCluster(cluster.name!),
+                                            close: () => {
+                                                setModalProps({ open: false })
+                                                props.refresh()
                                             },
-                                            cancel: () => {
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
+                                            isDanger: true,
+                                            confirmText: t('detach').toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -360,40 +363,23 @@ export function ClustersTable(props: {
                                     id: 'destroy-cluster',
                                     text: t('managed.destroySelected'),
                                     click: (cluster: Cluster) => {
-                                        setConfirm({
-                                            title: t('modal.destroy.title'),
-                                            message: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                        setModalProps({
                                             open: true,
-                                            confirm: () => {
-                                                alertContext.clearAlerts()
-                                                deleteCluster(cluster.name!, true)
-                                                    .promise.then((results) => {
-                                                        results.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'Destroy error',
-                                                                    message: `Failed to destroy managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
-                                                    })
-                                                    .catch((err) => {
-                                                        setConfirm(ClosedConfirmModalProps)
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: 'Destroy error',
-                                                            message: err,
-                                                        })
-                                                    })
-                                                    .finally(() => {
-                                                        props.refresh()
-                                                    })
-                                                setConfirm(ClosedConfirmModalProps)
+                                            singular: t('cluster'),
+                                            plural: t('clusters'),
+                                            action: t('destroy'),
+                                            processing: t('destroying'),
+                                            resources: [cluster],
+                                            description: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                            columns: modalColumns,
+                                            keyFn: (cluster) => cluster.name as string,
+                                            actionFn: (cluster) => deleteCluster(cluster.name!),
+                                            close: () => {
+                                                setModalProps({ open: false })
+                                                props.refresh()
                                             },
-                                            cancel: () => {
-                                                setConfirm(ClosedConfirmModalProps)
-                                            },
+                                            isDanger: true,
+                                            confirmText: t('destroy').toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -463,112 +449,47 @@ export function ClustersTable(props: {
                         id: 'destroyCluster',
                         title: t('managed.destroy'),
                         click: (clusters) => {
-                            setConfirm({
-                                title: t('modal.destroy.title'),
-                                message: `You are about to destroy ${clusters.length} managed clusters. This action is irreversible.`,
+                            setModalProps({
                                 open: true,
-                                confirm: async () => {
-                                    alertContext.clearAlerts()
-                                    const clusterNames = clusters.map((cluster) => cluster.name) as Array<string>
-
-                                    const promiseResults = await deleteClusters(clusterNames, true)
-                                    const resultErrors: string[] = []
-                                    let i = 0
-                                    promiseResults.promise
-                                        .then((results) => {
-                                            if (results) {
-                                                results.forEach((result) => {
-                                                    if (result.status === 'rejected') {
-                                                        resultErrors.push(
-                                                            `Failed to destroy managed cluster. ${result.reason}`
-                                                        )
-                                                    } else {
-                                                        result.value.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'Destroy error',
-                                                                    message: `Failed to destroy managed cluster ${clusterNames[i]}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
-                                                        i++
-                                                    }
-                                                })
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Destroy error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
-                                        .finally(() => {
-                                            props.refresh()
-                                        })
-                                    setConfirm(ClosedConfirmModalProps)
+                                singular: t('cluster'),
+                                plural: t('clusters'),
+                                action: t('destroy'),
+                                processing: t('destroying'),
+                                resources: clusters,
+                                description: `You are about to destroy clusters. This action is irreversible.`,
+                                columns: modalColumns,
+                                keyFn: (cluster) => cluster.name as string,
+                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
+                                close: () => {
+                                    setModalProps({ open: false })
+                                    props.refresh()
                                 },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
+                                isDanger: true,
+                                confirmText: t('destroy').toUpperCase(),
                             })
                         },
                     },
                     {
                         id: 'detachCluster',
                         title: t('managed.detachSelected'),
-                        click: (managedClusters) => {
-                            setConfirm({
-                                title: t('modal.detach.title'),
-                                message: `You are about to detach ${managedClusters.length} managed clusters. This action is irreversible.`,
+                        click: (clusters) => {
+                            setModalProps({
                                 open: true,
-                                confirm: () => {
-                                    alertContext.clearAlerts()
-                                    const managedClusterNames = managedClusters.map(
-                                        (managedCluster) => managedCluster.name
-                                    ) as Array<string>
-                                    const promiseResults = deleteClusters(managedClusterNames, false)
-                                    promiseResults.promise
-                                        .then((results) => {
-                                            const resultErrors: string[] = []
-                                            let i = 0
-                                            if (results) {
-                                                results.forEach((result) => {
-                                                    if (result.status === 'rejected') {
-                                                        resultErrors.push(
-                                                            `Failed to detach managed cluster. ${result.reason}`
-                                                        )
-                                                    } else {
-                                                        result.value.forEach((result) => {
-                                                            if (result.status === 'rejected') {
-                                                                alertContext.addAlert({
-                                                                    type: 'danger',
-                                                                    title: 'detach error',
-                                                                    message: `Failed to detach managed cluster ${managedClusterNames[i]}. ${result.reason}`,
-                                                                })
-                                                            }
-                                                        })
-                                                        i++
-                                                    }
-                                                })
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Detach error',
-                                                message: 'Encountered error: ' + err,
-                                            })
-                                        })
-                                        .finally(() => {
-                                            props.refresh()
-                                        })
-                                    setConfirm(ClosedConfirmModalProps)
+                                singular: t('cluster'),
+                                plural: t('clusters'),
+                                action: t('detach'),
+                                processing: t('detaching'),
+                                resources: clusters,
+                                description: `You are about to detach clusters. This action is irreversible.`,
+                                columns: modalColumns,
+                                keyFn: (cluster) => cluster.name as string,
+                                actionFn: (cluster) => detachCluster(cluster.name!),
+                                close: () => {
+                                    setModalProps({ open: false })
+                                    props.refresh()
                                 },
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
+                                isDanger: true,
+                                confirmText: t('detach').toUpperCase(),
                             })
                         },
                     },
