@@ -1,14 +1,16 @@
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { mockBadRequestStatus, nockDelete, nockList } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockCreate, nockDelete, nockList } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
+import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import ProviderConnectionsPage from './ProviderConnections'
 
 const mockProviderConnection1: ProviderConnection = {
@@ -25,6 +27,55 @@ const mockProviderConnection2: ProviderConnection = {
 
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
 let testLocation: Location
+
+function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
+    )
+}
+
+function getPatchSecretResourceAttributes(name: string, namespace: string) {
+    return {
+        name,
+        namespace,
+        resource: 'secret',
+        verb: 'patch',
+    } as ResourceAttributes
+}
+
+function getDeleteSecretResourceAttributes(name: string, namespace: string) {
+    return {
+        name,
+        namespace,
+        resource: 'secret',
+        verb: 'delete',
+    } as ResourceAttributes
+}
+
+function nocksAreDone(nocks: Scope[]) {
+    for (const nock of nocks) {
+        if (!nock.isDone()) return false
+    }
+    return true
+}
 
 describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
@@ -50,6 +101,14 @@ describe('provider connections page', () => {
         nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccesssRequest(
+                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+            nockCreateSelfSubjectAccesssRequest(
+                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+        ]
         const { getByText, getAllByLabelText } = render(
             <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
                 <Route
@@ -63,6 +122,7 @@ describe('provider connections page', () => {
         )
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         expect(testLocation.pathname).toEqual(NavigationPath.providerConnections)
         userEvent.click(getByText('edit'))
         expect(testLocation.pathname).toEqual(
@@ -80,6 +140,14 @@ describe('provider connections page', () => {
         const refreshNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccesssRequest(
+                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+            nockCreateSelfSubjectAccesssRequest(
+                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+        ]
         const { getByText, getAllByLabelText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
@@ -88,6 +156,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('delete')) // click the delete action
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
@@ -98,6 +167,14 @@ describe('provider connections page', () => {
         const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccesssRequest(
+                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+            nockCreateSelfSubjectAccesssRequest(
+                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+        ]
         const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
         const { getByText, getAllByLabelText } = render(
             <MemoryRouter>
@@ -107,6 +184,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('delete')) // click the delete action
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
@@ -117,6 +195,14 @@ describe('provider connections page', () => {
         const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccesssRequest(
+                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+            nockCreateSelfSubjectAccesssRequest(
+                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
+            ),
+        ]
         const { getByText, getAllByLabelText, queryAllByText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
@@ -125,6 +211,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
         userEvent.click(getByText('delete')) // click the delete action
         expect(queryAllByText('common:cancel')).toHaveLength(1)

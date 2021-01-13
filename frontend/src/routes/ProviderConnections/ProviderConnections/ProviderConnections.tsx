@@ -3,6 +3,7 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
+    AcmDropdown,
     AcmEmptyState,
     AcmInlineProvider,
     AcmPageCard,
@@ -21,6 +22,11 @@ import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import {
+    createSubjectAccessReviews,
+    ProviderConnectionsTableActionsRbac,
+    rbacMapping,
+} from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
@@ -84,10 +90,55 @@ function getProvider(labels: Record<string, string> | undefined) {
 
 export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
     const { t } = useTranslation(['connection', 'common'])
+    const defaultTableRbacValues: ProviderConnectionsTableActionsRbac = {
+        'secret.edit': false,
+        'secret.delete': false,
+    }
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<ProviderConnectionsTableActionsRbac>(
+        defaultTableRbacValues
+    )
+    const [isOpen, setIsOpen] = useState<boolean>(false)
+    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
+    const history = useHistory()
+
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
         open: false,
     })
-    const history = useHistory()
+
+    function abortRbacPromises() {
+        abortRbacCheck?.forEach((abort) => abort())
+    }
+
+    function checkRbacAccess(connection: ProviderConnection) {
+        let currentRbacValues = { ...defaultTableRbacValues }
+        let abortArray: Array<Function> = []
+
+        Object.keys(currentRbacValues).forEach((action) => {
+            const request = createSubjectAccessReviews(
+                rbacMapping(action, connection.metadata.name, connection.metadata.namespace)
+            )
+            request.promise
+                .then((results) => {
+                    if (results) {
+                        let rbacQueryResults: boolean[] = []
+                        results.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                rbacQueryResults.push(result.value.status?.allowed!)
+                            }
+                        })
+                        if (!rbacQueryResults.includes(false)) {
+                            setTableActionRbacValues((current) => {
+                                return { ...current, ...{ [action]: true } }
+                            })
+                        }
+                    }
+                })
+                .catch((err) => console.error(err))
+            abortArray.push(request.abort)
+        })
+        setRbacAborts(abortArray)
+    }
+
     return (
         <Fragment>
             <BulkActionModel<ProviderConnection> {...modalProps} />
@@ -151,6 +202,88 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         search: 'metadata.namespace',
                         cell: 'metadata.namespace',
                     },
+                    {
+                        header: '',
+                        cell: (providerConnection: ProviderConnection) => {
+                            const onSelect = (id: string) => {
+                                const action = actions.find((a) => a.id === id)
+                                return action?.click(providerConnection)
+                            }
+                            let actions = [
+                                {
+                                    id: 'editConnection',
+                                    text: t('edit'),
+                                    isDisabled: !tableActionRbacValues['secret.edit'],
+                                    tooltip: !tableActionRbacValues['secret.edit'] ? t('common:rbac.unauthorized') : '',
+                                    click: (providerConnection: ProviderConnection) => {
+                                        history.push(
+                                            NavigationPath.editConnection
+                                                .replace(':namespace', providerConnection.metadata.namespace!)
+                                                .replace(':name', providerConnection.metadata.name!)
+                                        )
+                                    },
+                                },
+                                {
+                                    id: 'deleteConnection',
+                                    text: t('delete'),
+                                    isDisabled: !tableActionRbacValues['secret.delete'],
+                                    tooltip: !tableActionRbacValues['secret.delete']
+                                        ? t('common:rbac.unauthorized')
+                                        : '',
+                                    click: (providerConnection: ProviderConnection) => {
+                                        setModalProps({
+                                            open: true,
+                                            singular: t('connection'),
+                                            plural: t('connections'),
+                                            action: t('common:delete'),
+                                            processing: t('common:deleting'),
+                                            resources: [providerConnection],
+                                            description: t('modal.delete.content.batch'),
+                                            columns: [
+                                                {
+                                                    header: t('table.header.name'),
+                                                    cell: 'metadata.name',
+                                                    sort: 'metadata.name',
+                                                },
+                                                {
+                                                    header: t('table.header.namespace'),
+                                                    cell: 'metadata.namespace',
+                                                    sort: 'metadata.namespace',
+                                                },
+                                            ],
+                                            keyFn: (providerConnection: ProviderConnection) =>
+                                                providerConnection.metadata.uid as string,
+                                            actionFn: (providerConnection: ProviderConnection) =>
+                                                deleteResource(providerConnection),
+                                            close: () => {
+                                                setModalProps({ open: false })
+                                                props.refresh()
+                                            },
+                                            isDanger: true,
+                                        })
+                                    },
+                                },
+                            ]
+                            return (
+                                <AcmDropdown
+                                    id={`${providerConnection.metadata.name}-actions`}
+                                    onSelect={onSelect}
+                                    text={t('actions')}
+                                    dropdownItems={actions}
+                                    isKebab={true}
+                                    isPlain={true}
+                                    onToggle={() => {
+                                        if (!isOpen) checkRbacAccess(providerConnection)
+                                        else {
+                                            abortRbacPromises()
+                                            setTableActionRbacValues(defaultTableRbacValues)
+                                            setIsOpen(!isOpen)
+                                        }
+                                    }}
+                                />
+                            )
+                        },
+                    },
                 ]}
                 keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
                 tableActions={[]}
@@ -192,55 +325,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         },
                     },
                 ]}
-                rowActions={[
-                    {
-                        id: 'editConnection',
-                        title: t('edit'),
-                        click: (providerConnection: ProviderConnection) => {
-                            history.push(
-                                NavigationPath.editConnection
-                                    .replace(':namespace', providerConnection.metadata.namespace!)
-                                    .replace(':name', providerConnection.metadata.name!)
-                            )
-                        },
-                    },
-                    {
-                        id: 'deleteConnection',
-                        title: t('delete'),
-                        click: (providerConnection: ProviderConnection) => {
-                            setModalProps({
-                                open: true,
-                                singular: t('connection'),
-                                plural: t('connections'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
-                                resources: [providerConnection],
-                                description: t('modal.delete.content.batch'),
-                                columns: [
-                                    {
-                                        header: t('table.header.name'),
-                                        cell: 'metadata.name',
-                                        sort: 'metadata.name',
-                                    },
-                                    {
-                                        header: t('table.header.namespace'),
-                                        cell: 'metadata.namespace',
-                                        sort: 'metadata.namespace',
-                                    },
-                                ],
-                                keyFn: (providerConnection: ProviderConnection) =>
-                                    providerConnection.metadata.uid as string,
-                                actionFn: (providerConnection: ProviderConnection) =>
-                                    deleteResource(providerConnection),
-                                close: () => {
-                                    setModalProps({ open: false })
-                                    props.refresh()
-                                },
-                                isDanger: true,
-                            })
-                        },
-                    },
-                ]}
+                rowActions={[]}
             />
         </Fragment>
     )

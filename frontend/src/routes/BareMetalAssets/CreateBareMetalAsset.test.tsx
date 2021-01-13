@@ -27,7 +27,6 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
             namespace: 'test-bare-metal-asset-new-namespace',
             resource: 'secret',
             verb: 'create',
-            version: 'v1',
         },
     },
 }

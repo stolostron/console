@@ -31,7 +31,6 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
             namespace: 'test-namespace',
             resource: 'secret',
             verb: 'create',
-            version: 'v1',
         },
     },
 }
