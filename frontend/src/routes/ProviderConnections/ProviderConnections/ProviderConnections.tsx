@@ -154,7 +154,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                 items={props.providerConnections}
                 columns={[
                     {
-                        header: t('table.header.name'),
+                        header: t('common:table.header.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: 'metadata.name',
@@ -197,7 +197,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         },
                     },
                     {
-                        header: t('table.header.namespace'),
+                        header: t('common:table.header.namespace'),
                         sort: 'metadata.namespace',
                         search: 'metadata.namespace',
                         cell: 'metadata.namespace',
@@ -241,12 +241,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             description: t('modal.delete.content.batch'),
                                             columns: [
                                                 {
-                                                    header: t('table.header.name'),
+                                                    header: t('common:table.header.name'),
                                                     cell: 'metadata.name',
                                                     sort: 'metadata.name',
                                                 },
                                                 {
-                                                    header: t('table.header.namespace'),
+                                                    header: t('common:table.header.namespace'),
                                                     cell: 'metadata.namespace',
                                                     sort: 'metadata.namespace',
                                                 },
@@ -302,12 +302,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 description: t('modal.delete.content.batch'),
                                 columns: [
                                     {
-                                        header: t('table.header.name'),
+                                        header: t('common:table.header.name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('table.header.namespace'),
+                                        header: t('common:table.header.namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },
