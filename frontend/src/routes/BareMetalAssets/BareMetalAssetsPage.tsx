@@ -3,6 +3,7 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
+    AcmDropdown,
     AcmEmptyState,
     AcmPageCard,
     AcmPageHeader,
@@ -12,9 +13,9 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
+import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
@@ -22,7 +23,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import { BMATableRbacAccess, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -59,7 +60,7 @@ let lastTime: number = 0
 
 export function BareMetalAssets() {
     const alertContext = useContext(AcmAlertContext)
-    const { data, error, startPolling } = useQuery(
+    const { data, error, startPolling, refresh } = useQuery(
         listBareMetalAssets,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
@@ -78,7 +79,13 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource}></BareMetalAssetsTable>
+    return (
+        <BareMetalAssetsTable
+            bareMetalAssets={data}
+            deleteBareMetalAsset={deleteResource}
+            refresh={refresh}
+        ></BareMetalAssetsTable>
+    )
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -88,10 +95,20 @@ export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
 export function BareMetalAssetsTable(props: {
     bareMetalAssets?: BareMetalAsset[]
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
+    refresh: () => void
 }) {
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
+    const [creationAccessRestriction, setcreationAccessRestriction] = useState<boolean>(true)
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
+        open: false,
+    })
     const history = useHistory()
+    const defaultTableBmaValues: BMATableRbacAccess = {
+        'bma.delete': false,
+        'bma.edit': false,
+    }
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<BMATableRbacAccess>(defaultTableBmaValues)
+    const [isOpen, setIsOpen] = useState<boolean>(false)
+    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
@@ -111,9 +128,42 @@ export function BareMetalAssetsTable(props: {
                         }
                     })
                 }
-                setAccessRestriction(!allowed)
+                setcreationAccessRestriction(!allowed)
             })
     }, [])
+
+    function abortRbacPromises() {
+        abortRbacCheck?.forEach((abort) => abort())
+    }
+
+    function CheckTableActionsRbacAccess(bareMetalAsset: BareMetalAsset) {
+        let currentRbacValues = { ...defaultTableBmaValues }
+        let abortArray: Array<Function> = []
+        Object.keys(currentRbacValues).forEach((action) => {
+            const request = createSubjectAccessReviews(
+                rbacMapping(action, bareMetalAsset.metadata.name, bareMetalAsset.metadata.namespace)
+            )
+            request.promise
+                .then((results) => {
+                    if (results) {
+                        let rbacQueryResults: boolean[] = []
+                        results.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                rbacQueryResults.push(result.value.status?.allowed!)
+                            }
+                        })
+                        if (!rbacQueryResults.includes(false)) {
+                            setTableActionRbacValues((current) => {
+                                return { ...current, ...{ [action]: true } }
+                            })
+                        }
+                    }
+                })
+                .catch((err) => console.error(err))
+            abortArray.push(request.abort)
+        })
+        if (setRbacAborts) setRbacAborts(abortArray)
+    }
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
         return bareMetalAsset.metadata.uid as string
@@ -121,7 +171,7 @@ export function BareMetalAssetsTable(props: {
 
     return (
         <AcmPageCard>
-            <ConfirmModal {...confirm} />
+            <BulkActionModel<BareMetalAsset> {...modalProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
                     emptyState={
@@ -133,8 +183,8 @@ export function BareMetalAssetsTable(props: {
                                     onClick={() => {
                                         history.push(NavigationPath.createBareMetalAsset)
                                     }}
-                                    isDisabled={accessRestriction}
-                                    tooltip={accessRestriction ? t('common:rbac.unauthorized') : ''}
+                                    isDisabled={creationAccessRestriction}
+                                    tooltip={creationAccessRestriction ? t('common:rbac.unauthorized') : ''}
                                 >
                                     {t('createBareMetalAsset.title')}
                                 </AcmButton>
@@ -173,6 +223,88 @@ export function BareMetalAssetsTable(props: {
                                 return BMAStatusMessage(bareMetalAsset, t)
                             },
                         },
+                        {
+                            header: '',
+                            cell: (bareMetalAsset) => {
+                                const onSelect = (id: string) => {
+                                    const action = actions.find((a) => a.id === id)
+                                    return action?.click(bareMetalAsset)
+                                }
+                                let actions = [
+                                    {
+                                        id: 'editAsset',
+                                        text: t('bareMetalAsset.rowAction.editAsset.title'),
+                                        isDisabled: !tableActionRbacValues['bma.edit'],
+                                        tooltip: !tableActionRbacValues['bma.edit']
+                                            ? t('common:rbac.unauthorized')
+                                            : '',
+                                        click: (bareMetalAsset: BareMetalAsset) => {
+                                            history.push(
+                                                NavigationPath.editBareMetalAsset.replace(
+                                                    ':namespace/:name',
+                                                    `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string
+                                                )
+                                            )
+                                        },
+                                    },
+                                    {
+                                        id: 'deleteAsset',
+                                        text: t('bareMetalAsset.rowAction.deleteAsset.title'),
+                                        isDisabled: !tableActionRbacValues['bma.delete'],
+                                        tooltip: !tableActionRbacValues['bma.delete']
+                                            ? t('common:rbac.unauthorized')
+                                            : '',
+                                        click: (bareMetalAsset: BareMetalAsset) => {
+                                            setModalProps({
+                                                open: true,
+                                                singular: t('bare metal asset'),
+                                                plural: t('bare metal assets'),
+                                                action: t('common:delete'),
+                                                processing: t('common:deleting'),
+                                                resources: [bareMetalAsset],
+                                                description: t('modal.delete.content.batch'),
+                                                columns: [
+                                                    {
+                                                        header: t('common:table.header.name'),
+                                                        cell: 'metadata.name',
+                                                        sort: 'metadata.name',
+                                                    },
+                                                    {
+                                                        header: t('common:table.header.namespace'),
+                                                        cell: 'metadata.namespace',
+                                                        sort: 'metadata.namespace',
+                                                    },
+                                                ],
+                                                keyFn: (bareMetalAsset: BareMetalAsset) =>
+                                                    bareMetalAsset.metadata.uid as string,
+                                                actionFn: (bareMetalAsset: BareMetalAsset) =>
+                                                    deleteResource(bareMetalAsset),
+                                                close: () => {
+                                                    setModalProps({ open: false })
+                                                    props.refresh()
+                                                },
+                                                isDanger: true,
+                                            })
+                                        },
+                                    },
+                                ]
+                                return (
+                                    <AcmDropdown
+                                        id={`${bareMetalAsset.metadata.namespace}-actions`}
+                                        onSelect={onSelect}
+                                        text={t('actions')}
+                                        dropdownItems={actions}
+                                        isKebab={true}
+                                        isPlain={true}
+                                        onToggle={() => {
+                                            if (!isOpen) CheckTableActionsRbacAccess(bareMetalAsset)
+                                            else abortRbacPromises()
+                                            setIsOpen(!isOpen)
+                                        }}
+                                    />
+                                )
+                            },
+                        },
                     ]}
                     keyFn={keyFn}
                     tableActions={[
@@ -182,8 +314,8 @@ export function BareMetalAssetsTable(props: {
                             click: () => {
                                 history.push(NavigationPath.createBareMetalAsset)
                             },
-                            isDisabled: accessRestriction,
-                            tooltip: accessRestriction ? t('common:rbac.unauthorized') : '',
+                            isDisabled: creationAccessRestriction,
+                            tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
                         },
                     ]}
                     bulkActions={[
@@ -191,23 +323,33 @@ export function BareMetalAssetsTable(props: {
                             id: 'destroyBareMetalAsset',
                             title: t('bareMetalAsset.bulkAction.destroyAsset'),
                             click: (bareMetalAssets: BareMetalAsset[]) => {
-                                setConfirm({
-                                    title: t('bareMetalAsset.modal.deleteMultiple.title'),
-                                    message: t('bareMetalAsset.modal.deleteMultiple.message', {
-                                        assetNum: bareMetalAssets.length,
-                                    }),
+                                setModalProps({
                                     open: true,
+                                    singular: t('bare metal asset'),
+                                    plural: t('bare metal assets'),
+                                    action: t('common:delete'),
+                                    processing: t('common:deleting'),
+                                    resources: [...bareMetalAssets],
+                                    description: t('modal.delete.content.batch'),
+                                    columns: [
+                                        {
+                                            header: t('common:table.header.name'),
+                                            cell: 'metadata.name',
+                                            sort: 'metadata.name',
+                                        },
+                                        {
+                                            header: t('common:table.header.namespace'),
+                                            cell: 'metadata.namespace',
+                                            sort: 'metadata.namespace',
+                                        },
+                                    ],
+                                    keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.metadata.uid as string,
+                                    actionFn: (bareMetalAsset: BareMetalAsset) => deleteResource(bareMetalAsset),
+                                    close: () => {
+                                        setModalProps({ open: false })
+                                        props.refresh()
+                                    },
                                     isDanger: true,
-                                    confirmText: t('common:destroy'),
-                                    confirm: () => {
-                                        void deleteBareMetalAssets(bareMetalAssets)
-                                        // TODO refresh
-                                        // TODO errors
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
-                                    cancel: () => {
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
                                 })
                             },
                         },
@@ -217,46 +359,7 @@ export function BareMetalAssetsTable(props: {
                             click: (items) => {},
                         },
                     ]}
-                    rowActions={[
-                        {
-                            id: 'editAsset',
-                            title: t('bareMetalAsset.rowAction.editAsset.title'),
-                            click: (bareMetalAsset: BareMetalAsset) => {
-                                history.push(
-                                    NavigationPath.editBareMetalAsset.replace(
-                                        ':namespace/:name',
-                                        `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string
-                                    )
-                                )
-                            },
-                        },
-                        {
-                            id: 'deleteAsset',
-                            title: t('bareMetalAsset.rowAction.deleteAsset.title'),
-                            click: (bareMetalAsset: BareMetalAsset) => {
-                                setConfirm({
-                                    title: t('bareMetalAsset.modal.delete.title'),
-                                    message: (
-                                        <Trans
-                                            i18nKey="bma:bareMetalAsset.modal.delete.message"
-                                            values={{ assetName: bareMetalAsset.metadata?.name }}
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    ),
-                                    confirmText: t('common:destroy'),
-                                    isDanger: true,
-                                    open: true,
-                                    confirm: () => {
-                                        props.deleteBareMetalAsset(bareMetalAsset)
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
-                                    cancel: () => {
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
-                                })
-                            },
-                        },
-                    ]}
+                    rowActions={[]}
                 />
             </AcmTablePaginationContextProvider>
         </AcmPageCard>

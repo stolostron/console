@@ -42,18 +42,15 @@ export type ClustersTableActionsRbac = {
     'cluster.upgrade'?: boolean
 }
 
-// TODO: Add support for bma and provider connections
-
 export type ProviderConnectionsTableActionsRbac = {
     'secret.edit'?: boolean
     'secret.delete': boolean
 }
 
-// export type BMATableRbacAccess = {
-//     editLabels: boolean
-//     editAsset: boolean
-//     destroy: boolean
-// }
+export type BMATableRbacAccess = {
+    'bma.delete': boolean
+    'bma.edit': boolean
+}
 
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
     return createResource<SelfSubjectAccessReview>({
@@ -233,6 +230,26 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     name,
                     namespace,
                     resource: 'secret',
+                    verb: 'patch',
+                },
+            ]
+        case 'bma.delete':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalasset',
+                    verb: 'delete',
+                },
+            ]
+        case 'bma.edit':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalasset',
                     verb: 'patch',
                 },
             ]
