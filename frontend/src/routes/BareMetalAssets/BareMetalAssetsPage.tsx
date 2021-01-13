@@ -23,13 +23,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import {
-    BMATableRbacAccess,
-    ClustersTableActionsRbac,
-    createSubjectAccessReviews,
-    defaultTableRbacValues,
-    rbacMapping,
-} from '../../resources/self-subject-access-review'
+import { BMATableRbacAccess, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
