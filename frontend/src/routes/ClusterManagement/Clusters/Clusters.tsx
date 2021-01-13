@@ -111,8 +111,6 @@ const PageActions = () => {
             <AcmDropdown
                 dropdownItems={dropdownItems}
                 text={t('managed.addCluster')}
-                isDisabled={clusterCreationRbacRestriction}
-                tooltip={t('common:rbac.unauthorized')}
                 onSelect={onSelect}
                 id="cluster-actions"
                 isKebab={false}
