@@ -28,7 +28,6 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
             namespace: 'test-namespace',
             resource: 'secret',
             verb: 'create',
