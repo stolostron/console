@@ -13,9 +13,9 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../components/ConfirmModal'
+import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
@@ -60,7 +60,7 @@ let lastTime: number = 0
 
 export function BareMetalAssets() {
     const alertContext = useContext(AcmAlertContext)
-    const { data, error, startPolling } = useQuery(
+    const { data, error, startPolling, refresh } = useQuery(
         listBareMetalAssets,
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
@@ -79,7 +79,13 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource}></BareMetalAssetsTable>
+    return (
+        <BareMetalAssetsTable
+            bareMetalAssets={data}
+            deleteBareMetalAsset={deleteResource}
+            refresh={refresh}
+        ></BareMetalAssetsTable>
+    )
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -89,9 +95,13 @@ export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
 export function BareMetalAssetsTable(props: {
     bareMetalAssets?: BareMetalAsset[]
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
+    refresh: () => void
 }) {
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [creationAccessRestriction, setcreationAccessRestriction] = useState<boolean>(true)
+    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
+        open: false,
+    })
     const history = useHistory()
     const defaultTableBmaValues: BMATableRbacAccess = {
         'bma.delete': false,
@@ -162,7 +172,7 @@ export function BareMetalAssetsTable(props: {
 
     return (
         <AcmPageCard>
-            <ConfirmModal {...confirm} />
+            <BulkActionModel<BareMetalAsset> {...modalProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
                     emptyState={
@@ -246,25 +256,33 @@ export function BareMetalAssetsTable(props: {
                                             ? t('common:rbac.unauthorized')
                                             : '',
                                         click: (bareMetalAsset: BareMetalAsset) => {
-                                            setConfirm({
-                                                title: t('bareMetalAsset.modal.delete.title'),
-                                                message: (
-                                                    <Trans
-                                                        i18nKey="bma:bareMetalAsset.modal.delete.message"
-                                                        values={{ assetName: bareMetalAsset.metadata?.name }}
-                                                        components={{ bold: <strong /> }}
-                                                    />
-                                                ),
-                                                confirmText: t('common:destroy'),
-                                                isDanger: true,
+                                            setModalProps({
                                                 open: true,
-                                                confirm: () => {
-                                                    props.deleteBareMetalAsset(bareMetalAsset)
-                                                    setConfirm(ClosedConfirmModalProps)
+                                                singular: t('bare metal asset'),
+                                                plural: t('bare metal assets'),
+                                                action: t('common:delete'),
+                                                processing: t('common:deleting'),
+                                                resources: [bareMetalAsset],
+                                                description: t('modal.delete.content.batch'),
+                                                columns: [
+                                                    {
+                                                        header: t('common:table.header.name'),
+                                                        cell: 'metadata.name',
+                                                        sort: 'metadata.name',
+                                                    },
+                                                    {
+                                                        header: t('common:table.header.namespace'),
+                                                        cell: 'metadata.namespace',
+                                                        sort: 'metadata.namespace',
+                                                    },
+                                                ],
+                                                keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.metadata.uid as string,
+                                                actionFn: (bareMetalAsset: BareMetalAsset) => deleteResource(bareMetalAsset),
+                                                close: () => {
+                                                    setModalProps({ open: false })
+                                                    props.refresh()
                                                 },
-                                                cancel: () => {
-                                                    setConfirm(ClosedConfirmModalProps)
-                                                },
+                                                isDanger: true,
                                             })
                                         },
                                     },
@@ -304,23 +322,33 @@ export function BareMetalAssetsTable(props: {
                             id: 'destroyBareMetalAsset',
                             title: t('bareMetalAsset.bulkAction.destroyAsset'),
                             click: (bareMetalAssets: BareMetalAsset[]) => {
-                                setConfirm({
-                                    title: t('bareMetalAsset.modal.deleteMultiple.title'),
-                                    message: t('bareMetalAsset.modal.deleteMultiple.message', {
-                                        assetNum: bareMetalAssets.length,
-                                    }),
+                                setModalProps({
                                     open: true,
+                                    singular: t('bare metal asset'),
+                                    plural: t('bare metal assets'),
+                                    action: t('common:delete'),
+                                    processing: t('common:deleting'),
+                                    resources: [...bareMetalAssets],
+                                    description: t('modal.delete.content.batch'),
+                                    columns: [
+                                        {
+                                            header: t('common:table.header.name'),
+                                            cell: 'metadata.name',
+                                            sort: 'metadata.name',
+                                        },
+                                        {
+                                            header: t('common:table.header.namespace'),
+                                            cell: 'metadata.namespace',
+                                            sort: 'metadata.namespace',
+                                        },
+                                    ],
+                                    keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.metadata.uid as string,
+                                    actionFn: (bareMetalAsset: BareMetalAsset) => deleteResource(bareMetalAsset),
+                                    close: () => {
+                                        setModalProps({ open: false })
+                                        props.refresh()
+                                    },
                                     isDanger: true,
-                                    confirmText: t('common:destroy'),
-                                    confirm: () => {
-                                        void deleteBareMetalAssets(bareMetalAssets)
-                                        // TODO refresh
-                                        // TODO errors
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
-                                    cancel: () => {
-                                        setConfirm(ClosedConfirmModalProps)
-                                    },
                                 })
                             },
                         },

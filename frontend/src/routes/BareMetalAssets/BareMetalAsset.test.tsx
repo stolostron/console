@@ -145,8 +145,8 @@ describe('bare metal asset page', () => {
         userEvent.click(getAllByLabelText('Actions')[0])
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('bareMetalAsset.rowAction.deleteAsset.title')) // click the delete action
-        await waitFor(() => expect(getByText('common:destroy')).toBeInTheDocument())
-        userEvent.click(getByText('common:destroy')) // click confirm on the delete dialog
+        expect(getByText('common:delete')).toBeInTheDocument()
+        userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })
@@ -155,6 +155,7 @@ describe('bare metal asset page', () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
         const clusterNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const listNockii = nockList(bareMetalAsset, [])
 
         const { getByText, getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
@@ -168,9 +169,10 @@ describe('bare metal asset page', () => {
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
         userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset'))
-        expect(getByText('common:destroy')).toBeInTheDocument()
-        userEvent.click(getByText('common:destroy'))
+        expect(getByText('common:delete')).toBeInTheDocument()
+        userEvent.click(getByText('common:delete'))
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
+        await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
     })
 })
