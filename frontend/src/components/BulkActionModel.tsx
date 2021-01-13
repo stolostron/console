@@ -1,4 +1,5 @@
 import {
+    AcmAlert,
     AcmAlertContext,
     AcmAlertProvider,
     AcmFormProvider,
@@ -71,13 +72,9 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
         <AcmFormProvider>
             <AcmModal
                 variant={ModalVariant.medium}
-                title={
-                    errors
-                        ? `${props.action} ${t('errors').toLowerCase()}`
-                        : `${props.action} ${
-                              props.resources.length === 1 ? props.singular.toLowerCase() : props.plural.toLowerCase()
-                          }`
-                }
+                title={`${props.action} ${
+                    props.resources.length === 1 ? props.singular.toLowerCase() : props.plural.toLowerCase()
+                }`}
                 isOpen={true}
                 onClose={props.close}
                 actions={
@@ -154,26 +151,48 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         />
                                     </AcmTablePaginationContextProvider>
                                 )}
-                                {progress > 0 ? (
-                                    <Progress
-                                        value={(progress * 100) / progressCount}
-                                        measureLocation={
-                                            progress ? ProgressMeasureLocation.outside : ProgressMeasureLocation.none
-                                        }
+
+                                <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                                    {progress > 0 ? (
+                                        <Progress
+                                            value={(progress * 100) / progressCount}
+                                            measureLocation={
+                                                progress
+                                                    ? ProgressMeasureLocation.outside
+                                                    : ProgressMeasureLocation.none
+                                            }
+                                        />
+                                    ) : (
+                                        <div style={{ minHeight: '24px' }} />
+                                    )}
+                                </div>
+                                {props.confirmText !== undefined && (
+                                    <AcmTextInput
+                                        label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
+                                        id="confirm"
+                                        value={confirm}
+                                        onChange={setConfirm}
+                                        autoComplete="off"
                                     />
-                                ) : (
-                                    <div style={{ minHeight: '24px' }} />
                                 )}
                             </Fragment>
                         ) : (
                             <Fragment>
-                                {errors.length === 1
-                                    ? `${t('common:there.was.an.error')
-                                          .replace('{0}', props.processing.toLowerCase())
-                                          .replace('{1}', props.singular.toLowerCase())}`
-                                    : `${t('common:there.were.errors')
-                                          .replace('{0}', props.processing.toLowerCase())
-                                          .replace('{1}', props.plural.toLowerCase())}`}
+                                <AcmAlert
+                                    isInline
+                                    noClose
+                                    variant="danger"
+                                    title={`${props.action} ${t('errors').toLowerCase()}`}
+                                    message={
+                                        errors.length === 1
+                                            ? `${t('common:there.was.an.error')
+                                                  .replace('{0}', props.processing.toLowerCase())
+                                                  .replace('{1}', props.singular.toLowerCase())}`
+                                            : `${t('common:there.were.errors')
+                                                  .replace('{0}', props.processing.toLowerCase())
+                                                  .replace('{1}', props.plural.toLowerCase())}`
+                                    }
+                                />
                                 {props.columns && props.keyFn && (
                                     <AcmTablePaginationContextProvider localStorageKey="model">
                                         <AcmTable<T>
@@ -203,16 +222,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         />
                                     </AcmTablePaginationContextProvider>
                                 )}
+                                <div style={{ minHeight: '24px' }} />
                             </Fragment>
-                        )}
-                        {props.confirmText !== undefined && (
-                            <AcmTextInput
-                                label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
-                                id="confirm"
-                                value={confirm}
-                                onChange={setConfirm}
-                                autoComplete="off"
-                            />
                         )}
                     </Form>
                 </AcmAlertProvider>
