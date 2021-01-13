@@ -110,11 +110,7 @@ describe('provider connections page', () => {
         userEvent.click(getByText('delete')) // click the delete action
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
-        await waitFor(() =>
-            expect(
-                getByText(`Failed to delete provider connection named ${mockProviderConnection1.metadata.name}`)
-            ).toBeInTheDocument()
-        )
+        await waitFor(() => expect(getByText(`Could not process request because of invalid data.`)).toBeInTheDocument())
     })
 
     test('should be able to cancel delete a provider connection', async () => {
@@ -131,68 +127,80 @@ describe('provider connections page', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
         userEvent.click(getByText('delete')) // click the delete action
-        expect(queryAllByText('modal.delete.title.single')).toHaveLength(1)
-        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
-        expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
-    })
-
-    test('should be able to bulk delete provider connections', async () => {
-        const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
-        const deleteNock1 = nockDelete(mockProviderConnection1)
-        const badRequestStatus = nockDelete(mockProviderConnection2, mockBadRequestStatus)
+        expect(queryAllByText('common:cancel')).toHaveLength(1)
         const refreshNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
-        const { getByText, queryAllByRole } = render(
+        userEvent.click(getByText('common:cancel')) // click cancel
+        expect(queryAllByText('common:cancel')).toHaveLength(0)
+        await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
+    })
+
+    test('should be able to bulk delete provider connections', async () => {
+        const listNock = nockList(
+            mockProviderConnection1,
+            [mockProviderConnection1],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
+        const deleteNock1 = nockDelete(mockProviderConnection1)
+        const refreshNock = nockList(
+            mockProviderConnection1,
+            [],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
+        const { getByText, queryAllByText, queryAllByRole } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
-        userEvent.click(queryAllByRole('checkbox')[0]) // Select all
-        userEvent.click(getByText('delete.batch')) // click the delete action
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(1))
+        await waitFor(() => expect(queryAllByRole('checkbox')).toHaveLength(2))
+        userEvent.click(queryAllByRole('checkbox')[1]) // Select first item
+        userEvent.click(getByText('delete.batch')) // click the batch delete
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
         await waitFor(() => expect(deleteNock1.isDone()).toBeTruthy()) // expect the delete api call
-        await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
-        await waitFor(() =>
-            expect(
-                getByText(`Failed to delete provider connection named ${mockProviderConnection2.metadata.name}`)
-            ).toBeInTheDocument()
-        )
+        await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(0))
     })
 
     test('should be able to cancel bulk delete provider connections', async () => {
         const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        const refreshNock = nockList(
+            mockProviderConnection1,
+            [],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
         const { getByText, queryAllByRole, queryAllByText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
-
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
         expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
         userEvent.click(getByText('delete.batch')) // click the delete action
-        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(1)
-        userEvent.click(getByText('cancel')) // click confirm on the delete dialog
-        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
+        expect(queryAllByText('common:cancel')).toHaveLength(1)
+        userEvent.click(getByText('common:cancel')) // click cancel
+        expect(queryAllByText('common:cancel')).toHaveLength(0)
+        await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
+        await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(0))
     })
 
     test('should show error if the connections fail to query', async () => {
-        nockList(mockProviderConnection1, mockBadRequestStatus, ['cluster.open-cluster-management.io/cloudconnection='])
+        const listNock = nockList(mockProviderConnection1, mockBadRequestStatus, [
+            'cluster.open-cluster-management.io/cloudconnection=',
+        ])
         const { getByText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
     })
 })
