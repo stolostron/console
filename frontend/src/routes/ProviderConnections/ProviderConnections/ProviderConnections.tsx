@@ -100,7 +100,10 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const history = useHistory()
-    const alertContext = useContext(AcmAlertContext)
+
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
+        open: false,
+    })
 
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
@@ -136,10 +139,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
         setRbacAborts(abortArray)
     }
 
-    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
-        open: false,
-    })
-    const history = useHistory()
+  
     return (
         <Fragment>
             <BulkActionModel<ProviderConnection> {...modalProps} />
@@ -231,14 +231,14 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                     tooltip: !tableActionRbacValues['secret.delete']
                                         ? t('common:rbac.unauthorized')
                                         : '',
-                                    click: (providerConnections: ProviderConnection[]) => {
+                                    click: (providerConnection: ProviderConnection) => {
                                         setModalProps({
                                             open: true,
                                             singular: t('connection'),
                                             plural: t('connections'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
-                                            resources: [...providerConnections],
+                                            resources: [providerConnection],
                                             description: t('modal.delete.content.batch'),
                                             columns: [
                                                 {
