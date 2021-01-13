@@ -375,6 +375,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     }}
                     isRequired
                     isDisabled={isEditing()}
+                    variant="typeahead"
                 >
                     {props.projects.map((project) => (
                         <SelectOption key={project} value={project}>
