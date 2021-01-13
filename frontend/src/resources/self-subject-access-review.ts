@@ -213,7 +213,6 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
         case 'secret.create':
             return [
                 {
-                    name,
                     namespace,
                     resource: 'secret',
                     verb: 'create',
