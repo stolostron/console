@@ -1,6 +1,6 @@
 import { IRequestResult, postRequest, backendUrl } from './resource-request'
 
-export const apiSearchUrl = '/search-query'
+export const apiSearchUrl = '/proxy/search'
 
 export type ISearchResult = {
     data: {
