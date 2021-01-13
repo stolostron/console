@@ -228,15 +228,15 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     verb: 'delete',
                 },
             ]
-            case 'secret.edit':
-                return [
-                    {
-                        name,
-                        namespace,
-                        resource: 'secret',
-                        verb: 'patch',
-                    },
-                ]
+        case 'secret.edit':
+            return [
+                {
+                    name,
+                    namespace,
+                    resource: 'secret',
+                    verb: 'patch',
+                },
+            ]
         default:
             return []
     }

@@ -23,7 +23,11 @@ import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
-import { createSubjectAccessReviews, ProviderConnectionsTableActionsRbac, rbacMapping } from '../../../resources/self-subject-access-review'
+import {
+    createSubjectAccessReviews,
+    ProviderConnectionsTableActionsRbac,
+    rbacMapping,
+} from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
@@ -92,35 +96,31 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
         'secret.delete': false,
     }
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    const [tableActionRbacValues, setTableActionRbacValues] = useState<ProviderConnectionsTableActionsRbac>(defaultTableRbacValues)
+    const [tableActionRbacValues, setTableActionRbacValues] = useState<ProviderConnectionsTableActionsRbac>(
+        defaultTableRbacValues
+    )
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
-    const [abortBatchRbacCheck, setBatchRbacAbort] = useState<abortDictionary>()
     const history = useHistory()
     const alertContext = useContext(AcmAlertContext)
 
-    interface abortDictionary {
-        [key: string]: Function[] | undefined
-    }
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
-    }
-    function abortBatchRbacPromises(connection: ProviderConnection) {
-        if (abortBatchRbacCheck) abortBatchRbacCheck[connection.metadata.name!]?.forEach((abort) => abort)
     }
 
     function checkRbacAccess(connection: ProviderConnection) {
         let currentRbacValues = { ...defaultTableRbacValues }
         let abortArray: Array<Function> = []
-       
+
         Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(rbacMapping(action, connection.metadata.name, connection.metadata.namespace))
+            const request = createSubjectAccessReviews(
+                rbacMapping(action, connection.metadata.name, connection.metadata.namespace)
+            )
             request.promise
                 .then((results) => {
                     if (results) {
                         let rbacQueryResults: boolean[] = []
                         results.forEach((result) => {
-                            console.log('checking rbac response: ', result)
                             if (result.status === 'fulfilled') {
                                 rbacQueryResults.push(result.value.status?.allowed!)
                             }
@@ -138,71 +138,10 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
         setRbacAborts(abortArray)
     }
 
-    function checkRbacAccessBatchAction(connections: ProviderConnection[]) {
-        if (connections.length === 0) {
-            setTableActionRbacValues(defaultTableRbacValues)
-        } else {
-            let rbacValues: ProviderConnectionsTableActionsRbac= {
-                'secret.delete': false
-            }
-
-            let abortArray: Array<Function> = []
-            let abortDictionary: abortDictionary = {}
-
-            let promiseArray = Promise.allSettled(
-                connections.map((connection) => {
-                    let newRbacPromise = Promise.allSettled(
-                        Object.keys(rbacValues).map((action: string) => {
-                            const request = createSubjectAccessReviews(
-                                rbacMapping(action, connection.metadata.name, connection.metadata.namespace)
-                            )
-                            abortArray.push(request.abort)
-                            return request.promise
-                                .then((results) => {
-                                    if (results) {
-                                        let rbacQueryResults: boolean[] = []
-                                        results.forEach((result) => {
-                                            console.log('checking rbac response: ', result)
-                                            if (result.status === 'fulfilled') {
-                                                rbacQueryResults.push(result.value.status?.allowed!)
-                                            }
-                                        })
-
-                                        if (!rbacQueryResults.includes(false)) {
-                                            // evaluates current rbacValue, if false value remains false
-                                            let actionValue =
-                                                rbacValues[
-                                                    action as 'secret.edit' | 'secret.delete' 
-                                                ] && true
-                                            rbacValues[
-                                                action as 'secret.edit' | 'secret.delete'
-                                            ] = actionValue!
-                                        } else {
-                                            rbacValues[
-                                                action as 'secret.edit' | 'secret.delete'
-                                            ] = false
-                                        }
-                                    }
-                                })
-                                .catch((err) => console.error(err))
-                        })
-                    )
-                    abortDictionary[connection.metadata.name!] = abortArray
-                    return newRbacPromise
-                })
-            )
-            promiseArray.then(() => {
-                setTableActionRbacValues(rbacValues)
-            })
-            setBatchRbacAbort(abortDictionary)
-        }
-    }
-
     return (
         <Fragment>
             <ConfirmModal {...confirm} />
             <AcmTable<ProviderConnection>
-                onSelect={(connections) => checkRbacAccessBatchAction(connections)}
                 emptyState={
                     <AcmEmptyState
                         title={t('empty.title')}
@@ -274,9 +213,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                     id: 'editConnection',
                                     text: t('edit'),
                                     isDisabled: !tableActionRbacValues['secret.edit'],
-                                    tooltip: !tableActionRbacValues['secret.edit']
-                                        ? t('common:rbac.unauthorized')
-                                        : '',
+                                    tooltip: !tableActionRbacValues['secret.edit'] ? t('common:rbac.unauthorized') : '',
                                     click: (providerConnection: ProviderConnection) => {
                                         history.push(
                                             NavigationPath.editConnection
@@ -344,7 +281,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 />
                             )
                         },
-                    }
+                    },
                 ]}
                 keyFn={(providerConnection) => {
                     return providerConnection.metadata?.uid as string
