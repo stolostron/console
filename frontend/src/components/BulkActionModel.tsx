@@ -73,7 +73,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 variant={ModalVariant.medium}
                 title={
                     errors
-                        ? `${props.action} ${t('errors')}`
+                        ? `${props.action} ${t('errors').toLowerCase()}`
                         : `${props.action} ${
                               props.resources.length === 1 ? props.singular.toLowerCase() : props.plural.toLowerCase()
                           }`
@@ -150,6 +150,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                             rowActions={[]}
                                             bulkActions={[]}
                                             perPageOptions={[]}
+                                            autoHidePagination
                                         />
                                     </AcmTablePaginationContextProvider>
                                 )}
@@ -198,6 +199,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                             rowActions={[]}
                                             bulkActions={[]}
                                             perPageOptions={[]}
+                                            autoHidePagination
                                         />
                                     </AcmTablePaginationContextProvider>
                                 )}
