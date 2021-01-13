@@ -302,12 +302,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 description: t('modal.delete.content.batch'),
                                 columns: [
                                     {
-                                        header: t('table.header.name'),
+                                        header: t('common:table.header.name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('table.header.namespace'),
+                                        header: t('common:table.header.namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },
