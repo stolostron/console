@@ -12,11 +12,10 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { getErrorInfo } from '../../../components/ErrorPage'
-import { deleteResources } from '../../../lib/delete-resources'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
@@ -85,12 +84,13 @@ function getProvider(labels: Record<string, string> | undefined) {
 
 export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
     const { t } = useTranslation(['connection', 'common'])
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
+        open: false,
+    })
     const history = useHistory()
-    const alertContext = useContext(AcmAlertContext)
     return (
         <Fragment>
-            <ConfirmModal {...confirm} />
+            <BulkActionModel<ProviderConnection> {...modalProps} />
             <AcmTable<ProviderConnection>
                 emptyState={
                     <AcmEmptyState
@@ -99,7 +99,7 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         action={<AddConnectionBtn />}
                     />
                 }
-                plural="connections"
+                plural={t('connections')}
                 items={props.providerConnections}
                 columns={[
                     {
@@ -152,51 +152,42 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         cell: 'metadata.namespace',
                     },
                 ]}
-                keyFn={(providerConnection) => {
-                    return providerConnection.metadata?.uid as string
-                }}
+                keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
                 tableActions={[]}
                 bulkActions={[
                     {
                         id: 'deleteConnection',
                         title: t('delete.batch'),
                         click: (providerConnections: ProviderConnection[]) => {
-                            setConfirm({
-                                title: (
-                                    <Trans
-                                        i18nKey="connection:modal.delete.title.batch"
-                                        values={{ number: providerConnections.length }}
-                                    />
-                                ),
-                                message: t('modal.delete.content.batch'),
+                            setModalProps({
                                 open: true,
-                                confirm: async () => {
-                                    alertContext.clearAlerts()
-                                    const promiseResults = await deleteResources(providerConnections).promise
-                                    const resultErrors: string[] = []
-                                    for (let index = 0; index < promiseResults.length; index++) {
-                                        const promiseResult = promiseResults[index]
-                                        if (promiseResult.status === 'rejected') {
-                                            resultErrors.push(
-                                                `Failed to delete provider connection named ${providerConnections[index].metadata.name}`
-                                            )
-                                        }
-                                    }
-                                    resultErrors.forEach((error) => {
-                                        alertContext.addAlert({
-                                            type: 'danger',
-                                            title: 'Delete error',
-                                            message: error,
-                                        })
-                                    })
+                                singular: t('connection'),
+                                plural: t('connections'),
+                                action: t('common:delete'),
+                                processing: t('common:deleting'),
+                                resources: [...providerConnections],
+                                description: t('modal.delete.content.batch'),
+                                columns: [
+                                    {
+                                        header: t('table.header.name'),
+                                        cell: 'metadata.name',
+                                        sort: 'metadata.name',
+                                    },
+                                    {
+                                        header: t('table.header.namespace'),
+                                        cell: 'metadata.namespace',
+                                        sort: 'metadata.namespace',
+                                    },
+                                ],
+                                keyFn: (providerConnection: ProviderConnection) =>
+                                    providerConnection.metadata.uid as string,
+                                actionFn: (providerConnection: ProviderConnection) =>
+                                    deleteResource(providerConnection),
+                                close: () => {
+                                    setModalProps({ open: false })
                                     props.refresh()
-                                    setConfirm(ClosedConfirmModalProps)
                                 },
-                                confirmText: t('common:delete'),
                                 isDanger: true,
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
                             })
                         },
                     },
@@ -217,34 +208,35 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         id: 'deleteConnection',
                         title: t('delete'),
                         click: (providerConnection: ProviderConnection) => {
-                            setConfirm({
-                                title: t('modal.delete.title.single'),
-                                message: (
-                                    <Trans
-                                        i18nKey="connection:modal.delete.content.single"
-                                        values={{ name: providerConnection?.metadata.name }}
-                                        components={{ bold: <strong /> }}
-                                    />
-                                ),
+                            setModalProps({
                                 open: true,
-                                confirm: () => {
-                                    alertContext.clearAlerts()
-                                    deleteResource(providerConnection)
-                                        .promise.then(props.refresh)
-                                        .catch(() => {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: 'Delete error',
-                                                message: `Failed to delete provider connection named ${providerConnection.metadata.name}`,
-                                            })
-                                        })
-                                    setConfirm(ClosedConfirmModalProps)
+                                singular: t('connection'),
+                                plural: t('connections'),
+                                action: t('common:delete'),
+                                processing: t('common:deleting'),
+                                resources: [providerConnection],
+                                description: t('modal.delete.content.batch'),
+                                columns: [
+                                    {
+                                        header: t('table.header.name'),
+                                        cell: 'metadata.name',
+                                        sort: 'metadata.name',
+                                    },
+                                    {
+                                        header: t('table.header.namespace'),
+                                        cell: 'metadata.namespace',
+                                        sort: 'metadata.namespace',
+                                    },
+                                ],
+                                keyFn: (providerConnection: ProviderConnection) =>
+                                    providerConnection.metadata.uid as string,
+                                actionFn: (providerConnection: ProviderConnection) =>
+                                    deleteResource(providerConnection),
+                                close: () => {
+                                    setModalProps({ open: false })
+                                    props.refresh()
                                 },
-                                confirmText: t('common:delete'),
                                 isDanger: true,
-                                cancel: () => {
-                                    setConfirm(ClosedConfirmModalProps)
-                                },
                             })
                         },
                     },
