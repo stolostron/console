@@ -430,6 +430,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     }}
                     isRequired
                     isDisabled={isEdit}
+                    variant="typeahead"
                 >
                     {props.projects.map((project) => (
                         <SelectOption key={project} value={project}>
