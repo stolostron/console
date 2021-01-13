@@ -98,7 +98,6 @@ export function BareMetalAssetsTable(props: {
     refresh: () => void
 }) {
     const [creationAccessRestriction, setcreationAccessRestriction] = useState<boolean>(true)
-    const [accessRestriction, setAccessRestriction] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
@@ -276,8 +275,10 @@ export function BareMetalAssetsTable(props: {
                                                         sort: 'metadata.namespace',
                                                     },
                                                 ],
-                                                keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.metadata.uid as string,
-                                                actionFn: (bareMetalAsset: BareMetalAsset) => deleteResource(bareMetalAsset),
+                                                keyFn: (bareMetalAsset: BareMetalAsset) =>
+                                                    bareMetalAsset.metadata.uid as string,
+                                                actionFn: (bareMetalAsset: BareMetalAsset) =>
+                                                    deleteResource(bareMetalAsset),
                                                 close: () => {
                                                     setModalProps({ open: false })
                                                     props.refresh()
