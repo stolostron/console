@@ -402,10 +402,10 @@ const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
+            name: clusterName,
             namespace: clusterName,
             resource: 'secret',
             verb: 'get',
-            version: 'v1',
         },
     },
 }

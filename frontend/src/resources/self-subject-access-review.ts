@@ -42,17 +42,15 @@ export type ClustersTableActionsRbac = {
     'cluster.upgrade'?: boolean
 }
 
-// TODO: Add support for bma and provider connections
-// export type ProviderConnectionsTableRbacAccess = {
-//     edit: boolean
-//     delete: boolean
-// }
+export type ProviderConnectionsTableActionsRbac = {
+    'secret.edit'?: boolean
+    'secret.delete': boolean
+}
 
-// export type BMATableRbacAccess = {
-//     editLabels: boolean
-//     editAsset: boolean
-//     destroy: boolean
-// }
+export type BMATableRbacAccess = {
+    'bma.delete': boolean
+    'bma.edit': boolean
+}
 
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
     return createResource<SelfSubjectAccessReview>({
@@ -191,23 +189,22 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     resource: 'managedclusterviews',
                     verb: 'create',
                     group: 'view.open-cluster-management.io',
-                    namespace               
-                }, 
+                    namespace,
+                },
                 {
                     resource: 'managedclusteractions',
                     verb: 'create',
                     group: 'action.open-cluster-management.io',
-                    namespace
-                }
-            
+                    namespace,
+                },
             ]
         case 'secret.get':
             return [
                 {
+                    name,
                     namespace,
                     resource: 'secret',
                     verb: 'get',
-                    version: 'v1',
                 },
             ]
         case 'secret.create':
@@ -216,7 +213,44 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     namespace,
                     resource: 'secret',
                     verb: 'create',
-                    version: 'v1',
+                },
+            ]
+        case 'secret.delete':
+            return [
+                {
+                    name,
+                    namespace,
+                    resource: 'secret',
+                    verb: 'delete',
+                },
+            ]
+        case 'secret.edit':
+            return [
+                {
+                    name,
+                    namespace,
+                    resource: 'secret',
+                    verb: 'patch',
+                },
+            ]
+        case 'bma.delete':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalasset',
+                    verb: 'delete',
+                },
+            ]
+        case 'bma.edit':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalasset',
+                    verb: 'patch',
                 },
             ]
         default:
