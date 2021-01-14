@@ -200,7 +200,7 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
         }
 
         // Search
-        if (url.startsWith('/search')) {
+        if (url.startsWith('/proxy/search')) {
             const token = getToken(req)
             if (!token) return res.writeHead(401).end()
 
