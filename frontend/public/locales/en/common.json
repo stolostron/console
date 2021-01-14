@@ -23,8 +23,5 @@
 
     "rbac.title.unauthorized": "Unauthorized",
     "rbac.unauthorized": "You are not authorized to complete this action. See your cluster administrator for role-based access control information.",
-    "rbac.namespaces.unauthorized": "You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.",
-
-    "table.header.name": "Name",
-    "table.header.namespace": "Namespace"
+    "rbac.namespaces.unauthorized": "You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information."
 }
