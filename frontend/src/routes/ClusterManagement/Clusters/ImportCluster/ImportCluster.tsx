@@ -7,12 +7,11 @@ import {
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
-    AcmSelect,
     AcmTextInput,
     AcmSubmit,
     AcmButton,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
+import { ActionGroup, Button, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { useTranslation } from 'react-i18next'
