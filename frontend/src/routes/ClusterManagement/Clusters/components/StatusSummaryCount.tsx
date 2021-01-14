@@ -49,7 +49,7 @@ export function StatusSummaryCount() {
                     },
                     {
                         id: 'applications',
-                        count: /* istanbul ignore next */ data?.[0].data.searchResult[0]?.related?.[0]?.count ?? 0,
+                        count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]?.count ?? 0,
                         countClick: () =>
                             window.open(
                                 buildSearchLink({ cluster: clusterName, kind: 'subscription' }, 'application'),
@@ -61,7 +61,7 @@ export function StatusSummaryCount() {
                     },
                     {
                         id: 'violations',
-                        count: /* istanbul ignore next */ data?.[0].data.searchResult?.[1]?.count ?? 0 ?? 0,
+                        count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
                         countClick: () =>
                             window.open(
                                 buildSearchLink({
