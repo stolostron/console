@@ -3,7 +3,7 @@ import { IRequestResult, postRequest, backendUrl } from './resource-request'
 export const apiSearchUrl = '/search'
 
 export type ISearchResult = {
-    data: {
+    data?: {
         searchResult: {
             count: number
             related: {
