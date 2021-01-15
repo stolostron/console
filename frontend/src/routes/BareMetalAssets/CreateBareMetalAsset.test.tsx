@@ -9,6 +9,7 @@ import { Project } from '../../resources/project'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 import { Secret } from '../../resources/secret'
 import { SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
+import { NavigationPath } from '../../NavigationPath'
 
 const testProject: Project = {
     apiVersion: 'project.openshift.io/v1',
@@ -25,7 +26,7 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-bare-metal-asset-new-namespace',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'create',
         },
     },
@@ -52,7 +53,7 @@ const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-bare-metal-asset-new-namespace',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'create',
             version: 'v1',
         },
@@ -203,7 +204,7 @@ const mockBareMetalAssets = [bareMetalAsset]
 const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
 const bmaProjects = [testProject]
 
-describe('bare metal asset creation page', () => {
+describe('CreateBareMetalAsset', () => {
     test('renders unauthorized page when rbac access is restricted', async () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
@@ -211,20 +212,20 @@ describe('bare metal asset creation page', () => {
         const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
         nockCreate(mockCreateClusterSelfSubjectAccessRequest, mockCreateClusterSelfSubjectAccessResponse)
         const { getByText } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
+            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
                 <Route
-                    path="/cluster-management/baremetal-assets/create"
-                    render={() => <CreateBareMetalAssetPage bmaSecretID="1234" />}
-                ></Route>
-                <Route path="/cluster-management/baremetal-assets" render={() => <BareMetalAssetsPage />} />
+                    path={NavigationPath.createBareMetalAsset}
+                    render={() => <CreateBareMetalAssetPage />}
+                />
+                <Route path={NavigationPath.bareMetalAssets} render={() => <BareMetalAssetsPage />} />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
+        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument()) // expect unauthorized message
+        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())
     })
 
     test('can create asset', async () => {
@@ -237,12 +238,12 @@ describe('bare metal asset creation page', () => {
         )
 
         const { getByText, getAllByText, getByTestId } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
+            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
                 <Route
-                    path="/cluster-management/baremetal-assets/create"
-                    render={() => <CreateBareMetalAssetPage bmaSecretID="1234" />}
-                ></Route>
-                <Route path="/cluster-management/baremetal-assets" render={() => <BareMetalAssetsPage />} />
+                    path={NavigationPath.createBareMetalAsset}
+                    render={() => <CreateBareMetalAssetPage />}
+                />
+                <Route path={NavigationPath.bareMetalAssets} render={() => <BareMetalAssetsPage />} />
             </MemoryRouter>
         )
 
@@ -274,7 +275,6 @@ describe('bare metal asset creation page', () => {
     })
 
     test('populate edit asset page', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
 
@@ -284,15 +284,14 @@ describe('bare metal asset creation page', () => {
                     path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
                     render={() => (
                         <EditBareMetalAssetPageData
-                            editAssetNamespace={'test-bare-metal-asset-namespace'}
-                            editAssetName={'test-bare-metal-asset-001'}
+                            namespace={'test-bare-metal-asset-namespace'}
+                            name={'test-bare-metal-asset-001'}
                         />
                     )}
                 />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
@@ -301,7 +300,6 @@ describe('bare metal asset creation page', () => {
     })
 
     test('submit edit to api', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(bmaSecret, bmaSecret)
         const patchNockSecret = nockPatch(bmaPatchedSecret, bmaPatchedSecret)
@@ -314,15 +312,14 @@ describe('bare metal asset creation page', () => {
                     path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1"
                     render={() => (
                         <EditBareMetalAssetPageData
-                            editAssetNamespace={'test-bare-metal-asset-namespace'}
-                            editAssetName={'test-bare-metal-asset-001'}
+                            namespace={'test-bare-metal-asset-namespace'}
+                            name={'test-bare-metal-asset-001'}
                         />
                     )}
                 />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 

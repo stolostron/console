@@ -1,5 +1,6 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { listResources } from '../lib/resource-request'
+import { listResources, getResource } from '../lib/resource-request'
+import { SecretApiVersionType, SecretKindType } from './secret'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -29,46 +30,9 @@ export interface BareMetalAsset {
     }
 }
 
-export function BMAStatusMessage(bareMetalAssets: BareMetalAsset, translation: Function) {
-    if (bareMetalAssets.status) {
-        let mostCurrentStatusTime = bareMetalAssets.status!.conditions[0].lastTransitionTime
-        let mostCurrentStatus = bareMetalAssets.status!.conditions[0].type
-        for (let conditions of bareMetalAssets.status!.conditions) {
-            if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
-                mostCurrentStatusTime = conditions.lastTransitionTime
-                mostCurrentStatus = conditions.type
-            }
-            // if status time is equivalent, take the status at that was added last
-            else if (conditions.lastTransitionTime === mostCurrentStatusTime) {
-                mostCurrentStatusTime = conditions.lastTransitionTime
-                mostCurrentStatus = conditions.type
-            }
-        }
-        return translation(GetStatusMessage(mostCurrentStatus))
-    }
-    return ''
-}
-function GetStatusMessage(status: string) {
-    switch (status) {
-        // returns translation strings
-        case 'CredentialsFound':
-            return 'bareMetalAsset.statusMessage.credentialsFound'
-        case 'AssetSyncStarted':
-            return 'bareMetalAsset.statusMessage.assetSyncStarted'
-        case 'ClusterDeploymentFound':
-            return 'bareMetalAsset.statusMessage.clusterDeploymentFound'
-        case 'AssetSyncCompleted':
-            return 'bareMetalAsset.statusMessage.assetSyncCompleted'
-        case 'Ready':
-            return 'bareMetalAsset.statusMessage.ready'
-        default:
-            return ''
-    }
-}
-
 export interface BMASecret extends V1Secret {
-    apiVersion: 'v1'
-    kind: 'Secret'
+    apiVersion: SecretApiVersionType
+    kind: SecretKindType
     metadata: V1ObjectMeta
     stringData: {
         password: string
@@ -76,18 +40,12 @@ export interface BMASecret extends V1Secret {
     }
 }
 
-export function MakeId(customID?: string) {
-    if (customID) {
-        return customID
-    }
-
-    let result = ''
-    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    const charactersLength = characters.length
-    for (var i = 0; i < 5; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength))
-    }
-    return result
+export function getBareMetalAsset(metadata: Object) {
+    return getResource<BareMetalAsset>({
+        kind: BareMetalAssetKind,
+        apiVersion: BareMetalAssetApiVersion,
+        metadata,
+    })
 }
 
 export function listBareMetalAssets() {
@@ -101,23 +59,4 @@ export function listBareMetalAssets() {
         }),
         abort: result.abort,
     }
-}
-
-export function unpackBareMetalAsset(bma: BareMetalAsset) {
-    const unpackedBMA: Partial<BareMetalAsset> = {
-        kind: bma.kind,
-        apiVersion: bma.apiVersion,
-        metadata: {
-            name: bma.metadata.name,
-            namespace: bma.metadata.namespace,
-        },
-        spec: {
-            bmc: {
-                address: bma.spec?.bmc.address!,
-                credentialsName: bma.spec?.bmc.credentialsName!,
-            },
-            bootMACAddress: bma.spec?.bootMACAddress!,
-        },
-    }
-    return unpackedBMA
 }
