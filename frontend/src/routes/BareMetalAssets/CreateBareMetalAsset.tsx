@@ -17,7 +17,13 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { createResource, patchResource } from '../../../src/lib/resource-request'
-import { BareMetalAsset, BMASecret, getBareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../src/resources/bare-metal-asset'
+import {
+    BareMetalAsset,
+    BMASecret,
+    getBareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetKind,
+} from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
@@ -30,7 +36,6 @@ export default function CreateBareMetalAssetPage() {
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
-    
         return (
             <Page>
                 <AcmAlertProvider>
@@ -54,10 +59,7 @@ export default function CreateBareMetalAssetPage() {
                             { text: t('bma:editBareMetalAsset.title'), to: '' },
                         ]}
                     />
-                    <EditBareMetalAssetPageData
-                        name={params.name}
-                        namespace={params.namespace}
-                    />
+                    <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
                 </AcmAlertProvider>
             </Page>
         )
@@ -223,10 +225,6 @@ export function CreateBareMetalAssetPageContent(props: {
             password: '',
             username: '',
         },
-        data: {
-            password: '',
-            username: '',
-        },
     })
 
     function updateBareMetalAsset(update: (bareMetalAsset: Partial<BareMetalAsset>) => void) {
@@ -257,7 +255,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     value={bareMetalAsset.metadata?.name}
                     onChange={(name) => {
                         updateBMASecret((bmaSecrets) => {
-                            bmaSecrets.metadata!.generateName = name + '-bmc-secret-'
+                            bmaSecrets.metadata!.name = name + '-bmc-secret'
                         })
                         updateBareMetalAsset((bareMetalAsset) => {
                             bareMetalAsset.metadata!.name = name
@@ -372,9 +370,9 @@ export function CreateBareMetalAssetPageContent(props: {
                         onClick={() => {
                             alertContext.clearAlerts()
                             if (isEdit) {
-                                return patchResource(bmaSecret as BMASecret, bmaSecret)
+                                return patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset)
                                     .promise.then(() => {
-                                        return patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset)
+                                        return patchResource(bmaSecret as BMASecret, bmaSecret)
                                             .promise.then(() => {
                                                 history.push(NavigationPath.bareMetalAssets)
                                             })
@@ -400,26 +398,37 @@ export function CreateBareMetalAssetPageContent(props: {
                                         }
                                     })
                             } else {
-                                return createResource(bmaSecret as BMASecret).promise.then((result) => {
-                                    console.log('secret create result', result)
-                                    if (bareMetalAsset.spec) {
-                                        bareMetalAsset.spec.bmc.credentialsName = result.metadata.name ?? ''
-                                    }
-                                    return createResource(bareMetalAsset as BareMetalAsset)
-                                        .promise.then(() => {
-                                            history.push(NavigationPath.bareMetalAssets)
-                                        })
-                                        .catch((e) => {
-                                            /* istanbul ignore else */
-                                            if (e instanceof Error) {
-                                                alertContext.addAlert({
-                                                    type: 'danger',
-                                                    title: t('common:request.failed'),
-                                                    message: e.message,
-                                                })
-                                            }
-                                        })
-                                })
+                                return createResource(bmaSecret as BMASecret)
+                                    .promise.then((result) => {
+                                        if (bareMetalAsset.spec) {
+                                            bareMetalAsset.spec.bmc.credentialsName = result.metadata.name ?? ''
+                                        }
+                                        return createResource(bareMetalAsset as BareMetalAsset)
+                                            .promise.then(() => {
+                                                history.push(NavigationPath.bareMetalAssets)
+                                            })
+                                            .catch((e) => {
+                                                /* istanbul ignore else */
+                                                if (e instanceof Error) {
+                                                    alertContext.addAlert({
+                                                        type: 'danger',
+                                                        title: t('common:request.failed'),
+                                                        message: e.message,
+                                                    })
+                                                }
+                                            })
+                                    })
+                                    .catch((e) => {
+                                        console.log('ERROR', e)
+                                        /* istanbul ignore else */
+                                        if (e instanceof Error) {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: t('common:request.failed'),
+                                                message: e.message,
+                                            })
+                                        }
+                                    })
                             }
                         }}
                     >

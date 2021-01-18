@@ -79,13 +79,7 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return (
-        <BareMetalAssetsTable
-            bareMetalAssets={data}
-            deleteBareMetalAsset={deleteResource}
-            refresh={refresh}
-        ></BareMetalAssetsTable>
-    )
+    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
