@@ -113,7 +113,7 @@ const mockManagedCluster: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'foobar',
-        labels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
+        labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
     },
     spec: { hubAcceptsClient: true },
 }
@@ -125,7 +125,7 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     spec: {
         clusterName: 'foobar',
         clusterNamespace: 'foobar',
-        clusterLabels: { cloud: 'AWS', vendor: 'auto-detect', name: 'foobar', environment: 'dev', foo: 'bar' },
+        clusterLabels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
         applicationManager: { enabled: true, argocdCluster: false },
         policyController: { enabled: true },
         searchCollector: { enabled: true },
@@ -158,7 +158,7 @@ const mockManagedClusterResponse: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
-        labels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
+        labels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         name: 'foobar',
         uid: 'e60ef618-324b-49d4-8a28-48839c546565',
     },
@@ -176,7 +176,7 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     spec: {
         applicationManager: { enabled: true, argocdCluster: false },
         certPolicyController: { enabled: true },
-        clusterLabels: { cloud: 'AWS', environment: 'dev', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
+        clusterLabels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         clusterName: 'foobar',
         clusterNamespace: 'foobar',
         iamPolicyController: { enabled: true },
@@ -205,8 +205,6 @@ describe('ImportCluster', () => {
         const { getByTestId, getByText } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
         expect(getByTestId('clusterName-label')).toBeInTheDocument()
-        expect(getByTestId('cloudLabel-label')).toBeInTheDocument()
-        expect(getByTestId('environmentLabel-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
         // expect(getByTestId('importModeManual')).toBeInTheDocument()
         expect(getByText('import.form.submit')).toBeInTheDocument()
@@ -221,12 +219,6 @@ describe('ImportCluster', () => {
         const { getByTestId, getByText, queryByTestId } = render(<Component />)
 
         userEvent.type(getByTestId('clusterName'), 'foobar')
-        userEvent.click(getByTestId('cloudLabel-button'))
-        await waitFor(() => expect(getByText('AWS')).toBeInTheDocument())
-        userEvent.click(getByText('AWS'))
-        userEvent.click(getByTestId('environmentLabel-button'))
-        await waitFor(() => expect(getByText('dev')).toBeInTheDocument())
-        userEvent.click(getByText('dev'))
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
 
@@ -266,10 +258,6 @@ describe('ImportCluster', () => {
         const { getByTestId, getByText } = render(<Component />)
 
         userEvent.type(getByTestId('clusterName'), 'foobar')
-        userEvent.click(getByTestId('cloudLabel-button'))
-        userEvent.click(getByText('AWS'))
-        userEvent.click(getByTestId('environmentLabel-button'))
-        userEvent.click(getByText('dev'))
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
         userEvent.click(getByText('import.form.submit'))
@@ -337,10 +325,6 @@ describe('Import Discovered Cluster', () => {
         await waitFor(() => expect(getByText('import.form.submit')).toBeInTheDocument()) // Wait for next page to render
 
         // Add labels
-        userEvent.click(getByTestId('cloudLabel-button'))
-        userEvent.click(getByText('AWS'))
-        userEvent.click(getByTestId('environmentLabel-button'))
-        userEvent.click(getByText('dev'))
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
 
