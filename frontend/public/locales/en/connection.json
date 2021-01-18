@@ -8,8 +8,8 @@
     "delete": "Delete connection",
     "delete.batch": "Delete connections",
 
-    "table.header.name": "Name",
     "table.header.provider": "Provider",
+    "table.header.name": "Name",
     "table.header.namespace": "Namespace",
 
     "modal.delete.title.single": "Delete provider connection",

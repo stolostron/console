@@ -289,12 +289,12 @@ export function BareMetalAssetsTable(props: {
                                                 description: t('modal.delete.content.batch'),
                                                 columns: [
                                                     {
-                                                        header: t('common:table.header.name'),
+                                                        header: t('bareMetalAsset.tableHeader.name'),
                                                         cell: 'metadata.name',
                                                         sort: 'metadata.name',
                                                     },
                                                     {
-                                                        header: t('common:table.header.namespace'),
+                                                        header: t('bareMetalAsset.tableHeader.namespace'),
                                                         cell: 'metadata.namespace',
                                                         sort: 'metadata.namespace',
                                                     },
@@ -357,12 +357,12 @@ export function BareMetalAssetsTable(props: {
                                     description: t('modal.delete.content.batch'),
                                     columns: [
                                         {
-                                            header: t('common:table.header.name'),
+                                            header: t('bareMetalAsset.tableHeader.name'),
                                             cell: 'metadata.name',
                                             sort: 'metadata.name',
                                         },
                                         {
-                                            header: t('common:table.header.namespace'),
+                                            header: t('bareMetalAsset.tableHeader.namespace'),
                                             cell: 'metadata.namespace',
                                             sort: 'metadata.namespace',
                                         },
