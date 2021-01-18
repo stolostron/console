@@ -183,8 +183,6 @@ export function BareMetalAssetsTable(props: {
                                     onClick={() => {
                                         history.push(NavigationPath.createBareMetalAsset)
                                     }}
-                                    isDisabled={creationAccessRestriction}
-                                    tooltip={creationAccessRestriction ? t('common:rbac.unauthorized') : ''}
                                 >
                                     {t('createBareMetalAsset.title')}
                                 </AcmButton>
@@ -314,8 +312,6 @@ export function BareMetalAssetsTable(props: {
                             click: () => {
                                 history.push(NavigationPath.createBareMetalAsset)
                             },
-                            isDisabled: creationAccessRestriction,
-                            tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
                         },
                     ]}
                     bulkActions={[
