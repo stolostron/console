@@ -86,18 +86,8 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     )
 
     useEffect(() => {
-        if (!dataRef.current.ismounted) return
-        if (dataRef.current.requestResult) {
-            dataRef.current.requestResult.abort()
-            dataRef.current.requestResult = undefined
-        }
         return refresh()
     }, [iteration, refresh])
-
-    useEffect(() => {
-        if (!dataRef.current.ismounted) return
-        setIteration((iteration) => iteration + 1)
-    }, [])
 
     const stopPolling = useCallback(() => {
         dataRef.current.polling = 0
@@ -123,6 +113,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
         startPolling,
         stopPolling,
         refresh: () => {
+            if (!dataRef.current.ismounted) return
             setIteration((iteration) => iteration + 1)
         },
     }
