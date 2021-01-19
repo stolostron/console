@@ -5,20 +5,19 @@ import { createProject } from '../resources/project'
 import { get, keyBy } from 'lodash'
 
 export async function createCluster(resources: JsonArray) {
-  
     // if creating a bare metal cluster
     // make sure all the bare metal assets exist
     let assets
-    let errors=[]
-    const resourcesMap = keyBy(resources, 'kind');
-    const hosts = get(resourcesMap, 'ClusterDeployment.spec.platform.baremetal.hosts');
+    let errors = []
+    const resourcesMap = keyBy(resources, 'kind')
+    const hosts = get(resourcesMap, 'ClusterDeployment.spec.platform.baremetal.hosts')
     if (hosts) {
-      ({assets, errors} = await syncBMAs(hosts, resources));
-      if (errors.length) {
-        return errors
-      }
+        ;({ assets, errors } = await syncBMAs(hosts, resources))
+        if (errors.length) {
+            return errors
+        }
     }
-  
+
     // get namespace and filter out any namespace resource
     // get ClusterDeployment and filter it out to create at the very end
     let response
@@ -107,13 +106,13 @@ export async function createCluster(resources: JsonArray) {
             }
         })
     }
-  
+
     // if this was a bare metal cluster mark the bare metal assets that are used
     if (errors.length === 0 && assets) {
-        const clusterName = _.get(resourcesMap, 'ClusterDeployment.metadata.name');
-        await attachBMAs(assets, hosts, clusterName, errors);
+        const clusterName = _.get(resourcesMap, 'ClusterDeployment.metadata.name')
+        await attachBMAs(assets, hosts, clusterName, errors)
     }
-    
+
     return {
         status: errors.length > 0 ? 'ERROR' : 'DONE',
         messages: errors.length > 0 ? errors : null,

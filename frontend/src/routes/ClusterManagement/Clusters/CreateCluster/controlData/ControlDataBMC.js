@@ -83,8 +83,8 @@ const setAvailableBMAs = (control, result) => {
                 return a.localeCompare(b)
             })
             control.available.forEach(getCreds)
-            control.available.forEach(data=>{
-              data.id = data.id.toString()
+            control.available.forEach((data) => {
+                data.id = data.id.toString()
             })
         } else {
             control.isLoading = loading
@@ -117,9 +117,10 @@ const sortTable = (items, selectedKey, sortDirection, active) => {
         const activeMap = _.keyBy(active, 'id')
         items.sort(({ id: a }, { id: b }) => {
             return (
-                sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
-                sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))
-            ) * (sortDirection==='asc' ? 1 : -1)
+                (sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
+                    sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))) *
+                (sortDirection === 'asc' ? 1 : -1)
+            )
         })
         return items
     }

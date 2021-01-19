@@ -67,47 +67,53 @@ export function createBareMetalAsset(asset: {
     bootMACAddress: string
     bmc: { address: string; username: string; password: string }
 }) {
-   const { name, namespace, bootMACAddress, bmc: { address, username, password }} = asset  
-   const credentialsName = `${name}-bmc-secret-${MakeId()}`
+    const {
+        name,
+        namespace,
+        bootMACAddress,
+        bmc: { address, username, password },
+    } = asset
+    const credentialsName = `${name}-bmc-secret`
     return new Promise((resolve, reject) => {
-      
-           // create the asset
-          createResource<BareMetalAsset>({
-            apiVersion: BareMetalAssetApiVersion,
-            kind: BareMetalAssetKind,
+        // create the secret
+        createResource<BMASecret>({
+            apiVersion: 'v1',
+            kind: 'Secret',
             metadata: {
-                name,
+                name: credentialsName,
                 namespace,
             },
-            spec: {
-                bmc: {
-                    address,
-                    credentialsName
-                },
-                bootMACAddress
-            }
-           }).promise.then((bma) => {
-            
-              // create the secret
-                createResource<BMASecret>({
-                    apiVersion: 'v1',
-                    kind: 'Secret',
+            stringData: {
+                password,
+                username,
+            },
+        })
+            .promise.then((secret) => {
+                // create the asset
+                createResource<BareMetalAsset>({
+                    apiVersion: BareMetalAssetApiVersion,
+                    kind: BareMetalAssetKind,
                     metadata: {
-                        name: credentialsName,
+                        name,
                         namespace,
                     },
-                    stringData: {
-                        password,
-                        username
+                    spec: {
+                        bmc: {
+                            address,
+                            credentialsName: secret.metadata.name ?? '',
+                        },
+                        bootMACAddress,
                     },
-                  }).promise.then(() => {
-                      resolve(bma)
-                  }).catch((err: Error) => {
-                     reject(err)
-                  })
-            }).catch((err: Error) => {
-              reject(err)
+                })
+                    .promise.then((bma) => {
+                        resolve(bma)
+                    })
+                    .catch((err: Error) => {
+                        reject(err)
+                    })
             })
-        })
-            
+            .catch((err: Error) => {
+                reject(err)
+            })
+    })
 }

@@ -624,19 +624,22 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     value={providerConnection.spec?.sshKnownHosts.join('\n')}
                     onChange={(sshKnownHosts) => {
                         updateProviderConnection((providerConnection) => {
-                            const knownSSHs = sshKnownHosts.trim().split(/[\r\n]+/g).map(ssh=>{
-                              ssh = ssh.trim()
-                              if (ssh.startsWith('-')) {
-                                ssh = ssh.substr(1).trim()
-                              }
-                              if (ssh.startsWith('"')) {
-                                ssh = ssh.substr(1)
-                              }
-                              if (ssh.endsWith('"')) {
-                                ssh = ssh.slice(0, -1)
-                              }
-                              return ssh
-                            })
+                            const knownSSHs = sshKnownHosts
+                                .trim()
+                                .split(/[\r\n]+/g)
+                                .map((ssh) => {
+                                    ssh = ssh.trim()
+                                    if (ssh.startsWith('-')) {
+                                        ssh = ssh.substr(1).trim()
+                                    }
+                                    if (ssh.startsWith('"')) {
+                                        ssh = ssh.substr(1)
+                                    }
+                                    if (ssh.endsWith('"')) {
+                                        ssh = ssh.slice(0, -1)
+                                    }
+                                    return ssh
+                                })
                             providerConnection.spec!.sshKnownHosts = knownSSHs
                         })
                     }}
