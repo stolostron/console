@@ -109,12 +109,8 @@ beforeEach(() => {
 
 describe('edit connection page', () => {
     it('should edit provider connection', async () => {
-        const projectsNock = nockClusterList(mockProject, mockProjects)
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const getProviderConnectionNock = nockGet(awsProviderConnection)
         const { getByText, getByTestId } = render(<TestEditConnectionPage />)
-        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 
