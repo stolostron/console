@@ -209,7 +209,6 @@ describe('bare metal asset creation page', () => {
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
-        nockCreate(mockCreateClusterSelfSubjectAccessRequest, mockCreateClusterSelfSubjectAccessResponse)
         const { getByText } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
                 <Route
@@ -231,10 +230,6 @@ describe('bare metal asset creation page', () => {
         const listProjectNock = nockClusterList(testProject, bmaProjects)
         const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
-        const clusterNock = nockCreate(
-            mockCreateClusterSelfSubjectAccessRequest,
-            mockCreateClusterSelfSubjectAccessResponse
-        )
 
         const { getByText, getAllByText, getByTestId } = render(
             <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
@@ -246,7 +241,6 @@ describe('bare metal asset creation page', () => {
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
