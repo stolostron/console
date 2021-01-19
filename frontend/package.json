@@ -53,8 +53,7 @@
     "scripts": {
         "start": "react-app-rewired start",
         "build": "react-app-rewired build && cd build && gzip * -k -r --best",
-        "test": "react-app-rewired test --all --watchAll=false --ci --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen --testResultsProcessor jest-sonar-reporter",
-        "test2": "react-app-rewired test \"CreateCluster\\.test\\.tsx\"",
+        "test": "react-app-rewired test --all --watchAll=false --ci --runInBand --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen --testResultsProcessor jest-sonar-reporter",
         "test:watch": "react-app-rewired test",
         "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
         "lint:fix": "eslint src --ext .ts,.tsx --fix",

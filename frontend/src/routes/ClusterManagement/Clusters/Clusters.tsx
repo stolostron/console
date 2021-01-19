@@ -71,6 +71,7 @@ const PageActions = () => {
                 // send err to console
                 console.error(err)
             })
+        return () => promiseResult.abort()
     }, [])
     const dropdownItems: AcmDropdownItems[] = [
         {
