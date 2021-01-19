@@ -92,7 +92,11 @@ export function getAllClusters(): IRequestResult<Cluster[]> {
                     return d.value
                 } else {
                     if (d.reason instanceof Error) {
-                        if (i === 2 && d.reason instanceof ResourceError && d.reason.code === ResourceErrorCode.Forbidden) {
+                        if (
+                            i === 2 &&
+                            d.reason instanceof ResourceError &&
+                            d.reason.code === ResourceErrorCode.Forbidden
+                        ) {
                             // ignore forbidden csr error
                         } else {
                             throw d.reason
