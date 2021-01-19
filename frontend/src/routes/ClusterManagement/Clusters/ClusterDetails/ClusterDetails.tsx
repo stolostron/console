@@ -49,8 +49,8 @@ export const ClusterContext = React.createContext<{
     readonly importCommandError?: string
     setImportCommand?: (command: string) => void
     setImportCommandError?: (error: string) => void
-    readonly editModalOpen?: boolean
-    setEditModalOpen?: (open: boolean) => void
+    readonly editClusterLabels?: Cluster
+    setEditClusterLabels?: (cluster: Cluster) => void
 }>({
     cluster: undefined,
     addons: undefined,
@@ -62,7 +62,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
     const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
-    const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
+    const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
@@ -185,14 +185,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     setImportCommand,
                     importCommandError,
                     setImportCommandError,
-                    editModalOpen,
-                    setEditModalOpen,
+                    editClusterLabels,
+                    setEditClusterLabels,
                 }}
             >
                 <EditLabelsModal
-                    cluster={editModalOpen ? cluster : undefined}
+                    cluster={editClusterLabels}
                     close={() => {
-                        setEditModalOpen(false)
+                        setEditClusterLabels(undefined)
                         refresh()
                     }}
                 />
@@ -272,7 +272,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'edit-labels',
                                             text: t('managed.editLabels'),
-                                            click: (cluster: Cluster) => setEditModalOpen(true),
+                                            click: (cluster: Cluster) => setEditClusterLabels({ ...cluster }),
                                             isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                             tooltip: !tableActionRbacValues['cluster.edit.labels']
                                                 ? t('common:rbac.unauthorized')

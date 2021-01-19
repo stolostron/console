@@ -302,7 +302,7 @@ export function ClustersTable(props: {
                                 {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
-                                    click: (cluster: Cluster) => setEditClusterLabels(cluster),
+                                    click: (cluster: Cluster) => setEditClusterLabels({ ...cluster }),
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                     tooltip: !tableActionRbacValues['cluster.edit.labels']
                                         ? t('common:rbac.unauthorized')
