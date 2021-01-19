@@ -29,7 +29,7 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-namespace',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'create',
         },
     },
@@ -56,7 +56,7 @@ const mockSelfSubjectAccessResponseTrue: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-namespace',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'create',
             version: 'v1',
         },
@@ -73,7 +73,7 @@ const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-namespace',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'create',
             version: 'v1',
         },

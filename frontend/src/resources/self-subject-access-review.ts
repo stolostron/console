@@ -78,7 +78,7 @@ export async function rbacNamespaceFilter(action: string, namespaces: Array<stri
     if (namespaces.length === 0) return []
 
     // check for admin access before checking namespaces individually
-    let adminAccess = await checkAdminAccess()
+    const adminAccess = await checkAdminAccess()
 
     if (adminAccess) {
         return namespaces
@@ -211,7 +211,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
             return [
                 {
                     namespace,
-                    resource: 'secret',
+                    resource: 'secrets',
                     verb: 'create',
                 },
             ]
@@ -220,7 +220,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                 {
                     name,
                     namespace,
-                    resource: 'secret',
+                    resource: 'secrets',
                     verb: 'delete',
                 },
             ]
@@ -229,7 +229,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                 {
                     name,
                     namespace,
-                    resource: 'secret',
+                    resource: 'secrets',
                     verb: 'patch',
                 },
             ]
@@ -239,7 +239,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     name,
                     namespace,
                     group: 'inventory.open-cluster-management.io',
-                    resource: 'baremetalasset',
+                    resource: 'baremetalassets',
                     verb: 'delete',
                 },
             ]
@@ -249,7 +249,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     name,
                     namespace,
                     group: 'inventory.open-cluster-management.io',
-                    resource: 'baremetalasset',
+                    resource: 'baremetalassets',
                     verb: 'patch',
                 },
             ]
