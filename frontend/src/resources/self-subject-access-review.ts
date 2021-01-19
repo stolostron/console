@@ -203,7 +203,7 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                 {
                     name,
                     namespace,
-                    resource: 'secret',
+                    resource: 'secrets',
                     verb: 'get',
                 },
             ]
