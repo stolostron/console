@@ -1,5 +1,5 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { listResources } from '../lib/resource-request'
+import { createResource, listResources } from '../lib/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -120,4 +120,55 @@ export function unpackBareMetalAsset(bma: BareMetalAsset) {
         },
     }
     return unpackedBMA
+}
+
+export function createBareMetalAsset(asset: {
+    name: string
+    namespace: string
+    bootMACAddress: string
+    bmc: { address: string; username: string; password: string }
+}) {
+   const { name, namespace, bootMACAddress, bmc: { address, username, password }} = asset  
+   const credentialsName = `${name}-bmc-secret-${MakeId()}`
+    return new Promise((resolve, reject) => {
+      
+           // create the asset
+          createResource<BareMetalAsset>({
+            apiVersion: BareMetalAssetApiVersion,
+            kind: BareMetalAssetKind,
+            metadata: {
+                name,
+                namespace,
+            },
+            spec: {
+                bmc: {
+                    address,
+                    credentialsName
+                },
+                bootMACAddress
+            }
+           }).promise.then((bma) => {
+            
+              // create the secret
+                createResource<BMASecret>({
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                        name: credentialsName,
+                        namespace,
+                    },
+                    stringData: {
+                        password,
+                        username
+                    },
+                  }).promise.then(() => {
+                      resolve(bma)
+                  }).catch((err: Error) => {
+                     reject(err)
+                  })
+            }).catch((err: Error) => {
+              reject(err)
+            })
+        })
+            
 }
