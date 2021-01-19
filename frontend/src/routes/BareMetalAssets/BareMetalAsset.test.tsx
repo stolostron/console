@@ -83,7 +83,7 @@ function getEditBMAResourceAttributes(name: string, namespace: string) {
         name,
         namespace,
         group: 'inventory.open-cluster-management.io',
-        resource: 'baremetalasset',
+        resource: 'baremetalassets',
         verb: 'patch',
     } as ResourceAttributes
 }
@@ -93,7 +93,7 @@ function getDeleteBMAResourceAttributes(name: string, namespace: string) {
         name,
         namespace,
         group: 'inventory.open-cluster-management.io',
-        resource: 'baremetalasset',
+        resource: 'baremetalassets',
         verb: 'delete',
     } as ResourceAttributes
 }
