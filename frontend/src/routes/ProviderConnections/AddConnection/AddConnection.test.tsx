@@ -145,7 +145,7 @@ describe('add connection page', () => {
         const { getByText } = render(<TestAddConnectionPage />)
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('common:retry')).toBeInTheDocument())
 
         // const projectsNock2 = nockClusterList(mockProject, [Project])
         // getByText('Retry').click()
@@ -154,7 +154,7 @@ describe('add connection page', () => {
 
     it('should show empty page if there are no projects', async () => {
         const projectsNock = nockClusterList(mockProject, [])
-        const { getByText, getAllByText } = render(
+        const { getAllByText } = render(
             <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
                 <Route
                     path={NavigationPath.addConnection}
@@ -163,12 +163,7 @@ describe('add connection page', () => {
             </MemoryRouter>
         )
         await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getAllByText('addConnection.error.noNamespacesFound')[0]).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Retry')).toBeInTheDocument())
-
-        // const projectsNock2 = nockClusterList(mockProject, [])
-        // getByText('Retry').click()
-        // await waitFor(() => expect(projectsNock2.isDone()).toBeTruthy())
+        await waitFor(() => expect(getAllByText('common:rbac.title.unauthorized')[0]).toBeInTheDocument())
     })
 
     it('should load empty page with restriction message when user cannot create secret in any namespace', async () => {

@@ -34,7 +34,7 @@ import {
     validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
-import { listProjects, Project } from '../../../resources/project'
+import { listProjects } from '../../../resources/project'
 import {
     createProviderConnection,
     getProviderConnection,
