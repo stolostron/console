@@ -114,13 +114,15 @@ export function mapClusters(
     certificateSigningRequests: CertificateSigningRequest[] = [],
     managedClusters: ManagedCluster[] = []
 ) {
+    const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
         new Set([
             ...clusterDeployments.map((cd) => cd.metadata.name),
             ...managedClusterInfos.map((mc) => mc.metadata.name),
-            ...managedClusters.filter((mc) => mc.metadata.name) ?? [],
+            ...mcs.map((mc) => mc.metadata.name),
         ])
     )
+    console.log('unqiueClusterNames', uniqueClusterNames)
     return uniqueClusterNames.map((cluster) => {
         const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
         const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
@@ -136,7 +138,7 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined
 ): Cluster {
     return {
-        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
+        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata?.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
         status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
@@ -330,7 +332,7 @@ export function getClusterStatus(
     if (!managedClusterInfo && !managedCluster) {
         return cdStatus
     }
-
+console.log('MC', managedCluster, 'MCI', managedClusterInfo)
     let mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status
@@ -341,7 +343,7 @@ export function getClusterStatus(
     const clusterAvailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions)
 
     // detaching
-    if (mc.metadata.deletionTimestamp) {
+    if (mc?.metadata.deletionTimestamp) {
         mcStatus = ClusterStatus.detaching
 
         // not accepted
