@@ -386,7 +386,7 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             name: '',
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'get',
             version: 'v1',
         },
@@ -404,7 +404,7 @@ const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
         resourceAttributes: {
             name: clusterName,
             namespace: clusterName,
-            resource: 'secret',
+            resource: 'secrets',
             verb: 'get',
         },
     },
