@@ -525,6 +525,9 @@ async function jsonRequest<T>(method: string, url: string, headers: IncomingHttp
 // }
 
 function isNameScope(url: string): boolean {
+    if (url.includes('?')) {
+        url = url.substr(0, url.indexOf('?'))
+    }
     if (url.startsWith('/api/')) {
         return url.split('/').length === 5
     } else if (url.startsWith('/apis/')) {
