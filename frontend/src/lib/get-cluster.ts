@@ -13,7 +13,7 @@ import {
     CertificateSigningRequest,
     CSR_CLUSTER_LABEL,
 } from '../resources/certificate-signing-requests'
-import { IRequestResult } from './resource-request'
+import { IRequestResult, ResourceError, ResourceErrorCode } from './resource-request'
 import { getLatest } from './utils'
 import { Provider } from '@open-cluster-management/ui-components'
 
@@ -92,7 +92,11 @@ export function getAllClusters(): IRequestResult<Cluster[]> {
                     return d.value
                 } else {
                     if (d.reason instanceof Error) {
-                        throw d.reason
+                        if (i === 2 && d.reason instanceof ResourceError && d.reason.code === ResourceErrorCode.Forbidden) {
+                            // ignore forbidden csr error
+                        } else {
+                            throw d.reason
+                        }
                     }
                     return []
                 }
@@ -122,7 +126,6 @@ export function mapClusters(
             ...mcs.map((mc) => mc.metadata.name),
         ])
     )
-    console.log('unqiueClusterNames', uniqueClusterNames)
     return uniqueClusterNames.map((cluster) => {
         const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
         const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
@@ -138,7 +141,7 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined
 ): Cluster {
     return {
-        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata?.name ?? managedClusterInfo?.metadata.name,
+        name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
         status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
@@ -332,7 +335,6 @@ export function getClusterStatus(
     if (!managedClusterInfo && !managedCluster) {
         return cdStatus
     }
-console.log('MC', managedCluster, 'MCI', managedClusterInfo)
     let mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status

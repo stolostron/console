@@ -528,8 +528,6 @@ function isNameScope(url: string): boolean {
     if (url.startsWith('/api/')) {
         return url.split('/').length === 5
     } else if (url.startsWith('/apis/')) {
-        console.log(url)
-        console.log(url.split('/').length)
         return url.split('/').length === 6
     }
     return false
