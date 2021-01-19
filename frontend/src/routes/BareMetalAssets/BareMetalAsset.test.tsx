@@ -24,34 +24,6 @@ const bareMetalAsset: BareMetalAsset = {
     },
 }
 
-const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-}
-const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
 const mockBareMetalAssets = [bareMetalAsset]
 
 function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {

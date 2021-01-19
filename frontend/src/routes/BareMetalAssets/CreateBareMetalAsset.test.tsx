@@ -94,35 +94,6 @@ const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
     },
 }
 
-const mockCreateClusterSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-}
-
-const mockCreateClusterSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
     kind: 'BareMetalAsset',
