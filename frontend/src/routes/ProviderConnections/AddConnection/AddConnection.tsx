@@ -621,7 +621,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     label={t('addConnection.sshKnownHosts.label')}
                     placeholder={t('addConnection.sshKnownHosts.placeholder')}
                     labelHelp={t('addConnection.sshKnownHosts.labelHelp')}
-                    value={providerConnection.spec?.sshKnownHosts?.join?('\n')}
+                    value={providerConnection.spec?.sshKnownHosts?.join?.('\n')}
                     onChange={(sshKnownHosts) => {
                         updateProviderConnection((providerConnection) => {
                             const knownSSHs = sshKnownHosts
