@@ -97,7 +97,6 @@ export function BareMetalAssetsTable(props: {
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
     refresh: () => void
 }) {
-    const [creationAccessRestriction, setcreationAccessRestriction] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
@@ -110,27 +109,6 @@ export function BareMetalAssetsTable(props: {
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const { t } = useTranslation(['bma', 'common'])
-
-    useEffect(() => {
-        const resourceList = rbacMapping('cluster.create')
-        const promiseResult = createSubjectAccessReviews(resourceList)
-        let allowed = true
-        promiseResult.promise
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
-            .then((results) => {
-                if (results) {
-                    results.forEach((result) => {
-                        if (result.status === 'fulfilled') {
-                            allowed = allowed && result.value.status?.allowed!
-                        }
-                    })
-                }
-                setcreationAccessRestriction(!allowed)
-            })
-    }, [])
 
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
