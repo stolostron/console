@@ -79,7 +79,7 @@ function nocksAreDone(nocks: Scope[]) {
 
 describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
-        nockList(mockProviderConnection1, mockProviderConnections, [
+        const listProviderConnectionNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const { getByText } = render(
@@ -93,12 +93,13 @@ describe('provider connections page', () => {
                 />
             </MemoryRouter>
         )
+        await waitFor(() => expect(listProviderConnectionNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
-        expect(testLocation.pathname).toEqual(NavigationPath.providerConnections)
+        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
     })
 
     test('should goto the edit connection page', async () => {
-        nockList(mockProviderConnection1, mockProviderConnections, [
+        const listProviderConnectionNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const rbacNocks: Scope[] = [
@@ -109,7 +110,7 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        const { getByText, getAllByLabelText } = render(
+        const { getByText, getAllByLabelText, queryAllByText, queryAllByLabelText } = render(
             <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
                 <Route
                     path={NavigationPath.providerConnections}
@@ -120,15 +121,24 @@ describe('provider connections page', () => {
                 />
             </MemoryRouter>
         )
+        await waitFor(() => expect(listProviderConnectionNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        expect(testLocation.pathname).toEqual(NavigationPath.providerConnections)
+        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
+
+        await waitFor(() => expect(queryAllByText('edit').length).toBeGreaterThan(0))
         userEvent.click(getByText('edit'))
-        expect(testLocation.pathname).toEqual(
-            NavigationPath.editConnection
-                .replace(':namespace', mockProviderConnection1.metadata.namespace!)
-                .replace(':name', mockProviderConnection1.metadata.name!)
+
+        await waitFor(() =>
+            expect(testLocation.pathname).toEqual(
+                NavigationPath.editConnection
+                    .replace(':namespace', mockProviderConnection1.metadata.namespace!)
+                    .replace(':name', mockProviderConnection1.metadata.name!)
+            )
         )
     })
 
@@ -148,17 +158,25 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        const { getByText, getAllByLabelText } = render(
+        const { getByText, getAllByLabelText, queryAllByText, queryAllByLabelText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
+
+        await waitFor(() => expect(queryAllByText('delete').length).toBeGreaterThan(0))
         userEvent.click(getByText('delete')) // click the delete action
+
+        await waitFor(() => expect(queryAllByText('common:delete').length).toBeGreaterThan(0))
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
+
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
     })
@@ -176,17 +194,25 @@ describe('provider connections page', () => {
             ),
         ]
         const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
-        const { getByText, getAllByLabelText } = render(
+        const { getByText, getAllByLabelText, queryAllByLabelText, queryAllByText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
+
+        await waitFor(() => expect(queryAllByText('delete').length).toBeGreaterThan(0))
         userEvent.click(getByText('delete')) // click the delete action
+
+        await waitFor(() => expect(queryAllByText('common:delete').length).toBeGreaterThan(0))
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
+
         await waitFor(() => expect(badRequestStatus.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(getByText(`Could not process request because of invalid data.`)).toBeInTheDocument())
     })
@@ -203,23 +229,30 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        const { getByText, getAllByLabelText, queryAllByText } = render(
+        const { getByText, getAllByLabelText, queryAllByText, queryAllByLabelText } = render(
             <MemoryRouter>
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
+
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        expect(queryAllByText('modal.delete.title.single')).toHaveLength(0)
+
+        await waitFor(() => expect(queryAllByText('delete').length).toBeGreaterThan(0))
         userEvent.click(getByText('delete')) // click the delete action
-        expect(queryAllByText('common:cancel')).toHaveLength(1)
+
         const refreshNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+
+        await waitFor(() => expect(queryAllByText('common:cancel')).toHaveLength(1))
         userEvent.click(getByText('common:cancel')) // click cancel
-        expect(queryAllByText('common:cancel')).toHaveLength(0)
+
+        await waitFor(() => expect(queryAllByText('common:cancel')).toHaveLength(0))
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
     })
 
@@ -243,10 +276,16 @@ describe('provider connections page', () => {
 
         await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(1))
+
         await waitFor(() => expect(queryAllByRole('checkbox')).toHaveLength(2))
         userEvent.click(queryAllByRole('checkbox')[1]) // Select first item
+
+        await waitFor(() => expect(queryAllByText('delete.batch')).toHaveLength(1))
         userEvent.click(getByText('delete.batch')) // click the batch delete
+
+        await waitFor(() => expect(queryAllByText('common:delete')).toHaveLength(1))
         userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
+
         await waitFor(() => expect(deleteNock1.isDone()).toBeTruthy()) // expect the delete api call
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
         await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(0))
@@ -268,12 +307,17 @@ describe('provider connections page', () => {
         )
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getByText(mockProviderConnection1.metadata!.name!)).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByRole('checkbox').length).toBeGreaterThan(0))
         userEvent.click(queryAllByRole('checkbox')[0]) // Select all
-        expect(queryAllByText('connection:modal.delete.title.batch')).toHaveLength(0)
+
+        await waitFor(() => expect(queryAllByText('delete.batch')).toHaveLength(1))
         userEvent.click(getByText('delete.batch')) // click the delete action
-        expect(queryAllByText('common:cancel')).toHaveLength(1)
+
+        await waitFor(() => expect(queryAllByText('common:cancel')).toHaveLength(1))
         userEvent.click(getByText('common:cancel')) // click cancel
-        expect(queryAllByText('common:cancel')).toHaveLength(0)
+
+        await waitFor(() => expect(queryAllByText('common:cancel')).toHaveLength(0))
         await waitFor(() => expect(refreshNock.isDone()).toBeTruthy()) // expect the refresh api call
         await waitFor(() => expect(queryAllByText(mockProviderConnection1.metadata!.name!)).toHaveLength(0))
     })
@@ -287,7 +331,7 @@ describe('provider connections page', () => {
                 <ProviderConnectionsPage />
             </MemoryRouter>
         )
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
     })
 })
