@@ -52,6 +52,7 @@ export class ResourceError extends Error {
     constructor(message: string, public code: ResourceErrorCode, public reason?: string) {
         super(message)
         Object.setPrototypeOf(this, ResourceError.prototype)
+        this.name = 'ResourceError'
     }
 }
 

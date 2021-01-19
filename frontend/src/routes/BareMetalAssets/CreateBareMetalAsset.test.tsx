@@ -2,21 +2,13 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
-import BareMetalAssetsPage from './BareMetalAssetsPage'
-import CreateBareMetalAssetPage, { EditBareMetalAssetPageData } from './CreateBareMetalAsset'
-import { nockList, nockClusterList, nockGet, nockPatch, nockOptions, nockCreate } from '../../lib/nock-util'
-import { Project } from '../../resources/project'
-import { BareMetalAsset } from '../../resources/bare-metal-asset'
-import { Secret } from '../../resources/secret'
+import CreateBareMetalAssetPage from './CreateBareMetalAsset'
+import { nockClusterList, nockGet, nockPatch, nockOptions, nockCreate } from '../../lib/nock-util'
+import { Project, ProjectApiVersion, ProjectKind } from '../../resources/project'
+import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
+import { Secret, SecretKind, SecretApiVersion } from '../../resources/secret'
 import { SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
-
-const testProject: Project = {
-    apiVersion: 'project.openshift.io/v1',
-    kind: 'Project',
-    metadata: {
-        name: 'test-bare-metal-asset-new-namespace',
-    },
-}
+import { NavigationPath } from '../../NavigationPath'
 
 const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
@@ -24,8 +16,8 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            namespace: 'test-bare-metal-asset-new-namespace',
-            resource: 'secret',
+            namespace: 'test-namespace',
+            resource: 'secrets',
             verb: 'create',
         },
     },
@@ -51,8 +43,8 @@ const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            namespace: 'test-bare-metal-asset-new-namespace',
-            resource: 'secret',
+            namespace: 'test-namespace',
+            resource: 'secrets',
             verb: 'create',
             version: 'v1',
         },
@@ -61,6 +53,7 @@ const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
         allowed: false,
     },
 }
+
 const mockSelfSubjectAccessResponseNonAdmin: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
@@ -94,235 +87,160 @@ const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
     },
 }
 
-const mockCreateClusterSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-}
-
-const mockCreateClusterSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
-const bareMetalAsset: BareMetalAsset = {
-    apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
-    kind: 'BareMetalAsset',
+const testProject: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
     metadata: {
-        name: 'test-bare-metal-asset-001',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
-    spec: {
-        bmc: {
-            address: 'example.com:80',
-            credentialsName: 'secret-test-bare-metal-asset',
-        },
-        bootMACAddress: '00:90:7F:12:DE:7F',
+        name: 'test-namespace',
     },
 }
 
-const newBareMetalAsset: BareMetalAsset = {
-    kind: 'BareMetalAsset',
-    apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
-    metadata: {
-        name: 'test-bare-metal-asset-002',
-        namespace: 'test-bare-metal-asset-new-namespace',
-    },
-    spec: {
-        bmc: {
-            address: 'example.com:80',
-            credentialsName: 'test-bare-metal-asset-002-bmc-secret-1234',
-        },
-        bootMACAddress: '00:90:7F:12:DE:7F',
-    },
-}
-const patchedBareMetalAsset: BareMetalAsset = {
-    kind: 'BareMetalAsset',
-    apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
-    metadata: {
-        name: 'test-bare-metal-asset-001',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
-    spec: {
-        bmc: {
-            address: 'example.com:80/patched',
-            credentialsName: 'secret-test-bare-metal-asset',
-        },
-        bootMACAddress: '00:90:7F:12:DE:7F',
-    },
-}
-
-const bmaSecret: Secret = {
-    kind: 'Secret',
-    apiVersion: 'v1',
-    metadata: {
-        name: 'secret-test-bare-metal-asset',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
-    data: {
-        username: 'test',
-        password: 'test',
-    },
-}
-const bmaPatchedSecret: Secret = {
-    kind: 'Secret',
-    apiVersion: 'v1',
-    metadata: {
-        name: 'secret-test-bare-metal-asset',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
-    data: {
-        username: 'test',
-        password: 'test',
-    },
-    stringData: {
-        username: '5k-',
-        password: '5k-',
-    },
-}
-
-const mockBareMetalAssets = [bareMetalAsset]
-const mockNewBareMetalAssets = [bareMetalAsset, newBareMetalAsset]
-const bmaProjects = [testProject]
-
-describe('bare metal asset creation page', () => {
-    test('renders unauthorized page when rbac access is restricted', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
-        const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
-        const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
-        nockCreate(mockCreateClusterSelfSubjectAccessRequest, mockCreateClusterSelfSubjectAccessResponse)
-        const { getByText } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
-                <Route
-                    path="/cluster-management/baremetal-assets/create"
-                    render={() => <CreateBareMetalAssetPage bmaSecretID="1234" />}
-                ></Route>
-                <Route path="/cluster-management/baremetal-assets" render={() => <BareMetalAssetsPage />} />
-            </MemoryRouter>
-        )
-
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument()) // expect unauthorized message
-    })
-
+describe('CreateBareMetalAsset', () => {
     test('can create asset', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
-        const listNocki = nockList(bareMetalAsset, mockBareMetalAssets)
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
-        const clusterNock = nockCreate(
-            mockCreateClusterSelfSubjectAccessRequest,
-            mockCreateClusterSelfSubjectAccessResponse
-        )
+        const createBareMetalAsset: BareMetalAsset = {
+            kind: BareMetalAssetKind,
+            apiVersion: BareMetalAssetApiVersion,
+            metadata: {
+                name: 'test-bma',
+                namespace: 'test-namespace',
+            },
+            spec: {
+                bmc: {
+                    address: 'example.com:80',
+                    credentialsName: 'test-bma-bmc-secret',
+                },
+                bootMACAddress: '00:90:7F:12:DE:7F',
+            },
+        }
 
-        const { getByText, getAllByText, getByTestId } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/create']}>
-                <Route
-                    path="/cluster-management/baremetal-assets/create"
-                    render={() => <CreateBareMetalAssetPage bmaSecretID="1234" />}
-                ></Route>
-                <Route path="/cluster-management/baremetal-assets" render={() => <BareMetalAssetsPage />} />
+        const createBmaSecret: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                name: 'test-bma-bmc-secret',
+                namespace: 'test-namespace',
+            },
+            stringData: {
+                password: 'test',
+                username: 'test',
+            },
+        }
+
+        const bmaSecret: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                namespace: 'test-namespace',
+                name: 'test-bma-bmc-secret',
+            },
+            data: { password: 'encoded', username: 'encoded' },
+        }
+
+        const listProjectNock = nockClusterList(testProject, [testProject])
+        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
+        const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
+        const bmaCreateNock = nockCreate(createBareMetalAsset)
+
+        const { getByText, queryAllByText, getByTestId } = render(
+            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
+                <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+                <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(listNocki.isDone()).toBeTruthy())
+        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByTestId('bareMetalAssetName'))) // expect asset name form to exist in doc
+
+        await waitFor(() => expect(getByTestId('bareMetalAssetName')))
 
         // user input
-        userEvent.type(getByTestId('bareMetalAssetName'), mockNewBareMetalAssets[0].metadata.name!)
-        userEvent.click(getByTestId('namespaceName-button'))
-        userEvent.click(getAllByText(mockNewBareMetalAssets[0].metadata.namespace!)[0])
-        await waitFor(() => expect(getByText(mockBareMetalAssets[0].metadata.namespace!)).toBeInTheDocument())
+        userEvent.type(getByTestId('bareMetalAssetName'), createBareMetalAsset.metadata.name!)
         userEvent.type(
-            getByTestId('baseboardManagementControllerAddress'),
-            mockNewBareMetalAssets[0].spec?.bmc.address!
+            getByTestId('namespaceName-button-select-typeahead'),
+            `${createBareMetalAsset.metadata.namespace!}{enter}`
         )
-        userEvent.type(getByTestId('username'), 'test')
-        userEvent.type(getByTestId('password'), 'test')
-        userEvent.type(getByTestId('bootMACAddress'), mockNewBareMetalAssets[0].spec?.bootMACAddress!)
+        userEvent.type(getByTestId('baseboardManagementControllerAddress'), createBareMetalAsset.spec?.bmc.address!)
+        userEvent.type(getByTestId('username'), createBmaSecret.stringData?.username!)
+        userEvent.type(getByTestId('password'), createBmaSecret.stringData?.username!)
+        userEvent.type(getByTestId('bootMACAddress'), createBareMetalAsset.spec?.bootMACAddress!)
 
-        // submitting new asset
-        expect(getByText('createBareMetalAsset.button.create')).toBeInTheDocument()
         userEvent.click(getByText('createBareMetalAsset.button.create'))
 
-        expect(getByText('bareMetalAsset.bulkAction.createAsset')).toBeVisible()
-        await waitFor(() => expect(getAllByText(mockNewBareMetalAssets[0].metadata.name!).length > 0))
+        await waitFor(() => expect(queryAllByText('Required').length).toBe(0))
+
+        await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
+
+        await waitFor(() => expect(getByTestId('redirected')).toBeInTheDocument())
     })
 
-    test('populate edit asset page', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
-        const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
-        const getSecretNock = nockGet(bmaSecret, bmaSecret)
+    test('can edit asset', async () => {
+        const bareMetalAsset: BareMetalAsset = {
+            kind: BareMetalAssetKind,
+            apiVersion: BareMetalAssetApiVersion,
+            metadata: {
+                name: 'test-bma',
+                namespace: 'test-namespace',
+            },
+            spec: {
+                bmc: {
+                    address: 'example.com:80',
+                    credentialsName: 'test-bma-bmc-secret',
+                },
+                bootMACAddress: '00:90:7F:12:DE:7F',
+            },
+        }
 
-        const { getByTestId } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
-                <Route
-                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit"
-                    render={() => (
-                        <EditBareMetalAssetPageData
-                            editAssetNamespace={'test-bare-metal-asset-namespace'}
-                            editAssetName={'test-bare-metal-asset-001'}
-                        />
-                    )}
-                />
-            </MemoryRouter>
+        const patchBareMetalAsset: BareMetalAsset = {
+            kind: BareMetalAssetKind,
+            apiVersion: BareMetalAssetApiVersion,
+            metadata: {
+                name: 'test-bma',
+                namespace: 'test-namespace',
+            },
+            spec: {
+                bmc: {
+                    address: 'example.com:80/patched',
+                    credentialsName: 'test-bma-bmc-secret',
+                },
+                bootMACAddress: '00:90:7F:12:DE:7F',
+            },
+        }
+
+        const patchBmaSecret: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                name: 'test-bma-bmc-secret',
+                namespace: 'test-namespace',
+            },
+            data: {
+                username: 'test',
+                password: 'test',
+            },
+            stringData: {
+                username: '5k-',
+                password: '5k-',
+            },
+        }
+
+        const editPath = NavigationPath.editBareMetalAsset.replace(
+            ':namespace/:name',
+            `${bareMetalAsset.metadata?.namespace}/${bareMetalAsset.metadata?.name}` as string
         )
-
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
-
-        await waitFor(() => expect(getByTestId('bootMACAddress')).toHaveValue(bareMetalAsset.spec?.bootMACAddress))
-        expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
-    })
-
-    test('submit edit to api', async () => {
-        const listProjectNock = nockClusterList(testProject, bmaProjects)
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
-        const getSecretNock = nockGet(bmaSecret, bmaSecret)
-        const patchNockSecret = nockPatch(bmaPatchedSecret, bmaPatchedSecret)
-        nockOptions(bareMetalAsset, bareMetalAsset)
-        const patchNock = nockPatch(patchedBareMetalAsset, patchedBareMetalAsset)
+        const getSecretNock = nockGet(patchBmaSecret, patchBmaSecret)
+        const patchNockSecret = nockPatch(patchBmaSecret, patchBmaSecret)
+        nockOptions(patchBareMetalAsset, patchBareMetalAsset)
+        const patchNock = nockPatch(patchBareMetalAsset, patchBareMetalAsset)
 
         const { getByTestId, getByText } = render(
-            <MemoryRouter initialEntries={['/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1/edit']}>
-                <Route
-                    path="/cluster-management/baremetal-assets/bma-test-cluster/test-asset-1"
-                    render={() => (
-                        <EditBareMetalAssetPageData
-                            editAssetNamespace={'test-bare-metal-asset-namespace'}
-                            editAssetName={'test-bare-metal-asset-001'}
-                        />
-                    )}
-                />
+            <MemoryRouter initialEntries={[editPath]}>
+                <Route path={NavigationPath.editBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+                <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
             </MemoryRouter>
         )
 
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
         await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
 
@@ -334,5 +252,23 @@ describe('bare metal asset creation page', () => {
 
         await waitFor(() => expect(patchNockSecret.isDone()).toBeTruthy())
         await waitFor(() => expect(patchNock.isDone()).toBeTruthy())
+
+        await waitFor(() => expect(getByTestId('redirected')).toBeInTheDocument())
+    })
+
+    test('renders unauthorized page when rbac access is restricted', async () => {
+        const listProjectNock = nockClusterList(testProject, [testProject])
+        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
+        const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
+        const { getByText } = render(
+            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
+                <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+            </MemoryRouter>
+        )
+
+        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
+        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())
     })
 })

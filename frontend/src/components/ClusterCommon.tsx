@@ -43,9 +43,11 @@ export function StatusField(props: { status: ClusterStatus }) {
         case ClusterStatus.detaching:
             type = StatusType.progress
             break
+        case ClusterStatus.detached:
+            type = StatusType.detached
+            break
         case ClusterStatus.pending:
         case ClusterStatus.pendingimport:
-        case ClusterStatus.detached:
         default:
             type = StatusType.unknown
     }

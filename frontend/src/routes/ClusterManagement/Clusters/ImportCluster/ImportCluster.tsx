@@ -7,12 +7,11 @@ import {
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
-    AcmSelect,
     AcmTextInput,
     AcmSubmit,
     AcmButton,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, SelectOption, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
+import { ActionGroup, Button, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { useTranslation } from 'react-i18next'
@@ -61,8 +60,6 @@ export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
-    const [cloudLabel, setCloudLabel] = useState<string>('auto-detect')
-    const [environmentLabel, setEnvironmentLabel] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState<boolean>(false)
@@ -71,8 +68,6 @@ export function ImportClusterPageContent() {
 
     const onReset = () => {
         setClusterName('')
-        setCloudLabel('auto-detect')
-        setEnvironmentLabel(undefined)
         setAdditionaLabels({})
         setSubmitted(false)
         setError(undefined)
@@ -85,10 +80,9 @@ export function ImportClusterPageContent() {
         setError(undefined)
         /* istanbul ignore next */
         const clusterLabels = {
-            cloud: cloudLabel ?? '',
+            cloud: 'auto-detect',
             vendor: 'auto-detect',
             name: clusterName,
-            environment: environmentLabel ?? '',
             ...additionalLabels,
         }
         const createdResources: IResource[] = []
@@ -140,37 +134,6 @@ export function ImportClusterPageContent() {
                         placeholder={t('import.form.clusterName.placeholder')}
                         required
                     />
-                    <AcmSelect
-                        id="cloudLabel"
-                        toggleId="cloudLabel-button"
-                        isDisabled={submitted}
-                        label={t('import.form.cloud.label')}
-                        value={cloudLabel}
-                        onChange={(label) => setCloudLabel(label as string)}
-                    >
-                        {['auto-detect', 'AWS', 'GCP', 'Azure', 'IBM', 'VMware', 'Datacenter', 'Baremetal'].map(
-                            (key) => (
-                                <SelectOption key={key} value={key}>
-                                    {key}
-                                </SelectOption>
-                            )
-                        )}
-                    </AcmSelect>
-                    <AcmSelect
-                        id="environmentLabel"
-                        toggleId="environmentLabel-button"
-                        label={t('import.form.environment.label')}
-                        value={environmentLabel}
-                        isDisabled={submitted}
-                        onChange={setEnvironmentLabel}
-                        placeholder={t('import.form.environment.placeholder')}
-                    >
-                        {['dev', 'prod', 'qa'].map((key) => (
-                            <SelectOption key={key} value={key}>
-                                {key}
-                            </SelectOption>
-                        ))}
-                    </AcmSelect>
                     <AcmLabelsInput
                         id="additionalLabels"
                         label={t('import.form.labels.label')}

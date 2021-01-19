@@ -71,6 +71,7 @@ const PageActions = () => {
                 // send err to console
                 console.error(err)
             })
+        return () => promiseResult.abort()
     }, [])
     const dropdownItems: AcmDropdownItems[] = [
         {
@@ -342,7 +343,7 @@ export function ClustersTable(props: {
                                             action: t('detach'),
                                             processing: t('detaching'),
                                             resources: [cluster],
-                                            description: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                            description: t('cluster.detach.description'),
                                             columns: modalColumns,
                                             keyFn: (cluster) => cluster.name as string,
                                             actionFn: (cluster) => detachCluster(cluster.name!),
@@ -370,7 +371,7 @@ export function ClustersTable(props: {
                                             action: t('destroy'),
                                             processing: t('destroying'),
                                             resources: [cluster],
-                                            description: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                            description: t('cluster.destroy.description'),
                                             columns: modalColumns,
                                             keyFn: (cluster) => cluster.name as string,
                                             actionFn: (cluster) => deleteCluster(cluster.name!),
@@ -456,7 +457,7 @@ export function ClustersTable(props: {
                                 action: t('destroy'),
                                 processing: t('destroying'),
                                 resources: clusters,
-                                description: `You are about to destroy clusters. This action is irreversible.`,
+                                description: t('cluster.destroy.description'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
@@ -480,7 +481,7 @@ export function ClustersTable(props: {
                                 action: t('detach'),
                                 processing: t('detaching'),
                                 resources: clusters,
-                                description: `You are about to detach clusters. This action is irreversible.`,
+                                description: t('cluster.detach.description'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),
