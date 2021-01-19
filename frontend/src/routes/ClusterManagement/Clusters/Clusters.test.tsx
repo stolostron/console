@@ -373,7 +373,7 @@ describe('Cluster page', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('managed.destroySelected')) // click the delete action
-        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
         userEvent.click(getByText('destroy')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
@@ -390,7 +390,7 @@ describe('Cluster page', () => {
         ]
         userEvent.click(getAllByRole('checkbox')[1]) // select row 1
         userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
-        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
         userEvent.click(getByText('destroy')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
@@ -426,7 +426,7 @@ describe('Cluster page', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on row
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         userEvent.click(getByText('managed.detached')) // click the delete action
-        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
         userEvent.click(getByText('detach')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
@@ -443,7 +443,7 @@ describe('Cluster page', () => {
         ]
         userEvent.click(getAllByRole('checkbox')[2]) // select row 2
         userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
-        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
         userEvent.click(getByText('detach')) // click confirm on the delete dialog
         await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
         await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())

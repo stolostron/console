@@ -351,7 +351,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: t('detach').toUpperCase(),
+                                            confirmText: cluster.name!.toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -379,7 +379,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: t('destroy').toUpperCase(),
+                                            confirmText: cluster.name!.toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -465,7 +465,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('destroy').toUpperCase(),
+                                confirmText: t('confirm').toUpperCase(),
                             })
                         },
                     },
@@ -489,7 +489,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('detach').toUpperCase(),
+                                confirmText: t('confirm').toUpperCase(),
                             })
                         },
                     },
