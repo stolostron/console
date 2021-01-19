@@ -107,6 +107,9 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 if (url === '/apis/cluster.open-cluster-management.io/v1/managedclusters') {
                     return managedClusters(token, res)
                 }
+                if (isNameScope(url)) {
+                    return res.writeHead(403).end()
+                }
                 return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
@@ -521,14 +524,17 @@ async function jsonRequest<T>(method: string, url: string, headers: IncomingHttp
 //     return false
 // }
 
-// function isNameScope(url: string): boolean {
-//     if (url.startsWith('/api/')) {
-//         return url.split('/').length === 7
-//     } else if (url.startsWith('/apis/')) {
-//         return url.split('/').length === 8
-//     }
-//     return false
-// }
+function isNameScope(url: string): boolean {
+    if (url.includes('?')) {
+        url = url.substr(0, url.indexOf('?'))
+    }
+    if (url.startsWith('/api/')) {
+        return url.split('/').length === 5
+    } else if (url.startsWith('/apis/')) {
+        return url.split('/').length === 6
+    }
+    return false
+}
 
 function addNamespace(url: string, namespace: string): string {
     let queryString = ''
