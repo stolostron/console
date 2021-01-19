@@ -22,7 +22,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { BareMetalAsset, BMAStatusMessage, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { BMATableRbacAccess, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
@@ -79,13 +79,7 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return (
-        <BareMetalAssetsTable
-            bareMetalAssets={data}
-            deleteBareMetalAsset={deleteResource}
-            refresh={refresh}
-        ></BareMetalAssetsTable>
-    )
+    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -220,7 +214,37 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
                             cell: (bareMetalAsset) => {
-                                return BMAStatusMessage(bareMetalAsset, t)
+                                if (bareMetalAsset.status) {
+                                    let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
+                                    let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
+                                    for (let conditions of bareMetalAsset.status!.conditions) {
+                                        if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
+                                            mostCurrentStatusTime = conditions.lastTransitionTime
+                                            mostCurrentStatus = conditions.type
+                                        }
+                                        // if status time is equivalent, take the status at that was added last
+                                        else if (conditions.lastTransitionTime === mostCurrentStatusTime) {
+                                            mostCurrentStatusTime = conditions.lastTransitionTime
+                                            mostCurrentStatus = conditions.type
+                                        }
+                                    }
+                                    switch (mostCurrentStatus) {
+                                        // returns translation strings
+                                        case 'CredentialsFound':
+                                            return t('bareMetalAsset.statusMessage.credentialsFound')
+                                        case 'AssetSyncStarted':
+                                            return t('bareMetalAsset.statusMessage.assetSyncStarted')
+                                        case 'ClusterDeploymentFound':
+                                            return t('bareMetalAsset.statusMessage.clusterDeploymentFound')
+                                        case 'AssetSyncCompleted':
+                                            return t('bareMetalAsset.statusMessage.assetSyncCompleted')
+                                        case 'Ready':
+                                            return t('bareMetalAsset.statusMessage.ready')
+                                        default:
+                                            return ''
+                                    }
+                                }
+                                return ''
                             },
                         },
                         {

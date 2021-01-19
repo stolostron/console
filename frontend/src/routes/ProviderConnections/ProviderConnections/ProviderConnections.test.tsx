@@ -56,7 +56,7 @@ function getPatchSecretResourceAttributes(name: string, namespace: string) {
     return {
         name,
         namespace,
-        resource: 'secret',
+        resource: 'secrets',
         verb: 'patch',
     } as ResourceAttributes
 }
@@ -65,7 +65,7 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
     return {
         name,
         namespace,
-        resource: 'secret',
+        resource: 'secrets',
         verb: 'delete',
     } as ResourceAttributes
 }
