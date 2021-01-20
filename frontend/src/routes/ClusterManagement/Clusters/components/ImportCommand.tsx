@@ -64,7 +64,9 @@ export function ImportCommandContainer() {
     if (cluster?.status === ClusterStatus.pendingimport) {
         return (
             <>
-                <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                <div style={{ marginBottom: '12px' }}>
+                    <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                </div>
                 <ImportCommand importCommand={importCommand} />
             </>
         )
