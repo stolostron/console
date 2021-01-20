@@ -88,8 +88,8 @@ const setAvailableBMAs = (control, result) => {
                     return a.localeCompare(b)
                 })
             control.available.forEach(getCreds)
-            control.available.forEach((data) => {
-                data.id = data.id.toString()
+            control.available.forEach((datum) => {
+                datum.id = datum.id.toString()
             })
         } else {
             control.isLoading = loading
