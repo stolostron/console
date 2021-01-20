@@ -15,7 +15,7 @@ export function ClusterOverviewPageContent(props: {
     getSecretAccessRestriction?: boolean
     editLabelAccessRestriction?: boolean
 }) {
-    const { cluster, setEditModalOpen } = useContext(ClusterContext)
+    const { cluster, setEditClusterLabels } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
     return (
         <PageSection>
@@ -45,7 +45,9 @@ export function ClusterOverviewPageContent(props: {
                         value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
                         keyAction: (
                             <AcmButton
-                                onClick={() => setEditModalOpen?.(true)}
+                                onClick={() => {
+                                    if (cluster) setEditClusterLabels?.({ ...cluster })
+                                }}
                                 variant={ButtonVariant.plain}
                                 aria-label={t('common:labels.edit.title')}
                                 isDisabled={props.editLabelAccessRestriction}

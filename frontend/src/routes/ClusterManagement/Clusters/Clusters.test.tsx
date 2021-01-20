@@ -385,7 +385,7 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.destroySelected')) // click the delete action
 
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
 
         await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
         userEvent.click(getByText('destroy')) // click confirm on the delete dialog
@@ -409,9 +409,8 @@ describe('Cluster page', () => {
 
         await waitFor(() => expect(queryAllByText('managed.destroy')).toHaveLength(1))
         userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
-
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'DESTROY')
+        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
 
         await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
         userEvent.click(getByText('destroy')) // click confirm on the delete dialog
@@ -456,7 +455,7 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.detached')) // click the delete action
 
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
 
         await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
         userEvent.click(getByText('detach')) // click confirm on the delete dialog
@@ -482,7 +481,7 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
 
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'DETACH')
+        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
 
         await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
         userEvent.click(getByText('detach')) // click confirm on the delete dialog
