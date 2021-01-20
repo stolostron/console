@@ -292,6 +292,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     id="baseboardManagementControllerAddress"
                     label={t('createBareMetalAsset.address.label')}
                     placeholder={t('createBareMetalAsset.address.placeholder')}
+                    labelHelp={t('createBareMetalAsset.address.labelHelp')}
                     value={bareMetalAsset.spec!.bmc.address}
                     onChange={(address) => {
                         updateBareMetalAsset((bareMetalAsset) => {
@@ -348,6 +349,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     id="bootMACAddress"
                     label={t('createBareMetalAsset.bootMACAddress.label')}
                     placeholder={t('createBareMetalAsset.bootMACAddress.placeholder')}
+                    labelHelp={t('createBareMetalAsset.bootMACAddress.labelHelp')}
                     value={bareMetalAsset.spec?.bootMACAddress}
                     onChange={(bootMACAddress) => {
                         updateBareMetalAsset((bareMetalAsset) => {
