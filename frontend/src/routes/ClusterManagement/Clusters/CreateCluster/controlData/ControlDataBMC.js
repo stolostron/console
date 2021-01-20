@@ -79,9 +79,14 @@ const setAvailableBMAs = (control, result) => {
         } else if (bmas) {
             control.isLoaded = true
             control.active = []
-            control.available = bmas.map(formatBMA).sort(({ hostName: a }, { hostName: b }) => {
-                return a.localeCompare(b)
-            })
+            control.available = bmas
+                .filter((bma) => {
+                    return !_.get(bma, 'spec.clusterDeployment.name')
+                })
+                .map(formatBMA)
+                .sort(({ hostName: a }, { hostName: b }) => {
+                    return a.localeCompare(b)
+                })
             control.available.forEach(getCreds)
             control.available.forEach((data) => {
                 data.id = data.id.toString()
