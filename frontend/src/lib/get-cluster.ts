@@ -184,10 +184,12 @@ export function getProvider(
     switch (providerLabel) {
         case 'Amazon':
         case 'AWS':
+        case 'EKS':
         case 'aws':
             provider = Provider.aws
             break
         case 'Google':
+        case 'GKE':
         case 'GCP':
         case 'GCE':
         case 'gcp':
@@ -195,9 +197,11 @@ export function getProvider(
             break
         case 'Azure':
         case 'azure':
+        case 'AKS':
             provider = Provider.azure
             break
         case 'IBM':
+        case 'IKS':
             provider = Provider.ibm
             break
         case 'baremetal':
