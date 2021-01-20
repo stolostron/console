@@ -100,7 +100,7 @@ describe('add connection page', () => {
             },
             spec: {
                 libvirtURI: 'qemu+ssh://libvirtURI',
-                sshKnownHosts: ['sshKnownHosts'],
+                sshKnownHosts: 'sshKnownHosts',
                 imageMirror: 'image.mirror:123/abc',
                 bootstrapOSImage: 'bootstrapOSImage',
                 clusterOSImage: 'clusterOSImage',
