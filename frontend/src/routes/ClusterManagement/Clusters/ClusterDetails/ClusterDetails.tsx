@@ -11,10 +11,11 @@ import {
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, Suspense, useCallback, useContext, useEffect, useState, useMemo } from 'react'
+import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { StatusField, UpgradeModal } from '../../../../components/ClusterCommon'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
@@ -29,18 +30,17 @@ import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import {
-    createSubjectAccessReview,
-    rbacMapping,
-    ClustersTableActionsRbac,
-    defaultTableRbacValues,
     CheckTableActionsRbacAccess,
+    ClustersTableActionsRbac,
+    createSubjectAccessReview,
+    defaultTableRbacValues,
+    rbacMapping,
 } from '../../../../resources/self-subject-access-review'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { EditLabelsModal } from '../components/EditLabelsModal'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -65,7 +65,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
