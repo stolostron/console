@@ -1,4 +1,5 @@
-import { AcmAlert, AcmButton, AcmCodeSnippet } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
+import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
 import {
     AlertVariant,
     Card,
@@ -9,7 +10,9 @@ import {
     Tab,
     Tabs,
     TabTitleText,
+    Tooltip,
 } from '@patternfly/react-core'
+import { CopyIcon } from '@patternfly/react-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
@@ -85,6 +88,14 @@ type ImportCommandProps = {
 export function ImportCommand(props: ImportCommandProps) {
     const { t } = useTranslation(['cluster', 'common'])
 
+    const [copied, setCopied] = useState<boolean>(false)
+    useEffect(() => {
+        /* istanbul ignore if */
+        if (copied) {
+            setTimeout(() => setCopied(false), 2000)
+        }
+    }, [copied])
+
     if (props.loading || props.error || !props.importCommand) {
         return null
     }
@@ -97,13 +108,21 @@ export function ImportCommand(props: ImportCommandProps) {
                         <Card>
                             <CardTitle>{t('import.command.generated')}</CardTitle>
                             <CardBody>
-                                <AcmCodeSnippet
-                                    id="import-command"
-                                    fakeCommand={t('import.command.fake')}
-                                    command={props.importCommand}
-                                    copyTooltipText={t('clipboardCopy')}
-                                    copySuccessText={t('copied')}
-                                />
+                                <div style={{ marginBottom: '12px' }}>{t('import.command.copy.description')}</div>
+                                <Tooltip isVisible={copied} content={t('common:copied')} trigger="click">
+                                    <AcmButton
+                                        id="import-command"
+                                        variant="secondary"
+                                        icon={<CopyIcon />}
+                                        iconPosition="right"
+                                        onClick={(e: any) => {
+                                            onCopy(e, props.importCommand ?? '')
+                                            setCopied(true)
+                                        }}
+                                    >
+                                        {t('import.command.copy')}
+                                    </AcmButton>
+                                </Tooltip>
                             </CardBody>
                             <CardTitle>{t('import.command.configurecluster')}</CardTitle>
                             <CardBody>{t('import.command.configureclusterdescription')}</CardBody>
