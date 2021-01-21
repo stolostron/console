@@ -421,7 +421,6 @@ export function CreateBareMetalAssetPageContent(props: {
                                             })
                                     })
                                     .catch((e) => {
-                                        console.log('ERROR', e)
                                         /* istanbul ignore else */
                                         if (e instanceof Error) {
                                             alertContext.addAlert({

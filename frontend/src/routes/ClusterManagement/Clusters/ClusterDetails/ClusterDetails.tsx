@@ -10,7 +10,9 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
+    AcmAlert
 } from '@open-cluster-management/ui-components'
+import { AlertVariant } from '@patternfly/react-core'
 import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
@@ -41,6 +43,7 @@ import { EditLabelsModal } from '../components/EditLabelsModal'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
+import { usePrevious } from '../../../../components/usePrevious'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -70,59 +73,20 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     // Cluster
-    const { data, startPolling, loading, error, refresh } = useQuery(
+    const { data, startPolling, stopPolling, loading, error, refresh } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
     const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
-    useEffect(startPolling, [startPolling])
-    useEffect(() => {
-        if (error) {
-            return setClusterError(error)
-        }
-
-        const results = data ?? []
-        if (results.length > 0) {
-            if (results[0].status === 'rejected' && results[1].status === 'rejected') {
-                const cdRequest = results[0] as PromiseRejectedResult
-                const mciRequest = results[1] as PromiseRejectedResult
-                const resourceError: ResourceError = {
-                    code: mciRequest.reason.code as ResourceErrorCode,
-                    message: `${mciRequest.reason.message}.  ${cdRequest.reason.message}` as string,
-                    name: '',
-                }
-                setClusterError(resourceError)
-            } else {
-                const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
-                setCluster(
-                    getCluster(
-                        items[1] as ManagedClusterInfo,
-                        items[0] as ClusterDeployment,
-                        items[2] as CertificateSigningRequest[],
-                        items[3] as ManagedCluster
-                    )
-                )
-            }
-        }
-    }, [data, error])
-
-    useEffect(() => {
-        const resource = rbacMapping('secret.get', match.params.id, match.params.id)[0]
-        try {
-            const promiseResult = createSubjectAccessReview(resource).promise
-            promiseResult.then((result) => {
-                setSecretAccessRestriction(!result.status?.allowed!)
-            })
-        } catch (err) {
-            console.error(err)
-        }
-    }, [match.params.id])
 
     // Addons
-    const { data: addonData, startPolling: addonStartPolling, error: addonError } = useQuery(
-        useCallback(() => listManagedClusterAddOns(match.params.id), [match.params.id])
-    )
+    const {
+        data: addonData,
+        startPolling: addonStartPolling,
+        stopPolling: addonStopPolling,
+        error: addonError,
+    } = useQuery(useCallback(() => listManagedClusterAddOns(match.params.id), [match.params.id]))
     const [addons, setAddons] = useState<Addon[] | undefined>(undefined)
     const [addonsError, setAddonsError] = useState<Error | undefined>(undefined)
     const { clusterManagementAddons } = useContext(AppContext)
@@ -136,6 +100,65 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             setAddons(mapAddons(clusterManagementAddons, addonData))
         }
     }, [addonData, addonError, clusterManagementAddons])
+    // End addons
+
+    // handle detach/destroy of clusters
+    const prevStatus = usePrevious(cluster?.status)
+    const prevIsHive = usePrevious(cluster?.isHive)
+    const [clusterIsRemoved, setClusterIsRemoved] = useState<boolean>(false)
+
+    useEffect(startPolling, [startPolling])
+    useEffect(() => {
+        if (error) {
+            return setClusterError(error)
+        }
+
+        const results = data ?? []
+        if (results.length > 0) {
+            if (results[0].status === 'rejected' && results[1].status === 'rejected') {
+                if (
+                    (prevIsHive && prevStatus === ClusterStatus.destroying) ||
+                    (!prevIsHive && prevStatus === ClusterStatus.detaching)
+                ) {
+                    // stopPolling()
+                    // addonStopPolling()
+                    setClusterIsRemoved(true)
+                } else {
+                    console.log('ERRORED')
+                    const cdRequest = results[0] as PromiseRejectedResult
+                    const mciRequest = results[1] as PromiseRejectedResult
+                    const resourceError: ResourceError = {
+                        code: mciRequest.reason.code as ResourceErrorCode,
+                        message: `${mciRequest.reason.message}.  ${cdRequest.reason.message}` as string,
+                        name: '',
+                    }
+                    setClusterError(resourceError)
+                }
+            } else {
+                const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
+                setCluster(
+                    getCluster(
+                        items[1] as ManagedClusterInfo,
+                        items[0] as ClusterDeployment,
+                        items[2] as CertificateSigningRequest[],
+                        items[3] as ManagedCluster
+                    )
+                )
+            }
+        }
+    }, [data, error, cluster, prevStatus, prevIsHive])
+
+    useEffect(() => {
+        const resource = rbacMapping('secret.get', match.params.id, match.params.id)[0]
+        try {
+            const promiseResult = createSubjectAccessReview(resource).promise
+            promiseResult.then((result) => {
+                setSecretAccessRestriction(!result.status?.allowed!)
+            })
+        } catch (err) {
+            console.error(err)
+        }
+    }, [match.params.id])
 
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     useEffect(() => {
@@ -186,6 +209,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     if (loading) {
         return <AcmSpinnerBackdrop />
+    }
+
+    if (clusterIsRemoved) {
+        return <AcmAlert title="Success" variant={AlertVariant.success} />
     }
 
     if (clusterError) {
