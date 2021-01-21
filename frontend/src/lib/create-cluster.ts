@@ -109,7 +109,7 @@ export async function createCluster(resources: JsonArray) {
 
     // if this was a bare metal cluster mark the bare metal assets that are used
     if (errors.length === 0 && assets) {
-        const clusterName = _.get(resourcesMap, 'ClusterDeployment.metadata.name')
+        const clusterName = get(resourcesMap, 'ClusterDeployment.metadata.name')
         await attachBMAs(assets, hosts, clusterName, errors)
     }
 
