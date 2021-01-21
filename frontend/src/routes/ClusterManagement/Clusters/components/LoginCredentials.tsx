@@ -27,10 +27,10 @@ const useStyles = makeStyles({
         paddingLeft: '0 !important',
         '& svg': {
             width: '24px',
-            fill: (props: LoginCredentialStyle) => (props.disabled ? '#000' : '#06C'),
+            fill: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : '#06C'),
         },
         '& span': {
-            color: (props: LoginCredentialStyle) => (props.disabled ? '#000' : undefined),
+            color: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined),
         },
         '& .credentials-toggle': {
             display: 'flex',
