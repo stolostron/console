@@ -30,7 +30,8 @@ const useStyles = makeStyles({
             fill: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : '#06C'),
         },
         '& span': {
-            color: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined),
+            color: (props: LoginCredentialStyle) =>
+                props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined,
         },
         '& .credentials-toggle': {
             display: 'flex',
