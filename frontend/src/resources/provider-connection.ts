@@ -22,9 +22,9 @@ export interface ProviderConnection extends V1Secret {
 
         baseDomainResourceGroupName?: string
         clientId?: string
-        clientsecret?: string
-        subscriptionid?: string
-        tenantid?: string
+        clientSecret?: string
+        subscriptionId?: string
+        tenantId?: string
 
         gcProjectID?: string
         gcServiceAccountKey?: string
