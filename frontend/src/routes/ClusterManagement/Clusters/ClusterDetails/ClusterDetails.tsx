@@ -10,9 +10,8 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
-    AcmAlert
+    AcmEmptyState,
 } from '@open-cluster-management/ui-components'
-import { AlertVariant } from '@patternfly/react-core'
 import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
@@ -115,21 +114,21 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
         const results = data ?? []
         if (results.length > 0) {
-            if (results[0].status === 'rejected' && results[1].status === 'rejected') {
+            if (results[0].status === 'rejected' && results[3].status === 'rejected') {
+                // show cluster detach/destroy success state
                 if (
                     (prevIsHive && prevStatus === ClusterStatus.destroying) ||
                     (!prevIsHive && prevStatus === ClusterStatus.detaching)
                 ) {
-                    // stopPolling()
-                    // addonStopPolling()
+                    stopPolling()
+                    addonStopPolling()
                     setClusterIsRemoved(true)
                 } else {
-                    console.log('ERRORED')
                     const cdRequest = results[0] as PromiseRejectedResult
-                    const mciRequest = results[1] as PromiseRejectedResult
+                    const mcRequest = results[3] as PromiseRejectedResult
                     const resourceError: ResourceError = {
-                        code: mciRequest.reason.code as ResourceErrorCode,
-                        message: `${mciRequest.reason.message}.  ${cdRequest.reason.message}` as string,
+                        code: mcRequest.reason.code as ResourceErrorCode,
+                        message: `${mcRequest.reason.message}.  ${cdRequest.reason.message}` as string,
                         name: '',
                     }
                     setClusterError(resourceError)
@@ -146,7 +145,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 )
             }
         }
-    }, [data, error, cluster, prevStatus, prevIsHive])
+    }, [data, error, prevStatus, prevIsHive, stopPolling, addonStopPolling])
 
     useEffect(() => {
         const resource = rbacMapping('secret.get', match.params.id, match.params.id)[0]
@@ -212,7 +211,26 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }
 
     if (clusterIsRemoved) {
-        return <AcmAlert title="Success" variant={AlertVariant.success} />
+        return (
+            <AcmPage>
+                <AcmPageHeader
+                    breadcrumb={[
+                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: match.params.id, to: '' },
+                    ]}
+                    title={match.params.id}
+                />
+                <AcmEmptyState
+                    title={t(`${prevStatus}.success`, { clusterName: match.params.id })}
+                    message={t(`${prevStatus}.success.message`, { clusterName: match.params.id })}
+                    action={
+                        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
+                            {t('button.backToClusters')}
+                        </AcmButton>
+                    }
+                />
+            </AcmPage>
+        )
     }
 
     if (clusterError) {

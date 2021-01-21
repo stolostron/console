@@ -36,6 +36,11 @@
     "cluster.detach.description": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
     "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be deprovisioned.",
 
+    "detaching.success": "Detach success",
+    "destroying.success": "Destroy success",
+    "detaching.success.message": "{{clusterName}} was successfully removed from management.",
+    "destroying.success.message": "{{clusterName}} was successfully removed from management and all infrastructure resources were cleaned up.",
+
     "configuration.download": "Download configuration",
     "actions": "Actions",
 
