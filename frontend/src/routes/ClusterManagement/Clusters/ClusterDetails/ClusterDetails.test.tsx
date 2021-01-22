@@ -589,10 +589,10 @@ const nockListHiveProvisionJobs = () =>
         ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
     )
 
+const nockGetManagedClusterError = () => nockGet(mockManagedCluster, mockBadRequestStatus, 400)
 const nockGetManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
 const nockGetClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
 const nockListManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
-// const nockManagedClusterError = () => nockGet(mockManagedCluster, mockBadRequestStatus, 400)
 
 function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
     return nockCreate(
@@ -712,7 +712,7 @@ describe('ClusterDetails', () => {
         const cdScope = nockGetClusterDeploymentError()
         const csrScope = nockListCertificateSigningRequests()
         const mcaScope = nockGetManagedClusterAddons()
-        const managedClusterNock = nockGetManagedCluster()
+        const managedClusterNock = nockGetManagedClusterError()
         const nockRbac = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
         render(<Component />)
         await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
