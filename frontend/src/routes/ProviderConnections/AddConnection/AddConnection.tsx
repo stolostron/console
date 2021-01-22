@@ -124,9 +124,9 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
 
             baseDomainResourceGroupName: '',
             clientId: '',
-            clientsecret: '',
-            subscriptionid: '',
-            tenantid: '',
+            clientSecret: '',
+            subscriptionId: '',
+            tenantId: '',
 
             gcProjectID: '',
             gcServiceAccountKey: '',
@@ -429,14 +429,14 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     isRequired
                 />
                 <AcmTextInput
-                    id="clientsecret"
-                    label={t('addConnection.clientsecret.label')}
-                    placeholder={t('addConnection.clientsecret.placeholder')}
-                    labelHelp={t('addConnection.clientsecret.labelHelp')}
-                    value={providerConnection.spec?.clientsecret}
-                    onChange={(clientsecret) => {
+                    id="clientSecret"
+                    label={t('addConnection.clientSecret.label')}
+                    placeholder={t('addConnection.clientSecret.placeholder')}
+                    labelHelp={t('addConnection.clientSecret.labelHelp')}
+                    value={providerConnection.spec?.clientSecret}
+                    onChange={(clientSecret) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.clientsecret = clientsecret
+                            providerConnection.spec!.clientSecret = clientSecret
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
@@ -444,28 +444,28 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     isRequired
                 />
                 <AcmTextInput
-                    id="subscriptionid"
-                    label={t('addConnection.subscriptionid.label')}
-                    placeholder={t('addConnection.subscriptionid.placeholder')}
-                    labelHelp={t('addConnection.subscriptionid.labelHelp')}
-                    value={providerConnection.spec?.subscriptionid}
-                    onChange={(subscriptionid) => {
+                    id="subscriptionId"
+                    label={t('addConnection.subscriptionId.label')}
+                    placeholder={t('addConnection.subscriptionId.placeholder')}
+                    labelHelp={t('addConnection.subscriptionId.labelHelp')}
+                    value={providerConnection.spec?.subscriptionId}
+                    onChange={(subscriptionId) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.subscriptionid = subscriptionid
+                            providerConnection.spec!.subscriptionId = subscriptionId
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
                     isRequired
                 />
                 <AcmTextInput
-                    id="tenantid"
-                    label={t('addConnection.tenantid.label')}
-                    placeholder={t('addConnection.tenantid.placeholder')}
-                    labelHelp={t('addConnection.tenantid.labelHelp')}
-                    value={providerConnection.spec?.tenantid}
-                    onChange={(tenantid) => {
+                    id="tenantId"
+                    label={t('addConnection.tenantId.label')}
+                    placeholder={t('addConnection.tenantId.placeholder')}
+                    labelHelp={t('addConnection.tenantId.labelHelp')}
+                    value={providerConnection.spec?.tenantId}
+                    onChange={(tenantId) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.tenantid = tenantid
+                            providerConnection.spec!.tenantId = tenantId
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
@@ -777,9 +777,9 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                             if (providerID !== ProviderID.AZR) {
                                 delete data.spec!.baseDomainResourceGroupName
                                 delete data.spec!.clientId
-                                delete data.spec!.clientsecret
-                                delete data.spec!.subscriptionid
-                                delete data.spec!.tenantid
+                                delete data.spec!.clientSecret
+                                delete data.spec!.subscriptionId
+                                delete data.spec!.tenantId
                             }
                             if (providerID !== ProviderID.BMC) {
                                 delete data.spec!.libvirtURI
