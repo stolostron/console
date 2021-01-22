@@ -10,7 +10,6 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
-    AcmEmptyState,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -38,6 +37,7 @@ import {
     rbacMapping,
 } from '../../../../resources/self-subject-access-review'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
+import { ClusterDestroy } from '../components/ClusterDestroy'
 import { EditLabelsModal } from '../components/EditLabelsModal'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
@@ -210,27 +210,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return <AcmSpinnerBackdrop />
     }
 
-    if (clusterIsRemoved) {
-        return (
-            <AcmPage>
-                <AcmPageHeader
-                    breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: match.params.id, to: '' },
-                    ]}
-                    title={match.params.id}
-                />
-                <AcmEmptyState
-                    title={t(`${prevStatus}.success`, { clusterName: match.params.id })}
-                    message={t(`${prevStatus}.success.message`, { clusterName: match.params.id })}
-                    action={
-                        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
-                            {t('button.backToClusters')}
-                        </AcmButton>
-                    }
-                />
-            </AcmPage>
-        )
+    if (
+        cluster?.status === ClusterStatus.destroying ||
+        (!cluster?.isHive && cluster?.status === ClusterStatus.detaching) ||
+        clusterIsRemoved
+    ) {
+        return <ClusterDestroy isLoading={!clusterIsRemoved} cluster={cluster} />
     }
 
     if (clusterError) {
