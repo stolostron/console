@@ -58,6 +58,10 @@ controlPlane:
   {{/case}}
 
   {{#case 'vSphere'}}
+  platform:
+    vsphere:
+      osDisk:
+        diskSizeGB: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
 
 {{/switch}}

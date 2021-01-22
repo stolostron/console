@@ -91,6 +91,33 @@ const vmwControlData = [
         collapsable: true,
         collapsed: true,
     },
+    ///////////////////////  master pool  /////////////////////////////////////
+    {
+        id: 'masterPool',
+        type: 'group',
+        onlyOne: true, // no prompts
+        controlData: [
+            {
+                id: 'masterPool',
+                type: 'section',
+                subtitle: 'creation.ocp.node.master.pool.title',
+                info: 'creation.ocp.node.master.pool.info',
+                collapsable: true,
+                collapsed: true,
+            },
+            ///////////////////////  root volume  /////////////////////////////////////
+            {
+                name: 'creation.ocp.root.storage',
+                tooltip: 'tooltip.creation.ocp.vmw.root.storage',
+                id: 'masterRootStorage',
+                type: 'combobox',
+                active: '100',
+                available: ['100', '300', '500', '800', '1000', '1200'],
+                validation: VALIDATE_NUMERIC,
+                cacheUserValueKey: 'create.cluster.master.root.storage',
+            },
+        ],
+    },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
         id: 'workerPools',

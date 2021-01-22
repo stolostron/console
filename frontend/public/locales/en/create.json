@@ -255,6 +255,7 @@
   "tooltip.creation.ocp.gcp.instance.type": "The GCP machine type.",
   "tooltip.creation.ocp.aws.root.storage": "The EC2 instance root volume size.",
   "tooltip.creation.ocp.azr.root.storage": "The Azure disk size for the VM.",
+  "tooltip.creation.ocp.vmw.root.storage": "The vSphere disk size for the VM.",
   "tooltip.creation.ocp.pool.name": "The name for your worker pool.",
   "tooltip.creation.ocp.compute.node.count": "The number of nodes in this node pool.",
   "tooltip.creation.ocp.network.cidr": "The CIDR for the network to use for provisioning. Example: 172.22.0.0/24",
