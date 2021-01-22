@@ -18,6 +18,7 @@ import {
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
 } from '../../../../resources/cluster-deployment'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 
 import {cloneDeep} from 'lodash'
 
@@ -122,6 +123,21 @@ const mockBareMetalAssets = Array.from({length: 5}, (val, inx) => {
     return mockedBma
 })
 
+const bmaSecret: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        namespace: 'test-bare-metal-asset-namespace',
+        name: 'test-bma-bmc-secret',
+    },
+    data: { password: 'encoded', username: 'encoded' },
+}
+const mockBareMetalSecrets = Array.from({length: 5}, (val, inx) => {
+    const mockedSecret = cloneDeep(bmaSecret)
+    mockedSecret.metadata.name = `secret-test-bare-metal-asset-${inx}`
+    return mockedSecret
+})
+
 
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
@@ -152,9 +168,14 @@ describe('CreateCluster', () => {
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
         const listHosts = nockList(bareMetalAsset, mockBareMetalAssets)
+        const getSecret0 = nockGet(mockBareMetalSecrets[0])
+        const getSecret1 = nockGet(mockBareMetalSecrets[1])
+        const getSecret2 = nockGet(mockBareMetalSecrets[2])
+        const getSecret3 = nockGet(mockBareMetalSecrets[3])
+        const getSecret4 = nockGet(mockBareMetalSecrets[4])
         
         // create the form
-        const { getByTestId, getByPlaceholderText, getByRole, container,  debug } = render(<Component />)
+        const { getByTestId, getByPlaceholderText, getByText, container,  debug } = render(<Component />)
         
         // start filling in the form
         userEvent.type(getByTestId('eman'), clusterName!)
@@ -164,36 +185,32 @@ describe('CreateCluster', () => {
         await waitFor(() => expect(listImageSetsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listConnections.isDone()).toBeTruthy())
         await waitFor(() => expect(listHosts.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecret0.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecret1.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecret2.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecret3.isDone()).toBeTruthy())
+        await waitFor(() => expect(getSecret4.isDone()).toBeTruthy())
 
-      debugger
         // finish the form
         await waitFor(() => expect(getByTestId('imageSet')))
         userEvent.type(getByTestId('imageSet'), clusterImageSet.spec.releaseImage!)
         userEvent.type(getByPlaceholderText('creation.ocp.cloud.select.connection'), providerConnection.metadata.name!)
         userEvent.click(container.querySelector('[name="check-all"]'))
-        
-        
-        
         userEvent.type(getByTestId('provisioningNetworkCIDR'), '10.4.5.3') //10.4.5.3
         userEvent.type(getByTestId('dnsVIP'), '10.0.0.3') //10.0.0.3
+        
+        // click create button
+        userEvent.click(getByTestId('create-button-portal-id'))
+        
+        await new Promise((r) => setTimeout(r, 2000));
         
   console.log('here')
         screen.debug(debug(), 2000000)        
   console.log('there')        
-
-        lkhnkl
-
-
         
-        // click create button
- //       userEvent.click(getByTestId('create-button-portal-id--click'))
-        
-//        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-//        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-//        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-//        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-
-//        await waitFor(() => expect(getByTestId('redirected')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
+        //await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
         
     })
     
