@@ -13,7 +13,7 @@ import {
     CertificateSigningRequest,
     CSR_CLUSTER_LABEL,
 } from '../resources/certificate-signing-requests'
-import { IRequestResult } from './resource-request'
+import { IRequestResult, ResourceError, ResourceErrorCode } from './resource-request'
 import { getLatest } from './utils'
 import { Provider } from '@open-cluster-management/ui-components'
 
@@ -92,7 +92,15 @@ export function getAllClusters(): IRequestResult<Cluster[]> {
                     return d.value
                 } else {
                     if (d.reason instanceof Error) {
-                        throw d.reason
+                        if (
+                            i === 2 &&
+                            d.reason instanceof ResourceError &&
+                            d.reason.code === ResourceErrorCode.Forbidden
+                        ) {
+                            // ignore forbidden csr error
+                        } else {
+                            throw d.reason
+                        }
                     }
                     return []
                 }
@@ -114,11 +122,12 @@ export function mapClusters(
     certificateSigningRequests: CertificateSigningRequest[] = [],
     managedClusters: ManagedCluster[] = []
 ) {
+    const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
         new Set([
             ...clusterDeployments.map((cd) => cd.metadata.name),
             ...managedClusterInfos.map((mc) => mc.metadata.name),
-            ...managedClusters.map((mc) => mc.metadata.name),
+            ...mcs.map((mc) => mc.metadata.name),
         ])
     )
     return uniqueClusterNames.map((cluster) => {
@@ -175,10 +184,12 @@ export function getProvider(
     switch (providerLabel) {
         case 'Amazon':
         case 'AWS':
+        case 'EKS':
         case 'aws':
             provider = Provider.aws
             break
         case 'Google':
+        case 'GKE':
         case 'GCP':
         case 'GCE':
         case 'gcp':
@@ -186,9 +197,11 @@ export function getProvider(
             break
         case 'Azure':
         case 'azure':
+        case 'AKS':
             provider = Provider.azure
             break
         case 'IBM':
+        case 'IKS':
             provider = Provider.ibm
             break
         case 'baremetal':
@@ -330,7 +343,6 @@ export function getClusterStatus(
     if (!managedClusterInfo && !managedCluster) {
         return cdStatus
     }
-
     let mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status
@@ -341,7 +353,7 @@ export function getClusterStatus(
     const clusterAvailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions)
 
     // detaching
-    if (mc.metadata.deletionTimestamp) {
+    if (mc?.metadata.deletionTimestamp) {
         mcStatus = ClusterStatus.detaching
 
         // not accepted

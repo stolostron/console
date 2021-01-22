@@ -5,38 +5,50 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     const [data, setData] = useState<T[] | undefined>(initialData)
     const [error, setError] = useState<Error>()
     const [loading, setLoading] = useState(true)
+    const [iteration, setIteration] = useState(0)
 
     const dataRef = useRef<{
-        timeout?: NodeJS.Timeout
+        ismounted: boolean
         polling: number
-        promise?: Promise<T | T[]>
-        aborted?: boolean
-    }>({ polling: 0 })
-    const stopPolling = useCallback(function stopPolling() {
-        dataRef.current.polling = 0
-        if (dataRef.current.timeout) {
-            clearTimeout(dataRef.current.timeout)
-            dataRef.current.timeout = undefined
+        timeout?: NodeJS.Timeout
+        requestResult?: IRequestResult<T | T[]>
+    }>({
+        ismounted: false,
+        polling: 0,
+    })
+
+    useEffect(() => {
+        let current = dataRef.current
+        current.ismounted = true
+        return () => {
+            current.ismounted = false
         }
     }, [])
-    useEffect(() => stopPolling, [stopPolling])
 
     const refresh = useCallback(
         function refresh() {
-            if (dataRef.current.promise) return
-            const result = restFunc()
-            dataRef.current.promise = result.promise
-            result.promise
+            if (!dataRef.current.ismounted) return
+            if (dataRef.current.requestResult) return
+            if (dataRef.current.timeout) {
+                clearTimeout(dataRef.current.timeout)
+                dataRef.current.timeout = undefined
+            }
+            let requestResult = restFunc()
+            dataRef.current.requestResult = requestResult
+            let aborted = false
+            dataRef.current.requestResult.promise
                 .then((data) => {
+                    if (!dataRef.current.ismounted) return
                     setData(Array.isArray(data) ? data : [data])
                     setError(undefined)
                 })
                 .catch((err: Error) => {
+                    if (!dataRef.current.ismounted) return
                     if (err instanceof ResourceError) {
                         switch (err.code) {
                             case ResourceErrorCode.RequestCancelled:
-                                dataRef.current.aborted = true
-                                break
+                                aborted = true
+                                return
                             case ResourceErrorCode.TooManyRequests:
                             case ResourceErrorCode.Timeout:
                             case ResourceErrorCode.ServiceUnavailable:
@@ -50,44 +62,59 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                                 setData(undefined)
                                 break
                         }
-                    } else if (err.name === 'AbortError') {
-                        dataRef.current.aborted = true
                     }
                     setError(err)
                 })
                 .finally(() => {
-                    if (dataRef.current.aborted) return
-                    setLoading(false)
-                    dataRef.current.promise = undefined
-                    if (dataRef.current.timeout) {
-                        clearTimeout(dataRef.current.timeout)
-                        dataRef.current.timeout = undefined
+                    if (!dataRef.current.ismounted) return
+                    dataRef.current.requestResult = undefined
+                    if (!aborted) {
+                        setLoading(false)
                     }
                     if (dataRef.current.polling > 0) {
-                        dataRef.current.timeout = setTimeout(() => {
-                            dataRef.current.timeout = undefined
-                            refresh()
-                        }, dataRef.current.polling)
+                        dataRef.current.timeout = setTimeout(
+                            () => setIteration((iteration) => iteration + 1),
+                            dataRef.current.polling
+                        )
                     }
                 })
-            return result.abort
+            return () => {
+                requestResult.abort()
+            }
         },
         [restFunc]
     )
 
-    useEffect(refresh, [refresh])
+    useEffect(() => {
+        return refresh()
+    }, [iteration, refresh])
 
+    const stopPolling = useCallback(() => {
+        dataRef.current.polling = 0
+    }, [])
     const startPolling = useCallback(
-        function startPolling(interval: number = 5 * 1000) {
+        (interval: number = 5 * 1000) => {
+            if (!dataRef.current.ismounted) return
             if (process.env.NODE_ENV !== 'test') {
-                stopPolling()
                 dataRef.current.polling = interval
-                refresh()
-                return stopPolling
+                if (!dataRef.current.requestResult) {
+                    setIteration((iteration) => iteration + 1)
+                }
+                return () => stopPolling()
             }
         },
-        [refresh, stopPolling]
+        [stopPolling]
     )
 
-    return { error, loading, data, startPolling, stopPolling, refresh }
+    return {
+        error,
+        loading,
+        data,
+        startPolling,
+        stopPolling,
+        refresh: () => {
+            if (!dataRef.current.ismounted) return
+            setIteration((iteration) => iteration + 1)
+        },
+    }
 }

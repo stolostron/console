@@ -167,7 +167,6 @@ describe('BattchUpgradeModal', () => {
                 clusters={allClusters}
                 open={true}
                 close={() => {
-                    console.log('called')
                     isClosed = true
                 }}
             />
@@ -205,13 +204,7 @@ describe('BattchUpgradeModal', () => {
     it('should show alert when failed; keep failed rows in table, and succeeded rows should show upgrading', async () => {
         jest.spyOn(console, 'error').mockImplementation(() => {})
         const { getByText, queryByText } = render(
-            <BatchUpgradeModal
-                clusters={allClusters}
-                open={true}
-                close={() => {
-                    console.log('called here')
-                }}
-            />
+            <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
         )
         const mockNockUpgrade1 = nockUpgrade('cluster-1-ready1', '1.2.9', 'ok', 200, 100)
         const mockNockUpgrade2 = nockUpgrade('cluster-2-ready2', '2.2.6', 'failed', 400, 100)

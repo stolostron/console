@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockClusterList, nockCreate, nockGet, nockReplace } from '../../../lib/nock-util'
+import { nockGet, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { FeatureGate } from '../../../resources/feature-gate'
@@ -13,7 +13,6 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import AddConnectionPage from './AddConnection'
 
 const mockProject: Project = {
@@ -22,45 +21,12 @@ const mockProject: Project = {
     metadata: { name: 'test-namespace' },
 }
 
-const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-}
-
-const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
     kind: 'FeatureGate',
     metadata: { name: 'open-cluster-management-discovery' },
     spec: { featureSet: 'DiscoveryEnabled' },
 }
-
-const mockProjects: Project[] = [mockProject]
 
 const awsProviderConnection: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -109,12 +75,8 @@ beforeEach(() => {
 
 describe('edit connection page', () => {
     it('should edit provider connection', async () => {
-        const projectsNock = nockClusterList(mockProject, mockProjects)
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const getProviderConnectionNock = nockGet(awsProviderConnection)
         const { getByText, getByTestId } = render(<TestEditConnectionPage />)
-        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 

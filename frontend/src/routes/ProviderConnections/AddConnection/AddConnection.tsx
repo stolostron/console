@@ -34,7 +34,7 @@ import {
     validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
-import { listProjects, Project } from '../../../resources/project'
+import { listProjects } from '../../../resources/project'
 import {
     createProviderConnection,
     getProviderConnection,
@@ -106,10 +106,10 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
 
 export function AddConnectionPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection', 'common'])
-    const [projects, setProjects] = useState<Project[]>()
-    const [filteredProjects, setFilteredProjects] = useState<string[]>()
+    const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
         apiVersion: ProviderConnectionApiVersion,
@@ -124,9 +124,9 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
 
             baseDomainResourceGroupName: '',
             clientId: '',
-            clientsecret: '',
-            subscriptionid: '',
-            tenantid: '',
+            clientSecret: '',
+            subscriptionId: '',
+            tenantId: '',
 
             gcProjectID: '',
             gcServiceAccountKey: '',
@@ -155,38 +155,36 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
 
     useEffect(() => {
         setError(undefined)
-        setFilteredProjects(undefined)
+        setProjects([])
+        setIsLoading(true)
     }, [retry])
 
+    // create connection
     useEffect(() => {
-        const result = listProjects()
-        result.promise
-            .then((projects) => {
-                setProjects(projects)
-            })
-            .catch(setError)
-        return result.abort
-    }, [retry])
-
-    useEffect(() => {
-        if (projects) {
-            if (projects.length! > 0) {
-                const namespaces = projects!.map((project) => project.metadata.name!)
-                rbacNamespaceFilter('secret.create', namespaces).then(setFilteredProjects).catch(setError)
-            } else {
-                setFilteredProjects([])
-            }
+        if (!props.namespace) {
+            const result = listProjects()
+            result.promise
+                .then(async (projects) => {
+                    const namespaces = projects!.map((project) => project.metadata.name!)
+                    await rbacNamespaceFilter('secret.create', namespaces).then(setProjects).catch(setError)
+                })
+                .catch(setError)
+                .finally(() => setIsLoading(false))
+            return result.abort
         }
-    }, [projects])
+    }, [props.namespace])
 
+    // edit connection
     useEffect(() => {
         if (props.name) {
+            setProjects([props.namespace])
             const result = getProviderConnection(props)
             result.promise
                 .then((providerConnection) => {
                     setProviderConnection(providerConnection)
                 })
                 .catch(setError)
+                .finally(() => setIsLoading(false))
             return result.abort
         }
     }, [retry, props])
@@ -201,59 +199,29 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
                             setRetry(retry + 1)
                         }}
                     >
-                        Retry
+                        {t('common:retry')}
                     </AcmButton>
                 }
             />
         )
     }
-    if (!projects || !filteredProjects) {
+    if (isLoading) {
         return <AcmLoadingPage />
     }
-    if (props.name && providerConnection.metadata.name === '') {
-        return <AcmLoadingPage />
-    }
+
     if (projects.length === 0) {
-        return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('addConnection.error.noNamespacesFound')}
-                    message={t('addConnection.error.noNamespacesFound')}
-                    action={
-                        <AcmButton
-                            onClick={() => {
-                                setRetry(retry + 1)
-                            }}
-                        >
-                            Retry
-                        </AcmButton>
-                    }
-                />
-            </AcmPageCard>
-        )
-    } else if (projects.length > 0 && filteredProjects.length === 0) {
-        // returns empty state when user cannot create secret in any namespace
         return (
             <AcmPageCard>
                 <AcmEmptyState
                     title={t('common:rbac.title.unauthorized')}
                     message={t('common:rbac.namespaces.unauthorized')}
                     showIcon={false}
-                    action={
-                        <AcmButton
-                            onClick={() => {
-                                setRetry(retry + 1)
-                            }}
-                        >
-                            Retry
-                        </AcmButton>
-                    }
                 />
             </AcmPageCard>
         )
     }
 
-    return <AddConnectionPageContent providerConnection={providerConnection} projects={filteredProjects} />
+    return <AddConnectionPageContent providerConnection={providerConnection} projects={projects} />
 }
 
 const useStyles = makeStyles({
@@ -461,14 +429,14 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     isRequired
                 />
                 <AcmTextInput
-                    id="clientsecret"
-                    label={t('addConnection.clientsecret.label')}
-                    placeholder={t('addConnection.clientsecret.placeholder')}
-                    labelHelp={t('addConnection.clientsecret.labelHelp')}
-                    value={providerConnection.spec?.clientsecret}
-                    onChange={(clientsecret) => {
+                    id="clientSecret"
+                    label={t('addConnection.clientSecret.label')}
+                    placeholder={t('addConnection.clientSecret.placeholder')}
+                    labelHelp={t('addConnection.clientSecret.labelHelp')}
+                    value={providerConnection.spec?.clientSecret}
+                    onChange={(clientSecret) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.clientsecret = clientsecret
+                            providerConnection.spec!.clientSecret = clientSecret
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
@@ -476,28 +444,28 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     isRequired
                 />
                 <AcmTextInput
-                    id="subscriptionid"
-                    label={t('addConnection.subscriptionid.label')}
-                    placeholder={t('addConnection.subscriptionid.placeholder')}
-                    labelHelp={t('addConnection.subscriptionid.labelHelp')}
-                    value={providerConnection.spec?.subscriptionid}
-                    onChange={(subscriptionid) => {
+                    id="subscriptionId"
+                    label={t('addConnection.subscriptionId.label')}
+                    placeholder={t('addConnection.subscriptionId.placeholder')}
+                    labelHelp={t('addConnection.subscriptionId.labelHelp')}
+                    value={providerConnection.spec?.subscriptionId}
+                    onChange={(subscriptionId) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.subscriptionid = subscriptionid
+                            providerConnection.spec!.subscriptionId = subscriptionId
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
                     isRequired
                 />
                 <AcmTextInput
-                    id="tenantid"
-                    label={t('addConnection.tenantid.label')}
-                    placeholder={t('addConnection.tenantid.placeholder')}
-                    labelHelp={t('addConnection.tenantid.labelHelp')}
-                    value={providerConnection.spec?.tenantid}
-                    onChange={(tenantid) => {
+                    id="tenantId"
+                    label={t('addConnection.tenantId.label')}
+                    placeholder={t('addConnection.tenantId.placeholder')}
+                    labelHelp={t('addConnection.tenantId.labelHelp')}
+                    value={providerConnection.spec?.tenantId}
+                    onChange={(tenantId) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.tenantid = tenantid
+                            providerConnection.spec!.tenantId = tenantId
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.AZR}
@@ -809,9 +777,9 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                             if (providerID !== ProviderID.AZR) {
                                 delete data.spec!.baseDomainResourceGroupName
                                 delete data.spec!.clientId
-                                delete data.spec!.clientsecret
-                                delete data.spec!.subscriptionid
-                                delete data.spec!.tenantid
+                                delete data.spec!.clientSecret
+                                delete data.spec!.subscriptionId
+                                delete data.spec!.tenantId
                             }
                             if (providerID !== ProviderID.BMC) {
                                 delete data.spec!.libvirtURI

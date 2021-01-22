@@ -71,6 +71,7 @@ const PageActions = () => {
                 // send err to console
                 console.error(err)
             })
+        return () => promiseResult.abort()
     }, [])
     const dropdownItems: AcmDropdownItems[] = [
         {
@@ -280,8 +281,27 @@ export function ClustersTable(props: {
                     },
                     {
                         header: t('table.labels'),
-                        // search: 'labels',
-                        cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
+                        search: (cluster) =>
+                            cluster.labels
+                                ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`)
+                                : '',
+                        cell: (cluster) =>
+                            cluster.labels ? (
+                                <AcmLabels
+                                    labels={cluster.labels}
+                                    style={{ maxWidth: '600px' }}
+                                    collapse={[
+                                        'cloud',
+                                        'clusterID',
+                                        'installer.name',
+                                        'installer.namespace',
+                                        'name',
+                                        'vendor',
+                                    ]}
+                                />
+                            ) : (
+                                '-'
+                            ),
                     },
                     {
                         header: t('table.nodes'),
@@ -301,7 +321,7 @@ export function ClustersTable(props: {
                                 {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
-                                    click: (cluster: Cluster) => setEditClusterLabels(cluster),
+                                    click: (cluster: Cluster) => setEditClusterLabels({ ...cluster }),
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                     tooltip: !tableActionRbacValues['cluster.edit.labels']
                                         ? t('common:rbac.unauthorized')
@@ -342,7 +362,7 @@ export function ClustersTable(props: {
                                             action: t('detach'),
                                             processing: t('detaching'),
                                             resources: [cluster],
-                                            description: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                            description: t('cluster.detach.description'),
                                             columns: modalColumns,
                                             keyFn: (cluster) => cluster.name as string,
                                             actionFn: (cluster) => detachCluster(cluster.name!),
@@ -351,7 +371,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: t('detach').toUpperCase(),
+                                            confirmText: cluster.name!.toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -370,7 +390,7 @@ export function ClustersTable(props: {
                                             action: t('destroy'),
                                             processing: t('destroying'),
                                             resources: [cluster],
-                                            description: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                            description: t('cluster.destroy.description'),
                                             columns: modalColumns,
                                             keyFn: (cluster) => cluster.name as string,
                                             actionFn: (cluster) => deleteCluster(cluster.name!),
@@ -379,7 +399,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: t('destroy').toUpperCase(),
+                                            confirmText: cluster.name!.toUpperCase(),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -456,7 +476,7 @@ export function ClustersTable(props: {
                                 action: t('destroy'),
                                 processing: t('destroying'),
                                 resources: clusters,
-                                description: `You are about to destroy clusters. This action is irreversible.`,
+                                description: t('cluster.destroy.description'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
@@ -465,7 +485,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('destroy').toUpperCase(),
+                                confirmText: t('confirm').toUpperCase(),
                             })
                         },
                     },
@@ -480,7 +500,7 @@ export function ClustersTable(props: {
                                 action: t('detach'),
                                 processing: t('detaching'),
                                 resources: clusters,
-                                description: `You are about to detach clusters. This action is irreversible.`,
+                                description: t('cluster.detach.description'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),
@@ -489,7 +509,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('detach').toUpperCase(),
+                                confirmText: t('confirm').toUpperCase(),
                             })
                         },
                     },
