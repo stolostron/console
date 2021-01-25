@@ -102,7 +102,7 @@ export function BareMetalAssetsTable(props: {
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
     refresh: () => void
 }) {
-    const [creationAccessRestriction, setcreationAccessRestriction] = useState<boolean>(true)
+    const [creationAccessRestriction, setCreationAccessRestriction] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
@@ -122,8 +122,7 @@ export function BareMetalAssetsTable(props: {
         let allowed = true
         promiseResult.promise
             .then((result) => {
-                allowed = allowed && result.status?.allowed!
-                setcreationAccessRestriction(!allowed)
+                setCreationAccessRestriction(!result.status?.allowed)
             })
             .catch((err) => {
                 console.error(err)
