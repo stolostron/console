@@ -89,7 +89,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   id="submit-button"
                                   isDisabled={
                                       props.confirmText !== undefined &&
-                                      confirm.toUpperCase() !== props.confirmText.toUpperCase()
+                                      confirm !== props.confirmText
                                   }
                                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                   onClick={async () => {
