@@ -16,7 +16,7 @@
     "errors": "Errors",
     "there.was.an.error": "There was an error {0} these {1}.",
     "there.were.errors": "There were errors {0} these {1}.",
-    "type.to.confirm": "Type {0} to confirm.",
+    "type.to.confirm": "Confirm by typing {0} below:",
     "close": "Close",
 
     "request.failed": "Request failed",

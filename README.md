@@ -32,7 +32,7 @@
    npm run setup
    ```
 
-   This will create a `.env` file in backend containing the environment variables.
+   This will create a `.env` file in the backend directory containing the environment variables.
 
 4. Start the development services
 
@@ -40,7 +40,7 @@
    npm start
    ```
 
-   This will start the frontend and the backend in parallel.
+   This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)
 
    The frontend will proxy requests to the backend using react scripts.
 
