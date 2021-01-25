@@ -23,7 +23,12 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { BMATableRbacAccess, createSubjectAccessReview, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import {
+    BMATableRbacAccess,
+    createSubjectAccessReview,
+    createSubjectAccessReviews,
+    rbacMapping,
+} from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -119,7 +124,8 @@ export function BareMetalAssetsTable(props: {
             .then((result) => {
                 allowed = allowed && result.status?.allowed!
                 setcreationAccessRestriction(!allowed)
-            }).catch((err) => {
+            })
+            .catch((err) => {
                 console.error(err)
             })
     }, [])
