@@ -281,8 +281,27 @@ export function ClustersTable(props: {
                     },
                     {
                         header: t('table.labels'),
-                        // search: 'labels',
-                        cell: (cluster) => (cluster.labels ? <AcmLabels labels={cluster.labels} /> : '-'),
+                        search: (cluster) =>
+                            cluster.labels
+                                ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`)
+                                : '',
+                        cell: (cluster) =>
+                            cluster.labels ? (
+                                <AcmLabels
+                                    labels={cluster.labels}
+                                    style={{ maxWidth: '600px' }}
+                                    collapse={[
+                                        'cloud',
+                                        'clusterID',
+                                        'installer.name',
+                                        'installer.namespace',
+                                        'name',
+                                        'vendor',
+                                    ]}
+                                />
+                            ) : (
+                                '-'
+                            ),
                     },
                     {
                         header: t('table.nodes'),

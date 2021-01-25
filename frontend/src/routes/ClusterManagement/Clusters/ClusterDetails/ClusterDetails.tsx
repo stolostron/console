@@ -2,6 +2,7 @@ import {
     AcmActionGroup,
     AcmButton,
     AcmDropdown,
+    AcmInlineProvider,
     AcmLaunchLink,
     AcmPage,
     AcmPageHeader,
@@ -10,14 +11,14 @@ import {
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
-import { UpgradeModal } from '../../../../components/ClusterCommon'
-import { ClosedConfirmModalProps, ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { StatusField, UpgradeModal } from '../../../../components/ClusterCommon'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { deleteCluster } from '../../../../lib/delete-cluster'
+import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
 import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -29,11 +30,11 @@ import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import {
-    createSubjectAccessReview,
-    rbacMapping,
-    ClustersTableActionsRbac,
-    defaultTableRbacValues,
     CheckTableActionsRbacAccess,
+    ClustersTableActionsRbac,
+    createSubjectAccessReview,
+    defaultTableRbacValues,
+    rbacMapping,
 } from '../../../../resources/self-subject-access-review'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { EditLabelsModal } from '../components/EditLabelsModal'
@@ -61,7 +62,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
-    const [confirm, setConfirm] = useState<IConfirmModalProps>(ClosedConfirmModalProps)
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
+        open: false,
+    })
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
@@ -155,6 +158,32 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         }
     }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
 
+    const modalColumns = useMemo(
+        () => [
+            {
+                header: t('table.name'),
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
+                sort: 'name',
+            },
+            {
+                header: t('table.status'),
+                sort: 'status',
+                cell: (cluster: Cluster) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <StatusField status={cluster.status} />
+                    </span>
+                ),
+            },
+            {
+                header: t('table.provider'),
+                sort: 'provider',
+                cell: (cluster: Cluster) =>
+                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            },
+        ],
+        [t]
+    )
+
     if (loading) {
         return <AcmSpinnerBackdrop />
     }
@@ -196,13 +225,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         refresh()
                     }}
                 />
-                <ConfirmModal
-                    open={confirm.open}
-                    confirm={confirm.confirm}
-                    cancel={confirm.cancel}
-                    title={confirm.title}
-                    message={confirm.message}
-                />
+                <BulkActionModel<Cluster> {...modalProps} />
+
                 <UpgradeModal
                     data={upgradeSingleCluster?.distribution}
                     open={!!upgradeSingleCluster}
@@ -310,27 +334,24 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                 ? t('common:rbac.unauthorized')
                                                 : '',
                                             click: (cluster: Cluster) => {
-                                                setConfirm({
-                                                    title: t('modal.detach.title'),
-                                                    message: `You are about to detach ${cluster?.name}. This action is irreversible.`,
+                                                setModalProps({
                                                     open: true,
-                                                    confirm: () => {
-                                                        deleteCluster(cluster?.name!, false).promise.then((results) => {
-                                                            results.forEach((result) => {
-                                                                if (result.status === 'rejected') {
-                                                                    // setErrors([
-                                                                    //     `Failed to detach managed cluster ${cluster?.name}. ${result.reason}`,
-                                                                    // ])
-                                                                }
-                                                            })
-                                                        })
-                                                        setConfirm(ClosedConfirmModalProps)
+                                                    singular: t('cluster'),
+                                                    plural: t('clusters'),
+                                                    action: t('detach'),
+                                                    processing: t('detaching'),
+                                                    resources: [cluster],
+                                                    description: t('cluster.detach.description'),
+                                                    columns: modalColumns,
+                                                    keyFn: (cluster) => cluster.name as string,
+                                                    actionFn: (cluster) => detachCluster(cluster.name!),
+                                                    close: () => {
+                                                        setModalProps({ open: false })
+                                                        refresh()
                                                     },
-                                                    cancel: () => {
-                                                        setConfirm(ClosedConfirmModalProps)
-                                                    },
+                                                    isDanger: true,
+                                                    confirmText: cluster.name!.toUpperCase(),
                                                 })
-                                                // props.refresh()
                                             },
                                         },
                                         {
@@ -341,27 +362,24 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                 ? t('common:rbac.unauthorized')
                                                 : '',
                                             click: (cluster: Cluster) => {
-                                                setConfirm({
-                                                    title: t('modal.destroy.title'),
-                                                    message: `You are about to destroy ${cluster.name}. This action is irreversible.`,
+                                                setModalProps({
                                                     open: true,
-                                                    confirm: () => {
-                                                        deleteCluster(cluster.name!, true).promise.then((results) => {
-                                                            results.forEach((result) => {
-                                                                if (result.status === 'rejected') {
-                                                                    // setErrors([
-                                                                    //     `Failed to destroy managed cluster ${cluster.name}. ${result.reason}`,
-                                                                    // ])
-                                                                }
-                                                            })
-                                                        })
-                                                        setConfirm(ClosedConfirmModalProps)
+                                                    singular: t('cluster'),
+                                                    plural: t('clusters'),
+                                                    action: t('destroy'),
+                                                    processing: t('destroying'),
+                                                    resources: [cluster],
+                                                    description: t('cluster.destroy.description'),
+                                                    columns: modalColumns,
+                                                    keyFn: (cluster) => cluster.name as string,
+                                                    actionFn: (cluster) => deleteCluster(cluster.name!),
+                                                    close: () => {
+                                                        setModalProps({ open: false })
+                                                        refresh()
                                                     },
-                                                    cancel: () => {
-                                                        setConfirm(ClosedConfirmModalProps)
-                                                    },
+                                                    isDanger: true,
+                                                    confirmText: cluster.name!.toUpperCase(),
                                                 })
-                                                // props.refresh()
                                             },
                                         },
                                     ]

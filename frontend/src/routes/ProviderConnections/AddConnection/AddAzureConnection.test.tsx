@@ -101,9 +101,9 @@ describe('add connection page', () => {
             spec: {
                 baseDomainResourceGroupName: 'baseDomainResourceGroupName',
                 clientId: 'clientId',
-                clientsecret: 'clientsecret',
-                subscriptionid: 'subscriptionid',
-                tenantid: 'tenantid',
+                clientSecret: 'clientSecret',
+                subscriptionId: 'subscriptionId',
+                tenantId: 'tenantId',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
@@ -135,9 +135,9 @@ describe('add connection page', () => {
             providerConnection.spec!.baseDomainResourceGroupName!
         )
         userEvent.type(getByTestId('clientId'), providerConnection.spec!.clientId!)
-        userEvent.type(getByTestId('clientsecret'), providerConnection.spec!.clientsecret!)
-        userEvent.type(getByTestId('subscriptionid'), providerConnection.spec!.subscriptionid!)
-        userEvent.type(getByTestId('tenantid'), providerConnection.spec!.tenantid!)
+        userEvent.type(getByTestId('clientSecret'), providerConnection.spec!.clientSecret!)
+        userEvent.type(getByTestId('subscriptionId'), providerConnection.spec!.subscriptionId!)
+        userEvent.type(getByTestId('tenantId'), providerConnection.spec!.tenantId!)
         userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)

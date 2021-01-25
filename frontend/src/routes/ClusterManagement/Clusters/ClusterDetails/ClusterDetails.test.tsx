@@ -8,6 +8,7 @@ import {
     mockBadRequestStatus,
     nockClusterList,
     nockCreate,
+    nockDelete,
     nockGet,
     nockNamespacedList,
 } from '../../../../lib/nock-util'
@@ -684,6 +685,27 @@ const Component = () => (
     </MemoryRouter>
 )
 
+function defaultNocks() {
+    const nocks: Scope[] = [
+        nockGetManagedClusterInfo(),
+        nockGetClusterDeployment(),
+        nockListCertificateSigningRequests(),
+        nockGetManagedClusterAddons(),
+        nockGetManagedCluster(),
+        nockListHiveProvisionJobs(),
+        nockListClusterProvision(),
+        nockCreate(mockGetSecretSelfSubjectAccessRequest),
+        nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+    ]
+    return nocks
+}
+
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
         const mciScope = nockGetManagedClusterInfoError()
@@ -706,34 +728,11 @@ describe('ClusterDetails', () => {
 
     test('overview page renders', async () => {
         window.open = jest.fn()
-        const mciScope = nockGetManagedClusterInfo()
-        const cdScope = nockGetClusterDeployment()
-        const csrScope = nockListCertificateSigningRequests()
-        const mcaScope = nockGetManagedClusterAddons()
-        const managedClusterNock = nockGetManagedCluster()
-        const hiveScope = nockListHiveProvisionJobs()
-        const listClusterProvisionsNock = nockListClusterProvision()
 
-        const rbacNocks: Scope[] = [
-            nockCreate(mockGetSecretSelfSubjectAccessRequest),
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
-        ]
-
+        const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(hiveScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 2000 })
             await waitFor(() => expect(screen.getByText('tab.overview')).toBeInTheDocument())
@@ -753,32 +752,9 @@ describe('ClusterDetails', () => {
     })
 
     test('nodes page renders', async () => {
-        const mciScope = nockGetManagedClusterInfo()
-        const cdScope = nockGetClusterDeployment()
-        const csrScope = nockListCertificateSigningRequests()
-        const mcaScope = nockGetManagedClusterAddons()
-        const managedClusterNock = nockGetManagedCluster()
-        const listClusterProvisionsNock = nockListClusterProvision()
-
-        const rbacNocks: Scope[] = [
-            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
-        ]
-
+        const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
@@ -799,32 +775,9 @@ describe('ClusterDetails', () => {
     })
 
     test('settings page renders', async () => {
-        const mciScope = nockGetManagedClusterInfo()
-        const cdScope = nockGetClusterDeployment()
-        const csrScope = nockListCertificateSigningRequests()
-        const mcaScope = nockGetManagedClusterAddons()
-        const managedClusterNock = nockGetManagedCluster()
-        const listClusterProvisionsNock = nockListClusterProvision()
-
-        const rbacNocks: Scope[] = [
-            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
-        ]
-
+        const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
 
         await act(async () => {
             await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
@@ -869,5 +822,52 @@ describe('ClusterDetails', () => {
             await waitFor(() => expect(screen.queryByText('Loading')).toBeNull(), { timeout: 10000 })
             await waitFor(() => expect(screen.getByText('Bad request')).toBeInTheDocument())
         })
+    })
+
+    test('overview page handles detach', async () => {
+        const nocks = defaultNocks()
+        let { queryAllByText, getByText } = render(<Component />)
+        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+        await waitFor(() => expect(getByText('tab.overview')).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByText('actions').length).toBeGreaterThan(0))
+        userEvent.click(getByText('actions'))
+
+        await waitFor(() => expect(queryAllByText('managed.detached')).toHaveLength(1))
+        userEvent.click(getByText('managed.detached'))
+
+        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster.metadata.name!)
+
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster)]
+
+        await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
+        userEvent.click(getByText('detach'))
+
+        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
+    })
+
+    test('overview page handles destroy', async () => {
+        const nocks = defaultNocks()
+        let { queryAllByText, getByText } = render(<Component />)
+        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+
+        await waitFor(() => expect(getByText('tab.overview')).toBeInTheDocument())
+
+        await waitFor(() => expect(queryAllByText('actions').length).toBeGreaterThan(0))
+        userEvent.click(getByText('actions'))
+
+        await waitFor(() => expect(queryAllByText('managed.destroySelected')).toHaveLength(1))
+        userEvent.click(getByText('managed.destroySelected'))
+
+        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster.metadata.name!)
+
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
+
+        await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
+        userEvent.click(getByText('destroy'))
+
+        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
     })
 })

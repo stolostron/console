@@ -76,6 +76,8 @@
     "import.form.labels.label": "Additional labels",
     "import.command.fake": "echo <The encoded CRD is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f - && sleep 2 && echo <The encoded YAML is only displayed in the command when you click the Copy button.> | base64 --decode | kubectl apply -f -",
     "import.command.generated": "1. Copy this command",
+    "import.command.copy": "Copy command",
+    "import.command.copy.description": "Click the button to have the command automatically copied to your clipboard.",
     "import.command.configurecluster": "2. Run this command with kubectl configured for your targeted cluster to start the import",
     "import.command.configureclusterdescription": "Log in to the existing cluster in your terminal and run the command.",
     "import.command.configurediscoveredclusterdescription": "Log in to the existing cluster in your terminal and run the command. Because your cluster is OpenShift version 4.5 or higher, you can also run this command in your console's web terminal (tech preview).",
