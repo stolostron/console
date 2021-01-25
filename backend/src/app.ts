@@ -429,7 +429,7 @@ async function projectsRequest(
     res.writeHead(200, { 'content-type': 'application/json' })
     res.write('{"items":[')
     let first = true
-    if (projects?.items) {
+    if (projects?.items && projects.items.length > 0) {
         await new Promise<void>((resolve) => {
             const projectCount = projects?.items.length
             let projectsComplete = 0
@@ -470,7 +470,7 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
     res.writeHead(200, { 'content-type': 'application/json' })
     res.write('{"items":[')
     let first = true
-    if (projects?.items) {
+    if (projects?.items && projects.items.length > 0) {
         await new Promise<void>((resolve) => {
             const projectCount = projects?.items.length
             let projectsComplete = 0
