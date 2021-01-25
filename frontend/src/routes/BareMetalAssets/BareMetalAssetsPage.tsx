@@ -23,7 +23,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { BMATableRbacAccess, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import { BMATableRbacAccess, createSubjectAccessReview, rbacMapping } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -112,23 +112,16 @@ export function BareMetalAssetsTable(props: {
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
-        const resourceList = rbacMapping('cluster.create')
-        const promiseResult = createSubjectAccessReviews(resourceList)
+        const resourceAttribute = rbacMapping('cluster.create')[0]
+        const promiseResult = createSubjectAccessReview(resourceAttribute)
         let allowed = true
         promiseResult.promise
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
-            .then((results) => {
-                if (results) {
-                    results.forEach((result) => {
-                        if (result.status === 'fulfilled') {
-                            allowed = allowed && result.value.status?.allowed!
-                        }
-                    })
-                }
+            .then((result) => {
+                allowed = allowed && result.status?.allowed!
                 setcreationAccessRestriction(!allowed)
+            })
+            .catch((err) => {
+                console.error(err)
             })
     }, [])
 
