@@ -23,7 +23,12 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { BMATableRbacAccess, createSubjectAccessReviews, rbacMapping } from '../../resources/self-subject-access-review'
+import {
+    BMATableRbacAccess,
+    createSubjectAccessReview,
+    createSubjectAccessReviews,
+    rbacMapping,
+} from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -79,7 +84,13 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
+    return (
+        <BareMetalAssetsTable
+            bareMetalAssets={data}
+            deleteBareMetalAsset={deleteResource}
+            refresh={refresh}
+        ></BareMetalAssetsTable>
+    )
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -91,6 +102,7 @@ export function BareMetalAssetsTable(props: {
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
     refresh: () => void
 }) {
+    const [creationAccessRestriction, setCreationAccessRestriction] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
@@ -103,6 +115,18 @@ export function BareMetalAssetsTable(props: {
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const { t } = useTranslation(['bma', 'common'])
+
+    useEffect(() => {
+        const resourceAttribute = rbacMapping('cluster.create')[0]
+        const promiseResult = createSubjectAccessReview(resourceAttribute)
+        promiseResult.promise
+            .then((result) => {
+                setCreationAccessRestriction(!result.status?.allowed)
+            })
+            .catch((err) => {
+                console.error(err)
+            })
+    }, [])
 
     function abortRbacPromises() {
         abortRbacCheck?.forEach((abort) => abort())
@@ -355,6 +379,8 @@ export function BareMetalAssetsTable(props: {
                             id: 'createBareMetalAssetCluster',
                             title: t('bareMetalAsset.bulkAction.createCluster'),
                             click: (items) => {},
+                            isDisabled: creationAccessRestriction,
+                            tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
                         },
                     ]}
                     rowActions={[]}
