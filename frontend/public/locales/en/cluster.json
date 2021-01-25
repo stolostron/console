@@ -31,10 +31,19 @@
     "discovery.enablediscoverybtn": "Enable cluster discovery",
     "discovery.emptyStateHeader": "No clusters are discovered, yet",
     "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
-    "button.backToClusters": "Back to Clusters page",
+    "button.backToClusters": "Back to Cluster management",
 
     "cluster.detach.description": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
     "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be deprovisioned.",
+
+    "detaching.inprogress": "{{clusterName}} is being detached",
+    "destroying.inprogress": "{{clusterName}} is being destroyed",
+    "detaching.inprogress.message": "It might take a few minutes for the detach process to complete. Select Back to Cluster management or wait here.",
+    "destroying.inprogress.message": "It might take a few minutes for the destroy process to complete. Select Back to Cluster management or View logs to see the cluster deprovision logs, or wait here.",
+    "detaching.success": "{{clusterName}} was successfully detached",
+    "destroying.success": "{{clusterName}} was successfully destroyed",
+    "detaching.success.message": "{{clusterName}} was successfully detached. Select Back to Cluster management or create a new cluster.",
+    "destroying.success.message": "{{clusterName}} was successfully destroyed. Select Back to Cluster management or create a new cluster.",
 
     "configuration.download": "Download configuration",
     "actions": "Actions",

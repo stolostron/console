@@ -4,7 +4,7 @@ import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
-import { ClusterStatus } from '../../../../lib/get-cluster'
+import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { getHivePod } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useQuery } from '../../../../lib/useQuery'
@@ -69,30 +69,7 @@ export function HiveNotification() {
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
                         <AcmButton
-                            onClick={() => {
-                                const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector(
-                                    '#openshift-console-url'
-                                )
-                                /* istanbul ignore next */
-                                const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
-                                /* istanbul ignore next */
-                                const name = cluster?.name ?? ''
-                                /* istanbul ignore next */
-                                const namespace = cluster?.namespace ?? ''
-                                /* istanbul ignore next */
-                                const status = cluster?.status ?? ''
-                                /* istanbul ignore else */
-                                if (name && namespace) {
-                                    const response = getHivePod(namespace, name, status)
-                                    response.then((job) => {
-                                        const podName = job?.metadata.name
-                                        podName &&
-                                            window.open(
-                                                `${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`
-                                            )
-                                    })
-                                }
-                            }}
+                            onClick={() => launchLogs(cluster)}
                             variant={ButtonVariant.link}
                             role="link"
                             id="view-logs"
@@ -107,4 +84,26 @@ export function HiveNotification() {
             />
         </div>
     )
+}
+
+export function launchLogs(cluster?: Cluster) {
+    if (cluster) {
+        const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector('#openshift-console-url')
+        /* istanbul ignore next */
+        const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
+        /* istanbul ignore next */
+        const name = cluster?.name ?? ''
+        /* istanbul ignore next */
+        const namespace = cluster?.namespace ?? ''
+        /* istanbul ignore next */
+        const status = cluster?.status ?? ''
+        /* istanbul ignore else */
+        if (name && namespace) {
+            const response = getHivePod(namespace, name, status)
+            response.then((job) => {
+                const podName = job?.metadata.name
+                podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
+            })
+        }
+    }
 }
