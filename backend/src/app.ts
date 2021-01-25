@@ -529,9 +529,9 @@ function isNameScope(url: string): boolean {
         url = url.substr(0, url.indexOf('?'))
     }
     if (url.startsWith('/api/')) {
-        return url.split('/').length === 5
+        return url.split('/').length === 5 || url.split('/').length === 7
     } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 6
+        return url.split('/').length === 6 || url.split('/').length === 8
     }
     return false
 }
