@@ -24,6 +24,38 @@ const bareMetalAsset: BareMetalAsset = {
     },
 }
 
+function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
+    )
+}
+
+function clusterCreationResourceAttributes() {
+    return {
+        resource: 'managedclusters',
+        verb: 'create',
+        group: 'cluster.open-cluster-management.io',
+    } as ResourceAttributes
+}
+
 const mockBareMetalAssets = [bareMetalAsset]
 
 function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
@@ -80,12 +112,14 @@ function nocksAreDone(nocks: Scope[]) {
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
+        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
 
         const { getAllByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
         )
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0))
         expect(getAllByText(mockBareMetalAssets[0].metadata.namespace!).length > 0)
@@ -94,6 +128,7 @@ describe('bare metal asset page', () => {
     test('can delete asset from overflow menu', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
+        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccesssRequest(
                 getEditBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
@@ -108,6 +143,7 @@ describe('bare metal asset page', () => {
             </MemoryRouter>
         )
 
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         userEvent.click(getAllByLabelText('Actions')[0])
@@ -122,6 +158,7 @@ describe('bare metal asset page', () => {
     test('can delete asset(s) from batch action menu', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
+        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
         const listNockii = nockList(bareMetalAsset, [])
 
         const { getByText, getAllByText, getByLabelText, queryByText } = render(
@@ -130,6 +167,7 @@ describe('bare metal asset page', () => {
             </MemoryRouter>
         )
 
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
