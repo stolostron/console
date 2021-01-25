@@ -429,7 +429,7 @@ async function projectsRequest(
     res.writeHead(200, { 'content-type': 'application/json' })
     res.write('{"items":[')
     let first = true
-    if (projects?.items) {
+    if (projects?.items && projects.items.length > 0) {
         await new Promise<void>((resolve) => {
             const projectCount = projects?.items.length
             let projectsComplete = 0
@@ -470,7 +470,7 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
     res.writeHead(200, { 'content-type': 'application/json' })
     res.write('{"items":[')
     let first = true
-    if (projects?.items) {
+    if (projects?.items && projects.items.length > 0) {
         await new Promise<void>((resolve) => {
             const projectCount = projects?.items.length
             let projectsComplete = 0
@@ -529,9 +529,9 @@ function isNameScope(url: string): boolean {
         url = url.substr(0, url.indexOf('?'))
     }
     if (url.startsWith('/api/')) {
-        return url.split('/').length === 5
+        return url.split('/').length === 5 || url.split('/').length === 7
     } else if (url.startsWith('/apis/')) {
-        return url.split('/').length === 6
+        return url.split('/').length === 6 || url.split('/').length === 8
     }
     return false
 }
