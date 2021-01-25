@@ -119,7 +119,6 @@ export function BareMetalAssetsTable(props: {
     useEffect(() => {
         const resourceAttribute = rbacMapping('cluster.create')[0]
         const promiseResult = createSubjectAccessReview(resourceAttribute)
-        let allowed = true
         promiseResult.promise
             .then((result) => {
                 setCreationAccessRestriction(!result.status?.allowed)
