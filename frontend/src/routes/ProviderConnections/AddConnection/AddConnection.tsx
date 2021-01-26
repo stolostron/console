@@ -369,7 +369,6 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                         !getProviderConnectionProviderID(providerConnection) ||
                         getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
                     }
-                    isRequired
                 />
                 <AcmTextInput
                     id="awsAccessKeyID"
