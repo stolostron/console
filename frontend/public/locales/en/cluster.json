@@ -21,7 +21,7 @@
     "managed.upgradeSelected": "Upgrade",
     "managed.importCluster": "Import an existing cluster",
     "managed.createCluster": "Create a cluster",
-    "managed.addCluster": "Add cluster",
+    "managed.addCluster": "Add a cluster",
     "managed.destroy": "Destroy",
     "managed.destroySelected": "Destroy cluster",
     "discovered": "Discovered",

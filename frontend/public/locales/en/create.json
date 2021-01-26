@@ -118,7 +118,7 @@
   "creation.ocp.cloud.loading.ocp.images": "Loading release image sets...",
   "creation.ocp.cloud.no.ocp.images": "No default images. Enter a release image path.",
   "creation.ocp.cloud.loading.connections": "Loading provider connections...",
-  "creation.ocp.cloud.no.connections": "No defined connections. Use 'Add a connection'.",
+  "creation.ocp.cloud.no.connections": "No defined connections. Select 'Add a connection' to create a connection.",
   "creation.ocp.cloud.add.connection": "Add a connection",
   "creation.ocp.cluster.add.label": "Add another label",
   "creation.ocp.cluster.add.host": "Search hosts with this label",
@@ -311,7 +311,7 @@
   "pagination.itemRangeDescription": "of {{0}} items",
 
   "editor.show.secrets": "Show secrets",
-  "enter.add.label": "Enter key=value then press enter or comma",
+  "enter.add.label": "Enter key=value, then type enter or a comma",
   "enter.duplicate.key": "Duplicate key: {{0}}",
   "cancel.label.create": "Cancel label create",
   "delete.label": "Delete label",
