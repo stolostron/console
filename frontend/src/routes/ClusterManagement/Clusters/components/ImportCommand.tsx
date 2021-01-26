@@ -161,7 +161,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
                 const klusterletCRD = secret.data?.['crds.yaml']
                 const importYaml = secret.data?.['import.yaml']
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo "The klusterlet CRD already exists and so this cluster is already imported or if it is detached and cleaned correctly"`
+                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo "The klusterlet CRD already exists and so this cluster is already imported or if it is detached, it was not cleaned correctly"`
                 )
             })
             .catch((err) => {
