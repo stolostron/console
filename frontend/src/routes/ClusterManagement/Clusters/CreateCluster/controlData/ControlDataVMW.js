@@ -105,6 +105,33 @@ const vmwControlData = [
                 collapsable: true,
                 collapsed: true,
             },
+            ///////////////////////  coresPerSocket  /////////////////////////////////////
+            {
+                name: 'creation.ocp.cores.per.socket',
+                tooltip: 'tooltip.creation.ocp.cores.per.socket',
+                id: 'masterCoresPerSocket',
+                type: 'number',
+                initial: '2',
+                validation: VALIDATE_NUMERIC,
+            },
+            ///////////////////////  cpus  /////////////////////////////////////
+            {
+                name: 'creation.ocp.cpus',
+                tooltip: 'tooltip.creation.ocp.cpus',
+                id: 'masterCpus',
+                type: 'number',
+                initial: '4',
+                validation: VALIDATE_NUMERIC,
+            },
+            ///////////////////////  memoryMB  /////////////////////////////////////
+            {
+                name: 'creation.ocp.memoryMB',
+                tooltip: 'tooltip.creation.ocp.memoryMB',
+                id: 'masterMemoryMB',
+                type: 'number',
+                initial: '16384',
+                validation: VALIDATE_NUMERIC,
+            },
             ///////////////////////  root volume  /////////////////////////////////////
             {
                 name: 'creation.ocp.root.storage',
