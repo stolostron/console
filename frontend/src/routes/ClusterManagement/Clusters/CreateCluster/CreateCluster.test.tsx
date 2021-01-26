@@ -83,6 +83,9 @@ const providerConnection: ProviderConnection = {
     metadata: {
         name: 'connection',
         namespace: clusterName,
+        labels: {
+          'cluster.open-cluster-management.io/provider': 'bmc'
+        }
     },
     spec: {
         libvirtURI: 'qemu+ssh://libvirtURI',
@@ -130,7 +133,7 @@ const bmaSecret: Secret = {
         namespace: 'test-bare-metal-asset-namespace',
         name: 'test-bma-bmc-secret',
     },
-    data: { password: 'encoded', username: 'encoded' },
+    data: { password: 'pass', username: 'user' },
 }
 const mockBareMetalSecrets = Array.from({length: 5}, (val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
@@ -167,6 +170,7 @@ describe('CreateCluster', () => {
         const listConnections = nockList(providerConnection, mockProviderConnection, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])
+        window.scrollBy = ()=>{}
         const listHosts = nockList(bareMetalAsset, mockBareMetalAssets)
         const getSecret0 = nockGet(mockBareMetalSecrets[0])
         const getSecret1 = nockGet(mockBareMetalSecrets[1])
@@ -200,10 +204,9 @@ describe('CreateCluster', () => {
         userEvent.type(getByTestId('dnsVIP'), '10.0.0.3') //10.0.0.3
         
         // click create button
-        userEvent.click(getByTestId('create-button-portal-id'))
+        userEvent.click(getByTestId('create-button-portal-id-btn'))
         
-        await new Promise((r) => setTimeout(r, 2000));
-        
+        await new Promise((r) => setTimeout(r, 5000));        
   console.log('here')
         screen.debug(debug(), 2000000)        
   console.log('there')        
