@@ -369,7 +369,6 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                         !getProviderConnectionProviderID(providerConnection) ||
                         getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
                     }
-                    isRequired
                 />
                 <AcmTextInput
                     id="awsAccessKeyID"
@@ -691,7 +690,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     size="xl"
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                 >
-                    Configure for disconnected installation
+                    {t('addConnection.configureDisconnectedInstall.label')}
                 </Title>
                 <AcmTextInput
                     id="imageMirror"

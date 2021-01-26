@@ -1,9 +1,9 @@
 {
-  "page.header.create-cluster": "Create cluster",
+  "page.header.create-cluster": "Create a cluster",
   "page.header.create-cluster.tooltip": "Create clusters across different providers.",
   "learn.more": "Learn more",
   "clusters": "Clusters",
-  "managed.createCluster": "Create cluster",
+  "managed.createCluster": "Create a cluster",
   "cluster.create.title": "Create a cluster",
   "cluster.create.select.cloudprovider": "Select a provider",
   "cluster.create.select.cloudprovider.description": "Select a managed service.",
@@ -50,7 +50,7 @@
   "cluster.create.ocp.ibmcloud.title": "Select to create an OpenShift Container Platform on IBM Cloud",
   "cluster.create.ocp.ibmcloud.subtitle": "OpenShift on IBM Cloud",
   "cluster.create.configure.cloudconnection": "Provider connection",
-  "cluster.create.configure.cloudconnection.add": "Add connection",
+  "cluster.create.configure.cloudconnection.add": "Add a connection",
   "cluster.create.configure.noconnections": "No connections available",
   "cluster.create.configure.createconnection": "Add a provider connection",
   "cluster.create.ocp.subtitle": "Red Hat OpenShift",
@@ -118,8 +118,8 @@
   "creation.ocp.cloud.loading.ocp.images": "Loading release image sets...",
   "creation.ocp.cloud.no.ocp.images": "No default images. Enter a release image path.",
   "creation.ocp.cloud.loading.connections": "Loading provider connections...",
-  "creation.ocp.cloud.no.connections": "No defined connections. Use 'Add connection'.",
-  "creation.ocp.cloud.add.connection": "Add connection",
+  "creation.ocp.cloud.no.connections": "No defined connections. Select 'Add a connection' to create a connection.",
+  "creation.ocp.cloud.add.connection": "Add a connection",
   "creation.ocp.cluster.add.label": "Add another label",
   "creation.ocp.cluster.add.host": "Search hosts with this label",
   "creation.ocp.cluster.node.pool.info": "The instance type and quantity of master and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.",
@@ -309,13 +309,13 @@
   "pagination.pageRange": "{{0}} of {{1}} pages",
   "pagination.itemRange": "{{0}}-{{1}}",
   "pagination.itemRangeDescription": "of {{0}} items",
-  
+
   "editor.show.secrets": "Show secrets",
-  "enter.add.label": "Enter key=value then press enter or comma",
+  "enter.add.label": "Enter key=value, then type enter or a comma",
   "enter.duplicate.key": "Duplicate key: {{0}}",
   "cancel.label.create": "Cancel label create",
   "delete.label": "Delete label",
-  "resource.none": "None",  
+  "resource.none": "None",
   "button.save.access.denied": "You are not authorized to save any changes.",
   "changes.maybe.lost": " Changes you made might not be saved.",
   "edit.yaml.on": "YAML: On",
@@ -341,7 +341,7 @@
   "success.create.generating": "Generating import command ...",
   "overview.error.default": "An unexpected error occurred. Try again.",
 
-  
+
   "formerror.required": "Required field",
   "formerror.json.required": "JSON required",
   "formerror.public.key.required": "Public key required",
@@ -371,5 +371,5 @@
   "validation.bad.type": "The '{{0}}' key must point to this value type: {{1}}",
   "validation.bad.value": "The '{{0}}' key must point to one of these values: {{1}}",
   "validation.number.value": "Number is not valid"
-  
+
 }
