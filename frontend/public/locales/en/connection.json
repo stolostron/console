@@ -49,7 +49,7 @@
     "addConnection.clientId.placeholder": "Enter your Client ID",
     "addConnection.clientId.labelHelp": "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'.",
     "addConnection.clientSecret.label": "Client secret",
-    "addConnection.clientSecret.placeholder": "Enter your Client secret",
+    "addConnection.clientSecret.placeholder": "Enter your client secret",
     "addConnection.clientSecret.labelHelp": "Your client password. This value is generated as the 'password' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'.",
     "addConnection.subscriptionId.label": "Subscription ID",
     "addConnection.subscriptionId.placeholder": "Enter your Subscription ID",
