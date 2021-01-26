@@ -87,10 +87,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         : [
                               <AcmSubmit
                                   id="submit-button"
-                                  isDisabled={
-                                      props.confirmText !== undefined &&
-                                      confirm.toUpperCase() !== props.confirmText.toUpperCase()
-                                  }
+                                  isDisabled={props.confirmText !== undefined && confirm !== props.confirmText}
                                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                   onClick={async () => {
                                       alertContext.clearAlerts()

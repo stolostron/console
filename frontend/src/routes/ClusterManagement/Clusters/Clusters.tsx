@@ -371,7 +371,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: cluster.name!.toUpperCase(),
+                                            confirmText: cluster.name,
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -399,7 +399,7 @@ export function ClustersTable(props: {
                                                 props.refresh()
                                             },
                                             isDanger: true,
-                                            confirmText: cluster.name!.toUpperCase(),
+                                            confirmText: cluster.name,
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],

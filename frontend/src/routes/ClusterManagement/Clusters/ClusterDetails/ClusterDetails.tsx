@@ -380,7 +380,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                         refresh()
                                                     },
                                                     isDanger: true,
-                                                    confirmText: cluster.name!.toUpperCase(),
+                                                    confirmText: cluster.name,
                                                 })
                                             },
                                         },
@@ -408,7 +408,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                         refresh()
                                                     },
                                                     isDanger: true,
-                                                    confirmText: cluster.name!.toUpperCase(),
+                                                    confirmText: cluster.name,
                                                 })
                                             },
                                         },
