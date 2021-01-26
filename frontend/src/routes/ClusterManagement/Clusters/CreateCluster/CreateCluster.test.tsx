@@ -6,7 +6,14 @@ import { NavigationPath } from '../../../../NavigationPath'
 import CreateClusterPage from './CreateCluster'
 
 import { nockList, nockGet, nockPatch, nockOptions, nockCreate } from '../../../../lib/nock-util'
-import { Project, ProjectApiVersion, ProjectKind } from '../../../../resources/project'
+import {
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+} from '../../../../resources/project'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
 import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../resources/cluster-image-set'
 import { ProviderConnection, 
@@ -23,6 +30,7 @@ import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secr
 import {cloneDeep} from 'lodash'
 
 const clusterName = 'test'
+const projectNamespace = 'test-bare-metal-asset-namespace'
 
 const mockClusterDeployment: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
@@ -108,7 +116,7 @@ const bareMetalAsset: BareMetalAsset = {
     kind: BareMetalAssetKind,
     metadata: {
         name: 'test-bare-metal-asset-001',
-        namespace: 'test-bare-metal-asset-namespace',
+        namespace: projectNamespace,
     },
     spec: {
         bmc: {
@@ -121,7 +129,6 @@ const bareMetalAsset: BareMetalAsset = {
 const mockBareMetalAssets = Array.from({length: 5}, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
-    mockedBma.metadata.uid = `uid${inx}`
     mockedBma.spec.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
     return mockedBma
 })
@@ -130,17 +137,74 @@ const bmaSecret: Secret = {
     kind: SecretKind,
     apiVersion: SecretApiVersion,
     metadata: {
+        name: 'test-bma-bmc-secret',
+        namespace: 'test-bare-metal-asset-namespace',
+    },
+    data: { password: btoa('pass'), username: btoa('user') },
+}
+
+const bmaSecretRes: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
         namespace: 'test-bare-metal-asset-namespace',
         name: 'test-bma-bmc-secret',
     },
-    data: { password: 'pass', username: 'user' },
+    data: { password: btoa('pass'), username: btoa('user') },
 }
+
 const mockBareMetalSecrets = Array.from({length: 5}, (val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
     mockedSecret.metadata.name = `secret-test-bare-metal-asset-${inx}`
     return mockedSecret
 })
 
+//////////////////////////////// CREATE MOCKS //////////////////////////////////////////
+const mockBareMetalAssets2 = Array.from({length: 3}, (val, inx) => {
+    const mockedBma = cloneDeep(bareMetalAsset)
+    mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
+    mockedBma.spec.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
+    return mockedBma
+})
+
+const mockProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: projectNamespace },
+}
+
+const mockProjectResponse: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+        name: projectNamespace,
+    },
+}
+
+const mockBareMetalAssets3 = Array.from({length: 2}, (val, inx) => {
+    const mockedBma = cloneDeep(bareMetalAsset)
+    mockedBma.metadata.name = `test-bare-metal-asset-${inx+3}`
+    mockedBma.spec.bmc.credentialsName = `test-bare-metal-asset-${inx+3}-bmc-secret`
+    return mockedBma
+})
+
+const createBmaSecretReq = Array.from({length: 2}, (val, inx) => {
+    const mockedSecret = cloneDeep(bmaSecret)
+    mockedSecret.metadata.name = `test-bare-metal-asset-${inx+3}-bmc-secret`
+    delete mockedSecret.data
+    mockedSecret.stringData = { password: 'pass', username: 'user' }
+    return mockedSecret
+})
+
+const createBmaSecretRes = Array.from({length: 2}, (val, inx) => {
+    const mockedSecret = cloneDeep(bmaSecretRes)
+    mockedSecret.metadata.name = `test-bare-metal-asset-${inx+3}-bmc-secret`
+    mockedSecret.data = { password: btoa('pass'), username: btoa('user') }
+    return mockedSecret
+})
+
+
+///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
@@ -179,7 +243,7 @@ describe('CreateCluster', () => {
         const getSecret4 = nockGet(mockBareMetalSecrets[4])
         
         // create the form
-        const { getByTestId, getByPlaceholderText, getByText, container,  debug } = render(<Component />)
+        const { getByTestId, getByPlaceholderText, getByText, container,  getAllByRole, debug } = render(<Component />)
         
         // start filling in the form
         userEvent.type(getByTestId('eman'), clusterName!)
@@ -198,22 +262,41 @@ describe('CreateCluster', () => {
         // finish the form
         await waitFor(() => expect(getByTestId('imageSet')))
         userEvent.type(getByTestId('imageSet'), clusterImageSet.spec.releaseImage!)
-        userEvent.type(getByPlaceholderText('creation.ocp.cloud.select.connection'), providerConnection.metadata.name!)
+        container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
+        getAllByRole('option')[0].click()
+        //userEvent.type(getByPlaceholderText('creation.ocp.cloud.select.connection'), providerConnection.metadata.name!)
         userEvent.click(container.querySelector('[name="check-all"]'))
-        userEvent.type(getByTestId('provisioningNetworkCIDR'), '10.4.5.3') //10.4.5.3
-        userEvent.type(getByTestId('dnsVIP'), '10.0.0.3') //10.0.0.3
+        userEvent.type(getByTestId('provisioningNetworkCIDR'), '10.4.5.3')
+        userEvent.type(getByTestId('dnsVIP'), `10.0.0.3{enter}`)
+        
+        
+        // nocks for cluster creation
+        // creates 2 less bmas so that backend creates those 2
+        const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const secretCreateNock1 = nockCreate(createBmaSecretReq[0], createBmaSecretRes[0])
+        const secretCreateNock2 = nockCreate(createBmaSecretReq[1], createBmaSecretRes[1])
+        const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
+        const bmaCreateNock2 = nockCreate(mockBareMetalAssets3[1])
         
         // click create button
         userEvent.click(getByTestId('create-button-portal-id-btn'))
+
+        // make sure created        
+        await waitFor(() => expect(getByText('success.create.creating')).toBeInTheDocument())
         
+        await waitFor(() => expect(listBmas.isDone()).toBeTruthy())
+        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        // two bmas will be created
+        await waitFor(() => expect(secretCreateNock1.isDone()).toBeTruthy())
+        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
+        await waitFor(() => expect(bmaCreateNock1.isDone()).toBeTruthy())
+        await waitFor(() => expect(bmaCreateNock2.isDone()).toBeTruthy())
         await new Promise((r) => setTimeout(r, 5000));        
-  console.log('here')
-        screen.debug(debug(), 2000000)        
-  console.log('there')        
-        
-        await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
-        //await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+
+//  console.log('here')
+//        screen.debug(debug(), 2000000)        
+//  console.log('there')        
         
     })
     

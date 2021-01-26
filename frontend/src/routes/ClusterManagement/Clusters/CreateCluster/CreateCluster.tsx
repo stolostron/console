@@ -16,9 +16,8 @@ import './style.css'
 import { controlData } from './controlData/ControlData'
 import hiveTemplate from './templates/hive-template.hbs'
 
-//import TemplateEditor from 'temptifly'
-//import 'temptifly/dist/styles.css'
-import TemplateEditor from 'C:/Users/jswanke/git/temptifly/src' //'temptifly'
+import TemplateEditor from 'temptifly'
+import 'temptifly/dist/styles.css'
 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -104,7 +103,6 @@ export default function CreateClusterPage() {
     if (typeof hiveTemplate === 'string') {
       template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
       Handlebars.registerPartial('endpoints', Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8')))
-      Handlebars.registerPartial('install-config', Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/install-config.hbs'), 'utf8')))
     }
     return (
         <AcmPage>

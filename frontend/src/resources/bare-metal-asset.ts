@@ -61,59 +61,59 @@ export function listBareMetalAssets() {
     }
 }
 
-export function createBareMetalAsset(asset: {
+export function createBareMetalAssetResource(asset: {
     name: string
     namespace: string
     bootMACAddress: string
-    bmc: { address: string; username: string; password: string }
+    bmc: { address: string; }
 }) {
     const {
         name,
         namespace,
         bootMACAddress,
-        bmc: { address, username, password },
+        bmc: { address },
     } = asset
     const credentialsName = `${name}-bmc-secret`
-    return new Promise((resolve, reject) => {
-        // create the secret
-        createResource<BMASecret>({
-            apiVersion: 'v1',
-            kind: 'Secret',
-            metadata: {
-                name: credentialsName,
-                namespace,
+    return createResource<BareMetalAsset>({
+        apiVersion: BareMetalAssetApiVersion,
+        kind: BareMetalAssetKind,
+        metadata: {
+            name,
+            namespace,
+        },
+        spec: {
+            bmc: {
+                address,
+                credentialsName: credentialsName,
             },
-            stringData: {
-                password,
-                username,
-            },
-        })
-            .promise.then((secret) => {
-                // create the asset
-                createResource<BareMetalAsset>({
-                    apiVersion: BareMetalAssetApiVersion,
-                    kind: BareMetalAssetKind,
-                    metadata: {
-                        name,
-                        namespace,
-                    },
-                    spec: {
-                        bmc: {
-                            address,
-                            credentialsName: secret.metadata.name ?? '',
-                        },
-                        bootMACAddress,
-                    },
-                })
-                    .promise.then((bma) => {
-                        resolve(bma)
-                    })
-                    .catch((err: Error) => {
-                        reject(err)
-                    })
-            })
-            .catch((err: Error) => {
-                reject(err)
-            })
+            bootMACAddress,
+        },
     })
 }
+
+
+export function createBareMetalAssetSecret(asset: {
+    name: string
+    namespace: string
+    bmc: { username: string; password: string }
+}) {
+    const {
+        name,
+        namespace,
+        bmc: { username, password },
+    } = asset
+    const credentialsName = `${name}-bmc-secret`
+    return createResource<BMASecret>({
+          apiVersion: 'v1',
+          kind: 'Secret',
+          metadata: {
+              name: credentialsName,
+              namespace,
+          },
+          stringData: {
+              password,
+              username,
+          },
+      })
+ }
+

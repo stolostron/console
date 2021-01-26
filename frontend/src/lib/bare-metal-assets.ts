@@ -1,4 +1,4 @@
-import { createBareMetalAsset, listBareMetalAssets } from '../resources/bare-metal-asset'
+import { createBareMetalAssetResource, createBareMetalAssetSecret, listBareMetalAssets } from '../resources/bare-metal-asset'
 import { createProject } from '../resources/project'
 import { patchResource } from '../lib/resource-request'
 import { get, keyBy } from 'lodash'
@@ -38,8 +38,15 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
         })
 
         // create the bma and its secret
-        results = newAssets.map((asset) => createBareMetalAsset(asset))
-        response = await Promise.allSettled(results.map((result) => result))
+        results = newAssets.map((asset) => createBareMetalAssetSecret(asset))
+        response = await Promise.allSettled(results.map((result) => result.promise))
+        response.forEach(({ status, reason, value }, inx) => {
+            if (status === 'rejected') {
+                errors.push({ message: reason.message })
+            }
+        })
+        results = newAssets.map((asset) => createBareMetalAssetResource(asset))
+        response = await Promise.allSettled(results.map((result) => result.promise))
         response.forEach(({ status, reason, value }, inx) => {
             if (status === 'rejected') {
                 errors.push({ message: reason.message })
