@@ -1,9 +1,23 @@
 import { listMCIs } from '../resources/managed-cluster-info'
 import { createResource, replaceResource } from './resource-request'
+import { syncBMAs, attachBMAs } from './bare-metal-assets'
 import { createProject } from '../resources/project'
-import { keyBy } from 'lodash'
+import { get, keyBy } from 'lodash'
 
 export async function createCluster(resources: JsonArray) {
+    // if creating a bare metal cluster
+    // make sure all the bare metal assets exist
+    let assets
+    let errors = []
+    const resourcesMap = keyBy(resources, 'kind')
+    const hosts = get(resourcesMap, 'ClusterDeployment.spec.platform.baremetal.hosts')
+    if (hosts) {
+        ;({ assets, errors } = await syncBMAs(hosts, resources))
+        if (errors.length) {
+            return errors
+        }
+    }
+
     // get namespace and filter out any namespace resource
     // get ClusterDeployment and filter it out to create at the very end
     let response
@@ -57,7 +71,7 @@ export async function createCluster(resources: JsonArray) {
     }
 
     // create cluster resources
-    const errors = []
+    errors = []
     const replaces = []
     let results = resources.map((resource) => createResource(resource))
     response = await Promise.allSettled(results.map((result) => result.promise))
@@ -92,6 +106,13 @@ export async function createCluster(resources: JsonArray) {
             }
         })
     }
+
+    // if this was a bare metal cluster mark the bare metal assets that are used
+    if (errors.length === 0 && assets) {
+        const clusterName = get(resourcesMap, 'ClusterDeployment.metadata.name')
+        await attachBMAs(assets, hosts, clusterName, errors)
+    }
+
     return {
         status: errors.length > 0 ? 'ERROR' : 'DONE',
         messages: errors.length > 0 ? errors : null,

@@ -208,8 +208,8 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.role'),
                             cell: (bareMetalAsset: BareMetalAsset) =>
-                                bareMetalAsset.metadata.labels?.['metadata.labels.metal3.io/role'] || '-',
-                            search: 'metadata.labels.metal3.io/role',
+                                bareMetalAsset.metadata.labels?.['metal3.io/role'] || '-',
+                            search: 'metal3.io/role',
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.status'),

@@ -4,6 +4,7 @@ import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
+import { isEqual } from 'lodash'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -147,13 +148,29 @@ export function nockNamespacedList<Resource extends IResource>(
 }
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), JSON.stringify(resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
+
+    // incredibly nock does a string comparison with the response
+    // so if the json strings don't equal it doesn't match!
+    if (response) {
+        scope.transformRequestBodyFunction = (body, request) => {
+            try {
+                if (isEqual(JSON.parse(body), JSON.parse(request))) {
+                    return request
+                }
+            } catch (e) {
+                //noop
+            }
+            return body
+        }
+    }
+    return scope
 }
 
 export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {

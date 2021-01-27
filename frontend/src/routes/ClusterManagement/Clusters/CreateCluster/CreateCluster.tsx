@@ -5,6 +5,8 @@ import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import fs from 'fs'
+import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { DOC_LINKS } from '../../../../lib/doc-util'
@@ -96,7 +98,15 @@ export default function CreateClusterPage() {
         return t(key, arg)
     }
 
-    const template = typeof hiveTemplate === 'string' ? Handlebars.compile(hiveTemplate) : hiveTemplate
+    let template = hiveTemplate
+    // react-scripts HATE jest transforms so we got to load the templates ourselves
+    if (typeof hiveTemplate === 'string') {
+        template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
+        Handlebars.registerPartial(
+            'endpoints',
+            Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
+        )
+    }
     return (
         <AcmPage>
             <AcmPageHeader
