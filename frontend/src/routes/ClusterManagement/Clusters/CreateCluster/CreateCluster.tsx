@@ -101,8 +101,11 @@ export default function CreateClusterPage() {
     let template = hiveTemplate
     // react-scripts HATE jest transforms so we got to load the templates ourselves
     if (typeof hiveTemplate === 'string') {
-      template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
-      Handlebars.registerPartial('endpoints', Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8')))
+        template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
+        Handlebars.registerPartial(
+            'endpoints',
+            Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
+        )
     }
     return (
         <AcmPage>

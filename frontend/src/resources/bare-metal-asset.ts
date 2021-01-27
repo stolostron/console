@@ -65,7 +65,7 @@ export function createBareMetalAssetResource(asset: {
     name: string
     namespace: string
     bootMACAddress: string
-    bmc: { address: string; }
+    bmc: { address: string }
 }) {
     const {
         name,
@@ -91,7 +91,6 @@ export function createBareMetalAssetResource(asset: {
     })
 }
 
-
 export function createBareMetalAssetSecret(asset: {
     name: string
     namespace: string
@@ -104,16 +103,15 @@ export function createBareMetalAssetSecret(asset: {
     } = asset
     const credentialsName = `${name}-bmc-secret`
     return createResource<BMASecret>({
-          apiVersion: 'v1',
-          kind: 'Secret',
-          metadata: {
-              name: credentialsName,
-              namespace,
-          },
-          stringData: {
-              password,
-              username,
-          },
-      })
- }
-
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+            name: credentialsName,
+            namespace,
+        },
+        stringData: {
+            password,
+            username,
+        },
+    })
+}

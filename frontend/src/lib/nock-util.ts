@@ -4,7 +4,7 @@ import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
-import {isEqual} from 'lodash'
+import { isEqual } from 'lodash'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -155,20 +155,20 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        
+
     // incredibly nock does a string comparison with the response
     // so if the json strings don't equal it doesn't match!
     if (response) {
-      scope.transformRequestBodyFunction = (body, request) => {
-        try {
-          if (isEqual(JSON.parse(body), JSON.parse(request))) {
-            return request
-          }
-        } catch (e) {
-          //noop
+        scope.transformRequestBodyFunction = (body, request) => {
+            try {
+                if (isEqual(JSON.parse(body), JSON.parse(request))) {
+                    return request
+                }
+            } catch (e) {
+                //noop
+            }
+            return body
         }
-        return body
-      }
     }
     return scope
 }

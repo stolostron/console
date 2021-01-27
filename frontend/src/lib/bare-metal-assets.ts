@@ -1,4 +1,8 @@
-import { createBareMetalAssetResource, createBareMetalAssetSecret, listBareMetalAssets } from '../resources/bare-metal-asset'
+import {
+    createBareMetalAssetResource,
+    createBareMetalAssetSecret,
+    listBareMetalAssets,
+} from '../resources/bare-metal-asset'
 import { createProject } from '../resources/project'
 import { patchResource } from '../lib/resource-request'
 import { get, keyBy } from 'lodash'

@@ -11,8 +11,10 @@ import vmwControlData from './ControlDataVMW'
 import bmcControlData from './ControlDataBMC'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 
-const installConfig = typeof installConfigHbs !== 'string' ? installConfigHbs :
-   Handlebars.compile(fs.readFileSync(path.resolve(__dirname, '../templates/install-config.hbs'), 'utf8'))
+const installConfig =
+    typeof installConfigHbs !== 'string'
+        ? installConfigHbs
+        : Handlebars.compile(fs.readFileSync(path.resolve(__dirname, '../templates/install-config.hbs'), 'utf8'))
 
 export const getActiveCardID = (control, fetchData = {}) => {
     const { requestedUIDs } = fetchData
