@@ -134,14 +134,12 @@ const vmwControlData = [
             },
             ///////////////////////  root volume  /////////////////////////////////////
             {
-                name: 'creation.ocp.root.storage',
-                tooltip: 'tooltip.creation.ocp.vmw.root.storage',
+                name: 'creation.ocp.diskSizeGB',
+                tooltip: 'tooltip.creation.ocp.diskSizeGB',
                 id: 'masterRootStorage',
-                type: 'combobox',
-                active: '100',
-                available: ['100', '300', '500', '800', '1000', '1200'],
+                type: 'number',
+                initial: '120',
                 validation: VALIDATE_NUMERIC,
-                cacheUserValueKey: 'create.cluster.master.root.storage',
             },
         ],
     },
