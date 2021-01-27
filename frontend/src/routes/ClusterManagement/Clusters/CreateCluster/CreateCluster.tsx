@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
@@ -120,24 +120,26 @@ export default function CreateClusterPage() {
                 ]}
                 actions={portals}
             />
-            <PageSection className="pf-c-content">
-                <TemplateEditor
-                    type={'cluster'}
-                    title={'Cluster YAML'}
-                    monacoEditor={<MonacoEditor />}
-                    controlData={controlData}
-                    template={template}
-                    portals={Portals}
-                    createControl={{
-                        createResource,
-                        cancelCreate,
-                        pauseCreate,
-                        creationStatus: creationStatus.status,
-                        creationMsg: creationStatus.messages,
-                    }}
-                    i18n={i18n}
-                />
-            </PageSection>
+            <AcmErrorBoundary>
+                <PageSection className="pf-c-content">
+                    <TemplateEditor
+                        type={'cluster'}
+                        title={'Cluster YAML'}
+                        monacoEditor={<MonacoEditor />}
+                        controlData={controlData}
+                        template={template}
+                        portals={Portals}
+                        createControl={{
+                            createResource,
+                            cancelCreate,
+                            pauseCreate,
+                            creationStatus: creationStatus.status,
+                            creationMsg: creationStatus.messages,
+                        }}
+                        i18n={i18n}
+                    />
+                </PageSection>
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }

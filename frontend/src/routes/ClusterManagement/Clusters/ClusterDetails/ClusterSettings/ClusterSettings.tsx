@@ -1,13 +1,23 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AcmPageCard, AcmTable, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
+import {
+    AcmPageCard,
+    AcmTable,
+    AcmInlineStatus,
+    StatusType,
+    AcmErrorBoundary,
+} from '@open-cluster-management/ui-components'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {
     const { addons, addonsError } = useContext(ClusterContext)
-    return <ClusterSettingsTable addons={addons} addonsError={addonsError} />
+    return (
+        <AcmErrorBoundary>
+            <ClusterSettingsTable addons={addons} addonsError={addonsError} />
+        </AcmErrorBoundary>
+    )
 }
 
 export function ClusterSettingsTable(props: { addons: Addon[] | undefined; addonsError: Error | undefined }) {

@@ -10,6 +10,7 @@ import {
     AcmTextInput,
     AcmSubmit,
     AcmButton,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, AlertVariant, Label, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -51,7 +52,9 @@ export default function ImportClusterPage() {
                     </>
                 }
             />
-            <ImportClusterPageContent />
+            <AcmErrorBoundary>
+                <ImportClusterPageContent />
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }
