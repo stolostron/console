@@ -60,9 +60,9 @@ controlPlane:
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus:  {{{../masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
-      coresPerSocket:  {{{../masterCpus}}} ##masterPool.{{@index}}.masterCpus
-      memoryMB:  {{{../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB    
+      cpus:  {{{../masterCpus}}} ##masterPool.{{@index}}.masterCpus
+      coresPerSocket:  {{{../masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
+      memoryMB:  {{{../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
         diskSizeGB: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
