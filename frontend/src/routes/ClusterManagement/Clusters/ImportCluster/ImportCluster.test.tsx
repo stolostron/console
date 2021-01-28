@@ -131,7 +131,7 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
         searchCollector: { enabled: true },
         certPolicyController: { enabled: true },
         iamPolicyController: { enabled: true },
-        version: '2.1.0',
+        version: '2.2.0',
     },
 }
 
@@ -182,7 +182,7 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
         iamPolicyController: { enabled: true },
         policyController: { enabled: true },
         searchCollector: { enabled: true },
-        version: '2.1.0',
+        version: '2.2.0',
     },
 }
 

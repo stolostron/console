@@ -79,10 +79,18 @@ const setAvailableBMAs = (control, result) => {
         } else if (bmas) {
             control.isLoaded = true
             control.active = []
-            control.available = bmas.map(formatBMA).sort(({ hostName: a }, { hostName: b }) => {
-                return a.localeCompare(b)
-            })
+            control.available = bmas
+                .filter((bma) => {
+                    return !_.get(bma, 'spec.clusterDeployment.name')
+                })
+                .map(formatBMA)
+                .sort(({ hostName: a }, { hostName: b }) => {
+                    return a.localeCompare(b)
+                })
             control.available.forEach(getCreds)
+            control.available.forEach((datum) => {
+                datum.id = datum.id.toString()
+            })
         } else {
             control.isLoading = loading
         }
@@ -114,8 +122,9 @@ const sortTable = (items, selectedKey, sortDirection, active) => {
         const activeMap = _.keyBy(active, 'id')
         items.sort(({ id: a }, { id: b }) => {
             return (
-                sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
-                sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))
+                (sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
+                    sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))) *
+                (sortDirection === 'asc' ? 1 : -1)
             )
         })
         return items

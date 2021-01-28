@@ -35,24 +35,32 @@ class WrappedImportBareMetalAssetsButton extends React.Component {
                 // parse csv
                 const allTextLines = content.split(/\r\n|\n/)
                 const headers = allTextLines.shift().split(',')
-                const lines = []
-                allTextLines.forEach((line) => {
-                    const data = line.split(',')
-                    if (data.length === headers.length) {
-                        const arr = []
-                        headers.forEach((header, inx) => {
-                            arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
-                        })
-                        arr.push(`"id": "${Math.random().toString()}"`)
-                        lines.push(`{${arr.join(',')}}`)
-                    }
-                })
+                if (headers.length > 3) {
+                    const lines = []
+                    allTextLines.forEach((line) => {
+                        const data = line.split(',')
+                        if (data.length === headers.length) {
+                            const arr = []
+                            headers.forEach((header, inx) => {
+                                arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
+                            })
+                            arr.push(`"id": "${Math.random().toString()}"`)
+                            lines.push(`{${arr.join(',')}}`)
+                        }
+                    })
 
-                try {
-                    const bmas = JSON.parse(`[${lines.join(',')}]`)
-                    appendTable(bmas)
-                } catch (err) {
-                    // handle exception
+                    try {
+                        const bmas = JSON.parse(`[${lines.join(',')}]`)
+                        bmas.map((bma) => {
+                            if (!bma.role) {
+                                bma.role = 'worker'
+                            }
+                            return bma
+                        })
+                        appendTable(bmas)
+                    } catch (err) {
+                        // handle exception
+                    }
                 }
             }
         }

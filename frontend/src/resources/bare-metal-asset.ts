@@ -1,5 +1,5 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { listResources, getResource } from '../lib/resource-request'
+import { createResource, listResources, getResource } from '../lib/resource-request'
 import { SecretApiVersionType, SecretKindType } from './secret'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
@@ -59,4 +59,59 @@ export function listBareMetalAssets() {
         }),
         abort: result.abort,
     }
+}
+
+export function createBareMetalAssetResource(asset: {
+    name: string
+    namespace: string
+    bootMACAddress: string
+    bmc: { address: string }
+}) {
+    const {
+        name,
+        namespace,
+        bootMACAddress,
+        bmc: { address },
+    } = asset
+    const credentialsName = `${name}-bmc-secret`
+    return createResource<BareMetalAsset>({
+        apiVersion: BareMetalAssetApiVersion,
+        kind: BareMetalAssetKind,
+        metadata: {
+            name,
+            namespace,
+        },
+        spec: {
+            bmc: {
+                address,
+                credentialsName: credentialsName,
+            },
+            bootMACAddress,
+        },
+    })
+}
+
+export function createBareMetalAssetSecret(asset: {
+    name: string
+    namespace: string
+    bmc: { username: string; password: string }
+}) {
+    const {
+        name,
+        namespace,
+        bmc: { username, password },
+    } = asset
+    const credentialsName = `${name}-bmc-secret`
+    return createResource<BMASecret>({
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+            name: credentialsName,
+            namespace,
+        },
+        stringData: {
+            password,
+            username,
+        },
+    })
 }
