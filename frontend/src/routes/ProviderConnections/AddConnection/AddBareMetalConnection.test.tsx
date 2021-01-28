@@ -100,7 +100,7 @@ describe('add connection page', () => {
             },
             spec: {
                 libvirtURI: 'qemu+ssh://libvirtURI',
-                sshKnownHosts: 'sshKnownHosts',
+                sshKnownHosts: ['sshKnownHosts'],
                 imageMirror: 'image.mirror:123/abc',
                 bootstrapOSImage: 'bootstrapOSImage',
                 clusterOSImage: 'clusterOSImage',
@@ -135,7 +135,7 @@ describe('add connection page', () => {
             providerConnection.spec!.baseDomainResourceGroupName!
         )
         userEvent.type(getByTestId('libvirtURI'), providerConnection.spec!.libvirtURI!)
-        userEvent.type(getByTestId('sshKnownHosts'), providerConnection.spec!.sshKnownHosts!)
+        userEvent.type(getByTestId('sshKnownHosts'), providerConnection.spec!.sshKnownHosts![0])
         userEvent.type(getByTestId('imageMirror'), providerConnection.spec!.imageMirror!)
         userEvent.type(getByTestId('bootstrapOSImage'), providerConnection.spec!.bootstrapOSImage!)
         userEvent.type(getByTestId('clusterOSImage'), providerConnection.spec!.clusterOSImage!)

@@ -620,10 +620,26 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     label={t('addConnection.sshKnownHosts.label')}
                     placeholder={t('addConnection.sshKnownHosts.placeholder')}
                     labelHelp={t('addConnection.sshKnownHosts.labelHelp')}
-                    value={providerConnection.spec?.sshKnownHosts}
+                    value={providerConnection.spec?.sshKnownHosts?.join?.('\n')}
                     onChange={(sshKnownHosts) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.sshKnownHosts = sshKnownHosts
+                            const knownSSHs = sshKnownHosts
+                                .trim()
+                                .split(/[\r\n]+/g)
+                                .map((ssh) => {
+                                    ssh = ssh.trim()
+                                    if (ssh.startsWith('-')) {
+                                        ssh = ssh.substr(1).trim()
+                                    }
+                                    if (ssh.startsWith('"')) {
+                                        ssh = ssh.substr(1)
+                                    }
+                                    if (ssh.endsWith('"')) {
+                                        ssh = ssh.slice(0, -1)
+                                    }
+                                    return ssh
+                                })
+                            providerConnection.spec!.sshKnownHosts = knownSSHs
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
