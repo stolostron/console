@@ -162,7 +162,7 @@ const createBmaSecretReq = Array.from({ length: 2 }, (val, inx) => {
 const createBmaSecretRes = Array.from({ length: 2 }, (val, inx) => {
     const mockedSecret = cloneDeep(bmaSecretRes)
     mockedSecret.metadata.name = `test-bare-metal-asset-${inx + 3}-bmc-secret`
-    mockedSecret.data = { password: btoa('pass'), username: btoa('user') }
+    mockedSecret.data = { password: 'encoded', username: 'encoded' }
     return mockedSecret
 })
 
@@ -265,7 +265,7 @@ const mockKlusterletAddonSecret = {
         iamPolicyController: {
             enabled: true,
         },
-        version: '2.1.0',
+        version: '2.2.0',
     },
 }
 
