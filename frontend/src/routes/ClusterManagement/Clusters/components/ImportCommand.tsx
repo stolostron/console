@@ -154,14 +154,16 @@ export function ImportCommand(props: ImportCommandProps) {
 }
 
 export async function pollImportYamlSecret(clusterName: string): Promise<string> {
+    const { t } = useTranslation(['cluster', 'common'])
     let retries = 10
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
             .promise.then((secret) => {
                 const klusterletCRD = secret.data?.['crds.yaml']
                 const importYaml = secret.data?.['import.yaml']
+                const alreadyImported = t('import.command.alreadyImported')
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo "The klusterlet CRD already exists and so this cluster is already imported or if it is detached, it was not cleaned correctly"`
+                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo ${alreadyImported}`
                 )
             })
             .catch((err) => {
