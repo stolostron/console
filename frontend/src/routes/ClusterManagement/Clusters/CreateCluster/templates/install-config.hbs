@@ -130,6 +130,13 @@ compute:
   {{/case}}
 
   {{#case 'vSphere'}}
+  platform:
+    vsphere:
+      cpus:  {{{../cpus}}} ##workerPools.{{@index}}.cpus
+      coresPerSocket:  {{{../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
+      memoryMB:  {{{../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+      osDisk:
+        diskSizeGB: {{{../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
 {{/switch}}
