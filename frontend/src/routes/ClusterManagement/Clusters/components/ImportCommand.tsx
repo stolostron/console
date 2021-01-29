@@ -36,7 +36,7 @@ export function ImportCommandContainer() {
             cluster?.status === ClusterStatus.pendingimport
         ) {
             setLoading(true)
-            pollImportYamlSecret(cluster?.name)
+            pollImportYamlSecret(t, cluster?.name)
                 .then((command: string) => {
                     setImportCommand?.(command)
                 })
@@ -48,7 +48,7 @@ export function ImportCommandContainer() {
                     setLoading(false)
                 })
         }
-    }, [cluster, error, loading, importCommand, setImportCommand])
+    }, [t, cluster, error, loading, importCommand, setImportCommand])
 
     if (loading) {
         return (
@@ -153,15 +153,16 @@ export function ImportCommand(props: ImportCommandProps) {
     )
 }
 
-export async function pollImportYamlSecret(clusterName: string): Promise<string> {
+export async function pollImportYamlSecret(t: any, clusterName: string): Promise<string> {
     let retries = 10
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
             .promise.then((secret) => {
                 const klusterletCRD = secret.data?.['crds.yaml']
                 const importYaml = secret.data?.['import.yaml']
+                const alreadyImported = t('import.command.alreadyimported')
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`
+                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo -e "${alreadyImported}"`
                 )
             })
             .catch((err) => {
