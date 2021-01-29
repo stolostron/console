@@ -48,7 +48,7 @@ export function ImportCommandContainer() {
                     setLoading(false)
                 })
         }
-    }, [cluster, error, loading, importCommand, setImportCommand])
+    }, [t, cluster, error, loading, importCommand, setImportCommand])
 
     if (loading) {
         return (
