@@ -172,7 +172,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText('bareMetalAsset.bulkAction.destroyAsset'))
+        userEvent.click(getByText('bareMetalAsset.bulkAction.deleteAsset'))
         expect(getByText('common:delete')).toBeInTheDocument()
         userEvent.click(getByText('common:delete'))
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish

@@ -26,7 +26,6 @@ import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { validateK8sCharacters } from '../../../../lib/validation'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -133,7 +132,6 @@ export function ImportClusterPageContent() {
                         isDisabled={submitted}
                         onChange={(name) => setClusterName(name)}
                         placeholder={t('import.form.clusterName.placeholder')}
-                        validation={(value) => validateK8sCharacters(value, t)}
                         isRequired
                     />
                     <AcmLabelsInput

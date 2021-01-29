@@ -124,16 +124,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     addonStopPolling()
                     setClusterIsRemoved(true)
                 } else {
-                    const cdRequest = results[0] as PromiseRejectedResult
-                    const mcRequest = results[3] as PromiseRejectedResult
-                    console.log('cdRequest', cdRequest)
-                    console.log('mcRequest', mcRequest)
-                    const resourceError: ResourceError = {
-                        code: mcRequest.reason.code as ResourceErrorCode,
-                        message: `${mcRequest.reason.message}.  ${cdRequest.reason.message}` as string,
-                        name: '',
-                    }
-                    setClusterError(resourceError)
+                    setClusterError(results[3].reason)
                 }
             } else {
                 const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))

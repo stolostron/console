@@ -127,13 +127,3 @@ export function validateImageMirror(value: string, t: TFunction) {
     }
     return undefined
 }
-
-export function validateK8sCharacters(value: string, t: TFunction) {
-    const VALID_K8S_CHARACTERS = new RegExp('(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?')
-    console.log('test', value, VALID_K8S_CHARACTERS.test(value))
-    if (!VALID_K8S_CHARACTERS.test(value)) {
-        return t('common:validate.k8s.characters')
-    }
-    return undefined
-}
-
