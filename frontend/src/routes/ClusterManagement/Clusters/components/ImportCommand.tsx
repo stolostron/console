@@ -162,7 +162,7 @@ export async function pollImportYamlSecret(t: any,clusterName: string): Promise<
                 const importYaml = secret.data?.['import.yaml']
                 const alreadyImported = t('import.command.alreadyimported')
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo ${alreadyImported}`
+                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo -e "${alreadyImported}"`
                 )
             })
             .catch((err) => {
