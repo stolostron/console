@@ -165,10 +165,10 @@ export function ImportClusterPageContent() {
                                 {t('import.importmode.importsaved')}
                             </Label>
                         ) : (
-                                <Link to={NavigationPath.clusters} id="cancel">
-                                    <Button variant="link">{t('common:cancel')}</Button>
-                                </Link>
-                            )}
+                            <Link to={NavigationPath.clusters} id="cancel">
+                                <Button variant="link">{t('common:cancel')}</Button>
+                            </Link>
+                        )}
                     </ActionGroup>
                     {importCommand && (
                         <React.Fragment>
