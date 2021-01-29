@@ -99,7 +99,7 @@ export function ImportClusterPageContent() {
                 createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
                 createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
 
-                setImportCommand(await pollImportYamlSecret(t,clusterName))
+                setImportCommand(await pollImportYamlSecret(t, clusterName))
             } catch (err) {
                 if (err instanceof Error) {
                     if (err.name === 'ResourceError') {
@@ -165,10 +165,10 @@ export function ImportClusterPageContent() {
                                 {t('import.importmode.importsaved')}
                             </Label>
                         ) : (
-                            <Link to={NavigationPath.clusters} id="cancel">
-                                <Button variant="link">{t('common:cancel')}</Button>
-                            </Link>
-                        )}
+                                <Link to={NavigationPath.clusters} id="cancel">
+                                    <Button variant="link">{t('common:cancel')}</Button>
+                                </Link>
+                            )}
                     </ActionGroup>
                     {importCommand && (
                         <React.Fragment>
