@@ -99,7 +99,7 @@ export function ImportClusterPageContent() {
                 createdResources.push(await createManagedCluster({ clusterName, clusterLabels }).promise)
                 createdResources.push(await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise)
 
-                setImportCommand(await pollImportYamlSecret(clusterName))
+                setImportCommand(await pollImportYamlSecret(t,clusterName))
             } catch (err) {
                 if (err instanceof Error) {
                     if (err.name === 'ResourceError') {

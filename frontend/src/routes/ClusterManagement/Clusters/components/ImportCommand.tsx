@@ -36,7 +36,7 @@ export function ImportCommandContainer() {
             cluster?.status === ClusterStatus.pendingimport
         ) {
             setLoading(true)
-            pollImportYamlSecret(cluster?.name)
+            pollImportYamlSecret(t,cluster?.name)
                 .then((command: string) => {
                     setImportCommand?.(command)
                 })
@@ -153,8 +153,7 @@ export function ImportCommand(props: ImportCommandProps) {
     )
 }
 
-export async function pollImportYamlSecret(clusterName: string): Promise<string> {
-    const { t } = useTranslation(['cluster', 'common'])
+export async function pollImportYamlSecret(t: any,clusterName: string): Promise<string> {
     let retries = 10
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
