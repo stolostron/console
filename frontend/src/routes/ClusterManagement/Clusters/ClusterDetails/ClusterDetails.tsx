@@ -76,7 +76,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
-    const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
+    const [clusterError, setClusterError] = useState<ResourceError | Error | undefined>(undefined)
     const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
 
     // Addons
@@ -126,6 +126,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 } else {
                     const cdRequest = results[0] as PromiseRejectedResult
                     const mcRequest = results[3] as PromiseRejectedResult
+                    console.log('cdRequest', cdRequest)
+                    console.log('mcRequest', mcRequest)
                     const resourceError: ResourceError = {
                         code: mcRequest.reason.code as ResourceErrorCode,
                         message: `${mcRequest.reason.message}.  ${cdRequest.reason.message}` as string,

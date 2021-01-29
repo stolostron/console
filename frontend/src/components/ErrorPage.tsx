@@ -11,7 +11,7 @@ import {
 import React, { ReactNode } from 'react'
 import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
-export function getErrorInfo(error: unknown): AcmAlertInfo {
+export function getErrorInfo(error: Error | ResourceError): AcmAlertInfo {
     let title = 'Error'
     let message = 'Unknown'
     if (error instanceof ResourceError) {
@@ -97,6 +97,7 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
 }
 
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {
+    console.log('ERROR STATE', props.error)
     const errorInfo = getErrorInfo(props.error)
     return (
         <EmptyState>
