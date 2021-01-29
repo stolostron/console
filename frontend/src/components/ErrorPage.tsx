@@ -88,7 +88,6 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
                 break
         }
     } else if (error instanceof Error) {
-        console.log('in instanceof error')
         message = error.message
     } else if (typeof error === 'string') {
         message = error
