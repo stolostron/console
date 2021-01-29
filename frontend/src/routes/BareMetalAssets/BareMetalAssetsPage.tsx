@@ -342,8 +342,8 @@ export function BareMetalAssetsTable(props: {
                     ]}
                     bulkActions={[
                         {
-                            id: 'destroyBareMetalAsset',
-                            title: t('bareMetalAsset.bulkAction.destroyAsset'),
+                            id: 'deleteBareMetalAsset',
+                            title: t('bareMetalAsset.bulkAction.deleteAsset'),
                             click: (bareMetalAssets: BareMetalAsset[]) => {
                                 setModalProps({
                                     open: true,

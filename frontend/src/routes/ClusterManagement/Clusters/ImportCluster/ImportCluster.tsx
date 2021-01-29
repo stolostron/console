@@ -132,7 +132,7 @@ export function ImportClusterPageContent() {
                         isDisabled={submitted}
                         onChange={(name) => setClusterName(name)}
                         placeholder={t('import.form.clusterName.placeholder')}
-                        required
+                        isRequired
                     />
                     <AcmLabelsInput
                         id="additionalLabels"

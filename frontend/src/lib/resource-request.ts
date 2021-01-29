@@ -35,6 +35,7 @@ export enum ResourceErrorCode {
     NotFound = 404,
     Timeout = 408,
     Conflict = 409,
+    UnprocessableEntity = 422,
     TooManyRequests = 429,
     InternalServerError = 500,
     NotImplemented = 501,
