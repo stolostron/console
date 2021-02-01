@@ -285,7 +285,7 @@ const bareControlData = [
         type: 'checkbox',
         name: 'creation.ocp.host.disable.certificate.verification',
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
-        active: 'false',
+        active: 'true',
         available: ['false', 'true'],
     },
     {
