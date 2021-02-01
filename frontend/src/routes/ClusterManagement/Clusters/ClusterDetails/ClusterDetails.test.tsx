@@ -695,13 +695,13 @@ function defaultNocks() {
         nockListHiveProvisionJobs(),
         nockListClusterProvision(),
         nockCreate(mockGetSecretSelfSubjectAccessRequest),
-        nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+        nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
 }
@@ -797,13 +797,13 @@ describe('ClusterDetails', () => {
         const listClusterProvisionsNock = nockListClusterProvision()
         const rbacNocks: Scope[] = [
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('')),
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
 
         render(<Component />)
