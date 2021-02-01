@@ -106,16 +106,6 @@ const bmaSecret: Secret = {
     data: { password: btoa('test'), username: btoa('test') },
 }
 
-const bmaSecretRes: Secret = {
-    kind: SecretKind,
-    apiVersion: SecretApiVersion,
-    metadata: {
-        namespace: 'test-bare-metal-asset-namespace',
-        name: 'test-bma-bmc-secret',
-    },
-    data: { password: btoa('test'), username: btoa('test') },
-}
-
 const mockBareMetalSecrets = Array.from({ length: 5 }, (val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
     mockedSecret.metadata.name = `secret-test-bare-metal-asset-${inx}`
