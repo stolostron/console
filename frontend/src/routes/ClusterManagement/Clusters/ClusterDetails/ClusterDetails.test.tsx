@@ -722,7 +722,7 @@ describe('ClusterDetails', () => {
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
         await act(async () => {
-            await waitFor(() => expect(screen.getByText('Error')).toBeInTheDocument(), { timeout: 2000 })
+            await waitFor(() => expect(screen.getByText('Bad request')).toBeInTheDocument(), { timeout: 2000 })
         })
     })
 

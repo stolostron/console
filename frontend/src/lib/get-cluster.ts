@@ -272,9 +272,7 @@ export function getConsoleUrl(
 }
 
 export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
-    if (!managedClusterInfo) return undefined
-
-    const nodeList: NodeInfo[] = managedClusterInfo.status?.nodeList ?? []
+    const nodeList: NodeInfo[] = managedClusterInfo?.status?.nodeList ?? []
     let active = 0
     let inactive = 0
 

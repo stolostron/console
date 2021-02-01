@@ -105,6 +105,7 @@
     "import.generating": "Generating",
     "import.command.fetching": "Loading cluster import command",
     "import.description": "Once you click on \"Save import and generate code\", the information you entered will be used to generate the code and cannot be modified anymore. If you wish to change any information, you will have to delete and re-import this cluster.",
+    "import.command.alreadyimported": "The cluster cannot be imported because its Klusterlet CRD already exists.\nEither the cluster was already imported, or it was not detached completely during a previous detach process.\nDetach the existing cluster before trying the import again.",
     "status.pending": "Pending",
     "status.destroying": "Destroying",
     "status.creating": "Creating",

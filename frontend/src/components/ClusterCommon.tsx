@@ -87,6 +87,7 @@ export function DistributionField(props: {
             <span>
                 {props.data?.displayVersion}{' '}
                 <span style={{ whiteSpace: 'nowrap' }}>
+                    (
                     <AcmButton
                         onClick={toggle}
                         variant={ButtonVariant.link}
@@ -94,6 +95,7 @@ export function DistributionField(props: {
                     >
                         {t('upgrade.available')}
                     </AcmButton>
+                    )
                     <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
                 </span>
             </span>
