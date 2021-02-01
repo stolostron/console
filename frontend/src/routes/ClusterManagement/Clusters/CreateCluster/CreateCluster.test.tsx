@@ -103,17 +103,7 @@ const bmaSecret: Secret = {
         name: 'test-bma-bmc-secret',
         namespace: 'test-bare-metal-asset-namespace',
     },
-    data: { password: btoa('pass'), username: btoa('user') },
-}
-
-const bmaSecretRes: Secret = {
-    kind: SecretKind,
-    apiVersion: SecretApiVersion,
-    metadata: {
-        namespace: 'test-bare-metal-asset-namespace',
-        name: 'test-bma-bmc-secret',
-    },
-    data: { password: btoa('pass'), username: btoa('user') },
+    data: { password: btoa('test'), username: btoa('test') },
 }
 
 const mockBareMetalSecrets = Array.from({ length: 5 }, (val, inx) => {
@@ -149,21 +139,6 @@ const mockBareMetalAssets3 = Array.from({ length: 2 }, (val, inx) => {
     mockedBma.metadata.name = `test-bare-metal-asset-${inx + 3}`
     mockedBma.spec.bmc.credentialsName = `test-bare-metal-asset-${inx + 3}-bmc-secret`
     return mockedBma
-})
-
-const createBmaSecretReq = Array.from({ length: 2 }, (val, inx) => {
-    const mockedSecret = cloneDeep(bmaSecret)
-    mockedSecret.metadata.name = `test-bare-metal-asset-${inx + 3}-bmc-secret`
-    delete mockedSecret.data
-    mockedSecret.stringData = { password: 'pass', username: 'user' }
-    return mockedSecret
-})
-
-const createBmaSecretRes = Array.from({ length: 2 }, (val, inx) => {
-    const mockedSecret = cloneDeep(bmaSecretRes)
-    mockedSecret.metadata.name = `test-bare-metal-asset-${inx + 3}-bmc-secret`
-    mockedSecret.data = { password: 'encoded', username: 'encoded' }
-    return mockedSecret
 })
 
 const mockClusterProject: ProjectRequest = {
@@ -219,7 +194,7 @@ const mockInstallConfigSecret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKLSBuYW1lOiB3b3JrZXIKICByZXBsaWNhczogMgpuZXR3b3JraW5nOgogIGNsdXN0ZXJOZXR3b3JrOgogIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lQ0lEUjogMTAuMC4wLjAvMTYKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgc2VydmljZU5ldHdvcms6CiAgLSAxNzIuMzAuMC4wLzE2CnBsYXRmb3JtOgogIGJhcmVtZXRhbDoKICAgIGxpYnZpcnRVUkk6IHFlbXUrc3NoOi8vbGlidmlydFVSSQogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBkbnNWSVA6IDEwLjAuMC4zCiAgICBhcGlWSVA6CiAgICBpbmdyZXNzVklQOgogICAgYm9vdHN0cmFwT1NJbWFnZTogPi0KICAgICAgYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6ID4tCiAgICAgIGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHVzZXIKICAgICAgICAgIHBhc3N3b3JkOiBwYXNzCiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB1c2VyCiAgICAgICAgICBwYXNzd29yZDogcGFzcwogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0yCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogJ2V4YW1wbGUuY29tOjgwJwogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdXNlcgogICAgICAgICAgcGFzc3dvcmQ6IHBhc3MKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHVzZXIKICAgICAgICAgIHBhc3N3b3JkOiBwYXNzCiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB1c2VyCiAgICAgICAgICBwYXNzd29yZDogcGFzcwogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCmFkZGl0aW9uYWxUcnVzdEJ1bmRsZTogfC0KICAgIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogICAgY2VydGRhdGEKICAgIC0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KaW1hZ2VDb250ZW50U291cmNlczoKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCi0gbWlycm9yczoKICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtdjQuMC1hcnQtZGV2Cg==',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKLSBuYW1lOiB3b3JrZXIKICByZXBsaWNhczogMgpuZXR3b3JraW5nOgogIGNsdXN0ZXJOZXR3b3JrOgogIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lQ0lEUjogMTAuMC4wLjAvMTYKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgc2VydmljZU5ldHdvcms6CiAgLSAxNzIuMzAuMC4wLzE2CnBsYXRmb3JtOgogIGJhcmVtZXRhbDoKICAgIGxpYnZpcnRVUkk6IHFlbXUrc3NoOi8vbGlidmlydFVSSQogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBkbnNWSVA6IDEwLjAuMC4zCiAgICBhcGlWSVA6CiAgICBpbmdyZXNzVklQOgogICAgYm9vdHN0cmFwT1NJbWFnZTogPi0KICAgICAgYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6ID4tCiAgICAgIGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0yCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogJ2V4YW1wbGUuY29tOjgwJwogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCmFkZGl0aW9uYWxUcnVzdEJ1bmRsZTogfC0KICAgIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogICAgY2VydGRhdGEKICAgIC0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KaW1hZ2VDb250ZW50U291cmNlczoKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCi0gbWlycm9yczoKICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtdjQuMC1hcnQtZGV2Cg==',
     },
 }
 
@@ -304,8 +279,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'user',
-                            password: 'pass',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -317,8 +292,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'user',
-                            password: 'pass',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -330,8 +305,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'user',
-                            password: 'pass',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -343,8 +318,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'user',
-                            password: 'pass',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -356,8 +331,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'user',
-                            password: 'pass',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -493,8 +468,50 @@ describe('CreateCluster', () => {
         // creates 2 less bmas so that backend creates those 2
         const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
         const bmaProjectNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
-        const secretCreateNock1 = nockCreate(createBmaSecretReq[0], createBmaSecretRes[0])
-        const secretCreateNock2 = nockCreate(createBmaSecretReq[1], createBmaSecretRes[1])
+        const createBmaSecret3: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                name: 'test-bare-metal-asset-3-bmc-secret',
+                namespace: 'test-bare-metal-asset-namespace',
+            },
+            stringData: {
+                password: 'test',
+                username: 'test',
+            },
+        }
+        const bmaSecret3: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                namespace: 'test-bare-metal-asset-namespace',
+                name: 'test-bare-metal-asset-3-bmc-secret',
+            },
+            data: { password: 'encoded', username: 'encoded' },
+        }
+        const createBmaSecret4: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                name: 'test-bare-metal-asset-4-bmc-secret',
+                namespace: 'test-bare-metal-asset-namespace',
+            },
+            stringData: {
+                password: 'test',
+                username: 'test',
+            },
+        }
+        const bmaSecret4: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                namespace: 'test-bare-metal-asset-namespace',
+                name: 'test-bare-metal-asset-4-bmc-secret',
+            },
+            data: { password: 'encoded', username: 'encoded' },
+        }
+        const secretCreateNock1 = nockCreate(createBmaSecret3, bmaSecret3)
+        const secretCreateNock2 = nockCreate(createBmaSecret4, bmaSecret4)
         const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
         const bmaCreateNock2 = nockCreate(mockBareMetalAssets3[1])
         const listManagedClusterNock = nockList(
@@ -533,8 +550,8 @@ describe('CreateCluster', () => {
         await waitFor(() => expect(bmaProjectNock.isDone()).toBeTruthy())
         // create two bmas/secrets
         await waitFor(() => expect(secretCreateNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock1.isDone()).toBeTruthy())
+        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock2.isDone()).toBeTruthy())
         // list no clusters so that creating this cluster doesn't think it already exists
         await waitFor(() => expect(listManagedClusterNock.isDone()).toBeTruthy())
