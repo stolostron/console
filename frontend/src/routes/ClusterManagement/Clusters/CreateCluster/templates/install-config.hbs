@@ -186,11 +186,11 @@ platform:
     apiVIP: {{{../../apiVIP}}} ##apiVIP
     ingressVIP: {{{../../ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
-{{#if ../bootstrapOSImage}}
+{{#if ../../bootstrapOSImage}}
     bootstrapOSImage: >-
       {{{../../bootstrapOSImage}}}
 {{/if}}
-{{#if ../clusterOSImage}}
+{{#if ../../clusterOSImage}}
     clusterOSImage: >-
       {{{../../clusterOSImage}}}
 {{/if}}
