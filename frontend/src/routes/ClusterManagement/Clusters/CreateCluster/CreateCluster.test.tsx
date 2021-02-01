@@ -151,21 +151,6 @@ const mockBareMetalAssets3 = Array.from({ length: 2 }, (val, inx) => {
     return mockedBma
 })
 
-const createBmaSecretReq = Array.from({ length: 2 }, (val, inx) => {
-    const mockedSecret = cloneDeep(bmaSecret)
-    mockedSecret.metadata.name = `test-bare-metal-asset-${inx + 3}-bmc-secret`
-    delete mockedSecret.data
-    mockedSecret.stringData = { password: 'test', username: 'test' }
-    return mockedSecret
-})
-
-const createBmaSecretRes = Array.from({ length: 2 }, (val, inx) => {
-    const mockedSecret = cloneDeep(bmaSecretRes)
-    mockedSecret.metadata.name = `test-bare-metal-asset-${inx + 3}-bmc-secret`
-    mockedSecret.data = { password: 'encoded', username: 'encoded' }
-    return mockedSecret
-})
-
 const mockClusterProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
     kind: ProjectRequestKind,
@@ -493,9 +478,7 @@ describe('CreateCluster', () => {
         // creates 2 less bmas so that backend creates those 2
         const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
         const bmaProjectNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
-        //const secretCreateNock1 = nockCreate(createBmaSecretReq[0], createBmaSecretRes[0])
-
-        const createBmaSecret: Secret = {
+        const createBmaSecret3: Secret = {
             kind: SecretKind,
             apiVersion: SecretApiVersion,
             metadata: {
@@ -507,8 +490,7 @@ describe('CreateCluster', () => {
                 username: 'test',
             },
         }
-
-        const bmaSecret: Secret = {
+        const bmaSecret3: Secret = {
             kind: SecretKind,
             apiVersion: SecretApiVersion,
             metadata: {
@@ -517,10 +499,29 @@ describe('CreateCluster', () => {
             },
             data: { password: 'encoded', username: 'encoded' },
         }
-
-        const secretCreateNock1 = nockCreate(createBmaSecret, bmaSecret)
-
-        const secretCreateNock2 = nockCreate(createBmaSecretReq[1], createBmaSecretRes[1])
+        const createBmaSecret4: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                name: 'test-bare-metal-asset-4-bmc-secret',
+                namespace: 'test-bare-metal-asset-namespace',
+            },
+            stringData: {
+                password: 'test',
+                username: 'test',
+            },
+        }
+        const bmaSecret4: Secret = {
+            kind: SecretKind,
+            apiVersion: SecretApiVersion,
+            metadata: {
+                namespace: 'test-bare-metal-asset-namespace',
+                name: 'test-bare-metal-asset-4-bmc-secret',
+            },
+            data: { password: 'encoded', username: 'encoded' },
+        }
+        const secretCreateNock1 = nockCreate(createBmaSecret3, bmaSecret3)
+        const secretCreateNock2 = nockCreate(createBmaSecret4, bmaSecret4)        
         const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
         const bmaCreateNock2 = nockCreate(mockBareMetalAssets3[1])
         const listManagedClusterNock = nockList(
@@ -559,8 +560,8 @@ describe('CreateCluster', () => {
         await waitFor(() => expect(bmaProjectNock.isDone()).toBeTruthy())
         // create two bmas/secrets
         await waitFor(() => expect(secretCreateNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock1.isDone()).toBeTruthy())
+        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock2.isDone()).toBeTruthy())
         // list no clusters so that creating this cluster doesn't think it already exists
         await waitFor(() => expect(listManagedClusterNock.isDone()).toBeTruthy())
