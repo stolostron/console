@@ -171,7 +171,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
-    }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
 
     const modalColumns = useMemo(
         () => [
