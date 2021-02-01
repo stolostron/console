@@ -494,9 +494,6 @@ describe('CreateCluster', () => {
         const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
         const bmaProjectNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
         //const secretCreateNock1 = nockCreate(createBmaSecretReq[0], createBmaSecretRes[0])
-        
-        
-        
 
         const createBmaSecret: Secret = {
             kind: SecretKind,
@@ -521,28 +518,8 @@ describe('CreateCluster', () => {
             data: { password: 'encoded', username: 'encoded' },
         }
 
-       const secretCreateNock1 = nockCreate(createBmaSecret, bmaSecret)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        const secretCreateNock1 = nockCreate(createBmaSecret, bmaSecret)
+
         const secretCreateNock2 = nockCreate(createBmaSecretReq[1], createBmaSecretRes[1])
         const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
         const bmaCreateNock2 = nockCreate(mockBareMetalAssets3[1])
@@ -569,9 +546,6 @@ describe('CreateCluster', () => {
         const patchNock2 = nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes)
         const patchNock3 = nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes)
         const patchNock4 = nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes)
-        
-        
-        
 
         // click create button
         userEvent.click(getByTestId('create-button-portal-id-btn'))
