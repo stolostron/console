@@ -511,7 +511,7 @@ describe('CreateCluster', () => {
             data: { password: 'encoded', username: 'encoded' },
         }
         const secretCreateNock1 = nockCreate(createBmaSecret3, bmaSecret3)
-        const secretCreateNock2 = nockCreate(createBmaSecret4, bmaSecret4)        
+        const secretCreateNock2 = nockCreate(createBmaSecret4, bmaSecret4)
         const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
         const bmaCreateNock2 = nockCreate(mockBareMetalAssets3[1])
         const listManagedClusterNock = nockList(
