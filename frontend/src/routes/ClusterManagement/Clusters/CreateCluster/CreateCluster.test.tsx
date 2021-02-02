@@ -549,6 +549,7 @@ describe('CreateCluster', () => {
         // create bma namespace
         await waitFor(() => expect(bmaProjectNock.isDone()).toBeTruthy())
         // create two bmas/secrets
+        await new Promise((r) => setTimeout(r, 1000))
         await waitFor(() => expect(secretCreateNock1.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock1.isDone()).toBeTruthy())
         await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
