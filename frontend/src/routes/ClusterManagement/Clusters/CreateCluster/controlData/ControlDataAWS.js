@@ -25,7 +25,7 @@ const us_east_1d = 'us-east-1d'
 const us_east_1e = 'us-east-1e'
 const us_east_1f = 'us-east-1f'
 export const awsRegions = {
-    'us-east-1': [us_east_1a, us_east_1b, us_east_1c, us_east_1d, 'us-east-1e', 'us-east-1f'],
+    'us-east-1': [us_east_1a, us_east_1b, us_east_1c, us_east_1d, us_east_1e, us_east_1f],
     'us-east-2': ['us-east-2a', 'us-east-2b', 'us-east-2c'],
     'us-west-1': ['us-west-1a', 'us-west-1c'],
     'us-west-2': ['us-west-2a', 'us-west-2b', 'us-west-2c', 'us-west-2d'],
@@ -640,7 +640,7 @@ const awsControlData = [
                 tooltip: 'tooltip.creation.ocp.master.zones',
                 id: 'masterZones',
                 type: 'multiselect',
-                available: [us_east_1a, us_east_1b, us_east_1c, us_east_1d, 'us-east-1e', 'us-east-1f'],
+                available: [us_east_1a, us_east_1b, us_east_1c, us_east_1d, us_east_1e, us_east_1f],
                 placeholder: 'creation.ocp.add.zones',
                 cacheUserValueKey: 'create.cluster.aws.master.zones',
                 validation: VALIDATE_ALPHANUMERIC,
@@ -709,7 +709,7 @@ const awsControlData = [
                 tooltip: 'tooltip.creation.ocp.worker.zones',
                 id: 'workerZones',
                 type: 'multiselect',
-                available: [us_east_1a, us_east_1b, us_east_1c, us_east_1d, 'us-east-1e', 'us-east-1f'],
+                available: [us_east_1a, us_east_1b, us_east_1c, us_east_1d, us_east_1e, us_east_1f],
                 placeholder: 'creation.ocp.add.zones',
                 cacheUserValueKey: 'create.cluster.aws.worker.zones',
                 validation: VALIDATE_ALPHANUMERIC,
