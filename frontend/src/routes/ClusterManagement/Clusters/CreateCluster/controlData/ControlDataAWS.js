@@ -30,6 +30,15 @@ const gp8Cpu32Gib = '8 vCPU, 32 GiB RAM - General Purpose'
 const gp16Cpu64Gib = '16 vCPU, 64 GiB RAM - General Purpose'
 const gp40Cpu160Gib = '40 vCPU, 160 GiB RAM - General Purpose'
 const gp64Cpu256Gib = '64 vCPU, 256 GiB RAM - General Purpose'
+const co96Cpu192Gib = '96 vCPU, 192 GiB RAM - Compute Optimized'
+const mo2Cpu16Gib = '2 vCPU, 16 GiB RAM - Memory Optimized'
+const mo8Cpu64Gib = '8 vCPU, 64 GiB RAM - Memory Optimized'
+const mo4Cpu64Gib = '4 vCPU, 32 GiB RAM - Memory Optimized'
+const mo16Cpu64Gib = '16 vCPU, 128 GiB RAM - Memory Optimized'
+const mo32Cpu64Gib = '32 vCPU, 256 GiB RAM - Memory Optimized'
+const mo48Cpu64Gib = '48 vCPU, 384 GiB RAM - Memory Optimized'
+const mo64Cpu64Gib = '64 vCPU, 512 GiB RAM - Memory Optimized'
+const mo96Cpu64Gib = '96 vCPU, 768 GiB RAM - Memory Optimized'
 
 export const awsRegions = {
     'us-east-1': [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
@@ -246,8 +255,8 @@ const AWSworkerInstanceTypes = [
                     { value: 'c5.9xlarge', description: '36 vCPU, 72 GiB RAM - Compute Optimized' },
                     { value: 'c5.12xlarge', description: '48 vCPU, 96  GiB RAM - Compute Optimized' },
                     { value: 'c5.18xlarge', description: '72 vCPU, 144 GiB RAM - Compute Optimized' },
-                    { value: 'c5.24xlarge', description: '96 vCPU, 192 GiB RAM - Compute Optimized' },
-                    { value: 'c5.metal', description: '96 vCPU, 192 GiB RAM - Compute Optimized' },
+                    { value: 'c5.24xlarge', description: co96Cpu192Gib },
+                    { value: 'c5.metal', description: co96Cpu192Gib },
                 ],
             },
             {
@@ -260,7 +269,7 @@ const AWSworkerInstanceTypes = [
                     { value: 'c5a.8xlarge', description: '32 vCPU, 64 GiB RAM - Compute Optimized' },
                     { value: 'c5a.12xlarge', description: '48 vCPU, 96 GiB RAM - Compute Optimized' },
                     { value: 'c5a.16xlarge', description: '64 vCPU, 128 GiB RAM - Compute Optimized' },
-                    { value: 'c5a.24xlarge', description: '96 vCPU, 192 GiB RAM - Compute Optimized' },
+                    { value: 'c5a.24xlarge', description: co96Cpu192Gib },
                 ],
             },
             {
@@ -273,8 +282,8 @@ const AWSworkerInstanceTypes = [
                     { value: 'c5d.9xlarge', description: '36 vCPU, 72  GiB RAM - Compute Optimized' },
                     { value: 'c5d.12xlarge', description: '48 vCPU, 96 GiB RAM - Compute Optimized' },
                     { value: 'c5d.18xlarge', description: '72 vCPU, 144 GiB RAM - Compute Optimized' },
-                    { value: 'c5d.24xlarge', description: '96 vCPU, 192 GiB RAM - Compute Optimized' },
-                    { value: 'c5d.metal', description: '96 vCPU, 192 GiB RAM - Compute Optimized' },
+                    { value: 'c5d.24xlarge', description: co96Cpu192Gib },
+                    { value: 'c5d.metal', description: co96Cpu192Gib },
                 ],
             },
             {
@@ -321,9 +330,9 @@ const AWSworkerInstanceTypes = [
                     {
                         label: 'R5 - 5% additional memory per vCPU over R4',
                         children: [
-                            { value: 'r5.large', description: '2 vCPU, 16 GiB RAM - Memory Optimized' },
+                            { value: 'r5.large', description: mo2Cpu16Gib },
                             { value: 'r5.xlarge', description: '4  vCPU, 32 GiB RAM - Memory Optimized' },
-                            { value: 'r5.2xlarge', description: '8 vCPU, 64 GiB RAM - Memory Optimized' },
+                            { value: 'r5.2xlarge', description: mo8Cpu64Gib },
                             { value: 'r5.4xlarge', description: '16 vCPU, 128GiB RAM - Memory Optimized' },
                             { value: 'r5.8xlarge', description: '32 vCPU, 256GiB RAM - Memory Optimized' },
                             { value: 'r5.12xlarge', description: '48 vCPU, 384GiB RAM - Memory Optimized' },
@@ -336,26 +345,26 @@ const AWSworkerInstanceTypes = [
                         label: 'R5a - AMD processors',
                         children: [
                             { value: 'r5a.large', description: '2  vCPU, 16 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.xlarge', description: '4 vCPU, 32 GiB RAM - Memory Optimized' },
+                            { value: 'r5a.xlarge', description: mo4Cpu64Gib },
                             { value: 'r5a.2xlarge', description: '8  vCPU, 64 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.4xlarge', description: '16 vCPU, 128 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.8xlarge', description: '32 vCPU, 256 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.16xlarge', description: '64 vCPU, 512 GiB RAM - Memory Optimized' },
-                            { value: 'r5a.24xlarge', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
+                            { value: 'r5a.4xlarge', description: mo16Cpu64Gib },
+                            { value: 'r5a.8xlarge', description: mo32Cpu64Gib },
+                            { value: 'r5a.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'r5a.16xlarge', description: mo64Cpu64Gib },
+                            { value: 'r5a.24xlarge', description: mo96Cpu64Gib },
                         ],
                     },
                     {
                         label: 'R5n - Network optimized',
                         children: [
-                            { value: 'r5n.large', description: '2 vCPU, 16 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.xlarge', description: '4 vCPU, 32 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.2xlarge', description: '8 vCPU, 64 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.4xlarge', description: '16 vCPU, 128 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.8xlarge', description: '32 vCPU, 256 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.16xlarge', description: '64 vCPU, 512 GiB RAM - Memory Optimized' },
-                            { value: 'r5n.24xlarge', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
+                            { value: 'r5n.large', description: mo2Cpu16Gib },
+                            { value: 'r5n.xlarge', description: mo4Cpu64Gib },
+                            { value: 'r5n.2xlarge', description: mo8Cpu64Gib },
+                            { value: 'r5n.4xlarge', description: mo16Cpu64Gib },
+                            { value: 'r5n.8xlarge', description: mo32Cpu64Gib },
+                            { value: 'r5n.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'r5n.16xlarge', description: mo64Cpu64Gib },
+                            { value: 'r5n.24xlarge', description: mo96Cpu64Gib },
                         ],
                     },
                     {
@@ -402,25 +411,25 @@ const AWSworkerInstanceTypes = [
                             { value: 'r5d.large', description: '2  vCPU, 16  GiB RAM - Memory Optimized' },
                             { value: 'r5d.xlarge', description: '4 vCPU, 32  GiB RAM - Memory Optimized' },
                             { value: 'r5d.2xlarge', description: '8  vCPU, 64  GiB RAM - Memory Optimized' },
-                            { value: 'r5d.4xlarge', description: '16 vCPU, 128 GiB RAM - Memory Optimized' },
-                            { value: 'r5d.8xlarge', description: '32 vCPU, 256 GiB RAM - Memory Optimized' },
-                            { value: 'r5d.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'r5d.16xlarge', description: '64 vCPU, 512 GiB RAM - Memory Optimized' },
-                            { value: 'r5d.24xlarge', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
-                            { value: 'r5d.metal', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
+                            { value: 'r5d.4xlarge', description: mo16Cpu64Gib },
+                            { value: 'r5d.8xlarge', description: mo32Cpu64Gib },
+                            { value: 'r5d.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'r5d.16xlarge', description: mo64Cpu64Gib },
+                            { value: 'r5d.24xlarge', description: mo96Cpu64Gib },
+                            { value: 'r5d.metal', description: mo96Cpu64Gib },
                         ],
                     },
                     {
                         label: 'R5dn - With SSD, network optimized',
                         children: [
-                            { value: 'r5dn.large', description: '2 vCPU, 16 GiB RAM - Memory Optimized' },
+                            { value: 'r5dn.large', description: mo2Cpu16Gib },
                             { value: 'r5dn.xlarge', description: '4  vCPU, 32 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.2xlarge', description: '8 vCPU, 64 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.4xlarge', description: '16 vCPU, 128 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.8xlarge', description: '32 vCPU, 256 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.16xlarge', description: '64 vCPU, 512 GiB RAM - Memory Optimized' },
-                            { value: 'r5dn.24xlarge', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
+                            { value: 'r5dn.2xlarge', description: mo8Cpu64Gib },
+                            { value: 'r5dn.4xlarge', description: mo16Cpu64Gib },
+                            { value: 'r5dn.8xlarge', description: mo32Cpu64Gib },
+                            { value: 'r5dn.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'r5dn.16xlarge', description: mo64Cpu64Gib },
+                            { value: 'r5dn.24xlarge', description: mo96Cpu64Gib },
                         ],
                     },
                     {
@@ -429,21 +438,21 @@ const AWSworkerInstanceTypes = [
                             { value: 'r5ad.large', description: '2 vCPU, 16  GiB RAM - Memory Optimized' },
                             { value: 'r5ad.xlarge', description: '4  vCPU, 32  GiB RAM - Memory Optimized' },
                             { value: 'r5ad.2xlarge', description: '8 vCPU, 64  GiB RAM - Memory Optimized' },
-                            { value: 'r5ad.4xlarge', description: '16 vCPU, 128 GiB RAM - Memory Optimized' },
-                            { value: 'r5ad.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'r5ad.24xlarge', description: '96 vCPU, 768 GiB RAM - Memory Optimized' },
+                            { value: 'r5ad.4xlarge', description: mo16Cpu64Gib },
+                            { value: 'r5ad.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'r5ad.24xlarge', description: mo96Cpu64Gib },
                         ],
                     },
                     {
                         label: 'Z1d - With SSD, fastest processor',
                         children: [
                             { value: 'z1d.large', description: '2  vCPU, 16 GiB RAM - Memory Optimized' },
-                            { value: 'z1d.xlarge', description: '4 vCPU, 32 GiB RAM - Memory Optimized' },
+                            { value: 'z1d.xlarge', description: mo4Cpu64Gib },
                             { value: 'z1d.2xlarge', description: '8  vCPU, 64 GiB RAM - Memory Optimized' },
                             { value: 'z1d.3xlarge', description: '12 vCPU, 96 GiB RAM - Memory Optimized' },
                             { value: 'z1d.6xlarge', description: '24 vCPU, 192 GiB RAM - Memory Optimized' },
-                            { value: 'z1d.12xlarge', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
-                            { value: 'z1d.metal', description: '48 vCPU, 384 GiB RAM - Memory Optimized' },
+                            { value: 'z1d.12xlarge', description: mo48Cpu64Gib },
+                            { value: 'z1d.metal', description: mo48Cpu64Gib },
                         ],
                     },
                 ],
