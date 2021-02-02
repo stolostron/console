@@ -155,7 +155,7 @@ const getActiveRole = (active = []) => {
     return master < 3 ? 'master' : 'worker'
 }
 
-const bareControlData = [
+const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -358,4 +358,4 @@ const bareControlData = [
     },
 ]
 
-export default bareControlData
+export default controlDataBMC

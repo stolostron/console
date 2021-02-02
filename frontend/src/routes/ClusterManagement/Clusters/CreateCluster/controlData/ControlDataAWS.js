@@ -579,7 +579,7 @@ const AWSworkerInstanceTypes = [
     },
 ]
 
-const awsControlData = [
+const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -773,4 +773,4 @@ const awsControlData = [
     ...networkingControlData,
 ]
 
-export default awsControlData
+export default controlDataAWS

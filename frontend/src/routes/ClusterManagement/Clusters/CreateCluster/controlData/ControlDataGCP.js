@@ -235,7 +235,7 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-const gcpControlData = [
+const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -385,4 +385,4 @@ const gcpControlData = [
     ...networkingControlData,
 ]
 
-export default gcpControlData
+export default controlDataGCP

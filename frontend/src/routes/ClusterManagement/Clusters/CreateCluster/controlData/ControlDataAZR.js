@@ -391,7 +391,7 @@ const ApplicationCreationPage = [
     },
 ]
 
-const azrControlData = [
+const controlDataAZR = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -576,4 +576,4 @@ const azrControlData = [
     ...networkingControlData,
 ]
 
-export default azrControlData
+export default controlDataAZR
