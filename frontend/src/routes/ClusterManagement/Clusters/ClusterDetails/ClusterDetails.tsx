@@ -156,8 +156,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         if (cluster?.status) {
             const tempCluster: Cluster = {
-                name: '',
-                namespace: '',
+                name: cluster.name,
+                namespace: cluster.namespace,
                 status: cluster?.status,
                 isHive: cluster?.isHive,
                 isManaged: cluster?.isManaged,
@@ -171,7 +171,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
-    }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
 
     const modalColumns = useMemo(
         () => [

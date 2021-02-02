@@ -30,41 +30,41 @@ controlPlane:
   {{#case 'AWS'}}
   platform:
     aws:
-{{#if ../masterZones}}
+{{#if ../../masterZones}}
       zones: ##masterPool.{{@index}}.masterZones
-      {{#each ../../masterZones}}
-      - {{{../../region}}}{{{ this }}}
+      {{#each ../../../masterZones}}
+      - {{{../../../region}}}{{{ this }}}
       {{/each}}
 {{/if}}
       rootVolume:
         iops: 4000
-        size: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        size: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
         type: io1
-      type: {{{../masterType}}} ##masterPool.{{@index}}.masterType
+      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../masterType}}} ##masterPool.{{@index}}.masterType
+      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
       osDisk:
-        diskSizeGB: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
-      type:  {{{../masterType}}} ##masterPool.{{@index}}.masterType
+        diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+      type:  {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus:  {{{../masterCpus}}} ##masterPool.{{@index}}.masterCpus
-      coresPerSocket:  {{{../masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
-      memoryMB:  {{{../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
+      cpus:  {{{../../masterCpus}}} ##masterPool.{{@index}}.masterCpus
+      coresPerSocket:  {{{../../masterCoresPerSocket}}} ##masterPool.{{@index}}.masterCoresPerSocket
+      memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
-        diskSizeGB: {{{../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+        diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
 
 {{/switch}}
@@ -97,13 +97,13 @@ compute:
     aws:
       rootVolume:
         iops: 2000
-        size: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
-{{#if ../workerZones}}
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+{{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
-      - {{{../../region}}}{{{ this }}}
+      - {{{../../../region}}}{{{ this }}}
       {{/each}}
 {{/if}}
 
@@ -112,31 +112,31 @@ compute:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
-      type:  {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      type:  {{{../../workerType}}} ##workerPools.{{@index}}.workerType
       osDisk:
-        diskSizeGB: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-      {{#if ../workerZones}}
+        diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+{{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - "{{{ this }}}"
       {{/each}}
-      {{/if}}
+{{/if}}
   {{/case}}
 
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      cpus:  {{{../cpus}}} ##workerPools.{{@index}}.cpus
-      coresPerSocket:  {{{../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
-      memoryMB:  {{{../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+      cpus:  {{{../../cpus}}} ##workerPools.{{@index}}.cpus
+      coresPerSocket:  {{{../../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
+      memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        diskSizeGB: {{{../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+        diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
 {{/switch}}
@@ -175,33 +175,33 @@ platform:
 
 {{#case 'BMC'}}
   baremetal:
-    libvirtURI: {{{../libvirtURI}}}
-    provisioningNetworkCIDR: {{{../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
-    provisioningNetworkInterface: {{{../provisioningNetworkInterface}}} ##provisioningNetworkInterface
-    provisioningBridge: {{{../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
-    externalBridge: {{{../externalNetworkBridge }}}  ##externalNetworkBridge
-    {{#if_gt '4.5.0' ../releaseImageVersion}}
-    dnsVIP: {{{../dnsVIP}}} ##dnsVIP
+    libvirtURI: {{{../../libvirtURI}}}
+    provisioningNetworkCIDR: {{{../../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
+    provisioningNetworkInterface: {{{../../provisioningNetworkInterface}}} ##provisioningNetworkInterface
+    provisioningBridge: {{{../../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+    externalBridge: {{{../../externalNetworkBridge }}}  ##externalNetworkBridge
+    {{#if_gt '4.5.0' ../../releaseImageVersion}}
+    dnsVIP: {{{../../../dnsVIP}}} ##dnsVIP
     {{/if_gt}}
-    apiVIP: {{{../apiVIP}}} ##apiVIP
-    ingressVIP: {{{../ingressVIP}}} ##ingressVIP
+    apiVIP: {{{../../apiVIP}}} ##apiVIP
+    ingressVIP: {{{../../ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
-{{#if ../bootstrapOSImage}}
+{{#if ../../bootstrapOSImage}}
     bootstrapOSImage: >-
       {{{../../bootstrapOSImage}}}
 {{/if}}
-{{#if ../clusterOSImage}}
+{{#if ../../clusterOSImage}}
     clusterOSImage: >-
       {{{../../clusterOSImage}}}
 {{/if}}
     hosts:
-{{#each ../hosts}}
+{{#each ../../hosts}}
       - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
         namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
-{{#if ../../disableCertificateVerification}}
+{{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
           username: {{{username}}}  ##hosts.{{@index}}.username
@@ -230,15 +230,15 @@ platform:
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{../vcenter}}}
-    username: {{{../username}}}
-    password: {{{../password}}}
-    datacenter: {{{../datacenter}}}
-    defaultDatastore: {{{../datastore}}}
-    cluster: {{{../vmClusterName}}}
-    apiVIP: {{{../apiVIP}}}    ##apiVIP
-    ingressVIP: {{{../ingressVIP}}}  ##ingressVIP
-    network: {{{../networkType}}}
+    vCenter: {{{../../vcenter}}}
+    username: {{{../../username}}}
+    password: {{{../../password}}}
+    datacenter: {{{../../datacenter}}}
+    defaultDatastore: {{{../../datastore}}}
+    cluster: {{{../../vmClusterName}}}
+    apiVIP: {{{../../apiVIP}}}    ##apiVIP
+    ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
+    network: {{{../../networkType}}}
 {{/case}}
 
 {{/switch}}
