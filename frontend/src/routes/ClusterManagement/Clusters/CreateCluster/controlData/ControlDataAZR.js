@@ -7,12 +7,10 @@ import {
     labelControlData,
 } from './ControlDataHelpers'
 
-
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
 const gp8Cpu8Gib = '8 vCPU, 32 GiB - General Purpose'
 const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
-
 
 const regions = [
     'centralus',
