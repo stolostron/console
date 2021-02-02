@@ -18,8 +18,9 @@ do
   aws ec2 describe-availability-zones --region $region --output json | jq -c '[ .AvailabilityZones[].ZoneName ]' | sed -e "s/\"/'/g" -e 's/,/, /g' -e 's/]/],/g'
 done
 */
-export const regions = {
-    'us-east-1': ['us-east-1a', 'us-east-1b', 'us-east-1c', 'us-east-1d', 'us-east-1e', 'us-east-1f'],
+const us_east_1a = 'us-east-1a'
+export const awsRegions = {
+    'us-east-1': [us_east_1a, 'us-east-1b', 'us-east-1c', 'us-east-1d', 'us-east-1e', 'us-east-1f'],
     'us-east-2': ['us-east-2a', 'us-east-2b', 'us-east-2c'],
     'us-west-1': ['us-west-1a', 'us-west-1c'],
     'us-west-2': ['us-west-2a', 'us-west-2b', 'us-west-2c', 'us-west-2d'],
@@ -47,7 +48,7 @@ const setAWSZones = (control, controlData) => {
         const region = control.active
         const pool = controlData.find(({ id }) => id === poolKey)
         const typeZones = pool.active[0].find(({ id }) => id === zoneKey)
-        const zones = regions[region]
+        const zones = awsRegions[region]
         typeZones.available = zones || []
         typeZones.active = []
     }
@@ -56,7 +57,7 @@ const setAWSZones = (control, controlData) => {
     setZones('workerPools', 'workerZones')
 }
 
-const masterInstanceTypes = [
+const AWSmasterInstanceTypes = [
     { value: 'm5.large', description: '2 vCPU, 8 GiB RAM - General Purpose' },
     { value: 'm5.xlarge', description: '4 vCPU, 16 GiB RAM - General Purpose' },
     { value: 'm5.2xlarge', description: '8 vCPU, 32 GiB RAM - General Purpose' },
@@ -65,7 +66,7 @@ const masterInstanceTypes = [
     { value: 'm5.16xlarge', description: '64 vCPU, 256 GiB RAM - General Purpose' },
 ]
 
-const workerInstanceTypes = [
+const AWSworkerInstanceTypes = [
     {
         label: 'General Purpose',
         children: [
@@ -608,7 +609,7 @@ const awsControlData = [
         id: 'region',
         type: 'combobox',
         active: 'us-east-1',
-        available: Object.keys(regions),
+        available: Object.keys(awsRegions),
         validation: VALIDATE_ALPHANUMERIC,
         cacheUserValueKey: 'create.cluster.region',
         onSelect: setAWSZones,
@@ -647,7 +648,7 @@ const awsControlData = [
                 learnMore: 'https://aws.amazon.com/ec2/instance-types/',
                 id: 'masterType',
                 type: 'combobox',
-                available: masterInstanceTypes,
+                available: AWSmasterInstanceTypes,
                 active: 'm5.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9.]+',
@@ -716,7 +717,7 @@ const awsControlData = [
                 learnMore: 'https://aws.amazon.com/ec2/instance-types/',
                 id: 'workerType',
                 type: 'treeselect',
-                available: workerInstanceTypes,
+                available: AWSworkerInstanceTypes,
                 active: 'm5.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9.]+',
