@@ -378,7 +378,12 @@ export function BareMetalAssetsTable(props: {
                         {
                             id: 'createBareMetalAssetCluster',
                             title: t('bareMetalAsset.bulkAction.createCluster'),
-                            click: (items) => {},
+                            click: (items) => {
+                                const params = new URLSearchParams()
+                                const bmaIDs = items.map((bma) => bma.metadata.uid)
+                                params.set('bmas', bmaIDs.join(','))
+                                history.push(`${NavigationPath.createCluster}?${params}`)
+                            },
                             isDisabled: creationAccessRestriction,
                             tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
                         },
