@@ -1,5 +1,11 @@
 import React, { useContext } from 'react'
-import { AcmDescriptionList, AcmLabels, AcmButton, AcmInlineProvider, AcmInlineCopy } from '@open-cluster-management/ui-components'
+import {
+    AcmDescriptionList,
+    AcmLabels,
+    AcmButton,
+    AcmInlineProvider,
+    AcmInlineCopy,
+} from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
@@ -64,7 +70,12 @@ export function ClusterOverviewPageContent(props: {
                     },
                 ]}
                 rightItems={[
-                    { key: t('table.kubeApiServer'), value: cluster?.kubeApiServer && <AcmInlineCopy text={cluster?.kubeApiServer} id='kube-api-server' /> },
+                    {
+                        key: t('table.kubeApiServer'),
+                        value: cluster?.kubeApiServer && (
+                            <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />
+                        ),
+                    },
                     {
                         key: t('table.consoleUrl'),
                         value: cluster?.consoleURL && (
@@ -78,7 +89,13 @@ export function ClusterOverviewPageContent(props: {
                         value: cluster?.labels?.hasOwnProperty('clusterID') ? (
                             <>
                                 <div>{cluster?.labels?.clusterID}</div>
-                                <a href={`https://cloud.redhat.com/openshift/details/${cluster?.labels?.clusterID}`} target='_blank' rel='noreferrer'>{t('common:openshift.cluster.manager')} <ExternalLinkAltIcon /></a>
+                                <a
+                                    href={`https://cloud.redhat.com/openshift/details/${cluster?.labels?.clusterID}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
+                                </a>
                             </>
                         ) : undefined,
                     },
