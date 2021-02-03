@@ -36,15 +36,15 @@ spec:
   {{#case 'BMC'}}
     baremetal:
       libvirtSSHPrivateKeySecretRef:
-        name: {{{../name}}}-ssh-private-key
+        name: {{{../../name}}}-ssh-private-key
       hosts:
-        {{#each ../hosts}}
+        {{#each ../../hosts}}
         - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
           namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
           role: {{{role}}}  ##hosts.{{@index}}.role
           bmc:
             address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
-{{#if ../../disableCertificateVerification}}
+{{#if ../../../disableCertificateVerification}}
             disableCertificateVerification: true
 {{/if}}
             username: {{{username}}}  ##hosts.{{@index}}.username
@@ -57,36 +57,36 @@ spec:
   {{#case 'AWS'}}
     aws:
       credentialsSecretRef:
-        name: {{{../name}}}-aws-creds
-      region: {{{../region}}}
+        name: {{{../../name}}}-aws-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'GCP'}}
     gcp:
       credentialsSecretRef:
-        name: {{{../name}}}-gcp-creds
-      region: {{{../region}}}
+        name: {{{../../name}}}-gcp-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'Azure'}}
     azure:
       baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
-        name: {{{../name}}}-azure-creds
-      region: {{{../region}}}
+        name: {{{../../name}}}-azure-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{../vmClusterName}}}
+      cluster: {{{../../vmClusterName}}}
       certificatesSecretRef:
-        name: {{{../name}}}-vsphere-certs
+        name: {{{../../name}}}-vsphere-certs
       credentialsSecretRef:
-        name: {{{../name}}}-vsphere-creds
-      vCenter: {{{../vcenter}}}
-      datacenter: {{{../datacenter}}}
-      defaultDatastore: {{{../datastore}}}
-      network: {{{../networkType}}}
+        name: {{{../../name}}}-vsphere-creds
+      vCenter: {{{../../vcenter}}}
+      datacenter: {{{../../datacenter}}}
+      defaultDatastore: {{{../../datastore}}}
+      network: {{{../../networkType}}}
   {{/case}}
 
 {{/switch}}
@@ -245,10 +245,10 @@ spec:
     aws:
       rootVolume:
         iops: 100
-        size: {{{../workerStorage}}} ##workerPools.{{@index}}.workerStorage
+        size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: gp2
-      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
-      {{#if ../workerZones}}
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - {{{../../region}}}{{{ this }}}
@@ -259,31 +259,31 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../workerType}}} ##workerPools.{{@index}}.workerType
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
       osDisk:
-        diskSizeGB: 128
+        diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
       type: Standard_D2s_v3
-      {{#if ../workerZones}}
+{{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
       - "{{{ this }}}"
       {{/each}}
-      {{/if}}
+{{/if}}
   {{/case}}
 
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      coresPerSocket: {{../coresPerSocket}}
-      cpus: {{../cpus}}
-      memoryMB: {{../memoryMB}}
+      coresPerSocket: {{../../coresPerSocket}}
+      cpus: {{../../cpus}}
+      memoryMB: {{../../memoryMB}}
       osDisk:
-        diskSizeGB: {{../diskSizeGB}}
+        diskSizeGB: {{../../diskSizeGB}}
   {{/case}}
 
 {{/switch}}

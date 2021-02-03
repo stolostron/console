@@ -12,6 +12,7 @@ import {
     TabTitleText,
     Tooltip,
 } from '@patternfly/react-core'
+import i18next from 'i18next'
 import { CopyIcon } from '@patternfly/react-icons'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -160,8 +161,9 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
             .promise.then((secret) => {
                 const klusterletCRD = secret.data?.['crds.yaml']
                 const importYaml = secret.data?.['import.yaml']
+                const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl apply -f - && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f -`
+                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo -e "${alreadyImported}"`
                 )
             })
             .catch((err) => {

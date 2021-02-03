@@ -6,7 +6,7 @@ import {
     labelControlData,
 } from './ControlDataHelpers'
 
-const vmwControlData = [
+const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -225,4 +225,4 @@ const vmwControlData = [
     },
 ]
 
-export default vmwControlData
+export default controlDataVMW

@@ -7,7 +7,7 @@ import {
     labelControlData,
 } from './ControlDataHelpers'
 
-const regions = [
+const GCPregions = [
     'asia-east1',
     'asia-east2',
     'asia-northeast1',
@@ -31,7 +31,7 @@ const regions = [
     'us-west2',
 ]
 
-const masterInstanceTypes = [
+const GCPmasterInstanceTypes = [
     { value: 'n1-standard-4', description: 'n1-standard-4 4 vCPU - General Purpose' },
     { value: 'n1-standard-8', description: 'n1-standard-8 8 vCPU - General Purpose' },
     { value: 'n1-standard-16', description: 'n1-standard-16 16 vCPU - General Purpose' },
@@ -40,7 +40,7 @@ const masterInstanceTypes = [
     { value: 'n1-standard-96', description: 'n1-standard-96 96 vCPU - General Purpose' },
 ]
 
-const workerInstanceTypes = [
+const GCPworkerInstanceTypes = [
     {
         label: 'General Purpose',
         children: [
@@ -235,7 +235,7 @@ const workerInstanceTypes = [
     },
 ]
 
-const gcpControlData = [
+const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -286,7 +286,7 @@ const gcpControlData = [
         id: 'region',
         type: 'combobox',
         active: 'us-east1',
-        available: regions,
+        available: GCPregions,
         validation: VALIDATE_ALPHANUMERIC,
         cacheUserValueKey: 'create.cluster.region',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
@@ -312,7 +312,7 @@ const gcpControlData = [
                 learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                 id: 'masterType',
                 type: 'combobox',
-                available: masterInstanceTypes,
+                available: GCPmasterInstanceTypes,
                 active: 'n1-standard-4',
                 validation: {
                     constraint: '[A-Za-z0-9-]+',
@@ -361,7 +361,7 @@ const gcpControlData = [
                 learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                 id: 'workerType',
                 type: 'treeselect',
-                available: workerInstanceTypes,
+                available: GCPworkerInstanceTypes,
                 active: 'n1-standard-4',
                 validation: {
                     constraint: '[A-Za-z0-9-]+',
@@ -385,4 +385,4 @@ const gcpControlData = [
     ...networkingControlData,
 ]
 
-export default gcpControlData
+export default controlDataGCP

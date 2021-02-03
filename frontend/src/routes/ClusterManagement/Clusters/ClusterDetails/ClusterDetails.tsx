@@ -21,7 +21,7 @@ import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
-import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
+import { ResourceError } from '../../../../lib/resource-request'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
@@ -76,7 +76,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
-    const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
+    const [clusterError, setClusterError] = useState<ResourceError | undefined>(undefined)
     const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
 
     // Addons
@@ -124,14 +124,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     addonStopPolling()
                     setClusterIsRemoved(true)
                 } else {
-                    const cdRequest = results[0] as PromiseRejectedResult
-                    const mcRequest = results[3] as PromiseRejectedResult
-                    const resourceError: ResourceError = {
-                        code: mcRequest.reason.code as ResourceErrorCode,
-                        message: `${mcRequest.reason.message}.  ${cdRequest.reason.message}` as string,
-                        name: '',
-                    }
-                    setClusterError(resourceError)
+                    setClusterError(results[3].reason)
                 }
             } else {
                 const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
@@ -163,8 +156,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         if (cluster?.status) {
             const tempCluster: Cluster = {
-                name: '',
-                namespace: '',
+                name: cluster.name,
+                namespace: cluster.namespace,
                 status: cluster?.status,
                 isHive: cluster?.isHive,
                 isManaged: cluster?.isManaged,
@@ -178,7 +171,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
-    }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
 
     const modalColumns = useMemo(
         () => [
