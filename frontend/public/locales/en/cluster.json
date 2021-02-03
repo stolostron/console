@@ -49,6 +49,7 @@
     "actions": "Actions",
 
     "table.name": "Name",
+    "table.clusterId": "Cluster ID",
     "table.status": "Status",
     "table.provider": "Provider",
     "table.distribution": "Distribution",

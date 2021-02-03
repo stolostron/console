@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
-import { AcmDescriptionList, AcmLabels, AcmButton, AcmInlineProvider } from '@open-cluster-management/ui-components'
+import { AcmDescriptionList, AcmLabels, AcmButton, AcmInlineProvider, AcmInlineCopy } from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
-import { PencilAltIcon } from '@patternfly/react-icons'
+import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
@@ -17,6 +17,7 @@ export function ClusterOverviewPageContent(props: {
 }) {
     const { cluster, setEditClusterLabels } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
+    console.log('cluster', cluster, 'has id', cluster?.labels?.hasOwnProperty('clusterID'))
     return (
         <PageSection>
             <HiveNotification />
@@ -24,7 +25,6 @@ export function ClusterOverviewPageContent(props: {
             <AcmDescriptionList
                 title={t('table.details')}
                 leftItems={[
-                    { key: t('table.name'), value: cluster?.name },
                     { key: t('table.status'), value: cluster?.status && <StatusField status={cluster?.status} /> },
                     {
                         key: t('table.provider'),
@@ -65,7 +65,7 @@ export function ClusterOverviewPageContent(props: {
                     },
                 ]}
                 rightItems={[
-                    { key: t('table.kubeApiServer'), value: cluster?.kubeApiServer },
+                    { key: t('table.kubeApiServer'), value: cluster?.kubeApiServer && <AcmInlineCopy text={cluster?.kubeApiServer} id='kube-api-server' /> },
                     {
                         key: t('table.consoleUrl'),
                         value: cluster?.consoleURL && (
@@ -73,6 +73,15 @@ export function ClusterOverviewPageContent(props: {
                                 {cluster?.consoleURL}
                             </a>
                         ),
+                    },
+                    {
+                        key: t('table.clusterId'),
+                        value: cluster?.labels?.hasOwnProperty('clusterID') ? (
+                            <>
+                                <div>{cluster?.labels?.clusterID}</div>
+                                <a href={`https://cloud.redhat.com/openshift/details/${cluster?.labels?.clusterID}`} target='_blank' rel='noreferrer'>{t('common:openshift.cluster.manager')} <ExternalLinkAltIcon /></a>
+                            </>
+                        ) : undefined,
                     },
                     {
                         key: t('table.credentials'),
