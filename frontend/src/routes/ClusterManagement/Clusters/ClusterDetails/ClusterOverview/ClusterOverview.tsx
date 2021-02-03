@@ -17,7 +17,6 @@ export function ClusterOverviewPageContent(props: {
 }) {
     const { cluster, setEditClusterLabels } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
-    console.log('cluster', cluster, 'has id', cluster?.labels?.hasOwnProperty('clusterID'))
     return (
         <PageSection>
             <HiveNotification />
