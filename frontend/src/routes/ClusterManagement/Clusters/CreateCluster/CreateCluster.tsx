@@ -3,7 +3,7 @@ import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import fs from 'fs'
 import path from 'path'
@@ -55,6 +55,7 @@ const Portals = Object.freeze({
 
 export default function CreateClusterPage() {
     const history = useHistory()
+    const location = useLocation()
 
     // create portals for buttons in header
     const portals = (
@@ -107,6 +108,18 @@ export default function CreateClusterPage() {
             Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
         )
     }
+
+    // if openned from bma page, pass selected bma's to editor
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const bmasParam = urlParams.get('bmas')
+    const requestedUIDs = bmasParam ? bmasParam.split(',') : []
+    const fetchControl = bmasParam
+        ? {
+              isLoaded: true,
+              fetchData: { requestedUIDs },
+          }
+        : null
+
     return (
         <AcmPage>
             <AcmPageHeader
@@ -138,6 +151,7 @@ export default function CreateClusterPage() {
                     controlData={controlData}
                     template={template}
                     portals={Portals}
+                    fetchControl={fetchControl}
                     createControl={{
                         createResource,
                         cancelCreate,
