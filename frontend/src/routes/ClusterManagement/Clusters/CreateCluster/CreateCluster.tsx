@@ -108,17 +108,18 @@ export default function CreateClusterPage() {
             Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
         )
     }
-    
+
     // if openned from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
     const bmasParam = urlParams.get('bmas')
     const requestedUIDs = bmasParam ? bmasParam.split(',') : []
-    const fetchControl = bmasParam ? {
-        isLoaded: true,
-        fetchData: { requestedUIDs }
-    } : null
+    const fetchControl = bmasParam
+        ? {
+              isLoaded: true,
+              fetchData: { requestedUIDs },
+          }
+        : null
 
-    
     return (
         <AcmPage>
             <AcmPageHeader
