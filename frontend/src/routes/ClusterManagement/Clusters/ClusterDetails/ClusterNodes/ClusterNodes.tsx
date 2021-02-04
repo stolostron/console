@@ -85,6 +85,11 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
         },
         {
             header: t('table.status'),
+            sort: (a: NodeInfo, b: NodeInfo) => {
+                const aReadyCondition = a.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
+                const bReadyCondition = b.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
+                return aReadyCondition.localeCompare(bReadyCondition)
+            },
             cell: (node) => {
                 const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
                 let type: StatusType
