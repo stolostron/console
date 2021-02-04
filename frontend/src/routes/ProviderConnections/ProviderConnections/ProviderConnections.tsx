@@ -11,6 +11,7 @@ import {
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -31,14 +32,16 @@ import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     return (
-        <AcmAlertProvider>
-            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-            <AcmPageCard>
-                <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                    <ProviderConnectionsPageContent />
-                </AcmTablePaginationContextProvider>
-            </AcmPageCard>
-        </AcmAlertProvider>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                <AcmPageCard>
+                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
+                        <ProviderConnectionsPageContent />
+                    </AcmTablePaginationContextProvider>
+                </AcmPageCard>
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 

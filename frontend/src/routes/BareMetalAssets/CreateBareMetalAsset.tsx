@@ -11,6 +11,7 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
@@ -59,7 +60,9 @@ export default function CreateBareMetalAssetPage() {
                             { text: t('bma:editBareMetalAsset.title'), to: '' },
                         ]}
                     />
-                    <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    <AcmErrorBoundary>
+                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    </AcmErrorBoundary>
                 </AcmAlertProvider>
             </Page>
         )
@@ -87,7 +90,9 @@ export default function CreateBareMetalAssetPage() {
                         { text: t('bma:createBareMetalAsset.title'), to: '' },
                     ]}
                 />
-                <CreateBareMetalAssetPageData />
+                <AcmErrorBoundary>
+                    <CreateBareMetalAssetPageData />
+                </AcmErrorBoundary>
             </AcmAlertProvider>
         </Page>
     )

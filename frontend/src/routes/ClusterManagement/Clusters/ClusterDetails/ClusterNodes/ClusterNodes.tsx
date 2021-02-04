@@ -1,12 +1,22 @@
 import React, { ReactNode, useContext } from 'react'
-import { AcmPageCard, AcmTable, compareNumbers, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import {
+    AcmPageCard,
+    AcmTable,
+    compareNumbers,
+    IAcmTableColumn,
+    AcmErrorBoundary,
+} from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
-    return <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+    return (
+        <AcmErrorBoundary>
+            <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+        </AcmErrorBoundary>
+    )
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
