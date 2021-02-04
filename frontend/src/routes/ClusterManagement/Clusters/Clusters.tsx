@@ -305,9 +305,17 @@ export function ClustersTable(props: {
                     },
                     {
                         header: t('table.nodes'),
-                        // sort: 'info.status.nodeList.length',
                         cell: (cluster) => {
-                            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
+                            return cluster.nodes!.ready > 0 ? cluster.nodes!.ready : '-'
+                            // return cluster.nodes!.nodeList!.length > 0 ? (
+                            //     <AcmInlineStatusGroup
+                            //         healthy={cluster.nodes!.ready}
+                            //         danger={cluster.nodes!.unhealthy}
+                            //         unknown={cluster.nodes!.unknown}
+                            //     />
+                            // ) : (
+                            //     '-'
+                            // )
                         },
                     },
                     {

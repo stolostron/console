@@ -1,5 +1,12 @@
 import React, { ReactNode, useContext } from 'react'
-import { AcmPageCard, AcmTable, compareNumbers, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import {
+    AcmPageCard,
+    AcmTable,
+    AcmInlineStatus,
+    StatusType,
+    compareNumbers,
+    IAcmTableColumn,
+} from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
@@ -75,6 +82,29 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
             sort: 'name',
             search: 'name',
             cell: 'name',
+        },
+        {
+            header: t('table.status'),
+            cell: (node) => {
+                const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
+                let type: StatusType
+                let status: string
+                switch (readyCondition?.status) {
+                    case 'True':
+                        type = StatusType.healthy
+                        status = t('node.status.ready')
+                        break
+                    case 'False':
+                        type = StatusType.danger
+                        status = t('node.status.unhealthy')
+                        break
+                    case 'Unknown':
+                    default:
+                        type = StatusType.unknown
+                        status = t('node.status.unknown')
+                }
+                return <AcmInlineStatus type={type} status={status} />
+            },
         },
         {
             header: t('table.role'),

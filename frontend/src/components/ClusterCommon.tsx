@@ -49,7 +49,7 @@ export function StatusField(props: { status: ClusterStatus }) {
         case ClusterStatus.pending:
         case ClusterStatus.pendingimport:
         default:
-            type = StatusType.unknown
+            type = StatusType.pending
     }
 
     return <AcmInlineStatus type={type} status={t(`status.${props.status}`)} />
