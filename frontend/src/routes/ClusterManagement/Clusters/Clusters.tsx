@@ -13,6 +13,7 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
     AcmErrorBoundary,
+    AcmInlineStatusGroup,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -308,9 +309,16 @@ export function ClustersTable(props: {
                     },
                     {
                         header: t('table.nodes'),
-                        // sort: 'info.status.nodeList.length',
                         cell: (cluster) => {
-                            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
+                            return cluster.nodes!.nodeList!.length > 0 ? (
+                                <AcmInlineStatusGroup
+                                    healthy={cluster.nodes!.ready}
+                                    danger={cluster.nodes!.unhealthy}
+                                    unknown={cluster.nodes!.unknown}
+                                />
+                            ) : (
+                                '-'
+                            )
                         },
                     },
                     {

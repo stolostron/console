@@ -117,6 +117,9 @@
     "status.pendingimport": "Pending import",
     "status.ready": "Ready",
     "status.offline": "Offline",
+    "node.status.ready": "Ready",
+    "node.status.unhealthy": "Unhealthy",
+    "node.status.unknown": "Unknown",
     "upgrade.available": "Upgrade available",
     "upgrade.notavailable": "Upgrade not available",
     "upgrade.istriggered": "Upgrading to {0}",
@@ -161,7 +164,7 @@
     "summary.nodes": "Nodes",
     "summary.applications": "Applications",
     "summary.violations": "Policy violations",
-    "summary.nodes.inactive": "{{number}} nodes inactive",
+    "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
     "summary.status.loading": "Loading application and violation status"

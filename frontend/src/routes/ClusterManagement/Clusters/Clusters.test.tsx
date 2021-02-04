@@ -191,6 +191,64 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
                 upgradeFailed: false,
             },
         },
+        nodeList: [
+            {
+                name: 'ip-10-0-134-240.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+                    'node-role.kubernetes.io/worker': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                conditions: [
+                    {
+                        status: 'True',
+                        type: 'Ready',
+                    },
+                ],
+            },
+            {
+                name: 'ip-10-0-130-30.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
+                    'node-role.kubernetes.io/master': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                capacity: {
+                    cpu: '4',
+                    memory: '15944104Ki',
+                },
+                conditions: [
+                    {
+                        status: 'Unknown',
+                        type: 'Ready',
+                    },
+                ],
+            },
+            {
+                name: 'ip-10-0-151-254.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-south-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
+                    'node-role.kubernetes.io/master': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                capacity: {
+                    cpu: '4',
+                    memory: '8194000Pi',
+                },
+                conditions: [
+                    {
+                        status: 'False',
+                        type: 'Ready',
+                    },
+                ],
+            },
+        ],
     },
 }
 function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {

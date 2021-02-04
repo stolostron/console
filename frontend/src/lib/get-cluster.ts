@@ -59,8 +59,9 @@ export type HiveSecrets = {
 }
 
 export type Nodes = {
-    active: number
-    inactive: number
+    ready: number
+    unhealthy: number
+    unknown: number
     nodeList: NodeInfo[]
 }
 
@@ -274,14 +275,25 @@ export function getConsoleUrl(
 
 export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
     const nodeList: NodeInfo[] = managedClusterInfo?.status?.nodeList ?? []
-    let active = 0
-    let inactive = 0
+    let ready = 0
+    let unhealthy = 0
+    let unknown = 0
 
     nodeList.forEach((node: NodeInfo) => {
         const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
-        readyCondition?.status === 'True' ? active++ : inactive++
+        switch (readyCondition?.status) {
+            case 'True':
+                ready++
+                break
+            case 'False':
+                unhealthy++
+                break
+            case 'Unknown':
+            default:
+                unknown++
+        }
     })
-    return { nodeList, active, inactive }
+    return { nodeList, ready, unhealthy, unknown }
 }
 
 export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined) {

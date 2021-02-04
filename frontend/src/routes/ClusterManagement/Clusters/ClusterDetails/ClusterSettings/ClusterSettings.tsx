@@ -54,6 +54,8 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined; addon
                                     type = StatusType.progress
                                     break
                                 case AddonStatus.Disabled:
+                                    type = StatusType.pending
+                                    break
                                 case AddonStatus.Unknown:
                                 default:
                                     type = StatusType.unknown
