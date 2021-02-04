@@ -19,6 +19,9 @@
     "type.to.confirm": "Confirm by typing {0} below:",
     "close": "Close",
 
+    "show.less": "Show less",
+    "show.more": "{{number}} more",
+
     "request.failed": "Request failed",
 
     "learn.more": "Learn more",

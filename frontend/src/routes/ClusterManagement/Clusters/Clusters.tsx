@@ -289,23 +289,29 @@ export function ClustersTable(props: {
                             cluster.labels
                                 ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`)
                                 : '',
-                        cell: (cluster) =>
-                            cluster.labels ? (
-                                <AcmLabels
-                                    labels={cluster.labels}
-                                    style={{ maxWidth: '600px' }}
-                                    collapse={[
-                                        'cloud',
-                                        'clusterID',
-                                        'installer.name',
-                                        'installer.namespace',
-                                        'name',
-                                        'vendor',
-                                    ]}
-                                />
-                            ) : (
-                                '-'
-                            ),
+                        cell: (cluster) => {
+                            if (cluster.labels) {
+                                const collapse = [
+                                    'cloud',
+                                    'clusterID',
+                                    'installer.name',
+                                    'installer.namespace',
+                                    'name',
+                                    'vendor',
+                                ]
+                                return (
+                                    <AcmLabels
+                                        labels={cluster.labels}
+                                        style={{ maxWidth: '600px' }}
+                                        expandedText={t('common:show.less')}
+                                        collapsedText={t('common:show.more', { number: collapse.length })}
+                                        collapse={collapse}
+                                    />
+                                )
+                            } else {
+                                return '-'
+                            }
+                        },
                     },
                     {
                         header: t('table.nodes'),
