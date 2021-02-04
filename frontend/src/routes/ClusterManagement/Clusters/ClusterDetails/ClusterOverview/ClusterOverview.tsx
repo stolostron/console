@@ -86,7 +86,7 @@ export function ClusterOverviewPageContent(props: {
                     },
                     {
                         key: t('table.clusterId'),
-                        value: cluster?.labels?.hasOwnProperty('clusterID') ? (
+                        value: cluster?.labels?.clusterID && (
                             <>
                                 <div>{cluster?.labels?.clusterID}</div>
                                 <a
@@ -97,7 +97,7 @@ export function ClusterOverviewPageContent(props: {
                                     {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
                                 </a>
                             </>
-                        ) : undefined,
+                        ),
                     },
                     {
                         key: t('table.credentials'),
