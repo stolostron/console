@@ -58,9 +58,14 @@ export default function CreateClusterPage() {
     const location = useLocation()
 
     // create portals for buttons in header
+    const switches = (
+        <div className="switch-controls">
+            <div id={Portals.editBtn} />
+        </div>
+    )
+
     const portals = (
         <div className="portal-controls">
-            <div id={Portals.editBtn} />
             <div id={Portals.cancelBtn} />
             <div id={Portals.createBtn} />
         </div>
@@ -141,6 +146,7 @@ export default function CreateClusterPage() {
                     { text: t('clusters'), to: NavigationPath.clusters },
                     { text: t('page.header.create-cluster'), to: '' },
                 ]}
+                switches={switches}
                 actions={portals}
             />
             <PageSection className="pf-c-content">
