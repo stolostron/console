@@ -15,7 +15,7 @@ import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo,
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { StatusField, UpgradeModal } from '../../../../components/ClusterCommon'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
