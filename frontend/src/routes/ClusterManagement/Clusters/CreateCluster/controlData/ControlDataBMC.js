@@ -51,6 +51,10 @@ const isHidden_gt_OCP44 = (control, controlData) => {
     return true
 }
 
+const showDNSVIP = (control, controlData) => {
+    return !isHidden_gt_OCP44(control, controlData)
+}
+
 const getRoleCount = (theRole, control, controlData) => {
     let count = 0
     const hosts = controlData.find(({ id }) => id === 'hosts')
@@ -339,6 +343,11 @@ const controlDataBMC = [
         tooltip: 'tooltip.creation.ocp.dns.vip',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR,
+    },
+    {
+        id: 'showDNSVIP',
+        type: 'hidden',
+        getActive: showDNSVIP,
     },
     {
         id: 'apiVIP',

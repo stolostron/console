@@ -12,6 +12,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -38,10 +39,12 @@ import { EditLabelsModal } from './components/EditLabelsModal'
 
 export default function ClustersPage() {
     return (
-        <AcmAlertProvider>
-            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-            <ClustersPageContent />
-        </AcmAlertProvider>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                <ClustersPageContent />
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 

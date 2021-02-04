@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { FeatureGate, listFeatureGates } from '../resources/feature-gate'
 import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
 
@@ -38,5 +39,11 @@ export function AppContextContainer(props: { children: React.ReactNode[] | React
         })()
     }, [])
 
-    return <AppContext.Provider value={{ featureGates, clusterManagementAddons }}>{props.children}</AppContext.Provider>
+    return (
+        <AcmErrorBoundary>
+            <AppContext.Provider value={{ featureGates, clusterManagementAddons }}>
+                {props.children}
+            </AppContext.Provider>
+        </AcmErrorBoundary>
+    )
 }
