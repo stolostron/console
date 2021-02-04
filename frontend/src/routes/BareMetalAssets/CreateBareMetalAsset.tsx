@@ -156,7 +156,7 @@ export function CreateBareMetalAssetPageData() {
         result.promise
             .then(async (projects) => {
                 const namespaces = projects!.map((project) => project.metadata.name!)
-                await rbacNamespaceFilter('secret.create', namespaces).then(setProjects).catch(setError)
+                await rbacNamespaceFilter('bma.create', namespaces).then(setProjects).catch(setError)
             })
             .catch(setError)
             .finally(() => setIsLoading(false))

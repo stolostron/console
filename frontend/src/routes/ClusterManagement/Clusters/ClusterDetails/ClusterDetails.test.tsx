@@ -89,7 +89,7 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
                 },
                 conditions: [
                     {
-                        status: 'True',
+                        status: 'Unknown',
                         type: 'Ready',
                     },
                 ],
@@ -109,7 +109,7 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
                 },
                 conditions: [
                     {
-                        status: 'True',
+                        status: 'False',
                         type: 'Ready',
                     },
                 ],

@@ -4,10 +4,11 @@ import {
     AcmLabels,
     AcmButton,
     AcmInlineProvider,
+    AcmInlineCopy,
     AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
-import { PencilAltIcon } from '@patternfly/react-icons'
+import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
 import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
@@ -72,13 +73,33 @@ export function ClusterOverviewPageContent(props: {
                         },
                     ]}
                     rightItems={[
-                        { key: t('table.kubeApiServer'), value: cluster?.kubeApiServer },
+                        {
+                            key: t('table.kubeApiServer'),
+                            value: cluster?.kubeApiServer && (
+                                <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />
+                            ),
+                        },
                         {
                             key: t('table.consoleUrl'),
                             value: cluster?.consoleURL && (
                                 <a href={cluster?.consoleURL} target="_blank" rel="noreferrer">
                                     {cluster?.consoleURL}
                                 </a>
+                            ),
+                        },
+                        {
+                            key: t('table.clusterId'),
+                            value: cluster?.labels?.clusterID && (
+                                <>
+                                    <div>{cluster?.labels?.clusterID}</div>
+                                    <a
+                                        href={`https://cloud.redhat.com/openshift/details/${cluster?.labels?.clusterID}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
+                                    </a>
+                                </>
                             ),
                         },
                         {

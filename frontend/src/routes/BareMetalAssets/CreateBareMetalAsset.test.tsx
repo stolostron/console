@@ -16,8 +16,10 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
+            name: '',
             namespace: 'test-namespace',
-            resource: 'secrets',
+            group: 'inventory.open-cluster-management.io',
+            resource: 'baremetalassets',
             verb: 'create',
         },
     },
