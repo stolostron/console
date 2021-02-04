@@ -24,6 +24,7 @@ import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
+import { ResourceError, ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -375,6 +376,9 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: (error) =>
+                                                error instanceof ResourceError &&
+                                                error.code !== ResourceErrorCode.NotFound,
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -403,6 +407,9 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: (error) =>
+                                                error instanceof ResourceError &&
+                                                error.code !== ResourceErrorCode.NotFound,
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -489,6 +496,8 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: (error) =>
+                                    error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound,
                             })
                         },
                     },
@@ -513,6 +522,8 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: (error) =>
+                                    error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound,
                             })
                         },
                     },

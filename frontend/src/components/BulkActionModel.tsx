@@ -31,6 +31,7 @@ export interface IBulkActionModelProps<T = undefined> {
     actionFn: (item: T) => IRequestResult
     confirmText?: string
     isDanger?: boolean
+    isValidError?: (error: Error) => boolean
 }
 
 interface ItemError<T> {
@@ -107,10 +108,16 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       const errors: ItemError<T>[] = []
                                       promiseResults.forEach((promiseResult, index) => {
                                           if (promiseResult.status === 'rejected') {
-                                              errors.push({
-                                                  item: props.resources[index],
-                                                  error: promiseResult.reason,
-                                              })
+                                              let validError = true
+                                              if (props.isValidError) {
+                                                  validError = props.isValidError(promiseResult.reason)
+                                              }
+                                              if (validError) {
+                                                  errors.push({
+                                                      item: props.resources[index],
+                                                      error: promiseResult.reason,
+                                                  })
+                                              }
                                           }
                                       })
                                       await new Promise((resolve) => setTimeout(resolve, 500))
