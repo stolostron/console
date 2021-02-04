@@ -8,13 +8,12 @@ import {
     AcmEmptyState,
     AcmErrorBoundary,
     AcmInlineProvider,
+    AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
-    AcmErrorBoundary,
-    AcmInlineStatusGroup,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
