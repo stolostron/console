@@ -18,7 +18,7 @@ import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -376,9 +376,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
-                                            isValidError: (error) =>
-                                                error instanceof ResourceError &&
-                                                error.code !== ResourceErrorCode.NotFound,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -407,9 +405,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
-                                            isValidError: (error) =>
-                                                error instanceof ResourceError &&
-                                                error.code !== ResourceErrorCode.NotFound,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -496,8 +492,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
-                                isValidError: (error) =>
-                                    error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound,
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },
@@ -522,8 +517,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
-                                isValidError: (error) =>
-                                    error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound,
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },

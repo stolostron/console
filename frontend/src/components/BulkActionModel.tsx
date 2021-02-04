@@ -15,7 +15,7 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
-import { IRequestResult, resultsSettled } from '../lib/resource-request'
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true
@@ -234,4 +234,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
             </AcmModal>
         </AcmFormProvider>
     )
+}
+
+export function errorIsNot(codes: ResourceErrorCode[]) {
+    return (error: Error) => error instanceof ResourceError && !codes.includes(error.code)
 }

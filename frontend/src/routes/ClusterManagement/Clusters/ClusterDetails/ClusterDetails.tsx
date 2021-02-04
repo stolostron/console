@@ -374,9 +374,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     },
                                                     isDanger: true,
                                                     confirmText: cluster.name,
-                                                    isValidError: (error) =>
-                                                        error instanceof ResourceError &&
-                                                        error.code !== ResourceErrorCode.NotFound,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
@@ -405,9 +403,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     },
                                                     isDanger: true,
                                                     confirmText: cluster.name,
-                                                    isValidError: (error) =>
-                                                        error instanceof ResourceError &&
-                                                        error.code !== ResourceErrorCode.NotFound,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
