@@ -6,13 +6,13 @@ import {
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
-    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,7 +24,7 @@ import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
-import { ResourceError, ResourceErrorCode } from '../../../lib/resource-request'
+import { ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
