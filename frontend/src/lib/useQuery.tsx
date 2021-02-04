@@ -71,7 +71,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                     if (!aborted) {
                         setLoading(false)
                     }
-                    if (dataRef.current.polling > 0) {
+                    if (dataRef.current.polling > 0 && !document.hidden) {
                         dataRef.current.timeout = setTimeout(
                             () => setIteration((iteration) => iteration + 1),
                             dataRef.current.polling
@@ -105,6 +105,14 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
         },
         [stopPolling]
     )
+
+    useEffect(() => {
+        const handler = () => {
+            if (!document.hidden) setIteration((iteration) => iteration + 1)
+        }
+        document.addEventListener('visibilitychange', handler, false)
+        return () => document.removeEventListener('visibilitychange', handler)
+    }, [])
 
     return {
         error,
