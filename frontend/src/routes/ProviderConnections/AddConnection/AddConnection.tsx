@@ -14,6 +14,7 @@ import {
     AcmTextInput,
     AcmInlineProvider,
     Provider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
@@ -98,7 +99,9 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                         ]}
                     />
                 )}
-                <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                <AcmErrorBoundary>
+                    <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                </AcmErrorBoundary>
             </Page>
         </AcmAlertProvider>
     )

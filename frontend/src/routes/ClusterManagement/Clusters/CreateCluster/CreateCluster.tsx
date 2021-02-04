@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
@@ -58,9 +58,14 @@ export default function CreateClusterPage() {
     const location = useLocation()
 
     // create portals for buttons in header
+    const switches = (
+        <div className="switch-controls">
+            <div id={Portals.editBtn} />
+        </div>
+    )
+
     const portals = (
         <div className="portal-controls">
-            <div id={Portals.editBtn} />
             <div id={Portals.cancelBtn} />
             <div id={Portals.createBtn} />
         </div>
@@ -141,27 +146,30 @@ export default function CreateClusterPage() {
                     { text: t('clusters'), to: NavigationPath.clusters },
                     { text: t('page.header.create-cluster'), to: '' },
                 ]}
+                switches={switches}
                 actions={portals}
             />
-            <PageSection className="pf-c-content">
-                <TemplateEditor
-                    type={'cluster'}
-                    title={'Cluster YAML'}
-                    monacoEditor={<MonacoEditor />}
-                    controlData={controlData}
-                    template={template}
-                    portals={Portals}
-                    fetchControl={fetchControl}
-                    createControl={{
-                        createResource,
-                        cancelCreate,
-                        pauseCreate,
-                        creationStatus: creationStatus.status,
-                        creationMsg: creationStatus.messages,
-                    }}
-                    i18n={i18n}
-                />
-            </PageSection>
+            <AcmErrorBoundary>
+                <PageSection className="pf-c-content">
+                    <TemplateEditor
+                        type={'cluster'}
+                        title={'Cluster YAML'}
+                        monacoEditor={<MonacoEditor />}
+                        controlData={controlData}
+                        template={template}
+                        portals={Portals}
+                        fetchControl={fetchControl}
+                        createControl={{
+                            createResource,
+                            cancelCreate,
+                            pauseCreate,
+                            creationStatus: creationStatus.status,
+                            creationMsg: creationStatus.messages,
+                        }}
+                        i18n={i18n}
+                    />
+                </PageSection>
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }

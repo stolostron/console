@@ -10,6 +10,7 @@ import {
     AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
@@ -50,12 +51,14 @@ export default function BareMetalAssetsPage() {
                     </>
                 }
             />
-            <AcmScrollable>
-                <AcmAlertProvider>
-                    <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                    <BareMetalAssets />
-                </AcmAlertProvider>
-            </AcmScrollable>
+            <AcmErrorBoundary>
+                <AcmScrollable>
+                    <AcmAlertProvider>
+                        <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                        <BareMetalAssets />
+                    </AcmAlertProvider>
+                </AcmScrollable>
+            </AcmErrorBoundary>
         </Page>
     )
 }
