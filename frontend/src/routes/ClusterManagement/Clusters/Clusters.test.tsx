@@ -96,6 +96,7 @@ const allMockManagedClusters: ManagedCluster[] = [
     mockManagedCluster3,
     mockManagedCluster4,
     mockManagedCluster5,
+    mockManagedCluster6,
 ]
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
@@ -310,13 +311,13 @@ describe('Cluster page', () => {
             nockListClusterDeployments(),
             nockListManagedClusters(),
         ]
-        const allViewPermissionNock:nock.Scope[] = allMockManagedClusters.map((mockManagedCluster)=>{
+        const allViewPermissionNock: nock.Scope[] = allMockManagedClusters.map((mockManagedCluster) => {
             return nockcreateSelfSubjectAccesssRequest(
                 getCreateClusterViewResourceAttributes(mockManagedCluster.metadata.name!),
                 true
-            ) 
+            )
         })
-        const allActionPermissionNock:nock.Scope[] = allMockManagedClusters.map((mockManagedCluster)=>{
+        const allActionPermissionNock: nock.Scope[] = allMockManagedClusters.map((mockManagedCluster) => {
             return nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
                 true
@@ -336,10 +337,10 @@ describe('Cluster page', () => {
         queryAllByRole = renderResult.queryAllByRole
         await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
         await waitFor(() => expect(getByText(mockManagedCluster1.metadata.name!)).toBeInTheDocument())
-        for(let i=0;i<allViewPermissionNock.length;i++){
+        for (let i = 0; i < allViewPermissionNock.length; i++) {
             await waitFor(() => expect(allViewPermissionNock[i].isDone()).toBeTruthy())
         }
-        for(let i=0;i<allActionPermissionNock.length;i++){
+        for (let i = 0; i < allActionPermissionNock.length; i++) {
             await waitFor(() => expect(allActionPermissionNock[i].isDone()).toBeTruthy())
         }
     })
@@ -379,7 +380,7 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.destroySelected')) // click the delete action
 
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name)
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata!.name!)
 
         await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
         userEvent.click(getByText('destroy')) // click confirm on the delete dialog
@@ -449,7 +450,7 @@ describe('Cluster page', () => {
         userEvent.click(getByText('managed.detached')) // click the delete action
 
         await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name)
+        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata!.name!)
 
         await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
         userEvent.click(getByText('detach')) // click confirm on the delete dialog

@@ -83,7 +83,7 @@ export function DistributionField(props: {
                 }
             })
             .catch((err) => console.error(err))
-    },[])
+    }, [props.clusterName])
 
     if (!props.data) return <>-</>
     // use display version directly for non-online clusters

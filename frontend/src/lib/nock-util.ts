@@ -7,7 +7,6 @@ import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import { isEqual } from 'lodash'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
 
-
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
@@ -175,7 +174,7 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
     return scope
 }
 
-export function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean) {
+export function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
     return nockCreate(
         {
             apiVersion: 'authorization.k8s.io/v1',

@@ -1,13 +1,11 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockUpgrade, nockcreateSelfSubjectAccesssRequest } from '../lib/nock-util'
-import { DistributionInfo } from '../lib/get-cluster'
+import { DistributionInfo, ClusterStatus } from '../lib/get-cluster'
 import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
 import { ResourceAttributes } from '../resources/self-subject-access-review'
 import * as nock from 'nock'
-import { createTrue } from 'typescript'
-import { truncate, truncateSync } from 'fs'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -82,24 +80,32 @@ describe('DistributionField', () => {
     let nockView: nock.Scope
 
     const renderDistributionInfoField = async (data: DistributionInfo, allowUpgrade: boolean) => {
-        nockAction = nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('clusterName'), allowUpgrade)
-        nockView = nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('clusterName'), allowUpgrade)
-        const retResource = render(<DistributionField clusterName="clusterName" data={data} />)
+        nockAction = nockcreateSelfSubjectAccesssRequest(
+            getClusterActionsResourceAttributes('clusterName'),
+            allowUpgrade
+        )
+        nockView = nockcreateSelfSubjectAccesssRequest(
+            getCreateClusterViewResourceAttributes('clusterName'),
+            allowUpgrade
+        )
+        const retResource = render(
+            <DistributionField clusterName="clusterName" data={data} clusterStatus={ClusterStatus.ready} />
+        )
         await waitFor(() => expect(nockAction.isDone()).toBeTruthy())
         await waitFor(() => expect(nockView.isDone()).toBeTruthy())
         return retResource
     }
 
     it('should not show upgrade button when no available upgrades', async () => {
-        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades,true)
+        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
         expect(queryAllByText('upgrade.available').length).toBe(0)
     })
     it('should not show upgrade button when no required permission', async () => {
-        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfo,false)
+        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, false)
         expect(queryAllByText('upgrade.available').length).toBe(0)
     })
     it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
-        const { getAllByText, queryAllByText } = await renderDistributionInfoField(mockDistributionInfo,true)
+        const { getAllByText, queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, true)
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         userEvent.click(getAllByText('upgrade.available')[0])
         expect(getAllByText('upgrade.title clusterName').length).toBeGreaterThan(0)
@@ -108,17 +114,20 @@ describe('DistributionField', () => {
         expect(queryAllByText('upgrade.title clusterName').length).toBe(0)
     })
     it('should show upgrading with loader when upgrading', async () => {
-        const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading,true)
+        const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
         expect(getAllByText('upgrade.upgrading ' + mockDistributionInfoUpgrading.ocp?.desiredVersion)).toBeTruthy()
         expect(queryByRole('progressbar')).toBeTruthy()
     })
 
     it('should show failed when failed upgrade', async () => {
-        const { getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedUpgrade,true)
+        const { getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedUpgrade, true)
         expect(getAllByText('upgrade.upgradefailed')).toBeTruthy()
     })
     it('should not show failed when there is no upgrade running', async () => {
-        const { queryAllByText, getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedInstall,true)
+        const { queryAllByText, getAllByText } = await renderDistributionInfoField(
+            mockDistributionInfoFailedInstall,
+            true
+        )
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
     })
