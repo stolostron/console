@@ -311,7 +311,7 @@
   "pagination.itemRangeDescription": "of {{0}} items",
 
   "editor.show.secrets": "Show secrets",
-  "enter.add.label": "Enter key=value, then type enter or a comma",
+  "enter.add.label": "Enter key=value",
   "enter.duplicate.key": "Duplicate key: {{0}}",
   "cancel.label.create": "Cancel label create",
   "delete.label": "Delete label",

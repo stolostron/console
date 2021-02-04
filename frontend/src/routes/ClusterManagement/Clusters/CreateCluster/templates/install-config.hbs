@@ -180,9 +180,9 @@ platform:
     provisioningNetworkInterface: {{{../../provisioningNetworkInterface}}} ##provisioningNetworkInterface
     provisioningBridge: {{{../../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
     externalBridge: {{{../../externalNetworkBridge }}}  ##externalNetworkBridge
-    {{#if_gt '4.5.0' ../../releaseImageVersion}}
+    {{#if ../../showDNSVIP}}
     dnsVIP: {{{../../../dnsVIP}}} ##dnsVIP
-    {{/if_gt}}
+    {{/if}}
     apiVIP: {{{../../apiVIP}}} ##apiVIP
     ingressVIP: {{{../../ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
