@@ -233,6 +233,16 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     verb: 'patch',
                 },
             ]
+        case 'bma.create':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalassets',
+                    verb: 'create',
+                },
+            ]
         case 'bma.delete':
             return [
                 {
