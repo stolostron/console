@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockCreate, nockDelete, nockList } from '../../../lib/nock-util'
+import { nockList, nockDelete, nockcreateSelfSubjectAccesssRequest } from '../../../lib/nock-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
@@ -20,9 +20,9 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
-
+import { ResourceAttributes } from '../../../resources/self-subject-access-review'
+import * as nock from 'nock'
 const mockManagedCluster1: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -90,17 +90,17 @@ const mockManagedCluster6: ManagedCluster = {
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
+const allMockManagedClusters: ManagedCluster[] = [
+    mockManagedCluster1,
+    mockManagedCluster2,
+    mockManagedCluster3,
+    mockManagedCluster4,
+    mockManagedCluster5,
+]
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
-        managedClusters ?? [
-            mockManagedCluster1,
-            mockManagedCluster2,
-            mockManagedCluster3,
-            mockManagedCluster4,
-            mockManagedCluster5,
-            mockManagedCluster6,
-        ]
+        managedClusters ?? allMockManagedClusters
     )
 }
 
@@ -237,30 +237,6 @@ function nockListCertificateSigningRequests(certificateSigningRequest?: Certific
     )
 }
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
-
 function getPatchClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
@@ -334,6 +310,18 @@ describe('Cluster page', () => {
             nockListClusterDeployments(),
             nockListManagedClusters(),
         ]
+        const allViewPermissionNock:nock.Scope[] = allMockManagedClusters.map((mockManagedCluster)=>{
+            return nockcreateSelfSubjectAccesssRequest(
+                getCreateClusterViewResourceAttributes(mockManagedCluster.metadata.name!),
+                true
+            ) 
+        })
+        const allActionPermissionNock:nock.Scope[] = allMockManagedClusters.map((mockManagedCluster)=>{
+            return nockcreateSelfSubjectAccesssRequest(
+                getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
+                true
+            )
+        })
         const renderResult = render(
             <MemoryRouter>
                 <ClustersPage />
@@ -348,6 +336,12 @@ describe('Cluster page', () => {
         queryAllByRole = renderResult.queryAllByRole
         await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
         await waitFor(() => expect(getByText(mockManagedCluster1.metadata.name!)).toBeInTheDocument())
+        for(let i=0;i<allViewPermissionNock.length;i++){
+            await waitFor(() => expect(allViewPermissionNock[i].isDone()).toBeTruthy())
+        }
+        for(let i=0;i<allActionPermissionNock.length;i++){
+            await waitFor(() => expect(allActionPermissionNock[i].isDone()).toBeTruthy())
+        }
     })
 
     it('deletes cluster', async () => {
