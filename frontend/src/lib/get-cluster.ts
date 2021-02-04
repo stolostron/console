@@ -282,17 +282,16 @@ export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
     nodeList.forEach((node: NodeInfo) => {
         const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
         switch (readyCondition?.status) {
-        case 'True':
-            ready++
-            break
-        case 'False':
-            unhealthy++
-            break
-        case 'Unknown':
-        default:
-            unknown++
+            case 'True':
+                ready++
+                break
+            case 'False':
+                unhealthy++
+                break
+            case 'Unknown':
+            default:
+                unknown++
         }
-
     })
     return { nodeList, ready, unhealthy, unknown }
 }

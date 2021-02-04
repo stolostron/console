@@ -43,7 +43,11 @@ export function StatusSummaryCount() {
                         description: (
                             <Trans
                                 i18nKey="cluster:summary.nodes.inactive"
-                                values={{ number: /* istanbul ignore next */ cluster?.nodes?.unhealthy!  + cluster?.nodes?.unknown! }}
+                                values={{
+                                    number:
+                                        /* istanbul ignore next */ cluster?.nodes?.unhealthy! +
+                                        cluster?.nodes?.unknown!,
+                                }}
                             />
                         ),
                         isDanger: cluster?.nodes?.unhealthy! + cluster?.nodes?.unknown! > 0,
