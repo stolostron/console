@@ -5,6 +5,7 @@ import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resour
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import { isEqual } from 'lodash'
+import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -171,6 +172,30 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         }
     }
     return scope
+}
+
+export function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
+    )
 }
 
 export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {

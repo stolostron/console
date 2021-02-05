@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Axios, { AxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import {
@@ -21,6 +21,7 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { ClusterStatus, DistributionInfo } from '../lib/get-cluster'
+import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function StatusField(props: { status: ClusterStatus }) {
@@ -63,6 +64,40 @@ export function DistributionField(props: {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
+    const [hasUpgradePermission, setHasUpgradePermission] = useState<boolean>(false)
+    useEffect(() => {
+        // if no available upgrades, skipping permission check
+        if (
+            !(props.data?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
+            (props.data?.ocp?.desiredVersion &&
+                props.data?.ocp?.version &&
+                props.data.ocp?.desiredVersion !== props.data.ocp?.version) // upgrading
+        ) {
+            return
+        }
+        // check if the user is allowed to upgrade the cluster
+        const request = createSubjectAccessReviews(rbacMapping('cluster.upgrade', props.clusterName, props.clusterName))
+        request.promise
+            .then((results) => {
+                if (results) {
+                    let rbacQueryResults: boolean[] = []
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled') {
+                            rbacQueryResults.push(result.value.status?.allowed!)
+                        }
+                    })
+                    if (!rbacQueryResults.includes(false)) {
+                        setHasUpgradePermission(true)
+                    }
+                }
+            })
+            .catch((err) => console.error(err))
+    }, [
+        props.clusterName,
+        props.data?.ocp?.availableUpdates?.length,
+        props.data?.ocp?.version,
+        props.data?.ocp?.desiredVersion,
+    ])
 
     if (!props.data) return <>-</>
     // use display version directly for non-online clusters
@@ -86,18 +121,18 @@ export function DistributionField(props: {
         return (
             <span>
                 {props.data?.displayVersion}{' '}
-                <span style={{ whiteSpace: 'nowrap' }}>
-                    (
-                    <AcmButton
-                        onClick={toggle}
-                        variant={ButtonVariant.link}
-                        style={{ padding: 0, margin: 0, fontSize: '14px' }}
-                    >
-                        {t('upgrade.available')}
-                    </AcmButton>
-                    )
-                    <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
-                </span>
+                {hasUpgradePermission && (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <AcmButton
+                            onClick={toggle}
+                            variant={ButtonVariant.link}
+                            style={{ padding: 0, margin: 0, fontSize: '14px' }}
+                        >
+                            {t('upgrade.available')}
+                        </AcmButton>
+                        <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
+                    </span>
+                )}
             </span>
         )
     } else {
