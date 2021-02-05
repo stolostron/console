@@ -128,7 +128,7 @@ export function DistributionField(props: {
                                     </a>
                                 }
                             >
-                                <AcmButton variant="link" style={{ padding: 0, fontSize: '14px' }}>
+                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
                                     {t('upgrade.upgradefailed')}
                                 </AcmButton>
                             </Popover>
@@ -164,7 +164,7 @@ export function DistributionField(props: {
                                     </a>
                                 }
                             >
-                                <AcmButton variant="link" style={{ padding: 0, fontSize: '14px' }}>
+                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
                                     {t('upgrade.upgrading.version', { version: props.data.ocp?.desiredVersion })}
                                 </AcmButton>
                             </Popover>
@@ -187,7 +187,7 @@ export function DistributionField(props: {
                         onClick={toggle}
                         icon={<ArrowCircleUpIcon />}
                         variant={ButtonVariant.link}
-                        style={{ padding: 0, margin: 0, fontSize: '14px' }}
+                        style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                     >
                         {t('upgrade.available')}
                     </AcmButton>
