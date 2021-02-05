@@ -179,8 +179,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     isInline
                                     noClose
                                     variant="danger"
-                                    title={`${props.action} ${t('errors').toLowerCase()}`}
-                                    message={
+                                    title={
                                         errors.length === 1
                                             ? `${t('common:there.was.an.error')
                                                   .replace('{0}', props.processing.toLowerCase())
@@ -200,13 +199,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                                 {
                                                     header: t('common:error'),
                                                     cell: (item) => {
-                                                        return (
-                                                            <Fragment>
-                                                                <ExclamationCircleIcon style={{ color: 'red' }} />{' '}
-                                                                &nbsp;
-                                                                {getItemError(item)?.message}
-                                                            </Fragment>
-                                                        )
+                                                        return <Fragment>{getItemError(item)?.message}</Fragment>
                                                     },
                                                 },
                                             ]}
