@@ -98,6 +98,10 @@ const allMockManagedClusters: ManagedCluster[] = [
     mockManagedCluster5,
     mockManagedCluster6,
 ]
+const allUpgradeAvailableMockManagedClusters: ManagedCluster[] = [
+    mockManagedCluster4,
+    mockManagedCluster6,
+] 
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
@@ -271,14 +275,7 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-function getCreateClusterViewResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusterviews',
-        verb: 'create',
-        group: 'view.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
+
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
@@ -311,13 +308,7 @@ describe('Cluster page', () => {
             nockListClusterDeployments(),
             nockListManagedClusters(),
         ]
-        const allViewPermissionNock: nock.Scope[] = allMockManagedClusters.map((mockManagedCluster) => {
-            return nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster.metadata.name!),
-                true
-            )
-        })
-        const allActionPermissionNock: nock.Scope[] = allMockManagedClusters.map((mockManagedCluster) => {
+        const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map((mockManagedCluster) => {
             return nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
                 true
@@ -337,9 +328,6 @@ describe('Cluster page', () => {
         queryAllByRole = renderResult.queryAllByRole
         await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
         await waitFor(() => expect(getByText(mockManagedCluster1.metadata.name!)).toBeInTheDocument())
-        for (let i = 0; i < allViewPermissionNock.length; i++) {
-            await waitFor(() => expect(allViewPermissionNock[i].isDone()).toBeTruthy())
-        }
         for (let i = 0; i < allActionPermissionNock.length; i++) {
             await waitFor(() => expect(allActionPermissionNock[i].isDone()).toBeTruthy())
         }
@@ -355,9 +343,6 @@ describe('Cluster page', () => {
             ),
             nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
             nockcreateSelfSubjectAccesssRequest(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
@@ -427,9 +412,6 @@ describe('Cluster page', () => {
                 getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
             nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
         ]
@@ -493,9 +475,6 @@ describe('Cluster page', () => {
             nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!)
             ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster3.metadata.name!)
-            ),
         ]
 
         const name = mockManagedCluster3.metadata.name!
@@ -516,9 +495,6 @@ describe('Cluster page', () => {
             nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!)
             ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster5.metadata.name!)
-            ),
         ]
 
         const name = mockManagedCluster5.metadata.name!
@@ -536,9 +512,6 @@ describe('Cluster page', () => {
         const rbacNocks: Scope[] = [
             nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster4.metadata.name!)
-            ),
             nockcreateSelfSubjectAccesssRequest(
                 getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)
             ),

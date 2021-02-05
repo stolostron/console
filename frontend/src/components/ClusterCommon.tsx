@@ -66,6 +66,16 @@ export function DistributionField(props: {
     const toggle = () => toggleOpen(!open)
     const [hasUpgradePermission, setHasUpgradePermission] = useState<boolean>(false)
     useEffect(() => {
+        // if no available upgrades, skipping permission check
+        if (
+            !props.data || // no data
+            !(props.data.ocp?.availableUpdates && props.data.ocp?.availableUpdates.length > 0) || // has no available upgrades
+            (props.data.ocp?.desiredVersion &&
+                props.data.ocp?.version &&
+                props.data.ocp?.desiredVersion !== props.data.ocp?.version) // upgrading
+        ) {
+            return
+        }
         // check if the user is allowed to upgrade the cluster
         const request = createSubjectAccessReviews(rbacMapping('cluster.upgrade', props.clusterName, props.clusterName))
         request.promise
