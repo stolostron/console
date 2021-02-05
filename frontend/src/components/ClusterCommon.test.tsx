@@ -94,9 +94,9 @@ describe('DistributionField', () => {
         const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
         expect(queryAllByText('upgrade.available').length).toBe(0)
     })
-    it('should not show upgrade button when no required permission', async () => {
-        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
-        expect(queryAllByText('upgrade.available').length).toBe(0)
+    it('should disable the upgrade button when the user lacks permissions', async () => {
+        const { queryByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
+        expect(queryByText('upgrade.available')).toHaveAttribute('aria-disabled', 'true')
     })
     it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
         const { getAllByText, queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, true, true)
@@ -109,7 +109,7 @@ describe('DistributionField', () => {
     })
     it('should show upgrading with loader when upgrading', async () => {
         const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
-        expect(getAllByText('upgrade.upgrading ' + mockDistributionInfoUpgrading.ocp?.desiredVersion)).toBeTruthy()
+        expect(getAllByText('upgrade.upgrading.version')).toBeTruthy()
         expect(queryByRole('progressbar')).toBeTruthy()
     })
 
