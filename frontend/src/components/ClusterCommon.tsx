@@ -68,10 +68,9 @@ export function DistributionField(props: {
     useEffect(() => {
         // if no available upgrades, skipping permission check
         if (
-            !props.data || // no data
-            !(props.data.ocp?.availableUpdates && props.data.ocp?.availableUpdates.length > 0) || // has no available upgrades
-            (props.data.ocp?.desiredVersion &&
-                props.data.ocp?.version &&
+            !(props.data?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
+            (props.data?.ocp?.desiredVersion &&
+                props.data?.ocp?.version &&
                 props.data.ocp?.desiredVersion !== props.data.ocp?.version) // upgrading
         ) {
             return
@@ -93,7 +92,12 @@ export function DistributionField(props: {
                 }
             })
             .catch((err) => console.error(err))
-    }, [props.clusterName, props.data])
+    }, [
+        props.clusterName,
+        props.data?.ocp?.availableUpdates?.length,
+        props.data?.ocp?.version,
+        props.data?.ocp?.desiredVersion,
+    ])
 
     if (!props.data) return <>-</>
     // use display version directly for non-online clusters
