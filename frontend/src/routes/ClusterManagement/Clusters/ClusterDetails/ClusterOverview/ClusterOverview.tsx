@@ -44,6 +44,7 @@ export function ClusterOverviewPageContent(props: {
                                     data={cluster?.distribution}
                                     clusterName={cluster?.name || ''}
                                     clusterStatus={cluster?.status}
+                                    consoleURL={cluster?.consoleURL}
                                 />
                             ),
                         },

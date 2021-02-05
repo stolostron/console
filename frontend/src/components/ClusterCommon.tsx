@@ -19,7 +19,9 @@ import {
     Text,
     AlertVariant,
     Title,
+    Popover,
 } from '@patternfly/react-core'
+import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ClusterStatus, DistributionInfo } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
@@ -60,6 +62,7 @@ export function DistributionField(props: {
     clusterName: string
     data: DistributionInfo | undefined
     clusterStatus: ClusterStatus
+    consoleURL?: string
 }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
@@ -105,35 +108,92 @@ export function DistributionField(props: {
         return <>{props.data.displayVersion ?? '-'}</>
     }
     if (props.data.ocp?.upgradeFailed && props.data.ocp?.desiredVersion !== props.data.ocp?.version) {
-        return <AcmInlineStatus type={StatusType.danger} status={t(`upgrade.upgradefailed`)} />
+        return (
+            <>
+                <div>{props.data.displayVersion}</div>
+                <AcmInlineStatus
+                    type={StatusType.danger}
+                    status={
+                        props.consoleURL ? (
+                            <Popover
+                                hasAutoWidth
+                                headerContent={t('upgrade.upgradefailed', { version: props.data.ocp?.desiredVersion })}
+                                bodyContent={t('upgrade.upgradefailed.message', {
+                                    clusterName: props.clusterName,
+                                    version: props.data.ocp?.desiredVersion,
+                                })}
+                                footerContent={
+                                    <a href={`${props.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
+                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                    </a>
+                                }
+                            >
+                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
+                                    {t('upgrade.upgradefailed')}
+                                </AcmButton>
+                            </Popover>
+                        ) : (
+                            t('upgrade.upgradefailed', { version: props.data.ocp?.desiredVersion })
+                        )
+                    }
+                />
+            </>
+        )
     } else if (
         props.data.ocp?.desiredVersion &&
         props.data.ocp?.version &&
         props.data.ocp?.desiredVersion !== props.data.ocp?.version
     ) {
         return (
-            <AcmInlineStatus
-                type={StatusType.progress}
-                status={t(`upgrade.upgrading`) + ' ' + props.data.ocp?.desiredVersion}
-            />
+            <>
+                <div>{props.data.displayVersion}</div>
+                <AcmInlineStatus
+                    type={StatusType.progress}
+                    status={
+                        props.consoleURL ? (
+                            <Popover
+                                hasAutoWidth
+                                headerContent={t('upgrade.upgrading', { version: props.data.ocp?.desiredVersion })}
+                                bodyContent={t('upgrade.upgrading.message', {
+                                    clusterName: props.clusterName,
+                                    version: props.data.ocp?.desiredVersion,
+                                })}
+                                footerContent={
+                                    <a href={`${props.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
+                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                    </a>
+                                }
+                            >
+                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
+                                    {t('upgrade.upgrading.version', { version: props.data.ocp?.desiredVersion })}
+                                </AcmButton>
+                            </Popover>
+                        ) : (
+                            t('upgrade.upgrading.version', { version: props.data.ocp?.desiredVersion })
+                        )
+                    }
+                    // status={t('upgrade.upgrading', { version: props.data.ocp?.desiredVersion })}
+                />
+            </>
         )
     } else if (props.data.ocp?.availableUpdates && props.data.ocp?.availableUpdates?.length > 0) {
         return (
-            <span>
-                {props.data?.displayVersion}{' '}
-                {hasUpgradePermission && (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        <AcmButton
-                            onClick={toggle}
-                            variant={ButtonVariant.link}
-                            style={{ padding: 0, margin: 0, fontSize: '14px' }}
-                        >
-                            {t('upgrade.available')}
-                        </AcmButton>
-                        <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
-                    </span>
-                )}
-            </span>
+            <>
+                <div>{props.data?.displayVersion}</div>
+                <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+                    <AcmButton
+                        isDisabled={!hasUpgradePermission}
+                        tooltip={t('common:rbac.unauthorized')}
+                        onClick={toggle}
+                        icon={<ArrowCircleUpIcon />}
+                        variant={ButtonVariant.link}
+                        style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                    >
+                        {t('upgrade.available')}
+                    </AcmButton>
+                    <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
+                </span>
+            </>
         )
     } else {
         return <>{props.data.displayVersion ?? '-'}</>
