@@ -11,7 +11,6 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Form, ModalVariant, Progress, ProgressMeasureLocation } from '@patternfly/react-core'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
