@@ -98,10 +98,7 @@ const allMockManagedClusters: ManagedCluster[] = [
     mockManagedCluster5,
     mockManagedCluster6,
 ]
-const allUpgradeAvailableMockManagedClusters: ManagedCluster[] = [
-    mockManagedCluster4,
-    mockManagedCluster6,
-] 
+const allUpgradeAvailableMockManagedClusters: ManagedCluster[] = [mockManagedCluster4, mockManagedCluster6]
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
@@ -308,12 +305,14 @@ describe('Cluster page', () => {
             nockListClusterDeployments(),
             nockListManagedClusters(),
         ]
-        const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map((mockManagedCluster) => {
-            return nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
-                true
-            )
-        })
+        const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map(
+            (mockManagedCluster) => {
+                return nockcreateSelfSubjectAccesssRequest(
+                    getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
+                    true
+                )
+            }
+        )
         const renderResult = render(
             <MemoryRouter>
                 <ClustersPage />

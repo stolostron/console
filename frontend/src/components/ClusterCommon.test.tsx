@@ -58,14 +58,6 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
     displayVersion: 'openshift',
 }
 
-function getCreateClusterViewResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusterviews',
-        verb: 'create',
-        group: 'view.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
