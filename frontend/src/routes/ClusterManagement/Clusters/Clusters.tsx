@@ -6,25 +6,26 @@ import {
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
+    AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
-    AcmErrorBoundary,
-    AcmInlineStatusGroup,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
+import { ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -389,6 +390,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -417,6 +419,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -503,6 +506,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },
@@ -527,6 +531,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },

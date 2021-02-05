@@ -15,13 +15,13 @@ import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo,
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { StatusField, UpgradeModal } from '../../../../components/ClusterCommon'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
-import { ResourceError } from '../../../../lib/resource-request'
+import { ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
@@ -374,6 +374,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     },
                                                     isDanger: true,
                                                     confirmText: cluster.name,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
@@ -402,6 +403,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     },
                                                     isDanger: true,
                                                     confirmText: cluster.name,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
