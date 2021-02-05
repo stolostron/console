@@ -14,8 +14,8 @@
     "label.add": "Add label",
     "error": "Error",
     "errors": "Errors",
-    "there.was.an.error": "There was an error {0} these {1}.",
-    "there.were.errors": "There were errors {0} these {1}.",
+    "there.was.an.error": "There was an error {0} the following {1}.",
+    "there.were.errors": "There were errors {0} the following {1}.",
     "type.to.confirm": "Confirm by typing {0} below:",
     "close": "Close",
 

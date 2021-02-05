@@ -11,7 +11,6 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Form, ModalVariant, Progress, ProgressMeasureLocation } from '@patternfly/react-core'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
@@ -186,8 +185,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     isInline
                                     noClose
                                     variant="danger"
-                                    title={`${props.action} ${t('errors').toLowerCase()}`}
-                                    message={
+                                    title={
                                         errors.length === 1
                                             ? `${t('common:there.was.an.error')
                                                   .replace('{0}', props.processing.toLowerCase())
@@ -207,13 +205,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                                 {
                                                     header: t('common:error'),
                                                     cell: (item) => {
-                                                        return (
-                                                            <Fragment>
-                                                                <ExclamationCircleIcon style={{ color: 'red' }} />{' '}
-                                                                &nbsp;
-                                                                {getItemError(item)?.message}
-                                                            </Fragment>
-                                                        )
+                                                        return <Fragment>{getItemError(item)?.message}</Fragment>
                                                     },
                                                 },
                                             ]}
