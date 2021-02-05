@@ -281,6 +281,7 @@ export function ClustersTable(props: {
                                 data={cluster.distribution}
                                 clusterName={cluster?.name || ''}
                                 clusterStatus={cluster?.status || ''}
+                                consoleURL={cluster?.consoleURL}
                             />
                         ),
                     },
