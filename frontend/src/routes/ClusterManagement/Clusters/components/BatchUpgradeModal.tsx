@@ -61,8 +61,8 @@ export function BatchUpgradeModal(props: {
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            plural={t('upgrade.multiple.title').replace('{0}', '' + upgradeableClusters.length)}
-            singular={t('upgrade.multiple.titlesingular').replace('{0}', '' + upgradeableClusters.length)}
+            plural={t('upgrade.multiple.plural')}
+            singular={t('upgrade.multiple.singular')}
             action={t('upgrade.submit')}
             processing={t('upgrade.submit.processing')}
             resources={upgradeableClusters}
