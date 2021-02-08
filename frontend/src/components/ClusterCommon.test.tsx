@@ -16,6 +16,7 @@ const mockDistributionInfo: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoUpgrading: DistributionInfo = {
     ocp: {
@@ -26,6 +27,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     ocp: {
@@ -36,6 +38,7 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     ocp: {
@@ -46,6 +49,7 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedInstall: DistributionInfo = {
     ocp: {
@@ -56,6 +60,18 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
+}
+const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        desiredVersion: '1.2.3',
+        upgradeFailed: false,
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: true,
 }
 
 function getClusterActionsResourceAttributes(name: string) {
@@ -138,6 +154,10 @@ describe('DistributionField', () => {
         )
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
+    })
+    it('should not show upgrade button for managed OpenShift', async () => {
+        const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
+        expect(queryAllByText('upgrade.available').length).toBe(0)
     })
 })
 

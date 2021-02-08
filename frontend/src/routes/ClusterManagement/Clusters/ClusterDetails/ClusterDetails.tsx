@@ -414,6 +414,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
 
                                     if (
+                                        cluster?.distribution?.isManagedOpenShift ||
                                         cluster?.status !== ClusterStatus.ready ||
                                         !(
                                             cluster?.distribution?.ocp?.availableUpdates &&

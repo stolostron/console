@@ -428,6 +428,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.distribution?.isManagedOpenShift ||
                                 cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&

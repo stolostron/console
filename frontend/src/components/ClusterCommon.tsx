@@ -192,7 +192,8 @@ export function DistributionField(props: { cluster?: Cluster }) {
         )
     } else if (
         props.cluster?.distribution.ocp?.availableUpdates &&
-        props.cluster?.distribution.ocp?.availableUpdates?.length > 0
+        props.cluster?.distribution.ocp?.availableUpdates?.length > 0 &&
+        !props.cluster?.distribution.isManagedOpenShift // don't allow upgrade for managed OpenShift
     ) {
         return (
             <>
