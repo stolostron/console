@@ -39,14 +39,7 @@ export function ClusterOverviewPageContent(props: {
                         },
                         {
                             key: t('table.distribution'),
-                            value: cluster?.distribution?.displayVersion && (
-                                <DistributionField
-                                    data={cluster?.distribution}
-                                    clusterName={cluster?.name || ''}
-                                    clusterStatus={cluster?.status}
-                                    consoleURL={cluster?.consoleURL}
-                                />
-                            ),
+                            value: cluster?.distribution?.displayVersion && <DistributionField cluster={cluster} />,
                         },
                         {
                             key: t('table.labels'),

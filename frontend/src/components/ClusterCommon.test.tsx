@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockUpgrade, nockcreateSelfSubjectAccesssRequest } from '../lib/nock-util'
-import { DistributionInfo, ClusterStatus } from '../lib/get-cluster'
+import { Cluster, DistributionInfo, ClusterStatus } from '../lib/get-cluster'
 import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
 import { ResourceAttributes } from '../resources/self-subject-access-review'
@@ -81,9 +81,22 @@ describe('DistributionField', () => {
             )
         }
 
-        const retResource = render(
-            <DistributionField clusterName="clusterName" data={data} clusterStatus={ClusterStatus.ready} />
-        )
+        const mockCluster: Cluster = {
+            name: 'clusterName',
+            namespace: 'clusterName',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: data,
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hiveSecrets: undefined,
+            isHive: false,
+            isManaged: true,
+        }
+
+        const retResource = render(<DistributionField cluster={mockCluster} />)
         if (hasUpgrade) {
             await waitFor(() => expect(nockAction.isDone()).toBeTruthy())
         }
@@ -129,10 +142,22 @@ describe('DistributionField', () => {
 })
 
 describe('UpgradeModal', () => {
+    const mockCluster: Cluster = {
+        name: 'clusterName',
+        namespace: 'clusterName',
+        provider: undefined,
+        status: ClusterStatus.ready,
+        distribution: mockDistributionInfo,
+        labels: { abc: '123' },
+        nodes: undefined,
+        kubeApiServer: '',
+        consoleURL: '',
+        hiveSecrets: undefined,
+        isHive: false,
+        isManaged: true,
+    }
     it('should show all available versions in descending order', () => {
-        const { getAllByRole, getByText } = render(
-            <UpgradeModal close={() => {}} open={true} clusterName="clusterName" data={mockDistributionInfo} />
-        )
+        const { getAllByRole, getByText } = render(<UpgradeModal close={() => {}} open={true} cluster={mockCluster} />)
         const button = getByText('upgrade.select.placeholder')
         expect(button).toBeTruthy()
         if (button) {
@@ -153,8 +178,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
 
@@ -176,8 +200,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
         const button = getByText('upgrade.select.placeholder')
@@ -207,8 +230,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
         const button = getByText('upgrade.select.placeholder')
