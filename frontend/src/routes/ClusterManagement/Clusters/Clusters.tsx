@@ -3,6 +3,7 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
+    AcmButton,
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
@@ -15,7 +16,7 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import React, { CSSProperties, Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
@@ -506,7 +507,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('confirm').toUpperCase(),
+                                confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
@@ -531,7 +532,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('confirm').toUpperCase(),
+                                confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
@@ -564,8 +565,38 @@ export function ClustersTable(props: {
                     },
                 ]}
                 rowActions={[]}
-                emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
+                emptyState={
+                    <AcmEmptyState
+                        key="mcEmptyState"
+                        title={t('managed.emptyStateHeader')}
+                        message={t('managed.emptyStateMsg')}
+                        action={
+                            <div>
+                                <CreateButton />
+                                <ImportButton style={{ marginLeft: '16px' }} />
+                            </div>
+                        }
+                    />
+                }
             />
         </Fragment>
+    )
+}
+
+const CreateButton = () => {
+    const { t } = useTranslation(['cluster'])
+    return (
+        <AcmButton component={Link} to={NavigationPath.createCluster}>
+            {t('managed.createCluster')}
+        </AcmButton>
+    )
+}
+
+const ImportButton = (props: { style: CSSProperties }) => {
+    const { t } = useTranslation(['cluster'])
+    return (
+        <AcmButton component={Link} to={NavigationPath.importCluster} {...props}>
+            {t('managed.importCluster')}
+        </AcmButton>
     )
 }
