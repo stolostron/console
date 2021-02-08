@@ -1,0 +1,114 @@
+{
+    "name": "@open-cluster-management/console-frontend",
+    "version": "0.0.1",
+    "private": true,
+    "homepage": "/multicloud/",
+    "proxy": "http://localhost:4000",
+    "dependencies": {
+        "@kubernetes/client-node": "^0.13.2",
+        "@open-cluster-management/ui-components": "^0.1.195",
+        "@patternfly/react-core": "^4.90.2",
+        "@patternfly/react-table": "^4.20.15",
+        "@types/lodash": "^4.14.168",
+        "@types/moment": "^2.13.0",
+        "@types/react": "^17.0.1",
+        "@types/react-dom": "^17.0.0",
+        "@types/react-router-dom": "^5.1.7",
+        "@types/yamljs": "^0.2.31",
+        "axios": "^0.21.1",
+        "customize-cra": "^1.0.0",
+        "handlebars": "^4.7.6",
+        "i18next": "^19.8.7",
+        "i18next-browser-languagedetector": "^6.0.1",
+        "i18next-http-backend": "^1.1.0",
+        "lodash": "^4.17.20",
+        "moment": "^2.29.1",
+        "monaco-editor": "^0.20.0",
+        "monaco-editor-webpack-plugin": "^1.9.0",
+        "react": "^17.0.1",
+        "react-app-rewired": "^2.1.8",
+        "react-dom": "^17.0.1",
+        "react-i18next": "^11.8.5",
+        "react-monaco-editor": "0.36.0",
+        "react-router-dom": "^5.2.0",
+        "react-scripts": "4.0.2",
+        "temptifly": "^0.2.14",
+        "typescript": "^4.1.3",
+        "yamljs": "^0.3.0"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^5.11.9",
+        "@testing-library/react": "^11.2.5",
+        "@testing-library/user-event": "^12.6.3",
+        "@types/get-value": "^3.0.1",
+        "@types/jest": "^26.0.20",
+        "@types/node": "^14.14.25",
+        "babel-jest": "^26.6.3",
+        "jest-environment-jsdom-sixteen": "^1.0.3",
+        "jest-sonar-reporter": "^2.0.0",
+        "nock": "^13.0.5",
+        "prettier": "^2.2.1",
+        "ts-jest": "^26.4.4"
+    },
+    "scripts": {
+        "start": "react-app-rewired start",
+        "build": "react-app-rewired build && cd build && gzip * -k -r --best",
+        "test": "react-app-rewired test --all --watchAll=false --ci --runInBand --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen --testResultsProcessor jest-sonar-reporter",
+        "test:watch": "react-app-rewired test",
+        "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
+        "lint:fix": "eslint src --ext .ts,.tsx --fix",
+        "check": "prettier --check src",
+        "check:fix": "prettier --write src",
+        "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
+        "clean": "rm -rf coverage build"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "jest": {
+        "collectCoverageFrom": [
+            "src/**/*.{ts,tsx}",
+            "!src/**/*.d.ts",
+            "!<rootDir>/node_modules/"
+        ],
+        "coverageThreshold": {
+            "global": {
+                "branches": 0,
+                "functions": 0,
+                "lines": 0,
+                "statements": 0
+            }
+        },
+        "coverageReporters": [
+            "text",
+            "text-summary",
+            "html",
+            "lcov"
+        ],
+        "moduleNameMapper": {
+            "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"
+        },
+        "watchPathIgnorePatterns": [
+            "node_modules",
+            "coverage"
+        ]
+    },
+    "prettier": {
+        "printWidth": 120,
+        "tabWidth": 4,
+        "semi": false,
+        "singleQuote": true
+    }
+}
