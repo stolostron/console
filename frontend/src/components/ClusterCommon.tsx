@@ -235,7 +235,7 @@ export function UpgradeModal(props: { close: () => void; open: boolean; cluster:
                 setUpgradeError('')
                 props.close()
             }}
-            title={t('upgrade.title') + ' ' + props.cluster?.name}
+            title={t('upgrade.title', { clusterName: props.cluster?.name })}
         >
             <AcmForm>
                 {upgradeError && (

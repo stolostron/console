@@ -131,10 +131,10 @@ describe('DistributionField', () => {
         const { getAllByText, queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, true, true)
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         userEvent.click(getAllByText('upgrade.available')[0])
-        expect(getAllByText('upgrade.title clusterName').length).toBeGreaterThan(0)
+        expect(getAllByText('upgrade.title').length).toBeGreaterThan(0)
         expect(getAllByText('upgrade.cancel')).toBeTruthy()
         userEvent.click(getAllByText('upgrade.cancel')[0])
-        expect(queryAllByText('upgrade.title clusterName').length).toBe(0)
+        expect(queryAllByText('upgrade.title').length).toBe(0)
     })
     it('should show upgrading with loader when upgrading', async () => {
         const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
