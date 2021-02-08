@@ -126,13 +126,15 @@ const sortTable = (items, selectedKey, sortDirection, active) => {
         const activeMap = _.keyBy(active, 'id')
         items.sort(({ id: a }, { id: b }) => {
             if (activeMap[a] && !activeMap[b]) {
-              return -1
+                return -1
             } else if (!activeMap[a] && activeMap[b]) {
-              return 1
+                return 1
             } else {
-              return (sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
-                  sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))) *
-              (sortDirection === 'asc' ? 1 : -1)
+                return (
+                    (sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
+                        sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))) *
+                    (sortDirection === 'asc' ? 1 : -1)
+                )
             }
         })
         return items
