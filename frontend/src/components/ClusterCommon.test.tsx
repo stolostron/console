@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockUpgrade, nockcreateSelfSubjectAccesssRequest } from '../lib/nock-util'
-import { DistributionInfo, ClusterStatus } from '../lib/get-cluster'
+import { Cluster, DistributionInfo, ClusterStatus } from '../lib/get-cluster'
 import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
 import { ResourceAttributes } from '../resources/self-subject-access-review'
@@ -16,6 +16,7 @@ const mockDistributionInfo: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoUpgrading: DistributionInfo = {
     ocp: {
@@ -26,6 +27,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     ocp: {
@@ -36,6 +38,7 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     ocp: {
@@ -46,6 +49,7 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedInstall: DistributionInfo = {
     ocp: {
@@ -56,6 +60,18 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
+}
+const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        desiredVersion: '1.2.3',
+        upgradeFailed: false,
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: true,
 }
 
 function getClusterActionsResourceAttributes(name: string) {
@@ -81,9 +97,22 @@ describe('DistributionField', () => {
             )
         }
 
-        const retResource = render(
-            <DistributionField clusterName="clusterName" data={data} clusterStatus={ClusterStatus.ready} />
-        )
+        const mockCluster: Cluster = {
+            name: 'clusterName',
+            namespace: 'clusterName',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: data,
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hiveSecrets: undefined,
+            isHive: false,
+            isManaged: true,
+        }
+
+        const retResource = render(<DistributionField cluster={mockCluster} />)
         if (hasUpgrade) {
             await waitFor(() => expect(nockAction.isDone()).toBeTruthy())
         }
@@ -102,10 +131,10 @@ describe('DistributionField', () => {
         const { getAllByText, queryAllByText } = await renderDistributionInfoField(mockDistributionInfo, true, true)
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         userEvent.click(getAllByText('upgrade.available')[0])
-        expect(getAllByText('upgrade.title clusterName').length).toBeGreaterThan(0)
+        expect(getAllByText('upgrade.title').length).toBeGreaterThan(0)
         expect(getAllByText('upgrade.cancel')).toBeTruthy()
         userEvent.click(getAllByText('upgrade.cancel')[0])
-        expect(queryAllByText('upgrade.title clusterName').length).toBe(0)
+        expect(queryAllByText('upgrade.title').length).toBe(0)
     })
     it('should show upgrading with loader when upgrading', async () => {
         const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
@@ -126,13 +155,29 @@ describe('DistributionField', () => {
         await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
     })
+    it('should not show upgrade button for managed OpenShift', async () => {
+        const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
+        expect(queryAllByText('upgrade.available').length).toBe(0)
+    })
 })
 
 describe('UpgradeModal', () => {
+    const mockCluster: Cluster = {
+        name: 'clusterName',
+        namespace: 'clusterName',
+        provider: undefined,
+        status: ClusterStatus.ready,
+        distribution: mockDistributionInfo,
+        labels: { abc: '123' },
+        nodes: undefined,
+        kubeApiServer: '',
+        consoleURL: '',
+        hiveSecrets: undefined,
+        isHive: false,
+        isManaged: true,
+    }
     it('should show all available versions in descending order', () => {
-        const { getAllByRole, getByText } = render(
-            <UpgradeModal close={() => {}} open={true} clusterName="clusterName" data={mockDistributionInfo} />
-        )
+        const { getAllByRole, getByText } = render(<UpgradeModal close={() => {}} open={true} cluster={mockCluster} />)
         const button = getByText('upgrade.select.placeholder')
         expect(button).toBeTruthy()
         if (button) {
@@ -153,8 +198,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
 
@@ -176,8 +220,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
         const button = getByText('upgrade.select.placeholder')
@@ -207,8 +250,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
         const button = getByText('upgrade.select.placeholder')

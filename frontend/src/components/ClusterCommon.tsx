@@ -22,7 +22,7 @@ import {
     Popover,
 } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { ClusterStatus, DistributionInfo } from '../lib/get-cluster'
+import { Cluster, ClusterStatus } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -58,12 +58,7 @@ export function StatusField(props: { status: ClusterStatus }) {
     return <AcmInlineStatus type={type} status={t(`status.${props.status}`)} />
 }
 
-export function DistributionField(props: {
-    clusterName: string
-    data: DistributionInfo | undefined
-    clusterStatus: ClusterStatus
-    consoleURL?: string
-}) {
+export function DistributionField(props: { cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
@@ -71,15 +66,18 @@ export function DistributionField(props: {
     useEffect(() => {
         // if no available upgrades, skipping permission check
         if (
-            !(props.data?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
-            (props.data?.ocp?.desiredVersion &&
-                props.data?.ocp?.version &&
-                props.data.ocp?.desiredVersion !== props.data.ocp?.version) // upgrading
+            props.cluster?.distribution?.isManagedOpenShift ||
+            !(props.cluster?.distribution?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
+            (props.cluster?.distribution?.ocp?.desiredVersion &&
+                props.cluster?.distribution?.ocp?.version &&
+                props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version) // upgrading
         ) {
             return
         }
         // check if the user is allowed to upgrade the cluster
-        const request = createSubjectAccessReviews(rbacMapping('cluster.upgrade', props.clusterName, props.clusterName))
+        const request = createSubjectAccessReviews(
+            rbacMapping('cluster.upgrade', props.cluster?.name, props.cluster?.name)
+        )
         request.promise
             .then((results) => {
                 if (results) {
@@ -96,34 +94,44 @@ export function DistributionField(props: {
             })
             .catch((err) => console.error(err))
     }, [
-        props.clusterName,
-        props.data?.ocp?.availableUpdates?.length,
-        props.data?.ocp?.version,
-        props.data?.ocp?.desiredVersion,
+        props.cluster?.name,
+        props.cluster?.distribution?.ocp?.availableUpdates?.length,
+        props.cluster?.distribution?.ocp?.version,
+        props.cluster?.distribution?.ocp?.desiredVersion,
+        props.cluster?.distribution?.isManagedOpenShift,
     ])
 
-    if (!props.data) return <>-</>
+    if (!props.cluster?.distribution) return <>-</>
     // use display version directly for non-online clusters
-    if (props.clusterStatus !== ClusterStatus.ready) {
-        return <>{props.data.displayVersion ?? '-'}</>
+    if (props.cluster?.status !== ClusterStatus.ready) {
+        return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-    if (props.data.ocp?.upgradeFailed && props.data.ocp?.desiredVersion !== props.data.ocp?.version) {
+    if (
+        props.cluster?.distribution.ocp?.upgradeFailed &&
+        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
+    ) {
         return (
             <>
-                <div>{props.data.displayVersion}</div>
+                <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
                     status={
-                        props.consoleURL ? (
+                        props.cluster?.consoleURL ? (
                             <Popover
                                 hasAutoWidth
-                                headerContent={t('upgrade.upgradefailed', { version: props.data.ocp?.desiredVersion })}
+                                headerContent={t('upgrade.upgradefailed', {
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                })}
                                 bodyContent={t('upgrade.upgradefailed.message', {
-                                    clusterName: props.clusterName,
-                                    version: props.data.ocp?.desiredVersion,
+                                    clusterName: props.cluster?.name,
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
                                 })}
                                 footerContent={
-                                    <a href={`${props.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
+                                    <a
+                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
                                         {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
                                     </a>
                                 }
@@ -133,53 +141,65 @@ export function DistributionField(props: {
                                 </AcmButton>
                             </Popover>
                         ) : (
-                            t('upgrade.upgradefailed', { version: props.data.ocp?.desiredVersion })
+                            t('upgrade.upgradefailed', { version: props.cluster?.distribution.ocp?.desiredVersion })
                         )
                     }
                 />
             </>
         )
     } else if (
-        props.data.ocp?.desiredVersion &&
-        props.data.ocp?.version &&
-        props.data.ocp?.desiredVersion !== props.data.ocp?.version
+        props.cluster?.distribution.ocp?.desiredVersion &&
+        props.cluster?.distribution.ocp?.version &&
+        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
     ) {
         return (
             <>
-                <div>{props.data.displayVersion}</div>
+                <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.progress}
                     status={
-                        props.consoleURL ? (
+                        props.cluster?.consoleURL ? (
                             <Popover
                                 hasAutoWidth
-                                headerContent={t('upgrade.upgrading', { version: props.data.ocp?.desiredVersion })}
+                                headerContent={t('upgrade.upgrading', {
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                })}
                                 bodyContent={t('upgrade.upgrading.message', {
-                                    clusterName: props.clusterName,
-                                    version: props.data.ocp?.desiredVersion,
+                                    clusterName: props.cluster?.name,
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
                                 })}
                                 footerContent={
-                                    <a href={`${props.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
+                                    <a
+                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
                                         {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
                                     </a>
                                 }
                             >
                                 <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
-                                    {t('upgrade.upgrading.version', { version: props.data.ocp?.desiredVersion })}
+                                    {t('upgrade.upgrading.version', {
+                                        version: props.cluster?.distribution.ocp?.desiredVersion,
+                                    })}
                                 </AcmButton>
                             </Popover>
                         ) : (
-                            t('upgrade.upgrading.version', { version: props.data.ocp?.desiredVersion })
+                            t('upgrade.upgrading.version', { version: props.cluster?.distribution.ocp?.desiredVersion })
                         )
                     }
-                    // status={t('upgrade.upgrading', { version: props.data.ocp?.desiredVersion })}
+                    // status={t('upgrade.upgrading', { version: props.cluster?.distribution.ocp?.desiredVersion })}
                 />
             </>
         )
-    } else if (props.data.ocp?.availableUpdates && props.data.ocp?.availableUpdates?.length > 0) {
+    } else if (
+        props.cluster?.distribution.ocp?.availableUpdates &&
+        props.cluster?.distribution.ocp?.availableUpdates?.length > 0 &&
+        !props.cluster?.distribution.isManagedOpenShift // don't allow upgrade for managed OpenShift
+    ) {
         return (
             <>
-                <div>{props.data?.displayVersion}</div>
+                <div>{props.cluster?.distribution?.displayVersion}</div>
                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
                     <AcmButton
                         isDisabled={!hasUpgradePermission}
@@ -191,21 +211,16 @@ export function DistributionField(props: {
                     >
                         {t('upgrade.available')}
                     </AcmButton>
-                    <UpgradeModal close={toggle} open={open} clusterName={props.clusterName} data={props.data} />
+                    <UpgradeModal close={toggle} open={open} cluster={props.cluster} />
                 </span>
             </>
         )
     } else {
-        return <>{props.data.displayVersion ?? '-'}</>
+        return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
 }
 
-export function UpgradeModal(props: {
-    close: () => void
-    open: boolean
-    clusterName: string
-    data: DistributionInfo | undefined
-}): JSX.Element {
+export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectVersion, setSelectVersion] = useState<string>()
     const [upgradeError, setUpgradeError] = useState<string>()
@@ -220,7 +235,7 @@ export function UpgradeModal(props: {
                 setUpgradeError('')
                 props.close()
             }}
-            title={t('upgrade.title') + ' ' + props.clusterName}
+            title={t('upgrade.title', { clusterName: props.cluster?.name })}
         >
             <AcmForm>
                 {upgradeError && (
@@ -234,7 +249,7 @@ export function UpgradeModal(props: {
                 <Title headingLevel="h5" size="md">
                     {t('upgrade.current.version')}
                 </Title>
-                <Text>{props.data?.ocp?.version || props.data?.displayVersion}</Text>
+                <Text>{props.cluster?.distribution?.ocp?.version || props.cluster?.distribution?.displayVersion}</Text>
                 <AcmSelect
                     id="upgradeVersionSelect"
                     label={t('upgrade.select.label')}
@@ -247,7 +262,7 @@ export function UpgradeModal(props: {
                     }}
                     isRequired
                 >
-                    {props.data?.ocp?.availableUpdates
+                    {props.cluster?.distribution?.ocp?.availableUpdates
                         .sort((a: string, b: string) => {
                             // basic sort semvers without preversion
                             const aVersion = a.split('.')
@@ -281,7 +296,7 @@ export function UpgradeModal(props: {
                             return Axios.post(
                                 url,
                                 {
-                                    clusterName: props.clusterName,
+                                    clusterName: props.cluster?.name,
                                     version: selectVersion,
                                 },
                                 { withCredentials: true }

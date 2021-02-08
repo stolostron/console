@@ -585,7 +585,7 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText('managed.upgrade')).toBeTruthy())
         userEvent.click(getByText('managed.upgrade'))
 
-        await waitFor(() => expect(getByText(`upgrade.title ${name}`)).toBeTruthy())
+        await waitFor(() => expect(getByText('upgrade.title')).toBeTruthy())
 
         await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
         userEvent.click(getByText('upgrade.cancel'))
@@ -603,7 +603,7 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(`managed.upgradeSelected`)).toBeTruthy())
         userEvent.click(getByText('managed.upgradeSelected'))
 
-        await waitFor(() => expect(getByText(`upgrade.title ${name}`)).toBeTruthy())
+        await waitFor(() => expect(getByText('upgrade.title')).toBeTruthy())
 
         await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
         userEvent.click(getByText('upgrade.cancel'))
