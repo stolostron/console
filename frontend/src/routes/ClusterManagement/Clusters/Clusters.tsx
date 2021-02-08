@@ -538,22 +538,7 @@ export function ClustersTable(props: {
                                 return
                             }
 
-                            const clusters = managedClusters.filter(
-                                (c) =>
-                                    c.status === ClusterStatus.ready &&
-                                    c.distribution?.ocp?.availableUpdates &&
-                                    c.distribution?.ocp?.availableUpdates.length > 0 &&
-                                    !(
-                                        c.distribution?.ocp?.desiredVersion &&
-                                        c.distribution?.ocp?.version &&
-                                        c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
-                                    )
-                            )
-                            if (clusters.length === 1 && managedClusters.length === 1) {
-                                setUpgradeSingleCluster(clusters[0])
-                            } else if (managedClusters.length > 0) {
-                                setUpgradeMultipleClusters(managedClusters)
-                            }
+                            setUpgradeMultipleClusters(managedClusters)
                         },
                     },
                 ]}
