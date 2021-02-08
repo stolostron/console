@@ -11,11 +11,10 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Form, ModalVariant, Progress, ProgressMeasureLocation } from '@patternfly/react-core'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
-import { IRequestResult, resultsSettled } from '../lib/resource-request'
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true
@@ -31,6 +30,7 @@ export interface IBulkActionModelProps<T = undefined> {
     actionFn: (item: T) => IRequestResult
     confirmText?: string
     isDanger?: boolean
+    isValidError?: (error: Error) => boolean
 }
 
 interface ItemError<T> {
@@ -107,10 +107,16 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       const errors: ItemError<T>[] = []
                                       promiseResults.forEach((promiseResult, index) => {
                                           if (promiseResult.status === 'rejected') {
-                                              errors.push({
-                                                  item: props.resources[index],
-                                                  error: promiseResult.reason,
-                                              })
+                                              let validError = true
+                                              if (props.isValidError) {
+                                                  validError = props.isValidError(promiseResult.reason)
+                                              }
+                                              if (validError) {
+                                                  errors.push({
+                                                      item: props.resources[index],
+                                                      error: promiseResult.reason,
+                                                  })
+                                              }
                                           }
                                       })
                                       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -179,8 +185,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     isInline
                                     noClose
                                     variant="danger"
-                                    title={`${props.action} ${t('errors').toLowerCase()}`}
-                                    message={
+                                    title={
                                         errors.length === 1
                                             ? `${t('common:there.was.an.error')
                                                   .replace('{0}', props.processing.toLowerCase())
@@ -200,13 +205,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                                 {
                                                     header: t('common:error'),
                                                     cell: (item) => {
-                                                        return (
-                                                            <Fragment>
-                                                                <ExclamationCircleIcon style={{ color: 'red' }} />{' '}
-                                                                &nbsp;
-                                                                {getItemError(item)?.message}
-                                                            </Fragment>
-                                                        )
+                                                        return <Fragment>{getItemError(item)?.message}</Fragment>
                                                     },
                                                 },
                                             ]}
@@ -227,4 +226,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
             </AcmModal>
         </AcmFormProvider>
     )
+}
+
+export function errorIsNot(codes: ResourceErrorCode[]) {
+    return (error: Error) => error instanceof ResourceError && !codes.includes(error.code)
 }

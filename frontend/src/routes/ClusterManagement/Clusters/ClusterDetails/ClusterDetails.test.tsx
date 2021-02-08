@@ -89,7 +89,7 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
                 },
                 conditions: [
                     {
-                        status: 'True',
+                        status: 'Unknown',
                         type: 'Ready',
                     },
                 ],
@@ -109,7 +109,7 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
                 },
                 conditions: [
                     {
-                        status: 'True',
+                        status: 'False',
                         type: 'Ready',
                     },
                 ],
@@ -651,14 +651,7 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-function getCreateClusterViewResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusterviews',
-        verb: 'create',
-        group: 'view.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
+
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
@@ -700,7 +693,6 @@ function defaultNocks() {
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
@@ -802,7 +794,6 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getCreateClusterViewResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
 

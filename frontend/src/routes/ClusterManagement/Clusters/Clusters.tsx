@@ -6,7 +6,9 @@ import {
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
+    AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageCard,
@@ -17,12 +19,13 @@ import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, ClusterStatus, getAllClusters } from '../../../lib/get-cluster'
+import { ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -38,10 +41,12 @@ import { EditLabelsModal } from './components/EditLabelsModal'
 
 export default function ClustersPage() {
     return (
-        <AcmAlertProvider>
-            <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-            <ClustersPageContent />
-        </AcmAlertProvider>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                <ClustersPageContent />
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 
@@ -271,13 +276,7 @@ export function ClustersTable(props: {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
-                        cell: (cluster) => (
-                            <DistributionField
-                                data={cluster.distribution}
-                                clusterName={cluster?.name || ''}
-                                clusterStatus={cluster?.status || ''}
-                            />
-                        ),
+                        cell: (cluster) => <DistributionField cluster={cluster} />,
                     },
                     {
                         header: t('table.labels'),
@@ -285,29 +284,42 @@ export function ClustersTable(props: {
                             cluster.labels
                                 ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`)
                                 : '',
-                        cell: (cluster) =>
-                            cluster.labels ? (
-                                <AcmLabels
-                                    labels={cluster.labels}
-                                    style={{ maxWidth: '600px' }}
-                                    collapse={[
-                                        'cloud',
-                                        'clusterID',
-                                        'installer.name',
-                                        'installer.namespace',
-                                        'name',
-                                        'vendor',
-                                    ]}
-                                />
-                            ) : (
-                                '-'
-                            ),
+                        cell: (cluster) => {
+                            if (cluster.labels) {
+                                const collapse = [
+                                    'cloud',
+                                    'clusterID',
+                                    'installer.name',
+                                    'installer.namespace',
+                                    'name',
+                                    'vendor',
+                                ]
+                                return (
+                                    <AcmLabels
+                                        labels={cluster.labels}
+                                        style={{ maxWidth: '600px' }}
+                                        expandedText={t('common:show.less')}
+                                        collapsedText={t('common:show.more', { number: collapse.length })}
+                                        collapse={collapse}
+                                    />
+                                )
+                            } else {
+                                return '-'
+                            }
+                        },
                     },
                     {
                         header: t('table.nodes'),
-                        // sort: 'info.status.nodeList.length',
                         cell: (cluster) => {
-                            return cluster.nodes?.active && cluster.nodes.active > 0 ? cluster.nodes.active : '-'
+                            return cluster.nodes!.nodeList!.length > 0 ? (
+                                <AcmInlineStatusGroup
+                                    healthy={cluster.nodes!.ready}
+                                    danger={cluster.nodes!.unhealthy}
+                                    unknown={cluster.nodes!.unknown}
+                                />
+                            ) : (
+                                '-'
+                            )
                         },
                     },
                     {
@@ -372,6 +384,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.detach'],
@@ -400,6 +413,7 @@ export function ClustersTable(props: {
                                             },
                                             isDanger: true,
                                             confirmText: cluster.name,
+                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.destroy'],
@@ -414,6 +428,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.distribution?.isManagedOpenShift ||
                                 cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&
@@ -486,6 +501,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },
@@ -510,6 +526,7 @@ export function ClustersTable(props: {
                                 },
                                 isDanger: true,
                                 confirmText: t('confirm').toUpperCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },

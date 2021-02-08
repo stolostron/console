@@ -50,6 +50,7 @@ export type DistributionInfo = {
     k8sVersion: string | undefined
     ocp: OpenShiftDistributionInfo | undefined
     displayVersion: string | undefined
+    isManagedOpenShift: boolean
 }
 
 export type HiveSecrets = {
@@ -59,8 +60,9 @@ export type HiveSecrets = {
 }
 
 export type Nodes = {
-    active: number
-    inactive: number
+    ready: number
+    unhealthy: number
+    unknown: number
     nodeList: NodeInfo[]
 }
 
@@ -178,25 +180,26 @@ export function getProvider(
     let providerLabel =
         hivePlatformLabel && hivePlatformLabel !== 'unknown'
             ? hivePlatformLabel
-            : platformClusterClaim?.value ?? cloudLabel
+            : platformClusterClaim?.value ?? cloudLabel ?? ''
+    providerLabel = providerLabel.toUpperCase()
 
     let provider: Provider | undefined
     switch (providerLabel) {
-        case 'Amazon':
+        case 'OPENSTACK':
+            provider = Provider.openstack
+            break
+        case 'AMAZON':
         case 'AWS':
         case 'EKS':
-        case 'aws':
             provider = Provider.aws
             break
-        case 'Google':
+        case 'GOOGLE':
         case 'GKE':
         case 'GCP':
         case 'GCE':
-        case 'gcp':
             provider = Provider.gcp
             break
-        case 'Azure':
-        case 'azure':
+        case 'AZURE':
         case 'AKS':
             provider = Provider.azure
             break
@@ -204,16 +207,16 @@ export function getProvider(
         case 'IKS':
             provider = Provider.ibm
             break
-        case 'baremetal':
+        case 'BAREMETAL':
             provider = Provider.baremetal
             break
-        case 'vsphere':
+        case 'VSPHERE':
             provider = Provider.vmware
             break
-        case 'auto-detect':
+        case 'AUTO-DETECT':
             provider = undefined
             break
-        case 'other':
+        case 'OTHER':
         default:
             provider = Provider.other
     }
@@ -245,8 +248,16 @@ export function getDistributionInfo(
         }
     }
 
+    const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+    switch (vendor) {
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
+    }
+
     if (k8sVersion && ocp && displayVersion) {
-        return { k8sVersion, ocp, displayVersion }
+        return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
     }
 
     return undefined
@@ -273,14 +284,25 @@ export function getConsoleUrl(
 
 export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
     const nodeList: NodeInfo[] = managedClusterInfo?.status?.nodeList ?? []
-    let active = 0
-    let inactive = 0
+    let ready = 0
+    let unhealthy = 0
+    let unknown = 0
 
     nodeList.forEach((node: NodeInfo) => {
         const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
-        readyCondition?.status === 'True' ? active++ : inactive++
+        switch (readyCondition?.status) {
+            case 'True':
+                ready++
+                break
+            case 'False':
+                unhealthy++
+                break
+            case 'Unknown':
+            default:
+                unknown++
+        }
     })
-    return { nodeList, active, inactive }
+    return { nodeList, ready, unhealthy, unknown }
 }
 
 export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined) {

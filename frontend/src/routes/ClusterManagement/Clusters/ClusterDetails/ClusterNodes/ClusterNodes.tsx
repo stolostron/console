@@ -1,12 +1,24 @@
 import React, { ReactNode, useContext } from 'react'
-import { AcmPageCard, AcmTable, compareNumbers, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import {
+    AcmPageCard,
+    AcmTable,
+    AcmInlineStatus,
+    StatusType,
+    compareNumbers,
+    IAcmTableColumn,
+    AcmErrorBoundary,
+} from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
-    return <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+    return (
+        <AcmErrorBoundary>
+            <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+        </AcmErrorBoundary>
+    )
 }
 
 export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
@@ -75,6 +87,34 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
             sort: 'name',
             search: 'name',
             cell: 'name',
+        },
+        {
+            header: t('table.status'),
+            sort: (a: NodeInfo, b: NodeInfo) => {
+                const aReadyCondition = a.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
+                const bReadyCondition = b.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
+                return aReadyCondition.localeCompare(bReadyCondition)
+            },
+            cell: (node) => {
+                const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
+                let type: StatusType
+                let status: string
+                switch (readyCondition?.status) {
+                    case 'True':
+                        type = StatusType.healthy
+                        status = t('node.status.ready')
+                        break
+                    case 'False':
+                        type = StatusType.danger
+                        status = t('node.status.unhealthy')
+                        break
+                    case 'Unknown':
+                    default:
+                        type = StatusType.unknown
+                        status = t('node.status.unknown')
+                }
+                return <AcmInlineStatus type={type} status={status} />
+            },
         },
         {
             header: t('table.role'),
