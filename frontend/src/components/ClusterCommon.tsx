@@ -66,6 +66,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
     useEffect(() => {
         // if no available upgrades, skipping permission check
         if (
+            props.cluster?.distribution?.isManagedOpenShift ||
             !(props.cluster?.distribution?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
             (props.cluster?.distribution?.ocp?.desiredVersion &&
                 props.cluster?.distribution?.ocp?.version &&

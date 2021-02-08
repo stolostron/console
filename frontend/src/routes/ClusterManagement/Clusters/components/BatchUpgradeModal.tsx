@@ -38,7 +38,9 @@ const compareVersion = (a: string, b: string) => {
 
 const isUpgradeable = (c: Cluster) => {
     const hasAvailableUpgrades =
-        c.distribution?.ocp?.availableUpdates && c.distribution?.ocp?.availableUpdates.length > 0
+        !c.distribution?.isManagedOpenShift &&
+        c.distribution?.ocp?.availableUpdates &&
+        c.distribution?.ocp?.availableUpdates.length > 0
     const isUpgrading = c.distribution?.ocp?.version !== c.distribution?.ocp?.desiredVersion
     const isReady = c.status === ClusterStatus.ready
     return (isReady && hasAvailableUpgrades && !isUpgrading) || false
