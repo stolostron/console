@@ -52,7 +52,7 @@ import { makeStyles } from '@material-ui/styles'
 import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['connection', 'common'])
     return (
         <AcmAlertProvider>
             <Page>
