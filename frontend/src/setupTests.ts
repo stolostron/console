@@ -19,8 +19,16 @@ async function setupBeforeAll(): Promise<void> {
 }
 
 let noMatches: string[]
+let consoleErrors: any[]
+
+console.warn = () => {}
+console.error = (error: any) => {
+    consoleErrors.push(error)
+}
+
 function setupBeforeEach(): void {
     noMatches = []
+    consoleErrors = []
     nock.emitter.on('no match', (req) => {
         if (noMatches.length === 0) {
             noMatches.push('No match for requests')
@@ -32,6 +40,7 @@ function setupBeforeEach(): void {
 async function setupAfterEach(): Promise<void> {
     // await new Promise((resolve) => setTimeout(resolve, 5 * 1000))
     expect(noMatches).toEqual([])
+    // expect(consoleErrors).toEqual([])
     const error = nock.isDone() ? undefined : `Pending Nocks: ${nock.pendingMocks().join(',')}`
     expect(error).toBeUndefined()
     nock.cleanAll()
@@ -52,4 +61,8 @@ jest.mock('react-i18next', () => ({
         t: (key: string) => key,
     }),
     Trans: (props: { i18nKey: string }) => props.i18nKey,
+}))
+
+jest.mock('i18next', () => ({
+    t: (key: string) => key,
 }))
