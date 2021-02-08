@@ -33,7 +33,7 @@ import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '.
 import { rbacNamespaceFilter } from '../../resources/self-subject-access-review'
 
 export default function CreateBareMetalAssetPage() {
-    const { t } = useTranslation(['bma, common'])
+    const { t } = useTranslation(['bma', 'common'])
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
