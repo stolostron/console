@@ -276,14 +276,7 @@ export function ClustersTable(props: {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
-                        cell: (cluster) => (
-                            <DistributionField
-                                data={cluster.distribution}
-                                clusterName={cluster?.name || ''}
-                                clusterStatus={cluster?.status || ''}
-                                consoleURL={cluster?.consoleURL}
-                            />
-                        ),
+                        cell: (cluster) => <DistributionField cluster={cluster} />,
                     },
                     {
                         header: t('table.labels'),
@@ -435,6 +428,7 @@ export function ClustersTable(props: {
                             }
 
                             if (
+                                cluster.distribution?.isManagedOpenShift ||
                                 cluster.status !== ClusterStatus.ready ||
                                 !(
                                     cluster.distribution?.ocp?.availableUpdates &&

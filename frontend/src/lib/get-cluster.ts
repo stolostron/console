@@ -50,6 +50,7 @@ export type DistributionInfo = {
     k8sVersion: string | undefined
     ocp: OpenShiftDistributionInfo | undefined
     displayVersion: string | undefined
+    isManagedOpenShift: boolean
 }
 
 export type HiveSecrets = {
@@ -247,8 +248,16 @@ export function getDistributionInfo(
         }
     }
 
+    const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+    switch (vendor) {
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
+    }
+
     if (k8sVersion && ocp && displayVersion) {
-        return { k8sVersion, ocp, displayVersion }
+        return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
     }
 
     return undefined
