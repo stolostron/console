@@ -249,11 +249,11 @@ export function getDistributionInfo(
     }
 
     const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
-    let isManagedOpenShift = false // OSD, ARO, ROKS, etc
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
     switch (vendor) {
-    case 'OpenShiftDedicated':
-        isManagedOpenShift = true
-        break
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
     }
 
     if (k8sVersion && ocp && displayVersion) {

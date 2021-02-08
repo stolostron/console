@@ -98,6 +98,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
         props.cluster?.distribution?.ocp?.availableUpdates?.length,
         props.cluster?.distribution?.ocp?.version,
         props.cluster?.distribution?.ocp?.desiredVersion,
+        props.cluster?.distribution?.isManagedOpenShift
     ])
 
     if (!props.cluster?.distribution) return <>-</>
