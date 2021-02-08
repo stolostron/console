@@ -603,10 +603,10 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(`managed.upgradeSelected`)).toBeTruthy())
         userEvent.click(getByText('managed.upgradeSelected'))
 
-        await waitFor(() => expect(getByText('upgrade.title')).toBeTruthy())
+        await waitFor(() => expect(getByText(`upgrade.submit upgrade.multiple.singular`)).toBeTruthy())
 
-        await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
-        userEvent.click(getByText('upgrade.cancel'))
+        await waitFor(() => expect(getByText(`common:cancel`)).toBeTruthy())
+        userEvent.click(getByText('common:cancel'))
 
         await waitFor(() => expect(getByText(name)).toBeInTheDocument())
     })
@@ -626,10 +626,11 @@ describe('Cluster page', () => {
         await waitFor(() => expect(getByText(`managed.upgradeSelected`)).toBeTruthy())
         userEvent.click(getByText('managed.upgradeSelected'))
 
-        await waitFor(() => expect(getByText(`upgrade.multiple.title`)).toBeTruthy())
+        await waitFor(() => expect(getByText(`upgrade.multiple.note`)).toBeTruthy())
+        await waitFor(() => expect(getByText(`upgrade.submit upgrade.multiple.plural`)).toBeTruthy())
 
-        await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
-        userEvent.click(getByText('upgrade.cancel'))
+        await waitFor(() => expect(getByText(`common:cancel`)).toBeTruthy())
+        userEvent.click(getByText('common:cancel'))
 
         await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
         await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
