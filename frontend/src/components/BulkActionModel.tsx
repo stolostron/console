@@ -80,12 +80,13 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 actions={
                     errors
                         ? [
-                              <Button variant="primary" onClick={props.close}>
+                              <Button variant="primary" key="close-bulk-action" onClick={props.close}>
                                   {t('common:close')}
                               </Button>,
                           ]
                         : [
                               <AcmSubmit
+                                  key="submit-bulk-action"
                                   id="submit-button"
                                   isDisabled={props.confirmText !== undefined && confirm !== props.confirmText}
                                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
@@ -128,7 +129,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   label={props.action}
                                   processingLabel={props.processing}
                               />,
-                              <Button variant="link" onClick={props.close}>
+                              <Button variant="link" onClick={props.close} key="cancel-bulk-action">
                                   {t('common:cancel')}
                               </Button>,
                           ]
