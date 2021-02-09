@@ -122,7 +122,7 @@ describe('HiveNotification', () => {
         })
     })
     test('renders the danger notification for failed provision status', async () => {
-        mockCluster.status = ClusterStatus.failed
+        mockCluster.status = ClusterStatus.provisionfailed
         const clusterProvisionScope = nockNamespacedList(
             {
                 apiVersion: ClusterProvisionApiVersion,
