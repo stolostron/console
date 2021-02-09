@@ -286,14 +286,17 @@ export function ClustersTable(props: {
                                 : '',
                         cell: (cluster) => {
                             if (cluster.labels) {
-                                const collapse = [
-                                    'cloud',
-                                    'clusterID',
-                                    'installer.name',
-                                    'installer.namespace',
-                                    'name',
-                                    'vendor',
-                                ]
+                                const labelKeys = Object.keys(cluster.labels)
+                                const collapse =
+                                    [
+                                        'cloud',
+                                        'clusterID',
+                                        'installer.name',
+                                        'installer.namespace',
+                                        'name',
+                                        'vendor',
+                                    ].filter((label) => labelKeys.includes(label)) ?? []
+
                                 return (
                                     <AcmLabels
                                         labels={cluster.labels}
