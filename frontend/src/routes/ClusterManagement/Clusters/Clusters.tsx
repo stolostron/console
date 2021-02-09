@@ -16,7 +16,7 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
-import React, { CSSProperties, Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
