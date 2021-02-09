@@ -572,31 +572,21 @@ export function ClustersTable(props: {
                         message={t('managed.emptyStateMsg')}
                         action={
                             <div>
-                                <CreateButton />
-                                <ImportButton style={{ marginLeft: '16px' }} />
+                                <AcmButton component={Link} to={NavigationPath.createCluster}>
+                                    {t('managed.createCluster')}
+                                </AcmButton>
+                                <AcmButton
+                                    component={Link}
+                                    to={NavigationPath.importCluster}
+                                    style={{ marginLeft: '16px' }}
+                                >
+                                    {t('managed.importCluster')}
+                                </AcmButton>
                             </div>
                         }
                     />
                 }
             />
         </Fragment>
-    )
-}
-
-const CreateButton = () => {
-    const { t } = useTranslation(['cluster'])
-    return (
-        <AcmButton component={Link} to={NavigationPath.createCluster}>
-            {t('managed.createCluster')}
-        </AcmButton>
-    )
-}
-
-const ImportButton = (props: { style: CSSProperties }) => {
-    const { t } = useTranslation(['cluster'])
-    return (
-        <AcmButton component={Link} to={NavigationPath.importCluster} {...props}>
-            {t('managed.importCluster')}
-        </AcmButton>
     )
 }
