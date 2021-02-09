@@ -1,9 +1,10 @@
+import { render, waitFor } from '@testing-library/react'
 import React, { useContext } from 'react'
-import { render, waitFor, screen } from '@testing-library/react'
-import { AppContextContainer, AppContext } from './AppContext'
-import { nockClusterList, mockBadRequestStatus } from '../lib/nock-util'
-import { FeatureGateKind, FeatureGateApiVersion } from '../resources/feature-gate'
-import { ClusterManagementAddOnKind, ClusterManagementAddOnApiVersion } from '../resources/cluster-management-add-on'
+import { mockBadRequestStatus, nockClusterList } from '../lib/nock-util'
+import { waitForNock, waitForText, waitTimeout } from '../lib/test-util'
+import { ClusterManagementAddOnApiVersion, ClusterManagementAddOnKind } from '../resources/cluster-management-add-on'
+import { FeatureGateApiVersion, FeatureGateKind } from '../resources/feature-gate'
+import { AppContext, AppContextContainer } from './AppContext'
 
 const mockFeatureGates = {
     apiVersion: 'config.openshift.io/v1',
@@ -216,19 +217,19 @@ describe('AppContextContainer', () => {
         const featureGates = nockFeatureGates()
         const clusterManagementAddons = nockClusterManagementAddons()
         render(<Component />)
-        await waitFor(() => expect(featureGates.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterManagementAddons.isDone()).toBeTruthy())
-        await waitFor(() => expect(screen.getByText('Context exists')).toBeInTheDocument())
+        await waitForNock(featureGates)
+        await waitForNock(clusterManagementAddons)
+        await waitForText('Context exists')
     })
+
     test('prints error to browser console', async () => {
         console.error = jest.fn()
         const featureGates = nockFeatureGatesError()
         const clusterManagementAddons = nockClusterManagementAddonsError()
         render(<Component />)
-        await waitFor(() => expect(featureGates.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterManagementAddons.isDone()).toBeTruthy())
-        await new Promise((resolve) => setTimeout(resolve, 100)) // need to wait for component update
-        await waitFor(() => expect(screen.getByText('Context missing')).toBeInTheDocument())
-        expect(console.error).toHaveBeenCalledTimes(2)
+        await waitForNock(featureGates)
+        await waitForNock(clusterManagementAddons)
+        await waitForText('Context missing')
+        await waitFor(() => expect(console.error).toHaveBeenCalledTimes(2), { timeout: waitTimeout })
     })
 })
