@@ -24,7 +24,6 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
 import {
-    validateBaseDnsName,
     validateCertificate,
     validateGCProjectID,
     validateImageMirror,
