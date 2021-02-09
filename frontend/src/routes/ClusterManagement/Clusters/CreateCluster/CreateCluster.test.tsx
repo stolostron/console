@@ -91,6 +91,7 @@ const bareMetalAsset: BareMetalAsset = {
 }
 const mockBareMetalAssets = Array.from({ length: 5 }, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
+    mockedBma.metadata.uid = `uid-${inx}`
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
     mockedBma.spec.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
     return mockedBma
