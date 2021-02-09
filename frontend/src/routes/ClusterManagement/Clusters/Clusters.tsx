@@ -3,6 +3,7 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
+    AcmButton,
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
@@ -503,7 +504,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('confirm').toUpperCase(),
+                                confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
@@ -528,7 +529,7 @@ export function ClustersTable(props: {
                                     props.refresh()
                                 },
                                 isDanger: true,
-                                confirmText: t('confirm').toUpperCase(),
+                                confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
@@ -546,7 +547,27 @@ export function ClustersTable(props: {
                     },
                 ]}
                 rowActions={[]}
-                emptyState={<AcmEmptyState title={t('managed.emptyStateHeader')} key="mcEmptyState" />}
+                emptyState={
+                    <AcmEmptyState
+                        key="mcEmptyState"
+                        title={t('managed.emptyStateHeader')}
+                        message={t('managed.emptyStateMsg')}
+                        action={
+                            <div>
+                                <AcmButton component={Link} to={NavigationPath.createCluster}>
+                                    {t('managed.createCluster')}
+                                </AcmButton>
+                                <AcmButton
+                                    component={Link}
+                                    to={NavigationPath.importCluster}
+                                    style={{ marginLeft: '16px' }}
+                                >
+                                    {t('managed.importCluster')}
+                                </AcmButton>
+                            </div>
+                        }
+                    />
+                }
             />
         </Fragment>
     )
