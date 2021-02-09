@@ -1,11 +1,19 @@
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { cloneDeep } from 'lodash'
+import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { nockCreate, nockGet, nockList, nockOptions, nockPatch } from '../../../../lib/nock-util'
+import { waitForNock, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import CreateClusterPage from './CreateCluster'
-
-import { nockList, nockGet, nockPatch, nockOptions, nockCreate } from '../../../../lib/nock-util'
+import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
+import {
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+} from '../../../../resources/cluster-image-set'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
+import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../../../resources/managed-cluster-info'
 import {
     Project,
     ProjectApiVersion,
@@ -14,23 +22,14 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../../../resources/managed-cluster-info'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
-import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
 import {
-    ClusterImageSet,
-    ClusterImageSetApiVersion,
-    ClusterImageSetKind,
-} from '../../../../resources/cluster-image-set'
-import {
+    packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-    packProviderConnection,
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-
-import { cloneDeep } from 'lodash'
+import CreateClusterPage from './CreateCluster'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -439,7 +438,7 @@ describe('CreateCluster', () => {
         const getSecret4 = nockGet(mockBareMetalSecrets[4])
 
         // create the form
-        const { getByTestId, getByText, container, getAllByRole } = render(<Component />)
+        const { getByTestId, container, getAllByRole } = render(<Component />)
 
         // start filling in the form
         userEvent.type(getByTestId('eman'), clusterName!)
@@ -542,40 +541,39 @@ describe('CreateCluster', () => {
         userEvent.click(getByTestId('create-button-portal-id-btn'))
 
         // make sure creating
-        await waitFor(() => expect(getByText('success.create.creating')).toBeInTheDocument())
+        await waitForText('success.create.creating')
 
         // list only 3 bmas so that 2 are created
-        await waitFor(() => expect(listBmas.isDone()).toBeTruthy())
+        await waitForNock(listBmas)
         // create bma namespace
-        await waitFor(() => expect(bmaProjectNock.isDone()).toBeTruthy())
+        await waitForNock(bmaProjectNock)
         // create two bmas/secrets
-        await new Promise((r) => setTimeout(r, 1000))
-        await waitFor(() => expect(secretCreateNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(bmaCreateNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(secretCreateNock2.isDone()).toBeTruthy())
-        await waitFor(() => expect(bmaCreateNock2.isDone()).toBeTruthy())
+        await waitForNock(secretCreateNock1)
+        await waitForNock(bmaCreateNock1)
+        await waitForNock(secretCreateNock2)
+        await waitForNock(bmaCreateNock2)
         // list no clusters so that creating this cluster doesn't think it already exists
-        await waitFor(() => expect(listManagedClusterNock.isDone()).toBeTruthy())
+        await waitForNock(listManagedClusterNock)
         // create the cluster's namespace (project)
-        await waitFor(() => expect(clusterProjectNock.isDone()).toBeTruthy())
+        await waitForNock(clusterProjectNock)
         // create the managed cluster
-        await waitFor(() => expect(clusterCreateNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterPullSecret.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterInstallConfigSecret.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterPrivateSecretSecret.isDone()).toBeTruthy())
-        await waitFor(() => expect(clusterKlusterletAddonSecret.isDone()).toBeTruthy())
-        await waitFor(() => expect(createClusterDeployment.isDone()).toBeTruthy())
+        await waitForNock(clusterCreateNock)
+        await waitForNock(clusterPullSecret)
+        await waitForNock(clusterInstallConfigSecret)
+        await waitForNock(clusterPrivateSecretSecret)
+        await waitForNock(clusterKlusterletAddonSecret)
+        await waitForNock(createClusterDeployment)
 
         // assigns cluster name to bmas
-        await waitFor(() => expect(optionNock0.isDone()).toBeTruthy())
-        await waitFor(() => expect(optionNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(optionNock2.isDone()).toBeTruthy())
-        await waitFor(() => expect(optionNock3.isDone()).toBeTruthy())
-        await waitFor(() => expect(optionNock4.isDone()).toBeTruthy())
-        await waitFor(() => expect(patchNock0.isDone()).toBeTruthy())
-        await waitFor(() => expect(patchNock1.isDone()).toBeTruthy())
-        await waitFor(() => expect(patchNock2.isDone()).toBeTruthy())
-        await waitFor(() => expect(patchNock3.isDone()).toBeTruthy())
-        await waitFor(() => expect(patchNock4.isDone()).toBeTruthy())
+        await waitForNock(optionNock0)
+        await waitForNock(optionNock1)
+        await waitForNock(optionNock2)
+        await waitForNock(optionNock3)
+        await waitForNock(optionNock4)
+        await waitForNock(patchNock0)
+        await waitForNock(patchNock1)
+        await waitForNock(patchNock2)
+        await waitForNock(patchNock3)
+        await waitForNock(patchNock4)
     })
 })
