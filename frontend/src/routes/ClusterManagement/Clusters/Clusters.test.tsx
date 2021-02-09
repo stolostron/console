@@ -415,7 +415,7 @@ describe('Cluster page', () => {
         ]
         await clickByRole('checkbox', 1) // select row 1
         await clickByText('managed.destroy')
-        await typeByText('type.to.confirm', 'CONFIRM')
+        await typeByText('type.to.confirm', 'confirm')
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
         await waitForNocks(refreshNocks)
@@ -462,7 +462,7 @@ describe('Cluster page', () => {
         ]
         await clickByRole('checkbox', 2) // select row 2
         await clickByText('managed.detachSelected')
-        await typeByText('type.to.confirm', 'CONFIRM')
+        await typeByText('type.to.confirm', 'confirm')
         await clickByText('detach')
         await waitForNocks(deleteNocks)
         await waitForNocks(refreshNocks)
