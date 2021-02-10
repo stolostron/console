@@ -479,16 +479,7 @@ describe('CreateCluster', () => {
                 username: 'test',
             },
         }
-        const bmaSecret4: Secret = {
-            kind: SecretKind,
-            apiVersion: SecretApiVersion,
-            metadata: {
-                namespace: 'test-bare-metal-asset-namespace',
-                name: 'test-bare-metal-asset-4-bmc-secret',
-            },
-            data: { password: 'encoded', username: 'encoded' },
-        }
-        const secretCreateNock1 = nockCreate(createBmaSecret4, bmaSecret4)
+        const secretCreateNock1 = nockCreate(createBmaSecret4)
         const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
         const listManagedClusterNock = nockList(
             { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },

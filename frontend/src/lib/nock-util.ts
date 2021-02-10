@@ -158,18 +158,16 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
         })
 
     // incredibly nock does a string comparison with the response
-    // so if the json strings don't equal it doesn't match!
-    if (response) {
-        scope.transformRequestBodyFunction = (body, request) => {
-            try {
-                if (isEqual(JSON.parse(body), JSON.parse(request))) {
-                    return request
-                }
-            } catch (e) {
-                //noop
+    // if the jsons match, the stringified json strings might not match
+    scope.transformRequestBodyFunction = (body, request) => {
+        try {
+            if (isEqual(JSON.parse(body), JSON.parse(request))) {
+                return request
             }
-            return body
+        } catch (e) {
+            //noop
         }
+        return body
     }
     return scope
 }
