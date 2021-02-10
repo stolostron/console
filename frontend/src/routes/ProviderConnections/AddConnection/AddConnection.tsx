@@ -24,7 +24,6 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
 import {
-    validateBaseDnsName,
     validateCertificate,
     validateGCProjectID,
     validateImageMirror,
@@ -153,6 +152,8 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
             pullSecret: '',
             sshPrivatekey: '',
             sshPublickey: '',
+
+            ocmAPIToken: '',
         },
     })
 
@@ -765,7 +766,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                     validation={(value) => (value ? validateCertificate(value, t) : undefined)}
                 />
-                <AcmTextArea
+                <AcmTextInput
                     id="ocmAPIToken"
                     label={t('addConnection.ocmapitoken.label')}
                     placeholder={t('addConnection.ocmapitoken.placeholder')}
@@ -778,7 +779,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
                     isRequired
-                    validation={(value) => validateBaseDnsName(value, t)}
+                    type="password"
                 />
                 <AcmAlertGroup isInline canClose />
                 <ActionGroup>
