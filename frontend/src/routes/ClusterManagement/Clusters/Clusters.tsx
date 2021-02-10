@@ -262,7 +262,7 @@ export function ClustersTable(props: {
                         search: 'status',
                         cell: (cluster) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
-                                <StatusField status={cluster.status} />
+                                <StatusField cluster={cluster} />
                             </span>
                         ),
                     },

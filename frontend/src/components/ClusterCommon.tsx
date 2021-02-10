@@ -28,7 +28,7 @@ export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.RE
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
     let type: StatusType
-    switch (props.cluster.status) {
+    switch (props.cluster?.status) {
         case ClusterStatus.ready:
             type = StatusType.healthy
             break
@@ -59,8 +59,8 @@ export function StatusField(props: { cluster: Cluster }) {
     return (
         <AcmInlineStatus
             type={type}
-            status={t(`status.${props.cluster.status}`)}
-            popover={{ bodyContent: t(`status.${props.cluster.status}.message`) }}
+            status={t(`status.${props.cluster?.status}`)}
+            popover={{ bodyContent: t(`status.${props.cluster?.status}.message`) }}
         />
     )
 }
