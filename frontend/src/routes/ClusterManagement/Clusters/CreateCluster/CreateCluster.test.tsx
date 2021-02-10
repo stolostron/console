@@ -1,10 +1,10 @@
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockCreate, nockGet, nockList, nockOptions, nockPatch } from '../../../../lib/nock-util'
-import { waitForNock, waitForText } from '../../../../lib/test-util'
+import { nockCreate, nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
+import { clickByRole, clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
 import {
@@ -424,49 +424,40 @@ describe('CreateCluster', () => {
     }
 
     test('can create bare metal cluster', async () => {
-        // simulated resources
-        const listImageSetsNock = nockList(clusterImageSet, mockClusterImageSet)
-        const listConnections = nockList(providerConnection, mockProviderConnection, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         window.scrollBy = () => {}
-        const listHosts = nockList(bareMetalAsset, mockBareMetalAssets)
-        const getSecret0 = nockGet(mockBareMetalSecrets[0])
-        const getSecret1 = nockGet(mockBareMetalSecrets[1])
-        const getSecret2 = nockGet(mockBareMetalSecrets[2])
-        const getSecret3 = nockGet(mockBareMetalSecrets[3])
-        const getSecret4 = nockGet(mockBareMetalSecrets[4])
+
+        const initialNocks = [
+            nockList(clusterImageSet, mockClusterImageSet),
+            nockList(providerConnection, mockProviderConnection, [
+                'cluster.open-cluster-management.io/cloudconnection=',
+            ]),
+            nockList(bareMetalAsset, mockBareMetalAssets),
+            nockGet(mockBareMetalSecrets[0]),
+            nockGet(mockBareMetalSecrets[1]),
+            nockGet(mockBareMetalSecrets[2]),
+            nockGet(mockBareMetalSecrets[3]),
+            nockGet(mockBareMetalSecrets[4]),
+        ]
 
         // create the form
-        const { getByTestId, container, getAllByRole } = render(<Component />)
+        const { container } = render(<Component />)
 
         // start filling in the form
-        userEvent.type(getByTestId('eman'), clusterName!)
-        userEvent.click(getByTestId('cluster.create.baremetal.subtitle'))
+        await typeByTestId('eman', clusterName!)
+        await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
-        await waitFor(() => expect(listImageSetsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listConnections.isDone()).toBeTruthy())
-        await waitFor(() => expect(listHosts.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret0.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret1.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret2.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret3.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret4.isDone()).toBeTruthy())
+        await waitForNocks(initialNocks)
 
         // finish the form
-        await waitFor(() => expect(getByTestId('imageSet')))
-        userEvent.type(getByTestId('imageSet'), clusterImageSet.spec.releaseImage!)
+        await typeByTestId('imageSet', clusterImageSet.spec.releaseImage!)
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-        getAllByRole('option')[0].click()
+        await clickByRole('option', 0)
+
         //userEvent.type(getByPlaceholderText('creation.ocp.cloud.select.connection'), providerConnection.metadata.name!)
         userEvent.click(container.querySelector('[name="check-all"]'))
-        userEvent.type(getByTestId('provisioningNetworkCIDR'), '10.4.5.3')
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
 
-        // nocks for cluster creation
-        // creates 1 less bmas so that backend creates that 1
-        const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
-        const bmaProjectNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
         const createBmaSecret4: Secret = {
             kind: SecretKind,
             apiVersion: SecretApiVersion,
@@ -474,10 +465,7 @@ describe('CreateCluster', () => {
                 name: 'test-bare-metal-asset-4-bmc-secret',
                 namespace: 'test-bare-metal-asset-namespace',
             },
-            stringData: {
-                password: 'test',
-                username: 'test',
-            },
+            stringData: { password: 'test', username: 'test' },
         }
         const bmaSecret4: Secret = {
             kind: SecretKind,
@@ -488,67 +476,50 @@ describe('CreateCluster', () => {
             },
             data: { password: 'encoded', username: 'encoded' },
         }
-        const secretCreateNock1 = nockCreate(createBmaSecret4, bmaSecret4)
-        const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
-        const listManagedClusterNock = nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            [],
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        const clusterProjectNock = nockCreate(mockClusterProject, mockClusterProjectResponse)
-        const clusterCreateNock = nockCreate(mockManagedCluster)
-        const clusterPullSecret = nockCreate(mockPullSecret)
-        const clusterInstallConfigSecret = nockCreate(mockInstallConfigSecret)
-        const clusterPrivateSecretSecret = nockCreate(mockPrivateSecret)
-        const clusterKlusterletAddonSecret = nockCreate(mockKlusterletAddonSecret)
-        const createClusterDeployment = nockCreate(mockClusterDeployment)
-        const optionNock0 = nockOptions(mockPatchBareMetalReq[0], mockPatchBareMetalReq[0])
-        const optionNock1 = nockOptions(mockPatchBareMetalReq[1], mockPatchBareMetalReq[1])
-        const optionNock2 = nockOptions(mockPatchBareMetalReq[2], mockPatchBareMetalReq[2])
-        const optionNock3 = nockOptions(mockPatchBareMetalReq[3], mockPatchBareMetalReq[3])
-        const optionNock4 = nockOptions(mockPatchBareMetalReq[4], mockPatchBareMetalReq[4])
-        const patchNock0 = nockPatch(mockPatchBareMetalReq[0], patchBareMetalAssetMasterRes)
-        const patchNock1 = nockPatch(mockPatchBareMetalReq[1], patchBareMetalAssetMasterRes)
-        const patchNock2 = nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes)
-        const patchNock3 = nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes)
-        const patchNock4 = nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes)
+
+        // nocks for cluster creation
+        const createNocks = [
+            // list only 4 bmas so that one is created
+            // creates 1 less bmas so that backend creates that 1
+            nockList(bareMetalAsset, mockBareMetalAssets2),
+
+            // create bma namespace
+            nockCreate(mockBmaProject, mockBmaProjectResponse),
+
+            // create bmas/secrets
+            nockCreate(createBmaSecret4, bmaSecret4),
+            nockCreate(mockBareMetalAssets3[0]),
+
+            // list no clusters so that creating this cluster doesn't think it already exists
+            nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
+                managedNamespacesOnly: '',
+            }),
+
+            // create the cluster's namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedCluster),
+            nockCreate(mockPullSecret),
+            nockCreate(mockInstallConfigSecret),
+            nockCreate(mockPrivateSecret),
+            nockCreate(mockKlusterletAddonSecret),
+            nockCreate(mockClusterDeployment),
+
+            // assigns cluster name to bmas
+            nockPatch(mockPatchBareMetalReq[0], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[1], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes),
+            nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes),
+        ]
 
         // click create button
-        userEvent.click(getByTestId('create-button-portal-id-btn'))
+        await clickByTestId('create-button-portal-id-btn')
 
         // make sure creating
         await waitForText('success.create.creating')
 
-        // list only 4 bmas so that one is created
-        await waitForNock(listBmas)
-        // create bma namespace
-        await waitForNock(bmaProjectNock)
-        // create bma/secret
-        await waitForNock(secretCreateNock1)
-        await waitForNock(bmaCreateNock1)
-        // list no clusters so that creating this cluster doesn't think it already exists
-        await waitForNock(listManagedClusterNock)
-        // create the cluster's namespace (project)
-        await waitForNock(clusterProjectNock)
-        // create the managed cluster
-        await waitForNock(clusterCreateNock)
-        await waitForNock(clusterPullSecret)
-        await waitForNock(clusterInstallConfigSecret)
-        await waitForNock(clusterPrivateSecretSecret)
-        await waitForNock(clusterKlusterletAddonSecret)
-        await waitForNock(createClusterDeployment)
-
-        // assigns cluster name to bmas
-        await waitForNock(optionNock0)
-        await waitForNock(optionNock1)
-        await waitForNock(optionNock2)
-        await waitForNock(optionNock3)
-        await waitForNock(optionNock4)
-        await waitForNock(patchNock0)
-        await waitForNock(patchNock1)
-        await waitForNock(patchNock2)
-        await waitForNock(patchNock3)
-        await waitForNock(patchNock4)
+        await waitForNocks(createNocks)
     })
 })

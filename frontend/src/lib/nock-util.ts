@@ -1,11 +1,11 @@
 /* istanbul ignore file */
 
+import { isEqual } from 'lodash'
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
+import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
-import { isEqual } from 'lodash'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
 
 export function nockGet<Resource extends IResource>(
     resource: Resource,
@@ -150,27 +150,12 @@ export function nockNamespacedList<Resource extends IResource>(
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), JSON.stringify(resource))
+        .post(getResourceApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-
-    // incredibly nock does a string comparison with the response
-    // so if the json strings don't equal it doesn't match!
-    if (response) {
-        scope.transformRequestBodyFunction = (body, request) => {
-            try {
-                if (isEqual(JSON.parse(body), JSON.parse(request))) {
-                    return request
-                }
-            } catch (e) {
-                //noop
-            }
-            return body
-        }
-    }
     return scope
 }
 
@@ -207,7 +192,7 @@ export function nockPatch(resource: IResource, data: unknown, response?: IResour
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(getResourceNameApiPath(resource), JSON.stringify(data))
+        .patch(getResourceNameApiPath(resource), (body) => isEqual(body, data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
@@ -224,7 +209,7 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), JSON.stringify(resource))
+        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
@@ -294,7 +279,7 @@ export function nockUpgrade(
     delay: number = 0
 ) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post('/upgrade', JSON.stringify({ clusterName, version }))
+        .post('/upgrade', (body) => isEqual(body, { clusterName, version }))
         .delay(delay)
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',
