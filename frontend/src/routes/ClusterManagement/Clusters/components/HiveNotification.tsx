@@ -54,7 +54,12 @@ export function HiveNotification() {
         }
     }, [cluster?.status, data, startPolling, stopPolling, clusterProvisionStatus])
 
-    const provisionStatuses: string[] = [ClusterStatus.creating, ClusterStatus.destroying, ClusterStatus.provisionfailed, ClusterStatus.deprovisionfailed]
+    const provisionStatuses: string[] = [
+        ClusterStatus.creating,
+        ClusterStatus.destroying,
+        ClusterStatus.provisionfailed,
+        ClusterStatus.deprovisionfailed,
+    ]
 
     if (!provisionStatuses.includes(/* istanbul ignore next */ cluster?.status ?? '')) {
         return null
@@ -64,7 +69,12 @@ export function HiveNotification() {
         <div style={{ marginBottom: '1rem' }} id={`hive-notification-${cluster?.status}`}>
             <AcmAlert
                 isInline
-                variant={(cluster?.status === ClusterStatus.provisionfailed || cluster?.status === ClusterStatus.deprovisionfailed) ? AlertVariant.danger : AlertVariant.info}
+                variant={
+                    cluster?.status === ClusterStatus.provisionfailed ||
+                    cluster?.status === ClusterStatus.deprovisionfailed
+                        ? AlertVariant.danger
+                        : AlertVariant.info
+                }
                 title={
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}

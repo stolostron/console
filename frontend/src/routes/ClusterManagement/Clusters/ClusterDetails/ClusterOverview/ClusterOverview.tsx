@@ -32,7 +32,7 @@ export function ClusterOverviewPageContent(props: {
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
-                        { key: t('table.status'), value: cluster?.status && <StatusField status={cluster?.status} /> },
+                        { key: t('table.status'), value: cluster?.status && <StatusField cluster={cluster} /> },
                         {
                             key: t('table.provider'),
                             value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,

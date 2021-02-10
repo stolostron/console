@@ -25,10 +25,10 @@ import { Cluster, ClusterStatus } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
-export function StatusField(props: { status: ClusterStatus }) {
+export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
     let type: StatusType
-    switch (props.status) {
+    switch (props.cluster.status) {
         case ClusterStatus.ready:
             type = StatusType.healthy
             break
@@ -59,8 +59,8 @@ export function StatusField(props: { status: ClusterStatus }) {
     return (
         <AcmInlineStatus
             type={type}
-            status={t(`status.${props.status}`)}
-            popover={{ bodyContent: t(`status.${props.status}.message`) }}
+            status={t(`status.${props.cluster.status}`)}
+            popover={{ bodyContent: t(`status.${props.cluster.status}.message`) }}
         />
     )
 }
