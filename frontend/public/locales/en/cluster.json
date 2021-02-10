@@ -161,7 +161,7 @@
     "upgrade.table.currentversion": "Current version",
     "upgrade.table.newversion": "New version",
     "provision.notification.creating": "Cluster provisioning is in progress:",
-    "provision.notification.failed": "Cluster provisioning failed:",
+    "provision.notification.provisionfailed": "Cluster provisioning failed:",
     "provision.notification.destroying": "Cluster deprovisioning is in progress:",
     "view.logs": "View logs",
 
