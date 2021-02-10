@@ -1,6 +1,7 @@
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import React from 'react'
 import { nockList } from '../../../lib/nock-util'
+import { waitForNock, waitForText } from '../../../lib/test-util'
 import {
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
@@ -74,30 +75,28 @@ test('DiscoveredClustersPage', async () => {
         { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
         mockDiscoveredClusters
     )
-    const { getByText } = render(<DiscoveredClustersPage />)
-    await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+    render(<DiscoveredClustersPage />)
+    await waitForNock(listNock)
 
-    await waitFor(() => expect(getByText('discovery.edit')).toBeInTheDocument())
-    await waitFor(() => expect(getByText('discovery.disable')).toBeInTheDocument())
-    await waitFor(() =>
-        expect(getByText(mockDiscoveredClusters[0].spec.providerConnections![0].name!)).toBeInTheDocument()
-    )
+    await waitForText('discovery.edit')
+    await waitForText('discovery.disable')
+    await waitForText(mockDiscoveredClusters[0].spec.providerConnections![0].name!)
 
     // Ensure data for each discoveredcluster appears in table
-    mockDiscoveredClusters.forEach((dc) => {
-        expect(getByText(dc.metadata.name!)).toBeInTheDocument()
-        expect(getByText('OpenShift ' + dc.spec.openshiftVersion)).toBeInTheDocument()
+    mockDiscoveredClusters.forEach(async (dc) => {
+        await waitForText(dc.metadata.name!)
+        await waitForText('OpenShift ' + dc.spec.openshiftVersion)
         if (dc.spec.cloudProvider === 'aws') {
-            expect(getByText('Amazon Web Services')).toBeInTheDocument()
+            await waitForText('Amazon Web Services')
         } else {
-            expect(getByText(dc.spec.cloudProvider)).toBeInTheDocument()
+            await waitForText(dc.spec.cloudProvider)
         }
     })
 })
 
 test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-    const { getByText } = render(<DiscoveredClustersPage />)
-    await waitFor(() => expect(listNock.isDone()).toBeTruthy())
-    await waitFor(() => expect(getByText('discovery.emptyStateHeader')).toBeInTheDocument())
+    render(<DiscoveredClustersPage />)
+    await waitForNock(listNock)
+    await waitForText('discovery.emptyStateHeader')
 })

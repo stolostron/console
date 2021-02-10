@@ -174,7 +174,7 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
     return scope
 }
 
-export function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+export function nockCreateSelfSubjectAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
     return nockCreate(
         {
             apiVersion: 'authorization.k8s.io/v1',
