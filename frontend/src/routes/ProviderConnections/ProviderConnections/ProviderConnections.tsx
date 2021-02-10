@@ -49,9 +49,8 @@ export default function ProviderConnectionsPage() {
 /* istanbul ignore next */
 const AddConnectionBtn = () => {
     const { t } = useTranslation(['connection'])
-    const { push } = useHistory()
     return (
-        <AcmButton component="a" href="#" onClick={() => push(NavigationPath.addConnection)}>
+        <AcmButton component="a" to={NavigationPath.addConnection}>
             {t('add')}
         </AcmButton>
     )

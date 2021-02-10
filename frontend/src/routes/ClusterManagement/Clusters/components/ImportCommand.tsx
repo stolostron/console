@@ -133,7 +133,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                         id="launch-console"
                                         variant="secondary"
                                         component="a"
-                                        href={
+                                        to={
                                             /* istanbul ignore next */ sessionStorage.getItem(
                                                 'DiscoveredClusterConsoleURL'
                                             ) ?? ''

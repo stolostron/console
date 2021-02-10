@@ -213,19 +213,19 @@ platform:
 
 {{#case 'AWS'}}
   aws:
-    region: {{{../region}}}
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'GCP'}}
   gcp:
-    projectID: {{{../gcProjectID}}} ##gcProjectID
-    region: {{{../region}}}
+    projectID: {{{../../gcProjectID}}} ##gcProjectID
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}}
-    region: {{{../region}}}
+    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'vSphere'}}

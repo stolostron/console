@@ -1,5 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
@@ -12,6 +11,17 @@ import {
     nockGet,
     nockNamespacedList,
 } from '../../../../lib/nock-util'
+import {
+    clickByLabel,
+    clickByText,
+    typeByText,
+    waitForCalled,
+    waitForNock,
+    waitForNocks,
+    waitForNotRole,
+    waitForRole,
+    waitForText,
+} from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
     CertificateSigningRequestApiVersion,
@@ -661,13 +671,6 @@ function getClusterActionsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function nocksAreDone(nocks: Scope[]) {
-    for (const nock of nocks) {
-        if (!nock.isDone()) return false
-    }
-    return true
-}
-
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
@@ -700,94 +703,85 @@ function defaultNocks() {
 
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
-        const mciScope = nockGetManagedClusterInfoError()
-        const cdScope = nockGetClusterDeploymentError()
-        const csrScope = nockListCertificateSigningRequests()
-        const mcaScope = nockGetManagedClusterAddons()
-        const managedClusterNock = nockGetManagedClusterError()
-        const nockRbac = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        const nocks = [
+            nockGetManagedClusterInfoError(),
+            nockGetClusterDeploymentError(),
+            nockListCertificateSigningRequests(),
+            nockGetManagedClusterAddons(),
+            nockGetManagedClusterError(),
+            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
+        ]
         render(<Component />)
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(nockRbac.isDone()).toBeTruthy())
-        await act(async () => {
-            await waitFor(() => expect(screen.getByText('Bad request')).toBeInTheDocument(), { timeout: 2000 })
-        })
+        await waitForNocks(nocks)
+        await waitForText('Bad request')
     })
 
     test('overview page renders', async () => {
-        window.open = jest.fn()
-
         const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+        await waitForNocks(nocks)
 
-        await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 2000 })
-            await waitFor(() => expect(screen.getByText('tab.overview')).toBeInTheDocument())
-            await waitFor(() => expect(screen.getByText('table.details')).toBeInTheDocument())
-            await waitFor(() => expect(screen.getByText('view.logs')).toBeInTheDocument())
-            userEvent.click(screen.getByText('view.logs'))
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            expect(window.open).toHaveBeenCalled()
+        await waitForText(clusterName, true)
+        await waitForText('tab.overview')
+        await waitForText('table.details')
+    })
 
-            // open edit labels modal
-            expect(screen.getByLabelText('common:labels.edit.title')).toBeInTheDocument()
-            userEvent.click(screen.getByLabelText('common:labels.edit.title'))
-            await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
-            userEvent.click(screen.getByText('common:cancel'))
-            await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-        })
+    test('overview page opens logs', async () => {
+        const nocks = defaultNocks()
+        render(<Component />)
+        await waitForNocks(nocks)
+
+        window.open = jest.fn()
+        await clickByText('view.logs')
+        await waitForCalled(window.open as jest.Mock)
+    })
+
+    test('overview page opens edit labels modal', async () => {
+        const nocks = defaultNocks()
+        render(<Component />)
+        await waitForNocks(nocks)
+
+        await waitForText(clusterName, true)
+
+        await clickByLabel('common:labels.edit.title')
+        await waitForRole('dialog')
+
+        await clickByText('common:cancel')
+        await waitForNotRole('dialog')
     })
 
     test('nodes page renders', async () => {
         const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+        await waitForNocks(nocks)
 
-        await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
-            await waitFor(() => expect(screen.getByText('tab.nodes')).toBeInTheDocument())
-            userEvent.click(screen.getByText('tab.nodes'))
-            await waitFor(() =>
-                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
-            )
-            userEvent.click(screen.getByText('table.role'))
-            await waitFor(() =>
-                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
-            )
-            userEvent.click(screen.getByText('table.region'))
-            await waitFor(() =>
-                expect(screen.getByText(mockManagedClusterInfo.status?.nodeList?.[0].name!)).toBeInTheDocument()
-            )
-        })
+        await clickByText('tab.nodes')
+        await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
+
+        await clickByText('table.role')
+        await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
+
+        await clickByText('table.region')
+        await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
     })
 
     test('settings page renders', async () => {
         const nocks = defaultNocks()
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+        await waitForNocks(nocks)
 
-        await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText(clusterName)).toBeTruthy(), { timeout: 10000 })
-            await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
-            userEvent.click(screen.getByText('tab.settings'))
-            await waitFor(() =>
-                expect(screen.getByText(mockmanagedClusterAddOns[0].metadata.name!)).toBeInTheDocument()
-            )
-        })
+        await clickByText('tab.settings')
+        await waitForText(mockmanagedClusterAddOns[0].metadata.name!)
     })
+
     test('should show error if the ManagedClusterAddons fail to query', async () => {
-        const mciScope = nockGetManagedClusterInfo()
-        const cdScope = nockGetClusterDeployment()
-        const csrScope = nockListCertificateSigningRequests()
-        const mcaScope = nockListManagedClusterAddonsError()
-        const managedClusterNock = nockGetManagedCluster()
-        const listClusterProvisionsNock = nockListClusterProvision()
-        const rbacNocks: Scope[] = [
+        const nocks = [
+            nockGetManagedClusterInfo(),
+            nockGetClusterDeployment(),
+            nockListCertificateSigningRequests(),
+            nockListManagedClusterAddonsError(),
+            nockGetManagedCluster(),
+            nockListClusterProvision(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
             nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
@@ -796,69 +790,38 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
-
         render(<Component />)
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(mciScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(cdScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(csrScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(mcaScope.isDone()).toBeTruthy())
-        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listClusterProvisionsNock.isDone()).toBeTruthy())
+        await waitForNocks(nocks)
 
-        await act(async () => {
-            await waitFor(() => expect(screen.queryAllByText('test-cluster')).toBeTruthy(), { timeout: 10000 })
-            await waitFor(() => expect(screen.getByText('tab.settings')).toBeInTheDocument())
-            userEvent.click(screen.getByText('tab.settings'))
-            await waitFor(() => expect(screen.queryByText('Loading')).toBeNull(), { timeout: 10000 })
-            await waitFor(() => expect(screen.getByText('Bad request')).toBeInTheDocument())
-        })
+        await clickByText('tab.settings')
+        await waitForText('Bad request')
     })
 
     test('overview page handles detach', async () => {
         const nocks = defaultNocks()
-        let { queryAllByText, getByText } = render(<Component />)
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
-        await waitFor(() => expect(getByText('tab.overview')).toBeInTheDocument())
+        render(<Component />)
+        await waitForNocks(nocks)
 
-        await waitFor(() => expect(queryAllByText('actions').length).toBeGreaterThan(0))
-        userEvent.click(getByText('actions'))
+        await clickByText('actions')
+        await clickByText('managed.detached')
+        await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
-        await waitFor(() => expect(queryAllByText('managed.detached')).toHaveLength(1))
-        userEvent.click(getByText('managed.detached'))
-
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster.metadata.name!)
-
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster)]
-
-        await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
-        userEvent.click(getByText('detach'))
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
+        const deleteNock = nockDelete(mockManagedCluster)
+        await clickByText('detach')
+        await waitForNock(deleteNock)
     })
 
     test('overview page handles destroy', async () => {
         const nocks = defaultNocks()
-        let { queryAllByText, getByText } = render(<Component />)
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
+        render(<Component />)
+        await waitForNocks(nocks)
 
-        await waitFor(() => expect(getByText('tab.overview')).toBeInTheDocument())
-
-        await waitFor(() => expect(queryAllByText('actions').length).toBeGreaterThan(0))
-        userEvent.click(getByText('actions'))
-
-        await waitFor(() => expect(queryAllByText('managed.destroySelected')).toHaveLength(1))
-        userEvent.click(getByText('managed.destroySelected'))
-
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster.metadata.name!)
+        await clickByText('actions')
+        await clickByText('managed.destroySelected')
+        await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
-
-        await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
-        userEvent.click(getByText('destroy'))
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
+        await clickByText('destroy')
+        await waitForNocks(deleteNocks)
     })
 })

@@ -70,7 +70,7 @@ spec:
 
   {{#case 'Azure'}}
     azure:
-      baseDomainResourceGroupName: {{{../baseDomainResourceGroupName}}} ##resourceGroupName
+      baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
         name: {{{../../name}}}-azure-creds
       region: {{{../../region}}}
@@ -140,15 +140,15 @@ metadata:
 {{#switch infrastructure}}
   {{#case 'AWS'}}
     cloud: Amazon
-    region: {{{../region}}}
+    region: {{{../../region}}}
   {{/case}}
   {{#case 'GCP'}}
     cloud: Google
-    region: {{{../region}}}
+    region: {{{../../region}}}
   {{/case}}
   {{#case 'Azure'}}
     cloud: Azure
-    region: {{{../region}}}
+    region: {{{../../region}}}
   {{/case}}
   {{#case 'BMC'}}
     cloud: Bare-Metal
@@ -352,11 +352,11 @@ type: Opaque
 
 {{#case 'AWS'}}
 metadata:
-  name: {{{../name}}}-aws-creds
-  namespace: {{{../name}}}
+  name: {{{../../name}}}-aws-creds
+  namespace: {{{../../name}}}
 stringData:
-  aws_access_key_id: {{{../awsAccessKeyID}}}
-{{#if ../showSecrets}}
+  aws_access_key_id: {{{../../awsAccessKeyID}}}
+{{#if ../../showSecrets}}
   aws_secret_access_key: {{{../../awsSecretAccessKeyID}}}
 {{else}}
   aws_secret_access_key: # injected on create
@@ -365,10 +365,10 @@ stringData:
 
 {{#case 'GCP'}}
 metadata:
-  name: {{{../name}}}-gcp-creds
-  namespace: {{{../name}}}
+  name: {{{../../name}}}-gcp-creds
+  namespace: {{{../../name}}}
 stringData:
-{{#if ../showSecrets}}
+{{#if ../../showSecrets}}
   osServiceAccount.json: |-
 {{#each ../../gcServiceAccountKey}}
     {{{.}}}
@@ -380,10 +380,10 @@ stringData:
 
 {{#case 'Azure'}}
 metadata:
-  name: {{{../name}}}-azure-creds
-  namespace: {{{../name}}}
+  name: {{{../../name}}}-azure-creds
+  namespace: {{{../../name}}}
 stringData:
-{{#if ../showSecrets}}
+{{#if ../../showSecrets}}
   osServicePrincipal.json: |-
     {"clientId": "{{{../../clientId}}}", "clientSecret": "{{{../../clientSecret}}}", "tenantId": "{{{../../tenantId}}}", "subscriptionId": "{{{../../subscriptionId}}}"}
 {{else}}
@@ -393,11 +393,11 @@ stringData:
 
 {{#case 'vSphere'}}
 metadata:
-  name: {{{../name}}}-vsphere-creds
-  namespace: {{{../name}}}
+  name: {{{../../name}}}-vsphere-creds
+  namespace: {{{../../name}}}
 stringData:
-  username: {{{../username}}}
-  password: {{{../password}}}
+  username: {{{../../username}}}
+  password: {{{../../password}}}
 
 ---
 
@@ -405,11 +405,11 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: {{{../name}}}-vsphere-certs
-  namespace: {{{../name}}}
+  name: {{{../../name}}}-vsphere-certs
+  namespace: {{{../../name}}}
 data:
 
-{{#if ../showSecrets}}
+{{#if ../../showSecrets}}
   .cacert: {{{../../cacertificate}}}
 {{else}}
   .cacert: # injected on create

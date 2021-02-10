@@ -12,6 +12,7 @@
     "clusters.discovered": "Discovered clusters",
     "managed": "Managed",
     "managed.emptyStateHeader": "No managed clusters found",
+    "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
     "managed.upgrade": "Upgrade cluster",

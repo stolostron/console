@@ -48,13 +48,13 @@ export function getResourceApiPath(options: {
     }
 
     const namespace = options.metadata?.namespace
-    if (namespace !== undefined) {
+    if (namespace) {
         path = join(path, 'namespaces', namespace)
     }
 
-    if (options.plural !== undefined) {
+    if (options.plural) {
         path = join(path, options.plural)
-    } else if (options.kind !== undefined) {
+    } else if (options.kind) {
         path = join(path, options.kind.toLowerCase() + 's')
     }
 
@@ -70,7 +70,7 @@ export function getResourceNameApiPath(options: {
     let path = getResourceApiPath(options)
 
     const name = options.metadata?.name
-    if (name !== undefined) {
+    if (name) {
         path = join(path, name)
     }
 
