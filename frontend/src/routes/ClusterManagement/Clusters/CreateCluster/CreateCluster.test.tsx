@@ -424,6 +424,8 @@ describe('CreateCluster', () => {
     }
 
     test('can create bare metal cluster', async () => {
+        jest.setTimeout(45000)
+              
         // simulated resources
         const listImageSetsNock = nockList(clusterImageSet, mockClusterImageSet)
         const listConnections = nockList(providerConnection, mockProviderConnection, [
