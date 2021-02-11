@@ -102,16 +102,18 @@ export function createBareMetalAssetSecret(asset: {
         bmc: { username, password },
     } = asset
     const credentialsName = `${name}-bmc-secret`
-    return createResource<BMASecret>({
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-            name: credentialsName,
-            namespace,
-        },
-        stringData: {
-            password,
-            username,
-        },
-    })
+    return !username
+        ? Promise.resolve()
+        : createResource<BMASecret>({
+              apiVersion: 'v1',
+              kind: 'Secret',
+              metadata: {
+                  name: credentialsName,
+                  namespace,
+              },
+              stringData: {
+                  password,
+                  username,
+              },
+          })
 }

@@ -91,7 +91,6 @@ const setAvailableBMAs = (control, result) => {
                 .sort(({ hostName: a }, { hostName: b }) => {
                     return a.localeCompare(b)
                 })
-            control.available.forEach(getCreds)
             control.available.forEach((datum) => {
                 datum.id = datum.id.toString()
             })
@@ -110,15 +109,6 @@ const formatBMA = (bma) => ({
     hostName: bma.metadata.name,
     hostNamespace: bma.metadata.namespace,
 })
-
-async function getCreds(available) {
-    getSecret({ namespace: available.credNamespace, name: available.credName }).promise.then(({ data }) => {
-        available.username = Buffer.from(data.username, 'base64').toString('ascii')
-        available.password = Buffer.from(data.password, 'base64').toString('ascii')
-        delete available.credName
-        delete available.credNamespace
-    })
-}
 
 const sortTable = (items, selectedKey, sortDirection, active) => {
     if (selectedKey === 'role' && active.length > 0) {

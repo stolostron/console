@@ -3,13 +3,22 @@ import {
     createBareMetalAssetSecret,
     listBareMetalAssets,
 } from '../resources/bare-metal-asset'
+import { getSecret } from '../resources/secret'
 import { createProject } from '../resources/project'
 import { patchResource } from '../lib/resource-request'
-import { get, keyBy } from 'lodash'
+import { set, get, keyBy } from 'lodash'
+import yaml from 'js-yaml'
+
+const INSTALL_CONFIG = 'install-config.yaml'
+const BMC_USERNAME = 'bmc.username'
+const BMC_PASSWORD = 'bmc.password'
+const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
+const CREDENTIAL_NAMESPACE = 'metadata.namespace'
 
 export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     // make sure all hosts have a bare metal asset
     // (bma's may have been imported from a csv)
+    let results
     const assets = []
     const errors = []
     let response = await listBareMetalAssets().promise
@@ -31,7 +40,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     if (newAssets.length > 0) {
         // determine the namespaces required and create them
         const namespaces = Object.keys(keyBy(newAssets, 'namespace'))
-        let results = namespaces.map((namespace) => createProject(namespace))
+        results = namespaces.map((namespace) => createProject(namespace))
         response = await Promise.allSettled(results.map((result) => result.promise))
         response.forEach(({ status, reason }, inx) => {
             if (status === 'rejected') {
@@ -58,6 +67,45 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
                 assets.push(value)
             }
         })
+    }
+
+    // make sure all hosts have a user/password in both ClusterDeployment and install-config.yaml
+    const hostsWithoutCred = hosts.filter((host) => !get(host, BMC_USERNAME))
+    const installConfig = resources.find(({ data }) => data && data[INSTALL_CONFIG])
+    const installConfigData = yaml.safeLoad(Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii'))
+    const installConfigHosts = get(installConfigData, 'platform.baremetal.hosts', [])
+    const installConfigHostsWithoutCred = installConfigHosts.filter((host) => !get(host, BMC_USERNAME))
+    if (hostsWithoutCred.length > 0 || installConfigHostsWithoutCred.length > 0) {
+        results = hostsWithoutCred.map(({ namespace, name }) => {
+            const asset = assetsMap[`${name}-${namespace}`]
+            return !asset
+                ? Promise.resolve()
+                : getSecret({ namespace: get(asset, CREDENTIAL_NAMESPACE), name: get(asset, CREDENTIAL_NAME) })
+        })
+        const secrets = await Promise.allSettled(results.map((result) => result.promise))
+        const secretMap = keyBy(secrets, (secret) => {
+            const name = get(secret, 'value.metadata.name')
+            const namespace = get(secret, 'value.metadata.namespace')
+            return `${name}-${namespace}`
+        })
+        const setSecrets = (fhosts) => {
+            fhosts.forEach((host) => {
+                const { name, namespace } = host
+                const asset = assetsMap[`${name}-${namespace}`]
+                const credName = get(asset, 'spec.bmc.credentialsName', name)
+                const secret = secretMap[`${credName}-${namespace}`]
+                if (secret) {
+                    const { username, password } = get(secret, 'value.data', {})
+                    set(host, BMC_USERNAME, username ? Buffer.from(username, 'base64').toString('ascii') : undefined)
+                    set(host, BMC_PASSWORD, password ? Buffer.from(password, 'base64').toString('ascii') : undefined)
+                }
+            })
+        }
+        setSecrets(hostsWithoutCred)
+        setSecrets(installConfigHostsWithoutCred)
+        if (installConfigHostsWithoutCred.length > 0) {
+            installConfig.data[INSTALL_CONFIG] = Buffer.from(yaml.safeDump(installConfigData)).toString('base64')
+        }
     }
     return { assets, errors }
 }
