@@ -85,7 +85,7 @@ compute:
 {{/if_eq}}
 
 {{#each workerPools}}
-{{#if @first}}
+{{! #if @first}}
 compute:
 - hyperthreading: Enabled
   name: {{{workerName}}}
@@ -140,7 +140,7 @@ compute:
   {{/case}}
 
 {{/switch}}
-{{/if}}
+{{! /if}}
 {{/each}}
 
 
