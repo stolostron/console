@@ -18,7 +18,6 @@ import {
 import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
 import { withRouter } from 'react-router-dom'
 import { withTranslation } from 'react-i18next'
-import { getSecret } from '../../../../../resources/secret'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
