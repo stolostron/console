@@ -21,7 +21,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { DistributionField, StatusField, UpgradeModal } from '../../../components/ClusterCommon'
+import { DistributionField, UpgradeModal } from '../../../components/ClusterCommon'
+import { StatusField } from './components/StatusField'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
@@ -201,7 +202,7 @@ export function ClustersTable(props: {
                 sort: 'status',
                 cell: (cluster: Cluster) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
-                        <StatusField status={cluster.status} />
+                        <StatusField cluster={cluster} />
                     </span>
                 ),
             },
@@ -262,7 +263,7 @@ export function ClustersTable(props: {
                         search: 'status',
                         cell: (cluster) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
-                                <StatusField status={cluster.status} />
+                                <StatusField cluster={cluster} />
                             </span>
                         ),
                     },
