@@ -452,7 +452,6 @@ describe('CreateCluster', () => {
         userEvent.click(container.querySelector('[name="check-all"]'))
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
 
-
         // nocks for cluster creation
         const createNocks = [
             // list only 4 bmas so that one is created
