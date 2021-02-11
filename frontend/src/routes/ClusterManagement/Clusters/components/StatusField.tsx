@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
@@ -8,6 +8,7 @@ import { launchLogs } from './HiveNotification'
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
     let type: StatusType
+
     switch (props.cluster?.status) {
         case ClusterStatus.ready:
             type = StatusType.healthy
@@ -64,7 +65,13 @@ export function StatusField(props: { cluster: Cluster }) {
             type={type}
             status={t(`status.${props.cluster?.status}`)}
             popover={{
-                bodyContent: t(`status.${props.cluster?.status}.message`),
+                hasAutoWidth: hasAction,
+                bodyContent: (
+                    <Trans
+                        i18nKey={`cluster:status.${props.cluster?.status}.message`}
+                        components={{ bold: <strong /> }}
+                    />
+                ),
                 footerContent: hasAction && <Action />,
             }}
         />
