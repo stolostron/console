@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
-export const waitTimeout = 30 * 1000
+export const waitTimeout = 3 * 1000
 
 export async function waitForText(text: string, multipleAllowed?: boolean) {
     if (multipleAllowed) {
@@ -10,6 +10,10 @@ export async function waitForText(text: string, multipleAllowed?: boolean) {
     } else {
         await waitFor(() => expect(screen.getByText(text)).toBeInTheDocument(), { timeout: waitTimeout })
     }
+}
+
+export async function waitForTestId(testId: string) {
+    await waitFor(() => expect(screen.getByTestId(testId)).toBeInTheDocument(), { timeout: waitTimeout })
 }
 
 export async function waitForRole(role: string, multipleAllowed?: boolean) {
@@ -52,9 +56,19 @@ export async function clickByText(text: string, index?: number) {
     }
 }
 
+export async function clickByTestId(testID: string) {
+    await waitForTestId(testID)
+    screen.getByTestId(testID).click()
+}
+
 export async function typeByText(text: string, type: string) {
     await waitForText(text)
     userEvent.type(screen.getByText('type.to.confirm'), type)
+}
+
+export async function typeByTestId(testID: string, type: string) {
+    await waitForTestId(testID)
+    userEvent.type(screen.getByTestId(testID), type)
 }
 
 export async function clickByLabel(label: string, index?: number) {

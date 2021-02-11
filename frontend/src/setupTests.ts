@@ -19,30 +19,43 @@ async function setupBeforeAll(): Promise<void> {
 }
 
 let noMatches: string[]
+let consoleWarnings: any[]
 let consoleErrors: any[]
 
-console.warn = () => {}
-console.error = (error: any) => {
-    consoleErrors.push(error)
+console.warn = (message?: any, ..._optionalParams: any[]) => {
+    if (typeof message === 'string') {
+        if (message.startsWith('You are using a beta component feature (isAriaDisabled).')) return
+    }
+    consoleWarnings.push(message)
+}
+// const originalConsoleError = console.error
+console.error = (message?: any, ...optionalParams: any[]) => {
+    consoleErrors.push(message)
+    // originalConsoleError(message, optionalParams)
+}
+
+function logNoMatch(req: any) {
+    if (noMatches.length === 0) {
+        noMatches.push('No match for requests')
+    }
+    noMatches.push(`${req.method} ${req.path}`)
 }
 
 function setupBeforeEach(): void {
     noMatches = []
     consoleErrors = []
-    nock.emitter.on('no match', (req) => {
-        if (noMatches.length === 0) {
-            noMatches.push('No match for requests')
-        }
-        noMatches.push(`${req.method} ${req.path}`)
-    })
+    consoleWarnings = []
+    nock.emitter.on('no match', logNoMatch)
 }
 
 async function setupAfterEach(): Promise<void> {
-    // await new Promise((resolve) => setTimeout(resolve, 5 * 1000))
+    await new Promise((resolve) => setTimeout(resolve, 100))
     expect(noMatches).toEqual([])
     // expect(consoleErrors).toEqual([])
+    // expect(consoleWarnings).toEqual([])
     const error = nock.isDone() ? undefined : `Pending Nocks: ${nock.pendingMocks().join(',')}`
     expect(error).toBeUndefined()
+    nock.emitter.off('no match', logNoMatch)
     nock.cleanAll()
 }
 

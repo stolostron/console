@@ -1,10 +1,10 @@
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockCreate, nockGet, nockList, nockOptions, nockPatch } from '../../../../lib/nock-util'
-import { waitForNock, waitForText } from '../../../../lib/test-util'
+import { nockCreate, nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
+import { clickByRole, clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
 import {
@@ -194,7 +194,7 @@ const mockInstallConfigSecret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKLSBuYW1lOiB3b3JrZXIKICByZXBsaWNhczogMgpuZXR3b3JraW5nOgogIGNsdXN0ZXJOZXR3b3JrOgogIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lQ0lEUjogMTAuMC4wLjAvMTYKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgc2VydmljZU5ldHdvcms6CiAgLSAxNzIuMzAuMC4wLzE2CnBsYXRmb3JtOgogIGJhcmVtZXRhbDoKICAgIGxpYnZpcnRVUkk6IHFlbXUrc3NoOi8vbGlidmlydFVSSQogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBhcGlWSVA6CiAgICBpbmdyZXNzVklQOgogICAgYm9vdHN0cmFwT1NJbWFnZTogPi0KICAgICAgYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6ID4tCiAgICAgIGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0yCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogJ2V4YW1wbGUuY29tOjgwJwogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCmFkZGl0aW9uYWxUcnVzdEJ1bmRsZTogfC0KICAgIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogICAgY2VydGRhdGEKICAgIC0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KaW1hZ2VDb250ZW50U291cmNlczoKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCi0gbWlycm9yczoKICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtdjQuMC1hcnQtZGV2Cg==',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKICAtIG5hbWU6IHdvcmtlcgogICAgcmVwbGljYXM6IDIKbmV0d29ya2luZzoKICBjbHVzdGVyTmV0d29yazoKICAgIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVDSURSOiAxMC4wLjAuMC8xNgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBzZXJ2aWNlTmV0d29yazoKICAgIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBiYXJlbWV0YWw6CiAgICBsaWJ2aXJ0VVJJOiAncWVtdStzc2g6Ly9saWJ2aXJ0VVJJJwogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBhcGlWSVA6IG51bGwKICAgIGluZ3Jlc3NWSVA6IG51bGwKICAgIGJvb3RzdHJhcE9TSW1hZ2U6IGJvb3RzdHJhcE9TSW1hZ2UKICAgIGNsdXN0ZXJPU0ltYWdlOiBjbHVzdGVyT1NJbWFnZQogICAgaG9zdHM6CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTAKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTIKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTMKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiBudWxsCiAgICAgICAgICBwYXNzd29yZDogbnVsbAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICcnCnNzaEtleTogc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogIGNlcnRkYXRhCiAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgogIC0gbWlycm9yczoKICAgICAgLSAnaW1hZ2UubWlycm9yOjEyMy9hYmMnCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKICAtIG1pcnJvcnM6CiAgICAgIC0gJ2ltYWdlLm1pcnJvcjoxMjMvYWJjJwogICAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtcmVsZWFzZQogIC0gbWlycm9yczoKICAgICAgLSAnaW1hZ2UubWlycm9yOjEyMy9hYmMnCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
     },
 }
 
@@ -331,8 +331,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'test',
-                            password: 'test',
+                            username: null,
+                            password: null,
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -424,131 +424,80 @@ describe('CreateCluster', () => {
     }
 
     test('can create bare metal cluster', async () => {
-        // simulated resources
-        const listImageSetsNock = nockList(clusterImageSet, mockClusterImageSet)
-        const listConnections = nockList(providerConnection, mockProviderConnection, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         window.scrollBy = () => {}
-        const listHosts = nockList(bareMetalAsset, mockBareMetalAssets)
-        const getSecret0 = nockGet(mockBareMetalSecrets[0])
-        const getSecret1 = nockGet(mockBareMetalSecrets[1])
-        const getSecret2 = nockGet(mockBareMetalSecrets[2])
-        const getSecret3 = nockGet(mockBareMetalSecrets[3])
-        const getSecret4 = nockGet(mockBareMetalSecrets[4])
+
+        const initialNocks = [
+            nockList(clusterImageSet, mockClusterImageSet),
+            nockList(providerConnection, mockProviderConnection, [
+                'cluster.open-cluster-management.io/cloudconnection=',
+            ]),
+            nockList(bareMetalAsset, mockBareMetalAssets),
+        ]
 
         // create the form
-        const { getByTestId, container, getAllByRole } = render(<Component />)
+        const { container } = render(<Component />)
 
         // start filling in the form
-        userEvent.type(getByTestId('eman'), clusterName!)
-        userEvent.click(getByTestId('cluster.create.baremetal.subtitle'))
+        await typeByTestId('eman', clusterName!)
+        await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
-        await waitFor(() => expect(listImageSetsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listConnections.isDone()).toBeTruthy())
-        await waitFor(() => expect(listHosts.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret0.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret1.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret2.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret3.isDone()).toBeTruthy())
-        await waitFor(() => expect(getSecret4.isDone()).toBeTruthy())
+        await waitForNocks(initialNocks)
 
         // finish the form
-        await waitFor(() => expect(getByTestId('imageSet')))
-        userEvent.type(getByTestId('imageSet'), clusterImageSet.spec.releaseImage!)
+        await typeByTestId('imageSet', clusterImageSet.spec.releaseImage!)
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-        getAllByRole('option')[0].click()
-        //userEvent.type(getByPlaceholderText('creation.ocp.cloud.select.connection'), providerConnection.metadata.name!)
+        await clickByRole('option', 0)
+
         userEvent.click(container.querySelector('[name="check-all"]'))
-        userEvent.type(getByTestId('provisioningNetworkCIDR'), '10.4.5.3')
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
 
         // nocks for cluster creation
-        // creates 1 less bmas so that backend creates that 1
-        const listBmas = nockList(bareMetalAsset, mockBareMetalAssets2)
-        const bmaProjectNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
-        const createBmaSecret4: Secret = {
-            kind: SecretKind,
-            apiVersion: SecretApiVersion,
-            metadata: {
-                name: 'test-bare-metal-asset-4-bmc-secret',
-                namespace: 'test-bare-metal-asset-namespace',
-            },
-            stringData: {
-                password: 'test',
-                username: 'test',
-            },
-        }
-        const bmaSecret4: Secret = {
-            kind: SecretKind,
-            apiVersion: SecretApiVersion,
-            metadata: {
-                namespace: 'test-bare-metal-asset-namespace',
-                name: 'test-bare-metal-asset-4-bmc-secret',
-            },
-            data: { password: 'encoded', username: 'encoded' },
-        }
-        const secretCreateNock1 = nockCreate(createBmaSecret4, bmaSecret4)
-        const bmaCreateNock1 = nockCreate(mockBareMetalAssets3[0])
-        const listManagedClusterNock = nockList(
-            { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-            [],
-            undefined,
-            { managedNamespacesOnly: '' }
-        )
-        const clusterProjectNock = nockCreate(mockClusterProject, mockClusterProjectResponse)
-        const clusterCreateNock = nockCreate(mockManagedCluster)
-        const clusterPullSecret = nockCreate(mockPullSecret)
-        const clusterInstallConfigSecret = nockCreate(mockInstallConfigSecret)
-        const clusterPrivateSecretSecret = nockCreate(mockPrivateSecret)
-        const clusterKlusterletAddonSecret = nockCreate(mockKlusterletAddonSecret)
-        const createClusterDeployment = nockCreate(mockClusterDeployment)
-        const optionNock0 = nockOptions(mockPatchBareMetalReq[0], mockPatchBareMetalReq[0])
-        const optionNock1 = nockOptions(mockPatchBareMetalReq[1], mockPatchBareMetalReq[1])
-        const optionNock2 = nockOptions(mockPatchBareMetalReq[2], mockPatchBareMetalReq[2])
-        const optionNock3 = nockOptions(mockPatchBareMetalReq[3], mockPatchBareMetalReq[3])
-        const optionNock4 = nockOptions(mockPatchBareMetalReq[4], mockPatchBareMetalReq[4])
-        const patchNock0 = nockPatch(mockPatchBareMetalReq[0], patchBareMetalAssetMasterRes)
-        const patchNock1 = nockPatch(mockPatchBareMetalReq[1], patchBareMetalAssetMasterRes)
-        const patchNock2 = nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes)
-        const patchNock3 = nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes)
-        const patchNock4 = nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes)
+        const createNocks = [
+            // list only 4 bmas so that one is created
+            // creates 1 less bmas so that backend creates that 1
+            nockList(bareMetalAsset, mockBareMetalAssets2),
+
+            // create bma namespace
+            nockCreate(mockBmaProject, mockBmaProjectResponse),
+
+            // create bmas/secrets
+            nockCreate(mockBareMetalAssets3[0]),
+            nockGet(mockBareMetalSecrets[0]),
+            nockGet(mockBareMetalSecrets[1]),
+            nockGet(mockBareMetalSecrets[2]),
+            nockGet(mockBareMetalSecrets[3]),
+
+            // list no clusters so that creating this cluster doesn't think it already exists
+            nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
+                managedNamespacesOnly: '',
+            }),
+
+            // create the cluster's namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedCluster),
+            nockCreate(mockPullSecret),
+            nockCreate(mockInstallConfigSecret),
+            nockCreate(mockPrivateSecret),
+            nockCreate(mockKlusterletAddonSecret),
+            nockCreate(mockClusterDeployment),
+
+            // assigns cluster name to bmas
+            nockPatch(mockPatchBareMetalReq[0], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[1], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes),
+            nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes),
+        ]
 
         // click create button
-        userEvent.click(getByTestId('create-button-portal-id-btn'))
+        await clickByTestId('create-button-portal-id-btn')
 
         // make sure creating
         await waitForText('success.create.creating')
 
-        // list only 4 bmas so that one is created
-        await waitForNock(listBmas)
-        // create bma namespace
-        await waitForNock(bmaProjectNock)
-        // create bma/secret
-        await waitForNock(secretCreateNock1)
-        await waitForNock(bmaCreateNock1)
-        // list no clusters so that creating this cluster doesn't think it already exists
-        await waitForNock(listManagedClusterNock)
-        // create the cluster's namespace (project)
-        await waitForNock(clusterProjectNock)
-        // create the managed cluster
-        await waitForNock(clusterCreateNock)
-        await waitForNock(clusterPullSecret)
-        await waitForNock(clusterInstallConfigSecret)
-        await waitForNock(clusterPrivateSecretSecret)
-        await waitForNock(clusterKlusterletAddonSecret)
-        await waitForNock(createClusterDeployment)
-
-        // assigns cluster name to bmas
-        await waitForNock(optionNock0)
-        await waitForNock(optionNock1)
-        await waitForNock(optionNock2)
-        await waitForNock(optionNock3)
-        await waitForNock(optionNock4)
-        await waitForNock(patchNock0)
-        await waitForNock(patchNock1)
-        await waitForNock(patchNock2)
-        await waitForNock(patchNock3)
-        await waitForNock(patchNock4)
+        await waitForNocks(createNocks)
     })
 })
