@@ -1,12 +1,14 @@
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
-import { nockList } from '../../../lib/nock-util'
+import { nockList, mockBadRequestStatus } from '../../../lib/nock-util'
 import {
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
 } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
+import { BrowserRouter } from 'react-router-dom'
+
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -97,7 +99,7 @@ test('DiscoveredClustersPage', async () => {
 
 test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-    const { getByText } = render(<DiscoveredClustersPage />)
+    const { getByText } = render(<BrowserRouter><DiscoveredClustersPage/></BrowserRouter>)
     await waitFor(() => expect(listNock.isDone()).toBeTruthy())
     await waitFor(() => expect(getByText('discovery.emptyStateHeader')).toBeInTheDocument())
 })
