@@ -11,6 +11,7 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
@@ -32,7 +33,7 @@ import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '.
 import { rbacNamespaceFilter } from '../../resources/self-subject-access-review'
 
 export default function CreateBareMetalAssetPage() {
-    const { t } = useTranslation(['bma, common'])
+    const { t } = useTranslation(['bma', 'common'])
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
@@ -59,7 +60,9 @@ export default function CreateBareMetalAssetPage() {
                             { text: t('bma:editBareMetalAsset.title'), to: '' },
                         ]}
                     />
-                    <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    <AcmErrorBoundary>
+                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    </AcmErrorBoundary>
                 </AcmAlertProvider>
             </Page>
         )
@@ -87,7 +90,9 @@ export default function CreateBareMetalAssetPage() {
                         { text: t('bma:createBareMetalAsset.title'), to: '' },
                     ]}
                 />
-                <CreateBareMetalAssetPageData />
+                <AcmErrorBoundary>
+                    <CreateBareMetalAssetPageData />
+                </AcmErrorBoundary>
             </AcmAlertProvider>
         </Page>
     )
@@ -151,7 +156,7 @@ export function CreateBareMetalAssetPageData() {
         result.promise
             .then(async (projects) => {
                 const namespaces = projects!.map((project) => project.metadata.name!)
-                await rbacNamespaceFilter('secret.create', namespaces).then(setProjects).catch(setError)
+                await rbacNamespaceFilter('bma.create', namespaces).then(setProjects).catch(setError)
             })
             .catch(setError)
             .finally(() => setIsLoading(false))

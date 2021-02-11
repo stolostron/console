@@ -10,6 +10,7 @@ import {
     AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
@@ -50,12 +51,14 @@ export default function BareMetalAssetsPage() {
                     </>
                 }
             />
-            <AcmScrollable>
-                <AcmAlertProvider>
-                    <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                    <BareMetalAssets />
-                </AcmAlertProvider>
-            </AcmScrollable>
+            <AcmErrorBoundary>
+                <AcmScrollable>
+                    <AcmAlertProvider>
+                        <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
+                        <BareMetalAssets />
+                    </AcmAlertProvider>
+                </AcmScrollable>
+            </AcmErrorBoundary>
         </Page>
     )
 }
@@ -208,8 +211,8 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.role'),
                             cell: (bareMetalAsset: BareMetalAsset) =>
-                                bareMetalAsset.metadata.labels?.['metadata.labels.metal3.io/role'] || '-',
-                            search: 'metadata.labels.metal3.io/role',
+                                bareMetalAsset.metadata.labels?.['metal3.io/role'] || '-',
+                            search: 'metal3.io/role',
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
@@ -342,8 +345,8 @@ export function BareMetalAssetsTable(props: {
                     ]}
                     bulkActions={[
                         {
-                            id: 'destroyBareMetalAsset',
-                            title: t('bareMetalAsset.bulkAction.destroyAsset'),
+                            id: 'deleteBareMetalAsset',
+                            title: t('bareMetalAsset.bulkAction.deleteAsset'),
                             click: (bareMetalAssets: BareMetalAsset[]) => {
                                 setModalProps({
                                     open: true,
@@ -378,7 +381,12 @@ export function BareMetalAssetsTable(props: {
                         {
                             id: 'createBareMetalAssetCluster',
                             title: t('bareMetalAsset.bulkAction.createCluster'),
-                            click: (items) => {},
+                            click: (items) => {
+                                const params = new URLSearchParams()
+                                const bmaIDs = items.map((bma) => bma.metadata.uid)
+                                params.set('bmas', bmaIDs.join(','))
+                                history.push(`${NavigationPath.createCluster}?${params}`)
+                            },
                             isDisabled: creationAccessRestriction,
                             tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
                         },

@@ -35,6 +35,7 @@ export enum ResourceErrorCode {
     NotFound = 404,
     Timeout = 408,
     Conflict = 409,
+    UnprocessableEntity = 422,
     TooManyRequests = 429,
     InternalServerError = 500,
     NotImplemented = 501,
@@ -260,8 +261,9 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                         }
                     }
                 } else if (response.status >= 400) {
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 302) {
                         // 401 is returned from the backend if no token cookie is on request
+                        // 302 is returned when token is valid but logged out
                         window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                     } else if (ResourceErrorCodes.includes(response.status)) {
                         throw new ResourceError(response.statusText, response.status)

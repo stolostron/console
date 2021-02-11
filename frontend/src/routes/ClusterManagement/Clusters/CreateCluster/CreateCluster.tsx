@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import fs from 'fs'
+import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { DOC_LINKS } from '../../../../lib/doc-util'
@@ -53,11 +55,17 @@ const Portals = Object.freeze({
 
 export default function CreateClusterPage() {
     const history = useHistory()
+    const location = useLocation()
 
     // create portals for buttons in header
+    const switches = (
+        <div className="switch-controls">
+            <div id={Portals.editBtn} />
+        </div>
+    )
+
     const portals = (
         <div className="portal-controls">
-            <div id={Portals.editBtn} />
             <div id={Portals.cancelBtn} />
             <div id={Portals.createBtn} />
         </div>
@@ -96,7 +104,27 @@ export default function CreateClusterPage() {
         return t(key, arg)
     }
 
-    const template = typeof hiveTemplate === 'string' ? Handlebars.compile(hiveTemplate) : hiveTemplate
+    let template = hiveTemplate
+    // react-scripts HATE jest transforms so we got to load the templates ourselves
+    if (typeof hiveTemplate === 'string') {
+        template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
+        Handlebars.registerPartial(
+            'endpoints',
+            Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
+        )
+    }
+
+    // if openned from bma page, pass selected bma's to editor
+    const urlParams = new URLSearchParams(location.search.substring(1))
+    const bmasParam = urlParams.get('bmas')
+    const requestedUIDs = bmasParam ? bmasParam.split(',') : []
+    const fetchControl = bmasParam
+        ? {
+              isLoaded: true,
+              fetchData: { requestedUIDs },
+          }
+        : null
+
     return (
         <AcmPage>
             <AcmPageHeader
@@ -118,26 +146,30 @@ export default function CreateClusterPage() {
                     { text: t('clusters'), to: NavigationPath.clusters },
                     { text: t('page.header.create-cluster'), to: '' },
                 ]}
+                switches={switches}
                 actions={portals}
             />
-            <PageSection className="pf-c-content">
-                <TemplateEditor
-                    type={'cluster'}
-                    title={'Cluster YAML'}
-                    monacoEditor={<MonacoEditor />}
-                    controlData={controlData}
-                    template={template}
-                    portals={Portals}
-                    createControl={{
-                        createResource,
-                        cancelCreate,
-                        pauseCreate,
-                        creationStatus: creationStatus.status,
-                        creationMsg: creationStatus.messages,
-                    }}
-                    i18n={i18n}
-                />
-            </PageSection>
+            <AcmErrorBoundary>
+                <PageSection className="pf-c-content">
+                    <TemplateEditor
+                        type={'cluster'}
+                        title={'Cluster YAML'}
+                        monacoEditor={<MonacoEditor />}
+                        controlData={controlData}
+                        template={template}
+                        portals={Portals}
+                        fetchControl={fetchControl}
+                        createControl={{
+                            createResource,
+                            cancelCreate,
+                            pauseCreate,
+                            creationStatus: creationStatus.status,
+                            creationMsg: creationStatus.messages,
+                        }}
+                        i18n={i18n}
+                    />
+                </PageSection>
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }

@@ -38,11 +38,11 @@ export interface ProviderConnection extends V1Secret {
         datastore?: string
 
         libvirtURI?: string
-        sshKnownHosts?: string
+        sshKnownHosts?: string[]
         imageMirror?: string
         bootstrapOSImage?: string
         clusterOSImage?: string
-        additionalTrustBundle?: string
+        additionalTrustBundle?: string[]
 
         ocmAPIToken?: string
 

@@ -18,7 +18,6 @@ import {
 import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
 import { withRouter } from 'react-router-dom'
 import { withTranslation } from 'react-i18next'
-import { getSecret } from '../../../../../resources/secret'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
@@ -51,6 +50,10 @@ const isHidden_gt_OCP44 = (control, controlData) => {
     return true
 }
 
+const showDNSVIP = (control, controlData) => {
+    return !isHidden_gt_OCP44(control, controlData)
+}
+
 const getRoleCount = (theRole, control, controlData) => {
     let count = 0
     const hosts = controlData.find(({ id }) => id === 'hosts')
@@ -79,10 +82,17 @@ const setAvailableBMAs = (control, result) => {
         } else if (bmas) {
             control.isLoaded = true
             control.active = []
-            control.available = bmas.map(formatBMA).sort(({ hostName: a }, { hostName: b }) => {
-                return a.localeCompare(b)
+            control.available = bmas
+                .filter((bma) => {
+                    return !_.get(bma, 'spec.clusterDeployment.name')
+                })
+                .map(formatBMA)
+                .sort(({ hostName: a }, { hostName: b }) => {
+                    return a.localeCompare(b)
+                })
+            control.available.forEach((datum) => {
+                datum.id = datum.id.toString()
             })
-            control.available.forEach(getCreds)
         } else {
             control.isLoading = loading
         }
@@ -99,24 +109,22 @@ const formatBMA = (bma) => ({
     hostNamespace: bma.metadata.namespace,
 })
 
-async function getCreds(available) {
-    getSecret({ namespace: available.credNamespace, name: available.credName }).promise.then(({ data }) => {
-        available.username = Buffer.from(data.username, 'base64').toString('ascii')
-        available.password = Buffer.from(data.password, 'base64').toString('ascii')
-        delete available.credName
-        delete available.credNamespace
-    })
-}
-
 const sortTable = (items, selectedKey, sortDirection, active) => {
     if (selectedKey === 'role' && active.length > 0) {
         const sorting = ['master', 'worker', 'unactive']
         const activeMap = _.keyBy(active, 'id')
         items.sort(({ id: a }, { id: b }) => {
-            return (
-                sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
-                sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))
-            )
+            if (activeMap[a] && !activeMap[b]) {
+                return -1
+            } else if (!activeMap[a] && activeMap[b]) {
+                return 1
+            } else {
+                return (
+                    (sorting.indexOf(_.get(activeMap[a], 'role', 'unactive')) -
+                        sorting.indexOf(_.get(activeMap[b], 'role', 'unactive'))) *
+                    (sortDirection === 'asc' ? 1 : -1)
+                )
+            }
         })
         return items
     }
@@ -146,7 +154,7 @@ const getActiveRole = (active = []) => {
     return master < 3 ? 'master' : 'worker'
 }
 
-const bareControlData = [
+const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
@@ -276,7 +284,7 @@ const bareControlData = [
         type: 'checkbox',
         name: 'creation.ocp.host.disable.certificate.verification',
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
-        active: 'false',
+        active: 'true',
         available: ['false', 'true'],
     },
     {
@@ -332,6 +340,11 @@ const bareControlData = [
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR,
     },
     {
+        id: 'showDNSVIP',
+        type: 'hidden',
+        getActive: showDNSVIP,
+    },
+    {
         id: 'apiVIP',
         type: 'text',
         name: 'creation.ocp.api.vip',
@@ -349,4 +362,4 @@ const bareControlData = [
     },
 ]
 
-export default bareControlData
+export default controlDataBMC

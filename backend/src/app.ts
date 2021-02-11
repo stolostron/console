@@ -503,6 +503,7 @@ async function managedClusters(token: string, res: ServerResponse): Promise<void
 
 // Handle a request that returns a json object
 async function jsonRequest<T>(method: string, url: string, headers: IncomingHttpHeaders, data?: unknown): Promise<T> {
+    delete headers['accept-encoding']
     return parseJsonBody<T>(await request(method, url, headers, data))
 }
 

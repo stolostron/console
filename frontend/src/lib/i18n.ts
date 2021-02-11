@@ -22,7 +22,6 @@ i18n.use(initReactI18next)
         defaultNS: 'common', // the default file for strings when using useTranslation, etc
 
         supportedLngs: ['en'], // only languages from this array will attempt to be loaded
-        nonExplicitSupportedLngs: true, // allows for example en-US/en-UK to be supported when en is supported
         fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
     })
 

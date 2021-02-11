@@ -1,9 +1,10 @@
-import { render, waitFor, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { render } from '@testing-library/react'
 import React from 'react'
+import { MemoryRouter } from 'react-router-dom'
+import { AppContext } from '../../components/AppContext'
+import { waitForNotText, waitForText } from '../../lib/test-util'
 import { FeatureGate } from '../../resources/feature-gate'
 import ClusterManagementPage from './ClusterManagement'
-import { AppContext } from '../../components/AppContext'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -30,9 +31,9 @@ describe('Cluster Management', () => {
                 </MemoryRouter>
             </AppContext.Provider>
         )
-        await waitFor(() => expect(screen.getByText('cluster:clusters')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByText('connection:connections')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByText('cluster:clusters.discovered')).toBeInTheDocument())
+        await waitForText('cluster:clusters')
+        await waitForText('connection:connections')
+        await waitForText('cluster:clusters.discovered')
     })
 
     test('No Discovery Feature Flag', async () => {
@@ -48,8 +49,8 @@ describe('Cluster Management', () => {
                 </MemoryRouter>
             </AppContext.Provider>
         )
-        await waitFor(() => expect(screen.getByText('cluster:clusters')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByText('connection:connections')).toBeInTheDocument())
-        await waitFor(() => expect(screen.queryByText('cluster:clusters.discovered')).toBeNull())
+        await waitForText('cluster:clusters')
+        await waitForText('connection:connections')
+        await waitForNotText('cluster:clusters.discovered')
     })
 })

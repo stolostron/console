@@ -3,6 +3,7 @@ import {
     AcmEmptyState,
     AcmPageCard,
     AcmTable,
+    AcmErrorBoundary,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
@@ -139,9 +140,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
 
 export default function DiscoveredClustersPage() {
     return (
-        <Page>
-            <DiscoveredClustersPageContent />
-        </Page>
+        <AcmErrorBoundary>
+            <Page>
+                <DiscoveredClustersPageContent />
+            </Page>
+        </AcmErrorBoundary>
     )
 }
 

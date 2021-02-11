@@ -15,8 +15,9 @@ import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo,
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
-import { StatusField, UpgradeModal } from '../../../../components/ClusterCommon'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { UpgradeModal } from '../../../../components/ClusterCommon'
+import { StatusField } from '../components/StatusField'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
@@ -76,7 +77,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
-    const [clusterError, setClusterError] = useState<Error | undefined>(undefined)
+    const [clusterError, setClusterError] = useState<ResourceError | undefined>(undefined)
     const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
 
     // Addons
@@ -124,14 +125,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     addonStopPolling()
                     setClusterIsRemoved(true)
                 } else {
-                    const cdRequest = results[0] as PromiseRejectedResult
-                    const mcRequest = results[3] as PromiseRejectedResult
-                    const resourceError: ResourceError = {
-                        code: mcRequest.reason.code as ResourceErrorCode,
-                        message: `${mcRequest.reason.message}.  ${cdRequest.reason.message}` as string,
-                        name: '',
-                    }
-                    setClusterError(resourceError)
+                    setClusterError(results[3].reason)
                 }
             } else {
                 const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
@@ -163,8 +157,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         if (cluster?.status) {
             const tempCluster: Cluster = {
-                name: '',
-                namespace: '',
+                name: cluster.name,
+                namespace: cluster.namespace,
                 status: cluster?.status,
                 isHive: cluster?.isHive,
                 isManaged: cluster?.isManaged,
@@ -178,7 +172,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             }
             CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
         }
-    }, [cluster?.status, cluster?.isHive, cluster?.isManaged])
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
 
     const modalColumns = useMemo(
         () => [
@@ -192,7 +186,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 sort: 'status',
                 cell: (cluster: Cluster) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
-                        <StatusField status={cluster.status} />
+                        <StatusField cluster={cluster} />
                     </span>
                 ),
             },
@@ -380,7 +374,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                         refresh()
                                                     },
                                                     isDanger: true,
-                                                    confirmText: cluster.name!.toUpperCase(),
+                                                    confirmText: cluster.name,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
@@ -408,7 +403,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                         refresh()
                                                     },
                                                     isDanger: true,
-                                                    confirmText: cluster.name!.toUpperCase(),
+                                                    confirmText: cluster.name,
+                                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                 })
                                             },
                                         },
@@ -419,6 +415,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
 
                                     if (
+                                        cluster?.distribution?.isManagedOpenShift ||
                                         cluster?.status !== ClusterStatus.ready ||
                                         !(
                                             cluster?.distribution?.ocp?.availableUpdates &&

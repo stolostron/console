@@ -1,9 +1,18 @@
-import { ByRoleMatcher, ByRoleOptions, Matcher, render, SelectorMatcherOptions, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render } from '@testing-library/react'
+import * as nock from 'nock'
 import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockCreate, nockDelete, nockList } from '../../../lib/nock-util'
+import { nockCreateSelfSubjectAccessReview, nockDelete, nockList } from '../../../lib/nock-util'
+import {
+    clickByLabel,
+    clickByRole,
+    clickByText,
+    typeByText,
+    waitForNocks,
+    waitForNotText,
+    waitForText,
+} from '../../../lib/test-util'
 import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
@@ -20,7 +29,7 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
+import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
 
 const mockManagedCluster1: ManagedCluster = {
@@ -90,17 +99,19 @@ const mockManagedCluster6: ManagedCluster = {
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
+const allMockManagedClusters: ManagedCluster[] = [
+    mockManagedCluster1,
+    mockManagedCluster2,
+    mockManagedCluster3,
+    mockManagedCluster4,
+    mockManagedCluster5,
+    mockManagedCluster6,
+]
+const allUpgradeAvailableMockManagedClusters: ManagedCluster[] = [mockManagedCluster4, mockManagedCluster6]
 function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
     return nockList(
         { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
-        managedClusters ?? [
-            mockManagedCluster1,
-            mockManagedCluster2,
-            mockManagedCluster3,
-            mockManagedCluster4,
-            mockManagedCluster5,
-            mockManagedCluster6,
-        ]
+        managedClusters ?? allMockManagedClusters
     )
 }
 
@@ -191,6 +202,64 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
                 upgradeFailed: false,
             },
         },
+        nodeList: [
+            {
+                name: 'ip-10-0-134-240.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+                    'node-role.kubernetes.io/worker': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                conditions: [
+                    {
+                        status: 'True',
+                        type: 'Ready',
+                    },
+                ],
+            },
+            {
+                name: 'ip-10-0-130-30.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
+                    'node-role.kubernetes.io/master': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                capacity: {
+                    cpu: '4',
+                    memory: '15944104Ki',
+                },
+                conditions: [
+                    {
+                        status: 'Unknown',
+                        type: 'Ready',
+                    },
+                ],
+            },
+            {
+                name: 'ip-10-0-151-254.ec2.internal',
+                labels: {
+                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                    'failure-domain.beta.kubernetes.io/region': 'us-south-1',
+                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
+                    'node-role.kubernetes.io/master': '',
+                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                },
+                capacity: {
+                    cpu: '4',
+                    memory: '8194000Pi',
+                },
+                conditions: [
+                    {
+                        status: 'False',
+                        type: 'Ready',
+                    },
+                ],
+            },
+        ],
     },
 }
 function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
@@ -237,30 +306,6 @@ function nockListCertificateSigningRequests(certificateSigningRequest?: Certific
     )
 }
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
-
 function getPatchClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
@@ -294,14 +339,7 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-function getCreateClusterViewResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusterviews',
-        verb: 'create',
-        group: 'view.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
+
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
@@ -311,21 +349,6 @@ function getClusterActionsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function nocksAreDone(nocks: Scope[]) {
-    for (const nock of nocks) {
-        if (!nock.isDone()) return false
-    }
-    return true
-}
-
-let getByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement
-let queryByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement | null
-let getAllByLabelText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement[]
-let getAllByRole: (role: ByRoleMatcher, options?: ByRoleOptions) => HTMLElement[]
-let queryAllByLabelText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement[]
-let queryAllByText: (id: Matcher, options?: SelectorMatcherOptions) => HTMLElement[]
-let queryAllByRole: (role: ByRoleMatcher, options?: ByRoleOptions) => HTMLElement[]
-
 describe('Cluster page', () => {
     beforeEach(async () => {
         const nocks: Scope[] = [
@@ -334,37 +357,34 @@ describe('Cluster page', () => {
             nockListClusterDeployments(),
             nockListManagedClusters(),
         ]
-        const renderResult = render(
+        const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map(
+            (mockManagedCluster) => {
+                return nockCreateSelfSubjectAccessReview(
+                    getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
+                    true
+                )
+            }
+        )
+        render(
             <MemoryRouter>
                 <ClustersPage />
             </MemoryRouter>
         )
-        getByText = renderResult.getByText
-        queryByText = renderResult.queryByText
-        getAllByLabelText = renderResult.getAllByLabelText
-        getAllByRole = renderResult.getAllByRole
-        queryAllByLabelText = renderResult.queryAllByLabelText
-        queryAllByText = renderResult.queryAllByText
-        queryAllByRole = renderResult.queryAllByRole
-        await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy())
-        await waitFor(() => expect(getByText(mockManagedCluster1.metadata.name!)).toBeInTheDocument())
+        await waitForNocks(nocks)
+        await waitForText(mockManagedCluster1.metadata.name!)
+        await waitForNocks(allActionPermissionNock)
     })
 
     it('deletes cluster', async () => {
         const rbacNocks: Scope[] = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
                 getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
-            nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
         ]
@@ -375,24 +395,14 @@ describe('Cluster page', () => {
             nockListClusterDeployments([]),
             nockListManagedClusters([]),
         ]
-
-        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
-        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on the first table row
-
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-
-        await waitFor(() => expect(queryAllByText('managed.destroySelected')).toHaveLength(1))
-        userEvent.click(getByText('managed.destroySelected')) // click the delete action
-
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
-
-        await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
-        userEvent.click(getByText('destroy')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
-        await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
+        await clickByLabel('Actions', 0) // Click the action button on row
+        await waitForNocks(rbacNocks)
+        await clickByText('managed.destroySelected')
+        await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
+        await clickByText('destroy')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     it('bulk deletes cluster', async () => {
@@ -403,38 +413,25 @@ describe('Cluster page', () => {
             nockListClusterDeployments([]),
             nockListManagedClusters([]),
         ]
-
-        await waitFor(() => expect(queryAllByRole('checkbox').length).toBeGreaterThan(1))
-        userEvent.click(getAllByRole('checkbox')[1]) // select row 1
-
-        await waitFor(() => expect(queryAllByText('managed.destroy')).toHaveLength(1))
-        userEvent.click(getByText('managed.destroy')) // click the bulk destroy button
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
-
-        await waitFor(() => expect(queryAllByText('destroy')).toHaveLength(1))
-        userEvent.click(getByText('destroy')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
-        await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
+        await clickByRole('checkbox', 1) // select row 1
+        await clickByText('managed.destroy')
+        await typeByText('type.to.confirm', 'confirm')
+        await clickByText('destroy')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     it('detaches cluster', async () => {
         const rbacNocks: Scope[] = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
                 getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
-            nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
         ]
@@ -445,24 +442,14 @@ describe('Cluster page', () => {
             nockListClusterDeployments([]),
             nockListManagedClusters([]),
         ]
-
-        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(0))
-        userEvent.click(getAllByLabelText('Actions')[0]) // Click the action button on row
-
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-
-        await waitFor(() => expect(queryAllByText('managed.detached')).toHaveLength(1))
-        userEvent.click(getByText('managed.detached')) // click the delete action
-
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), mockManagedCluster1.metadata.name!.toUpperCase())
-
-        await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
-        userEvent.click(getByText('detach')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
-        await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
+        await clickByLabel('Actions', 0) // Click the action button on row
+        await waitForNocks(rbacNocks)
+        await clickByText('managed.detached')
+        await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
+        await clickByText('detach')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     it('bulk detaches cluster', async () => {
@@ -473,140 +460,75 @@ describe('Cluster page', () => {
             nockListClusterDeployments([]),
             nockListManagedClusters([]),
         ]
-
-        await waitFor(() => expect(queryAllByRole('checkbox').length).toBeGreaterThan(2))
-        userEvent.click(getAllByRole('checkbox')[2]) // select row 2
-
-        await waitFor(() => expect(queryAllByText('managed.detachSelected')).toHaveLength(1))
-        userEvent.click(getByText('managed.detachSelected')) // click the bulk detach button
-
-        await waitFor(() => expect(queryAllByText('type.to.confirm')).toHaveLength(1))
-        userEvent.type(getByText('type.to.confirm'), 'CONFIRM')
-
-        await waitFor(() => expect(queryAllByText('detach')).toHaveLength(1))
-        userEvent.click(getByText('detach')) // click confirm on the delete dialog
-
-        await waitFor(() => expect(nocksAreDone(deleteNocks)).toBeTruthy())
-        await waitFor(() => expect(nocksAreDone(refreshNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText(mockManagedCluster1.metadata.name!)).toBeNull())
+        await clickByRole('checkbox', 2) // select row 2
+        await clickByText('managed.detachSelected')
+        await typeByText('type.to.confirm', 'confirm')
+        await clickByText('detach')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
         const rbacNocks: Scope[] = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster3.metadata.name!)
-            ),
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!)),
         ]
-
-        const name = mockManagedCluster3.metadata.name!
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
-
-        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(2))
-        userEvent.click(getAllByLabelText('Actions')[2]) // Click the action button on the 3rd table row
-
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText('managed.upgrade')).toBeFalsy())
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        await waitForText(mockManagedCluster3.metadata.name!)
+        await clickByLabel('Actions', 2) // Click the action button on the 3th table row
+        await waitForNocks(rbacNocks)
+        await waitForNotText('managed.upgrade')
+        await waitForText(mockManagedCluster3.metadata.name!)
     })
 
     test('overflow menu should hide upgrade option if currently upgrading', async () => {
         const rbacNocks: Scope[] = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster5.metadata.name!)
-            ),
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!)),
         ]
-
-        const name = mockManagedCluster5.metadata.name!
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
-
-        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(4))
-        userEvent.click(getAllByLabelText('Actions')[4]) // Click the action button on the 5th table row
-
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        await waitFor(() => expect(queryByText('managed.upgrade')).toBeFalsy())
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        await waitForText(mockManagedCluster5.metadata.name!)
+        await clickByLabel('Actions', 4) // Click the action button on the 5th table row
+        await waitForNocks(rbacNocks)
+        await waitForNotText('managed.upgrade')
+        await waitForText(mockManagedCluster5.metadata.name!)
     })
 
     test('overflow menu should allow upgrade if has available upgrade', async () => {
         const rbacNocks: Scope[] = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockcreateSelfSubjectAccesssRequest(
-                getCreateClusterViewResourceAttributes(mockManagedCluster4.metadata.name!)
-            ),
-            nockcreateSelfSubjectAccesssRequest(
-                getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)
-            ),
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
         ]
-
-        const name = mockManagedCluster4.metadata.name!
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
-
-        await waitFor(() => expect(queryAllByLabelText('Actions').length).toBeGreaterThan(3))
-        userEvent.click(getAllByLabelText('Actions')[3]) // Click the action button on the 4th table row
-
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-
-        await waitFor(() => expect(getByText('managed.upgrade')).toBeTruthy())
-        userEvent.click(getByText('managed.upgrade'))
-
-        await waitFor(() => expect(getByText(`upgrade.title ${name}`)).toBeTruthy())
-
-        await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
-        userEvent.click(getByText('upgrade.cancel'))
-
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await clickByLabel('Actions', 3) // Click the action button on the 4th table row
+        await waitForNocks(rbacNocks)
+        await clickByText('managed.upgrade')
+        await waitForText('upgrade.title')
+        await clickByText('upgrade.cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
     })
 
     test('batch upgrade support when upgrading single cluster', async () => {
-        const name = mockManagedCluster4.metadata.name!
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
-
-        await waitFor(() => expect(getAllByLabelText(`Select row 3`)).toBeTruthy())
-        userEvent.click(getAllByLabelText('Select row 3')[0])
-
-        await waitFor(() => expect(getByText(`managed.upgradeSelected`)).toBeTruthy())
-        userEvent.click(getByText('managed.upgradeSelected'))
-
-        await waitFor(() => expect(getByText(`upgrade.title ${name}`)).toBeTruthy())
-
-        await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
-        userEvent.click(getByText('upgrade.cancel'))
-
-        await waitFor(() => expect(getByText(name)).toBeInTheDocument())
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await clickByLabel('Select row 3')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.submit upgrade.multiple.singular`)
+        await clickByText('common:cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
-        const name1 = mockManagedCluster4.metadata.name!
-        const name2 = mockManagedCluster6.metadata.name!
-        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
-        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
-
-        await waitFor(() => expect(queryAllByLabelText('Select row 3').length).toBeGreaterThan(0))
-        userEvent.click(getAllByLabelText('Select row 3')[0])
-
-        await waitFor(() => expect(queryAllByLabelText('Select row 5').length).toBeGreaterThan(0))
-        userEvent.click(getAllByLabelText('Select row 5')[0])
-
-        await waitFor(() => expect(getByText(`managed.upgradeSelected`)).toBeTruthy())
-        userEvent.click(getByText('managed.upgradeSelected'))
-
-        await waitFor(() => expect(getByText(`upgrade.multiple.title`)).toBeTruthy())
-
-        await waitFor(() => expect(getByText(`upgrade.cancel`)).toBeTruthy())
-        userEvent.click(getByText('upgrade.cancel'))
-
-        await waitFor(() => expect(getByText(name1)).toBeInTheDocument())
-        await waitFor(() => expect(getByText(name2)).toBeInTheDocument())
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await waitForText(mockManagedCluster6.metadata.name!)
+        await clickByLabel('Select row 3')
+        await clickByLabel('Select row 5')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`upgrade.submit upgrade.multiple.plural`)
+        await clickByText('common:cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await waitForText(mockManagedCluster6.metadata.name!)
     })
 })

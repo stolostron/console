@@ -186,12 +186,6 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
         case 'cluster.upgrade':
             return [
                 {
-                    resource: 'managedclusterviews',
-                    verb: 'create',
-                    group: 'view.open-cluster-management.io',
-                    namespace,
-                },
-                {
                     resource: 'managedclusteractions',
                     verb: 'create',
                     group: 'action.open-cluster-management.io',
@@ -231,6 +225,16 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     namespace,
                     resource: 'secrets',
                     verb: 'patch',
+                },
+            ]
+        case 'bma.create':
+            return [
+                {
+                    name,
+                    namespace,
+                    group: 'inventory.open-cluster-management.io',
+                    resource: 'baremetalassets',
+                    verb: 'create',
                 },
             ]
         case 'bma.delete':

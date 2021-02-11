@@ -14,6 +14,7 @@ import {
     AcmTextInput,
     AcmInlineProvider,
     Provider,
+    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
@@ -23,7 +24,6 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID, providers } from '../../../lib/providers'
 import { IRequestResult } from '../../../lib/resource-request'
 import {
-    validateBaseDnsName,
     validateCertificate,
     validateGCProjectID,
     validateImageMirror,
@@ -51,7 +51,7 @@ import { makeStyles } from '@material-ui/styles'
 import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['connection', 'common'])
     return (
         <AcmAlertProvider>
             <Page>
@@ -98,7 +98,9 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                         ]}
                     />
                 )}
-                <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                <AcmErrorBoundary>
+                    <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                </AcmErrorBoundary>
             </Page>
         </AcmAlertProvider>
     )
@@ -150,6 +152,8 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
             pullSecret: '',
             sshPrivatekey: '',
             sshPublickey: '',
+
+            ocmAPIToken: '',
         },
     })
 
@@ -369,7 +373,6 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                         !getProviderConnectionProviderID(providerConnection) ||
                         getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
                     }
-                    isRequired
                 />
                 <AcmTextInput
                     id="awsAccessKeyID"
@@ -621,10 +624,26 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     label={t('addConnection.sshKnownHosts.label')}
                     placeholder={t('addConnection.sshKnownHosts.placeholder')}
                     labelHelp={t('addConnection.sshKnownHosts.labelHelp')}
-                    value={providerConnection.spec?.sshKnownHosts}
+                    value={providerConnection.spec?.sshKnownHosts?.join?.('\n')}
                     onChange={(sshKnownHosts) => {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.spec!.sshKnownHosts = sshKnownHosts
+                            const knownSSHs = sshKnownHosts
+                                .trim()
+                                .split(/[\r\n]+/g)
+                                .map((ssh) => {
+                                    ssh = ssh.trim()
+                                    if (ssh.startsWith('-')) {
+                                        ssh = ssh.substr(1).trim()
+                                    }
+                                    if (ssh.startsWith('"')) {
+                                        ssh = ssh.substr(1)
+                                    }
+                                    if (ssh.endsWith('"')) {
+                                        ssh = ssh.slice(0, -1)
+                                    }
+                                    return ssh
+                                })
+                            providerConnection.spec!.sshKnownHosts = knownSSHs
                         })
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
@@ -691,7 +710,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     size="xl"
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                 >
-                    Configure for disconnected installation
+                    {t('addConnection.configureDisconnectedInstall.label')}
                 </Title>
                 <AcmTextInput
                     id="imageMirror"
@@ -747,7 +766,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.BMC}
                     validation={(value) => (value ? validateCertificate(value, t) : undefined)}
                 />
-                <AcmTextArea
+                <AcmTextInput
                     id="ocmAPIToken"
                     label={t('addConnection.ocmapitoken.label')}
                     placeholder={t('addConnection.ocmapitoken.placeholder')}
@@ -760,7 +779,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     }}
                     hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
                     isRequired
-                    validation={(value) => validateBaseDnsName(value, t)}
+                    type="password"
                 />
                 <AcmAlertGroup isInline canClose />
                 <ActionGroup>

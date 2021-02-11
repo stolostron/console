@@ -1,9 +1,12 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { nockUpgrade } from '../lib/nock-util'
-import { DistributionInfo, ClusterStatus } from '../lib/get-cluster'
+import { nockUpgrade, nockCreateSelfSubjectAccessReview } from '../lib/nock-util'
+import { Cluster, DistributionInfo, ClusterStatus } from '../lib/get-cluster'
 import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
+import { ResourceAttributes } from '../resources/self-subject-access-review'
+import * as nock from 'nock'
+import { clickByText, waitForNock, waitForNotText, waitForText } from '../lib/test-util'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -14,6 +17,7 @@ const mockDistributionInfo: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoUpgrading: DistributionInfo = {
     ocp: {
@@ -24,6 +28,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     ocp: {
@@ -34,6 +39,7 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     ocp: {
@@ -44,6 +50,7 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
 }
 const mockDistributionInfoFailedInstall: DistributionInfo = {
     ocp: {
@@ -54,78 +61,132 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
+    isManagedOpenShift: false,
+}
+const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        desiredVersion: '1.2.3',
+        upgradeFailed: false,
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: true,
+}
+
+function getClusterActionsResourceAttributes(name: string) {
+    return {
+        resource: 'managedclusteractions',
+        verb: 'create',
+        group: 'action.open-cluster-management.io',
+        namespace: name,
+    } as ResourceAttributes
 }
 
 describe('DistributionField', () => {
-    it('should not show upgrade button when no available upgrades', () => {
-        const { queryAllByText } = render(
-            <DistributionField
-                clusterName="clusterName"
-                data={mockDistributionInfoWithoutUpgrades}
-                clusterStatus={ClusterStatus.ready}
-            />
-        )
+    const renderDistributionInfoField = async (
+        data: DistributionInfo,
+        allowUpgrade: boolean,
+        hasUpgrade: boolean = false
+    ) => {
+        let nockAction: nock.Scope | undefined = undefined
+        if (hasUpgrade) {
+            nockAction = nockCreateSelfSubjectAccessReview(
+                getClusterActionsResourceAttributes('clusterName'),
+                allowUpgrade
+            )
+        }
+
+        const mockCluster: Cluster = {
+            name: 'clusterName',
+            namespace: 'clusterName',
+            provider: undefined,
+            status: ClusterStatus.ready,
+            distribution: data,
+            labels: { abc: '123' },
+            nodes: undefined,
+            kubeApiServer: '',
+            consoleURL: '',
+            hiveSecrets: undefined,
+            isHive: false,
+            isManaged: true,
+        }
+
+        const retResource = render(<DistributionField cluster={mockCluster} />)
+        if (nockAction) {
+            await waitForNock(nockAction)
+        }
+        return retResource
+    }
+
+    it('should not show upgrade button when no available upgrades', async () => {
+        const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
         expect(queryAllByText('upgrade.available').length).toBe(0)
     })
-    it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', () => {
-        const { getAllByText, queryAllByText } = render(
-            <DistributionField
-                clusterName="clusterName"
-                data={mockDistributionInfo}
-                clusterStatus={ClusterStatus.ready}
-            />
-        )
-        expect(getAllByText('upgrade.available')).toBeTruthy()
-        userEvent.click(getAllByText('upgrade.available')[0])
-        expect(getAllByText('upgrade.title clusterName').length).toBeGreaterThan(0)
-        expect(getAllByText('upgrade.cancel')).toBeTruthy()
-        userEvent.click(getAllByText('upgrade.cancel')[0])
-        expect(queryAllByText('upgrade.title clusterName').length).toBe(0)
+
+    it('should disable the upgrade button when the user lacks permissions', async () => {
+        const { queryByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
+        expect(queryByText('upgrade.available')).toHaveAttribute('aria-disabled', 'true')
     })
-    it('should show upgrading with loader when upgrading', () => {
-        const { getAllByText, queryByRole } = render(
-            <DistributionField
-                clusterName="cluster"
-                data={mockDistributionInfoUpgrading}
-                clusterStatus={ClusterStatus.ready}
-            />
-        )
-        expect(getAllByText('upgrade.upgrading ' + mockDistributionInfoUpgrading.ocp?.desiredVersion)).toBeTruthy()
+
+    it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
+        await renderDistributionInfoField(mockDistributionInfo, true, true)
+        await clickByText('upgrade.available', 0)
+        await waitForText('upgrade.title')
+        await clickByText('upgrade.cancel', 0)
+        await waitForNotText('upgrade.title')
+    })
+
+    it('should show upgrading with loader when upgrading', async () => {
+        const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
+        expect(getAllByText('upgrade.upgrading.version')).toBeTruthy()
         expect(queryByRole('progressbar')).toBeTruthy()
     })
 
-    it('should show failed when failed upgrade', () => {
-        const { getAllByText } = render(
-            <DistributionField
-                clusterName="clusterName"
-                data={mockDistributionInfoFailedUpgrade}
-                clusterStatus={ClusterStatus.ready}
-            />
-        )
+    it('should show failed when failed upgrade', async () => {
+        const { getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedUpgrade, true)
         expect(getAllByText('upgrade.upgradefailed')).toBeTruthy()
     })
-    it('should not show failed when there is no upgrade running', () => {
-        const { queryAllByText, getAllByText } = render(
-            <DistributionField
-                clusterName="clusterName"
-                data={mockDistributionInfoFailedInstall}
-                clusterStatus={ClusterStatus.ready}
-            />
+
+    it('should not show failed when there is no upgrade running', async () => {
+        const { queryAllByText, getAllByText } = await renderDistributionInfoField(
+            mockDistributionInfoFailedInstall,
+            true,
+            true
         )
+        await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
         expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
-        expect(getAllByText('upgrade.available')).toBeTruthy()
+    })
+
+    it('should not show upgrade button for managed OpenShift', async () => {
+        const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
+        expect(queryAllByText('upgrade.available').length).toBe(0)
     })
 })
 
 describe('UpgradeModal', () => {
+    const mockCluster: Cluster = {
+        name: 'clusterName',
+        namespace: 'clusterName',
+        provider: undefined,
+        status: ClusterStatus.ready,
+        distribution: mockDistributionInfo,
+        labels: { abc: '123' },
+        nodes: undefined,
+        kubeApiServer: '',
+        consoleURL: '',
+        hiveSecrets: undefined,
+        isHive: false,
+        isManaged: true,
+    }
+
     it('should show all available versions in descending order', () => {
-        const { getAllByRole, getByText } = render(
-            <UpgradeModal close={() => {}} open={true} clusterName="clusterName" data={mockDistributionInfo} />
-        )
-        const selectbox = getByText('upgrade.select.placeholder')
-        expect(selectbox).toBeTruthy()
-        if (selectbox) {
-            userEvent.click(selectbox)
+        const { getAllByRole, getByText } = render(<UpgradeModal close={() => {}} open={true} cluster={mockCluster} />)
+        const button = getByText('upgrade.select.placeholder')
+        expect(button).toBeTruthy()
+        if (button) {
+            userEvent.click(button)
             expect(
                 getAllByRole('option').map((elem) => {
                     return elem.textContent
@@ -142,8 +203,7 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
 
@@ -156,6 +216,7 @@ describe('UpgradeModal', () => {
             expect(isClosed).toBeTruthy()
         }
     })
+
     it('should do upgrade request when click submit and show loading', async () => {
         const mockUpgrade = nockUpgrade('clusterName', '1.2.6', 'ok', 200, 500)
         let isClosed = false
@@ -165,13 +226,12 @@ describe('UpgradeModal', () => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
-        const selectbox = getByText('upgrade.select.placeholder')
-        expect(selectbox).toBeTruthy()
-        userEvent.click(selectbox)
+        const button = getByText('upgrade.select.placeholder')
+        expect(button).toBeTruthy()
+        userEvent.click(button)
         // select a version
         expect(getAllByRole('option').length).toBeGreaterThan(0)
         const versionButton = getAllByRole('option')[0]
@@ -190,19 +250,18 @@ describe('UpgradeModal', () => {
     it('should show error message when failed upgrading', async () => {
         const mockUpgrade = nockUpgrade('clusterName', '1.2.6', '', 405, 100)
         let isClosed = false
-        const { getAllByRole, getByText, queryByText } = render(
+        const { getAllByRole, getByText } = render(
             <UpgradeModal
                 close={() => {
                     isClosed = true
                 }}
                 open={true}
-                clusterName="clusterName"
-                data={mockDistributionInfo}
+                cluster={mockCluster}
             />
         )
-        const selectbox = getByText('upgrade.select.placeholder')
-        expect(selectbox).toBeTruthy()
-        userEvent.click(selectbox)
+        const button = getByText('upgrade.select.placeholder')
+        expect(button).toBeTruthy()
+        userEvent.click(button)
         // select a version
         expect(getAllByRole('option').length).toBeGreaterThan(0)
         const versionButton = getAllByRole('option')[0]
@@ -212,13 +271,13 @@ describe('UpgradeModal', () => {
         const submitButton = getByText('upgrade.submit')
         expect(submitButton).toBeTruthy()
         userEvent.click(submitButton)
-        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
-        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
+        await waitForText('upgrade.submit.processing')
+        await waitForNotText('upgrade.submit.processing')
 
         // wait for modal to show alert
         expect(isClosed).toBe(false)
         expect(getByText('upgrade.upgradefailed')).toBeTruthy()
         expect(getByText('Request failed with status code 405')).toBeTruthy()
-        await waitFor(() => expect(mockUpgrade.isDone()).toBeTruthy())
+        await waitForNock(mockUpgrade)
     })
 })

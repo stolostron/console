@@ -1,7 +1,9 @@
 /* istanbul ignore file */
 
+import { isEqual } from 'lodash'
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
+import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
@@ -147,13 +149,38 @@ export function nockNamespacedList<Resource extends IResource>(
 }
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), JSON.stringify(resource))
+    const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .post(getResourceApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
+    return scope
+}
+
+export function nockCreateSelfSubjectAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: 'authorization.k8s.io/v1',
+            kind: 'SelfSubjectAccessReview',
+            metadata: {},
+            spec: {
+                resourceAttributes,
+            },
+            status: {
+                allowed,
+            },
+        } as SelfSubjectAccessReview
+    )
 }
 
 export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
@@ -165,7 +192,7 @@ export function nockPatch(resource: IResource, data: unknown, response?: IResour
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .patch(getResourceNameApiPath(resource), JSON.stringify(data))
+        .patch(getResourceNameApiPath(resource), (body) => isEqual(body, data))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
@@ -182,7 +209,7 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
-        .put(getResourceNameApiPath(resource), JSON.stringify(resource))
+        .put(getResourceNameApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'PUT, OPTIONS',
@@ -252,7 +279,7 @@ export function nockUpgrade(
     delay: number = 0
 ) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post('/upgrade', JSON.stringify({ clusterName, version }))
+        .post('/upgrade', (body) => isEqual(body, { clusterName, version }))
         .delay(delay)
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',

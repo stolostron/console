@@ -21,6 +21,8 @@ export enum ClusterStatus {
     'pending' = 'pending',
     'destroying' = 'destroying',
     'creating' = 'creating',
+    'provisionfailed' = 'provisionfailed',
+    'deprovisionfailed' = 'deprovisionfailed',
     'failed' = 'failed',
     'detached' = 'detached',
     'detaching' = 'detaching',
@@ -50,6 +52,7 @@ export type DistributionInfo = {
     k8sVersion: string | undefined
     ocp: OpenShiftDistributionInfo | undefined
     displayVersion: string | undefined
+    isManagedOpenShift: boolean
 }
 
 export type HiveSecrets = {
@@ -59,8 +62,9 @@ export type HiveSecrets = {
 }
 
 export type Nodes = {
-    active: number
-    inactive: number
+    ready: number
+    unhealthy: number
+    unknown: number
     nodeList: NodeInfo[]
 }
 
@@ -178,25 +182,26 @@ export function getProvider(
     let providerLabel =
         hivePlatformLabel && hivePlatformLabel !== 'unknown'
             ? hivePlatformLabel
-            : platformClusterClaim?.value ?? cloudLabel
+            : platformClusterClaim?.value ?? cloudLabel ?? ''
+    providerLabel = providerLabel.toUpperCase()
 
     let provider: Provider | undefined
     switch (providerLabel) {
-        case 'Amazon':
+        case 'OPENSTACK':
+            provider = Provider.openstack
+            break
+        case 'AMAZON':
         case 'AWS':
         case 'EKS':
-        case 'aws':
             provider = Provider.aws
             break
-        case 'Google':
+        case 'GOOGLE':
         case 'GKE':
         case 'GCP':
         case 'GCE':
-        case 'gcp':
             provider = Provider.gcp
             break
-        case 'Azure':
-        case 'azure':
+        case 'AZURE':
         case 'AKS':
             provider = Provider.azure
             break
@@ -204,16 +209,16 @@ export function getProvider(
         case 'IKS':
             provider = Provider.ibm
             break
-        case 'baremetal':
+        case 'BAREMETAL':
             provider = Provider.baremetal
             break
-        case 'vsphere':
+        case 'VSPHERE':
             provider = Provider.vmware
             break
-        case 'auto-detect':
+        case 'AUTO-DETECT':
             provider = undefined
             break
-        case 'other':
+        case 'OTHER':
         default:
             provider = Provider.other
     }
@@ -245,8 +250,16 @@ export function getDistributionInfo(
         }
     }
 
+    const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+    switch (vendor) {
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
+    }
+
     if (k8sVersion && ocp && displayVersion) {
-        return { k8sVersion, ocp, displayVersion }
+        return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
     }
 
     return undefined
@@ -272,17 +285,26 @@ export function getConsoleUrl(
 }
 
 export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
-    if (!managedClusterInfo) return undefined
-
-    const nodeList: NodeInfo[] = managedClusterInfo.status?.nodeList ?? []
-    let active = 0
-    let inactive = 0
+    const nodeList: NodeInfo[] = managedClusterInfo?.status?.nodeList ?? []
+    let ready = 0
+    let unhealthy = 0
+    let unknown = 0
 
     nodeList.forEach((node: NodeInfo) => {
         const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
-        readyCondition?.status === 'True' ? active++ : inactive++
+        switch (readyCondition?.status) {
+            case 'True':
+                ready++
+                break
+            case 'False':
+                unhealthy++
+                break
+            case 'Unknown':
+            default:
+                unknown++
+        }
     })
-    return { nodeList, active, inactive }
+    return { nodeList, ready, unhealthy, unknown }
 }
 
 export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined) {
@@ -311,13 +333,17 @@ export function getClusterStatus(
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
 
-        // deprovisioning
-        if (clusterDeployment.metadata.deletionTimestamp) {
+        // deprovision failure
+        if (deprovisionLaunchError) {
+            cdStatus = ClusterStatus.deprovisionfailed
+
+            // destroying
+        } else if (clusterDeployment.metadata.deletionTimestamp) {
             cdStatus = ClusterStatus.destroying
 
-            // provision/deprovision failure
-        } else if (provisionLaunchError || deprovisionLaunchError) {
-            cdStatus = ClusterStatus.failed
+            // provision failure
+        } else if (provisionLaunchError) {
+            cdStatus = ClusterStatus.provisionfailed
 
             // provision success
         } else if (clusterDeployment.spec?.installed) {
@@ -329,7 +355,7 @@ export function getClusterStatus(
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
-                    cdStatus = ClusterStatus.failed
+                    cdStatus = ClusterStatus.provisionfailed
                 } else {
                     cdStatus = ClusterStatus.creating
                 }
@@ -343,6 +369,7 @@ export function getClusterStatus(
     if (!managedClusterInfo && !managedCluster) {
         return cdStatus
     }
+
     let mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status
@@ -355,6 +382,10 @@ export function getClusterStatus(
     // detaching
     if (mc?.metadata.deletionTimestamp) {
         mcStatus = ClusterStatus.detaching
+
+        // registration controller may not report status when in failed state
+    } else if (mcConditions.length === 0) {
+        mcStatus = ClusterStatus.failed
 
         // not accepted
     } else if (!clusterAccepted) {
@@ -378,10 +409,20 @@ export function getClusterStatus(
         mcStatus = clusterAvailable ? ClusterStatus.ready : ClusterStatus.offline
     }
 
-    // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
-    // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
-    // so this is the case is the cluster is being detached but not destroyed)
-    if ((mcStatus === 'detaching' || !clusterJoined) && clusterDeployment && cdStatus !== 'detached') {
+    // if the ManagedCluster is in failed state because the registration controller is unavailable
+    if (mcStatus === ClusterStatus.failed) {
+        return clusterDeployment && cdStatus !== ClusterStatus.detached
+            ? cdStatus // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
+            : mcStatus
+
+        // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
+        // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
+        // so this is the case is the cluster is being detached but not destroyed)
+    } else if (
+        (mcStatus === ClusterStatus.detaching || !clusterJoined) &&
+        clusterDeployment &&
+        cdStatus !== ClusterStatus.detached
+    ) {
         return cdStatus
     } else {
         return mcStatus
