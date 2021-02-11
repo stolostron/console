@@ -35,12 +35,12 @@
     "button.backToClusters": "Back to Cluster management",
 
     "cluster.detach.description": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
-    "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be deprovisioned.",
+    "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be destroyed.",
 
     "detaching.inprogress": "{{clusterName}} is being detached",
     "destroying.inprogress": "{{clusterName}} is being destroyed",
     "detaching.inprogress.message": "It might take a few minutes for the detach process to complete. Select Back to Cluster management or wait here.",
-    "destroying.inprogress.message": "It might take a few minutes for the destroy process to complete. Select Back to Cluster management or View logs to see the cluster deprovision logs, or wait here.",
+    "destroying.inprogress.message": "It might take a few minutes for the destroy process to complete. Select Back to Cluster management or View logs to see the cluster destroy logs, or wait here.",
     "detaching.success": "{{clusterName}} was successfully detached",
     "destroying.success": "{{clusterName}} was successfully destroyed",
     "detaching.success.message": "{{clusterName}} was successfully detached. Select Back to Cluster management or create a new cluster.",
@@ -160,9 +160,10 @@
     "upgrade.table.name": "Name",
     "upgrade.table.currentversion": "Current version",
     "upgrade.table.newversion": "New version",
-    "provision.notification.creating": "Cluster provisioning is in progress:",
-    "provision.notification.provisionfailed": "Cluster provisioning failed:",
-    "provision.notification.destroying": "Cluster deprovisioning is in progress:",
+    "provision.notification.creating": "Cluster creation is in progress:",
+    "provision.notification.deprovisionfailed": "Cluster destroy failed:",
+    "provision.notification.provisionfailed": "Cluster creation failed:",
+    "provision.notification.destroying": "Cluster creation is in progress:",
     "view.logs": "View logs",
 
     "modal.destroy.title": "Destroy managed cluster",

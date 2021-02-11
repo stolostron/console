@@ -25,46 +25,6 @@ import { Cluster, ClusterStatus } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
-export function StatusField(props: { cluster: Cluster }) {
-    const { t } = useTranslation(['cluster'])
-    let type: StatusType
-    switch (props.cluster?.status) {
-        case ClusterStatus.ready:
-            type = StatusType.healthy
-            break
-        case ClusterStatus.needsapproval:
-            type = StatusType.warning
-            break
-        case ClusterStatus.failed:
-        case ClusterStatus.provisionfailed:
-        case ClusterStatus.deprovisionfailed:
-        case ClusterStatus.notaccepted:
-        case ClusterStatus.offline:
-            type = StatusType.danger
-            break
-        case ClusterStatus.creating:
-        case ClusterStatus.destroying:
-        case ClusterStatus.detaching:
-            type = StatusType.progress
-            break
-        case ClusterStatus.detached:
-            type = StatusType.detached
-            break
-        case ClusterStatus.pending:
-        case ClusterStatus.pendingimport:
-        default:
-            type = StatusType.pending
-    }
-
-    return (
-        <AcmInlineStatus
-            type={type}
-            status={t(`status.${props.cluster?.status}`)}
-            popover={{ bodyContent: t(`status.${props.cluster?.status}.message`) }}
-        />
-    )
-}
-
 export function DistributionField(props: { cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
