@@ -10,7 +10,6 @@ import {
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { BrowserRouter } from 'react-router-dom'
 
-
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
         apiVersion: 'discovery.open-cluster-management.io/v1',
@@ -98,7 +97,11 @@ test('DiscoveredClustersPage', async () => {
 
 test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-    render(<BrowserRouter><DiscoveredClustersPage/></BrowserRouter>)
+    render(
+        <BrowserRouter>
+            <DiscoveredClustersPage />
+        </BrowserRouter>
+    )
     await waitForNock(listNock)
     await waitForText('discovery.emptyStateHeader')
 })

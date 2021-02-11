@@ -15,7 +15,6 @@ export interface MultiClusterHub extends IResource {
     spec?: {}
 }
 
-
 export function listMultiClusterHubs() {
     return listResources<MultiClusterHub>({
         apiVersion: MultiClusterHubApiVersion,

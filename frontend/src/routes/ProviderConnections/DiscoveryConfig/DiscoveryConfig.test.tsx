@@ -2,15 +2,24 @@ import { render, waitFor } from '@testing-library/react'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
-import { mockBadRequestStatus, mockNotFoundStatus, nockList, nockCreate, nockGet, nockReplace } from '../../../lib/nock-util'
+import {
+    mockBadRequestStatus,
+    mockNotFoundStatus,
+    nockList,
+    nockCreate,
+    nockGet,
+    nockReplace,
+} from '../../../lib/nock-util'
 import { FeatureGate } from '../../../resources/feature-gate'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 import DiscoveryConfigPage from './DiscoveryConfig'
-import { ProviderConnection, ProviderConnectionApiVersion, ProviderConnectionKind } from '../../../resources/provider-connection'
-import {  ProviderID } from '../../../lib/providers'
-
-
+import {
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+} from '../../../resources/provider-connection'
+import { ProviderID } from '../../../lib/providers'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -59,7 +68,7 @@ const discoveryConfig: DiscoveryConfig = {
     spec: {
         filters: {
             lastActive: 14,
-            openShiftVersions: ["4.7"]
+            openShiftVersions: ['4.7'],
         },
         providerConnections: [providerConnection.metadata.name!],
     },
@@ -75,12 +84,11 @@ const discoveryConfigUpdated: DiscoveryConfig = {
     spec: {
         filters: {
             lastActive: 30,
-            openShiftVersions: ["4.7", "4.8"]
+            openShiftVersions: ['4.7', '4.8'],
         },
         providerConnections: [providerConnection.metadata.name!],
     },
 }
-
 
 function TestDiscoveryConfigPage() {
     return (
@@ -126,9 +134,11 @@ describe('discovery config page', () => {
 
     it('Create DiscoveryConfig', async () => {
         const mchNock = nockList(multiClusterHub, [multiClusterHub])
-        const providerConnectionsNock = nockList(providerConnection, [providerConnection], [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
+        const providerConnectionsNock = nockList(
+            providerConnection,
+            [providerConnection],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
 
         nockGet(discoveryConfig, mockNotFoundStatus)
@@ -141,14 +151,14 @@ describe('discovery config page', () => {
             expect(container.querySelectorAll(`[aria-labelledby^="lastActiveFilter-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
-        await waitFor(() => expect(getByText("14 days")).toBeInTheDocument())
-        getByText("14 days").click()
+        await waitFor(() => expect(getByText('14 days')).toBeInTheDocument())
+        getByText('14 days').click()
 
         // Select Version
         expect(container.querySelectorAll(`[aria-labelledby^="discoveryVersions-label"]`)).toHaveLength(1)
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
-        await waitFor(() => expect(getByText("4.7")).toBeInTheDocument())
-        getByText("4.7").click()
+        await waitFor(() => expect(getByText('4.7')).toBeInTheDocument())
+        getByText('4.7').click()
 
         // Select ProviderConnection
         expect(container.querySelectorAll(`[aria-labelledby^="providerConnections-label"]`)).toHaveLength(1)
@@ -163,9 +173,11 @@ describe('discovery config page', () => {
 
     it('Edit DiscoveryConfig', async () => {
         const mchNock = nockList(multiClusterHub, [multiClusterHub])
-        const providerConnectionsNock = nockList(providerConnection, [providerConnection], [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
+        const providerConnectionsNock = nockList(
+            providerConnection,
+            [providerConnection],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
         const getDiscoveryConfig = nockGet(discoveryConfig, discoveryConfig)
         const replaceNock = nockReplace(discoveryConfigUpdated)
 
@@ -175,18 +187,18 @@ describe('discovery config page', () => {
         await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
 
         // Ensure Form is prepopulated
-        expect(getByText(discoveryConfig.spec.filters?.lastActive! + " days")).toBeVisible()
+        expect(getByText(discoveryConfig.spec.filters?.lastActive! + ' days')).toBeVisible()
         expect(getByText(discoveryConfig.spec.filters?.openShiftVersions![0]!)).toBeVisible()
         expect(getByText(providerConnection.metadata.name!)).toBeVisible()
 
         // Change form
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
-        await waitFor(() => expect(getByText("30 days")).toBeInTheDocument())
-        getByText("30 days").click()
+        await waitFor(() => expect(getByText('30 days')).toBeInTheDocument())
+        getByText('30 days').click()
 
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
-        await waitFor(() => expect(getByText("4.8")).toBeInTheDocument())
-        getByText("4.8").click()
+        await waitFor(() => expect(getByText('4.8')).toBeInTheDocument())
+        getByText('4.8').click()
 
         getByText('discoveryConfig.enable').click()
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())

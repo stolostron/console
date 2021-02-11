@@ -20,27 +20,30 @@ import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { NavigationPath } from '../../../NavigationPath'
 import { Link } from 'react-router-dom'
-import {  ResourceErrorCode } from '../../../lib/resource-request'
+import { ResourceErrorCode } from '../../../lib/resource-request'
 
 import { listMultiClusterHubs } from '../../../resources/multi-cluster-hub'
 
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
-import { createDiscoveryConfig, replaceDiscoveryConfig, DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind, getDiscoveryConfig } from '../../../resources/discovery-config'
-
-
+import {
+    createDiscoveryConfig,
+    replaceDiscoveryConfig,
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    getDiscoveryConfig,
+} from '../../../resources/discovery-config'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmAlertProvider>
-            <Page>   
+            <Page>
                 <AcmPageHeader
                     title={t('discoveryConfig.title')}
-                    breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                    ]}
+                    breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
                 />
-                <AddDiscoveryConfigData/>
+                <AddDiscoveryConfigData />
             </Page>
         </AcmAlertProvider>
     )
@@ -51,7 +54,6 @@ export function AddDiscoveryConfigData() {
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
-
 
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
@@ -65,7 +67,7 @@ export function AddDiscoveryConfigData() {
                 lastActive: 0,
             },
             providerConnections: [],
-        }
+        },
     })
 
     // Get MCH Namespace
@@ -79,7 +81,7 @@ export function AddDiscoveryConfigData() {
                     if (mch.length === 1) {
                         discoveryConfig.metadata.namespace = mch[0].metadata.namespace
                     } else {
-                        setError(Error("Only 1 MulticlusterHub resource may exist"))
+                        setError(Error('Only 1 MulticlusterHub resource may exist'))
                     }
                 })
                 .catch((err) => {
@@ -129,13 +131,13 @@ export function AddDiscoveryConfigData() {
         return <AcmLoadingPage />
     }
 
-    return <DiscoveryConfigPageContent discoveryConfig={discoveryConfig}/>
+    return <DiscoveryConfigPageContent discoveryConfig={discoveryConfig} />
 }
 
 let lastData: ProviderConnection[] | undefined
 let lastTime: number = 0
 
-export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryConfig}) {
+export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryConfig }) {
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>(
         JSON.parse(JSON.stringify(props.discoveryConfig))
     )
@@ -147,16 +149,20 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
     const [, setError] = useState<string | undefined>()
     const [editing, setEditing] = useState<boolean>(false)
 
-    const supportedVersions = ["4.5", "4.6", "4.7", "4.8"]
+    const supportedVersions = ['4.5', '4.6', '4.7', '4.8']
 
-    type LastActive = { day: number; stringDay: string; value: string };
+    type LastActive = { day: number; stringDay: string; value: string }
     let lastActive: LastActive[]
     lastActive = []
     lastActive.push(
-        {day: 1, stringDay: "1 day", value: "1d"}, {day: 2, stringDay: "2 days", value: "2d"}, 
-        {day: 3, stringDay: "3 days", value: "3d"}, {day: 7, stringDay: "7 days", value: "7d"},
-        {day: 14, stringDay: "14 days", value: "14d"}, {day: 21, stringDay: "21 days", value: "21d"},
-        {day: 30, stringDay: "30 days", value: "30d"})
+        { day: 1, stringDay: '1 day', value: '1d' },
+        { day: 2, stringDay: '2 days', value: '2d' },
+        { day: 3, stringDay: '3 days', value: '3d' },
+        { day: 7, stringDay: '7 days', value: '7d' },
+        { day: 14, stringDay: '14 days', value: '14d' },
+        { day: 21, stringDay: '21 days', value: '21d' },
+        { day: 30, stringDay: '30 days', value: '30d' }
+    )
 
     useEffect(() => {
         if (props.discoveryConfig.metadata.name !== '') {
@@ -193,19 +199,18 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
         setDiscoveryConfig(copy)
     }
 
-    const onSubmit = async() => {
+    const onSubmit = async () => {
         setSubmitted(true)
         setError(undefined)
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 if (!editing) {
-                    discoveryConfig.metadata.name = "discovery"
+                    discoveryConfig.metadata.name = 'discovery'
                     await createDiscoveryConfig(discoveryConfig).promise
-                }
-                else {
+                } else {
                     await replaceDiscoveryConfig(discoveryConfig).promise
                 }
-            } catch(err) {
+            } catch (err) {
                 setError(err.message)
                 setSubmitted(false)
                 reject()
@@ -232,17 +237,21 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                             if (lastActive) {
                                 if (!discoveryConfig.spec.filters) {
                                     discoveryConfig.spec.filters = {}
-                                } 
-                                discoveryConfig.spec.filters.lastActive = parseInt(lastActive.substring(0, lastActive.length - 1))
+                                }
+                                discoveryConfig.spec.filters.lastActive = parseInt(
+                                    lastActive.substring(0, lastActive.length - 1)
+                                )
                             }
                         })
                     }}
                     isDisabled={submitted}
                     isRequired
                 >
-                    {
-                        lastActive.map((e, i) => <SelectOption key={e.day} value={e.value}>{e.stringDay}</SelectOption>)
-                    }
+                    {lastActive.map((e, i) => (
+                        <SelectOption key={e.day} value={e.value}>
+                            {e.stringDay}
+                        </SelectOption>
+                    ))}
                 </AcmSelect>
                 <AcmMultiSelect
                     id="discoveryVersions"
@@ -260,10 +269,11 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                     isDisabled={submitted}
                     isRequired
                 >
-                    {
-                        supportedVersions.map((version) => (
-                            <SelectOption key={version} value={version}>{version}</SelectOption>
-                        ))}
+                    {supportedVersions.map((version) => (
+                        <SelectOption key={version} value={version}>
+                            {version}
+                        </SelectOption>
+                    ))}
                 </AcmMultiSelect>
                 <AcmFormSection title={t('discoveryConfig.connections.header')}></AcmFormSection>
                 <Text component={TextVariants.h3}>{t('discoveryConfig.connections.subheader')}</Text>
@@ -275,7 +285,7 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                     onChange={(providerConnection) => {
                         updateDiscoveryConfig((discoveryConfig) => {
                             if (providerConnection) {
-                                discoveryConfig.spec.providerConnections = []                                
+                                discoveryConfig.spec.providerConnections = []
                                 discoveryConfig.spec.providerConnections.push(providerConnection)
                             }
                         })
@@ -283,15 +293,12 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                     isDisabled={submitted}
                     isRequired
                 >
-                    {
-                        data?.map((providerConnection) => (
-                            <SelectOption 
-                                key={providerConnection.metadata.name}
-                                value={providerConnection.metadata.name}>
-                                    {providerConnection.metadata.name}
-                            </SelectOption>
-                        ))}
-                </AcmSelect>    
+                    {data?.map((providerConnection) => (
+                        <SelectOption key={providerConnection.metadata.name} value={providerConnection.metadata.name}>
+                            {providerConnection.metadata.name}
+                        </SelectOption>
+                    ))}
+                </AcmSelect>
 
                 <ActionGroup>
                     <AcmSubmit
@@ -299,33 +306,32 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                         onClick={onSubmit}
                         variant={ButtonVariant.primary}
                         isDisabled={submitted}
-                    >{t('discoveryConfig.enable')}</AcmSubmit>
-                    <Link to={NavigationPath.discoveredClusters} id='cancelDiscoveryConfig'>
-                        <AcmButton
-                            variant={ButtonVariant.link}
-                        >{t('discoveryConfig.cancel')}</AcmButton>
+                    >
+                        {t('discoveryConfig.enable')}
+                    </AcmSubmit>
+                    <Link to={NavigationPath.discoveredClusters} id="cancelDiscoveryConfig">
+                        <AcmButton variant={ButtonVariant.link}>{t('discoveryConfig.cancel')}</AcmButton>
                     </Link>
-                </ActionGroup>  
+                </ActionGroup>
             </AcmForm>
         </AcmPageCard>
     )
 }
 
-
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
     let lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
-    if (lastActive === undefined){
-        return "7d" as string
+    if (lastActive === undefined) {
+        return '7d' as string
     }
-    return lastActive.toString().concat("d") as string
+    return lastActive.toString().concat('d') as string
 }
 
 export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<DiscoveryConfig>) {
     let providerConnection = discoveryConfig.spec?.providerConnections || undefined
-    if (providerConnection !== undefined && providerConnection[0] !== undefined){
+    if (providerConnection !== undefined && providerConnection[0] !== undefined) {
         return providerConnection[0] as string
     }
-    return "" as string
+    return '' as string
 }
 
 export function getDiscoveryConfigVersions(discoveryConfig: Partial<DiscoveryConfig>) {
