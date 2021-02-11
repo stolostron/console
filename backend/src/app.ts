@@ -12,6 +12,7 @@ import { encode as stringifyQuery, parse as parseQueryString } from 'querystring
 import { parse as parseUrl } from 'url'
 import { logger } from './logger'
 import { getRemoteResource, updateRemoteResource, parseJsonBody, parseBody, requestException } from './lib/utils'
+import { pipeline } from 'stream'
 
 function getRandomInt(min: number, max: number) {
     min = Math.ceil(min)
@@ -61,7 +62,11 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
             headers.authorization = `Bearer ${token}`
             headers.host = parseUrl(acmUrl).host
             const response = await request(req.method, headerUrl, headers)
-            return response.pipe(res.writeHead(response.statusCode, response.headers))
+            res.writeHead(response.statusCode, response.headers)
+            pipeline(response, res, (err) => {
+                if (err) console.error(err)
+            })
+            return
         }
 
         if (url.startsWith('/multicloud')) {
@@ -113,7 +118,10 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 return void projectsRequest(req.method, process.env.CLUSTER_API_URL + url, headers, res)
             } else {
                 res.writeHead(response.statusCode, response.headers)
-                return response.pipe(res)
+                pipeline(response, res, (err) => {
+                    if (err) console.error(err)
+                })
+                return
             }
         }
         // Upgrade
@@ -215,7 +223,8 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                 ...parseUrl(searchUrl + '/searchapi/graphql'),
                 ...{ method: req.method, headers, agent: new Agent({ rejectUnauthorized: false }) },
             }
-            return req.pipe(
+            pipeline(
+                req,
                 httpRequest(options, (response) => {
                     const headers = { ...response.headers }
                     if (process.env.NODE_ENV === 'development') {
@@ -224,9 +233,15 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                         }
                     }
                     res.writeHead(response.statusCode, headers)
-                    response.pipe(res)
-                })
+                    pipeline(response, res, (err) => {
+                        if (err) console.error(err)
+                    })
+                }),
+                (err) => {
+                    if (err) console.error(err)
+                }
             )
+            return
         }
 
         // OAuth Login
@@ -328,7 +343,9 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                             })
                         })
                         .on('error', (err) => res.writeHead(404).end())
-                        .pipe(res, { end: true })
+                    pipeline(readStream, res, (err) => {
+                        console.log(err)
+                    })
                 } catch (err) {
                     return res.writeHead(404).end()
                 }
@@ -339,7 +356,9 @@ export async function requestHandler(req: IncomingMessage, res: ServerResponse):
                         res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
                     })
                     .on('error', (err) => res.writeHead(404).end())
-                    .pipe(res, { end: true })
+                pipeline(readStream, res, (err) => {
+                    console.log(err)
+                })
             }
             return
         } catch (err) {
