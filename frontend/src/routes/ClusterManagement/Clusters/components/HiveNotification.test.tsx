@@ -122,7 +122,7 @@ describe('HiveNotification', () => {
         })
     })
     test('renders the danger notification for failed provision status', async () => {
-        mockCluster.status = ClusterStatus.failed
+        mockCluster.status = ClusterStatus.provisionfailed
         const clusterProvisionScope = nockNamespacedList(
             {
                 apiVersion: ClusterProvisionApiVersion,
@@ -143,8 +143,8 @@ describe('HiveNotification', () => {
         render(<Component />)
         await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
         await act(async () => {
-            expect(screen.getByTestId('hive-notification-failed')).toBeInTheDocument()
-            expect(screen.getByText('provision.notification.failed')).toBeInTheDocument()
+            expect(screen.getByTestId('hive-notification-provisionfailed')).toBeInTheDocument()
+            expect(screen.getByText('provision.notification.provisionfailed')).toBeInTheDocument()
             await waitFor(() => expect(screen.getByText('Invalid GCP project ID')).toBeInTheDocument())
             expect(screen.getByTestId('view-logs')).toBeInTheDocument()
             userEvent.click(screen.getByTestId('view-logs'))

@@ -10,7 +10,11 @@ class WrappedCreateBareMetalAssetModal extends React.Component {
         }
         return (
             <div>
-                <Button id={t('modal.create-acmbaremetalasset.button.key')} onClick={onClick.bind(this)}>
+                <Button
+                    id={t('modal.create-acmbaremetalasset.button.key')}
+                    onClick={onClick.bind(this)}
+                    variant="secondary"
+                >
                     {t('modal.create-acmbaremetalasset.button.text')}
                 </Button>
             </div>

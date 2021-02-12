@@ -11,7 +11,8 @@ import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
-import { StatusField, DistributionField } from '../../../../../components/ClusterCommon'
+import { DistributionField } from '../../../../../components/ClusterCommon'
+import { StatusField } from '../../components/StatusField'
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
@@ -32,7 +33,7 @@ export function ClusterOverviewPageContent(props: {
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
-                        { key: t('table.status'), value: cluster?.status && <StatusField status={cluster?.status} /> },
+                        { key: t('table.status'), value: cluster?.status && <StatusField cluster={cluster} /> },
                         {
                             key: t('table.provider'),
                             value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,

@@ -19,44 +19,11 @@ import {
     Text,
     AlertVariant,
     Title,
-    Popover,
 } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Cluster, ClusterStatus } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
-
-export function StatusField(props: { status: ClusterStatus }) {
-    const { t } = useTranslation(['cluster'])
-    let type: StatusType
-    switch (props.status) {
-        case ClusterStatus.ready:
-            type = StatusType.healthy
-            break
-        case ClusterStatus.needsapproval:
-            type = StatusType.warning
-            break
-        case ClusterStatus.failed:
-        case ClusterStatus.notaccepted:
-        case ClusterStatus.offline:
-            type = StatusType.danger
-            break
-        case ClusterStatus.creating:
-        case ClusterStatus.destroying:
-        case ClusterStatus.detaching:
-            type = StatusType.progress
-            break
-        case ClusterStatus.detached:
-            type = StatusType.detached
-            break
-        case ClusterStatus.pending:
-        case ClusterStatus.pendingimport:
-        default:
-            type = StatusType.pending
-    }
-
-    return <AcmInlineStatus type={type} status={t(`status.${props.status}`)} />
-}
 
 export function DistributionField(props: { cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
@@ -115,34 +82,30 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
-                    status={
-                        props.cluster?.consoleURL ? (
-                            <Popover
-                                hasAutoWidth
-                                headerContent={t('upgrade.upgradefailed', {
-                                    version: props.cluster?.distribution.ocp?.desiredVersion,
-                                })}
-                                bodyContent={t('upgrade.upgradefailed.message', {
-                                    clusterName: props.cluster?.name,
-                                    version: props.cluster?.distribution.ocp?.desiredVersion,
-                                })}
-                                footerContent={
-                                    <a
-                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
-                                    </a>
-                                }
-                            >
-                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
-                                    {t('upgrade.upgradefailed')}
-                                </AcmButton>
-                            </Popover>
-                        ) : (
-                            t('upgrade.upgradefailed', { version: props.cluster?.distribution.ocp?.desiredVersion })
-                        )
+                    status={t('upgrade.upgradefailed', {
+                        version: props.cluster?.consoleURL ? '' : props.cluster?.distribution.ocp?.desiredVersion,
+                    })}
+                    popover={
+                        props.cluster?.consoleURL
+                            ? {
+                                  headerContent: t('upgrade.upgradefailed', {
+                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                  }),
+                                  bodyContent: t('upgrade.upgradefailed.message', {
+                                      clusterName: props.cluster?.name,
+                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                  }),
+                                  footerContent: (
+                                      <a
+                                          href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                      >
+                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                      </a>
+                                  ),
+                              }
+                            : undefined
                     }
                 />
             </>
@@ -157,38 +120,31 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.progress}
-                    status={
-                        props.cluster?.consoleURL ? (
-                            <Popover
-                                hasAutoWidth
-                                headerContent={t('upgrade.upgrading', {
-                                    version: props.cluster?.distribution.ocp?.desiredVersion,
-                                })}
-                                bodyContent={t('upgrade.upgrading.message', {
-                                    clusterName: props.cluster?.name,
-                                    version: props.cluster?.distribution.ocp?.desiredVersion,
-                                })}
-                                footerContent={
-                                    <a
-                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
-                                    </a>
-                                }
-                            >
-                                <AcmButton variant="link" style={{ padding: 0, fontSize: 'inherit' }}>
-                                    {t('upgrade.upgrading.version', {
-                                        version: props.cluster?.distribution.ocp?.desiredVersion,
-                                    })}
-                                </AcmButton>
-                            </Popover>
-                        ) : (
-                            t('upgrade.upgrading.version', { version: props.cluster?.distribution.ocp?.desiredVersion })
-                        )
+                    status={t('upgrade.upgrading.version', {
+                        version: props.cluster?.distribution.ocp?.desiredVersion,
+                    })}
+                    popover={
+                        props.cluster?.consoleURL
+                            ? {
+                                  headerContent: t('upgrade.upgrading', {
+                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                  }),
+                                  bodyContent: t('upgrade.upgrading.message', {
+                                      clusterName: props.cluster?.name,
+                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                  }),
+                                  footerContent: (
+                                      <a
+                                          href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                      >
+                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                      </a>
+                                  ),
+                              }
+                            : undefined
                     }
-                    // status={t('upgrade.upgrading', { version: props.cluster?.distribution.ocp?.desiredVersion })}
                 />
             </>
         )
