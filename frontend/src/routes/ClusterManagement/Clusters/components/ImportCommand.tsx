@@ -132,14 +132,13 @@ export function ImportCommand(props: ImportCommandProps) {
                                     <AcmButton
                                         id="launch-console"
                                         variant="secondary"
-                                        component="a"
-                                        to={
-                                            /* istanbul ignore next */ sessionStorage.getItem(
-                                                'DiscoveredClusterConsoleURL'
-                                            ) ?? ''
-                                        }
-                                        target="_blank"
-                                        rel="noreferrer"
+                                        onClick={() => {
+                                            const location = sessionStorage.getItem('DiscoveredClusterConsoleURL')
+                                            if (location) {
+                                                window.open(location, '_blank')
+                                            }
+                                        }}
+                                        role="link"
                                     >
                                         {t('import.command.launchconsole')}
                                     </AcmButton>
