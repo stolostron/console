@@ -260,10 +260,12 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                             throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown)
                         }
                     }
+                } else if (response.status === 302) {
+                    // 302 is returned when token is valid but logged out
+                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                 } else if (response.status >= 400) {
-                    if (response.status === 401 || response.status === 302) {
+                    if (response.status === 401) {
                         // 401 is returned from the backend if no token cookie is on request
-                        // 302 is returned when token is valid but logged out
                         window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                     } else if (ResourceErrorCodes.includes(response.status)) {
                         throw new ResourceError(response.statusText, response.status)
