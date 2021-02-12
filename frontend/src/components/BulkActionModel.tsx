@@ -1,7 +1,6 @@
 import {
     AcmAlert,
     AcmAlertContext,
-    AcmAlertProvider,
     AcmFormProvider,
     AcmModal,
     AcmSubmit,
@@ -135,95 +134,91 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                           ]
                 }
             >
-                <AcmAlertProvider>
-                    <Form style={{ gap: 0 }}>
-                        {!errors ? (
-                            <Fragment>
-                                {props.description}
-                                {props.columns && props.keyFn && (
-                                    <AcmTablePaginationContextProvider localStorageKey="model">
-                                        <AcmTable<T>
-                                            plural=""
-                                            items={props.resources}
-                                            columns={props.columns}
-                                            keyFn={props.keyFn}
-                                            tableActions={[]}
-                                            rowActions={[]}
-                                            bulkActions={[]}
-                                            perPageOptions={[]}
-                                            autoHidePagination
-                                        />
-                                    </AcmTablePaginationContextProvider>
-                                )}
-
-                                <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                                    {progress > 0 ? (
-                                        <Progress
-                                            value={(progress * 100) / progressCount}
-                                            measureLocation={
-                                                progress
-                                                    ? ProgressMeasureLocation.outside
-                                                    : ProgressMeasureLocation.none
-                                            }
-                                        />
-                                    ) : (
-                                        <div style={{ minHeight: '24px' }} />
-                                    )}
-                                </div>
-                                {props.confirmText !== undefined && (
-                                    <AcmTextInput
-                                        label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
-                                        id="confirm"
-                                        value={confirm}
-                                        onChange={setConfirm}
-                                        autoComplete="off"
+                <Form style={{ gap: 0 }}>
+                    {!errors ? (
+                        <Fragment>
+                            {props.description}
+                            {props.columns && props.keyFn && (
+                                <AcmTablePaginationContextProvider localStorageKey="model">
+                                    <AcmTable<T>
+                                        plural={props.plural}
+                                        items={props.resources}
+                                        columns={props.columns}
+                                        keyFn={props.keyFn}
+                                        tableActions={[]}
+                                        rowActions={[]}
+                                        bulkActions={[]}
+                                        perPageOptions={[]}
+                                        autoHidePagination
                                     />
+                                </AcmTablePaginationContextProvider>
+                            )}
+
+                            <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                                {progress > 0 ? (
+                                    <Progress
+                                        value={(progress * 100) / progressCount}
+                                        measureLocation={
+                                            progress ? ProgressMeasureLocation.outside : ProgressMeasureLocation.none
+                                        }
+                                    />
+                                ) : (
+                                    <div style={{ minHeight: '24px' }} />
                                 )}
-                            </Fragment>
-                        ) : (
-                            <Fragment>
-                                <AcmAlert
-                                    isInline
-                                    noClose
-                                    variant="danger"
-                                    title={
-                                        errors.length === 1
-                                            ? `${t('common:there.was.an.error')
-                                                  .replace('{0}', props.processing.toLowerCase())
-                                                  .replace('{1}', props.singular.toLowerCase())}`
-                                            : `${t('common:there.were.errors')
-                                                  .replace('{0}', props.processing.toLowerCase())
-                                                  .replace('{1}', props.plural.toLowerCase())}`
-                                    }
+                            </div>
+                            {props.confirmText !== undefined && (
+                                <AcmTextInput
+                                    label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
+                                    id="confirm"
+                                    value={confirm}
+                                    onChange={setConfirm}
+                                    autoComplete="off"
                                 />
-                                {props.columns && props.keyFn && (
-                                    <AcmTablePaginationContextProvider localStorageKey="model">
-                                        <AcmTable<T>
-                                            plural=""
-                                            items={props.resources.filter((item) => getItemError(item) !== undefined)}
-                                            columns={[
-                                                props.columns[0],
-                                                {
-                                                    header: t('common:error'),
-                                                    cell: (item) => {
-                                                        return <Fragment>{getItemError(item)?.message}</Fragment>
-                                                    },
+                            )}
+                        </Fragment>
+                    ) : (
+                        <Fragment>
+                            <AcmAlert
+                                isInline
+                                noClose
+                                variant="danger"
+                                title={
+                                    errors.length === 1
+                                        ? `${t('common:there.was.an.error')
+                                              .replace('{0}', props.processing.toLowerCase())
+                                              .replace('{1}', props.singular.toLowerCase())}`
+                                        : `${t('common:there.were.errors')
+                                              .replace('{0}', props.processing.toLowerCase())
+                                              .replace('{1}', props.plural.toLowerCase())}`
+                                }
+                            />
+                            {props.columns && props.keyFn && (
+                                <AcmTablePaginationContextProvider localStorageKey="model">
+                                    <AcmTable<T>
+                                        plural=""
+                                        items={props.resources.filter((item) => getItemError(item) !== undefined)}
+                                        columns={[
+                                            props.columns[0],
+                                            {
+                                                header: t('common:error'),
+                                                cell: (item) => {
+                                                    return <Fragment>{getItemError(item)?.message}</Fragment>
                                                 },
-                                            ]}
-                                            keyFn={props.keyFn}
-                                            tableActions={[]}
-                                            rowActions={[]}
-                                            bulkActions={[]}
-                                            perPageOptions={[]}
-                                            autoHidePagination
-                                        />
-                                    </AcmTablePaginationContextProvider>
-                                )}
-                                <div style={{ minHeight: '24px' }} />
-                            </Fragment>
-                        )}
-                    </Form>
-                </AcmAlertProvider>
+                                            },
+                                        ]}
+                                        keyFn={props.keyFn}
+                                        tableActions={[]}
+                                        rowActions={[]}
+                                        bulkActions={[]}
+                                        perPageOptions={[]}
+                                        autoHidePagination
+                                    />
+                                </AcmTablePaginationContextProvider>
+                            )}
+                            <div style={{ minHeight: '24px' }} />
+                        </Fragment>
+                    )}
+                </Form>
             </AcmModal>
         </AcmFormProvider>
     )
