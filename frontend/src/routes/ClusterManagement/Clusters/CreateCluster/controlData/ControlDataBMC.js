@@ -233,12 +233,14 @@ const controlDataBMC = [
                 name: 'creation.ocp.host.name',
                 id: 'hostName',
                 type: 'text',
+                width: '25%',
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
                 name: 'creation.ocp.host.namespace',
                 id: 'hostNamespace',
                 type: 'text',
+                width: '40%',
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
@@ -246,6 +248,7 @@ const controlDataBMC = [
                 id: 'role',
                 type: 'toggle',
                 active: getActiveRole,
+                width: '20%',
                 available: ['master', 'worker'],
                 validation: {
                     notification: 'creation.ocp.cluster.valid.key',
@@ -256,6 +259,7 @@ const controlDataBMC = [
                 name: 'creation.ocp.host.bmc.address',
                 id: 'bmcAddress',
                 type: 'text',
+                width: '50%',
                 validation: VALIDATE_BMC_ADDR,
             },
             {
