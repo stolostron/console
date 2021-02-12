@@ -390,7 +390,13 @@ export function CreateBareMetalAssetPageContent(props: {
                                     },
                                 ])
                                     .promise.then(() => {
-                                        return patchResource(bmaSecret as BMASecret, bmaSecret)
+                                        return patchResource(bmaSecret as BMASecret, [
+                                            {
+                                                op: 'replace',
+                                                path: `/stringData`,
+                                                value: bmaSecret.stringData,
+                                            },
+                                        ])
                                             .promise.then(() => {
                                                 history.push(NavigationPath.bareMetalAssets)
                                             })

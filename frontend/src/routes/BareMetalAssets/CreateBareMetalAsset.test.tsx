@@ -232,9 +232,26 @@ describe('CreateBareMetalAsset', () => {
         )
         const getBMANock = nockGet(bareMetalAsset, bareMetalAsset)
         const getSecretNock = nockGet(patchBmaSecret, patchBmaSecret)
-        const patchNockSecret = nockPatch(patchBmaSecret, patchBmaSecret)
+        const patchNockSecret = nockPatch(patchBmaSecret, [
+            {
+                op: 'replace',
+                path: `/stringData`,
+                value: patchBmaSecret.stringData,
+            },
+        ])
         nockOptions(patchBareMetalAsset, patchBareMetalAsset)
-        const patchNock = nockPatch(patchBareMetalAsset, patchBareMetalAsset)
+        const patchNock = nockPatch(patchBareMetalAsset, [
+            {
+                op: 'replace',
+                path: `/spec/bmc`,
+                value: patchBareMetalAsset.spec?.bmc,
+            },
+            {
+                op: 'replace',
+                path: `/spec/bootMACAddress`,
+                value: patchBareMetalAsset.spec?.bootMACAddress!,
+            },
+        ])
 
         const { getByTestId, getByText } = render(
             <MemoryRouter initialEntries={[editPath]}>
