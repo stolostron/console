@@ -241,7 +241,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
     return {
         promise: axiosRetry<ResultType>({
             ...config,
-            ...{ cancelToken: cancelTokenSource.token, withCredentials: true },
+            ...{ cancelToken: cancelTokenSource.token, withCredentials: true, maxRedirects: 0 },
         })
             .then((response) => {
                 if ((response.data as any)?.kind === StatusKind) {
