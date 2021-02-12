@@ -90,7 +90,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                             {props.columns && props.keyFn && (
                                 <AcmTablePaginationContextProvider localStorageKey="model">
                                     <AcmTable<T>
-                                        plural=""
+                                        plural={props.plural}
                                         items={props.resources}
                                         columns={props.columns}
                                         keyFn={props.keyFn}

@@ -179,6 +179,7 @@
     "labels.button.add": "Add label",
     "labels.edit.title": "Edit labels",
     "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.",
+    "labels.edit.placeholder": "Enter key=value, then press enter, space, or comma",
 
     "summary.status": "Status",
     "summary.nodes": "Nodes",

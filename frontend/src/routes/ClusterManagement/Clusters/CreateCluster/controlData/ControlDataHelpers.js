@@ -68,8 +68,9 @@ export const setAvailableOCPImages = (provider, control, result) => {
             control.noHandlebarReplacements = true
             imageSets.forEach((item) => {
                 const { metadata, spec } = item
-                const { name, visible } = metadata
-                const { releaseImage } = spec
+                const name = metadata?.name
+                const visible = metadata?.labels?.visible
+                const releaseImage = spec?.releaseImage
                 // We only hide when visible is false. We consider visible the default
                 if (visible !== 'false') {
                     switch (provider) {
