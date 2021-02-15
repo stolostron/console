@@ -12,7 +12,11 @@ class WrappedImportBareMetalAssetsButton extends React.Component {
         const { t } = this.props
         return (
             <div>
-                <Button id={t('modal.import-acmbaremetalasset.button.key')} onClick={this.importCSV.bind(this)}>
+                <Button
+                    id={t('modal.import-acmbaremetalasset.button.key')}
+                    onClick={this.importCSV.bind(this)}
+                    variant="secondary"
+                >
                     {t('modal.import-acmbaremetalasset.button.text')}
                 </Button>
                 <Tooltip control={{ tooltip: t('modal.import-acmbaremetalasset.button.tooltip') }} />

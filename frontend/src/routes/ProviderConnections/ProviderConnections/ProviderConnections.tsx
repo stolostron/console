@@ -15,7 +15,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
@@ -50,7 +50,7 @@ export default function ProviderConnectionsPage() {
 const AddConnectionBtn = () => {
     const { t } = useTranslation(['connection'])
     return (
-        <AcmButton component="a" to={NavigationPath.addConnection}>
+        <AcmButton component={Link} to={NavigationPath.addConnection}>
             {t('add')}
         </AcmButton>
     )

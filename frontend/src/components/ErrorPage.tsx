@@ -29,6 +29,10 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
                 title = 'Conflict'
                 message = 'Unable to update the resource because of a resource conflict.'
                 break
+            case ResourceErrorCode.UnprocessableEntity:
+                title = 'Unprocessable entity'
+                message = error.message
+                break
             case ResourceErrorCode.ConnectionReset:
                 title = 'Connection reset'
                 message = 'Unable to communicate with the server because the network connection was reset.'

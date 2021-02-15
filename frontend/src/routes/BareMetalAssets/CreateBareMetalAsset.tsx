@@ -377,9 +377,26 @@ export function CreateBareMetalAssetPageContent(props: {
                         onClick={() => {
                             alertContext.clearAlerts()
                             if (isEdit) {
-                                return patchResource(bareMetalAsset as BareMetalAsset, bareMetalAsset)
+                                return patchResource(bareMetalAsset as BareMetalAsset, [
+                                    {
+                                        op: 'replace',
+                                        path: `/spec/bmc`,
+                                        value: bareMetalAsset.spec?.bmc,
+                                    },
+                                    {
+                                        op: 'replace',
+                                        path: `/spec/bootMACAddress`,
+                                        value: bareMetalAsset.spec?.bootMACAddress!,
+                                    },
+                                ])
                                     .promise.then(() => {
-                                        return patchResource(bmaSecret as BMASecret, bmaSecret)
+                                        return patchResource(bmaSecret as BMASecret, [
+                                            {
+                                                op: 'replace',
+                                                path: `/stringData`,
+                                                value: bmaSecret.stringData,
+                                            },
+                                        ])
                                             .promise.then(() => {
                                                 history.push(NavigationPath.bareMetalAssets)
                                             })

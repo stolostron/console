@@ -183,7 +183,7 @@ export function ImportClusterPageContent() {
                                         </Link>
                                         <AcmButton
                                             variant="secondary"
-                                            component="a"
+                                            role="link"
                                             onClick={() => {
                                                 sessionStorage.getItem('DiscoveredClusterConsoleURL')
                                                     ? history.push(NavigationPath.discoveredClusters)
