@@ -70,10 +70,10 @@ export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
                                 patch = [
                                     ...patch,
                                     ...Object.keys(labels).map((key) => {
-                                        key = key.replace(/\//g, '~1')
+                                        const keyPath = key.replace(/\//g, '~1')
                                         return {
                                             op: 'add',
-                                            path: `/metadata/labels/${key}`,
+                                            path: `/metadata/labels/${keyPath}`,
                                             value: labels[key],
                                         }
                                     }),
