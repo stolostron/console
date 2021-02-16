@@ -18,9 +18,8 @@ import {
     waitForCalled,
     waitForNock,
     waitForNocks,
-    waitForNotRole,
-    waitForRole,
     waitForText,
+    waitForNotText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -736,7 +735,7 @@ describe('ClusterDetails', () => {
         await waitForCalled(window.open as jest.Mock)
     })
 
-    test('overview page opens edit labels modal', async () => {
+    test('overview page opens edit labels', async () => {
         const nocks = defaultNocks()
         render(<Component />)
         await waitForNocks(nocks)
@@ -744,10 +743,10 @@ describe('ClusterDetails', () => {
         await waitForText(clusterName, true)
 
         await clickByLabel('common:labels.edit.title')
-        await waitForRole('dialog')
+        await waitForText('labels.description')
 
         await clickByText('common:cancel')
-        await waitForNotRole('dialog')
+        await waitForNotText('labels.description')
     })
 
     test('nodes page renders', async () => {
