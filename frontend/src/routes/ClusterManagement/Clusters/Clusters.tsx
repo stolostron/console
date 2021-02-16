@@ -15,6 +15,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmDrawerContext,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -39,7 +40,7 @@ import {
 } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
-import { EditLabelsModal } from './components/EditLabelsModal'
+import { EditLabels } from './components/EditLabels'
 
 export default function ClustersPage() {
     return (
@@ -173,7 +174,6 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -182,6 +182,9 @@ export function ClustersTable(props: {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
+
+    const { setDrawerContext } = useContext(AcmDrawerContext)
+
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
@@ -219,13 +222,6 @@ export function ClustersTable(props: {
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
-            <EditLabelsModal
-                cluster={editClusterLabels}
-                close={() => {
-                    setEditClusterLabels(undefined)
-                    props.refresh()
-                }}
-            />
             <UpgradeModal
                 data={upgradeSingleCluster?.distribution}
                 open={!!upgradeSingleCluster}
@@ -338,7 +334,20 @@ export function ClustersTable(props: {
                                 {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
-                                    click: (cluster: Cluster) => setEditClusterLabels({ ...cluster }),
+                                    click: (cluster: Cluster) => {
+                                        setDrawerContext({
+                                            isExpanded: true,
+                                            title: t('labels.edit.title'),
+                                            onCloseClick: () => setDrawerContext(undefined),
+                                            panelContent: (
+                                                <EditLabels
+                                                    cluster={cluster}
+                                                    close={() => setDrawerContext(undefined)}
+                                                />
+                                            ),
+                                            panelContentProps: { minSize: '600px' },
+                                        })
+                                    },
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                     tooltip: !tableActionRbacValues['cluster.edit.labels']
                                         ? t('common:rbac.unauthorized')
