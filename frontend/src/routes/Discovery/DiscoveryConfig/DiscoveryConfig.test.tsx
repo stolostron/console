@@ -115,17 +115,31 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
-    it('Error Retrieving MCH', async () => {
-        const mchNock = nockList(multiClusterHub, mockBadRequestStatus)
+    it('Error Retrieving discoveryConfigs', async () => {
+        const dcNock = nockList(discoveryConfig, mockBadRequestStatus)
+        const providerConnectionsNock = nockList(
+            providerConnection,
+            [providerConnection],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
         const { getByText } = render(<TestDiscoveryConfigPage />)
-        await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(dcNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('Bad request')).toBeInTheDocument())
         await waitFor(() => expect(getByText('common:retry')).toBeInTheDocument())
     })
 
     it('No MCH Retrieved', async () => {
+        const dcNock = nockList(discoveryConfig, discoveryConfig)
+        const providerConnectionsNock = nockList(
+            providerConnection,
+            [providerConnection],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
         const mchNock = nockList(multiClusterHub, [])
         const { getByText } = render(<TestDiscoveryConfigPage />)
+        await waitFor(() => expect(dcNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
         await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('Error')).toBeInTheDocument())
         await waitFor(() => expect(getByText('Only 1 MulticlusterHub resource may exist')).toBeInTheDocument())
@@ -133,6 +147,7 @@ describe('discovery config page', () => {
     })
 
     it('Create DiscoveryConfig', async () => {
+        const dcNock = nockList(discoveryConfig, [])
         const mchNock = nockList(multiClusterHub, [multiClusterHub])
         const providerConnectionsNock = nockList(
             providerConnection,
@@ -143,8 +158,9 @@ describe('discovery config page', () => {
 
         nockGet(discoveryConfig, mockNotFoundStatus)
         const { getByText, container } = render(<TestDiscoveryConfigPage />)
-        await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(dcNock.isDone()).toBeTruthy())
         await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
 
         // Select LastActive
         await waitFor(() =>
@@ -172,18 +188,16 @@ describe('discovery config page', () => {
     })
 
     it('Edit DiscoveryConfig', async () => {
-        const mchNock = nockList(multiClusterHub, [multiClusterHub])
+        const dcNock = nockList(discoveryConfig, [discoveryConfig])
         const providerConnectionsNock = nockList(
             providerConnection,
             [providerConnection],
             ['cluster.open-cluster-management.io/cloudconnection=']
         )
-        const getDiscoveryConfig = nockGet(discoveryConfig, discoveryConfig)
         const replaceNock = nockReplace(discoveryConfigUpdated)
 
         const { getByText, container } = render(<TestDiscoveryConfigPage />)
-        await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getDiscoveryConfig.isDone()).toBeTruthy())
+        await waitFor(() => expect(dcNock.isDone()).toBeTruthy())
         await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
 
         // Ensure Form is prepopulated

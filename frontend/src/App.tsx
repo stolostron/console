@@ -15,7 +15,7 @@ const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters
 const AddConnectionPage = lazy(() => import('./routes/ProviderConnections/AddConnection/AddConnection'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
-const DiscoveryConfig = lazy(() => import('./routes/ProviderConnections/DiscoveryConfig/DiscoveryConfig'))
+const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 
 declare global {
     interface Window {

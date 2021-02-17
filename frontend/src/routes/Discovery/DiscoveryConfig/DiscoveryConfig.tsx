@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
+    AcmAlertGroup,
     AcmAlertProvider,
     AcmSubmit,
     AcmButton,
@@ -12,8 +13,6 @@ import {
     AcmFormSection,
     AcmMultiSelect,
 } from '@open-cluster-management/ui-components'
-import { useQuery } from '../../../lib/useQuery'
-import { getErrorInfo } from '../../../components/ErrorPage'
 import { Page, SelectOption, Text, TextVariants, ButtonVariant, ActionGroup } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -31,17 +30,20 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    getDiscoveryConfig,
+    listDiscoveryConfigs,
 } from '../../../resources/discovery-config'
 
 export default function DiscoveryConfigPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['discovery'])
     return (
         <AcmAlertProvider>
             <Page>
                 <AcmPageHeader
                     title={t('discoveryConfig.title')}
-                    breadcrumb={[{ text: t('clusters'), to: NavigationPath.clusters }]}
+                    breadcrumb={[
+                        { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
+                        { text: t('discoveryConfig.title'), to: '' },
+                    ]}
                 />
                 <AddDiscoveryConfigData />
             </Page>
@@ -50,10 +52,11 @@ export default function DiscoveryConfigPage() {
 }
 
 export function AddDiscoveryConfigData() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation(['discovery', 'common'])
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [providerConnections, setProviderConnections] = useState<ProviderConnection[]>([])
 
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
@@ -70,46 +73,57 @@ export function AddDiscoveryConfigData() {
         },
     })
 
-    // Get MCH Namespace
     useEffect(() => {
-        if (!discoveryConfig.metadata.namespace) {
-            setIsLoading(true)
-            const result = listMultiClusterHubs()
-            result.promise
-                .then((mch) => {
-                    // only one mch can exist
-                    if (mch.length === 1) {
-                        discoveryConfig.metadata.namespace = mch[0].metadata.namespace
-                    } else {
-                        setError(Error('Only 1 MulticlusterHub resource may exist'))
-                    }
-                })
-                .catch((err) => {
-                    setError(err)
-                })
-                .finally(() => setIsLoading(false))
-            return result.abort
-        }
-    }, [discoveryConfig])
+        setIsLoading(true)
+        const providerConnectionsResult = listProviderConnections().promise
+        providerConnectionsResult
+            .then((results) => {
+                setProviderConnections(results)
+                setIsLoading(false)
+            })
+            .catch((err) => {
+                setError(err)
+            })
+    }, [])
 
     // Get Discovery Config if it exists
     useEffect(() => {
-        if (discoveryConfig.metadata.namespace) {
-            setIsLoading(true)
-            const result = getDiscoveryConfig(discoveryConfig.metadata.namespace)
-            result.promise
-                .then((discoveryConfig) => {
-                    setDiscoveryConfig(discoveryConfig)
-                })
-                .catch((err) => {
-                    if (err.code !== ResourceErrorCode.NotFound) {
-                        setError(err)
-                    }
-                })
-                .finally(() => setIsLoading(false))
-            return result.abort
-        }
-    }, [discoveryConfig.metadata.namespace])
+        setIsLoading(true)
+        const discoveryConfigResult = listDiscoveryConfigs().promise
+        discoveryConfigResult
+            .then((results) => {
+                if (results.length === 1) {
+                    setDiscoveryConfig(results[0])
+                } else if (results.length === 0) {
+                    const result = listMultiClusterHubs()
+                    return result.promise
+                        .then((mch) => {
+                            // only one mch can exist
+                            if (mch.length === 1) {
+                                const copy = { ...discoveryConfig }
+                                copy.metadata.namespace = mch[0].metadata.namespace
+                                setDiscoveryConfig(copy)
+                            } else {
+                                setError(Error('Only 1 MulticlusterHub resource may exist'))
+                            }
+                        })
+                        .catch((err) => {
+                            setError(err)
+                        })
+                } else {
+                    setError(Error('Only 1 DiscoveryConfig resource may exist'))
+                }
+            })
+            .catch((err) => {
+                if (err.code !== ResourceErrorCode.NotFound) {
+                    setError(err)
+                }
+            })
+            .finally(() => {
+                setIsLoading(false)
+            })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     if (error) {
         return (
@@ -131,22 +145,17 @@ export function AddDiscoveryConfigData() {
         return <AcmLoadingPage />
     }
 
-    return <DiscoveryConfigPageContent discoveryConfig={discoveryConfig} />
+    return <DiscoveryConfigPageContent discoveryConfig={discoveryConfig} providerConnections={providerConnections} />
 }
 
-let lastData: ProviderConnection[] | undefined
-let lastTime: number = 0
-
-export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryConfig }) {
-    const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>(
-        JSON.parse(JSON.stringify(props.discoveryConfig))
-    )
+export function DiscoveryConfigPageContent(props: {
+    discoveryConfig: DiscoveryConfig
+    providerConnections: ProviderConnection[]
+}) {
+    const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>(props.discoveryConfig)
     const alertContext = useContext(AcmAlertContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['discovery', 'common'])
     const history = useHistory()
-    const [submitted, setSubmitted] = useState<boolean>(false)
-    const [, setLoading] = useState<boolean>(false)
-    const [, setError] = useState<string | undefined>()
     const [editing, setEditing] = useState<boolean>(false)
 
     const supportedVersions = ['4.5', '4.6', '4.7', '4.8']
@@ -171,28 +180,6 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
         }
     }, [props.discoveryConfig])
 
-    const { error, data, startPolling } = useQuery(
-        listProviderConnections,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
-
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'test') {
-            lastData = data
-            lastTime = Date.now()
-        }
-    }, [data])
-
-    useEffect(startPolling, [startPolling])
-
-    useEffect(() => {
-        alertContext.clearAlerts()
-        if (error) {
-            alertContext.addAlert(getErrorInfo(error))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
     function updateDiscoveryConfig(update: (discoveryConfig: DiscoveryConfig) => void) {
         const copy = { ...discoveryConfig }
         update(copy)
@@ -200,8 +187,7 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
     }
 
     const onSubmit = async () => {
-        setSubmitted(true)
-        setError(undefined)
+        alertContext.clearAlerts()
         return new Promise(async (resolve, reject) => {
             try {
                 if (!editing) {
@@ -210,14 +196,17 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                 } else {
                     await replaceDiscoveryConfig(discoveryConfig).promise
                 }
-            } catch (err) {
-                setError(err.message)
-                setSubmitted(false)
-                reject()
-            } finally {
-                setLoading(false)
                 resolve(undefined)
                 history.push(NavigationPath.discoveredClusters)
+            } catch (err) {
+                if (err instanceof Error) {
+                    alertContext.addAlert({
+                        type: 'danger',
+                        title: t('common:request.failed'),
+                        message: err.message,
+                    })
+                    reject()
+                }
             }
         })
     }
@@ -244,7 +233,6 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                             }
                         })
                     }}
-                    isDisabled={submitted}
                     isRequired
                 >
                     {lastActive.map((e, i) => (
@@ -266,7 +254,6 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                             discoveryConfig.spec.filters.openShiftVersions = versions
                         })
                     }}
-                    isDisabled={submitted}
                     isRequired
                 >
                     {supportedVersions.map((version) => (
@@ -290,23 +277,17 @@ export function DiscoveryConfigPageContent(props: { discoveryConfig: DiscoveryCo
                             }
                         })
                     }}
-                    isDisabled={submitted}
                     isRequired
                 >
-                    {data?.map((providerConnection) => (
+                    {props.providerConnections?.map((providerConnection) => (
                         <SelectOption key={providerConnection.metadata.name} value={providerConnection.metadata.name}>
                             {providerConnection.metadata.name}
                         </SelectOption>
                     ))}
                 </AcmSelect>
-
+                <AcmAlertGroup isInline canClose />
                 <ActionGroup>
-                    <AcmSubmit
-                        id="applyDiscoveryConfig"
-                        onClick={onSubmit}
-                        variant={ButtonVariant.primary}
-                        isDisabled={submitted}
-                    >
+                    <AcmSubmit id="applyDiscoveryConfig" onClick={onSubmit} variant={ButtonVariant.primary}>
                         {t('discoveryConfig.enable')}
                     </AcmSubmit>
                     <Link to={NavigationPath.discoveredClusters} id="cancelDiscoveryConfig">
