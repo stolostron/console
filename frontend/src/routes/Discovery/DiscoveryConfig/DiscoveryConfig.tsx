@@ -103,8 +103,6 @@ export function AddDiscoveryConfigData() {
                                 const copy = { ...discoveryConfig }
                                 copy.metadata.namespace = mch[0].metadata.namespace
                                 setDiscoveryConfig(copy)
-                            } else {
-                                setError(Error('Only 1 MulticlusterHub resource may exist'))
                             }
                         })
                         .catch((err) => {
@@ -298,17 +296,17 @@ export function DiscoveryConfigPageContent(props: {
 }
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    let lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
+    let lastActive = discoveryConfig.spec?.filters?.lastActive
     if (lastActive === undefined) {
-        return '7d' as string
+        return '7d'
     }
-    return lastActive.toString().concat('d') as string
+    return lastActive.toString().concat('d')
 }
 
 export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<DiscoveryConfig>) {
-    let providerConnection = discoveryConfig.spec?.providerConnections || undefined
+    let providerConnection = discoveryConfig.spec?.providerConnections
     if (providerConnection !== undefined && providerConnection[0] !== undefined) {
-        return providerConnection[0] as string
+        return providerConnection[0]
     }
-    return '' as string
+    return ''
 }

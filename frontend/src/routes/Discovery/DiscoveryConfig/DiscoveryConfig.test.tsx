@@ -129,23 +129,6 @@ describe('discovery config page', () => {
         await waitFor(() => expect(getByText('common:retry')).toBeInTheDocument())
     })
 
-    it('No MCH Retrieved', async () => {
-        const dcNock = nockList(discoveryConfig, discoveryConfig)
-        const providerConnectionsNock = nockList(
-            providerConnection,
-            [providerConnection],
-            ['cluster.open-cluster-management.io/cloudconnection=']
-        )
-        const mchNock = nockList(multiClusterHub, [])
-        const { getByText } = render(<TestDiscoveryConfigPage />)
-        await waitFor(() => expect(dcNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(providerConnectionsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(mchNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('Error')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('Only 1 MulticlusterHub resource may exist')).toBeInTheDocument())
-        await waitFor(() => expect(getByText('common:retry')).toBeInTheDocument())
-    })
-
     it('Create DiscoveryConfig', async () => {
         const dcNock = nockList(discoveryConfig, [])
         const mchNock = nockList(multiClusterHub, [multiClusterHub])

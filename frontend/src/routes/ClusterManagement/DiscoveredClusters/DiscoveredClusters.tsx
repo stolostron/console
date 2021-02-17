@@ -153,9 +153,9 @@ function DiscoveredClustersEmptyState() {
     return (
         <AcmEmptyState
             action={
-                <Link to={NavigationPath.discoveryConfig}>
-                    <AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>
-                </Link>
+                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                    {t('discovery.enablediscoverybtn')}
+                </AcmButton>
             }
             title={t('discovery.emptyStateHeader')}
             message={t('discovery.emptyStateMsg')}
