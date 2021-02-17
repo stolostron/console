@@ -14,8 +14,7 @@ export const createImportResources = (cluster: Cluster) => {
                 const managedCluster = await createManagedCluster({ clusterName: cluster.name, clusterLabels }).promise
                 await createKlusterletAddonConfig({ clusterName: cluster.name, clusterLabels }).promise
                 resolve(managedCluster)
-            } catch(err) {
-                console.log('err', err)
+            } catch (err) {
                 reject(err)
             }
         }),

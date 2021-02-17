@@ -662,15 +662,6 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function getClusterActionsResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusteractions',
-        verb: 'create',
-        group: 'action.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
-
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
