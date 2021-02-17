@@ -6,7 +6,7 @@
     "cluster": "Cluster",
     "clusters": "Clusters",
     "detach": "Detach",
-    "attach": "Attach",
+    "import": "Import",
     "detaching": "Detaching",
     "destroy": "Destroy",
     "destroying": "Destroying",
@@ -14,7 +14,7 @@
     "managed": "Managed",
     "managed.emptyStateHeader": "No managed clusters found",
     "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
-    "managed.attach": "Attach cluster",
+    "managed.import": "Import cluster",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
     "managed.upgrade": "Upgrade cluster",
@@ -36,7 +36,7 @@
     "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
     "button.backToClusters": "Back to Cluster management",
 
-    "cluster.attach.description": "Attaching a cluster will import it to the hub cluster. The kubeadmin user must be enabled on the target cluster(s) for the import to succeed.",
+    "cluster.import.description": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",
     "cluster.detach.description": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
     "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be destroyed.",
 

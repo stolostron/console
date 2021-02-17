@@ -3,7 +3,7 @@ import * as nock from 'nock'
 import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockCreateSelfSubjectAccessReview, nockDelete, nockList } from '../../../lib/nock-util'
+import { nockCreateSelfSubjectAccessReview, nockDelete, nockList, nockCreate } from '../../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -29,6 +29,11 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
+import {
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+} from '../../../resources/klusterlet-add-on-config'
 import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
 
@@ -287,10 +292,37 @@ const mockClusterDeployment: ClusterDeployment = {
         labels: { 'hive.openshift.io/cluster-platform': 'aws' },
     },
 }
+
+// there must not be a ManagedCluster7
+const mockClusterDeployment7: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        name: 'managed-cluster-name-7',
+        namespace: 'managed-cluster-name-7',
+        labels: { 'hive.openshift.io/cluster-platform': 'aws' },
+    },
+    spec: {
+        clusterName: 'managed-cluster-name-7',
+        installed: true,
+        provisioning: {
+            imageSetRef: { name: '' },
+            installConfigSecretRef: { name: '' },
+            sshPrivateKeySecretRef: { name: '' },
+        },
+        pullSecretRef: { name: '' },
+    },
+}
+
 function nockListClusterDeployments(clusterDeployments?: ClusterDeployment[]) {
-    return nockList(mockClusterDeployment, clusterDeployments ?? [mockClusterDeployment], undefined, {
-        managedNamespacesOnly: '',
-    })
+    return nockList(
+        mockClusterDeployment,
+        clusterDeployments ?? [mockClusterDeployment, mockClusterDeployment7],
+        undefined,
+        {
+            managedNamespacesOnly: '',
+        }
+    )
 }
 
 const mockCertifigate: CertificateSigningRequest = {
@@ -383,7 +415,6 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(
                 getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
-            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
@@ -430,7 +461,6 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(
                 getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
-            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
@@ -473,10 +503,9 @@ describe('Cluster page', () => {
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!)),
         ]
         await waitForText(mockManagedCluster3.metadata.name!)
-        await clickByLabel('Actions', 2) // Click the action button on the 3th table row
+        await clickByLabel('Actions', 2) // Click the action button on the 3rd table row
         await waitForNocks(rbacNocks)
         await waitForNotText('managed.upgrade')
         await waitForText(mockManagedCluster3.metadata.name!)
@@ -486,7 +515,6 @@ describe('Cluster page', () => {
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!)),
         ]
         await waitForText(mockManagedCluster5.metadata.name!)
         await clickByLabel('Actions', 4) // Click the action button on the 5th table row
@@ -530,5 +558,67 @@ describe('Cluster page', () => {
         await clickByText('common:cancel')
         await waitForText(mockManagedCluster4.metadata.name!)
         await waitForText(mockManagedCluster6.metadata.name!)
+    })
+
+    // TODO re-enable when re-attach is supported
+    test.skip('can re-attach detached clusters', async () => {
+        const mockCreateManagedCluster: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                name: mockClusterDeployment7.metadata.name!,
+                labels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockClusterDeployment7.metadata.name!,
+                },
+            },
+            spec: { hubAcceptsClient: true },
+        }
+        const mockCreateKlusterletAddonConfig: KlusterletAddonConfig = {
+            apiVersion: KlusterletAddonConfigApiVersion,
+            kind: KlusterletAddonConfigKind,
+            metadata: {
+                name: mockClusterDeployment7.metadata.name!,
+                namespace: mockClusterDeployment7.metadata.name!,
+            },
+            spec: {
+                clusterName: mockClusterDeployment7.metadata.name!,
+                clusterNamespace: mockClusterDeployment7.metadata.name!,
+                clusterLabels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockClusterDeployment7.metadata.name!,
+                },
+                applicationManager: { enabled: true, argocdCluster: false },
+                policyController: { enabled: true },
+                searchCollector: { enabled: true },
+                certPolicyController: { enabled: true },
+                iamPolicyController: { enabled: true },
+                version: '2.2.0',
+            },
+        }
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(
+                getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockClusterDeployment7.metadata.name!)
+            ),
+        ]
+        const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
+        const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
+        await waitForText(mockClusterDeployment7.metadata.name!)
+        await clickByLabel('Actions', 6) // Click the action button on the 7th table row
+        await waitForNocks(rbacNocks)
+        await waitForText('managed.import')
+        await clickByText('managed.import')
+        await waitForText('cluster.import.description')
+        await clickByText('import')
+        await waitForNocks([createMcNock, createKacNock])
+        await waitForNotText('cluster.import.description')
     })
 })
