@@ -5,7 +5,7 @@ import {
     AcmTable,
     AcmErrorBoundary,
     IAcmTableColumn,
-    } from '@open-cluster-management/ui-components'
+} from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
@@ -21,7 +21,11 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
 import { deleteResource } from '../../../lib/resource-request'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { DiscoveryConfigApiVersion, DiscoveryConfigKind, listDiscoveryConfigs } from '../../../resources/discovery-config'
+import {
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    listDiscoveryConfigs,
+} from '../../../resources/discovery-config'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -151,24 +155,20 @@ export default function DiscoveredClustersPage() {
 }
 
 function DisableDiscovery() {
-    const result=listDiscoveryConfigs()
-    result.promise
-        .then((DiscConfig) => {
-            if (DiscConfig.length === 1) {
-                return deleteResource({
-                    apiVersion: DiscoveryConfigApiVersion,
-                    kind: DiscoveryConfigKind,
-                    metadata: { name: DiscConfig[0].metadata.name, namespace: DiscConfig[0].metadata.namespace},
-                })                
-            }
-            else {
-               const error = (Error('Only 1 DiscoveryConfig resource may exist'))
-               return <ErrorPage error={error} />
-            }
+    const result = listDiscoveryConfigs()
+    result.promise.then((DiscConfig) => {
+        if (DiscConfig.length === 1) {
+            return deleteResource({
+                apiVersion: DiscoveryConfigApiVersion,
+                kind: DiscoveryConfigKind,
+                metadata: { name: DiscConfig[0].metadata.name, namespace: DiscConfig[0].metadata.namespace },
+            })
+        } else {
+            const error = Error('Only 1 DiscoveryConfig resource may exist')
+            return <ErrorPage error={error} />
+        }
     })
 }
-
-
 
 function DiscoveredClustersEmptyState() {
     const { t } = useTranslation(['cluster'])
@@ -207,61 +207,61 @@ export function DiscoveredClustersPageContent() {
     )
 }
 
-
-
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
     })
-    return (   
+    return (
         <Fragment>
-            <ConfirmModal {...modalProps} />  
-        <AcmTable<DiscoveredCluster>
-            plural="discovered clusters"
-            items={props.discoveredClusters}
-            columns={discoveredClusterCols}
-            keyFn={dckeyFn}
-            key="discoveredClustersTable"
-            tableActions={[
-                {
-                    id: 'editClusterDiscvoveryBtn',
-                    title: t('discovery.edit'),
-                    click: () => {
-                    }, // TODO: Make this button work
-                },
-                {
-                    id: 'disableClusterDiscvoveryBtn',
-                    title: t('discovery.disable'),
-                    click: () => {
-                        setModalProps({
-                            open: true,
-                            title: t('disable.title'),
-                            confirm: () => {DisableDiscovery(); setModalProps({ open: false })},                                                                                  
-                            message: t('disable.message'),
-                            isDanger: false,
-                            cancel: () => {
-                                setModalProps({ open: false })
-                            },                        
-                    })
-                 }} // TODO: Make this button work
-                
-                ]}
-            bulkActions={[]}
-            rowActions={[
-                {
-                    id: 'importCluster',
-                    title: t('discovery.import'),
-                    click: (item) => {
-                        sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
-                        sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                        history.push(NavigationPath.importCluster)
+            <ConfirmModal {...modalProps} />
+            <AcmTable<DiscoveredCluster>
+                plural="discovered clusters"
+                items={props.discoveredClusters}
+                columns={discoveredClusterCols}
+                keyFn={dckeyFn}
+                key="discoveredClustersTable"
+                tableActions={[
+                    {
+                        id: 'editClusterDiscvoveryBtn',
+                        title: t('discovery.edit'),
+                        click: () => {}, // TODO: Make this button work
                     },
-                },
-            ]}
-            emptyState={<DiscoveredClustersEmptyState />}
-        />
+                    {
+                        id: 'disableClusterDiscvoveryBtn',
+                        title: t('discovery.disable'),
+                        click: () => {
+                            setModalProps({
+                                open: true,
+                                title: t('disable.title'),
+                                confirm: () => {
+                                    DisableDiscovery()
+                                    setModalProps({ open: false })
+                                },
+                                message: t('disable.message'),
+                                isDanger: false,
+                                cancel: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    }, // TODO: Make this button work
+                ]}
+                bulkActions={[]}
+                rowActions={[
+                    {
+                        id: 'importCluster',
+                        title: t('discovery.import'),
+                        click: (item) => {
+                            sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                            sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                            history.push(NavigationPath.importCluster)
+                        },
+                    },
+                ]}
+                emptyState={<DiscoveredClustersEmptyState />}
+            />
         </Fragment>
     )
 }

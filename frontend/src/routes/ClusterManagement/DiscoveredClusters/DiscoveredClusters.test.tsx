@@ -71,24 +71,21 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     },
 ]
 
-const mockDiscoveryConfig: DiscoveryConfig= {
+const mockDiscoveryConfig: DiscoveryConfig = {
     apiVersion: DiscoveryConfigApiVersion,
     kind: DiscoveryConfigKind,
     metadata: { name: 'discoveryconfig', namespace: 'open-cluster-management' },
-    spec: {}    
-    }
+    spec: {},
+}
 
-const mockDiscoveryConfigs: DiscoveryConfig[] = [
-    mockDiscoveryConfig
-]
-
+const mockDiscoveryConfigs: DiscoveryConfig[] = [mockDiscoveryConfig]
 
 test('DiscoveredClustersPage', async () => {
     const listNock = nockList(
         { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
         mockDiscoveredClusters
     )
-    const configlistNock=nockList(
+    const configlistNock = nockList(
         { apiVersion: DiscoveryConfigApiVersion, kind: DiscoveryConfigKind },
         mockDiscoveryConfigs
     )
@@ -111,7 +108,7 @@ test('DiscoveredClustersPage', async () => {
         }
     })
 
-    // Test Delete Buttons 
+    // Test Delete Buttons
     await clickByText('discovery.disable')
     await waitForText('confirm')
     await clickByText('confirm')
@@ -125,4 +122,3 @@ test('No Discovered Clusters', async () => {
     await waitForNock(listNock)
     await waitForText('discovery.emptyStateHeader')
 })
-
