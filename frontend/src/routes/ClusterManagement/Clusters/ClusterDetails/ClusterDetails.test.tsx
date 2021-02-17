@@ -695,7 +695,6 @@ function defaultNocks() {
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
@@ -704,11 +703,11 @@ function defaultNocks() {
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
         const nocks = [
+            nockGetManagedClusterError(),
             nockGetManagedClusterInfoError(),
             nockGetClusterDeploymentError(),
             nockListCertificateSigningRequests(),
             nockGetManagedClusterAddons(),
-            nockGetManagedClusterError(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
         ]
         render(<Component />)
@@ -787,7 +786,6 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
