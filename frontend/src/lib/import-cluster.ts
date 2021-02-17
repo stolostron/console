@@ -1,6 +1,5 @@
 import { createManagedCluster } from '../resources/managed-cluster'
 import { createKlusterletAddonConfig } from '../resources/klusterlet-add-on-config'
-import { ResourceError, IRequestResult } from './resource-request'
 import { Cluster } from './get-cluster'
 
 export const createImportResources = (cluster: Cluster) => {
@@ -9,31 +8,17 @@ export const createImportResources = (cluster: Cluster) => {
         vendor: 'auto-detect',
         name: cluster.name ?? '',
     }
-    const calls = [
-        createManagedCluster({ clusterName: cluster.name, clusterLabels }),
-        createKlusterletAddonConfig({ clusterName: cluster.name, clusterLabels }),
-    ]
-    const attachClusterResult: IRequestResult<PromiseSettledResult<unknown>[]> = {
-        promise: Promise.allSettled(calls.map((result) => result.promise)),
-        abort: () => calls.forEach((call) => call.abort()),
-    }
     return {
-        promise: new Promise((resolve, reject) => {
-            attachClusterResult.promise.then((result) => {
-                if (result.every((res) => res.status !== 'rejected')) {
-                    resolve(result)
-                } else {
-                    const mcResult = result[0] as PromiseRejectedResult
-                    const kacResult = result[1] as PromiseRejectedResult
-                    if (mcResult.status === 'rejected' || kacResult.status === 'rejected') {
-                        const error = mcResult.reason ?? kacResult.reason
-                        if (error instanceof ResourceError) {
-                            reject(mcResult.reason)
-                        }
-                    }
-                }
-            })
+        promise: new Promise(async (resolve, reject) => {
+            try {
+                const managedCluster = await createManagedCluster({ clusterName: cluster.name, clusterLabels }).promise
+                await createKlusterletAddonConfig({ clusterName: cluster.name, clusterLabels }).promise
+                resolve(managedCluster)
+            } catch(err) {
+                console.log('err', err)
+                reject(err)
+            }
         }),
-        abort: attachClusterResult.abort,
+        abort: () => {},
     }
 }

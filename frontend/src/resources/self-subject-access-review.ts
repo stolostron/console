@@ -280,7 +280,7 @@ export function CheckTableActionsRbacAccess(
         delete currentRbacValues['cluster.edit.labels']
     }
     if (
-        cluster.distribution?.ocp?.availableUpdates.length === 0 ||
+        cluster.distribution?.ocp?.availableUpdates?.length === 0 ||
         cluster.distribution?.ocp === undefined ||
         cluster.distribution?.ocp.version !== cluster.distribution?.ocp.desiredVersion
     ) {
