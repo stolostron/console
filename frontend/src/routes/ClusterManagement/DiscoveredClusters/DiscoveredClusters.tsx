@@ -5,13 +5,13 @@ import {
     AcmTable,
     AcmErrorBoundary,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+    } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
-import React, { Fragment, useEffect } from 'react'
+import React, { useState, Fragment, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -19,6 +19,9 @@ import { ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
+import { deleteResource } from '../../../lib/resource-request'
+import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import { DiscoveryConfigApiVersion, DiscoveryConfigKind, listDiscoveryConfigs } from '../../../resources/discovery-config'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -147,6 +150,26 @@ export default function DiscoveredClustersPage() {
     )
 }
 
+function DisableDiscovery() {
+    const result=listDiscoveryConfigs()
+    result.promise
+        .then((DiscConfig) => {
+            if (DiscConfig.length === 1) {
+                return deleteResource({
+                    apiVersion: DiscoveryConfigApiVersion,
+                    kind: DiscoveryConfigKind,
+                    metadata: { name: DiscConfig[0].metadata.name, namespace: DiscConfig[0].metadata.namespace},
+                })                
+            }
+            else {
+               const error = (Error('Only 1 DiscoveryConfig resource may exist'))
+               return <ErrorPage error={error} />
+            }
+    })
+}
+
+
+
 function DiscoveredClustersEmptyState() {
     const { t } = useTranslation(['cluster'])
     return (
@@ -184,10 +207,17 @@ export function DiscoveredClustersPageContent() {
     )
 }
 
+
+
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
     const history = useHistory()
-    return (
+    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
+        open: false,
+    })
+    return (   
+        <Fragment>
+            <ConfirmModal {...modalProps} />  
         <AcmTable<DiscoveredCluster>
             plural="discovered clusters"
             items={props.discoveredClusters}
@@ -198,14 +228,26 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                 {
                     id: 'editClusterDiscvoveryBtn',
                     title: t('discovery.edit'),
-                    click: () => {}, // TODO: Make this button work
+                    click: () => {
+                    }, // TODO: Make this button work
                 },
                 {
                     id: 'disableClusterDiscvoveryBtn',
                     title: t('discovery.disable'),
-                    click: () => {}, // TODO: Make this button work
-                },
-            ]}
+                    click: () => {
+                        setModalProps({
+                            open: true,
+                            title: t('disable.title'),
+                            confirm: () => {DisableDiscovery(); setModalProps({ open: false })},                                                                                  
+                            message: t('disable.message'),
+                            isDanger: false,
+                            cancel: () => {
+                                setModalProps({ open: false })
+                            },                        
+                    })
+                 }} // TODO: Make this button work
+                
+                ]}
             bulkActions={[]}
             rowActions={[
                 {
@@ -220,6 +262,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
             ]}
             emptyState={<DiscoveredClustersEmptyState />}
         />
+        </Fragment>
     )
 }
 
