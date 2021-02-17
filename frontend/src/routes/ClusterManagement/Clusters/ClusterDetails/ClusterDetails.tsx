@@ -472,6 +472,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         actions = actions.filter((a) => a.id !== 'search-cluster')
                                     }
 
+                                    if (cluster?.status !== ClusterStatus.detached) {
+                                        actions = actions.filter((a) => a.id !== 'attach-cluster')
+                                    }
+
                                     if (cluster?.status === ClusterStatus.detached) {
                                         actions = actions.filter((a) => a.id !== 'detach-cluster')
                                     }
