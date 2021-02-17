@@ -37,6 +37,8 @@ import {
     defaultTableRbacValues,
     rbacMapping,
 } from '../../../resources/self-subject-access-review'
+import { createManagedCluster } from '../../../resources/klusterlet-add-on-config'
+import { createKlusterletAddonConfig } from '../../../resources/klusterlet-add-on-config'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { EditLabelsModal } from './components/EditLabelsModal'
@@ -369,6 +371,19 @@ export function ClustersTable(props: {
                                         ),
                                 },
                                 {
+                                    id: 'attach-cluster',
+                                    text: t('managed.attach'),
+                                    click: (cluster: Cluster) => {
+                                        const clusterLabels = {
+                                            cloud: 'auto-detect',
+                                            vendor: 'auto-detect',
+                                            name: cluster.name ?? '',
+                                        }
+                                        createManagedCluster({ clusterName: cluster.name, clusterLabels })
+                                        createKlusterletAddonConfig({ clusterName: cluster.name, clusterLabels })
+                                    },
+                                },
+                                {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
                                     click: (cluster: Cluster) => {
@@ -448,6 +463,10 @@ export function ClustersTable(props: {
 
                             if (!cluster.isManaged) {
                                 actions = actions.filter((a) => a.id !== 'search-cluster')
+                            }
+
+                            if (cluster.status !== ClusterStatus.detached) {
+                                actions = actions.filter((a) => a.id !== 'attach-cluster')
                             }
 
                             if (cluster.status === ClusterStatus.detached) {
