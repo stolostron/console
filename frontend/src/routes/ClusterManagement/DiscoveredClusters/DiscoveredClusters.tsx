@@ -5,16 +5,17 @@ import {
     AcmTable,
     AcmErrorBoundary,
     IAcmTableColumn,
+    AcmAlertContext,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
-import React, { useState, Fragment, useEffect } from 'react'
+import React, { useState, Fragment, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ErrorPage } from '../../../components/ErrorPage'
+import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
 import { ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -154,19 +155,14 @@ export default function DiscoveredClustersPage() {
     )
 }
 
-function DisableDiscovery() {
+async function disableDiscovery(): Promise<void> {
     const result = listDiscoveryConfigs()
-    result.promise.then((DiscConfig) => {
-        if (DiscConfig.length === 1) {
-            return deleteResource({
-                apiVersion: DiscoveryConfigApiVersion,
-                kind: DiscoveryConfigKind,
-                metadata: { name: DiscConfig[0].metadata.name, namespace: DiscConfig[0].metadata.namespace },
-            })
-        } else {
-            const error = Error('Only 1 DiscoveryConfig resource may exist')
-            return <ErrorPage error={error} />
-        }
+    const discConfig = await result.promise
+    if (discConfig.length !== 1) throw new Error("Only 1 DiscoveryConfig resource may exist")
+    await deleteResource({
+        apiVersion: DiscoveryConfigApiVersion,
+        kind: DiscoveryConfigKind,
+        metadata: { name: discConfig[0].metadata.name, namespace: discConfig[0].metadata.namespace },
     })
 }
 
@@ -209,6 +205,7 @@ export function DiscoveredClustersPageContent() {
 
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
+    const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
@@ -234,13 +231,19 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                         click: () => {
                             setModalProps({
                                 open: true,
-                                title: t('disable.title'),
-                                confirm: () => {
-                                    DisableDiscovery()
-                                    setModalProps({ open: false })
+                                title: t('disable.title'),                                
+                                confirm: async() => {
+                                    try {
+                                        await disableDiscovery() 
+                                        setModalProps({ open: false })
+                                    }
+                                    catch (err) {
+                                        alertContext.addAlert(getErrorInfo(err))
+                                    }                                    
                                 },
+                                confirmText: t('disable.button'),
                                 message: t('disable.message'),
-                                isDanger: false,
+                                isDanger: true,
                                 cancel: () => {
                                     setModalProps({ open: false })
                                 },

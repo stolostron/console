@@ -1,4 +1,4 @@
-import { AcmButton, AcmModal } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmModal, AcmAlertGroup } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { ModalVariant, ButtonVariant } from '@patternfly/react-core'
 import React from 'react'
@@ -45,6 +45,7 @@ export function ConfirmModal(props: IConfirmModalProps) {
             ]}
         >
             {props.message}
+            <AcmAlertGroup />
         </AcmModal>
     )
 }
