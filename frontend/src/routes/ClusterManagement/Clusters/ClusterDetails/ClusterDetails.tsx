@@ -414,6 +414,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                                 setModalProps({ open: false })
                                                                 refresh()
                                                             },
+                                                            isDanger: true,
+                                                            confirmText: cluster.name,
+                                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                                         })
                                                     },
                                                 },
