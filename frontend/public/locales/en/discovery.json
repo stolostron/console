@@ -11,7 +11,7 @@
     "discoveryConfig.discoveryVersions.label": "OpenShift version",
     "discoveryConfig.discoveryVersions.labelHelp": "Only OpenShift clusters matching the selected versions will be found",
     "discoveryConfig.connections.label": "Provider connection",
-    "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discoveredclusters",
+    "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discovered clusters",
     "discoveryConfig.testFilter": "Test filter",
     "discoveryConfig.enable": "Enable",
     "discoveryConfig.cancel": "Cancel"

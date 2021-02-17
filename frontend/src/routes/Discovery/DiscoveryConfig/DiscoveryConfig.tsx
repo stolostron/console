@@ -122,7 +122,7 @@ export function AddDiscoveryConfigData() {
             .finally(() => {
                 setIsLoading(false)
             })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (error) {
@@ -161,17 +161,15 @@ export function DiscoveryConfigPageContent(props: {
     const supportedVersions = ['4.5', '4.6', '4.7', '4.8']
 
     type LastActive = { day: number; stringDay: string; value: string }
-    let lastActive: LastActive[]
-    lastActive = []
-    lastActive.push(
+    const lastActive: LastActive[] = [
         { day: 1, stringDay: '1 day', value: '1d' },
         { day: 2, stringDay: '2 days', value: '2d' },
         { day: 3, stringDay: '3 days', value: '3d' },
         { day: 7, stringDay: '7 days', value: '7d' },
         { day: 14, stringDay: '14 days', value: '14d' },
         { day: 21, stringDay: '21 days', value: '21d' },
-        { day: 30, stringDay: '30 days', value: '30d' }
-    )
+        { day: 30, stringDay: '30 days', value: '30d' },
+    ]
 
     useEffect(() => {
         if (props.discoveryConfig.metadata.name !== '') {
@@ -313,8 +311,4 @@ export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<Di
         return providerConnection[0] as string
     }
     return '' as string
-}
-
-export function getDiscoveryConfigVersions(discoveryConfig: Partial<DiscoveryConfig>) {
-    return discoveryConfig.spec?.filters?.openShiftVersions
 }
