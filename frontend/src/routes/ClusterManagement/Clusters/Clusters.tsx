@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { DistributionField, UpgradeModal } from '../../../components/ClusterCommon'
+import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -175,11 +175,10 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
-    const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
-    const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
+    const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -227,19 +226,11 @@ export function ClustersTable(props: {
                     props.refresh()
                 }}
             />
-            <UpgradeModal
-                data={upgradeSingleCluster?.distribution}
-                open={!!upgradeSingleCluster}
-                clusterName={upgradeSingleCluster?.name || ''}
-                close={() => {
-                    setUpgradeSingleCluster(undefined)
-                }}
-            />
             <BatchUpgradeModal
-                clusters={upgradeMultipleClusters}
-                open={!!upgradeMultipleClusters}
+                clusters={upgradeClusters}
+                open={!!upgradeClusters}
                 close={() => {
-                    setUpgradeMultipleClusters(undefined)
+                    setUpgradeClusters(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -354,7 +345,7 @@ export function ClustersTable(props: {
                                     id: 'upgrade-cluster',
                                     text: t('managed.upgrade'),
                                     click: (cluster: Cluster) => {
-                                        setUpgradeSingleCluster(cluster)
+                                        setUpgradeClusters([cluster])
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
                                     tooltip: !tableActionRbacValues['cluster.upgrade']
@@ -582,7 +573,7 @@ export function ClustersTable(props: {
                                 return
                             }
 
-                            setUpgradeMultipleClusters(managedClusters)
+                            setUpgradeClusters(managedClusters)
                         },
                     },
                 ]}

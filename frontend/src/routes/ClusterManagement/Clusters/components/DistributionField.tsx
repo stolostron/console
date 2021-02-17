@@ -1,28 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import Axios, { AxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
-import {
-    AcmInlineStatus,
-    StatusType,
-    AcmButton,
-    AcmModal,
-    AcmForm,
-    AcmSubmit,
-    AcmSelect,
-    AcmAlert,
-} from '@open-cluster-management/ui-components'
-import {
-    ButtonVariant,
-    ModalVariant,
-    ActionGroup,
-    SelectOption,
-    Text,
-    AlertVariant,
-    Title,
-} from '@patternfly/react-core'
+import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Cluster, ClusterStatus } from '../lib/get-cluster'
-import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
+import { createSubjectAccessReviews, rbacMapping } from '../../../../resources/self-subject-access-review'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {
@@ -167,123 +150,11 @@ export function DistributionField(props: { cluster?: Cluster }) {
                     >
                         {t('upgrade.available')}
                     </AcmButton>
-                    <UpgradeModal close={toggle} open={open} cluster={props.cluster} />
+                    <BatchUpgradeModal clusters={[props.cluster]} open={open} close={toggle} />
                 </span>
             </>
         )
     } else {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-}
-
-export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
-    const [selectVersion, setSelectVersion] = useState<string>()
-    const [upgradeError, setUpgradeError] = useState<string>()
-    const [loading, setLoading] = useState<boolean>(false)
-    return (
-        <AcmModal
-            variant={ModalVariant.small}
-            isOpen={props.open}
-            onClose={() => {
-                setLoading(false)
-                setSelectVersion('')
-                setUpgradeError('')
-                props.close()
-            }}
-            title={t('upgrade.title', { clusterName: props.cluster?.name })}
-        >
-            <AcmForm>
-                {upgradeError && (
-                    <AcmAlert
-                        title={t('upgrade.upgradefailed')}
-                        subtitle={upgradeError}
-                        variant={AlertVariant.danger}
-                        isInline
-                    />
-                )}
-                <Title headingLevel="h5" size="md">
-                    {t('upgrade.current.version')}
-                </Title>
-                <Text>{props.cluster?.distribution?.ocp?.version || props.cluster?.distribution?.displayVersion}</Text>
-                <AcmSelect
-                    id="upgradeVersionSelect"
-                    label={t('upgrade.select.label')}
-                    maxHeight={'6em'}
-                    placeholder={t('upgrade.select.placeholder')}
-                    value={selectVersion}
-                    onChange={(value) => {
-                        setSelectVersion(value)
-                        setUpgradeError('')
-                    }}
-                    isRequired
-                >
-                    {props.cluster?.distribution?.ocp?.availableUpdates
-                        .sort((a: string, b: string) => {
-                            // basic sort semvers without preversion
-                            const aVersion = a.split('.')
-                            const bVersion = b.split('.')
-                            for (let i = 0; i < Math.min(aVersion.length, bVersion.length); i++) {
-                                if (aVersion[i] !== bVersion[i]) {
-                                    return Number(bVersion[i]) - Number(aVersion[i])
-                                }
-                            }
-                            return bVersion.length - aVersion.length
-                        })
-                        .map((version) => (
-                            <SelectOption key={version} value={version}>
-                                {version}
-                            </SelectOption>
-                        ))}
-                </AcmSelect>
-
-                <ActionGroup>
-                    <AcmSubmit
-                        label={t('upgrade.submit')}
-                        processingLabel={t('upgrade.submit.processing')}
-                        isLoading={loading}
-                        onClick={() => {
-                            if (loading) {
-                                return
-                            }
-                            setLoading(true)
-                            setUpgradeError('')
-                            const url = backendUrl + '/upgrade'
-                            return Axios.post(
-                                url,
-                                {
-                                    clusterName: props.cluster?.name,
-                                    version: selectVersion,
-                                },
-                                { withCredentials: true }
-                            )
-                                .then(() => {
-                                    setLoading(false)
-                                    setSelectVersion('')
-                                    props.close()
-                                })
-                                .catch((reason: AxiosError) => {
-                                    setLoading(false)
-                                    setSelectVersion('')
-                                    setUpgradeError(reason.message)
-                                })
-                        }}
-                    >
-                        {t('upgrade.submit')}
-                    </AcmSubmit>
-                    <AcmButton
-                        onClick={() => {
-                            setLoading(false)
-                            setSelectVersion('')
-                            setUpgradeError('')
-                            props.close()
-                        }}
-                        variant={ButtonVariant.link}
-                    >
-                        {t('upgrade.cancel')}
-                    </AcmButton>
-                </ActionGroup>
-            </AcmForm>
-        </AcmModal>
-    )
 }

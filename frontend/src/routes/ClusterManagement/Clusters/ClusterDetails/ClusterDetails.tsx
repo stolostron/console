@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
-import { UpgradeModal } from '../../../../components/ClusterCommon'
+import { BatchUpgradeModal } from '../components/BatchUpgradeModal'
 import { StatusField } from '../components/StatusField'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
@@ -72,7 +72,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
-    const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
+    const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     // Cluster
     const { data, startPolling, stopPolling, loading, error, refresh } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
@@ -252,13 +252,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 />
                 <BulkActionModel<Cluster> {...modalProps} />
 
-                <UpgradeModal
-                    data={upgradeSingleCluster?.distribution}
-                    open={!!upgradeSingleCluster}
-                    clusterName={upgradeSingleCluster?.name || ''}
-                    close={() => {
-                        setUpgradeSingleCluster(undefined)
-                    }}
+                <BatchUpgradeModal
+                    clusters={!!cluster ? [cluster] : []}
+                    open={showUpgradeModal}
+                    close={() => setShowUpgradeModal(false)}
                 />
                 <AcmPageHeader
                     breadcrumb={[
@@ -335,9 +332,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         {
                                             id: 'upgrade-cluster',
                                             text: t('managed.upgrade'),
-                                            click: (cluster: Cluster) => {
-                                                setUpgradeSingleCluster(cluster)
-                                            },
+                                            click: (cluster: Cluster) => setShowUpgradeModal(true),
                                             isDisabled: !tableActionRbacValues['cluster.upgrade'],
                                             tooltip: !tableActionRbacValues['cluster.edit.labels']
                                                 ? t('common:rbac.unauthorized')

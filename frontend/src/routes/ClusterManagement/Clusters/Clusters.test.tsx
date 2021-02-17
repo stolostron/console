@@ -533,8 +533,8 @@ describe('Cluster page', () => {
         await clickByLabel('Actions', 3) // Click the action button on the 4th table row
         await waitForNocks(rbacNocks)
         await clickByText('managed.upgrade')
-        await waitForText('upgrade.title')
-        await clickByText('upgrade.cancel')
+        await waitForText('upgrade.table.name')
+        await clickByText('common:cancel')
         await waitForText(mockManagedCluster4.metadata.name!)
     })
 
