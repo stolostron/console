@@ -17,4 +17,5 @@ export enum NavigationPath {
     bareMetalAssets = '/multicloud/bare-metal-assets',
     editBareMetalAsset = '/multicloud/bare-metal-assets/:namespace/:name',
     createBareMetalAsset = '/multicloud/create-bare-metal-asset',
+    discoveryConfig = '/multicloud/discovery/config',
 }

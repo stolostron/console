@@ -15,6 +15,7 @@ const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters
 const AddConnectionPage = lazy(() => import('./routes/ProviderConnections/AddConnection/AddConnection'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
+const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 
 declare global {
     interface Window {
@@ -37,6 +38,7 @@ export default function App() {
                     <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                     <Route exact path={NavigationPath.editBareMetalAsset} component={CreateBareMetalAssetPage} />
                     <Route exact path={NavigationPath.createBareMetalAsset} component={CreateBareMetalAssetPage} />
+                    <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
                     <Route path={NavigationPath.console} component={ClusterManagementPage} />
                     <Route exact path="*">
                         <Redirect to={NavigationPath.console} />

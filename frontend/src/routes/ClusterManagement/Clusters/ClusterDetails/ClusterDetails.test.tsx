@@ -661,15 +661,6 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function getClusterActionsResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusteractions',
-        verb: 'create',
-        group: 'action.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
-
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
@@ -694,7 +685,6 @@ function defaultNocks() {
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
@@ -703,11 +693,11 @@ function defaultNocks() {
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
         const nocks = [
+            nockGetManagedClusterError(),
             nockGetManagedClusterInfoError(),
             nockGetClusterDeploymentError(),
             nockListCertificateSigningRequests(),
             nockGetManagedClusterAddons(),
-            nockGetManagedClusterError(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
         ]
         render(<Component />)
@@ -786,7 +776,6 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
