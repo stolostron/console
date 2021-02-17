@@ -243,172 +243,178 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     >
                         <BulkActionModel<Cluster> {...modalProps} />
 
-                <BatchUpgradeModal
-                    clusters={!!cluster ? [cluster] : []}
-                    open={showUpgradeModal}
-                    close={() => setShowUpgradeModal(false)}
-                />
-                <AcmPageHeader
-                    breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: match.params.id, to: '' },
-                    ]}
-                    title={match.params.id}
-                    navigation={
-                        <AcmSecondaryNav>
-                            <AcmSecondaryNavItem
-                                isActive={
-                                    location.pathname === NavigationPath.clusterOverview.replace(':id', match.params.id)
-                                }
-                            >
-                                <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
-                                    {t('tab.overview')}
-                                </Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={
-                                    location.pathname === NavigationPath.clusterNodes.replace(':id', match.params.id)
-                                }
-                            >
-                                <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>
-                                    {t('tab.nodes')}
-                                </Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={
-                                    location.pathname === NavigationPath.clusterSettings.replace(':id', match.params.id)
-                                }
-                            >
-                                <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
-                                    {t('tab.settings')}
-                                </Link>
-                            </AcmSecondaryNavItem>
-                        </AcmSecondaryNav>
-                    }
-                    actions={
-                        <Fragment>
-                            <AcmActionGroup>
-                                <AcmLaunchLink
-                                    links={addons
-                                        ?.filter((addon) => addon.launchLink)
-                                        ?.map((addon) => ({
-                                            id: addon.launchLink?.displayText ?? '',
-                                            text: addon.launchLink?.displayText ?? '',
-                                            href: addon.launchLink?.href ?? '',
-                                        }))}
-                                />
-                                <DownloadConfigurationDropdown
-                                    getSecretAccessRestriction={getSecretAccessRestriction}
-                                />
-                                {(() => {
-                                    const onSelect = (id: string) => {
-                                        const action = actions.find((a) => a.id === id)
-                                        return action?.click(cluster!)
-                                    }
-                                    let actions = [
-                                        {
-                                            id: 'edit-labels',
-                                            text: t('managed.editLabels'),
-                                            click: (cluster: Cluster) => {
-                                                setDrawerContext({
-                                                    isExpanded: true,
-                                                    title: t('labels.edit.title'),
-                                                    onCloseClick: () => setDrawerContext(undefined),
-                                                    panelContent: (
-                                                        <EditLabels
-                                                            cluster={cluster}
-                                                            close={() => setDrawerContext(undefined)}
-                                                        />
-                                                    ),
-                                                    panelContentProps: { minSize: '600px' },
-                                                })
-                                            },
-                                            isDisabled: !tableActionRbacValues['cluster.edit.labels'],
-                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
-                                                ? t('common:rbac.unauthorized')
-                                                : '',
-                                        },
-                                        {
-                                            id: 'launch-cluster',
-                                            text: t('managed.launch'),
-                                            click: (cluster: Cluster) => window.open(cluster?.consoleURL, '_blank'),
-                                        },
-                                        {
-                                            id: 'upgrade-cluster',
-                                            text: t('managed.upgrade'),
-                                            click: (cluster: Cluster) => setShowUpgradeModal(true),
-                                            isDisabled: !tableActionRbacValues['cluster.upgrade'],
-                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
-                                                ? t('common:rbac.unauthorized')
-                                                : '',
-                                        },
-                                        {
-                                            id: 'search-cluster',
-                                            text: t('managed.search'),
-                                            click: (cluster: Cluster) =>
-                                                window.location.assign(
-                                                    `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
-                                                ),
-                                        },
-                                        // {
-                                        //     id: 'attach-cluster',
-                                        //     text: t('managed.import'),
-                                        //     click: (cluster: Cluster) => {
-                                        //         setModalProps({
-                                        //             open: true,
-                                        //             singular: t('cluster'),
-                                        //             plural: t('clusters'),
-                                        //             action: t('import'),
-                                        //             processing: t('import.generating'),
-                                        //             resources: [cluster],
-                                        //             close: () => {
-                                        //                 setModalProps({ open: false })
-                                        //             },
-                                        //             description: t('cluster.import.description'),
-                                        //             columns: [
-                                        //                 {
-                                        //                     header: t('upgrade.table.name'),
-                                        //                     sort: 'name',
-                                        //                     cell: 'name',
-                                        //                 },
-                                        //                 {
-                                        //                     header: t('table.provider'),
-                                        //                     sort: 'provider',
-                                        //                     cell: (cluster: Cluster) =>
-                                        //                         cluster?.provider ? (
-                                        //                             <AcmInlineProvider provider={cluster?.provider} />
-                                        //                         ) : (
-                                        //                             '-'
-                                        //                         ),
-                                        //                 },
-                                        //             ],
-                                        //             keyFn: (cluster) => cluster.name as string,
-                                        //             actionFn: createImportResources,
-                                        //         })
-                                        //     },
-                                        // },
-                                        {
-                                            id: 'detach-cluster',
-                                            text: t('managed.detached'),
-                                            isDisabled: !tableActionRbacValues['cluster.detach'],
-                                            tooltip: !tableActionRbacValues['cluster.edit.labels']
-                                                ? t('common:rbac.unauthorized')
-                                                : '',
-                                            click: (cluster: Cluster) => {
-                                                setModalProps({
-                                                    open: true,
-                                                    singular: t('cluster'),
-                                                    plural: t('clusters'),
-                                                    action: t('detach'),
-                                                    processing: t('detaching'),
-                                                    resources: [cluster],
-                                                    description: t('cluster.detach.description'),
-                                                    columns: modalColumns,
-                                                    keyFn: (cluster) => cluster.name as string,
-                                                    actionFn: (cluster) => detachCluster(cluster.name!),
-                                                    close: () => {
-                                                        setModalProps({ open: false })
-                                                        refresh()
+                        <BatchUpgradeModal
+                            clusters={!!cluster ? [cluster] : []}
+                            open={showUpgradeModal}
+                            close={() => setShowUpgradeModal(false)}
+                        />
+                        <AcmPageHeader
+                            breadcrumb={[
+                                { text: t('clusters'), to: NavigationPath.clusters },
+                                { text: match.params.id, to: '' },
+                            ]}
+                            title={match.params.id}
+                            navigation={
+                                <AcmSecondaryNav>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
+                                            NavigationPath.clusterOverview.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
+                                            {t('tab.overview')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
+                                            NavigationPath.clusterNodes.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>
+                                            {t('tab.nodes')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
+                                            NavigationPath.clusterSettings.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
+                                            {t('tab.settings')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                </AcmSecondaryNav>
+                            }
+                            actions={
+                                <Fragment>
+                                    <AcmActionGroup>
+                                        <AcmLaunchLink
+                                            links={addons
+                                                ?.filter((addon) => addon.launchLink)
+                                                ?.map((addon) => ({
+                                                    id: addon.launchLink?.displayText ?? '',
+                                                    text: addon.launchLink?.displayText ?? '',
+                                                    href: addon.launchLink?.href ?? '',
+                                                }))}
+                                        />
+                                        <DownloadConfigurationDropdown
+                                            getSecretAccessRestriction={getSecretAccessRestriction}
+                                        />
+                                        {(() => {
+                                            const onSelect = (id: string) => {
+                                                const action = actions.find((a) => a.id === id)
+                                                return action?.click(cluster!)
+                                            }
+                                            let actions = [
+                                                {
+                                                    id: 'edit-labels',
+                                                    text: t('managed.editLabels'),
+                                                    click: (cluster: Cluster) => {
+                                                        setDrawerContext({
+                                                            isExpanded: true,
+                                                            title: t('labels.edit.title'),
+                                                            onCloseClick: () => setDrawerContext(undefined),
+                                                            panelContent: (
+                                                                <EditLabels
+                                                                    cluster={cluster}
+                                                                    close={() => setDrawerContext(undefined)}
+                                                                />
+                                                            ),
+                                                            panelContentProps: { minSize: '600px' },
+                                                        })
+                                                    },
+                                                    isDisabled: !tableActionRbacValues['cluster.edit.labels'],
+                                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                        ? t('common:rbac.unauthorized')
+                                                        : '',
+                                                },
+                                                {
+                                                    id: 'launch-cluster',
+                                                    text: t('managed.launch'),
+                                                    click: (cluster: Cluster) =>
+                                                        window.open(cluster?.consoleURL, '_blank'),
+                                                },
+                                                {
+                                                    id: 'upgrade-cluster',
+                                                    text: t('managed.upgrade'),
+                                                    click: (cluster: Cluster) => setShowUpgradeModal(true),
+                                                    isDisabled: !tableActionRbacValues['cluster.upgrade'],
+                                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                        ? t('common:rbac.unauthorized')
+                                                        : '',
+                                                },
+                                                {
+                                                    id: 'search-cluster',
+                                                    text: t('managed.search'),
+                                                    click: (cluster: Cluster) =>
+                                                        window.location.assign(
+                                                            `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                                                        ),
+                                                },
+                                                // {
+                                                //     id: 'attach-cluster',
+                                                //     text: t('managed.import'),
+                                                //     click: (cluster: Cluster) => {
+                                                //         setModalProps({
+                                                //             open: true,
+                                                //             singular: t('cluster'),
+                                                //             plural: t('clusters'),
+                                                //             action: t('import'),
+                                                //             processing: t('import.generating'),
+                                                //             resources: [cluster],
+                                                //             close: () => {
+                                                //                 setModalProps({ open: false })
+                                                //             },
+                                                //             description: t('cluster.import.description'),
+                                                //             columns: [
+                                                //                 {
+                                                //                     header: t('upgrade.table.name'),
+                                                //                     sort: 'name',
+                                                //                     cell: 'name',
+                                                //                 },
+                                                //                 {
+                                                //                     header: t('table.provider'),
+                                                //                     sort: 'provider',
+                                                //                     cell: (cluster: Cluster) =>
+                                                //                         cluster?.provider ? (
+                                                //                             <AcmInlineProvider provider={cluster?.provider} />
+                                                //                         ) : (
+                                                //                             '-'
+                                                //                         ),
+                                                //                 },
+                                                //             ],
+                                                //             keyFn: (cluster) => cluster.name as string,
+                                                //             actionFn: createImportResources,
+                                                //         })
+                                                //     },
+                                                // },
+                                                {
+                                                    id: 'detach-cluster',
+                                                    text: t('managed.detached'),
+                                                    isDisabled: !tableActionRbacValues['cluster.detach'],
+                                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
+                                                        ? t('common:rbac.unauthorized')
+                                                        : '',
+                                                    click: (cluster: Cluster) => {
+                                                        setModalProps({
+                                                            open: true,
+                                                            singular: t('cluster'),
+                                                            plural: t('clusters'),
+                                                            action: t('detach'),
+                                                            processing: t('detaching'),
+                                                            resources: [cluster],
+                                                            description: t('cluster.detach.description'),
+                                                            columns: modalColumns,
+                                                            keyFn: (cluster) => cluster.name as string,
+                                                            actionFn: (cluster) => detachCluster(cluster.name!),
+                                                            close: () => {
+                                                                setModalProps({ open: false })
+                                                                refresh()
+                                                            },
+                                                        })
                                                     },
                                                 },
                                                 {
@@ -461,28 +467,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                 actions = actions.filter((a) => a.id !== 'upgrade-cluster')
                                             }
 
-<<<<<<< HEAD
                                             if (!cluster?.isManaged) {
+                                                actions = actions.filter((a) => a.id !== 'edit-labels')
                                                 actions = actions.filter((a) => a.id !== 'search-cluster')
+                                            }
+
+                                            if (cluster?.status !== ClusterStatus.detached) {
+                                                actions = actions.filter((a) => a.id !== 'attach-cluster')
                                             }
 
                                             if (cluster?.status === ClusterStatus.detached) {
                                                 actions = actions.filter((a) => a.id !== 'detach-cluster')
                                             }
-=======
-                                    if (!cluster?.isManaged) {
-                                        actions = actions.filter((a) => a.id !== 'edit-labels')
-                                        actions = actions.filter((a) => a.id !== 'search-cluster')
-                                    }
-
-                                    if (cluster?.status !== ClusterStatus.detached) {
-                                        actions = actions.filter((a) => a.id !== 'attach-cluster')
-                                    }
-
-                                    if (cluster?.status === ClusterStatus.detached) {
-                                        actions = actions.filter((a) => a.id !== 'detach-cluster')
-                                    }
->>>>>>> 28d65642fe21259fb52c014943ab0cca2f5d85e1
 
                                             if (!cluster?.isHive) {
                                                 actions = actions.filter((a) => a.id !== 'destroy-cluster')
