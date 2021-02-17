@@ -19,6 +19,7 @@ import { ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
+import { Link } from 'react-router-dom'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -151,7 +152,11 @@ function DiscoveredClustersEmptyState() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmEmptyState
-            action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
+            action={
+                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                    {t('discovery.enablediscoverybtn')}
+                </AcmButton>
+            }
             title={t('discovery.emptyStateHeader')}
             message={t('discovery.emptyStateMsg')}
             key="dcEmptyState"
@@ -198,11 +203,14 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                 {
                     id: 'editClusterDiscvoveryBtn',
                     title: t('discovery.edit'),
-                    click: () => {}, // TODO: Make this button work
+                    click: () => {
+                        history.push(NavigationPath.discoveryConfig)
+                    },
                 },
                 {
                     id: 'disableClusterDiscvoveryBtn',
                     title: t('discovery.disable'),
+                    isDisabled: true,
                     click: () => {}, // TODO: Make this button work
                 },
             ]}
