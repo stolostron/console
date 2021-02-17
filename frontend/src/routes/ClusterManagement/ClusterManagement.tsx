@@ -1,10 +1,10 @@
 import {
+    AcmPage,
     AcmPageHeader,
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
 import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
@@ -46,7 +46,7 @@ export default function ClusterManagementPage() {
     const { featureGates } = useContext(AppContext)
 
     return (
-        <Page>
+        <AcmPage hasDrawer>
             <PageContext.Provider value={{ actions, setActions }}>
                 <AcmPageHeader
                     title={t('page.header.cluster-management')}
@@ -109,6 +109,6 @@ export default function ClusterManagementPage() {
                     </Suspense>
                 </AcmScrollable>
             </PageContext.Provider>
-        </Page>
+        </AcmPage>
     )
 }

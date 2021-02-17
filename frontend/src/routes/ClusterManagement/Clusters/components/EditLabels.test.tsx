@@ -3,7 +3,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockPatch } from '../../../../lib/nock-util'
 import { IResource } from '../../../../resources/resource'
-import { EditLabelsModal } from './EditLabelsModal'
+import { EditLabels } from './EditLabels'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 
@@ -15,6 +15,7 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: { abc: '123' },
     nodes: undefined,
@@ -25,15 +26,14 @@ const mockCluster: Cluster = {
     isManaged: true,
 }
 
-describe('EditLabelsModal', () => {
+describe('EditLabels', () => {
     test('can add and remove labels', async () => {
         const resource: IResource = {
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
             metadata: { name: 'test-cluster', labels: { abc: '123' } },
         }
-        const { getByTestId, getByText } = render(<EditLabelsModal cluster={mockCluster} close={() => {}} />)
-        expect(getByText('labels.edit.title')).toBeInTheDocument()
+        const { getByTestId, getByText } = render(<EditLabels cluster={mockCluster} close={() => {}} />)
         expect(getByText('abc=123')).toBeInTheDocument()
         getByTestId('label-input-button').click()
         userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
@@ -55,8 +55,7 @@ describe('EditLabelsModal', () => {
             kind: ManagedClusterKind,
             metadata: { name: 'test-cluster', labels: { abc: '123' } },
         }
-        const { getByText } = render(<EditLabelsModal cluster={mockCluster} close={() => {}} />)
-        expect(getByText('labels.edit.title')).toBeInTheDocument()
+        const { getByText } = render(<EditLabels cluster={mockCluster} close={() => {}} />)
         expect(getByText('abc=123')).toBeInTheDocument()
         const nockScope = nockPatch(
             resource,
@@ -73,10 +72,7 @@ describe('EditLabelsModal', () => {
 
     test('can add and remove labels without labels on resource', async () => {
         mockCluster.labels = {}
-        const { queryByText, getByTestId, getByText } = render(
-            <EditLabelsModal cluster={mockCluster} close={() => {}} />
-        )
-        expect(getByText('labels.edit.title')).toBeInTheDocument()
+        const { queryByText, getByTestId, getByText } = render(<EditLabels cluster={mockCluster} close={() => {}} />)
         getByTestId('label-input-button').click()
         userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
         expect(getByText('foo=bar')).toBeVisible()
