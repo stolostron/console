@@ -9,7 +9,7 @@ import {
 } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { IResource } from '../../../resources/resource'
+
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
         apiVersion: 'discovery.open-cluster-management.io/v1',
