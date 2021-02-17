@@ -37,6 +37,7 @@ import {
     defaultTableRbacValues,
     rbacMapping,
 } from '../../../resources/self-subject-access-review'
+// import { createImportResources } from '../../../lib/import-cluster'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { EditLabelsModal } from './components/EditLabelsModal'
@@ -368,6 +369,39 @@ export function ClustersTable(props: {
                                             `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
                                         ),
                                 },
+                                // {
+                                //     id: 'attach-cluster',
+                                //     text: t('managed.import'),
+                                //     click: (cluster: Cluster) => {
+                                //         setModalProps({
+                                //             open: true,
+                                //             singular: t('cluster'),
+                                //             plural: t('clusters'),
+                                //             action: t('import'),
+                                //             processing: t('import.generating'),
+                                //             resources: [cluster],
+                                //             close: () => {
+                                //                 setModalProps({ open: false })
+                                //             },
+                                //             description: t('cluster.import.description'),
+                                //             columns: [
+                                //                 {
+                                //                     header: t('upgrade.table.name'),
+                                //                     sort: 'name',
+                                //                     cell: 'name',
+                                //                 },
+                                //                 {
+                                //                     header: t('table.provider'),
+                                //                     sort: 'provider',
+                                //                     cell: (cluster: Cluster) =>
+                                //                         cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                                //                 },
+                                //             ],
+                                //             keyFn:(cluster) => cluster.name as string,
+                                //             actionFn: createImportResources,
+                                //         })
+                                //     },
+                                // },
                                 {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
@@ -447,7 +481,12 @@ export function ClustersTable(props: {
                             }
 
                             if (!cluster.isManaged) {
+                                actions = actions.filter((a) => a.id !== 'edit-labels')
                                 actions = actions.filter((a) => a.id !== 'search-cluster')
+                            }
+
+                            if (cluster.status !== ClusterStatus.detached) {
+                                actions = actions.filter((a) => a.id !== 'attach-cluster')
                             }
 
                             if (cluster.status === ClusterStatus.detached) {

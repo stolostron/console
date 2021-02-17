@@ -44,6 +44,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { usePrevious } from '../../../../components/usePrevious'
+// import { createImportResources } from '../../../../lib/import-cluster'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -350,6 +351,43 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
                                                 ),
                                         },
+                                        // {
+                                        //     id: 'attach-cluster',
+                                        //     text: t('managed.import'),
+                                        //     click: (cluster: Cluster) => {
+                                        //         setModalProps({
+                                        //             open: true,
+                                        //             singular: t('cluster'),
+                                        //             plural: t('clusters'),
+                                        //             action: t('import'),
+                                        //             processing: t('import.generating'),
+                                        //             resources: [cluster],
+                                        //             close: () => {
+                                        //                 setModalProps({ open: false })
+                                        //             },
+                                        //             description: t('cluster.import.description'),
+                                        //             columns: [
+                                        //                 {
+                                        //                     header: t('upgrade.table.name'),
+                                        //                     sort: 'name',
+                                        //                     cell: 'name',
+                                        //                 },
+                                        //                 {
+                                        //                     header: t('table.provider'),
+                                        //                     sort: 'provider',
+                                        //                     cell: (cluster: Cluster) =>
+                                        //                         cluster?.provider ? (
+                                        //                             <AcmInlineProvider provider={cluster?.provider} />
+                                        //                         ) : (
+                                        //                             '-'
+                                        //                         ),
+                                        //                 },
+                                        //             ],
+                                        //             keyFn: (cluster) => cluster.name as string,
+                                        //             actionFn: createImportResources,
+                                        //         })
+                                        //     },
+                                        // },
                                         {
                                             id: 'detach-cluster',
                                             text: t('managed.detached'),
@@ -430,7 +468,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
 
                                     if (!cluster?.isManaged) {
+                                        actions = actions.filter((a) => a.id !== 'edit-labels')
                                         actions = actions.filter((a) => a.id !== 'search-cluster')
+                                    }
+
+                                    if (cluster?.status !== ClusterStatus.detached) {
+                                        actions = actions.filter((a) => a.id !== 'attach-cluster')
                                     }
 
                                     if (cluster?.status === ClusterStatus.detached) {
