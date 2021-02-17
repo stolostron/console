@@ -15,7 +15,7 @@ export const createImportResources = (cluster: Cluster) => {
     ]
     const attachClusterResult: IRequestResult<PromiseSettledResult<unknown>[]> = {
         promise: Promise.allSettled(calls.map((result) => result.promise)),
-        abort: () => calls.forEach((call) => call.abort())
+        abort: () => calls.forEach((call) => call.abort()),
     }
     return {
         promise: new Promise((resolve, reject) => {

@@ -395,7 +395,7 @@ export function ClustersTable(props: {
                                 //                     sort: 'provider',
                                 //                     cell: (cluster: Cluster) =>
                                 //                         cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-                                //                 },   
+                                //                 },
                                 //             ],
                                 //             keyFn:(cluster) => cluster.name as string,
                                 //             actionFn: createImportResources,
