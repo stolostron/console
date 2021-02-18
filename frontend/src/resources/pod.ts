@@ -35,7 +35,6 @@ export function listHivePods(namespace: string, labels?: string[]) {
             kind: PodKind,
             metadata: { namespace },
         },
-        undefined,
         labels
     )
 }

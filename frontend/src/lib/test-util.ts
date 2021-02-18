@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
-export const waitTimeout = 3 * 1000
+export const waitTimeout = 5 * 1000
 
 export async function waitForText(text: string, multipleAllowed?: boolean) {
     if (multipleAllowed) {

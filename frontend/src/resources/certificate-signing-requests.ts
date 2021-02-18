@@ -38,7 +38,6 @@ export function listCertificateSigningRequests(cluster?: string) {
             apiVersion: CertificateSigningRequestApiVersion,
             kind: CertificateSigningRequestKind,
         },
-        undefined,
         [clusterCsrLabel(cluster)]
     )
 }
