@@ -235,7 +235,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                         title: t('discovery.edit'),
                         click: () => {
                             history.push(NavigationPath.discoveryConfig)
-                            }, 
+                        },
                     },
                     {
                         id: 'disableClusterDiscvoveryBtn',
@@ -249,7 +249,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                         await disableDiscovery()
                                         setModalProps({ open: false })
                                     } catch (err) {
-                                        alertContext.addAlert(getErrorInfo(err))
+                                        alertContext.addAlert(getErrorInfo(err))  //TODO: not currently displaying within modal
                                     }
                                 },
                                 confirmText: t('disable.button'),
