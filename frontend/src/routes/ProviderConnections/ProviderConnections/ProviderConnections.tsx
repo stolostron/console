@@ -3,7 +3,6 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
-    AcmDropdown,
     AcmEmptyState,
     AcmInlineProvider,
     AcmPageCard,
@@ -18,16 +17,12 @@ import { useTranslation } from 'react-i18next'
 import { useHistory, Link } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { getErrorInfo } from '../../../components/ErrorPage'
+import { RbacDropdown } from '../../../components/RbacDropdown'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
-import {
-    createSubjectAccessReviews,
-    ProviderConnectionsTableActionsRbac,
-    rbacMapping,
-} from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
@@ -92,54 +87,10 @@ function getProvider(labels: Record<string, string> | undefined) {
 
 export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
     const { t } = useTranslation(['connection', 'common'])
-    const defaultTableRbacValues: ProviderConnectionsTableActionsRbac = {
-        'secret.edit': false,
-        'secret.delete': false,
-    }
-    const [tableActionRbacValues, setTableActionRbacValues] = useState<ProviderConnectionsTableActionsRbac>(
-        defaultTableRbacValues
-    )
-    const [isOpen, setIsOpen] = useState<boolean>(false)
-    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const history = useHistory()
-
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
         open: false,
     })
-
-    function abortRbacPromises() {
-        abortRbacCheck?.forEach((abort) => abort())
-    }
-
-    function checkRbacAccess(connection: ProviderConnection) {
-        let currentRbacValues = { ...defaultTableRbacValues }
-        let abortArray: Array<Function> = []
-
-        Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(
-                rbacMapping(action, connection.metadata.name, connection.metadata.namespace)
-            )
-            request.promise
-                .then((results) => {
-                    if (results) {
-                        let rbacQueryResults: boolean[] = []
-                        results.forEach((result) => {
-                            if (result.status === 'fulfilled') {
-                                rbacQueryResults.push(result.value.status?.allowed!)
-                            }
-                        })
-                        if (!rbacQueryResults.includes(false)) {
-                            setTableActionRbacValues((current) => {
-                                return { ...current, ...{ [action]: true } }
-                            })
-                        }
-                    }
-                })
-                .catch((err) => console.error(err))
-            abortArray.push(request.abort)
-        })
-        setRbacAborts(abortArray)
-    }
 
     return (
         <Fragment>
@@ -207,16 +158,11 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                     {
                         header: '',
                         cell: (providerConnection: ProviderConnection) => {
-                            const onSelect = (id: string) => {
-                                const action = actions.find((a) => a.id === id)
-                                return action?.click(providerConnection)
-                            }
-                            let actions = [
+                            const actions = [
                                 {
                                     id: 'editConnection',
                                     text: t('edit'),
-                                    isDisabled: !tableActionRbacValues['secret.edit'],
-                                    tooltip: !tableActionRbacValues['secret.edit'] ? t('common:rbac.unauthorized') : '',
+                                    isDisabled: true,
                                     click: (providerConnection: ProviderConnection) => {
                                         history.push(
                                             NavigationPath.editConnection
@@ -224,14 +170,19 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                                 .replace(':name', providerConnection.metadata.name!)
                                         )
                                     },
+                                    rbac: [
+                                        {
+                                            name: providerConnection.metadata.name,
+                                            namespace: providerConnection.metadata.namespace,
+                                            resource: 'secrets',
+                                            verb: 'patch',
+                                        },
+                                    ],
                                 },
                                 {
                                     id: 'deleteConnection',
                                     text: t('delete'),
-                                    isDisabled: !tableActionRbacValues['secret.delete'],
-                                    tooltip: !tableActionRbacValues['secret.delete']
-                                        ? t('common:rbac.unauthorized')
-                                        : '',
+                                    isDisabled: true,
                                     click: (providerConnection: ProviderConnection) => {
                                         setModalProps({
                                             open: true,
@@ -264,24 +215,24 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             isDanger: true,
                                         })
                                     },
+                                    rbac: [
+                                        {
+                                            name: providerConnection.metadata.name,
+                                            namespace: providerConnection.metadata.namespace,
+                                            resource: 'secrets',
+                                            verb: 'delete',
+                                        },
+                                    ],
                                 },
                             ]
+
                             return (
-                                <AcmDropdown
+                                <RbacDropdown<ProviderConnection>
                                     id={`${providerConnection.metadata.name}-actions`}
-                                    onSelect={onSelect}
-                                    text={t('actions')}
-                                    dropdownItems={actions}
+                                    item={providerConnection}
                                     isKebab={true}
-                                    isPlain={true}
-                                    onToggle={() => {
-                                        if (!isOpen) checkRbacAccess(providerConnection)
-                                        else {
-                                            abortRbacPromises()
-                                            setTableActionRbacValues(defaultTableRbacValues)
-                                            setIsOpen(!isOpen)
-                                        }
-                                    }}
+                                    text={`${providerConnection.metadata.name}-actions`}
+                                    actions={actions}
                                 />
                             )
                         },
