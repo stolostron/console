@@ -189,5 +189,9 @@
     "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
-    "summary.status.loading": "Loading application and violation status"
+    "summary.status.loading": "Loading application and violation status",
+
+    "disable.title": "Disable cluster discovery",
+    "disable.button": "Disable",
+    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted."
 }
