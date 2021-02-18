@@ -12,8 +12,6 @@ import {
     waitForNocks,
     waitForNotText,
     waitForText,
-    nockCreateClusterRbac,
-
 } from '../../../lib/test-util'
 import {
     CertificateSigningRequest,
@@ -373,13 +371,6 @@ function getClusterActionsResourceAttributes(name: string) {
         group: 'action.open-cluster-management.io',
         namespace: name,
     } as ResourceAttributes
-}
-function getClusterCreateResourceAttributes() {
-    return {
-        resource: 'managedclusters',
-        verb: 'create',
-        group: 'cluster.open-cluster-management.io',
-    }
 }
 
 describe('Cluster page', () => {

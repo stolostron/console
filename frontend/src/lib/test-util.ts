@@ -1,8 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
-import { SelfSubjectAccessReview } from '../resources/self-subject-access-review'
-import { nockCreate } from './nock-util'
 
 export const waitTimeout = 5 * 1000
 
@@ -249,37 +247,4 @@ export async function waitForNocks(nocks: Scope[]) {
 
 export async function waitForNock(nock: Scope) {
     await waitFor(() => expect(nock.isDone()).toBeTruthy(), options)
-}
-
-export async function nockCreateClusterRbac() {
-    const create = nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes: {
-                    resource: 'managedclusters',
-                    verb: 'create',
-                    group: 'cluster.open-cluster-management.io',
-                },
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes: {
-                    resource: 'managedclusters',
-                    verb: 'create',
-                    group: 'cluster.open-cluster-management.io',
-                },
-            },
-            status: {
-                allowed: true,
-            },
-        } as SelfSubjectAccessReview
-    )
-    waitForNock(create)
 }

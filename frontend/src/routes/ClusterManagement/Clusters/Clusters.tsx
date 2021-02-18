@@ -376,10 +376,7 @@ export function ClustersTable(props: {
                         message={t('managed.emptyStateMsg')}
                         action={
                             <div>
-                                <AcmButton
-                                    component={Link}
-                                    to={NavigationPath.createCluster}
-                                >
+                                <AcmButton component={Link} to={NavigationPath.createCluster}>
                                     {t('managed.createCluster')}
                                 </AcmButton>
                                 <AcmButton
