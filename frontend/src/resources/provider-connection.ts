@@ -78,7 +78,6 @@ export function listProviderConnections() {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
         },
-        undefined,
         ['cluster.open-cluster-management.io/cloudconnection=']
     )
     return {
