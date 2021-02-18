@@ -54,7 +54,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
     // Cluster
-    const { data, startPolling, stopPolling, loading, error, refresh } = useQuery(
+    const { data, startPolling, stopPolling, loading, error } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
