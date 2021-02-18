@@ -1,4 +1,3 @@
-import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import {
     getResourceApiPath,
     getResourceName,
@@ -9,12 +8,6 @@ import {
 import { Status, StatusKind } from '../resources/status'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
-
-export interface IRequestOptions {
-    retries?: number
-    backoff?: number
-    // TODO abortSignal - incases where you want one abort for a bunch of requests
-}
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -43,7 +36,7 @@ export enum ResourceErrorCode {
     ServiceUnavailable = 503,
     GatewayTimeout = 504,
     NetworkError = 700,
-    RequestCancelled = 800,
+    RequestAborted = 800,
     ConnectionReset = 900,
     Unknown = 999,
 }
@@ -58,25 +51,22 @@ export class ResourceError extends Error {
 }
 
 export function createResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource,
-    options?: IRequestOptions
+    resource: Resource
 ): IRequestResult<ResultType> {
     const url = backendUrl + getResourceApiPath(resource)
-    return postRequest<Resource, ResultType>(url, resource, options)
+    return postRequest<Resource, ResultType>(url, resource)
 }
 
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource,
-    options?: IRequestOptions
+    resource: Resource
 ): IRequestResult<ResultType> {
     const url = backendUrl + getResourceNameApiPath(resource)
-    return putRequest<Resource, ResultType>(url, resource, options)
+    return putRequest<Resource, ResultType>(url, resource)
 }
 
 export function patchResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
-    data: unknown,
-    options?: IRequestOptions
+    data: unknown
 ): IRequestResult<ResultType> {
     const url = backendUrl + getResourceNameApiPath(resource)
     let headers: Record<string, string> = {}
@@ -85,32 +75,25 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     } else {
         headers['Content-Type'] = 'application/merge-patch+json'
     }
-    return patchRequest<Resource, ResultType>(url, data, headers, options)
+    return patchRequest<unknown, ResultType>(url, data, headers)
 }
 
-export function deleteResource<Resource extends IResource>(
-    resource: Resource,
-    options?: IRequestOptions
-): IRequestResult {
+export function deleteResource<Resource extends IResource>(resource: Resource): IRequestResult {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     const url = backendUrl + getResourceNameApiPath(resource)
-    return deleteRequest(url, options)
+    return deleteRequest(url)
 }
 
-export function getResource<Resource extends IResource>(
-    resource: Resource,
-    options?: IRequestOptions
-): IRequestResult<Resource> {
+export function getResource<Resource extends IResource>(resource: Resource): IRequestResult<Resource> {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     const url = backendUrl + getResourceNameApiPath(resource)
-    return getRequest<Resource>(url, { ...{ retries: 2 }, ...options })
+    return getRequest<Resource>(url)
 }
 
 export function listResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
-    options?: IRequestOptions,
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
@@ -127,7 +110,7 @@ export function listResources<Resource extends IResource>(
                 .map((key) => `${key}=${query[key]}`)
                 .join('&')}`
     }
-    const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
+    const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => {
             if (Array.isArray(result.items)) {
@@ -148,12 +131,11 @@ export function listResources<Resource extends IResource>(
 
 export function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
-    options?: IRequestOptions,
     labels?: string[]
 ): IRequestResult<Resource[]> {
     let url = backendUrl + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
-    const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
+    const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
         abort: result.abort,
@@ -166,119 +148,131 @@ export function listNamespacedResources<Resource extends IResource>(
         kind: string
         metadata: { namespace: string }
     },
-    options?: IRequestOptions,
     labels?: string[]
 ): IRequestResult<Resource[]> {
     let url = backendUrl + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
-    const result = getRequest<ResourceList<Resource>>(url, { ...{ retries: 2 }, ...options })
+    const result = getRequest<ResourceList<Resource>>(url)
     return {
         promise: result.promise.then((result) => result.items as Resource[]),
         abort: result.abort,
     }
 }
 
-function getRequest<ResourceType, ResultType = ResourceType>(
-    url: string,
-    options?: IRequestOptions
-): IRequestResult<ResultType> {
-    return axiosRequest<ResultType>({
-        ...{ url, method: 'GET', validateStatus: (status) => true },
-        ...{ retries: 2 },
-        ...options,
-    })
+export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
+    const abortController = new AbortController()
+    return {
+        promise: fetchGet<ResultT>(url, abortController.signal).then((result) => result.data),
+        abort: () => abortController.abort(),
+    }
 }
 
-export function postRequest<ResourceType, ResultType = ResourceType>(
-    url: string,
-    data: ResourceType,
-    options?: IRequestOptions
-): IRequestResult<ResultType> {
-    return axiosRequest<ResultType>({
-        ...{ url, method: 'POST', validateStatus: (status) => true, data },
-        ...options,
-    })
+export function putRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+    const abortController = new AbortController()
+    return {
+        promise: fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        abort: () => abortController.abort(),
+    }
 }
 
-function putRequest<ResourceType, ResultType = ResourceType>(
-    url: string,
-    data: ResourceType,
-    options?: IRequestOptions
-): IRequestResult<ResultType> {
-    return axiosRequest<ResultType>({
-        ...{ url, method: 'PUT', validateStatus: (status) => true, data },
-        ...options,
-    })
+export function postRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+    const abortController = new AbortController()
+    return {
+        promise: fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        abort: () => abortController.abort(),
+    }
 }
 
-function patchRequest<ResourceType, ResultType = ResourceType>(
+export function patchRequest<DataT, ResultT>(
+    url: string,
+    data: DataT,
+    headers?: Record<string, string>
+): IRequestResult<ResultT> {
+    const abortController = new AbortController()
+    return {
+        promise: fetchPatch<ResultT>(url, data, abortController.signal, headers).then((result) => result.data),
+        abort: () => abortController.abort(),
+    }
+}
+
+export function deleteRequest(url: string): IRequestResult {
+    const abortController = new AbortController()
+    return { promise: fetchDelete(url, abortController.signal), abort: () => abortController.abort() }
+}
+
+// --- FETCH FUNCTIONS ---
+
+export function fetchGet<T = unknown>(url: string, signal: AbortSignal) {
+    return fetchRetry<T>({ method: 'GET', url, signal, retries: process.env.NODE_ENV === 'production' ? 2 : 0 })
+}
+
+export function fetchPut<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
+    return fetchRetry<T>({ method: 'PUT', url, signal, data })
+}
+
+export function fetchPost<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
+    return fetchRetry<T>({ method: 'POST', url, signal, data })
+}
+
+export function fetchPatch<T = unknown>(
     url: string,
     data: unknown,
-    headers: Record<string, string>,
-    options?: IRequestOptions
-): IRequestResult<ResultType> {
-    return axiosRequest<ResultType>({
-        ...{
-            url,
-            method: 'PATCH',
-            validateStatus: (status) => true,
-            headers,
-            data,
-        },
-        ...options,
-    })
+    signal: AbortSignal,
+    headers?: Record<string, string>
+) {
+    return fetchRetry<T>({ method: 'PATCH', url, signal, data, headers })
 }
 
-function deleteRequest(url: string, options?: IRequestOptions): IRequestResult {
-    return axiosRequest({
-        ...{ url, method: 'DELETE', validateStatus: (status) => true },
-        ...options,
-    })
+export function fetchDelete(url: string, signal: AbortSignal) {
+    return fetchRetry<unknown>({ method: 'DELETE', url, signal })
 }
 
-function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions): IRequestResult<ResultType> {
-    const cancelTokenSource = Axios.CancelToken.source()
-    return {
-        promise: axiosRetry<ResultType>({
-            ...config,
-            ...{ cancelToken: cancelTokenSource.token, withCredentials: true },
-        })
-            .then((response) => {
-                if ((response.data as any)?.kind === StatusKind) {
-                    const status = (response.data as unknown) as Status
-                    if (status.status === 'Success') {
-                        // TODO...
-                        return response.data as ResultType
-                    } else {
-                        if (status.code === 401) {
-                            // 401 is returned from kubernetes in a Status object if token is not valid
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                            throw new ResourceError(status.message as string, status.code as number)
-                        } else if (ResourceErrorCodes.includes(status.code as number)) {
-                            throw new ResourceError(status.message as string, status.code as number)
-                        } else {
-                            throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown)
-                        }
-                    }
-                } else if (response.status === 302) {
-                    // 302 is returned when token is valid but logged out
-                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                } else if (response.status >= 400) {
-                    if (response.status === 401) {
-                        // 401 is returned from the backend if no token cookie is on request
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                    } else if (ResourceErrorCodes.includes(response.status)) {
-                        throw new ResourceError(response.statusText, response.status)
-                    } else {
-                        throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown)
-                    }
-                }
-                return response.data
+export async function fetchRetry<T>(options: {
+    method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'
+    url: string
+    signal: AbortSignal
+    data?: unknown
+    retries?: number
+    delay?: number
+    headers?: Record<string, string>
+}): Promise<{ headers: Headers; status: number; data: T }> {
+    let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
+    let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
+
+    const headers: Record<string, string> = options.headers ?? {
+        Accept: 'application/json',
+    }
+
+    let fetchBody: string | undefined
+    if (options.data) {
+        try {
+            fetchBody = JSON.stringify(options.data)
+            if (!headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json'
+            }
+        } catch (err) {
+            throw new ResourceError(`Invalid body object for request`, ResourceErrorCode.BadRequest)
+        }
+    }
+
+    while (true) {
+        let response: Response | undefined
+        try {
+            response = await fetch(options.url, {
+                method: options.method ?? 'GET',
+                credentials: 'include',
+                headers,
+                body: fetchBody,
+                signal: options.signal,
+                redirect: 'manual',
             })
-            .catch((err) => {
-                if (Axios.isCancel(err)) {
-                    throw new ResourceError('Request cancelled', ResourceErrorCode.RequestCancelled)
-                } else if (err instanceof Error) {
+        } catch (err) {
+            if (options.signal.aborted) {
+                throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
+            }
+
+            if (retries === 0) {
+                if (err instanceof Error) {
                     if (typeof (err as any)?.code === 'string') {
                         switch ((err as any)?.code) {
                             case 'ETIMEDOUT':
@@ -305,35 +299,74 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
                     }
                 }
                 throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
-            }),
-        abort: cancelTokenSource.cancel,
-    }
-}
-
-function axiosRetry<ResponseType>(
-    config: AxiosRequestConfig & IRequestOptions & unknown
-): Promise<AxiosResponse<ResponseType>> {
-    const retryCodes = [408, 429, 500, 502, 503, 504, 522, 524]
-    const retries = config?.retries ?? 0
-    const backoff = config?.backoff ?? 300
-    return new Promise((resolve, reject) => {
-        function retryRequest(config: AxiosRequestConfig & IRequestOptions) {
-            Axios.request(config)
-                .then((response) => {
-                    resolve(response)
-                })
-                .catch((err) => {
-                    if (retries > 0 && retryCodes.includes(err.status)) {
-                        setTimeout(() => {
-                            retryRequest({ ...config, ...{ retries: retries - 1, backoff: backoff * 2 } })
-                        }, backoff)
-                    } else if (typeof err.code === 'number') {
-                        // TO
-                    } else {
-                        reject(err)
-                    }
-                })
+            }
         }
-        retryRequest(config)
-    })
+
+        if (response) {
+            let responseData: T | undefined = undefined
+            try {
+                responseData = (await response.json()) as T
+            } catch {}
+
+            if ((responseData as any)?.kind === StatusKind) {
+                const status = (responseData as unknown) as Status
+                if (status.status !== 'Success') {
+                    if (status.code === 401) {
+                        // 401 is returned from kubernetes in a Status object if token is not valid
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        throw new ResourceError(status.message as string, status.code as number)
+                    } else if (ResourceErrorCodes.includes(status.code as number)) {
+                        throw new ResourceError(status.message as string, status.code as number)
+                    } else {
+                        throw new ResourceError('Unknown error.', ResourceErrorCode.Unknown)
+                    }
+                }
+            }
+
+            if (response.status < 300) {
+                return { headers: response.headers, status: response.status, data: responseData as T }
+            }
+
+            switch (response.status) {
+                case 302: // 302 is returned when token is valid but logged out
+                case 401: // 401 is returned from the backend if no token cookie is on request
+                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                    throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
+
+                case 408: // Request Timeout
+                case 429: // Too Many Requests
+                case 500: // Internal Server Error
+                case 502: // Bad Gateway
+                case 503: // Service Unavailable
+                case 504: // Gateway Timeout
+                case 522: // Connection timed out
+                case 524: // A Timeout Occurred
+                    try {
+                        const retryAfter = Number(response.headers.get('retry-after'))
+                        if (Number.isInteger(retryAfter)) delay = retryAfter
+                    } catch {}
+                    break
+
+                default:
+                    retries = 0
+                    break
+            }
+
+            if (retries === 0) {
+                if (ResourceErrorCodes.includes(response.status)) {
+                    throw new ResourceError(response.statusText, response.status)
+                } else {
+                    throw new ResourceError(
+                        `Request failed with status code ${response.status}`,
+                        ResourceErrorCode.Unknown
+                    )
+                }
+            }
+        }
+
+        let ms = delay
+        await new Promise((resolve) => setTimeout(resolve, ms))
+        delay *= 2
+        retries--
+    }
 }

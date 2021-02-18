@@ -15,7 +15,6 @@
         "@types/react-dom": "^17.0.1",
         "@types/react-router-dom": "^5.1.7",
         "@types/yamljs": "^0.2.31",
-        "axios": "^0.21.1",
         "customize-cra": "^1.0.0",
         "handlebars": "^4.7.6",
         "i18next": "^19.8.7",

@@ -1,8 +1,8 @@
 import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
-import { listNamespacedResources } from '../lib/resource-request'
-import { IResource } from './resource'
-import { getLatest } from '../lib/utils'
 import { ClusterStatus } from '../lib/get-cluster'
+import { listNamespacedResources } from '../lib/resource-request'
+import { getLatest } from '../lib/utils'
+import { IResource } from './resource'
 
 export const PodApiVersion = 'v1'
 export type PodApiVersionType = 'v1'
@@ -35,7 +35,6 @@ export function listHivePods(namespace: string, labels?: string[]) {
             kind: PodKind,
             metadata: { namespace },
         },
-        undefined,
         labels
     )
 }

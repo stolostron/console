@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 
-// CONSOLE-HEADER
-import Axios, { AxiosResponse } from 'axios'
+import { fetchGet } from './resource-request'
 
+// CONSOLE-HEADER
 declare global {
     interface Window {
         __PRELOADED_STATE__: object
@@ -27,14 +27,12 @@ type HeaderAssets = {
 
 export const fetchHeader = async () => {
     const isLocal: boolean = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    let headerResponse: AxiosResponse
     try {
-        headerResponse = await Axios.request({
-            url: isLocal ? '/header' : '/multicloud/header/api/v1/header?serviceId=console&dev=false',
-            method: 'GET',
-            responseType: 'json',
-            withCredentials: true,
-        })
+        const abortController = new AbortController()
+        const headerResponse = await fetchGet(
+            isLocal ? '/header' : '/multicloud/header/api/v1/header?serviceId=console&dev=false',
+            abortController.signal
+        )
 
         if (headerResponse.status === 200) {
             const { headerHtml, files, props, state } = headerResponse.data as HeaderAssets
@@ -77,7 +75,7 @@ export const fetchHeader = async () => {
 
             // Dependency on console-header to provide the OpenShift console url because
             // we do not have a service account to query for the url ourselves if the user does not have privileges
-            const appLinks = headerResponse?.data?.state?.uiconfig?.config?.appLinks ?? []
+            const appLinks = (headerResponse?.data as any)?.state?.uiconfig?.config?.appLinks ?? []
             const openShiftConsoleApp =
                 appLinks.find((link: { name: string }) => link.name === 'Red Hat OpenShift Container Platform') ?? {}
             const openShiftConsoleUrl = openShiftConsoleApp.url
@@ -92,10 +90,8 @@ export const fetchHeader = async () => {
             }
         }
     } catch (err) {
-        headerResponse = err
         console.error(err)
     }
-    return headerResponse
 }
 
 fetchHeader()
