@@ -170,12 +170,14 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                                 .replace(':name', providerConnection.metadata.name!)
                                         )
                                     },
-                                    rbac: [{
-                                        name: providerConnection.metadata.name,
-                                        namespace: providerConnection.metadata.namespace,
-                                        resource: 'secrets',
-                                        verb: 'patch',
-                                    }],
+                                    rbac: [
+                                        {
+                                            name: providerConnection.metadata.name,
+                                            namespace: providerConnection.metadata.namespace,
+                                            resource: 'secrets',
+                                            verb: 'patch',
+                                        },
+                                    ],
                                 },
                                 {
                                     id: 'deleteConnection',
@@ -213,12 +215,14 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             isDanger: true,
                                         })
                                     },
-                                    rbac: [{
-                                        name: providerConnection.metadata.name,
-                                        namespace: providerConnection.metadata.namespace,
-                                        resource: 'secrets',
-                                        verb: 'delete',
-                                    }],
+                                    rbac: [
+                                        {
+                                            name: providerConnection.metadata.name,
+                                            namespace: providerConnection.metadata.namespace,
+                                            resource: 'secrets',
+                                            verb: 'delete',
+                                        },
+                                    ],
                                 },
                             ]
 

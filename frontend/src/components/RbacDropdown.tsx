@@ -38,25 +38,29 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
 
     const onToggle = async (isOpen?: boolean) => {
         if (isOpen) {
-            const rbacActions: Actions<T>[] = await Promise.all(props.actions.map(async (action) => {
-                try {
-                    if (action.rbac && action.rbac.length > 0) {
-                        const results = await Promise.all(action.rbac.map(async (rbac) => {
-                            return await createSubjectAccessReview(rbac).promise
-                        }))
-                        const isDisabled = !results.every((result) => result?.status?.allowed)
-                        return {
-                            ...action,
-                            isDisabled,
-                            tooltip: isDisabled ? t('common:rbac.unauthorized') : ''
+            const rbacActions: Actions<T>[] = await Promise.all(
+                props.actions.map(async (action) => {
+                    try {
+                        if (action.rbac && action.rbac.length > 0) {
+                            const results = await Promise.all(
+                                action.rbac.map(async (rbac) => {
+                                    return await createSubjectAccessReview(rbac).promise
+                                })
+                            )
+                            const isDisabled = !results.every((result) => result?.status?.allowed)
+                            return {
+                                ...action,
+                                isDisabled,
+                                tooltip: isDisabled ? t('common:rbac.unauthorized') : '',
+                            }
+                        } else {
+                            return action
                         }
-                    } else {
+                    } catch (err) {
                         return action
                     }
-                } catch (err) {
-                    return action
-                }
-            }))
+                })
+            )
             setActions(rbacActions)
         }
     }
