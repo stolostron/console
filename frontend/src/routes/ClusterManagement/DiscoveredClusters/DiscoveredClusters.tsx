@@ -249,7 +249,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                         await disableDiscovery()
                                         setModalProps({ open: false })
                                     } catch (err) {
-                                        alertContext.addAlert(getErrorInfo(err))  //TODO: not currently displaying within modal
+                                        alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                                     }
                                 },
                                 confirmText: t('disable.button'),
