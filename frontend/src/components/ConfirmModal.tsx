@@ -45,7 +45,6 @@ export function ConfirmModal(props: IConfirmModalProps) {
             ]}
         >
             {props.message}
-            <AcmAlertGroup />
         </AcmModal>
     )
 }
