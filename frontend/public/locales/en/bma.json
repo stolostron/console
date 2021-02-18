@@ -23,6 +23,11 @@
   "createBareMetalAsset.form.invalidBmcAddress":"Invalid format of BMC address",
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
+
+  "importBareMetalAssets.title": "Import bare metal assets",
+  "importBareMetalAssets.loading": "Importing bare metal assets",
+  "importBareMetalAssets.tooltip": "Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.",
+
   
   "editBareMetalAsset.title": "Edit bare metal asset",
   "editBareMetalAsset.button.submit":"Apply",
@@ -34,6 +39,7 @@
   "bareMetalAsset.tableHeader.role":"Role",
   "bareMetalAsset.tableHeader.status":"Status",
   "bareMetalAsset.tableHeader.labels":"Labels",
+  "bareMetalAsset.bulkAction.importAssets":"Import assets",
   "bareMetalAsset.bulkAction.createAsset":"Create asset",
   "bareMetalAsset.bulkAction.deleteAsset":"Delete asset(s)",
   "bareMetalAsset.bulkAction.createCluster":"Create cluster",

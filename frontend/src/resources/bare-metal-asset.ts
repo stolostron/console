@@ -71,6 +71,7 @@ export function createBareMetalAssetResource(asset: {
         name,
         namespace,
         bootMACAddress,
+        role,
         bmc: { address },
     } = asset
     const credentialsName = `${name}-bmc-secret`
@@ -87,6 +88,7 @@ export function createBareMetalAssetResource(asset: {
                 credentialsName: credentialsName,
             },
             bootMACAddress,
+            role,
         },
     })
 }

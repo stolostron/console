@@ -38,35 +38,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
         }
     })
     if (newAssets.length > 0) {
-        // determine the namespaces required and create them
-        const namespaces = Object.keys(keyBy(newAssets, 'namespace'))
-        results = namespaces.map((namespace) => createProject(namespace))
-        response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
-            if (status === 'rejected') {
-                if (reason.code !== 409) {
-                    errors.push({ message: reason.message })
-                }
-            }
-        })
-
-        // create the bma and its secret
-        results = newAssets.map((asset) => createBareMetalAssetSecret(asset))
-        response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason, value }, inx) => {
-            if (status === 'rejected') {
-                errors.push({ message: reason.message })
-            }
-        })
-        results = newAssets.map((asset) => createBareMetalAssetResource(asset))
-        response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason, value }, inx) => {
-            if (status === 'rejected') {
-                errors.push({ message: reason.message })
-            } else {
-                assets.push(value)
-            }
-        })
+        createBMAs(newAssets, assets, errors)
     }
 
     // make sure all hosts have a user/password in both ClusterDeployment and install-config.yaml
@@ -130,4 +102,97 @@ export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterNam
             errors.push({ message: reason.message })
         }
     })
+}
+
+export async function importBMAs(setIsLoading) {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.csv, .txt'
+    input.onchange = (e) => {
+        const file = e.target.files[0]
+        const reader = new FileReader()
+        reader.readAsText(file, 'UTF-8')
+        reader.onload = async (readerEvent) => {
+            const content = readerEvent.target.result
+
+            // parse csv
+            setIsLoading(true)
+             setTimeout(() => {
+              const allTextLines = content.split(/\r\n|\n/)
+              const headers = allTextLines.shift().split(',')
+              if (headers.length > 3) {
+                  const lines = []
+                  allTextLines.forEach((line) => {
+                      const data = line.split(',')
+                      if (data.length === headers.length) {
+                          const arr = []
+                          headers.forEach((header, inx) => {
+                              arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
+                          })
+                          arr.push(`"id": "${Math.random().toString()}"`)
+                          lines.push(`{${arr.join(',')}}`)
+                      }
+                  })
+  
+                  try {
+                      let bmas = JSON.parse(`[${lines.join(',')}]`)
+                      bmas = bmas.map((bma) => {
+                          return {
+                              name: bma.hostName,
+                              namespace: bma.hostNamespace,
+                              bootMACAddress: bma.macAddress,
+                              role: bma.role ?? 'worker',
+                              bmc: {
+                                  address: bma.bmcAddress,
+                                  username: bma.username,
+                                  password: bma.password,
+                              },
+                          }
+                      })
+  
+                      return createBMAs(bmas)
+  
+                  } catch (err) {
+                      // handle exception
+                  }
+              }
+            }, 100)
+        }
+    }
+    input.click()
+}
+
+export async function createBMAs(bmas: JsonArray, assets = [], errors = []) {
+    let results
+    let response
+    // determine the namespaces required and create them
+    const namespaces = Object.keys(keyBy(bmas, 'namespace'))
+    results = namespaces.map((namespace) => createProject(namespace))
+    response = await Promise.allSettled(results.map((result) => result.promise))
+    response.forEach(({ status, reason }, inx) => {
+        if (status === 'rejected') {
+            if (reason.code !== 409) {
+                errors.push({ message: reason.message })
+            }
+        }
+    })
+
+    // create the bma and its secret
+    results = bmas.map((asset) => createBareMetalAssetSecret(asset))
+    response = await Promise.allSettled(results.map((result) => result.promise))
+    response.forEach(({ status, reason, value }, inx) => {
+        if (status === 'rejected') {
+            errors.push({ message: reason.message })
+        }
+    })
+    results = bmas.map((asset) => createBareMetalAssetResource(asset))
+    response = await Promise.allSettled(results.map((result) => result.promise))
+    response.forEach(({ status, reason, value }, inx) => {
+        if (status === 'rejected') {
+            errors.push({ message: reason.message })
+        } else {
+            assets.push(value)
+        }
+    })
+    return { assets, errors }
 }

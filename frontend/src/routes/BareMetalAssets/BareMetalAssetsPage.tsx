@@ -12,6 +12,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
+import { AcmLoadingButton } from './AcmLoadingButton'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +25,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { importBMAs } from '../../lib/bare-metal-assets'
 import {
     BMATableRbacAccess,
     createSubjectAccessReview,
@@ -32,7 +34,7 @@ import {
 } from '../../resources/self-subject-access-review'
 
 export default function BareMetalAssetsPage() {
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation(['bma', 'common', 'create'])
     return (
         <Page>
             <AcmPageHeader
@@ -177,14 +179,28 @@ export function BareMetalAssetsTable(props: {
                         <AcmEmptyState
                             title={t('bareMetalAsset.emptyState.title')}
                             action={
-                                <AcmButton
-                                    variant="primary"
-                                    onClick={() => {
-                                        history.push(NavigationPath.createBareMetalAsset)
-                                    }}
-                                >
-                                    {t('createBareMetalAsset.title')}
-                                </AcmButton>
+                                <div style={{ display: 'flex', justifyContent: 'space-evenly', margin: 'auto' }}>
+                                    <AcmButton
+                                        variant="primary"
+                                        onClick={() => {
+                                            history.push(NavigationPath.createBareMetalAsset)
+                                        }}
+                                    >
+                                        {t('createBareMetalAsset.title')}
+                                    </AcmButton>
+                                    <AcmLoadingButton
+                                        key="import-action"
+                                        id="import-button"
+                                        variant="primary"
+                                        onClick={async (setIsLoading) => {
+                                            importBMAs(setIsLoading)
+                                            props.refresh()
+                                        }}
+                                        label={t('importBareMetalAssets.title')}
+                                        processingLabel={t('importBareMetalAssets.loading')}
+                                        tooltip={t('importBareMetalAssets.tooltip')}
+                                    />
+                                </div>
                             }
                         />
                     }
@@ -335,6 +351,15 @@ export function BareMetalAssetsTable(props: {
                     ]}
                     keyFn={keyFn}
                     tableActions={[
+                        {
+                            id: 'importAsset',
+                            title: t('bareMetalAsset.bulkAction.importAssets'),
+                            click: () => {
+                                importBMAs(props.refresh)
+                                props.refresh()
+                            },
+                            tooltip: 'asdsdfasdf',
+                        },
                         {
                             id: 'createAsset',
                             title: t('bareMetalAsset.bulkAction.createAsset'),
