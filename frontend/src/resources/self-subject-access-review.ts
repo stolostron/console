@@ -276,6 +276,16 @@ export function CheckTableActionsRbacAccess(
 ) {
     let currentRbacValues = { ...defaultTableRbacValues }
     let abortArray: Array<Function> = []
+    if (!cluster.isManaged) {
+        delete currentRbacValues['cluster.edit.labels']
+    }
+    if (
+        cluster.distribution?.ocp?.availableUpdates?.length === 0 ||
+        cluster.distribution?.ocp === undefined ||
+        cluster.distribution?.ocp.version !== cluster.distribution?.ocp.desiredVersion
+    ) {
+        delete currentRbacValues['cluster.upgrade']
+    }
     if (!cluster.isHive) {
         delete currentRbacValues['cluster.destroy']
     }

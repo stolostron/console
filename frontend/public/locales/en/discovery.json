@@ -1,0 +1,18 @@
+{
+    "discoveredClusters": "Discovered clusters",
+    "discoveryConfig.title": "Enable cluster discovery",
+    "discoveryConfig.filterform.header": "Set filter(s) for your discovered clusters",
+    "discoveryConfig.connections.header": "Select connections to obtain discovered clusters information",
+    "discoveryConfig.connections.subheader": "Some provider connections enable you to discover clusters. Once you save these changes, the filtered clusters will appear in the Discovered clusters tab of the Cluster management page.",
+    "discoveryConfig.filterform.subheader": "Set filters for the discovered clusters from your connections to make sure you only process and add the clusters relevant to you. Only the 100 most recent clusters will be shown.", 
+    "discoveryConfig.lastActiveFilter.label": "Last active",
+    "discoveryConfig.lastActiveFilter.labelHelp": "Only discoveredclusters active within this time period (in days) will be found",
+    "discoveryConfig.lastActiveFilter.placeholder": "7",
+    "discoveryConfig.discoveryVersions.label": "OpenShift version",
+    "discoveryConfig.discoveryVersions.labelHelp": "Only OpenShift clusters matching the selected versions will be found",
+    "discoveryConfig.connections.label": "Provider connection",
+    "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discovered clusters",
+    "discoveryConfig.testFilter": "Test filter",
+    "discoveryConfig.enable": "Enable",
+    "discoveryConfig.cancel": "Cancel"
+}

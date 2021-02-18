@@ -9,6 +9,7 @@ import {
 } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
+import { MemoryRouter } from 'react-router-dom'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -118,7 +119,11 @@ test('DiscoveredClustersPage', async () => {
 
 test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-    render(<DiscoveredClustersPage />)
+    render(
+        <MemoryRouter>
+            <DiscoveredClustersPage />
+        </MemoryRouter>
+    )
     await waitForNock(listNock)
     await waitForText('discovery.emptyStateHeader')
 })

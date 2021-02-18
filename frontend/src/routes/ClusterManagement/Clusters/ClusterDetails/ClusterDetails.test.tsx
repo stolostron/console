@@ -18,9 +18,8 @@ import {
     waitForCalled,
     waitForNock,
     waitForNocks,
-    waitForNotRole,
-    waitForRole,
     waitForText,
+    waitForNotText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -662,15 +661,6 @@ function getDeleteMachinePoolsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function getClusterActionsResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusteractions',
-        verb: 'create',
-        group: 'action.open-cluster-management.io',
-        namespace: name,
-    } as ResourceAttributes
-}
-
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
         <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
@@ -695,7 +685,6 @@ function defaultNocks() {
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
@@ -704,11 +693,11 @@ function defaultNocks() {
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
         const nocks = [
+            nockGetManagedClusterError(),
             nockGetManagedClusterInfoError(),
             nockGetClusterDeploymentError(),
             nockListCertificateSigningRequests(),
             nockGetManagedClusterAddons(),
-            nockGetManagedClusterError(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
         ]
         render(<Component />)
@@ -736,7 +725,7 @@ describe('ClusterDetails', () => {
         await waitForCalled(window.open as jest.Mock)
     })
 
-    test('overview page opens edit labels modal', async () => {
+    test('overview page opens edit labels', async () => {
         const nocks = defaultNocks()
         render(<Component />)
         await waitForNocks(nocks)
@@ -744,10 +733,10 @@ describe('ClusterDetails', () => {
         await waitForText(clusterName, true)
 
         await clickByLabel('common:labels.edit.title')
-        await waitForRole('dialog')
+        await waitForText('labels.description')
 
         await clickByText('common:cancel')
-        await waitForNotRole('dialog')
+        await waitForNotText('labels.description')
     })
 
     test('nodes page renders', async () => {
@@ -787,7 +776,6 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)

@@ -15,13 +15,14 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
+    AcmDrawerContext,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { DistributionField, UpgradeModal } from '../../../components/ClusterCommon'
+import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -37,9 +38,10 @@ import {
     defaultTableRbacValues,
     rbacMapping,
 } from '../../../resources/self-subject-access-review'
+// import { createImportResources } from '../../../lib/import-cluster'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
-import { EditLabelsModal } from './components/EditLabelsModal'
+import { EditLabels } from './components/EditLabels'
 
 export default function ClustersPage() {
     return (
@@ -173,15 +175,16 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
-    const [editClusterLabels, setEditClusterLabels] = useState<Cluster | undefined>()
-    const [upgradeSingleCluster, setUpgradeSingleCluster] = useState<Cluster | undefined>()
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
-    const [upgradeMultipleClusters, setUpgradeMultipleClusters] = useState<Array<Cluster> | undefined>()
+    const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
+
+    const { setDrawerContext } = useContext(AcmDrawerContext)
+
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
     }
@@ -219,26 +222,11 @@ export function ClustersTable(props: {
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
-            <EditLabelsModal
-                cluster={editClusterLabels}
-                close={() => {
-                    setEditClusterLabels(undefined)
-                    props.refresh()
-                }}
-            />
-            <UpgradeModal
-                data={upgradeSingleCluster?.distribution}
-                open={!!upgradeSingleCluster}
-                clusterName={upgradeSingleCluster?.name || ''}
-                close={() => {
-                    setUpgradeSingleCluster(undefined)
-                }}
-            />
             <BatchUpgradeModal
-                clusters={upgradeMultipleClusters}
-                open={!!upgradeMultipleClusters}
+                clusters={upgradeClusters}
+                open={!!upgradeClusters}
                 close={() => {
-                    setUpgradeMultipleClusters(undefined)
+                    setUpgradeClusters(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -338,7 +326,20 @@ export function ClustersTable(props: {
                                 {
                                     id: 'edit-labels',
                                     text: t('managed.editLabels'),
-                                    click: (cluster: Cluster) => setEditClusterLabels({ ...cluster }),
+                                    click: (cluster: Cluster) => {
+                                        setDrawerContext({
+                                            isExpanded: true,
+                                            title: t('labels.edit.title'),
+                                            onCloseClick: () => setDrawerContext(undefined),
+                                            panelContent: (
+                                                <EditLabels
+                                                    cluster={cluster}
+                                                    close={() => setDrawerContext(undefined)}
+                                                />
+                                            ),
+                                            panelContentProps: { minSize: '600px' },
+                                        })
+                                    },
                                     isDisabled: !tableActionRbacValues['cluster.edit.labels'],
                                     tooltip: !tableActionRbacValues['cluster.edit.labels']
                                         ? t('common:rbac.unauthorized')
@@ -353,7 +354,7 @@ export function ClustersTable(props: {
                                     id: 'upgrade-cluster',
                                     text: t('managed.upgrade'),
                                     click: (cluster: Cluster) => {
-                                        setUpgradeSingleCluster(cluster)
+                                        setUpgradeClusters([cluster])
                                     },
                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
                                     tooltip: !tableActionRbacValues['cluster.upgrade']
@@ -368,6 +369,39 @@ export function ClustersTable(props: {
                                             `/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
                                         ),
                                 },
+                                // {
+                                //     id: 'attach-cluster',
+                                //     text: t('managed.import'),
+                                //     click: (cluster: Cluster) => {
+                                //         setModalProps({
+                                //             open: true,
+                                //             singular: t('cluster'),
+                                //             plural: t('clusters'),
+                                //             action: t('import'),
+                                //             processing: t('import.generating'),
+                                //             resources: [cluster],
+                                //             close: () => {
+                                //                 setModalProps({ open: false })
+                                //             },
+                                //             description: t('cluster.import.description'),
+                                //             columns: [
+                                //                 {
+                                //                     header: t('upgrade.table.name'),
+                                //                     sort: 'name',
+                                //                     cell: 'name',
+                                //                 },
+                                //                 {
+                                //                     header: t('table.provider'),
+                                //                     sort: 'provider',
+                                //                     cell: (cluster: Cluster) =>
+                                //                         cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                                //                 },
+                                //             ],
+                                //             keyFn:(cluster) => cluster.name as string,
+                                //             actionFn: createImportResources,
+                                //         })
+                                //     },
+                                // },
                                 {
                                     id: 'detach-cluster',
                                     text: t('managed.detached'),
@@ -447,7 +481,12 @@ export function ClustersTable(props: {
                             }
 
                             if (!cluster.isManaged) {
+                                actions = actions.filter((a) => a.id !== 'edit-labels')
                                 actions = actions.filter((a) => a.id !== 'search-cluster')
+                            }
+
+                            if (cluster.status !== ClusterStatus.detached) {
+                                actions = actions.filter((a) => a.id !== 'attach-cluster')
                             }
 
                             if (cluster.status === ClusterStatus.detached) {
@@ -543,7 +582,7 @@ export function ClustersTable(props: {
                                 return
                             }
 
-                            setUpgradeMultipleClusters(managedClusters)
+                            setUpgradeClusters(managedClusters)
                         },
                     },
                 ]}

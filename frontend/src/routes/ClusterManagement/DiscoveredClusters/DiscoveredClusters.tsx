@@ -28,6 +28,7 @@ import {
     DiscoveryConfigKind,
     listDiscoveryConfigs,
 } from '../../../resources/discovery-config'
+import { Link } from 'react-router-dom'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -174,7 +175,11 @@ function DiscoveredClustersEmptyState() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmEmptyState
-            action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
+            action={
+                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                    {t('discovery.enablediscoverybtn')}
+                </AcmButton>
+            }
             title={t('discovery.emptyStateHeader')}
             message={t('discovery.emptyStateMsg')}
             key="dcEmptyState"
@@ -228,7 +233,9 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                     {
                         id: 'editClusterDiscvoveryBtn',
                         title: t('discovery.edit'),
-                        click: () => {}, // TODO: Make this button work
+                        click: () => {
+                            history.push(NavigationPath.discoveryConfig)
+                            }, 
                     },
                     {
                         id: 'disableClusterDiscvoveryBtn',
@@ -253,7 +260,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                 },
                             })
                         },
-                    }, // TODO: Make this button work
+                    },
                 ]}
                 bulkActions={[]}
                 rowActions={[
