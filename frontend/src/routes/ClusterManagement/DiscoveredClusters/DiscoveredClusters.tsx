@@ -155,19 +155,7 @@ export default function DiscoveredClustersPage() {
         </AcmErrorBoundary>
     )
 }
-/*
-async function disableDiscovery(): Promise<void> {
-    const result = listDiscoveryConfigs()
-    const discConfig = await result.promise
-    if (discConfig.length !== 3) throw new Error("Only 1 DiscoveryConfig resource may exist")
-    await deleteResource({
-        apiVersion: DiscoveryConfigApiVersion,
-        kind: DiscoveryConfigKind,
-        metadata: { name: discConfig[0].metadata.name, namespace: discConfig[0].metadata.namespace },
-        
-    })
-}
-*/
+
 
 async function disableDiscovery(): Promise<void> {
     const result = listDiscoveryConfigs()

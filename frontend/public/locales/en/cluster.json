@@ -190,6 +190,7 @@
     "summary.violations.launch": "Go to Policies",
     "summary.status.loading": "Loading application and violation status",
 
-    "disable.title": "Disable Cluster Discovery",
+    "disable.title": "Disable cluster discovery",
+    "disable.button": "Disable",
     "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted."
 }

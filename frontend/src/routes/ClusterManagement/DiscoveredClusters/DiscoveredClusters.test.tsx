@@ -110,8 +110,8 @@ test('DiscoveredClustersPage', async () => {
 
     // Test Delete Buttons
     await clickByText('discovery.disable')
-    await waitForText('confirm')
-    await clickByText('confirm')
+    await waitForText('disable.button')
+    await clickByText('disable.button')
     await waitForNock(configlistNock)
     await waitForNock(deleteNock)
 })
