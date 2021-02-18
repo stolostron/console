@@ -1,6 +1,7 @@
 import {
     AcmAlert,
     AcmFormProvider,
+    AcmForm,
     AcmModal,
     AcmSubmit,
     AcmTable,
@@ -12,7 +13,6 @@ import {
     ActionGroup,
     Button,
     ButtonVariant,
-    Form,
     ModalVariant,
     Progress,
     ProgressMeasureLocation,
@@ -83,7 +83,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 isOpen={true}
                 onClose={props.close}
             >
-                <Form style={{ gap: 0 }}>
+                <AcmForm style={{ gap: 0 }}>
                     {!errors ? (
                         <Fragment>
                             {props.description}
@@ -223,7 +223,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   </Button>,
                               ]}
                     </ActionGroup>
-                </Form>
+                </AcmForm>
             </AcmModal>
         </AcmFormProvider>
     )
