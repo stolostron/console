@@ -1,12 +1,12 @@
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { nockUpgrade, nockCreateSelfSubjectAccessReview } from '../lib/nock-util'
-import { Cluster, DistributionInfo, ClusterStatus } from '../lib/get-cluster'
-import { DistributionField, UpgradeModal } from './ClusterCommon'
 import userEvent from '@testing-library/user-event'
-import { ResourceAttributes } from '../resources/self-subject-access-review'
 import * as nock from 'nock'
-import { clickByText, waitForNock, waitForNotText, waitForText } from '../lib/test-util'
+import React from 'react'
+import { Cluster, ClusterStatus, DistributionInfo } from '../lib/get-cluster'
+import { nockAccessReview, nockUpgrade } from '../lib/nock-util'
+import { clickByRole, clickByText, waitForNock, waitForNotText, waitForText } from '../lib/test-util'
+import { ResourceAttributes } from '../resources/self-subject-access-review'
+import { DistributionField, UpgradeModal } from './ClusterCommon'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -92,10 +92,7 @@ describe('DistributionField', () => {
     ) => {
         let nockAction: nock.Scope | undefined = undefined
         if (hasUpgrade) {
-            nockAction = nockCreateSelfSubjectAccessReview(
-                getClusterActionsResourceAttributes('clusterName'),
-                allowUpgrade
-            )
+            nockAction = nockAccessReview(getClusterActionsResourceAttributes('clusterName'), allowUpgrade)
         }
 
         const mockCluster: Cluster = {
@@ -248,36 +245,16 @@ describe('UpgradeModal', () => {
     })
 
     it('should show error message when failed upgrading', async () => {
-        const mockUpgrade = nockUpgrade('clusterName', '1.2.6', '', 405, 100)
-        let isClosed = false
-        const { getAllByRole, getByText } = render(
-            <UpgradeModal
-                close={() => {
-                    isClosed = true
-                }}
-                open={true}
-                cluster={mockCluster}
-            />
-        )
-        const button = getByText('upgrade.select.placeholder')
-        expect(button).toBeTruthy()
-        userEvent.click(button)
-        // select a version
-        expect(getAllByRole('option').length).toBeGreaterThan(0)
-        const versionButton = getAllByRole('option')[0]
-        expect(versionButton).toBeTruthy()
-        userEvent.click(versionButton)
-        // click submit and wait for loader to show
-        const submitButton = getByText('upgrade.submit')
-        expect(submitButton).toBeTruthy()
-        userEvent.click(submitButton)
-        await waitForText('upgrade.submit.processing')
-        await waitForNotText('upgrade.submit.processing')
+        render(<UpgradeModal close={() => {}} open={true} cluster={mockCluster} />)
 
-        // wait for modal to show alert
-        expect(isClosed).toBe(false)
-        expect(getByText('upgrade.upgradefailed')).toBeTruthy()
-        expect(getByText('Request failed with status code 405')).toBeTruthy()
-        await waitForNock(mockUpgrade)
+        await clickByText('upgrade.select.placeholder')
+        await clickByRole('option', 0) // select a version
+
+        const upgradeNock = nockUpgrade('clusterName', '1.2.6', '', 405)
+        await clickByText('upgrade.submit')
+        await waitForNock(upgradeNock)
+
+        await waitForText('upgrade.upgradefailed')
+        await waitForText('Request failed with status code 405')
     })
 })

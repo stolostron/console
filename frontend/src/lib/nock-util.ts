@@ -3,7 +3,12 @@
 import { isEqual } from 'lodash'
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
+import {
+    ResourceAttributes,
+    SelfSubjectAccessReview,
+    SelfSubjectAccessReviewApiVersion,
+    SelfSubjectAccessReviewKind,
+} from '../resources/self-subject-access-review'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
@@ -159,26 +164,48 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
     return scope
 }
 
-export function nockCreateSelfSubjectAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+export function nockRBAC(
+    method: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE',
+    resource: IResource,
+    allowed: boolean = true
+) {
+    const resourceAttributes: ResourceAttributes = {
+        resource: resource.kind.toLowerCase() + 's',
+        verb: method.toLowerCase(),
+        group: resource.apiVersion.split('/')[0],
+        name: resource.metadata.name,
+    }
     return nockCreate(
         {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
             metadata: {},
-            spec: {
-                resourceAttributes,
-            },
+            spec: { resourceAttributes },
         } as SelfSubjectAccessReview,
         {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
             metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
+            spec: { resourceAttributes },
+            status: { allowed },
+        } as SelfSubjectAccessReview
+    )
+}
+
+export function nockAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+    return nockCreate(
+        {
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
+            metadata: {},
+            spec: { resourceAttributes },
+        } as SelfSubjectAccessReview,
+        {
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
+            metadata: {},
+            spec: { resourceAttributes },
+            status: { allowed },
         } as SelfSubjectAccessReview
     )
 }

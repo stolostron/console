@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
-    AcmInlineStatus,
-    StatusType,
-    AcmButton,
-    AcmModal,
-    AcmForm,
-    AcmSubmit,
-    AcmSelect,
     AcmAlert,
+    AcmButton,
+    AcmForm,
+    AcmInlineStatus,
+    AcmModal,
+    AcmSelect,
+    AcmSubmit,
+    StatusType,
 } from '@open-cluster-management/ui-components'
 import {
+    ActionGroup,
+    AlertVariant,
     ButtonVariant,
     ModalVariant,
-    ActionGroup,
     SelectOption,
     Text,
-    AlertVariant,
     Title,
 } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Cluster, ClusterStatus } from '../lib/get-cluster'
+import { fetchPost } from '../lib/resource-request'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
-import { fetchPost, ResourceError } from '../lib/resource-request'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {

@@ -357,7 +357,7 @@ export async function fetchRetry<T>(options: {
                     throw new ResourceError(response.statusText, response.status)
                 } else {
                     throw new ResourceError(
-                        `Unhandled response status code: ${response.status}`,
+                        `Request failed with status code ${response.status}`,
                         ResourceErrorCode.Unknown
                     )
                 }

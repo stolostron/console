@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react'
-import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
@@ -9,7 +8,7 @@ import {
     nockCreate,
     nockDelete,
     nockGet,
-    nockNamespacedList,
+    nockNamespacedList
 } from '../../../../lib/nock-util'
 import {
     clickByLabel,
@@ -20,7 +19,7 @@ import {
     waitForNocks,
     waitForNotRole,
     waitForRole,
-    waitForText,
+    waitForText
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -28,12 +27,12 @@ import {
     CertificateSigningRequestKind,
     CertificateSigningRequestList,
     CertificateSigningRequestListApiVersion,
-    CertificateSigningRequestListKind,
+    CertificateSigningRequestListKind
 } from '../../../../resources/certificate-signing-requests'
 import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
+    ClusterDeploymentKind
 } from '../../../../resources/cluster-deployment'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
 import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
@@ -41,12 +40,12 @@ import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '..
 import {
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
+    ManagedClusterAddOnKind
 } from '../../../../resources/managed-cluster-add-on'
 import {
     ManagedClusterInfo,
     ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
+    ManagedClusterInfoKind
 } from '../../../../resources/managed-cluster-info'
 import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
@@ -682,7 +681,7 @@ const Component = () => (
 )
 
 function defaultNocks() {
-    const nocks: Scope[] = [
+    const nocks = [
         nockGetManagedClusterInfo(),
         nockGetClusterDeployment(),
         nockListCertificateSigningRequests(),
@@ -820,7 +819,7 @@ describe('ClusterDetails', () => {
         await clickByText('managed.destroySelected')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
+        const deleteNocks = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
     })
