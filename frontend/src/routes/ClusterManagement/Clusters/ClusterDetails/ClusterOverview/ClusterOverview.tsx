@@ -48,7 +48,7 @@ export function ClusterOverviewPageContent(props: {
                         {
                             key: t('table.labels'),
                             value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
-                            keyAction: (
+                            keyAction: cluster?.isManaged && (
                                 <AcmButton
                                     onClick={() => {
                                         if (cluster) {
