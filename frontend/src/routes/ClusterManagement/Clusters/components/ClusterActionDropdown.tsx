@@ -11,7 +11,7 @@ import { ResourceErrorCode } from '../../../../lib/resource-request'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 // import { createImportResources } from '../../../lib/import-cluster'
 
-export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
+export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean; refresh?: () => void }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
 
@@ -155,7 +155,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     actionFn: (cluster) => detachCluster(cluster.name!),
                     close: () => {
                         setModalProps({ open: false })
-                        // props.refresh()
+                        props.refresh?.()
                     },
                     isDanger: true,
                     confirmText: cluster.name,
@@ -189,7 +189,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     actionFn: (cluster) => deleteCluster(cluster.name!),
                     close: () => {
                         setModalProps({ open: false })
-                        // props.refresh()
+                        props.refresh?.()
                     },
                     isDanger: true,
                     confirmText: cluster.name,
@@ -246,6 +246,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (!cluster.isHive) {
         actions = actions.filter((a) => a.id !== 'destroy-cluster')
     }
+
+    cluster?.name === 'managed-cluster-name-1' && console.log('actions', actions)
 
     return (
         <>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { LinkProps } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AcmDropdown, AcmButton } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
@@ -79,7 +80,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     )
 }
 
-type RbacButtonProps = ButtonProps & {
+type RbacButtonProps = ButtonProps & LinkProps & {
     rbac: ResourceAttributes[]
 }
 

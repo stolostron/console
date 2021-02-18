@@ -395,7 +395,7 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
+            namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
             version: 'v1',
@@ -412,7 +412,6 @@ const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: clusterName,
             namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
@@ -652,14 +651,6 @@ function getDeleteDeploymentResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-function getDeleteMachinePoolsResourceAttributes(name: string) {
-    return {
-        resource: 'machinepools',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        namespace: name,
-    } as ResourceAttributes
-}
 
 const Component = () => (
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -680,12 +671,8 @@ function defaultNocks() {
         nockGetManagedCluster(),
         nockListHiveProvisionJobs(),
         nockListClusterProvision(),
-        nockCreate(mockGetSecretSelfSubjectAccessRequest),
+        nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
         nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
 }
@@ -773,10 +760,6 @@ describe('ClusterDetails', () => {
             nockListClusterProvision(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
             nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
         await waitForNocks(nocks)
@@ -787,10 +770,18 @@ describe('ClusterDetails', () => {
 
     test('overview page handles detach', async () => {
         const nocks = defaultNocks()
+        const rbacNocks = [
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+        ]
         render(<Component />)
         await waitForNocks(nocks)
 
         await clickByText('actions')
+        await waitForNocks(rbacNocks)
+
         await clickByText('managed.detached')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
@@ -801,10 +792,17 @@ describe('ClusterDetails', () => {
 
     test('overview page handles destroy', async () => {
         const nocks = defaultNocks()
+        const rbacNocks = [
+            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+        ]
         render(<Component />)
         await waitForNocks(nocks)
 
         await clickByText('actions')
+        await waitForNocks(rbacNocks)
         await clickByText('managed.destroySelected')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
