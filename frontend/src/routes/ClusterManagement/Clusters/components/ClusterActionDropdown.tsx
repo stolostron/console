@@ -247,8 +247,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'destroy-cluster')
     }
 
-    cluster?.name === 'managed-cluster-name-1' && console.log('actions', actions)
-
     return (
         <>
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />

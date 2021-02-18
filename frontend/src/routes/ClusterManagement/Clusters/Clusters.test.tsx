@@ -195,7 +195,7 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: {
         name: 'managed-cluster-name-6-upgrade-available',
-        namespace: 'anaged-cluster-name-6-upgrade-available',
+        namespace: 'managed-cluster-name-6-upgrade-available',
     },
     status: {
         conditions: readyManagedClusterConditions,
@@ -374,6 +374,13 @@ function getClusterActionsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
+function getClusterCreateResourceAttributes() {
+    return {
+        resource: 'managedclusters',
+        verb: 'create',
+        group: 'cluster.open-cluster-management.io',
+    }
+}
 
 describe('Cluster page', () => {
     beforeEach(async () => {
@@ -396,7 +403,6 @@ describe('Cluster page', () => {
                 <ClustersPage />
             </MemoryRouter>
         )
-        nockCreateClusterRbac()
         await waitForNocks(nocks)
         await waitForText(mockManagedCluster1.metadata.name!)
         await waitForNocks(allActionPermissionNock)
@@ -428,183 +434,183 @@ describe('Cluster page', () => {
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
-    // it('bulk deletes cluster', async () => {
-    //     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
-    //     const refreshNocks: Scope[] = [
-    //         nockListManagedClusterInfos([]),
-    //         nockListCertificateSigningRequests([]),
-    //         nockListClusterDeployments([]),
-    //         nockListManagedClusters([]),
-    //     ]
-    //     await clickByRole('checkbox', 1) // select row 1
-    //     await clickByText('managed.destroy')
-    //     await typeByText('type.to.confirm', 'confirm')
-    //     await clickByText('destroy')
-    //     await waitForNocks(deleteNocks)
-    //     await waitForNocks(refreshNocks)
-    //     await waitForNotText(mockManagedCluster1.metadata.name!)
-    // })
+    it('bulk deletes cluster', async () => {
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
+        const refreshNocks: Scope[] = [
+            nockListManagedClusterInfos([]),
+            nockListCertificateSigningRequests([]),
+            nockListClusterDeployments([]),
+            nockListManagedClusters([]),
+        ]
+        await clickByRole('checkbox', 1) // select row 1
+        await clickByText('managed.destroy')
+        await typeByText('type.to.confirm', 'confirm')
+        await clickByText('destroy')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
+    })
 
-    // it('detaches cluster', async () => {
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(
-    //             getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
-    //         ),
-    //     ]
-    //     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
-    //     const refreshNocks: Scope[] = [
-    //         nockListManagedClusterInfos([]),
-    //         nockListCertificateSigningRequests([]),
-    //         nockListClusterDeployments([]),
-    //         nockListManagedClusters([]),
-    //     ]
-    //     await clickByLabel('Actions', 0) // Click the action button on row
-    //     await waitForNocks(rbacNocks)
-    //     await clickByText('managed.detached')
-    //     await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
-    //     await clickByText('detach')
-    //     await waitForNocks(deleteNocks)
-    //     await waitForNocks(refreshNocks)
-    //     await waitForNotText(mockManagedCluster1.metadata.name!)
-    // })
+    it('detaches cluster', async () => {
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
+            ),
+        ]
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
+        const refreshNocks: Scope[] = [
+            nockListManagedClusterInfos([]),
+            nockListCertificateSigningRequests([]),
+            nockListClusterDeployments([]),
+            nockListManagedClusters([]),
+        ]
+        await clickByLabel('Actions', 0) // Click the action button on row
+        await waitForNocks(rbacNocks)
+        await clickByText('managed.detached')
+        await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
+        await clickByText('detach')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
+    })
 
-    // it('bulk detaches cluster', async () => {
-    //     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster2)]
-    //     const refreshNocks: Scope[] = [
-    //         nockListManagedClusterInfos([]),
-    //         nockListCertificateSigningRequests([]),
-    //         nockListClusterDeployments([]),
-    //         nockListManagedClusters([]),
-    //     ]
-    //     await clickByRole('checkbox', 2) // select row 2
-    //     await clickByText('managed.detachSelected')
-    //     await typeByText('type.to.confirm', 'confirm')
-    //     await clickByText('detach')
-    //     await waitForNocks(deleteNocks)
-    //     await waitForNocks(refreshNocks)
-    //     await waitForNotText(mockManagedCluster1.metadata.name!)
-    // })
+    it('bulk detaches cluster', async () => {
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster2)]
+        const refreshNocks: Scope[] = [
+            nockListManagedClusterInfos([]),
+            nockListCertificateSigningRequests([]),
+            nockListClusterDeployments([]),
+            nockListManagedClusters([]),
+        ]
+        await clickByRole('checkbox', 2) // select row 2
+        await clickByText('managed.detachSelected')
+        await typeByText('type.to.confirm', 'confirm')
+        await clickByText('detach')
+        await waitForNocks(deleteNocks)
+        await waitForNocks(refreshNocks)
+        await waitForNotText(mockManagedCluster1.metadata.name!)
+    })
 
-    // test('overflow menu should hide upgrade option if no available upgrade', async () => {
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-    //     ]
-    //     await waitForText(mockManagedCluster3.metadata.name!)
-    //     await clickByLabel('Actions', 2) // Click the action button on the 3rd table row
-    //     await waitForNocks(rbacNocks)
-    //     await waitForNotText('managed.upgrade')
-    //     await waitForText(mockManagedCluster3.metadata.name!)
-    // })
+    test('overflow menu should hide upgrade option if no available upgrade', async () => {
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+        ]
+        await waitForText(mockManagedCluster3.metadata.name!)
+        await clickByLabel('Actions', 2) // Click the action button on the 3rd table row
+        await waitForNocks(rbacNocks)
+        await waitForNotText('managed.upgrade')
+        await waitForText(mockManagedCluster3.metadata.name!)
+    })
 
-    // test('overflow menu should hide upgrade option if currently upgrading', async () => {
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-    //     ]
-    //     await waitForText(mockManagedCluster5.metadata.name!)
-    //     await clickByLabel('Actions', 4) // Click the action button on the 5th table row
-    //     await waitForNocks(rbacNocks)
-    //     await waitForNotText('managed.upgrade')
-    //     await waitForText(mockManagedCluster5.metadata.name!)
-    // })
+    test('overflow menu should hide upgrade option if currently upgrading', async () => {
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+        ]
+        await waitForText(mockManagedCluster5.metadata.name!)
+        await clickByLabel('Actions', 4) // Click the action button on the 5th table row
+        await waitForNocks(rbacNocks)
+        await waitForNotText('managed.upgrade')
+        await waitForText(mockManagedCluster5.metadata.name!)
+    })
 
-    // test('overflow menu should allow upgrade if has available upgrade', async () => {
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-    //         nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
-    //     ]
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    //     await clickByLabel('Actions', 3) // Click the action button on the 4th table row
-    //     await waitForNocks(rbacNocks)
-    //     await clickByText('managed.upgrade')
-    //     await waitForText('upgrade.table.name')
-    //     await clickByText('common:cancel')
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    // })
+    test('overflow menu should allow upgrade if has available upgrade', async () => {
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
+        ]
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await clickByLabel('Actions', 3) // Click the action button on the 4th table row
+        await waitForNocks(rbacNocks)
+        await clickByText('managed.upgrade')
+        await waitForText('upgrade.table.name')
+        await clickByText('common:cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
+    })
 
-    // test('batch upgrade support when upgrading single cluster', async () => {
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    //     await clickByLabel('Select row 3')
-    //     await clickByText('managed.upgradeSelected')
-    //     await waitForText(`upgrade.submit upgrade.multiple.singular`)
-    //     await clickByText('common:cancel')
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    // })
+    test('batch upgrade support when upgrading single cluster', async () => {
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await clickByLabel('Select row 3')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.submit upgrade.multiple.singular`)
+        await clickByText('common:cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
+    })
 
-    // test('batch upgrade support when upgrading multiple clusters', async () => {
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    //     await waitForText(mockManagedCluster6.metadata.name!)
-    //     await clickByLabel('Select row 3')
-    //     await clickByLabel('Select row 5')
-    //     await clickByText('managed.upgradeSelected')
-    //     await waitForText(`upgrade.multiple.note`)
-    //     await waitForText(`upgrade.submit upgrade.multiple.plural`)
-    //     await clickByText('common:cancel')
-    //     await waitForText(mockManagedCluster4.metadata.name!)
-    //     await waitForText(mockManagedCluster6.metadata.name!)
-    // })
+    test('batch upgrade support when upgrading multiple clusters', async () => {
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await waitForText(mockManagedCluster6.metadata.name!)
+        await clickByLabel('Select row 3')
+        await clickByLabel('Select row 5')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`upgrade.submit upgrade.multiple.plural`)
+        await clickByText('common:cancel')
+        await waitForText(mockManagedCluster4.metadata.name!)
+        await waitForText(mockManagedCluster6.metadata.name!)
+    })
 
-    // // TODO re-enable when re-attach is supported
-    // test.skip('can re-attach detached clusters', async () => {
-    //     const mockCreateManagedCluster: ManagedCluster = {
-    //         apiVersion: ManagedClusterApiVersion,
-    //         kind: ManagedClusterKind,
-    //         metadata: {
-    //             name: mockClusterDeployment7.metadata.name!,
-    //             labels: {
-    //                 cloud: 'auto-detect',
-    //                 vendor: 'auto-detect',
-    //                 name: mockClusterDeployment7.metadata.name!,
-    //             },
-    //         },
-    //         spec: { hubAcceptsClient: true },
-    //     }
-    //     const mockCreateKlusterletAddonConfig: KlusterletAddonConfig = {
-    //         apiVersion: KlusterletAddonConfigApiVersion,
-    //         kind: KlusterletAddonConfigKind,
-    //         metadata: {
-    //             name: mockClusterDeployment7.metadata.name!,
-    //             namespace: mockClusterDeployment7.metadata.name!,
-    //         },
-    //         spec: {
-    //             clusterName: mockClusterDeployment7.metadata.name!,
-    //             clusterNamespace: mockClusterDeployment7.metadata.name!,
-    //             clusterLabels: {
-    //                 cloud: 'auto-detect',
-    //                 vendor: 'auto-detect',
-    //                 name: mockClusterDeployment7.metadata.name!,
-    //             },
-    //             applicationManager: { enabled: true, argocdCluster: false },
-    //             policyController: { enabled: true },
-    //             searchCollector: { enabled: true },
-    //             certPolicyController: { enabled: true },
-    //             iamPolicyController: { enabled: true },
-    //             version: '2.2.0',
-    //         },
-    //     }
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(
-    //             getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)
-    //         ),
-    //         nockCreateSelfSubjectAccessReview(
-    //             getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)
-    //         ),
-    //     ]
-    //     const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
-    //     const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
-    //     await waitForText(mockClusterDeployment7.metadata.name!)
-    //     await clickByLabel('Actions', 6) // Click the action button on the 7th table row
-    //     await waitForNocks(rbacNocks)
-    //     await waitForText('managed.import')
-    //     await clickByText('managed.import')
-    //     await waitForText('cluster.import.description')
-    //     await clickByText('import')
-    //     await waitForNocks([createMcNock, createKacNock])
-    //     await waitForNotText('cluster.import.description')
-    // })
+    // TODO re-enable when re-attach is supported
+    test.skip('can re-attach detached clusters', async () => {
+        const mockCreateManagedCluster: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                name: mockClusterDeployment7.metadata.name!,
+                labels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockClusterDeployment7.metadata.name!,
+                },
+            },
+            spec: { hubAcceptsClient: true },
+        }
+        const mockCreateKlusterletAddonConfig: KlusterletAddonConfig = {
+            apiVersion: KlusterletAddonConfigApiVersion,
+            kind: KlusterletAddonConfigKind,
+            metadata: {
+                name: mockClusterDeployment7.metadata.name!,
+                namespace: mockClusterDeployment7.metadata.name!,
+            },
+            spec: {
+                clusterName: mockClusterDeployment7.metadata.name!,
+                clusterNamespace: mockClusterDeployment7.metadata.name!,
+                clusterLabels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockClusterDeployment7.metadata.name!,
+                },
+                applicationManager: { enabled: true, argocdCluster: false },
+                policyController: { enabled: true },
+                searchCollector: { enabled: true },
+                certPolicyController: { enabled: true },
+                iamPolicyController: { enabled: true },
+                version: '2.2.0',
+            },
+        }
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(
+                getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)
+            ),
+        ]
+        const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
+        const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
+        await waitForText(mockClusterDeployment7.metadata.name!)
+        await clickByLabel('Actions', 6) // Click the action button on the 7th table row
+        await waitForNocks(rbacNocks)
+        await waitForText('managed.import')
+        await clickByText('managed.import')
+        await waitForText('cluster.import.description')
+        await clickByText('import')
+        await waitForNocks([createMcNock, createKacNock])
+        await waitForNotText('cluster.import.description')
+    })
 })

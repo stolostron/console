@@ -80,8 +80,9 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     )
 }
 
-type RbacButtonProps = ButtonProps & LinkProps & {
+type RbacButtonProps = ButtonProps & {
     rbac: ResourceAttributes[]
+    to?: string
 }
 
 export function RbacButton(props: RbacButtonProps) {

@@ -3,6 +3,7 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
+    AcmButton,
     AcmDropdown,
     AcmDropdownItems,
     AcmEmptyState,
@@ -33,7 +34,6 @@ import { createSubjectAccessReview } from '../../../resources/self-subject-acces
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
-import { RbacButton } from '../../../components/Rbac'
 
 export default function ClustersPage() {
     return (
@@ -376,33 +376,19 @@ export function ClustersTable(props: {
                         message={t('managed.emptyStateMsg')}
                         action={
                             <div>
-                                <RbacButton
+                                <AcmButton
                                     component={Link}
                                     to={NavigationPath.createCluster}
-                                    rbac={[
-                                        {
-                                            resource: 'managedclusters',
-                                            verb: 'create',
-                                            group: 'cluster.open-cluster-management.io',
-                                        },
-                                    ]}
                                 >
                                     {t('managed.createCluster')}
-                                </RbacButton>
-                                <RbacButton
+                                </AcmButton>
+                                <AcmButton
                                     component={Link}
                                     to={NavigationPath.importCluster}
                                     style={{ marginLeft: '16px' }}
-                                    rbac={[
-                                        {
-                                            resource: 'managedclusters',
-                                            verb: 'create',
-                                            group: 'cluster.open-cluster-management.io',
-                                        },
-                                    ]}
                                 >
                                     {t('managed.importCluster')}
-                                </RbacButton>
+                                </AcmButton>
                             </div>
                         }
                     />
