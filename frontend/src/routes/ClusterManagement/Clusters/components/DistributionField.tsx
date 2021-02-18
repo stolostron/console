@@ -5,7 +5,7 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { RbacButton } from '../../../../components/RbacDropdown'
+import { RbacButton } from '../../../../components/Rbac'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {

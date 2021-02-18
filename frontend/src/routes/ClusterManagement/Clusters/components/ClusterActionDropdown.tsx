@@ -1,7 +1,7 @@
 import React, { useState, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
-import { RbacDropdown } from '../../../../components/RbacDropdown'
+import { RbacDropdown } from '../../../../components/Rbac'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'

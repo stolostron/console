@@ -24,7 +24,7 @@ import { useQuery } from '../../lib/useQuery'
 import { createSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { RbacDropdown } from '../../components/RbacDropdown'
+import { RbacDropdown } from '../../components/Rbac'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])

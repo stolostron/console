@@ -19,7 +19,7 @@ import { EditLabels } from '../../components/EditLabels'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
-import { RbacButton } from '../../../../../components/RbacDropdown'
+import { RbacButton } from '../../../../../components/Rbac'
 
 export function ClusterOverviewPageContent(props: {
     getSecretAccessRestriction?: boolean
