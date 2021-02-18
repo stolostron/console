@@ -156,19 +156,17 @@ export default function DiscoveredClustersPage() {
     )
 }
 
-
 async function disableDiscovery(): Promise<void> {
     const result = listDiscoveryConfigs()
     const discConfig = await result.promise
     discConfig.forEach(deleteDiscoveryConfig)
 }
 
-function deleteDiscoveryConfig(config){
+function deleteDiscoveryConfig(config) {
     deleteResource({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
         metadata: { name: config.metadata.name, namespace: config.metadata.namespace },
-        
     })
 }
 
@@ -217,7 +215,6 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
         open: false,
     })
     return (
-        
         <Fragment>
             <AcmAlertGroup />
             <ConfirmModal {...modalProps} />
@@ -239,17 +236,14 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                         click: () => {
                             setModalProps({
                                 open: true,
-                                title: t('disable.title'),                                
-                                confirm: async() => {
+                                title: t('disable.title'),
+                                confirm: async () => {
                                     try {
-                                        await disableDiscovery() 
+                                        await disableDiscovery()
                                         setModalProps({ open: false })
-                                    }
-                                    catch(err) {
-                                        console.log(err)
+                                    } catch (err) {
                                         alertContext.addAlert(getErrorInfo(err))
-                                        alertContext.addAlert(err)
-                                    }                                    
+                                    }
                                 },
                                 confirmText: t('disable.button'),
                                 message: t('disable.message'),
