@@ -6,6 +6,7 @@ import {
     AcmErrorBoundary,
     IAcmTableColumn,
     AcmAlertContext,
+    AcmAlertGroup,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
@@ -154,15 +155,32 @@ export default function DiscoveredClustersPage() {
         </AcmErrorBoundary>
     )
 }
-
+/*
 async function disableDiscovery(): Promise<void> {
     const result = listDiscoveryConfigs()
     const discConfig = await result.promise
-    if (discConfig.length !== 1) throw new Error("Only 1 DiscoveryConfig resource may exist")
+    if (discConfig.length !== 3) throw new Error("Only 1 DiscoveryConfig resource may exist")
     await deleteResource({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
         metadata: { name: discConfig[0].metadata.name, namespace: discConfig[0].metadata.namespace },
+        
+    })
+}
+*/
+
+async function disableDiscovery(): Promise<void> {
+    const result = listDiscoveryConfigs()
+    const discConfig = await result.promise
+    discConfig.forEach(deleteDiscoveryConfig)
+}
+
+function deleteDiscoveryConfig(config){
+    deleteResource({
+        apiVersion: DiscoveryConfigApiVersion,
+        kind: DiscoveryConfigKind,
+        metadata: { name: config.metadata.name, namespace: config.metadata.namespace },
+        
     })
 }
 
@@ -211,7 +229,9 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
         open: false,
     })
     return (
+        
         <Fragment>
+            <AcmAlertGroup />
             <ConfirmModal {...modalProps} />
             <AcmTable<DiscoveredCluster>
                 plural="discovered clusters"
@@ -237,8 +257,10 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                         await disableDiscovery() 
                                         setModalProps({ open: false })
                                     }
-                                    catch (err) {
+                                    catch(err) {
+                                        console.log(err)
                                         alertContext.addAlert(getErrorInfo(err))
+                                        alertContext.addAlert(err)
                                     }                                    
                                 },
                                 confirmText: t('disable.button'),
