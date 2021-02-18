@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import Axios, { AxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import {
     AcmInlineStatus,
@@ -23,6 +22,7 @@ import {
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Cluster, ClusterStatus } from '../lib/get-cluster'
 import { createSubjectAccessReviews, rbacMapping } from '../resources/self-subject-access-review'
+import { fetchPost, ResourceError } from '../lib/resource-request'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {
@@ -249,23 +249,25 @@ export function UpgradeModal(props: { close: () => void; open: boolean; cluster:
                             setLoading(true)
                             setUpgradeError('')
                             const url = backendUrl + '/upgrade'
-                            return Axios.post(
+                            const abortController = new AbortController()
+                            fetchPost(
                                 url,
                                 {
                                     clusterName: props.cluster?.name,
                                     version: selectVersion,
                                 },
-                                { withCredentials: true }
+                                abortController.signal
                             )
                                 .then(() => {
                                     setLoading(false)
                                     setSelectVersion('')
                                     props.close()
                                 })
-                                .catch((reason: AxiosError) => {
+                                .catch((error: any) => {
+                                    if (abortController.signal.aborted) return
                                     setLoading(false)
                                     setSelectVersion('')
-                                    setUpgradeError(reason.message)
+                                    if (error.message) setUpgradeError(error.message)
                                 })
                         }}
                     >
