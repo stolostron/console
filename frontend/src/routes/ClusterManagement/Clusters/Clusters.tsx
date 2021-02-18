@@ -47,7 +47,7 @@ export default function ClustersPage() {
 }
 
 const PageActions = () => {
-    const [clusterCreationRbacRestriction, setclusterCreationRbacRestriction] = useState<boolean>(true)
+    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(true)
     const { push } = useHistory()
     const { t } = useTranslation(['cluster', 'common'])
     const { clusterManagementAddons } = useContext(AppContext)
@@ -62,7 +62,7 @@ const PageActions = () => {
 
         createClusterRbac.promise
             .then((result) => {
-                setclusterCreationRbacRestriction(result.status?.allowed!)
+                setCanCreateCluster(result.status?.allowed!)
             })
             .catch((err) => {
                 // send err to console
@@ -75,14 +75,14 @@ const PageActions = () => {
         {
             id: 'create-cluster',
             text: t('managed.createCluster'),
-            isDisabled: clusterCreationRbacRestriction,
-            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
+            isDisabled: !canCreateCluster,
+            tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
         },
         {
             id: 'import-cluster',
             text: t('managed.importCluster'),
-            isDisabled: clusterCreationRbacRestriction,
-            tooltip: clusterCreationRbacRestriction ? t('common:rbac.unauthorized') : '',
+            isDisabled: !canCreateCluster,
+            tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
         },
     ]
     const onSelect = (id: string) => {
