@@ -153,25 +153,25 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [match.params.id])
 
     const [tableActionRbacValues, setTableActionRbacValues] = useState<ClustersTableActionsRbac>(defaultTableRbacValues)
-    // useEffect(() => {
-    //     if (cluster?.status) {
-    //         const tempCluster: Cluster = {
-    //             name: cluster.name,
-    //             namespace: cluster.namespace,
-    //             status: cluster?.status,
-    //             isHive: cluster?.isHive,
-    //             isManaged: cluster?.isManaged,
-    //             provider: undefined,
-    //             distribution: undefined,
-    //             labels: undefined,
-    //             nodes: undefined,
-    //             hiveSecrets: undefined,
-    //             kubeApiServer: undefined,
-    //             consoleURL: undefined,
-    //         }
-    //         CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
-    //     }
-    // }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
+    useEffect(() => {
+        if (cluster?.status) {
+            const tempCluster: Cluster = {
+                name: cluster.name,
+                namespace: cluster.namespace,
+                status: cluster?.status,
+                isHive: cluster?.isHive,
+                isManaged: cluster?.isManaged,
+                provider: undefined,
+                distribution: undefined,
+                labels: undefined,
+                nodes: undefined,
+                hiveSecrets: undefined,
+                kubeApiServer: undefined,
+                consoleURL: undefined,
+            }
+            CheckTableActionsRbacAccess(tempCluster, setTableActionRbacValues)
+        }
+    }, [cluster?.status, cluster?.isHive, cluster?.isManaged, cluster?.name, cluster?.namespace])
 
     const modalColumns = useMemo(
         () => [
@@ -342,7 +342,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     text: t('managed.upgrade'),
                                                     click: (cluster: Cluster) => setShowUpgradeModal(true),
                                                     isDisabled: !tableActionRbacValues['cluster.upgrade'],
-                                                    tooltip: !tableActionRbacValues['cluster.upgrade']
+                                                    tooltip: !tableActionRbacValues['cluster.edit.labels']
                                                         ? t('common:rbac.unauthorized')
                                                         : '',
                                                 },
@@ -495,11 +495,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     dropdownItems={actions}
                                                     isKebab={false}
                                                     isPlain={true}
-                                                    toggle={(isOpen: boolean) => {
-                                                        if (isOpen) {
-                                                            CheckTableActionsRbacAccess(cluster!, setTableActionRbacValues)
-                                                        }
-                                                    }}
                                                 />
                                             )
                                         })()}
