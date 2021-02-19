@@ -28,9 +28,8 @@ import {
 import { ErrorPage } from '../../components/ErrorPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
-import { listProjects } from '../../resources/project'
 import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '../../resources/secret'
-import { rbacNamespaceFilter } from '../../resources/self-subject-access-review'
+import { getAuthorizedNamespaces } from '../../lib/rbac-helpers'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -152,16 +151,19 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        const result = listProjects()
-        result.promise
-            .then(async (projects) => {
-                const namespaces = projects!.map((project) => project.metadata.name!)
-                await rbacNamespaceFilter('bma.create', namespaces).then(setProjects).catch(setError)
+        getAuthorizedNamespaces([
+            {
+                group: 'inventory.open-cluster-management.io',
+                resource: 'baremetalassets',
+                verb: 'create',
+            },
+        ])
+            .then((namespaces: string[]) => {
+                setProjects(namespaces)
             })
             .catch(setError)
             .finally(() => setIsLoading(false))
-        return result.abort
-    }, [retry])
+    }, [])
 
     if (error) {
         return (

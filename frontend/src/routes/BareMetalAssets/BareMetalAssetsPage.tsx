@@ -21,10 +21,10 @@ import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
-import { createSubjectAccessReview, rbacMapping } from '../../resources/self-subject-access-review'
+import { createSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { RbacDropdown } from '../../components/RbacDropdown'
+import { RbacDropdown } from '../../components/Rbac'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -102,15 +102,21 @@ export function BareMetalAssetsTable(props: {
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
-        const resourceAttribute = rbacMapping('cluster.create')[0]
-        const promiseResult = createSubjectAccessReview(resourceAttribute)
-        promiseResult.promise
+        const createClusterRbac = createSubjectAccessReview({
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        })
+
+        createClusterRbac.promise
             .then((result) => {
-                setCreationAccessRestriction(!result.status?.allowed)
+                setCreationAccessRestriction(result.status?.allowed!)
             })
             .catch((err) => {
+                // send err to console
                 console.error(err)
             })
+        return () => createClusterRbac.abort()
     }, [])
 
     function keyFn(bareMetalAsset: BareMetalAsset) {

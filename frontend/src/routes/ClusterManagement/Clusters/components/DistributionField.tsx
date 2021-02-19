@@ -1,55 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { createSubjectAccessReviews, rbacMapping } from '../../../../resources/self-subject-access-review'
+import { RbacButton } from '../../../../components/Rbac'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const [hasUpgradePermission, setHasUpgradePermission] = useState<boolean>(false)
-    useEffect(() => {
-        // if no available upgrades, skipping permission check
-        if (
-            props.cluster?.distribution?.isManagedOpenShift ||
-            !(props.cluster?.distribution?.ocp?.availableUpdates?.length || -1 > 0) || // has no available upgrades
-            (props.cluster?.distribution?.ocp?.desiredVersion &&
-                props.cluster?.distribution?.ocp?.version &&
-                props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version) // upgrading
-        ) {
-            return
-        }
-        // check if the user is allowed to upgrade the cluster
-        const request = createSubjectAccessReviews(
-            rbacMapping('cluster.upgrade', props.cluster?.name, props.cluster?.name)
-        )
-        request.promise
-            .then((results) => {
-                if (results) {
-                    let rbacQueryResults: boolean[] = []
-                    results.forEach((result) => {
-                        if (result.status === 'fulfilled') {
-                            rbacQueryResults.push(result.value.status?.allowed!)
-                        }
-                    })
-                    if (!rbacQueryResults.includes(false)) {
-                        setHasUpgradePermission(true)
-                    }
-                }
-            })
-            .catch((err) => console.error(err))
-    }, [
-        props.cluster?.name,
-        props.cluster?.distribution?.ocp?.availableUpdates?.length,
-        props.cluster?.distribution?.ocp?.version,
-        props.cluster?.distribution?.ocp?.desiredVersion,
-        props.cluster?.distribution?.isManagedOpenShift,
-    ])
 
     if (!props.cluster?.distribution) return <>-</>
     // use display version directly for non-online clusters
@@ -140,16 +102,22 @@ export function DistributionField(props: { cluster?: Cluster }) {
             <>
                 <div>{props.cluster?.distribution?.displayVersion}</div>
                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                    <AcmButton
-                        isDisabled={!hasUpgradePermission}
-                        tooltip={t('common:rbac.unauthorized')}
+                    <RbacButton
                         onClick={toggle}
                         icon={<ArrowCircleUpIcon />}
                         variant={ButtonVariant.link}
                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                        rbac={[
+                            {
+                                resource: 'managedclusteractions',
+                                verb: 'create',
+                                group: 'action.open-cluster-management.io',
+                                namespace: props.cluster?.namespace,
+                            },
+                        ]}
                     >
                         {t('upgrade.available')}
-                    </AcmButton>
+                    </RbacButton>
                     <BatchUpgradeModal clusters={[props.cluster]} open={open} close={toggle} />
                 </span>
             </>

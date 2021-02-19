@@ -34,7 +34,6 @@ import {
     validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
-import { listProjects } from '../../../resources/project'
 import {
     createProviderConnection,
     getProviderConnection,
@@ -46,9 +45,9 @@ import {
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
 import { AppContext } from '../../../components/AppContext'
-import { rbacNamespaceFilter } from '../../../resources/self-subject-access-review'
 import { makeStyles } from '@material-ui/styles'
 import { DOC_LINKS } from '../../../lib/doc-util'
+import { getAuthorizedNamespaces } from '../../../lib/rbac-helpers'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -166,15 +165,17 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            const result = listProjects()
-            result.promise
-                .then(async (projects) => {
-                    const namespaces = projects!.map((project) => project.metadata.name!)
-                    await rbacNamespaceFilter('secret.create', namespaces).then(setProjects).catch(setError)
+            getAuthorizedNamespaces([
+                {
+                    resource: 'secrets',
+                    verb: 'create',
+                },
+            ])
+                .then((namespaces: string[]) => {
+                    setProjects(namespaces)
                 })
                 .catch(setError)
                 .finally(() => setIsLoading(false))
-            return result.abort
         }
     }, [props.namespace])
 

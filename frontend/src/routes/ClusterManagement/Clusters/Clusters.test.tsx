@@ -193,7 +193,7 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: {
         name: 'managed-cluster-name-6-upgrade-available',
-        namespace: 'anaged-cluster-name-6-upgrade-available',
+        namespace: 'managed-cluster-name-6-upgrade-available',
     },
     status: {
         conditions: readyManagedClusterConditions,
@@ -363,14 +363,6 @@ function getDeleteDeploymentResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-function getDeleteMachinePoolsResourceAttributes(name: string) {
-    return {
-        resource: 'machinepools',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        namespace: name,
-    } as ResourceAttributes
-}
 
 function getClusterActionsResourceAttributes(name: string) {
     return {
@@ -412,9 +404,6 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
@@ -458,9 +447,6 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
@@ -604,9 +590,6 @@ describe('Cluster page', () => {
             ),
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)
-            ),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteMachinePoolsResourceAttributes(mockClusterDeployment7.metadata.name!)
             ),
         ]
         const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
