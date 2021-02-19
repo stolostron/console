@@ -4,6 +4,7 @@ import {
     createSubjectAccessReviews,
 } from '../resources/self-subject-access-review'
 import { listProjects } from '../resources/project'
+import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
 
 export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]) {
     return new Promise<string[]>(async (resolve, reject) => {
@@ -56,5 +57,15 @@ export async function checkAdminAccess() {
         return result.status!.allowed
     } catch (err) {
         return false
+    }
+}
+
+export function getResourceAttributes(verb: 'get' | 'patch', resource: IResource, namespace?: string, name?: string) {
+    return {
+        name: name ?? resource.metadata?.name,
+        namespace: namespace ?? resource.metadata?.namespace,
+        resource: getResourcePlural(resource),
+        verb,
+        group: getResourceGroup(resource),
     }
 }
