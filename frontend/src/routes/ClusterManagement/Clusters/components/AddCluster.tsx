@@ -12,7 +12,7 @@ export function AddCluster(props: {
     buttonSpacing?: boolean
 }) {
     const { t } = useTranslation('cluster')
-    const { push } = useHistory()
+    const history = useHistory()
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
     useEffect(() => {
@@ -52,10 +52,10 @@ export function AddCluster(props: {
         const onSelect = (id: string) => {
             switch (id) {
                 case 'create-cluster':
-                    push(NavigationPath.createCluster)
+                    history.push(NavigationPath.createCluster)
                     break
                 case 'import-cluster':
-                    push(NavigationPath.importCluster)
+                    history.push(NavigationPath.importCluster)
                     break
             }
         }
