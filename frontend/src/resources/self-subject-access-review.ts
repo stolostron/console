@@ -34,23 +34,6 @@ export type ResourceAttributes = {
     subresource?: string
 }
 
-export type ClustersTableActionsRbac = {
-    'cluster.edit.labels'?: boolean
-    'cluster.detach'?: boolean
-    'cluster.destroy'?: boolean
-    'cluster.upgrade'?: boolean
-}
-
-export type ProviderConnectionsTableActionsRbac = {
-    'secret.edit'?: boolean
-    'secret.delete': boolean
-}
-
-export type BMATableRbacAccess = {
-    'bma.delete': boolean
-    'bma.edit': boolean
-}
-
 export function createSubjectAccessReview(resourceAttributes: ResourceAttributes) {
     return createResource<SelfSubjectAccessReview>({
         apiVersion: SelfSubjectAccessReviewApiVersion,
