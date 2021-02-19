@@ -10,7 +10,7 @@ export type CertificateSigningRequestKindType = 'CertificateSigningRequest'
 
 export const CertificateSigningRequestDefinition: IResourceDefinition = {
     apiVersion: CertificateSigningRequestApiVersion,
-    kind: CertificateSigningRequestKind
+    kind: CertificateSigningRequestKind,
 }
 
 export interface CertificateSigningRequest extends IResource {

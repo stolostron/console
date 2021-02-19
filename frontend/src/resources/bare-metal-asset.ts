@@ -11,7 +11,7 @@ export type BareMetalAssetKindType = 'BareMetalAsset'
 
 export const BareMetalAssetDefinition: IResourceDefinition = {
     apiVersion: BareMetalAssetApiVersion,
-    kind: BareMetalAssetKind
+    kind: BareMetalAssetKind,
 }
 
 export interface BareMetalAsset {

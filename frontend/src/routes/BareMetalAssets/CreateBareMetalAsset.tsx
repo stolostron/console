@@ -152,9 +152,7 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        getAuthorizedNamespaces([
-            getResourceAttributes('create', BareMetalAssetDefinition)
-        ])
+        getAuthorizedNamespaces([getResourceAttributes('create', BareMetalAssetDefinition)])
             .then((namespaces: string[]) => {
                 setProjects(namespaces)
             })

@@ -16,7 +16,7 @@ export interface Project extends IResource {
 
 export const ProjectDefinition: IResourceDefinition = {
     apiVersion: ProjectApiVersion,
-    kind: ProjectKind
+    kind: ProjectKind,
 }
 
 export const ProjectRequestApiVersion = 'project.openshift.io/v1'
@@ -27,7 +27,7 @@ export type ProjectRequestKindType = 'ProjectRequest'
 
 export const ProjectRequestDefinition: IResourceDefinition = {
     apiVersion: ProjectRequestApiVersion,
-    kind: ProjectRequestKind
+    kind: ProjectRequestKind,
 }
 
 export interface ProjectRequest extends IResource {

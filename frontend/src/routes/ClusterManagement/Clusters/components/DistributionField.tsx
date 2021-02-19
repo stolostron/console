@@ -109,7 +109,9 @@ export function DistributionField(props: { cluster?: Cluster }) {
                         icon={<ArrowCircleUpIcon />}
                         variant={ButtonVariant.link}
                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                        rbac={[getResourceAttributes('create', ManagedClusterActionDefinition, props.cluster?.namespace)]}
+                        rbac={[
+                            getResourceAttributes('create', ManagedClusterActionDefinition, props.cluster?.namespace),
+                        ]}
                     >
                         {t('upgrade.available')}
                     </RbacButton>

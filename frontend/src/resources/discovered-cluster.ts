@@ -10,7 +10,7 @@ export type DiscoveredClusterKindType = 'DiscoveredCluster'
 
 export const DiscoveredClusterDefinition: IResourceDefinition = {
     apiVersion: DiscoveredClusterApiVersion,
-    kind: DiscoveredClusterKind
+    kind: DiscoveredClusterKind,
 }
 
 export interface DiscoveredCluster extends IResource {

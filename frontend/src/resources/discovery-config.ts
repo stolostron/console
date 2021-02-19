@@ -10,7 +10,7 @@ export type DiscoveryConfigKindType = 'DiscoveryConfig'
 
 export const DiscoveryConfigDefinition: IResourceDefinition = {
     apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind
+    kind: DiscoveryConfigKind,
 }
 
 export interface DiscoveryConfig extends IResource {

@@ -10,7 +10,7 @@ export type SecretKindType = 'Secret'
 
 export const SecretDefinition: IResourceDefinition = {
     apiVersion: SecretApiVersion,
-    kind: SecretKind
+    kind: SecretKind,
 }
 
 export interface Secret extends V1Secret, IResource {

@@ -10,7 +10,7 @@ export type FeatureGateKindType = 'FeatureGate'
 
 export const FeatureGateDefinition: IResourceDefinition = {
     apiVersion: FeatureGateApiVersion,
-    kind: FeatureGateKind
+    kind: FeatureGateKind,
 }
 
 export interface FeatureGate extends IResource {

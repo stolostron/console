@@ -10,7 +10,7 @@ export type ClusterDeploymentKindType = 'ClusterDeployment'
 
 export const ClusterDeploymentDefinition: IResourceDefinition = {
     apiVersion: ClusterDeploymentApiVersion,
-    kind: ClusterDeploymentKind
+    kind: ClusterDeploymentKind,
 }
 
 export interface ClusterDeployment {

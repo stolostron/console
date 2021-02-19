@@ -10,7 +10,7 @@ export type ManagedClusterKindType = 'ManagedCluster'
 
 export const ManagedClusterDefinition: IResourceDefinition = {
     apiVersion: ManagedClusterApiVersion,
-    kind: ManagedClusterKind
+    kind: ManagedClusterKind,
 }
 
 export interface ClusterLabels {

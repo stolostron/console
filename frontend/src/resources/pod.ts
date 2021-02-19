@@ -12,7 +12,7 @@ export type PodKindType = 'Pod'
 
 export const PodDefinition: IResourceDefinition = {
     apiVersion: PodApiVersion,
-    kind: PodKind
+    kind: PodKind,
 }
 
 export interface Pod extends V1Pod, IResource {

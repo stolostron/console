@@ -10,7 +10,7 @@ export type ManagedClusterAddOnKindType = 'ManagedClusterAddOn'
 
 export const ManagedClusterAddOnDefinition: IResourceDefinition = {
     apiVersion: ManagedClusterAddOnApiVersion,
-    kind: ManagedClusterAddOnKind
+    kind: ManagedClusterAddOnKind,
 }
 
 export interface ManagedClusterAddOn extends IResource {

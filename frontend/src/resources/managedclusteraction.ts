@@ -6,7 +6,7 @@ export type ManagedClusterActionKindType = 'ManagedClusterAction'
 
 export const ManagedClusterActionDefinition = {
     apiVersion: ManagedClusterActionApiVersion,
-    kind: ManagedClusterActionKind
+    kind: ManagedClusterActionKind,
 }
 
 export const ManagedClusterActionConditionType = 'Completed'

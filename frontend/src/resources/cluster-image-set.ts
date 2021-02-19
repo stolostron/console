@@ -10,7 +10,7 @@ export type ClusterImageSetKindType = 'ClusterImageSet'
 
 export const ClusterImageSetDefinition: IResourceDefinition = {
     apiVersion: ClusterImageSetApiVersion,
-    kind: ClusterImageSetKind
+    kind: ClusterImageSetKind,
 }
 
 export type ClusterImageSet = {

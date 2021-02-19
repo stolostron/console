@@ -23,9 +23,7 @@ import { RbacButton } from '../../../../../components/Rbac'
 import { getResourceAttributes } from '../../../../../lib/get-cluster'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 
-export function ClusterOverviewPageContent(props: {
-    canGetSecret?: boolean
-}) {
+export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
@@ -69,10 +67,12 @@ export function ClusterOverviewPageContent(props: {
                                     }}
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
-                                    rbac={[getResourceAttributes('patch', ManagedClusterDefinition, null, cluster?.name),
+                                    rbac={[
+                                        getResourceAttributes('patch', ManagedClusterDefinition, null, cluster?.name),
                                     ]}
                                 >
-                                    <PencilAltIcon style={{ fill: 'inherit' }}
+                                    <PencilAltIcon
+                                        style={{ fill: 'inherit' }}
                                         // color={
                                         //     props.editLabelAccessRestriction
                                         //         ? 'var(--pf-global--disabled-color--200)'

@@ -10,7 +10,7 @@ export type MultiClusterHubKindType = 'MultiClusterHub'
 
 export const MultiClusterHubDefinition: IResourceDefinition = {
     apiVersion: MultiClusterHubApiVersion,
-    kind: MultiClusterHubKind
+    kind: MultiClusterHubKind,
 }
 
 export interface MultiClusterHub extends IResource {

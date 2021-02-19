@@ -10,7 +10,7 @@ export type SelfSubjectAccessReviewType = 'SelfSubjectAccessReview'
 
 export const SecretDefinition: IResourceDefinition = {
     apiVersion: SelfSubjectAccessReviewApiVersion,
-    kind: SelfSubjectAccessReviewKind
+    kind: SelfSubjectAccessReviewKind,
 }
 
 export interface SelfSubjectAccessReview extends IResource {

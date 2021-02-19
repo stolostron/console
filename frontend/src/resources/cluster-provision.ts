@@ -10,7 +10,7 @@ export type ClusterProvisionKindType = 'ClusterProvision'
 
 export const ClusterProvisionDefinition: IResourceDefinition = {
     apiVersion: ClusterProvisionApiVersion,
-    kind: ClusterProvisionKind
+    kind: ClusterProvisionKind,
 }
 
 export interface ClusterProvision {

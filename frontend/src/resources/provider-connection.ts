@@ -12,7 +12,7 @@ export type ProviderConnectionKindType = 'Secret'
 
 export const ProviderConnectionDefinition: IResourceDefinition = {
     apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind
+    kind: ProviderConnectionKind,
 }
 
 export interface ProviderConnection extends V1Secret {

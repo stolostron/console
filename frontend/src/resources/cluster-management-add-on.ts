@@ -10,7 +10,7 @@ export type ClusterManagementAddOnKindType = 'ClusterManagementAddOn'
 
 export const ClusterManagementAddOnDefinition: IResourceDefinition = {
     apiVersion: ClusterManagementAddOnApiVersion,
-    kind: ClusterManagementAddOnKind
+    kind: ClusterManagementAddOnKind,
 }
 
 export interface ClusterManagementAddOn extends IResource {

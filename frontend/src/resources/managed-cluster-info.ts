@@ -10,7 +10,7 @@ export type ManagedClusterInfoKindType = 'ManagedClusterInfo'
 
 export const ManagedClusterInfoDefinition: IResourceDefinition = {
     apiVersion: ManagedClusterInfoApiVersion,
-    kind: ManagedClusterInfoKind
+    kind: ManagedClusterInfoKind,
 }
 
 export interface NodeInfo {

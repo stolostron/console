@@ -11,7 +11,7 @@ export type KlusterletAddonConfigKindType = 'KlusterletAddonConfig'
 
 export const KlusterletAddonConfigDefinition: IResourceDefinition = {
     apiVersion: KlusterletAddonConfigApiVersion,
-    kind: KlusterletAddonConfigKind
+    kind: KlusterletAddonConfigKind,
 }
 
 export interface KlusterletAddonConfig extends IResource {
