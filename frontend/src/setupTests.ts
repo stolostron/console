@@ -38,6 +38,7 @@ function logNoMatch(req: any) {
     if (noMatches.length === 0) {
         noMatches.push('No match for requests')
     }
+    console.log('req', req)
     noMatches.push(`${req.method} ${req.path}`)
 }
 
