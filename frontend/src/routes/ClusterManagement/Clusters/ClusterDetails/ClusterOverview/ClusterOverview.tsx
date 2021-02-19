@@ -68,17 +68,15 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
                                     rbac={[
-                                        getResourceAttributes('patch', ManagedClusterDefinition, null, cluster?.name),
+                                        getResourceAttributes(
+                                            'patch',
+                                            ManagedClusterDefinition,
+                                            undefined,
+                                            cluster?.name
+                                        ),
                                     ]}
                                 >
-                                    <PencilAltIcon
-                                        style={{ fill: 'inherit' }}
-                                        // color={
-                                        //     props.editLabelAccessRestriction
-                                        //         ? 'var(--pf-global--disabled-color--200)'
-                                        //         : 'var(--pf-global--primary-color--100)'
-                                        // }
-                                    />
+                                    <PencilAltIcon />
                                 </RbacButton>
                             ),
                         },
