@@ -115,7 +115,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                                 return <AcmInlineStatus type={StatusType.danger} status={t('credentials.failed')} />
                             } else if (loading) {
                                 return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
-                            } else if (!canGetSecret) {
+                            } else if (!props.canGetSecret) {
                                 return (
                                     <Tooltip content={t('common:rbac.unauthorized')}>
                                         <div className="credentials-toggle">
