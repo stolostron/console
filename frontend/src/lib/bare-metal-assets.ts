@@ -104,62 +104,63 @@ export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterNam
     })
 }
 
-export async function importBMAs(setIsLoading) {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.csv, .txt'
-    input.onchange = (e) => {
-        const file = e.target.files[0]
-        const reader = new FileReader()
-        reader.readAsText(file, 'UTF-8')
-        reader.onload = async (readerEvent) => {
-            const content = readerEvent.target.result
+export async function importBMAs() {
+    return new Promise((resolve, reject) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.csv, .txt'
+        input.onchange = (e) => {
+            const file = e.target.files[0]
+            const reader = new FileReader()
+            reader.readAsText(file, 'UTF-8')
+            reader.onload = async (readerEvent) => {
+                const content = readerEvent.target.result
 
-            // parse csv
-            setIsLoading(true)
-             setTimeout(() => {
-              const allTextLines = content.split(/\r\n|\n/)
-              const headers = allTextLines.shift().split(',')
-              if (headers.length > 3) {
-                  const lines = []
-                  allTextLines.forEach((line) => {
-                      const data = line.split(',')
-                      if (data.length === headers.length) {
-                          const arr = []
-                          headers.forEach((header, inx) => {
-                              arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
-                          })
-                          arr.push(`"id": "${Math.random().toString()}"`)
-                          lines.push(`{${arr.join(',')}}`)
-                      }
-                  })
-  
-                  try {
-                      let bmas = JSON.parse(`[${lines.join(',')}]`)
-                      bmas = bmas.map((bma) => {
-                          return {
-                              name: bma.hostName,
-                              namespace: bma.hostNamespace,
-                              bootMACAddress: bma.macAddress,
-                              role: bma.role ?? 'worker',
-                              bmc: {
-                                  address: bma.bmcAddress,
-                                  username: bma.username,
-                                  password: bma.password,
-                              },
-                          }
-                      })
-  
-                      return createBMAs(bmas)
-  
-                  } catch (err) {
-                      // handle exception
-                  }
-              }
-            }, 100)
+                // parse csv
+                setTimeout(() => {
+                    const allTextLines = content.split(/\r\n|\n/)
+                    const headers = allTextLines.shift().split(',')
+                    if (headers.length > 3) {
+                        const lines = []
+                        allTextLines.forEach((line) => {
+                            const data = line.split(',')
+                            if (data.length === headers.length) {
+                                const arr = []
+                                headers.forEach((header, inx) => {
+                                    arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
+                                })
+                                arr.push(`"id": "${Math.random().toString()}"`)
+                                lines.push(`{${arr.join(',')}}`)
+                            }
+                        })
+
+                        try {
+                            let bmas = JSON.parse(`[${lines.join(',')}]`)
+                            bmas = bmas.map((bma) => {
+                                return {
+                                    name: bma.hostName,
+                                    namespace: bma.hostNamespace,
+                                    bootMACAddress: bma.macAddress,
+                                    role: bma.role,
+                                    uid: `${Math.random().toString()}`,
+                                    bmc: {
+                                        address: bma.bmcAddress,
+                                        username: bma.username,
+                                        password: bma.password,
+                                    },
+                                }
+                            })
+
+                            resolve(bmas)
+                        } catch (err) {
+                            reject(err)
+                        }
+                    }
+                }, 100)
+            }
         }
-    }
-    input.click()
+        input.click()
+    })
 }
 
 export async function createBMAs(bmas: JsonArray, assets = [], errors = []) {
@@ -182,14 +183,14 @@ export async function createBMAs(bmas: JsonArray, assets = [], errors = []) {
     response = await Promise.allSettled(results.map((result) => result.promise))
     response.forEach(({ status, reason, value }, inx) => {
         if (status === 'rejected') {
-            errors.push({ message: reason.message })
+            errors.push({ message: reason.message, item: bmas[inx] })
         }
     })
     results = bmas.map((asset) => createBareMetalAssetResource(asset))
     response = await Promise.allSettled(results.map((result) => result.promise))
     response.forEach(({ status, reason, value }, inx) => {
         if (status === 'rejected') {
-            errors.push({ message: reason.message })
+            errors.push({ message: reason.message, item: bmas[inx] })
         } else {
             assets.push(value)
         }

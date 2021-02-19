@@ -12,7 +12,6 @@ import {
     AcmTablePaginationContextProvider,
     AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
-import { AcmLoadingButton } from './AcmLoadingButton'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -25,7 +24,7 @@ import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
-import { importBMAs } from '../../lib/bare-metal-assets'
+import { importBMAs, createBMAs } from '../../lib/bare-metal-assets'
 import {
     BMATableRbacAccess,
     createSubjectAccessReview,
@@ -170,6 +169,83 @@ export function BareMetalAssetsTable(props: {
         return bareMetalAsset.metadata.uid as string
     }
 
+    function setImportModalProps() {
+        setModalProps({
+            open: true,
+            plural: t('bare metal assets'),
+            action: t('common:import'),
+            resources: [],
+            columns: [{}],
+            keyFn: () => {},
+            emptyState: (
+                <AcmEmptyState
+                    title={t('bareMetalAsset.importAction.title')}
+                    message={t('bareMetalAsset.importAction.message')}
+                    showIcon={false}
+                    action={
+                        <AcmButton
+                            id="import-button"
+                            variant="primary"
+                            onClick={async () => {
+                                const result = await importBMAs()
+                                setModalProps({
+                                    open: true,
+                                    singular: t('bare metal asset'),
+                                    plural: t('bare metal assets'),
+                                    action: t('common:import'),
+                                    processing: t('common:importing'),
+                                    resources: result,
+                                    columns: [
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.name'),
+                                            cell: 'name',
+                                            sort: 'name',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.namespace'),
+                                            cell: 'namespace',
+                                            sort: 'namespace',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.macaddress'),
+                                            cell: 'bootMACAddress',
+                                            sort: 'bootMACAddress',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.address'),
+                                            cell: 'bmc.address',
+                                            sort: 'bmc.address',
+                                        },
+                                    ],
+                                    keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.uid as string,
+                                    customFn: async (bareMetalAssets: BareMetalAsset, errors) => {
+                                        const { errors: errs } = await createBMAs(bareMetalAssets)
+                                        errs.forEach((error) => {
+                                            errors.push({
+                                                error: error.message,
+                                                item: error.item,
+                                            })
+                                        })
+                                    },
+                                    close: () => {
+                                        setModalProps({ open: false })
+                                        props.refresh()
+                                    },
+                                })
+                            }}
+                        >
+                            {t('bareMetalAsset.importAction.button')}
+                        </AcmButton>
+                    }
+                />
+            ),
+            close: () => {
+                setModalProps({ open: false })
+                props.refresh()
+            },
+        })
+    }
+
     return (
         <AcmPageCard>
             <BulkActionModel<BareMetalAsset> {...modalProps} />
@@ -188,18 +264,14 @@ export function BareMetalAssetsTable(props: {
                                     >
                                         {t('createBareMetalAsset.title')}
                                     </AcmButton>
-                                    <AcmLoadingButton
-                                        key="import-action"
-                                        id="import-button"
+                                    <AcmButton
                                         variant="primary"
-                                        onClick={async (setIsLoading) => {
-                                            importBMAs(setIsLoading)
-                                            props.refresh()
+                                        onClick={() => {
+                                            setImportModalProps()
                                         }}
-                                        label={t('importBareMetalAssets.title')}
-                                        processingLabel={t('importBareMetalAssets.loading')}
-                                        tooltip={t('importBareMetalAssets.tooltip')}
-                                    />
+                                    >
+                                        {t('importBareMetalAssets.title')}
+                                    </AcmButton>
                                 </div>
                             }
                         />
@@ -352,19 +424,17 @@ export function BareMetalAssetsTable(props: {
                     keyFn={keyFn}
                     tableActions={[
                         {
-                            id: 'importAsset',
-                            title: t('bareMetalAsset.bulkAction.importAssets'),
-                            click: () => {
-                                importBMAs(props.refresh)
-                                props.refresh()
-                            },
-                            tooltip: 'asdsdfasdf',
-                        },
-                        {
                             id: 'createAsset',
                             title: t('bareMetalAsset.bulkAction.createAsset'),
                             click: () => {
                                 history.push(NavigationPath.createBareMetalAsset)
+                            },
+                        },
+                        {
+                            id: 'importAsset',
+                            title: t('bareMetalAsset.bulkAction.importAssets'),
+                            click: () => {
+                                setImportModalProps()
                             },
                         },
                     ]}
