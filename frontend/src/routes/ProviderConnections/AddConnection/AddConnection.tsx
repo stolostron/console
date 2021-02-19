@@ -165,22 +165,17 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            try {
-                getAuthorizedNamespaces([
-                    {
-                        resource: 'secrets',
-                        verb: 'create',
-                    },
-                ])
-                    .then((namespaces: string[]) => {
-                        setProjects(namespaces)
-                    })
-                    .catch(setError)
-                    .finally(() => setIsLoading(false))
-            } catch (err) {
-                setError(err)
-                setIsLoading(false)
-            }
+            getAuthorizedNamespaces([
+                {
+                    resource: 'secrets',
+                    verb: 'create',
+                },
+            ])
+                .then((namespaces: string[]) => {
+                    setProjects(namespaces)
+                })
+                .catch(setError)
+                .finally(() => setIsLoading(false))
         }
     }, [props.namespace])
 

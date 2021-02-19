@@ -151,23 +151,18 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        try {
-            getAuthorizedNamespaces([
-                {
-                    group: 'inventory.open-cluster-management.io',
-                    resource: 'baremetalassets',
-                    verb: 'create',
-                },
-            ])
-                .then((namespaces: string[]) => {
-                    setProjects(namespaces)
-                })
-                .catch(setError)
-                .finally(() => setIsLoading(false))
-        } catch (err) {
-            setError(err)
-            setIsLoading(false)
-        }
+        getAuthorizedNamespaces([
+            {
+                group: 'inventory.open-cluster-management.io',
+                resource: 'baremetalassets',
+                verb: 'create',
+            },
+        ])
+            .then((namespaces: string[]) => {
+                setProjects(namespaces)
+            })
+            .catch(setError)
+            .finally(() => setIsLoading(false))
     }, [])
 
     if (error) {
