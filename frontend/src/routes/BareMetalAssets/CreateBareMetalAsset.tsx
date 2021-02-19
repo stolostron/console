@@ -29,7 +29,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '../../resources/secret'
-import { getAuthorizedNamespaces } from '../../lib/rbac-helpers'
+import { getAuthorizedNamespaces } from '../../lib/rbac-util'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])

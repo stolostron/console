@@ -47,7 +47,7 @@ import {
 import { AppContext } from '../../../components/AppContext'
 import { makeStyles } from '@material-ui/styles'
 import { DOC_LINKS } from '../../../lib/doc-util'
-import { getAuthorizedNamespaces } from '../../../lib/rbac-helpers'
+import { getAuthorizedNamespaces } from '../../../lib/rbac-util'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
