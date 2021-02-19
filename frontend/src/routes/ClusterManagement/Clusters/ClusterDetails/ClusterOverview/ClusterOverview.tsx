@@ -20,7 +20,7 @@ import { ImportCommandContainer } from '../../../Clusters/components/ImportComma
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { RbacButton } from '../../../../../components/Rbac'
-import { getResourceAttributes } from '../../../../../lib/get-cluster'
+import { getResourceAttributes } from '../../../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
