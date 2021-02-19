@@ -38,7 +38,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
         }
     })
     if (newAssets.length > 0) {
-        createBMAs(newAssets, assets, errors)
+        await createBMAs(newAssets, assets, errors)
     }
 
     // make sure all hosts have a user/password in both ClusterDeployment and install-config.yaml

@@ -18,6 +18,7 @@ export interface BareMetalAsset {
             credentialsName: string
         }
         bootMACAddress: string
+        role: string
     }
     status?: {
         conditions: Array<{
@@ -65,6 +66,7 @@ export function createBareMetalAssetResource(asset: {
     name: string
     namespace: string
     bootMACAddress: string
+    role: string
     bmc: { address: string }
 }) {
     const {

@@ -136,6 +136,7 @@ const mockBmaProjectResponse: Project = {
 
 const mockBareMetalAssets3 = Array.from({ length: 1 }, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
+    mockedBma.spec.role = 'worker'
     mockedBma.metadata.name = `test-bare-metal-asset-${inx + 4}`
     mockedBma.spec.bmc.credentialsName = `test-bare-metal-asset-${inx + 4}-bmc-secret`
     return mockedBma
