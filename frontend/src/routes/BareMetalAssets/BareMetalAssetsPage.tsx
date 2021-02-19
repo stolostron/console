@@ -21,10 +21,11 @@ import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
-import { createSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
-import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { BareMetalAsset, BareMetalAssetDefinition, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { RbacDropdown } from '../../components/Rbac'
+import { getUserAccess, getResourceAttributes } from '../../lib/rbac-util'
+import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -94,7 +95,7 @@ export function BareMetalAssetsTable(props: {
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
     refresh: () => void
 }) {
-    const [creationAccessRestriction, setCreationAccessRestriction] = useState<boolean>(true)
+    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
@@ -102,21 +103,12 @@ export function BareMetalAssetsTable(props: {
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
-        const createClusterRbac = createSubjectAccessReview({
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        })
+        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
 
-        createClusterRbac.promise
-            .then((result) => {
-                setCreationAccessRestriction(result.status?.allowed!)
-            })
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
-        return () => createClusterRbac.abort()
+        canCreateCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateCluster.abort()
     }, [])
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
@@ -222,13 +214,12 @@ export function BareMetalAssetsTable(props: {
                                             )
                                         },
                                         rbac: [
-                                            {
-                                                name: bareMetalAsset.metadata?.name,
-                                                namespace: bareMetalAsset.metadata?.namespace,
-                                                group: 'inventory.open-cluster-management.io',
-                                                resource: 'baremetalassets',
-                                                verb: 'patch',
-                                            },
+                                            getResourceAttributes(
+                                                'patch',
+                                                BareMetalAssetDefinition,
+                                                bareMetalAsset.metadata?.namespace,
+                                                bareMetalAsset.metadata?.name
+                                            ),
                                         ],
                                     },
                                     {
@@ -268,13 +259,12 @@ export function BareMetalAssetsTable(props: {
                                             })
                                         },
                                         rbac: [
-                                            {
-                                                name: bareMetalAsset.metadata?.name,
-                                                namespace: bareMetalAsset.metadata?.namespace,
-                                                group: 'inventory.open-cluster-management.io',
-                                                resource: 'baremetalassets',
-                                                verb: 'delete',
-                                            },
+                                            getResourceAttributes(
+                                                'delete',
+                                                BareMetalAssetDefinition,
+                                                bareMetalAsset.metadata?.namespace,
+                                                bareMetalAsset.metadata?.name
+                                            ),
                                         ],
                                     },
                                 ]
@@ -345,8 +335,8 @@ export function BareMetalAssetsTable(props: {
                                 params.set('bmas', bmaIDs.join(','))
                                 history.push(`${NavigationPath.createCluster}?${params}`)
                             },
-                            isDisabled: creationAccessRestriction,
-                            tooltip: creationAccessRestriction ? t('common:rbac.unauthorized') : '',
+                            isDisabled: !canCreateCluster,
+                            tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
                         },
                     ]}
                     rowActions={[]}

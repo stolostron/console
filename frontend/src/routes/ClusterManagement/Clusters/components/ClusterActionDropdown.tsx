@@ -9,6 +9,10 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../../lib/resource-request'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
+import { getResourceAttributes } from '../../../../lib/rbac-util'
+import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
+import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
+import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 // import { createImportResources } from '../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean; refresh?: () => void }) {
@@ -62,14 +66,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'patch',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-            ],
+            rbac: [getResourceAttributes('patch', ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'launch-cluster',
@@ -83,14 +80,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 setShowUpgradeModal(true)
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusteractions',
-                    verb: 'create',
-                    group: 'action.open-cluster-management.io',
-                    namespace: cluster.namespace,
-                },
-            ],
+            rbac: [getResourceAttributes('create', ManagedClusterActionDefinition, cluster.namespace)],
         },
         {
             id: 'search-cluster',
@@ -130,13 +120,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         //             actionFn: createImportResources,
         //         })
         //     },
-        //     rbac: [
-        //         {
-        //             resource: 'managedclusters',
-        //             verb: 'create',
-        //             group: 'cluster.open-cluster-management.io',
-        //         },
-        //     ],
+        //     rbac: [getResourceAttributes('create', ManagedClusterDefinition)],
         // },
         {
             id: 'detach-cluster',
@@ -163,14 +147,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'delete',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-            ],
+            rbac: [getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'destroy-cluster',
@@ -198,19 +175,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: true,
             rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'delete',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-                {
-                    resource: 'clusterdeployments',
-                    verb: 'delete',
-                    group: 'hive.openshift.io',
-                    name: cluster.name,
-                    namespace: cluster.namespace,
-                },
+                getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name),
+                getResourceAttributes('delete', ClusterDeploymentDefinition, cluster.namespace, cluster.name),
             ],
         },
     ]

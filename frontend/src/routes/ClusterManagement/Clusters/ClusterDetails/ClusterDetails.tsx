@@ -18,10 +18,12 @@ import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { useQuery } from '../../../../lib/useQuery'
+import { getUserAccess } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
+import { SecretDefinition } from '../../../../resources/secrets'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { createSubjectAccessReview } from '../../../../resources/self-subject-access-review'
@@ -59,7 +61,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
     const [clusterError, setClusterError] = useState<ResourceError | undefined>(undefined)
-    const [getSecretAccessRestriction, setSecretAccessRestriction] = useState<boolean>(true)
+    const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
 
     // Addons
     const {
@@ -123,17 +125,11 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [data, error, prevStatus, prevIsHive, stopPolling, addonStopPolling])
 
     useEffect(() => {
-        try {
-            createSubjectAccessReview({
-                namespace: match.params.id,
-                resource: 'secrets',
-                verb: 'get',
-            }).promise.then((result) => {
-                setSecretAccessRestriction(!result.status?.allowed!)
-            })
-        } catch (err) {
-            console.error(err)
-        }
+        const canGetSecret = getUserAccess('get', SecretDefinition, match.params.id)
+        canGetSecret.promise
+            .then((result) => setCanGetSecret(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canGetSecret.abort()
     }, [match.params.id])
 
     if (loading) {
@@ -225,9 +221,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             href: addon.launchLink?.href!,
                                         }))}
                                 />
-                                <DownloadConfigurationDropdown
-                                    getSecretAccessRestriction={getSecretAccessRestriction}
-                                />
+                                <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
                                 <ClusterActionDropdown cluster={cluster!} isKebab={false} />
                             </AcmActionGroup>
                         </Fragment>
@@ -237,10 +231,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     <Suspense fallback={<Fragment />}>
                         <Switch>
                             <Route exact path={NavigationPath.clusterOverview}>
-                                <ClusterOverviewPageContent
-                                    getSecretAccessRestriction={getSecretAccessRestriction}
-                                    // editLabelAccessRestriction={!tableActionRbacValues['cluster.edit.labels']}
-                                />
+                                <ClusterOverviewPageContent canGetSecret={canGetSecret} />
                             </Route>
                             <Route exact path={NavigationPath.clusterNodes}>
                                 <NodePoolsPageContent />

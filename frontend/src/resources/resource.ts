@@ -11,7 +11,7 @@ export interface IResourceDefinition {
 export interface IResource extends IResourceDefinition {
     apiVersion: string
     kind: string
-    metadata: V1ObjectMeta
+    metadata?: V1ObjectMeta
 }
 
 export interface ResourceList<Resource extends IResource> {
