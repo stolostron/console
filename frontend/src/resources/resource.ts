@@ -1,9 +1,14 @@
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist'
 import { join } from 'path'
 
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
 
-export interface IResource {
+export interface IResourceDefinition {
+    apiVersion: string
+    kind: string
+}
+
+export interface IResource extends IResourceDefinition {
     apiVersion: string
     kind: string
     metadata: V1ObjectMeta
@@ -12,6 +17,18 @@ export interface IResource {
 export interface ResourceList<Resource extends IResource> {
     kind: string
     items?: Resource[]
+}
+
+export function getResourcePlural(resourceDefinition: IResourceDefinition) {
+    return resourceDefinition.kind.toLowerCase() + 's'
+}
+
+export function getResourceGroup(resourceDefinition: IResourceDefinition) {
+    if (resourceDefinition.apiVersion.includes('/')) {
+        return resourceDefinition.apiVersion.split('/')[0]
+    } else {
+        return ''
+    }
 }
 
 export function getResourceName(resource: Partial<IResource>) {

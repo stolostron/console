@@ -1,5 +1,6 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
+import { IResource, IResourceDefinition } from './resource'
 import { SecretApiVersionType, SecretKindType } from './secret'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
@@ -8,7 +9,12 @@ export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io
 export const BareMetalAssetKind = 'BareMetalAsset'
 export type BareMetalAssetKindType = 'BareMetalAsset'
 
-export interface BareMetalAsset {
+export const BareMetalAssetDefinition: IResourceDefinition = {
+    apiVersion: BareMetalAssetApiVersion,
+    kind: BareMetalAssetKind,
+}
+
+export interface BareMetalAsset extends IResource {
     apiVersion: BareMetalAssetApiVersionType
     kind: BareMetalAssetKindType
     metadata: V1ObjectMeta

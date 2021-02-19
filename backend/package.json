@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
+        "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
         "build": "npm run clean && tsc --sourceMap false --declaration false",
         "clean": "rm -rf coverage build",
         "test": "jest --verbose",
@@ -22,7 +23,9 @@
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.20",
         "@types/node": "^14.x.x",
+        "@types/pino": "^6.3.6",
         "@types/prettier": "^2.2.1",
+        "@types/raw-body": "^2.3.0",
         "@typescript-eslint/eslint-plugin": "^4.15.1",
         "@typescript-eslint/parser": "^4.15.1",
         "axios": "^0.21.1",
@@ -31,6 +34,7 @@
         "eslint-plugin-prettier": "^3.3.1",
         "jest": "^26.x.x",
         "nock": "^13.0.7",
+        "pino-zen": "^1.0.20",
         "prettier": "^2.2.1",
         "ts-jest": "^26.x.x",
         "ts-node": "^9.1.1",
@@ -96,5 +100,10 @@
                 }
             ]
         }
+    },
+    "dependencies": {
+        "find-my-way": "^4.0.0",
+        "pino": "^6.11.1",
+        "raw-body": "^2.4.1"
     }
 }
