@@ -2,28 +2,31 @@ import React, { useContext } from 'react'
 import {
     AcmDescriptionList,
     AcmLabels,
-    AcmButton,
     AcmInlineProvider,
     AcmInlineCopy,
     AcmErrorBoundary,
+    AcmDrawerContext,
 } from '@open-cluster-management/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails'
-import { DistributionField } from '../../../../../components/ClusterCommon'
+import { DistributionField } from '../../components/DistributionField'
 import { StatusField } from '../../components/StatusField'
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { HiveNotification } from '../../components/HiveNotification'
+import { EditLabels } from '../../components/EditLabels'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
+import { RbacButton } from '../../../../../components/Rbac'
 
 export function ClusterOverviewPageContent(props: {
     getSecretAccessRestriction?: boolean
     editLabelAccessRestriction?: boolean
 }) {
-    const { cluster, setEditClusterLabels } = useContext(ClusterContext)
+    const { cluster } = useContext(ClusterContext)
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
     return (
         <PageSection>
@@ -45,15 +48,34 @@ export function ClusterOverviewPageContent(props: {
                         {
                             key: t('table.labels'),
                             value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
-                            keyAction: (
-                                <AcmButton
+                            keyAction: cluster?.isManaged && (
+                                <RbacButton
                                     onClick={() => {
-                                        if (cluster) setEditClusterLabels?.({ ...cluster })
+                                        if (cluster) {
+                                            setDrawerContext({
+                                                isExpanded: true,
+                                                title: t('labels.edit.title'),
+                                                onCloseClick: () => setDrawerContext(undefined),
+                                                panelContent: (
+                                                    <EditLabels
+                                                        cluster={cluster}
+                                                        close={() => setDrawerContext(undefined)}
+                                                    />
+                                                ),
+                                                panelContentProps: { minSize: '600px' },
+                                            })
+                                        }
                                     }}
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
-                                    isDisabled={props.editLabelAccessRestriction}
-                                    tooltip={props.editLabelAccessRestriction ? t('common:rbac.unauthorized') : ''}
+                                    rbac={[
+                                        {
+                                            resource: 'managedclusters',
+                                            verb: 'patch',
+                                            group: 'cluster.open-cluster-management.io',
+                                            name: cluster?.name,
+                                        },
+                                    ]}
                                 >
                                     <PencilAltIcon
                                         color={
@@ -62,7 +84,7 @@ export function ClusterOverviewPageContent(props: {
                                                 : 'var(--pf-global--primary-color--100)'
                                         }
                                     />
-                                </AcmButton>
+                                </RbacButton>
                             ),
                         },
                     ]}

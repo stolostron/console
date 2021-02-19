@@ -16,7 +16,6 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     metadata: {},
     spec: {
         resourceAttributes: {
-            name: '',
             namespace: 'test-namespace',
             group: 'inventory.open-cluster-management.io',
             resource: 'baremetalassets',
@@ -46,9 +45,9 @@ const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
     spec: {
         resourceAttributes: {
             namespace: 'test-namespace',
-            resource: 'secrets',
+            resource: 'baremetalassets',
+            group: 'inventory.open-cluster-management.io',
             verb: 'create',
-            version: 'v1',
         },
     },
     status: {

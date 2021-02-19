@@ -3,7 +3,6 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
-    AcmDropdown,
     AcmEmptyState,
     AcmPageCard,
     AcmPageHeader,
@@ -22,15 +21,11 @@ import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
+import { createSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
 import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
 import { importBMAs, createBMAs } from '../../lib/bare-metal-assets'
-import {
-    BMATableRbacAccess,
-    createSubjectAccessReview,
-    createSubjectAccessReviews,
-    rbacMapping,
-} from '../../resources/self-subject-access-review'
+import { RbacDropdown } from '../../components/Rbac'
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common', 'create'])
@@ -88,13 +83,7 @@ export function BareMetalAssets() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
-    return (
-        <BareMetalAssetsTable
-            bareMetalAssets={data}
-            deleteBareMetalAsset={deleteResource}
-            refresh={refresh}
-        ></BareMetalAssetsTable>
-    )
+    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -111,59 +100,25 @@ export function BareMetalAssetsTable(props: {
         open: false,
     })
     const history = useHistory()
-    const defaultTableBmaValues: BMATableRbacAccess = {
-        'bma.delete': false,
-        'bma.edit': false,
-    }
-    const [tableActionRbacValues, setTableActionRbacValues] = useState<BMATableRbacAccess>(defaultTableBmaValues)
-    const [isOpen, setIsOpen] = useState<boolean>(false)
-    const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
-        const resourceAttribute = rbacMapping('cluster.create')[0]
-        const promiseResult = createSubjectAccessReview(resourceAttribute)
-        promiseResult.promise
+        const createClusterRbac = createSubjectAccessReview({
+            resource: 'managedclusters',
+            verb: 'create',
+            group: 'cluster.open-cluster-management.io',
+        })
+
+        createClusterRbac.promise
             .then((result) => {
-                setCreationAccessRestriction(!result.status?.allowed)
+                setCreationAccessRestriction(result.status?.allowed!)
             })
             .catch((err) => {
+                // send err to console
                 console.error(err)
             })
+        return () => createClusterRbac.abort()
     }, [])
-
-    function abortRbacPromises() {
-        abortRbacCheck?.forEach((abort) => abort())
-    }
-
-    function CheckTableActionsRbacAccess(bareMetalAsset: BareMetalAsset) {
-        let currentRbacValues = { ...defaultTableBmaValues }
-        let abortArray: Array<Function> = []
-        Object.keys(currentRbacValues).forEach((action) => {
-            const request = createSubjectAccessReviews(
-                rbacMapping(action, bareMetalAsset.metadata.name, bareMetalAsset.metadata.namespace)
-            )
-            request.promise
-                .then((results) => {
-                    if (results) {
-                        let rbacQueryResults: boolean[] = []
-                        results.forEach((result) => {
-                            if (result.status === 'fulfilled') {
-                                rbacQueryResults.push(result.value.status?.allowed!)
-                            }
-                        })
-                        if (!rbacQueryResults.includes(false)) {
-                            setTableActionRbacValues((current) => {
-                                return { ...current, ...{ [action]: true } }
-                            })
-                        }
-                    }
-                })
-                .catch((err) => console.error(err))
-            abortArray.push(request.abort)
-        })
-        if (setRbacAborts) setRbacAborts(abortArray)
-    }
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
         return bareMetalAsset.metadata.uid as string
@@ -341,18 +296,11 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: '',
                             cell: (bareMetalAsset) => {
-                                const onSelect = (id: string) => {
-                                    const action = actions.find((a) => a.id === id)
-                                    return action?.click(bareMetalAsset)
-                                }
-                                let actions = [
+                                const actions = [
                                     {
                                         id: 'editAsset',
                                         text: t('bareMetalAsset.rowAction.editAsset.title'),
-                                        isDisabled: !tableActionRbacValues['bma.edit'],
-                                        tooltip: !tableActionRbacValues['bma.edit']
-                                            ? t('common:rbac.unauthorized')
-                                            : '',
+                                        isDisabled: true,
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             history.push(
                                                 NavigationPath.editBareMetalAsset.replace(
@@ -361,14 +309,20 @@ export function BareMetalAssetsTable(props: {
                                                 )
                                             )
                                         },
+                                        rbac: [
+                                            {
+                                                name: bareMetalAsset.metadata?.name,
+                                                namespace: bareMetalAsset.metadata?.namespace,
+                                                group: 'inventory.open-cluster-management.io',
+                                                resource: 'baremetalassets',
+                                                verb: 'patch',
+                                            },
+                                        ],
                                     },
                                     {
                                         id: 'deleteAsset',
                                         text: t('bareMetalAsset.rowAction.deleteAsset.title'),
-                                        isDisabled: !tableActionRbacValues['bma.delete'],
-                                        tooltip: !tableActionRbacValues['bma.delete']
-                                            ? t('common:rbac.unauthorized')
-                                            : '',
+                                        isDisabled: true,
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             setModalProps({
                                                 open: true,
@@ -401,21 +355,25 @@ export function BareMetalAssetsTable(props: {
                                                 isDanger: true,
                                             })
                                         },
+                                        rbac: [
+                                            {
+                                                name: bareMetalAsset.metadata?.name,
+                                                namespace: bareMetalAsset.metadata?.namespace,
+                                                group: 'inventory.open-cluster-management.io',
+                                                resource: 'baremetalassets',
+                                                verb: 'delete',
+                                            },
+                                        ],
                                     },
                                 ]
+
                                 return (
-                                    <AcmDropdown
-                                        id={`${bareMetalAsset.metadata.namespace}-actions`}
-                                        onSelect={onSelect}
-                                        text={t('actions')}
-                                        dropdownItems={actions}
+                                    <RbacDropdown<BareMetalAsset>
+                                        id={`${bareMetalAsset.metadata.name}-actions`}
+                                        item={bareMetalAsset}
                                         isKebab={true}
-                                        isPlain={true}
-                                        onToggle={() => {
-                                            if (!isOpen) CheckTableActionsRbacAccess(bareMetalAsset)
-                                            else abortRbacPromises()
-                                            setIsOpen(!isOpen)
-                                        }}
+                                        text={`${bareMetalAsset.metadata.name}-actions`}
+                                        actions={actions}
                                     />
                                 )
                             },

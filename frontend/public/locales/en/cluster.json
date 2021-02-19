@@ -6,6 +6,7 @@
     "cluster": "Cluster",
     "clusters": "Clusters",
     "detach": "Detach",
+    "import": "Import",
     "detaching": "Detaching",
     "destroy": "Destroy",
     "destroying": "Destroying",
@@ -13,6 +14,7 @@
     "managed": "Managed",
     "managed.emptyStateHeader": "No managed clusters found",
     "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
+    "managed.import": "Import cluster",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
     "managed.upgrade": "Upgrade cluster",
@@ -34,6 +36,7 @@
     "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
     "button.backToClusters": "Back to Cluster management",
 
+    "cluster.import.description": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",
     "cluster.detach.description": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
     "cluster.destroy.description": "Destroying a cluster is irreversible. This action detaches the cluster and if possible the cluster will be destroyed.",
 
@@ -147,14 +150,12 @@
     "upgrade.upgrading.version": "Upgrading to OpenShift {{version}}",
     "upgrade.upgradefailed": "Upgrade failed",
     "upgrade.upgradefailed.message": "Upgrading {{clusterName}} to OpenShift {{version}} failed.",
-    "upgrade.title": "Upgrade {{clusterName}}",
     "upgrade.select.label": "Select a new version:",
     "upgrade.select.placeholder": "Select a new version",
     "upgrade.current.version": "Current version:",
     "upgrade.loading": "Loading",
     "upgrade.submit": "Upgrade",
     "upgrade.submit.processing": "Upgrading",
-    "upgrade.cancel": "Cancel",
     "upgrade.multiple.plural": "clusters",
     "upgrade.multiple.singular": "cluster",
     "upgrade.table.name": "Name",
@@ -188,5 +189,9 @@
     "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
-    "summary.status.loading": "Loading application and violation status"
+    "summary.status.loading": "Loading application and violation status",
+
+    "disable.title": "Disable cluster discovery",
+    "disable.button": "Disable",
+    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted."
 }

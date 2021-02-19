@@ -1,5 +1,5 @@
-import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { listResources, getResource } from '../lib/resource-request'
+import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
+import { getResource, listResources } from '../lib/resource-request'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
@@ -95,7 +95,6 @@ export function listClusterDeployments() {
             apiVersion: ClusterDeploymentApiVersion,
             kind: ClusterDeploymentKind,
         },
-        undefined,
         undefined,
         { managedNamespacesOnly: '' }
     )

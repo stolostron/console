@@ -3,7 +3,12 @@
 import { isEqual } from 'lodash'
 import nock from 'nock'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../resources/self-subject-access-review'
+import {
+    ResourceAttributes,
+    SelfSubjectAccessReview,
+    SelfSubjectAccessReviewApiVersion,
+    SelfSubjectAccessReviewKind,
+} from '../resources/self-subject-access-review'
 import { StatusApiVersion, StatusKind } from '../resources/status'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
@@ -162,23 +167,17 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
 export function nockCreateSelfSubjectAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
     return nockCreate(
         {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
             metadata: {},
-            spec: {
-                resourceAttributes,
-            },
+            spec: { resourceAttributes },
         } as SelfSubjectAccessReview,
         {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
+            apiVersion: SelfSubjectAccessReviewApiVersion,
+            kind: SelfSubjectAccessReviewKind,
             metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
+            spec: { resourceAttributes },
+            status: { allowed },
         } as SelfSubjectAccessReview
     )
 }

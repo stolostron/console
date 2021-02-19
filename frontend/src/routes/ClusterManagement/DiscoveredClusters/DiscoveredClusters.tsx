@@ -5,20 +5,30 @@ import {
     AcmTable,
     AcmErrorBoundary,
     IAcmTableColumn,
+    AcmAlertContext,
+    AcmAlertGroup,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
-import React, { Fragment, useEffect } from 'react'
+import React, { useState, Fragment, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-import { ErrorPage } from '../../../components/ErrorPage'
+import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
 import { ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
+import { deleteResource } from '../../../lib/resource-request'
+import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import {
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    listDiscoveryConfigs,
+} from '../../../resources/discovery-config'
+import { Link } from 'react-router-dom'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -147,11 +157,29 @@ export default function DiscoveredClustersPage() {
     )
 }
 
+async function disableDiscovery(): Promise<void> {
+    const result = listDiscoveryConfigs()
+    const discConfig = await result.promise
+    discConfig.forEach(deleteDiscoveryConfig)
+}
+
+function deleteDiscoveryConfig(config) {
+    deleteResource({
+        apiVersion: DiscoveryConfigApiVersion,
+        kind: DiscoveryConfigKind,
+        metadata: { name: config.metadata.name, namespace: config.metadata.namespace },
+    })
+}
+
 function DiscoveredClustersEmptyState() {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmEmptyState
-            action={<AcmButton>{t('discovery.enablediscoverybtn')}</AcmButton>}
+            action={
+                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                    {t('discovery.enablediscoverybtn')}
+                </AcmButton>
+            }
             title={t('discovery.emptyStateHeader')}
             message={t('discovery.emptyStateMsg')}
             key="dcEmptyState"
@@ -186,40 +214,69 @@ export function DiscoveredClustersPageContent() {
 
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
     const { t } = useTranslation(['cluster'])
+    const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
+    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
+        open: false,
+    })
     return (
-        <AcmTable<DiscoveredCluster>
-            plural="discovered clusters"
-            items={props.discoveredClusters}
-            columns={discoveredClusterCols}
-            keyFn={dckeyFn}
-            key="discoveredClustersTable"
-            tableActions={[
-                {
-                    id: 'editClusterDiscvoveryBtn',
-                    title: t('discovery.edit'),
-                    click: () => {}, // TODO: Make this button work
-                },
-                {
-                    id: 'disableClusterDiscvoveryBtn',
-                    title: t('discovery.disable'),
-                    click: () => {}, // TODO: Make this button work
-                },
-            ]}
-            bulkActions={[]}
-            rowActions={[
-                {
-                    id: 'importCluster',
-                    title: t('discovery.import'),
-                    click: (item) => {
-                        sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
-                        sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                        history.push(NavigationPath.importCluster)
+        <Fragment>
+            <AcmAlertGroup />
+            <ConfirmModal {...modalProps} />
+            <AcmTable<DiscoveredCluster>
+                plural="discovered clusters"
+                items={props.discoveredClusters}
+                columns={discoveredClusterCols}
+                keyFn={dckeyFn}
+                key="discoveredClustersTable"
+                tableActions={[
+                    {
+                        id: 'editClusterDiscvoveryBtn',
+                        title: t('discovery.edit'),
+                        click: () => {
+                            history.push(NavigationPath.discoveryConfig)
+                        },
                     },
-                },
-            ]}
-            emptyState={<DiscoveredClustersEmptyState />}
-        />
+                    {
+                        id: 'disableClusterDiscvoveryBtn',
+                        title: t('discovery.disable'),
+                        click: () => {
+                            setModalProps({
+                                open: true,
+                                title: t('disable.title'),
+                                confirm: async () => {
+                                    try {
+                                        await disableDiscovery()
+                                        setModalProps({ open: false })
+                                    } catch (err) {
+                                        alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
+                                    }
+                                },
+                                confirmText: t('disable.button'),
+                                message: t('disable.message'),
+                                isDanger: true,
+                                cancel: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    },
+                ]}
+                bulkActions={[]}
+                rowActions={[
+                    {
+                        id: 'importCluster',
+                        title: t('discovery.import'),
+                        click: (item) => {
+                            sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                            sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                            history.push(NavigationPath.importCluster)
+                        },
+                    },
+                ]}
+                emptyState={<DiscoveredClustersEmptyState />}
+            />
+        </Fragment>
     )
 }
 

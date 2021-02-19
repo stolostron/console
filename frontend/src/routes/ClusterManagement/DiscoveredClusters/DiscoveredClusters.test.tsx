@@ -1,13 +1,15 @@
 import { render } from '@testing-library/react'
 import React from 'react'
-import { nockList } from '../../../lib/nock-util'
-import { waitForNock, waitForText } from '../../../lib/test-util'
+import { nockList, nockDelete } from '../../../lib/nock-util'
+import { waitForNock, waitForText, clickByText } from '../../../lib/test-util'
 import {
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
 } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
+import { MemoryRouter } from 'react-router-dom'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -70,11 +72,25 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     },
 ]
 
+const mockDiscoveryConfig: DiscoveryConfig = {
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+    metadata: { name: 'discoveryconfig', namespace: 'open-cluster-management' },
+    spec: {},
+}
+
+const mockDiscoveryConfigs: DiscoveryConfig[] = [mockDiscoveryConfig]
+
 test('DiscoveredClustersPage', async () => {
     const listNock = nockList(
         { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
         mockDiscoveredClusters
     )
+    const configlistNock = nockList(
+        { apiVersion: DiscoveryConfigApiVersion, kind: DiscoveryConfigKind },
+        mockDiscoveryConfigs
+    )
+    const deleteNock = nockDelete(mockDiscoveryConfig)
     render(<DiscoveredClustersPage />)
     await waitForNock(listNock)
 
@@ -92,11 +108,22 @@ test('DiscoveredClustersPage', async () => {
             await waitForText(dc.spec.cloudProvider)
         }
     })
+
+    // Test Delete Buttons
+    await clickByText('discovery.disable')
+    await waitForText('disable.button')
+    await clickByText('disable.button')
+    await waitForNock(configlistNock)
+    await waitForNock(deleteNock)
 })
 
 test('No Discovered Clusters', async () => {
     const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
-    render(<DiscoveredClustersPage />)
+    render(
+        <MemoryRouter>
+            <DiscoveredClustersPage />
+        </MemoryRouter>
+    )
     await waitForNock(listNock)
     await waitForText('discovery.emptyStateHeader')
 })
