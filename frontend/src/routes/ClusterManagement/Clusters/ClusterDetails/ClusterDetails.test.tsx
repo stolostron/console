@@ -398,7 +398,6 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
             namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
-            version: 'v1',
         },
     },
     status: {
@@ -415,6 +414,7 @@ const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
             namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
+            group: '',
         },
     },
 }

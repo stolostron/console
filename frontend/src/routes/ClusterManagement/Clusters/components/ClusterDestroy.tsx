@@ -3,10 +3,11 @@ import { useHistory } from 'react-router-dom'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
-import { createSubjectAccessReview } from '../../../../resources/self-subject-access-review'
+import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { NavigationPath } from '../../../../NavigationPath'
 import { launchLogs } from './HiveNotification'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
+import { getUserAccess } from '../../../../lib/rbac-util'
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
@@ -14,21 +15,11 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
     useEffect(() => {
-        const createClusterRbac = createSubjectAccessReview({
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        })
-
-        createClusterRbac.promise
-            .then((result) => {
-                setCanCreateCluster(result.status?.allowed!)
-            })
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
-        return () => createClusterRbac.abort()
+        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
+        canCreateCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateCluster.abort()
     }, [])
 
     return (

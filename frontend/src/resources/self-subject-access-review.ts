@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 import { createResource } from '../lib/resource-request'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
@@ -7,6 +7,11 @@ export type SelfSubjectAccessReviewApiVersionType = 'authorization.k8s.io/v1'
 
 export const SelfSubjectAccessReviewKind = 'SelfSubjectAccessReview'
 export type SelfSubjectAccessReviewType = 'SelfSubjectAccessReview'
+
+export const SecretDefinition: IResourceDefinition = {
+    apiVersion: SelfSubjectAccessReviewApiVersion,
+    kind: SelfSubjectAccessReviewKind,
+}
 
 export interface SelfSubjectAccessReview extends IResource {
     apiVersion: SelfSubjectAccessReviewApiVersionType

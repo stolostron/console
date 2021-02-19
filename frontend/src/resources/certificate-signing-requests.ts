@@ -1,12 +1,17 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { listClusterResources } from '../lib/resource-request'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const CertificateSigningRequestApiVersion = 'certificates.k8s.io/v1beta1'
 export type CertificateSigningRequestApiVersionType = 'certificates.k8s.io/v1beta1'
 
 export const CertificateSigningRequestKind = 'CertificateSigningRequest'
 export type CertificateSigningRequestKindType = 'CertificateSigningRequest'
+
+export const CertificateSigningRequestDefinition: IResourceDefinition = {
+    apiVersion: CertificateSigningRequestApiVersion,
+    kind: CertificateSigningRequestKind,
+}
 
 export interface CertificateSigningRequest extends IResource {
     apiVersion: CertificateSigningRequestApiVersionType

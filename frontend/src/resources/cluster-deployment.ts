@@ -1,11 +1,17 @@
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
 import { getResource, listResources } from '../lib/resource-request'
+import { IResourceDefinition } from './resource'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
 
 export const ClusterDeploymentKind = 'ClusterDeployment'
 export type ClusterDeploymentKindType = 'ClusterDeployment'
+
+export const ClusterDeploymentDefinition: IResourceDefinition = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+}
 
 export interface ClusterDeployment {
     apiVersion: ClusterDeploymentApiVersionType

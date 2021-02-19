@@ -20,11 +20,10 @@ import { ImportCommandContainer } from '../../../Clusters/components/ImportComma
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { RbacButton } from '../../../../../components/Rbac'
+import { getResourceAttributes } from '../../../../../lib/rbac-util'
+import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 
-export function ClusterOverviewPageContent(props: {
-    getSecretAccessRestriction?: boolean
-    editLabelAccessRestriction?: boolean
-}) {
+export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
@@ -69,21 +68,15 @@ export function ClusterOverviewPageContent(props: {
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
                                     rbac={[
-                                        {
-                                            resource: 'managedclusters',
-                                            verb: 'patch',
-                                            group: 'cluster.open-cluster-management.io',
-                                            name: cluster?.name,
-                                        },
+                                        getResourceAttributes(
+                                            'patch',
+                                            ManagedClusterDefinition,
+                                            undefined,
+                                            cluster?.name
+                                        ),
                                     ]}
                                 >
-                                    <PencilAltIcon
-                                        color={
-                                            props.editLabelAccessRestriction
-                                                ? 'var(--pf-global--disabled-color--200)'
-                                                : 'var(--pf-global--primary-color--100)'
-                                        }
-                                    />
+                                    <PencilAltIcon />
                                 </RbacButton>
                             ),
                         },
@@ -120,7 +113,7 @@ export function ClusterOverviewPageContent(props: {
                         },
                         {
                             key: t('table.credentials'),
-                            value: <LoginCredentials accessRestriction={props.getSecretAccessRestriction} />,
+                            value: <LoginCredentials canGetSecret={props.canGetSecret} />,
                         },
                     ]}
                 />

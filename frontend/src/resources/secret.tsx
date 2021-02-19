@@ -1,12 +1,17 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { getResource } from '../lib/resource-request'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const SecretApiVersion = 'v1'
 export type SecretApiVersionType = 'v1'
 
 export const SecretKind = 'Secret'
 export type SecretKindType = 'Secret'
+
+export const SecretDefinition: IResourceDefinition = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+}
 
 export interface Secret extends V1Secret, IResource {
     apiVersion: SecretApiVersionType
