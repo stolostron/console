@@ -1,6 +1,6 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { createResource, listClusterResources } from '../lib/resource-request'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
 export type ProjectApiVersionType = 'project.openshift.io/v1'
@@ -14,11 +14,21 @@ export interface Project extends IResource {
     metadata: V1ObjectMeta
 }
 
+export const ProjectDefinition: IResourceDefinition = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+}
+
 export const ProjectRequestApiVersion = 'project.openshift.io/v1'
 export type ProjectRequestApiVersionType = 'project.openshift.io/v1'
 
 export const ProjectRequestKind = 'ProjectRequest'
 export type ProjectRequestKindType = 'ProjectRequest'
+
+export const ProjectRequestDefinition: IResourceDefinition = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+}
 
 export interface ProjectRequest extends IResource {
     apiVersion: ProjectRequestApiVersionType

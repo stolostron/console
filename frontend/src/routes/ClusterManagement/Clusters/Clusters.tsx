@@ -30,10 +30,11 @@ import { Cluster, getAllClusters } from '../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { createSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
+import { getUserAccess } from '../../../lib/rbac-util'
+import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
 
 export default function ClustersPage() {
     return (
@@ -54,21 +55,12 @@ const PageActions = () => {
     const addons = mapAddons(clusterManagementAddons)
 
     useEffect(() => {
-        const createClusterRbac = createSubjectAccessReview({
-            resource: 'managedclusters',
-            verb: 'create',
-            group: 'cluster.open-cluster-management.io',
-        })
+        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
 
-        createClusterRbac.promise
-            .then((result) => {
-                setCanCreateCluster(result.status?.allowed!)
-            })
-            .catch((err) => {
-                // send err to console
-                console.error(err)
-            })
-        return () => createClusterRbac.abort()
+        canCreateCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateCluster.abort()
     }, [])
 
     const dropdownItems: AcmDropdownItems[] = [

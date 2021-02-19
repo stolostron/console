@@ -1,4 +1,4 @@
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { listResources } from '../lib/resource-request'
 
@@ -7,6 +7,11 @@ export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management
 
 export const DiscoveredClusterKind = 'DiscoveredCluster'
 export type DiscoveredClusterKindType = 'DiscoveredCluster'
+
+export const DiscoveredClusterDefinition: IResourceDefinition = {
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
+}
 
 export interface DiscoveredCluster extends IResource {
     apiVersion: DiscoveredClusterApiVersionType

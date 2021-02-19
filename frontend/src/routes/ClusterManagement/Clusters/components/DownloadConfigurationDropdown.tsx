@@ -5,7 +5,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
 
-export function DownloadConfigurationDropdown(props: { getSecretAccessRestriction: boolean }) {
+export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
 
@@ -35,14 +35,14 @@ export function DownloadConfigurationDropdown(props: { getSecretAccessRestrictio
             {
                 id: 'install-config.yaml',
                 text: 'install-config',
-                isDisabled: props.getSecretAccessRestriction,
-                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
+                isDisabled: !props.canGetSecret,
+                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
             },
             {
                 id: 'kubeconfig',
                 text: 'kubeconfig',
-                isDisabled: props.getSecretAccessRestriction,
-                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
+                isDisabled: !props.canGetSecret,
+                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
             },
         ]
         return (

@@ -1,12 +1,17 @@
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
 import { getResource, listNamespacedResources, listResources } from '../lib/resource-request'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
 export type ManagedClusterInfoApiVersionType = 'internal.open-cluster-management.io/v1beta1'
 
 export const ManagedClusterInfoKind = 'ManagedClusterInfo'
 export type ManagedClusterInfoKindType = 'ManagedClusterInfo'
+
+export const ManagedClusterInfoDefinition: IResourceDefinition = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+}
 
 export interface NodeInfo {
     name?: string

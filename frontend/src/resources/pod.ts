@@ -2,13 +2,18 @@ import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
 import { ClusterStatus } from '../lib/get-cluster'
 import { listNamespacedResources } from '../lib/resource-request'
 import { getLatest } from '../lib/utils'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const PodApiVersion = 'v1'
 export type PodApiVersionType = 'v1'
 
 export const PodKind = 'Pod'
 export type PodKindType = 'Pod'
+
+export const PodDefinition: IResourceDefinition = {
+    apiVersion: PodApiVersion,
+    kind: PodKind,
+}
 
 export interface Pod extends V1Pod, IResource {
     apiVersion: PodApiVersionType

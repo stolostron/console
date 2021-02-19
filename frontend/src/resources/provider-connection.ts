@@ -1,6 +1,7 @@
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { ProviderID } from '../lib/providers'
+import { IResourceDefinition } from './resource'
 import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 
 export const ProviderConnectionApiVersion = 'v1'
@@ -8,6 +9,11 @@ export type ProviderConnectionApiVersionType = 'v1'
 
 export const ProviderConnectionKind = 'Secret'
 export type ProviderConnectionKindType = 'Secret'
+
+export const ProviderConnectionDefinition: IResourceDefinition = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+}
 
 export interface ProviderConnection extends V1Secret {
     apiVersion: ProviderConnectionApiVersionType

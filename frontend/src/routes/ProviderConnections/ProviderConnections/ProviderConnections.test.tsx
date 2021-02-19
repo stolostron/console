@@ -66,6 +66,7 @@ function getPatchSecretResourceAttributes(name: string, namespace: string) {
         namespace,
         resource: 'secrets',
         verb: 'patch',
+        group: '',
     } as ResourceAttributes
 }
 
@@ -75,6 +76,7 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
         namespace,
         resource: 'secrets',
         verb: 'delete',
+        group: '',
     } as ResourceAttributes
 }
 
@@ -99,7 +101,7 @@ describe('provider connections page', () => {
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
     })
 
-    test('should goto the edit connection page', async () => {
+    test('should go to the edit connection page', async () => {
         const listProviderConnectionNock = nockList(mockProviderConnection1, mockProviderConnections, [
             'cluster.open-cluster-management.io/cloudconnection=',
         ])

@@ -60,12 +60,20 @@ export async function checkAdminAccess() {
     }
 }
 
-export function getResourceAttributes(verb: 'get' | 'patch', resource: IResource, namespace?: string, name?: string) {
+type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
+
+export function getResourceAttributes(verb: Verb, resource: IResource, namespace?: string, name?: string) {
     return {
-        name: name ?? resource.metadata?.name,
-        namespace: namespace ?? resource.metadata?.namespace,
+        name: name ?? resource?.metadata?.name,
+        namespace: namespace ?? resource?.metadata?.namespace,
         resource: getResourcePlural(resource),
         verb,
         group: getResourceGroup(resource),
     }
+}
+
+export function getUserAccess(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+    const resourceAttributes = getResourceAttributes(verb, resource, namespace, name)
+    const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
+    return selfSubjectAccessReview
 }

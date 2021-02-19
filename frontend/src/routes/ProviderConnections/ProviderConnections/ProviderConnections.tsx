@@ -22,7 +22,12 @@ import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import {
+    listProviderConnections,
+    ProviderConnection,
+    ProviderConnectionDefinition,
+} from '../../../resources/provider-connection'
+import { getResourceAttributes } from '../../../lib/rbac-util'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
@@ -171,12 +176,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                         )
                                     },
                                     rbac: [
-                                        {
-                                            name: providerConnection.metadata.name,
-                                            namespace: providerConnection.metadata.namespace,
-                                            resource: 'secrets',
-                                            verb: 'patch',
-                                        },
+                                        getResourceAttributes(
+                                            'patch',
+                                            ProviderConnectionDefinition,
+                                            providerConnection.metadata.namespace,
+                                            providerConnection.metadata.name
+                                        ),
                                     ],
                                 },
                                 {
@@ -216,12 +221,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                         })
                                     },
                                     rbac: [
-                                        {
-                                            name: providerConnection.metadata.name,
-                                            namespace: providerConnection.metadata.namespace,
-                                            resource: 'secrets',
-                                            verb: 'delete',
-                                        },
+                                        getResourceAttributes(
+                                            'delete',
+                                            ProviderConnectionDefinition,
+                                            providerConnection.metadata.namespace,
+                                            providerConnection.metadata.name
+                                        ),
                                     ],
                                 },
                             ]

@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 import { ClusterLabels } from './managed-cluster'
 import { createResource } from '../lib/resource-request'
 
@@ -8,6 +8,11 @@ export type KlusterletAddonConfigApiVersionType = 'agent.open-cluster-management
 
 export const KlusterletAddonConfigKind = 'KlusterletAddonConfig'
 export type KlusterletAddonConfigKindType = 'KlusterletAddonConfig'
+
+export const KlusterletAddonConfigDefinition: IResourceDefinition = {
+    apiVersion: KlusterletAddonConfigApiVersion,
+    kind: KlusterletAddonConfigKind,
+}
 
 export interface KlusterletAddonConfig extends IResource {
     apiVersion: KlusterletAddonConfigApiVersionType

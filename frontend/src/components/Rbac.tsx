@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AcmDropdown, AcmButton } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { ResourceAttributes, createSubjectAccessReview } from '../resources/self-subject-access-review'
+import { makeStyles } from '@material-ui/styles'
 
 type RbacDropdownProps<T = unknown> = {
     actions: Actions<T>[]
@@ -84,10 +85,20 @@ type RbacButtonProps = ButtonProps & {
     to?: string
 }
 
+const useStyles = makeStyles({
+    button: {
+        '& svg': {
+            fill: (isDisabled: boolean) =>
+                isDisabled ? 'var(--pf-global--disabled-color--200)' : 'var(--pf-global--primary-color--100)',
+        },
+    },
+})
+
 export function RbacButton(props: RbacButtonProps) {
     const { t } = useTranslation()
     const [isDisabled, setIsDisabled] = useState<boolean>(true)
     const [rbac] = useState<ResourceAttributes[]>(props.rbac)
+    const classes = useStyles(isDisabled)
 
     useEffect(() => {
         Promise.all(
@@ -100,5 +111,12 @@ export function RbacButton(props: RbacButtonProps) {
         })
     }, [rbac])
 
-    return <AcmButton {...props} isDisabled={isDisabled} tooltip={isDisabled ? t('common:rbac.unauthorized') : ''} />
+    return (
+        <AcmButton
+            {...props}
+            isDisabled={isDisabled}
+            tooltip={isDisabled ? t('common:rbac.unauthorized') : ''}
+            className={classes.button}
+        />
+    )
 }
