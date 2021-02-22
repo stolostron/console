@@ -7,7 +7,7 @@ import {
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
 
-export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
+export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>

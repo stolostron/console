@@ -1,11 +1,11 @@
 import * as axios from 'axios'
 import * as nock from 'nock'
 import { AddressInfo } from 'net'
-import { startServer, stopServer } from '../src/server'
-import { requestHandler } from '../src/app'
-import { Server } from 'http'
+import { start, stop } from '../src/app'
+import { Http2Server } from 'http2'
+import { Agent } from 'https'
 
-let server: Server
+let server: Http2Server
 
 export let request: axios.AxiosInstance
 
@@ -19,13 +19,14 @@ export async function setupBeforeAll(): Promise<void> {
         token_endpoint: 'https://example.com/token',
     })
 
-    server = await startServer(requestHandler)
+    server = await start()
 
     const port = (server.address() as AddressInfo).port
     request = axios.default.create({
-        baseURL: `http://localhost:${port}`,
+        baseURL: `https://localhost:${port}`,
         validateStatus: () => true,
         headers: { cookie: 'acm-access-token-cookie=123' },
+        httpsAgent: new Agent({ rejectUnauthorized: false }),
     })
 }
 
@@ -35,13 +36,11 @@ export function setupAfterEach(): void {
 }
 
 export async function setupAfterAll(): Promise<void> {
-    await stopServer()
+    await stop()
     nock.enableNetConnect()
     nock.restore()
 }
 
-export function setup(): void {
-    beforeAll(setupBeforeAll, 30 * 1000)
-    afterEach(setupAfterEach)
-    afterAll(setupAfterAll)
-}
+beforeAll(setupBeforeAll, 30 * 1000)
+afterEach(setupAfterEach)
+afterAll(setupAfterAll)
