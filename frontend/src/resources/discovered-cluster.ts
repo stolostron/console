@@ -50,5 +50,5 @@ export function listDiscoveredClusters() {
     return listResources<DiscoveredCluster>({
         apiVersion: DiscoveredClusterApiVersion,
         kind: DiscoveredClusterKind,
-    })
+    }, ["isManagedCluster!=true"])
 }
