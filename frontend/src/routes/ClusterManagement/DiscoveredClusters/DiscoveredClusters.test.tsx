@@ -89,8 +89,7 @@ test('DiscoveredClustersPage', async () => {
     )
     const configlistNock = nockList(
         { apiVersion: DiscoveryConfigApiVersion, kind: DiscoveryConfigKind },
-        mockDiscoveryConfigs,
-        ['isManagedCluster!=true']
+        mockDiscoveryConfigs
     )
     const deleteNock = nockDelete(mockDiscoveryConfig)
     render(<DiscoveredClustersPage />)
