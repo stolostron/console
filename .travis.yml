@@ -9,7 +9,7 @@ addons:
 
 branches:
     only:
-        - master
+        - main
         - /^release-[0-9]+\..*$/
 
 before_script:
@@ -40,7 +40,7 @@ jobs:
               - make sonar/js
 
         - stage: fast forward commits to release branch
-          if: type = push AND branch =~ /^master$/
+          if: type = push AND branch =~ /^main$/
           script: make release-ff
 
         - stage: update release manifest
@@ -48,7 +48,7 @@ jobs:
           script: make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}
 
         - stage: Automated Dependency Upgrade
-          if: type = cron AND branch = master
+          if: type = cron AND branch = main
           language: node_js
           node_js: "12"
           install: echo skip install
@@ -56,7 +56,7 @@ jobs:
               - set -e
               - git remote remove origin
               - git remote add origin https://${GITHUB_TOKEN}@github.com/@open-cluster-management/console.git > /dev/null 2>&1
-              - git checkout master
+              - git checkout main
               - npm ci
               - npm run update
               - npm run build
@@ -65,4 +65,4 @@ jobs:
               - git add -u :/
               - set +e
               - git commit -m "fix(deps) - upgrade dependencies"
-              - git push origin master
+              - git push origin main
