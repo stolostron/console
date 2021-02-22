@@ -250,9 +250,12 @@ export function getDistributionInfo(
         }
     }
 
-    const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
+    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+        (cc) => cc.name === 'product.open-cluster-management.io'
+    )?.value
+
     let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-    switch (vendor) {
+    switch (productClaim) {
         case 'OpenShiftDedicated':
             isManagedOpenShift = true
             break
