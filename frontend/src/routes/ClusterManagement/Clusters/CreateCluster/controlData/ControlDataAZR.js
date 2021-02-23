@@ -18,7 +18,7 @@ const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
 // Cross ref with what Azure UI shows when deploying a VM
 
 // For this regions list, place recommeneded at the top
-// Recommended
+// Recommended is top alphabetized list, optional is second list
 const regions = [
     'australiaeast',
     'brazilsouth',
@@ -44,7 +44,6 @@ const regions = [
     'westeurope',
     'westus',
     'westus2',
-//Optional
     'canadaeast',
     'westcentralus',
     'australiacentral',
