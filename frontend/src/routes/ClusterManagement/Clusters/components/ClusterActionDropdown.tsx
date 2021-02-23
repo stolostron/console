@@ -256,11 +256,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     }
 
     if (cluster.status !== ClusterStatus.hibernating) {
-        actions = actions.filter((a) => a.id === 'unhibernate-cluster')
+        actions = actions.filter((a) => a.id !== 'unhibernate-cluster')
     }
 
     if (!cluster.hive.isHibernatable) {
-        actions = actions.filter((a) => a.id === 'hibernate-cluster')
+        actions = actions.filter((a) => a.id !== 'hibernate-cluster')
     }
 
     if (!cluster.consoleURL) {
