@@ -186,12 +186,17 @@
     "summary.nodes": "Nodes",
     "summary.applications": "Applications",
     "summary.violations": "Policy violations",
+    "summary.cluster.issues": "Identified issues",
     "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
+    "summary.cluster.issues.text": "By total risk",
     "summary.status.loading": "Loading application and violation status",
 
     "disable.title": "Disable cluster discovery",
     "disable.button": "Disable",
-    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted."
+    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted.",
+
+    "policy.report.flyout.title": "{{count}} identified issues",
+    "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters."
 }

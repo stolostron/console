@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
+import _ from 'lodash'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmCountCardSection } from '@open-cluster-management/ui-components'
+import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { queryStatusCount } from '../../../../lib/search'
+import { queryStatusCount, queryCCXReports } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 
@@ -15,13 +17,17 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 
 export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
-
+    const PolicyReportResults = useQuery(
+        useCallback(() => queryCCXReports('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'), [])
+    )
+    const policyReportCount = _.get(PolicyReportResults, 'data[0].data.searchResult[0].count', 0)
     useEffect(startPolling, [startPolling])
 
     /* istanbul ignore next */
@@ -81,6 +87,24 @@ export function StatusSummaryCount() {
                         linkText: t('summary.violations.launch'),
                         onLinkClick: () => window.open('/multicloud/policies', '_self'),
                         isDanger: true,
+                    },
+                    {
+                        id: 'clusterIssues',
+                        count: policyReportCount,
+                        countClick: () => {
+                            setDrawerContext({
+                                isExpanded: true,
+                                title: t('policy.report.flyout.title', { count: policyReportCount }),
+                                onCloseClick: () => setDrawerContext(undefined),
+                                panelContent: (
+                                    <ClusterPolicySidebar
+                                        data={PolicyReportResults.data || []}
+                                        loading={PolicyReportResults.loading} />
+                                ),
+                                panelContentProps: { minSize: '600px' },
+                            })
+                        },
+                        title: t('summary.cluster.issues'),
                     },
                 ]}
             />
