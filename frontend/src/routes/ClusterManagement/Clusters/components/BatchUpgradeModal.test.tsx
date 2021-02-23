@@ -23,7 +23,15 @@ const mockClusterNoAvailable: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isManaged: true,
 }
 const mockClusterReady1: Cluster = {
@@ -45,7 +53,15 @@ const mockClusterReady1: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isManaged: true,
 }
 const mockClusterReady2: Cluster = {
@@ -67,7 +83,15 @@ const mockClusterReady2: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isManaged: true,
 }
 const mockClusterOffline: Cluster = {
@@ -89,7 +113,15 @@ const mockClusterOffline: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isManaged: true,
 }
 const mockClusterFailedUpgrade: Cluster = {
@@ -111,7 +143,15 @@ const mockClusterFailedUpgrade: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isManaged: true,
 }
 const allClusters: Array<Cluster> = [

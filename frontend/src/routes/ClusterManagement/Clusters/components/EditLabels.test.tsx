@@ -21,8 +21,15 @@ const mockCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
-    isHive: false,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            kubeconfig: '',
+            kubeadmin: '',
+            installConfig: '',
+        },
+    },    isHive: false,
     isManaged: true,
 }
 

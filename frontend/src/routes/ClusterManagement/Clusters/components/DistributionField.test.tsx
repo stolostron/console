@@ -107,7 +107,15 @@ describe('DistributionField', () => {
             nodes: undefined,
             kubeApiServer: '',
             consoleURL: '',
-            hiveSecrets: undefined,
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                    kubeadmin: '',
+                    kubeconfig: '',
+                },
+            },
             isHive: false,
             isManaged: true,
         }
