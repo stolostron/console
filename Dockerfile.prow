@@ -1,0 +1,18 @@
+#FROM registry.access.redhat.com/ubi8/nodejs-12 as builder
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs12-linux-amd64 as builder
+USER root
+COPY ./ ./
+RUN npm ci
+RUN npm run postinstall
+RUN npm run build
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+#COPY --from=registry.access.redhat.com/ubi8/nodejs-12 /usr/bin/node /usr/bin/node
+COPY --from=builder /usr/bin/node /usr/bin/node
+RUN mkdir -p /app
+WORKDIR /app
+ENV NODE_ENV production
+COPY --from=builder /opt/app-root/src/backend/build ./
+COPY --from=builder /opt/app-root/src/frontend/build ./public
+USER 1001
+CMD ["node", "main.js"]
