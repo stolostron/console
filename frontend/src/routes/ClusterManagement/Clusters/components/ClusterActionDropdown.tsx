@@ -138,14 +138,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     columns: modalColumns,
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
-                        return patchResource({
-                            apiVersion: ClusterDeploymentDefinition.apiVersion,
-                            kind: ClusterDeploymentDefinition.kind,
-                            metadata: {
-                                name: cluster.name!,
-                                namespace: cluster.namespace!
-                            }
-                        } as ClusterDeployment, { op: 'replace', path: '/spec/powerState', value: 'Hibernating' })
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            { op: 'replace', path: '/spec/powerState', value: 'Hibernating' }
+                        )
                     },
                     close: () => {
                         setModalProps({ open: false })
@@ -156,7 +159,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)]
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
         {
             id: 'unhibernate-cluster',
@@ -173,14 +176,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     columns: modalColumns,
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
-                        return patchResource({
-                            apiVersion: ClusterDeploymentDefinition.apiVersion,
-                            kind: ClusterDeploymentDefinition.kind,
-                            metadata: {
-                                name: cluster.name!,
-                                namespace: cluster.namespace!
-                            }
-                        } as ClusterDeployment, { op: 'replace', path: '/spec/powerState', value: 'Running' })
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            { op: 'replace', path: '/spec/powerState', value: 'Running' }
+                        )
                     },
                     close: () => {
                         setModalProps({ open: false })
@@ -189,7 +195,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)]
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
         {
             id: 'detach-cluster',
@@ -251,7 +257,14 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     ]
 
     if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
-        const disabledHibernationActions = ['launch-cluster', 'upgrade-cluster', 'search-cluster', 'hibernate-cluster', 'attach-cluster', 'detach-cluster']
+        const disabledHibernationActions = [
+            'launch-cluster',
+            'upgrade-cluster',
+            'search-cluster',
+            'hibernate-cluster',
+            'attach-cluster',
+            'detach-cluster',
+        ]
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
     }
 

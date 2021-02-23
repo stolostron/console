@@ -29,7 +29,8 @@ const mockCluster: Cluster = {
             kubeadmin: '',
             installConfig: '',
         },
-    },    isHive: false,
+    },
+    isHive: false,
     isManaged: true,
 }
 

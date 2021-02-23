@@ -373,16 +373,16 @@ export function getClusterStatus(
             if (hibernatingCondition?.status === 'False') {
                 cdStatus = ClusterStatus.detached
             } else {
-                switch(hibernatingCondition?.reason) {
-                case 'Resuming':
-                    cdStatus = ClusterStatus.resuming
-                    break
-                case 'Stopping':
-                    cdStatus = ClusterStatus.stopping
-                    break
-                case 'Hibernating':
-                    cdStatus = ClusterStatus.hibernating
-                    break
+                switch (hibernatingCondition?.reason) {
+                    case 'Resuming':
+                        cdStatus = ClusterStatus.resuming
+                        break
+                    case 'Stopping':
+                        cdStatus = ClusterStatus.stopping
+                        break
+                    case 'Hibernating':
+                        cdStatus = ClusterStatus.hibernating
+                        break
                 }
             }
 
@@ -403,10 +403,10 @@ export function getClusterStatus(
     }
 
     // if mc doesn't exist, default to cd status
-    if ((!managedClusterInfo && !managedCluster)) {
+    if (!managedClusterInfo && !managedCluster) {
         return cdStatus
-    
-    // return the cd status when a hibernation state is detected
+
+        // return the cd status when a hibernation state is detected
     } else if ([ClusterStatus.hibernating, ClusterStatus.resuming, ClusterStatus.stopping].includes(cdStatus)) {
         return cdStatus
     }
