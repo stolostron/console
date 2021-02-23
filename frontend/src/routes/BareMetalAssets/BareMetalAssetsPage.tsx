@@ -217,18 +217,13 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
                             cell: (bareMetalAsset) => {
-                                if (bareMetalAsset.status) {
-                                    let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
-                                    let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
-                                    for (let conditions of bareMetalAsset.status!.conditions) {
-                                        if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
-                                            mostCurrentStatusTime = conditions.lastTransitionTime
-                                            mostCurrentStatus = conditions.type
-                                        }
-                                        // if status time is equivalent, take the status at that was added last
-                                        else if (conditions.lastTransitionTime === mostCurrentStatusTime) {
-                                            mostCurrentStatusTime = conditions.lastTransitionTime
-                                            mostCurrentStatus = conditions.type
+                                if (Array.isArray(bareMetalAsset.status?.conditions)) {
+                                    let mostCurrentStatusTime = new Date()
+                                    let mostCurrentStatus: string | undefined = undefined
+                                    for (let condition of bareMetalAsset.status!.conditions) {
+                                        if (condition.lastTransitionTime >= mostCurrentStatusTime) {
+                                            mostCurrentStatusTime = condition.lastTransitionTime
+                                            mostCurrentStatus = condition.type
                                         }
                                     }
                                     switch (mostCurrentStatus) {
