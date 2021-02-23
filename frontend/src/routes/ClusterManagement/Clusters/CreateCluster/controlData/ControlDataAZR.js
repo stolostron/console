@@ -12,30 +12,48 @@ const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
 const gp8Cpu8Gib = '8 vCPU, 32 GiB - General Purpose'
 const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
 
+// The list of regions can be obtained by running the following command:
+//   az account list-locations --query "sort_by([].{Name:name, Category:metadata.regionCategory, Region:metadata.regionType DisplayName:displayName}, &Name)" --output table
+// Use all the Recommended names in the list.  Omit continents like asia, uk, etc
+// Cross ref with what Azure UI shows when deploying a VM
+
+// For this regions list, place recommeneded at the top
+// Recommended
 const regions = [
+    'australiaeast',
+    'brazilsouth',
+    'canadacentral',
+    'centralindia',
     'centralus',
+    'eastasia',
     'eastus',
     'eastus2',
+    'francecentral',
+    'germanywestcentral',
+    'japaneast',
+    'koreacentral',
     'northcentralus',
+    'northeurope',
+    'norwayeast',
+    'southafricanorth',
     'southcentralus',
-    'westcentralus',
+    'southeastasia',
+    'switzerlandnorth',
+    'uaenorth',
+    'uksouth',
+    'westeurope',
     'westus',
     'westus2',
-    'uksouth',
-    'ukwest',
-    'francecentral',
-    'northeurope',
-    'westeurope',
-    'japaneast',
+//Optional
+    'canadaeast',
+    'westcentralus',
+    'australiacentral',
+    'australiasoutheast',
     'japanwest',
-    'koreacentral',
     'koreasouth',
-    'eastasia',
-    'southeastasia',
     'southindia',
-    'centralindia',
     'westindia',
-    'uaenorth',
+    'ukwest',
 ]
 
 const masterInstanceTypes = [
