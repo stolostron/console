@@ -1,6 +1,7 @@
 import {
     AcmDonutChart,
-    AcmTable
+    AcmLabels,
+    AcmTable,
 } from '@open-cluster-management/ui-components'
 import React from 'react'
 import _ from 'lodash'
@@ -13,6 +14,9 @@ const useStyles = makeStyles({
         fontSize: '14px',
         paddingBottom: '1rem'
     },
+    donutContainer: {
+        paddingBottom: '.5rem'
+    }
 })
 
 export function ClusterPolicySidebar(props: { data: ISearchResult[], loading: boolean }) {
@@ -26,30 +30,38 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[], loading: bo
             <div className={classes.sidebarDescText}>
                 {t('policy.report.flyout.description')}
             </div>
-            <AcmDonutChart
-                loading={props.loading ?? true}
-                title="Total issues"
-                description={'char desc'}
-                data={[
-                    {
-                        key: 'Critical',
-                        value: clusterRiskScores.filter((score: string) => score === '4').length,
-                        isPrimary: true,
-                    },
-                    {
-                        key: 'Important',
-                        value: clusterRiskScores.filter((score: string) => score === '3').length,
-                    },
-                    {
-                        key: 'Moderate',
-                        value: clusterRiskScores.filter((score: string) => score === '2').length,
-                    },
-                    {
-                        key: 'Low',
-                        value: clusterRiskScores.filter((score: string) => score === '1').length,
-                    },
-                ]}
-            />
+            <div className={classes.donutContainer}>
+                <AcmDonutChart
+                    loading={props.loading ?? true}
+                    title='Total issues'
+                    description={'char desc'}
+                    data={[
+                        {
+                            key: 'Critical',
+                            value: clusterRiskScores.filter((score: string) => score === '4').length,
+                            isPrimary: true,
+                        },
+                        {
+                            key: 'Major',
+                            value: clusterRiskScores.filter((score: string) => score === '3').length,
+                        },
+                        {
+                            key: 'Minor',
+                            value: clusterRiskScores.filter((score: string) => score === '2').length,
+                        },
+                        {
+                            key: 'Low',
+                            value: clusterRiskScores.filter((score: string) => score === '1').length,
+                        },
+                        {
+                            key: 'Warning',
+                            value: clusterRiskScores.filter((score: string) => score === '0').length,
+                        },
+                    ]}
+                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                />
+            </div>
+            {/* TODO Loading table */}
             <AcmTable
                 plural="Recommendations"
                 items={clusterIssues}
@@ -59,6 +71,19 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[], loading: bo
                         sort: 'message',
                         // search: 'message',
                         cell: 'message',
+                    },
+                    {
+                        header: 'Category',
+                        sort: 'category',
+                        // search: 'category',
+                        cell: (item: any) => {
+                            if (item.category) {
+                                const labels = item.label.split(',')
+                                const labelsToHide = labels.slice(1)
+                                return <AcmLabels labels={labels} collapse={labelsToHide} />
+                            }
+                            return '-'
+                        },
                     },
                     {
                         header: 'Total risk',

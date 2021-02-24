@@ -187,10 +187,11 @@
     "summary.applications": "Applications",
     "summary.violations": "Policy violations",
     "summary.cluster.issues": "Identified issues",
+    "summary.cluster.no.issues": "No potential issues found",
     "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
-    "summary.cluster.issues.text": "By total risk",
+    "summary.cluster.issues.description": "By total risk:",
     "summary.status.loading": "Loading application and violation status",
 
     "disable.title": "Disable cluster discovery",
