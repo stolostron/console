@@ -1,26 +1,9 @@
 import { IncomingMessage } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import * as rawBody from 'raw-body'
-import { Readable } from 'stream'
-import { createBrotliDecompress, createDeflate, createGunzip } from 'zlib'
+import { getDecodeStream } from './compression'
 
 export const APPLICATION_JSON = 'application/json'
-
-export function getDecodeStream(stream: Readable, contentEncoding?: string | string[]): Readable {
-    switch (contentEncoding) {
-        case undefined:
-        case 'identity':
-            return stream
-        case 'deflate':
-            return stream.pipe(createDeflate())
-        case 'br':
-            return stream.pipe(createBrotliDecompress())
-        case 'gzip':
-            return stream.pipe(createGunzip())
-        default:
-            throw new Error('Unknown content encoding')
-    }
-}
 
 export async function parseJsonBody<T = unknown>(req: Http2ServerRequest | IncomingMessage): Promise<T> {
     const contentType = req.headers[constants.HTTP2_HEADER_CONTENT_TYPE]

@@ -88,7 +88,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                                 msg: STATUS_CODES[res.statusCode],
                                 status: res.statusCode,
                                 method: req.method,
-                                url: req.url,
+                                path: req.url,
                                 ms: 0,
                             }
 

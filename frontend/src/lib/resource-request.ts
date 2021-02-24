@@ -85,10 +85,43 @@ export function deleteResource<Resource extends IResource>(resource: Resource): 
     return deleteRequest(url)
 }
 
-export function getResource<Resource extends IResource>(resource: Resource): IRequestResult<Resource> {
-    if (getResourceName(resource) === undefined)
+export function getResource<Resource extends IResource>(
+    resource: Resource,
+    options?: {
+        labelSelector?: Record<string, string>
+        fieldSelector?: Record<string, unknown>
+    }
+): IRequestResult<Resource> {
+    if (getResourceName(resource) === undefined) {
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    const url = backendUrl + getResourceNameApiPath(resource)
+    }
+
+    let url = backendUrl + getResourceNameApiPath(resource)
+
+    let queryString = undefined
+
+    if (options?.labelSelector) {
+        let labels: string[] = []
+        for (const key in options.labelSelector) {
+            const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
+            labels.push(`${key}=${value}`)
+        }
+        queryString = 'labelSelector=' + labels.map((label) => label).join(',')
+    }
+
+    if (options?.fieldSelector) {
+        let fields: string[] = []
+        for (const key in options.fieldSelector) {
+            const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
+            fields.push(`${key}=${value}`)
+        }
+        if (queryString) queryString += '&'
+        else queryString = ''
+        queryString += 'fieldSelector=' + fields.map((field) => field).join(',')
+    }
+
+    if (queryString) url += '?' + queryString
+
     return getRequest<Resource>(url)
 }
 

@@ -16,6 +16,11 @@
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
+    "dependencies": {
+        "find-my-way": "^4.0.0",
+        "pino": "^6.11.1",
+        "raw-body": "^2.4.1"
+    },
     "devDependencies": {
         "@types/axios": "^0.14.0",
         "@types/eslint": "^7.2.6",
@@ -118,10 +123,5 @@
                 }
             ]
         }
-    },
-    "dependencies": {
-        "find-my-way": "^4.0.0",
-        "pino": "^6.11.1",
-        "raw-body": "^2.4.1"
     }
 }
