@@ -12,30 +12,51 @@ const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
 const gp8Cpu8Gib = '8 vCPU, 32 GiB - General Purpose'
 const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
 
+// The list of regions can be obtained by running the following commands:
+//   - Recommended regions:
+//   az account list-locations --query "sort_by([].{Name:name, Category:metadata.regionCategory, Region:metadata.regionType DisplayName:displayName}, &Name)" --output table | grep Recommended
+//   - Other regions:
+//   az account list-locations --query "sort_by([].{Name:name, Category:metadata.regionCategory, Region:metadata.regionType DisplayName:displayName}, &Name)" --output table | grep Other
+// Use all the Recommended names in the list.
+// For Others, cross ref with what Azure UI shows when deploying a VM AND
+// also check what OCP has : https://docs.openshift.com/container-platform/4.6/installing/installing_azure/installing-azure-account.html#installation-azure-regions_installing-azure-account
+
+// For this regions list, place recommeneded at the top
+// Recommended is top alphabetized list, others/optional is second alphabetixed list
 const regions = [
+    'australiaeast',
+    'brazilsouth',
+    'canadacentral',
+    'centralindia',
     'centralus',
+    'eastasia',
     'eastus',
     'eastus2',
+    'francecentral',
+    'germanywestcentral',
+    'japaneast',
+    'koreacentral',
     'northcentralus',
+    'northeurope',
+    'norwayeast',
+    'southafricanorth',
     'southcentralus',
-    'westcentralus',
+    'southeastasia',
+    'switzerlandnorth',
+    'uaenorth',
+    'uksouth',
+    'westeurope',
     'westus',
     'westus2',
-    'uksouth',
-    'ukwest',
-    'francecentral',
-    'northeurope',
-    'westeurope',
-    'japaneast',
+    'australiacentral',
+    'australiasoutheast',
+    'canadaeast',
     'japanwest',
-    'koreacentral',
     'koreasouth',
-    'eastasia',
-    'southeastasia',
     'southindia',
-    'centralindia',
+    'ukwest',
+    'westcentralus',
     'westindia',
-    'uaenorth',
 ]
 
 const masterInstanceTypes = [

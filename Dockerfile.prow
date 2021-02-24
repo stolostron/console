@@ -2,7 +2,6 @@ FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-am
 USER root
 RUN mkdir -p /app
 
-
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
