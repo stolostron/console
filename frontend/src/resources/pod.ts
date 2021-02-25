@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
 import { ClusterStatus } from '../lib/get-cluster'
 import { listNamespacedResources } from '../lib/resource-request'

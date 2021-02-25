@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 /* istanbul ignore file */
 
 import '@patternfly/react-core/dist/styles/base.css'

@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import { IResource } from '../resources/resource'
 import { deleteResource, IRequestResult } from './resource-request'
 

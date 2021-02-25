@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 // https://github.com/openshift/hive/blob/master/docs/using-hive.md
 
 interface ControlPlane {

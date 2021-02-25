@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import React, { useState, useContext } from 'react'
 import {
     AcmAlertProvider,

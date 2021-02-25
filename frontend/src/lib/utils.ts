@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import get from 'get-value'
 
 export function getLatest<T>(items: T[], key: string) {

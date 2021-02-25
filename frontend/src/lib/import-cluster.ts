@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import { createManagedCluster } from '../resources/managed-cluster'
 import { createKlusterletAddonConfig } from '../resources/klusterlet-add-on-config'
 import { Cluster } from './get-cluster'

@@ -1,3 +1,6 @@
+[comment]: # ( Copyright Contributors to the Open Cluster Management project )
+
+
 # @open-cluster-management/console
 
 [![Build Status](https://travis-ci.com/open-cluster-management/console.svg?token=APpLzibLo9i2xU1nq9kC&branch=master)](https://travis-ci.com/open-cluster-management/console)

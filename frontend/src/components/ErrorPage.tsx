@@ -1,3 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+
 import { AcmAlertInfo } from '@open-cluster-management/ui-components'
 import {
     Card,
