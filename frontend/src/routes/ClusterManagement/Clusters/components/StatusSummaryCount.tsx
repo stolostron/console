@@ -15,18 +15,30 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
     return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
 }
 
-function DescriptionStringBuilder (PolicyReportResultData: ISearchResult[]) {
+function DescriptionStringBuilder(PolicyReportResultData: ISearchResult[]) {
     const { t } = useTranslation(['cluster'])
     const policyReportViolationsCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].count', 0)
-    const criticalCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter((item: any) => item.risk === '4').length
-    const majorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter((item: any) => item.risk === '3').length
-    const minorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter((item: any) => item.risk === '2').length
-    const lowCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter((item: any) => item.risk === '1').length
-    const warningCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter((item: any) => item.risk === '0').length
+    const criticalCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
+        (item: any) => item.risk === '4'
+    ).length
+    const majorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
+        (item: any) => item.risk === '3'
+    ).length
+    const minorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
+        (item: any) => item.risk === '2'
+    ).length
+    const lowCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
+        (item: any) => item.risk === '1'
+    ).length
+    const warningCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
+        (item: any) => item.risk === '0'
+    ).length
     if (policyReportViolationsCount === 0) {
         return ''
     }
-    return `${t('summary.cluster.issues.description')} ${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
+    return `${t(
+        'summary.cluster.issues.description'
+    )} ${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
 }
 
 export function StatusSummaryCount() {
@@ -38,9 +50,7 @@ export function StatusSummaryCount() {
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
-    const PolicyReportResults = useQuery(
-        useCallback(() => queryCCXReports('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'), [])
-    )
+    const PolicyReportResults = useQuery(useCallback(() => queryCCXReports('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'), []))
     const policyReportViolationsCount = _.get(PolicyReportResults, 'data[0].data.searchResult[0].count', 0)
 
     useEffect(startPolling, [startPolling])
@@ -109,20 +119,26 @@ export function StatusSummaryCount() {
                         countClick: () => {
                             setDrawerContext({
                                 isExpanded: true,
-                                title: t('policy.report.flyout.title', { count: policyReportViolationsCount }),
+                                // title: t('policy.report.flyout.title', { count: policyReportViolationsCount }),
                                 onCloseClick: () => setDrawerContext(undefined),
                                 panelContent: (
                                     <ClusterPolicySidebar
                                         data={PolicyReportResults.data || []}
-                                        loading={PolicyReportResults.loading} />
+                                        loading={PolicyReportResults.loading}
+                                    />
                                 ),
                                 panelContentProps: { minSize: '50%' },
                             })
                         },
-                        title: policyReportViolationsCount > 0 ? t('summary.cluster.issues') : t('summary.cluster.no.issues'),
+                        title:
+                            policyReportViolationsCount > 0
+                                ? t('summary.cluster.issues')
+                                : t('summary.cluster.no.issues'),
                         description: DescriptionStringBuilder(PolicyReportResults.data || []),
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: _.get(PolicyReportResults, 'data[0].data.searchResult[0].items', []).some((item: any) => parseInt(item.risk, 10) >= 3)
+                        isDanger: _.get(PolicyReportResults, 'data[0].data.searchResult[0].items', []).some(
+                            (item: any) => parseInt(item.risk, 10) >= 3
+                        ),
                     },
                 ]}
             />
