@@ -8,7 +8,7 @@
 
 ## Prerequisites
 
-- Node.js v12.x
+- Node.js v14.x
 
 ## Running
 
