@@ -16,7 +16,7 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 }
 
 function DescriptionStringBuilder(PolicyReportResultData: ISearchResult[]) {
-    const { t } = useTranslation(['cluster'])
+    // const { t } = useTranslation(['cluster'])
     const policyReportViolationsCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].count', 0)
     const criticalCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
         (item: any) => item.risk === '4'
@@ -36,9 +36,10 @@ function DescriptionStringBuilder(PolicyReportResultData: ISearchResult[]) {
     if (policyReportViolationsCount === 0) {
         return ''
     }
-    return `${t(
-        'summary.cluster.issues.description'
-    )} ${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
+    return `${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
+    // return `${t(
+    //     'summary.cluster.issues.description'
+    // )} ${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
 }
 
 export function StatusSummaryCount() {

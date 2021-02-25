@@ -75,7 +75,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                         header: 'Description',
                         sort: 'message',
                         // search: 'message',
-                        cell: 'message'
+                        cell: 'message',
                     },
                     {
                         header: 'Category',
