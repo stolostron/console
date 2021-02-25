@@ -119,7 +119,6 @@ export function StatusSummaryCount() {
                         countClick: () => {
                             setDrawerContext({
                                 isExpanded: true,
-                                // title: t('policy.report.flyout.title', { count: policyReportViolationsCount }),
                                 onCloseClick: () => setDrawerContext(undefined),
                                 panelContent: (
                                     <ClusterPolicySidebar
