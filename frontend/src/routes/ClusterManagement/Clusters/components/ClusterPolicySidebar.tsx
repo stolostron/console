@@ -74,18 +74,16 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                     {
                         header: 'Description',
                         sort: 'message',
-                        // search: 'message',
                         cell: 'message',
                     },
                     {
                         header: 'Category',
                         sort: 'category',
-                        // search: 'category',
                         cell: (item: any) => {
                             if (item.category) {
-                                const labels = item.label.split(',')
-                                const labelsToHide = labels.slice(1)
-                                return <AcmLabels labels={labels} collapse={labelsToHide} />
+                                const categories = item.category.split(',')
+                                const categoriesToHide = categories.slice(1)
+                                return <AcmLabels labels={categories} collapse={categoriesToHide} />
                             }
                             return '-'
                         },
@@ -93,7 +91,6 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                     {
                         header: 'Total risk',
                         sort: 'risk',
-                        // search: 'risk',
                         cell: 'risk',
                     },
                 ]}

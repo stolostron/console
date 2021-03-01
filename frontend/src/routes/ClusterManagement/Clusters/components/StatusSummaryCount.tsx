@@ -51,7 +51,7 @@ export function StatusSummaryCount() {
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
-    const PolicyReportResults = useQuery(useCallback(() => queryCCXReports('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'), []))
+    const PolicyReportResults = useQuery(useCallback(() => queryCCXReports(cluster?.name ?? ''), [cluster?.name]))
     const policyReportViolationsCount = _.get(PolicyReportResults, 'data[0].data.searchResult[0].count', 0)
 
     useEffect(startPolling, [startPolling])

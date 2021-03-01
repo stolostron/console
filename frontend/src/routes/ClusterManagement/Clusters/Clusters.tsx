@@ -35,6 +35,7 @@ import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { getUserAccess } from '../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
+import { MockCluster } from '../../../resources/ccx-mock-cluster-responses'
 
 export default function ClustersPage() {
     return (
@@ -191,6 +192,13 @@ export function ClustersTable(props: {
         [t]
     )
 
+    let clusterList: Cluster[] | undefined = props.clusters
+    if (props.clusters) {
+        clusterList = [
+            ...props.clusters,
+            MockCluster('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'),
+            MockCluster('74ae54aa-6577-4e80-85e7-697cb646ff37')]
+        }
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
@@ -203,7 +211,7 @@ export function ClustersTable(props: {
             />
             <AcmTable<Cluster>
                 plural="clusters"
-                items={props.clusters}
+                items={clusterList}
                 columns={[
                     {
                         header: t('table.name'),
