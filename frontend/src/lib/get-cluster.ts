@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { getClusterDeployment, listClusterDeployments, ClusterDeployment } from '../resources/cluster-deployment'
 import {

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 // TODO Request Queue
 // TODO Compression Support
 // TODO auth callback

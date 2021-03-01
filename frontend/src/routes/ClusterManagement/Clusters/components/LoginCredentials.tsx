@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { Fragment, useContext, useState } from 'react'
 import {
     AcmIcon,

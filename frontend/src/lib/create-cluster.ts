@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { listMCIs } from '../resources/managed-cluster-info'
 import { createResource, replaceResource } from './resource-request'
 import { syncBMAs, attachBMAs } from './bare-metal-assets'

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'jsdom',

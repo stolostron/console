@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'

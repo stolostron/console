@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState } from 'react'
 import { render, waitFor, screen } from '@testing-library/react'
 import { ImportCommandContainer } from './ImportCommand'

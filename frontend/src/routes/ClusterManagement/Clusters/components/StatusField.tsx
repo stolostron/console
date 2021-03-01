@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'

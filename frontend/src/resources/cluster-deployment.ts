@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
 import { getResource, listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
