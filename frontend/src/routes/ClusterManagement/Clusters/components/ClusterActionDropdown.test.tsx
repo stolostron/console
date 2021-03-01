@@ -8,12 +8,7 @@ import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
-import {
-    clickByLabel,
-    clickByText,
-    waitForNocks,
-    waitForText,
-} from '../../../../lib/test-util'
+import { clickByLabel, clickByText, waitForNocks, waitForText } from '../../../../lib/test-util'
 import { getResourceAttributes } from '../../../../lib/rbac-util'
 
 const mockCluster: Cluster = {
@@ -66,14 +61,17 @@ function getDeleteDeploymentResourceAttributes() {
 }
 
 function patchClusterDeployment(powerState: 'Running' | 'Hibernating') {
-    return nockPatch({
-        apiVersion: ClusterDeploymentDefinition.apiVersion,
-        kind: ClusterDeploymentDefinition.kind,
-        metadata: {
-            name: mockCluster.name,
-            namespace: mockCluster.namespace,
-        }
-    }, [ {op: 'replace', path: '/spec/powerState', value: powerState } ])
+    return nockPatch(
+        {
+            apiVersion: ClusterDeploymentDefinition.apiVersion,
+            kind: ClusterDeploymentDefinition.kind,
+            metadata: {
+                name: mockCluster.name,
+                namespace: mockCluster.namespace,
+            },
+        },
+        [{ op: 'replace', path: '/spec/powerState', value: powerState }]
+    )
 }
 
 describe('ClusterActionDropdown', () => {
@@ -93,7 +91,6 @@ describe('ClusterActionDropdown', () => {
         await clickByText('managed.hibernate')
         await clickByText('hibernate')
         await waitForNocks([patchClusterDeployment('Hibernating')])
-
     })
     // test('resume action', async () => {
     //     const cluster = { ...mockCluster }
