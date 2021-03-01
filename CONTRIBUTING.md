@@ -1,3 +1,6 @@
+[comment]: # ( Copyright Contributors to the Open Cluster Management project )
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -8,7 +11,6 @@
     - [Contributing A Patch](#contributing-a-patch)
     - [Issue and Pull Request Management](#issue-and-pull-request-management)
     - [Pre-check before submitting a PR](#pre-check-before-submitting-a-pr)
-    - [Build images](#build-images)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -45,24 +47,18 @@ Repo maintainers can assign you an issue or pull request by leaving a
 
 After your PR is ready to commit, please run following commands to check your code.
 ```bash
-make compile
+npm run check
 ```
 
 ### Testing your change
-Make sure your `kubectl` context is set to your target cluster.
+Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 This will run the code locally:
-#### Controller
+#### Start local version of console
 ```bash
-./build/_output/cluster-curator-controller
+npm run setup
+npm start
 ```
-You will see the log output on the console. Provision a NEW cluster in ACM with `spec.installAttemptsLimit: 0` and you will see the controller launch a job.  Monitor the job with `oc logs jobs/cluster-curator-job-XYZAB` Where the job name is found using `oc get jobs`. The jobs are run in the cluster namespace.
+A new console will launch and after approximately 30 seconds you will see the RHACM console.
 
-## Build images
-Make sure your code compiled (passed).
-```bash
-export REPO_URL=<REPO_URL>      # quay.io/my-org
-export VERSION=<VERSION>
-make build
-```
 
 Now, you can follow the [getting started guide](./README.md#getting-started) to work with the open-cluster-management cluster-curator-controller repository.

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render, waitFor } from '@testing-library/react'
 import React, { useContext } from 'react'
 import { mockBadRequestStatus, nockClusterList } from '../lib/nock-util'

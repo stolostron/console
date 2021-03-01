@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
