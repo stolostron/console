@@ -177,11 +177,12 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
     conditions.find((c) => c.type === condition)?.status === 'True'
 
 export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
-    const isInstalled = clusterDeployment?.spec?.installed
-    const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
-    const supportsHibernation =
-        hibernatingCondition?.status === 'False' && hibernatingCondition?.reason === 'Unsupported'
-    const isHibernatable = !!isInstalled && !!supportsHibernation
+    // const isInstalled = clusterDeployment?.spec?.installed
+    // const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
+    // const supportsHibernation =
+    //     hibernatingCondition?.status === 'False' && hibernatingCondition?.reason === 'Unsupported'
+    const isHibernatable = true
+    // const isHibernatable = !!isInstalled && !!supportsHibernation
 
     return {
         isHibernatable,

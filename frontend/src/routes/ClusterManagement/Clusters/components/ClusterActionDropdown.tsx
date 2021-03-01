@@ -149,32 +149,30 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                                     namespace: cluster.namespace!,
                                 },
                             } as ClusterDeployment,
-                            { op: 'replace', path: '/spec/powerState', value: 'Hibernating' }
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
                         )
                     },
                     close: () => {
                         setModalProps({ open: false })
                         props.refresh?.()
                     },
-                    isDanger: true,
-                    confirmText: cluster.name,
                 })
             },
             isDisabled: true,
             rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
         {
-            id: 'unhibernate-cluster',
-            text: t('managed.unhibernate'),
+            id: 'resume-cluster',
+            text: t('managed.resume'),
             click: () => {
                 setModalProps({
                     open: true,
                     singular: t('cluster'),
                     plural: t('clusters'),
-                    action: t('unhibernate'),
-                    processing: t('unhibernating'),
+                    action: t('resume'),
+                    processing: t('resuming'),
                     resources: [cluster],
-                    description: t('cluster.unhibernate.description'),
+                    description: t('cluster.resume.description'),
                     columns: modalColumns,
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
@@ -187,7 +185,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                                     namespace: cluster.namespace!,
                                 },
                             } as ClusterDeployment,
-                            { op: 'replace', path: '/spec/powerState', value: 'Running' }
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
                         )
                     },
                     close: () => {
@@ -271,7 +269,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     }
 
     if (cluster.status !== ClusterStatus.hibernating) {
-        actions = actions.filter((a) => a.id !== 'unhibernate-cluster')
+        actions = actions.filter((a) => a.id !== 'resume-cluster')
     }
 
     if (!cluster.hive.isHibernatable) {
