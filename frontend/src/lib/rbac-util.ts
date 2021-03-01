@@ -65,13 +65,16 @@ export async function checkAdminAccess() {
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
 
 export function getResourceAttributes(verb: Verb, resource: IResource, namespace?: string, name?: string) {
-    return {
+    let attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
         resource: getResourcePlural(resource),
         verb,
         group: getResourceGroup(resource),
     }
+    if (!attributes.name) delete attributes.name
+    if (!attributes.namespace) delete attributes.namespace
+    return attributes
 }
 
 export function getUserAccess(verb: Verb, resource: IResource, namespace?: string, name?: string) {

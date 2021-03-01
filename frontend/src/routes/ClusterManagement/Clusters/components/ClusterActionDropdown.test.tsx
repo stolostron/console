@@ -92,23 +92,21 @@ describe('ClusterActionDropdown', () => {
         await clickByText('hibernate')
         await waitForNocks([patchClusterDeployment('Hibernating')])
     })
-    // test('resume action', async () => {
-    //     const cluster = { ...mockCluster }
-    //     cluster.status = ClusterStatus.hibernating
-    //     const rbacNocks: Scope[] = [
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes()),
-    //         nockCreateSelfSubjectAccessReview(getPatchClusterDeploymentResourceAttributes()),
-    //         nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes()),
-    //         nockCreateSelfSubjectAccessReview(
-    //             getDeleteDeploymentResourceAttributes()
-    //         ),
-    //     ]
-    //     render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
-    //     await clickByRole('button')
-    //     await waitForNocks(rbacNocks)
-    //     await waitForText('managed.resume')
-    //     await clickByText('managed.resume')
-    //     await clickByText('resume')
-    //     await waitForNocks([patchClusterDeployment('Running')])
-    // })
+    test('resume action', async () => {
+        const cluster = { ...mockCluster }
+        cluster.status = ClusterStatus.hibernating
+        const rbacNocks: Scope[] = [
+            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes()),
+            nockCreateSelfSubjectAccessReview(getPatchClusterDeploymentResourceAttributes()),
+            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes()),
+            nockCreateSelfSubjectAccessReview(getDeleteDeploymentResourceAttributes()),
+        ]
+        render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
+        await clickByLabel('Actions')
+        await waitForNocks(rbacNocks)
+        await waitForText('managed.resume')
+        await clickByText('managed.resume')
+        await clickByText('resume')
+        await waitForNocks([patchClusterDeployment('Running')])
+    })
 })
