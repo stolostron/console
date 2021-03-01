@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { Button } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../../NavigationPath'

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from '@patternfly/react-core'

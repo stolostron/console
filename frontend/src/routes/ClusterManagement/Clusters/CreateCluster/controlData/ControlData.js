@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { VALID_DNS_LABEL } from 'temptifly'
 import fs from 'fs'
 import path from 'path'
