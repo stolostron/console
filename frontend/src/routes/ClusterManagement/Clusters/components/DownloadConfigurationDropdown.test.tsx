@@ -31,10 +31,14 @@ const mockCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: {
-        installConfig: 'test-cluster-install-config',
-        kubeadmin: 'test-cluster-0-fk6c9-admin-password',
-        kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: 'test-cluster-install-config',
+            kubeadmin: 'test-cluster-0-fk6c9-admin-password',
+            kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
+        },
     },
     isHive: true,
     isManaged: true,

@@ -14,8 +14,8 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
     const downloadConfig = async (id: string) => {
         /* istanbul ignore next */
         const map: { [key: string]: string } = {
-            'install-config.yaml': cluster?.hiveSecrets?.installConfig ?? '',
-            kubeconfig: cluster?.hiveSecrets?.kubeconfig ?? '',
+            'install-config.yaml': cluster?.hive.secrets?.installConfig ?? '',
+            kubeconfig: cluster?.hive.secrets?.kubeconfig ?? '',
         }
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
@@ -32,21 +32,22 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         }
     }
 
-    if (cluster?.hiveSecrets) {
-        const dropdownItems = [
-            {
+    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
+        let dropdownItems = []
+        cluster?.hive.secrets?.installConfig &&
+            dropdownItems.push({
                 id: 'install-config.yaml',
                 text: 'install-config',
                 isDisabled: !props.canGetSecret,
                 tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            },
-            {
+            })
+        cluster?.hive.secrets?.kubeconfig &&
+            dropdownItems.push({
                 id: 'kubeconfig',
                 text: 'kubeconfig',
                 isDisabled: !props.canGetSecret,
                 tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            },
-        ]
+            })
         return (
             <AcmDropdown
                 isPlain={true}

@@ -69,8 +69,8 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
         /* istanbul ignore next */
-        const name = cluster?.hiveSecrets?.kubeadmin ?? ''
-        if (!credentials && !isVisible && cluster?.hiveSecrets?.kubeadmin) {
+        const name = cluster?.hive.secrets?.kubeadmin ?? ''
+        if (!credentials && !isVisible && cluster?.hive.secrets?.kubeadmin) {
             setLoading(true)
             try {
                 const secret = await getSecret({ name, namespace }).promise
@@ -87,7 +87,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
         }
     }
 
-    if (cluster?.hiveSecrets?.kubeadmin) {
+    if (cluster?.hive.secrets?.kubeadmin) {
         return (
             <Fragment>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
