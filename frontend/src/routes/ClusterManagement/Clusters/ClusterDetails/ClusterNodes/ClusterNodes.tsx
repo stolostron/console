@@ -18,7 +18,7 @@ export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
     return (
         <AcmErrorBoundary>
-            <NodesPoolsTable nodes={cluster!.nodes!.nodeList!} />
+            <NodesPoolsTable nodes={cluster!.nodes.nodeList} />
         </AcmErrorBoundary>
     )
 }
