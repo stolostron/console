@@ -49,8 +49,11 @@ export interface DiscoveredCluster extends IResource {
 }
 
 export function listDiscoveredClusters() {
-    return listResources<DiscoveredCluster>({
-        apiVersion: DiscoveredClusterApiVersion,
-        kind: DiscoveredClusterKind,
-    })
+    return listResources<DiscoveredCluster>(
+        {
+            apiVersion: DiscoveredClusterApiVersion,
+            kind: DiscoveredClusterKind,
+        },
+        ['isManagedCluster!=true']
+    ) // do not list discovered clusters that are already managed
 }
