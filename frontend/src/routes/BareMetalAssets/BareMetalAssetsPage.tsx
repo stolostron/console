@@ -32,7 +32,9 @@ import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
 const baremetalasset = 'bare metal asset'
 const baremetalassets = 'bare metal assets'
-const noop = () => {}
+const noop = () => {
+    // This is intentional
+}
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common', 'create'])

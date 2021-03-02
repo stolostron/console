@@ -16,7 +16,7 @@ const BMC_USERNAME = 'bmc.username'
 const BMC_PASSWORD = 'bmc.password'
 const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
 const CREDENTIAL_NAMESPACE = 'metadata.namespace'
-let random = () => (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32).toString()
+const random = () => (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32).toString()
 
 export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     // make sure all hosts have a bare metal asset
