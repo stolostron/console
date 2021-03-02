@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
 import { nockList, nockDelete, nockCreate } from '../../lib/nock-util'
-import { clickByText, waitForText } from '../../lib/test-util'
+import { clickByText } from '../../lib/test-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { Scope } from 'nock/types'
@@ -164,7 +164,7 @@ describe('bare metal asset page', () => {
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
         const listNockii = nockList(bareMetalAsset, [])
 
-        const { getByText, getAllByText, getByLabelText, queryByText } = render(
+        const { getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
