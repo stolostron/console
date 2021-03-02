@@ -199,9 +199,9 @@ describe('provider connections page', () => {
     })
 
     test('should be able to cancel bulk delete provider connections', async () => {
-        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+        render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 0) // Select all
+        await clickByRole('checkbox', 1) // Select all
         await clickByText('delete.batch')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')

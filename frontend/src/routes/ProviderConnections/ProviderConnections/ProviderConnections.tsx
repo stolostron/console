@@ -21,9 +21,10 @@ import { providerConnectionsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { getResourceAttributes } from '../../../lib/rbac-util'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import { ProviderConnection } from '../../../resources/provider-connection'
+import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {

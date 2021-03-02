@@ -4,7 +4,12 @@ import { jsonRequest } from '../lib/json-request'
 import { redirect, respondInternalServerError } from '../lib/respond'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
-const oauthInfoPromise = jsonRequest<OAuthInfo>(`${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`)
+const oauthInfoPromise = jsonRequest<OAuthInfo>(
+    `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+).catch(() => ({
+    authorization_endpoint: '',
+    token_endpoint: '',
+}))
 
 export async function login(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise

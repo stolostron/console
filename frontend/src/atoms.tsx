@@ -104,8 +104,8 @@ export function Startup(props: { children?: ReactNode }) {
                     return setResources((resources) => [
                         ...resources.filter(
                             (resource) =>
-                                resource.metadata.name !== data.object.metadata.name ||
-                                resource.metadata.namespace !== data.object.metadata.namespace
+                                resource.metadata?.name !== data.object.metadata.name ||
+                                resource.metadata?.namespace !== data.object.metadata.namespace
                         ),
                         data.object as T,
                     ])
@@ -114,8 +114,8 @@ export function Startup(props: { children?: ReactNode }) {
                     return setResources((resources) => [
                         ...resources.filter(
                             (resource) =>
-                                resource.metadata.name !== data.object.metadata.name ||
-                                resource.metadata.namespace !== data.object.metadata.namespace
+                                resource.metadata?.name !== data.object.metadata.name ||
+                                resource.metadata?.namespace !== data.object.metadata.namespace
                         ),
                     ])
             }
