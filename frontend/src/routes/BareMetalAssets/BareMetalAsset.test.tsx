@@ -174,9 +174,15 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
+        await new Promise((r) => setTimeout(r, 1000))
+
         userEvent.click(getByText('bareMetalAsset.bulkAction.deleteAsset'))
+        await new Promise((r) => setTimeout(r, 1000))
+
         expect(getByText('common:delete')).toBeInTheDocument()
         userEvent.click(getByText('common:delete'))
+        await new Promise((r) => setTimeout(r, 1000))
+
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
