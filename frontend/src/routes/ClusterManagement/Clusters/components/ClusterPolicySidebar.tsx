@@ -42,9 +42,9 @@ const useStyles = makeStyles({
 })
 
 function DetailsView(props: {
-    setDetailsView: React.Dispatch<React.SetStateAction<boolean>>;
-    selectedPolicy: { name: string; namespace: string;
-} }) {
+    setDetailsView: React.Dispatch<React.SetStateAction<boolean>>
+    selectedPolicy: { name: string; namespace: string }
+}) {
     const { setDetailsView, selectedPolicy } = props
     const { t } = useTranslation(['cluster'])
     const [tabState, setTabState] = useState<React.ReactText>(0)
@@ -57,13 +57,15 @@ function DetailsView(props: {
     const classes = useStyles()
 
     if (!reportError && reportData.message === '') {
-        getPolicyReport({ name: selectedPolicy.name, namespace: selectedPolicy.namespace}).promise.then(result => {
-            setReportData({
-                message: _.get(result, 'results[0].message', ''),
-                remediation: _.get(result, 'results[0].data.resolution', ''),
-                reason: _.get(result, 'results[0].data.reason', ''),
+        getPolicyReport({ name: selectedPolicy.name, namespace: selectedPolicy.namespace })
+            .promise.then((result) => {
+                setReportData({
+                    message: _.get(result, 'results[0].message', ''),
+                    remediation: _.get(result, 'results[0].data.resolution', ''),
+                    reason: _.get(result, 'results[0].data.reason', ''),
+                })
             })
-        }).catch(e => setReportError(e))
+            .catch((e) => setReportError(e))
     }
 
     if (reportError) {
@@ -83,12 +85,15 @@ function DetailsView(props: {
         <div className={classes.sidebarBody}>
             <div className={classes.sidebarTitleText}>
                 <button onClick={() => setDetailsView(false)} className={classes.backAction}>
-                {t('policy.report.flyout.back')}
+                    {t('policy.report.flyout.back')}
                 </button>
             </div>
             <div className={classes.sidebarDescText}>{reportData.message}</div>
             <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
-                <Tab eventKey={0} title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}>
+                <Tab
+                    eventKey={0}
+                    title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
+                >
                     {reportData.remediation}
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
