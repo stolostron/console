@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs'
 import { IncomingMessage } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
@@ -34,11 +35,21 @@ interface WatchEvent {
     }
 }
 
+function readToken() {
+    try {
+        return readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+    } catch (err) {
+        logger.error(err)
+    }
+}
+
+let serviceAccountToken = readToken()
+
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
     ServerSideEvents.handleRequest(token, req, res)
-    startWatching(token)
+    startWatching(serviceAccountToken ?? token)
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
