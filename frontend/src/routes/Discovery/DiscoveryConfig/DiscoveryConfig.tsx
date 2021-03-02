@@ -298,7 +298,7 @@ export function DiscoveryConfigPageContent(props: {
 }
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    let lastActive = discoveryConfig.spec?.filters?.lastActive
+    const lastActive = discoveryConfig.spec?.filters?.lastActive
     if (lastActive === undefined) {
         return '7d'
     }
@@ -306,7 +306,7 @@ export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryC
 }
 
 export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<DiscoveryConfig>) {
-    let providerConnection = discoveryConfig.spec?.providerConnections
+    const providerConnection = discoveryConfig.spec?.providerConnections
     if (providerConnection !== undefined && providerConnection[0] !== undefined) {
         return providerConnection[0]
     }

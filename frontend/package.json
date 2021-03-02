@@ -11,7 +11,6 @@
         "@patternfly/react-table": "^4.20.15",
         "@types/lodash": "^4.14.168",
         "@types/moment": "^2.13.0",
-        "@types/react": "^17.0.2",
         "@types/react-dom": "^17.0.1",
         "@types/react-router-dom": "^5.1.7",
         "@types/yamljs": "^0.2.31",
@@ -42,7 +41,13 @@
         "@types/get-value": "^3.0.1",
         "@types/jest": "^26.0.20",
         "@types/node": "^14.14.28",
+        "@types/react": "^17.0.2",
+        "@typescript-eslint/eslint-plugin": "^4.16.1",
+        "@typescript-eslint/parser": "^4.16.1",
         "babel-jest": "^26.6.3",
+        "eslint-config-prettier": "^8.1.0",
+        "eslint-config-react": "^1.1.7",
+        "eslint-plugin-prettier": "^3.3.1",
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "jest-sonar-reporter": "^2.0.0",
         "nock": "^13.0.7",
@@ -62,7 +67,40 @@
         "clean": "rm -rf coverage build"
     },
     "eslintConfig": {
-        "extends": "react-app"
+        "extends": [
+            "eslint:recommended",
+            "plugin:react/recommended",
+            "plugin:@typescript-eslint/recommended",
+            "prettier"
+        ],
+        "plugins": [
+            "react",
+            "@typescript-eslint",
+            "prettier"
+        ],
+        "env": {
+            "browser": true,
+            "jasmine": true,
+            "jest": true
+        },
+        "rules": {
+            "prettier/prettier": [
+                "error",
+                {
+                    "singleQuote": true
+                }
+            ],
+            "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/explicit-module-boundary-types": "off",
+            "react/display-name": "off"
+        },
+        "settings": {
+            "react": {
+                "pragma": "React",
+                "version": "detect"
+            }
+        },
+        "parser": "@typescript-eslint/parser"
     },
     "browserslist": {
         "production": [

@@ -114,7 +114,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
 
 export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterName: string, errors: JsonArray) {
     // mark asset as being used by this cluster
-    let results = assets.map((asset, inx) => {
+    const results = assets.map((asset, inx) => {
         const patch = {
             spec: {
                 role: hosts[inx].role,

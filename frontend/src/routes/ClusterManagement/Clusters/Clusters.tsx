@@ -114,7 +114,7 @@ const PageActions = () => {
 }
 
 let lastData: Cluster[] | undefined
-let lastTime: number = 0
+let lastTime = 0
 
 export function ClustersPageContent() {
     const alertContext = useContext(AcmAlertContext)

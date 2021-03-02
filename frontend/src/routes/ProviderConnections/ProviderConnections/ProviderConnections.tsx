@@ -59,7 +59,7 @@ const AddConnectionBtn = () => {
 }
 
 let lastData: ProviderConnection[] | undefined
-let lastTime: number = 0
+let lastTime = 0
 
 export function ProviderConnectionsPageContent() {
     const alertContext = useContext(AcmAlertContext)

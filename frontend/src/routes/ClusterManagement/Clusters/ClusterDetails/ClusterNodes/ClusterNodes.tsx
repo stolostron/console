@@ -195,7 +195,7 @@ function formatFileSize(size: number): string {
         unitIndex = units.length - 1
     }
 
-    let fileSize = size / factorize
+    const fileSize = size / factorize
 
     let res = fileSize.toFixed(decimals)
 

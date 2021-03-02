@@ -71,7 +71,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     data: unknown
 ): IRequestResult<ResultType> {
     const url = backendUrl + getResourceNameApiPath(resource)
-    let headers: Record<string, string> = {}
+    const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
     } else {
@@ -366,7 +366,7 @@ export async function fetchRetry<T>(options: {
             }
         }
 
-        let ms = delay
+        const ms = delay
         await new Promise((resolve) => setTimeout(resolve, ms))
         delay *= 2
         retries--

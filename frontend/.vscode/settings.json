@@ -1,4 +1,10 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
-    "jest.runAllTestsFirst": false
+    "jest.runAllTestsFirst": false,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ]
 }
