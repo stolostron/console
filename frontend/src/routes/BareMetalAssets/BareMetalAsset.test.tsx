@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
 import { nockList, nockDelete, nockCreate } from '../../lib/nock-util'
+import { clickByText, waitForText } from '../../lib/test-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { Scope } from 'nock/types'
@@ -174,15 +175,8 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        await new Promise((r) => setTimeout(r, 1000))
-
-        userEvent.click(getByText('bareMetalAsset.bulkAction.deleteAsset'))
-        await new Promise((r) => setTimeout(r, 1000))
-
-        expect(getByText('common:delete')).toBeInTheDocument()
-        userEvent.click(getByText('common:delete'))
-        await new Promise((r) => setTimeout(r, 1000))
-
+        await clickByText('bareMetalAsset.bulkAction.deleteAsset')
+        await clickByText('common:delete')
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc

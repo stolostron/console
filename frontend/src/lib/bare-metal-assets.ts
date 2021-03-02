@@ -16,6 +16,7 @@ const BMC_USERNAME = 'bmc.username'
 const BMC_PASSWORD = 'bmc.password'
 const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
 const CREDENTIAL_NAMESPACE = 'metadata.namespace'
+let random = () => (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32).toString()
 
 export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     // make sure all hosts have a bare metal asset
@@ -131,7 +132,7 @@ export async function importBMAs() {
                                 headers.forEach((header, inx) => {
                                     arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
                                 })
-                                arr.push(`"id": "${Math.random().toString()}"`)
+                                arr.push(`"id": "${random()}"`)
                                 lines.push(`{${arr.join(',')}}`)
                             }
                         })
@@ -144,7 +145,7 @@ export async function importBMAs() {
                                     namespace: bma.hostNamespace,
                                     bootMACAddress: bma.macAddress,
                                     role: bma.role,
-                                    uid: `${Math.random().toString()}`,
+                                    uid: `${random()}`,
                                     bmc: {
                                         address: bma.bmcAddress,
                                         username: bma.username,
