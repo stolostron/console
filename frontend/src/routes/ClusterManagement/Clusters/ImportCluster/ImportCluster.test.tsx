@@ -108,6 +108,17 @@ const mockSecretResponse: Secret = {
     type: 'Opaque',
 }
 
+const mockAutoSecretResponse: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'auto-import-secret',
+        namespace: 'foobar',
+    },
+    data: { 'autoImportRetry': '2', 'kubeconfig': 'Test text' },
+    type: 'Opaque',
+}
+
 const mockManagedCluster: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -202,12 +213,11 @@ describe('ImportCluster', () => {
     })
 
     test('renders', () => {
-        const { getByTestId, getByText } = render(<Component />)
+        const { getByTestId } = render(<Component />)
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
         expect(getByTestId('clusterName-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
-        // expect(getByTestId('importModeManual')).toBeInTheDocument()
-        expect(getByText('import.form.submit')).toBeInTheDocument()
+        
     })
 
     test('can create resources and generate the import command', async () => {
@@ -221,7 +231,8 @@ describe('ImportCluster', () => {
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-
+        userEvent.click(getByText('import.mode.default'))
+        userEvent.click(getByText('import.manual.choice'))
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
         userEvent.click(getByText('import.form.submit'))
 
@@ -238,11 +249,39 @@ describe('ImportCluster', () => {
         await waitFor(() => expect(queryByTestId('import-command')).toBeNull())
         expect(getByTestId('clusterName')).toHaveValue('')
     })
+    test('can create resources when auto importing', async () => {
+//        const autoProjectNock = nockCreate(mockProject, mockProjectResponse)
+//        const autoManagedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+/*        const autoKacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+        const importAutoSecretNock = nockGet(mockAutoSecretResponse)
+*/
+        const { getByTestId, getByText } = render(<Component />)
 
+        userEvent.type(getByTestId('clusterName'), 'foobar')
+        userEvent.click(getByTestId('label-input-button'))
+        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+        userEvent.click(getByText('import.mode.default'))
+        userEvent.click(getByText('import.auto.choice'))
+        userEvent.click(getByText('import.credential.default'))
+        userEvent.click(getByText('import.config.choice'))
+        userEvent.click(getByText('import.auto.config.label'))
+        expect(getByText('import.auto.button')).toBeInTheDocument
+        userEvent.click(getByText('import.auto.button'))
+
+//        await waitFor(() => expect(autoProjectNock.isDone()).toBeTruthy())
+//        await waitFor(() => expect(autoManagedClusterNock.isDone()).toBeTruthy())
+/*        await waitFor(() => expect(autoKacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(importAutoSecretNock.isDone()).toBeTruthy())
+*/
+        
+
+    })
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByTestId, getByText } = render(<Component />)
         userEvent.type(getByTestId('clusterName'), 'foobar')
+        userEvent.click(getByText('import.mode.default'))
+        userEvent.click(getByText('import.manual.choice'))
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
         userEvent.click(getByText('import.form.submit'))
         await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
@@ -260,6 +299,8 @@ describe('ImportCluster', () => {
         userEvent.type(getByTestId('clusterName'), 'foobar')
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
+        userEvent.click(getByText('import.mode.default'))
+        userEvent.click(getByText('import.manual.choice'))
         userEvent.click(getByText('import.form.submit'))
 
         await waitFor(() => expect(createProjectNock.isDone()).toBeTruthy())
@@ -321,13 +362,14 @@ describe('Import Discovered Cluster', () => {
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
         await waitFor(() => expect(getByText('discovery.import')).toBeInTheDocument())
         userEvent.click(getByText('discovery.import')) // Click Import cluster
-
+        userEvent.click(getByText('import.mode.default'))
+        userEvent.click(getByText('import.manual.choice'))
         await waitFor(() => expect(getByText('import.form.submit')).toBeInTheDocument()) // Wait for next page to render
 
         // Add labels
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-
+        
         userEvent.click(getByText('import.form.submit'))
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
