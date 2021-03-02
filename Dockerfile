@@ -1,6 +1,7 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.access.redhat.com/ubi8/nodejs-12 as builder
+# FROM registry.access.redhat.com/ubi8/nodejs-14 as builder
+FROM node:14 as builder
 USER root
 RUN mkdir -p /app
 
