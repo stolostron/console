@@ -74,4 +74,8 @@ class WrappedImportBareMetalAssetsButton extends React.Component {
     }
 }
 
+WrappedImportBareMetalAssetsButton.propTypes = {
+    t: PropTypes.func,
+}
+
 export default WrappedImportBareMetalAssetsButton
