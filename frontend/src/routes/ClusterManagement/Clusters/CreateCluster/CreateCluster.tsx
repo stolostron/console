@@ -75,6 +75,7 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<Record<string, string>>({})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const createResource = async (resourceJSON: any[]) => {
         if (resourceJSON) {
             setCreationStatus({ status: 'IN_PROGRESS' })
