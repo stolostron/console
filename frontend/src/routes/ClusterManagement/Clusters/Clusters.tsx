@@ -5,9 +5,6 @@ import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
-    AcmButton,
-    AcmDropdown,
-    AcmDropdownItems,
     AcmEmptyState,
     AcmErrorBoundary,
     AcmInlineProvider,
@@ -20,11 +17,12 @@ import {
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
+import { AddCluster } from './components/AddCluster'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
@@ -35,8 +33,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
-import { getUserAccess } from '../../../lib/rbac-util'
-import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
 
 export default function ClustersPage() {
     return (
@@ -50,45 +46,8 @@ export default function ClustersPage() {
 }
 
 const PageActions = () => {
-    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(true)
-    const { push } = useHistory()
-    const { t } = useTranslation(['cluster', 'common'])
     const { clusterManagementAddons } = useContext(AppContext)
     const addons = mapAddons(clusterManagementAddons)
-
-    useEffect(() => {
-        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
-
-        canCreateCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateCluster.abort()
-    }, [])
-
-    const dropdownItems: AcmDropdownItems[] = [
-        {
-            id: 'create-cluster',
-            text: t('managed.createCluster'),
-            isDisabled: !canCreateCluster,
-            tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
-        },
-        {
-            id: 'import-cluster',
-            text: t('managed.importCluster'),
-            isDisabled: !canCreateCluster,
-            tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
-        },
-    ]
-    const onSelect = (id: string) => {
-        switch (id) {
-            case 'create-cluster':
-                push(NavigationPath.createCluster)
-                break
-            case 'import-cluster':
-                push(NavigationPath.importCluster)
-                break
-        }
-    }
 
     return (
         <AcmActionGroup>
@@ -101,14 +60,7 @@ const PageActions = () => {
                         href: addon.launchLink?.href ?? '',
                     }))}
             />
-            <AcmDropdown
-                dropdownItems={dropdownItems}
-                text={t('managed.addCluster')}
-                onSelect={onSelect}
-                id="cluster-actions"
-                isKebab={false}
-                isPrimary={true}
-            />
+            <AddCluster type="dropdown" />
         </AcmActionGroup>
     )
 }
@@ -124,7 +76,7 @@ export function ClustersPageContent() {
         Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
     )
     useEffect(startPolling, [startPolling])
-    usePageContext(!!data, PageActions)
+    usePageContext(data !== undefined && data.length > 0, PageActions)
 
     useEffect(() => {
         if (process.env.NODE_ENV !== 'test') {
@@ -368,20 +320,7 @@ export function ClustersTable(props: {
                         key="mcEmptyState"
                         title={t('managed.emptyStateHeader')}
                         message={t('managed.emptyStateMsg')}
-                        action={
-                            <div>
-                                <AcmButton component={Link} to={NavigationPath.createCluster}>
-                                    {t('managed.createCluster')}
-                                </AcmButton>
-                                <AcmButton
-                                    component={Link}
-                                    to={NavigationPath.importCluster}
-                                    style={{ marginLeft: '16px' }}
-                                >
-                                    {t('managed.importCluster')}
-                                </AcmButton>
-                            </div>
-                        }
+                        action={<AddCluster type="button" buttonSpacing />}
                     />
                 }
             />
