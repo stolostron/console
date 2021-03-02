@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
 import { ClusterLabels } from './managed-cluster'

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import {

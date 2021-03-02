@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
 import { ManagedClusterAddOn, listManagedClusterAddOns } from '../resources/managed-cluster-add-on'
 import { IRequestResult } from './resource-request'

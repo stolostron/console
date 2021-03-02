@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
 import { deleteResources } from './delete-resources'

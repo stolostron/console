@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1Status } from '@kubernetes/client-node'
 
 export const StatusApiVersion = 'v1'

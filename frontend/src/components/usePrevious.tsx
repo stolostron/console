@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useRef, useEffect } from 'react'
 
 export function usePrevious<T>(value: T): T {

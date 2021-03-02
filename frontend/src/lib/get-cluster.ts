@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { getClusterDeployment, listClusterDeployments, ClusterDeployment } from '../resources/cluster-deployment'
 import {
@@ -31,6 +33,9 @@ export enum ClusterStatus {
     'pendingimport' = 'pendingimport',
     'ready' = 'ready',
     'offline' = 'offline',
+    'hibernating' = 'hibernating',
+    'stopping' = 'stopping',
+    'resuming' = 'resuming',
 }
 
 export type Cluster = {
@@ -43,7 +48,11 @@ export type Cluster = {
     nodes: Nodes | undefined
     kubeApiServer: string | undefined
     consoleURL: string | undefined
-    hiveSecrets: HiveSecrets | undefined
+    hive: {
+        clusterPool: string | undefined
+        isHibernatable: boolean
+        secrets: HiveSecrets | undefined
+    }
     isHive: boolean
     isManaged: boolean
 }
@@ -158,9 +167,30 @@ export function getCluster(
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
         consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
-        hiveSecrets: getHiveSecrets(clusterDeployment),
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
+        hive: getHiveConfig(clusterDeployment),
+    }
+}
+
+const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
+    conditions.find((c) => c.type === condition)?.status === 'True'
+
+export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
+    const isInstalled = clusterDeployment?.spec?.installed
+    const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
+    const supportsHibernation =
+        hibernatingCondition?.status === 'False' && hibernatingCondition?.reason !== 'Unsupported'
+    const isHibernatable = !!isInstalled && !!supportsHibernation
+
+    return {
+        isHibernatable,
+        clusterPool: clusterDeployment?.spec?.clusterPoolRef?.poolName,
+        secrets: {
+            kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
+            kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef.name,
+            installConfig: clusterDeployment?.spec?.provisioning.installConfigSecretRef.name,
+        },
     }
 }
 
@@ -250,9 +280,12 @@ export function getDistributionInfo(
         }
     }
 
-    const vendor = (managedCluster ?? managedClusterInfo)?.metadata?.labels?.vendor
+    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+        (cc) => cc.name === 'product.open-cluster-management.io'
+    )?.value
+
     let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-    switch (vendor) {
+    switch (productClaim) {
         case 'OpenShiftDedicated':
             isManagedOpenShift = true
             break
@@ -307,24 +340,12 @@ export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
     return { nodeList, ready, unhealthy, unknown }
 }
 
-export function getHiveSecrets(clusterDeployment: ClusterDeployment | undefined) {
-    if (!clusterDeployment) return undefined
-    return {
-        kubeconfig: clusterDeployment.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
-        kubeadmin: clusterDeployment.spec?.clusterMetadata?.adminPasswordSecretRef.name,
-        installConfig: clusterDeployment.spec?.provisioning.installConfigSecretRef.name,
-    }
-}
-
 export function getClusterStatus(
     clusterDeployment: ClusterDeployment | undefined,
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined
 ) {
-    const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
-        conditions.find((c) => c.type === condition)?.status === 'True'
-
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
@@ -349,6 +370,24 @@ export function getClusterStatus(
         } else if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
 
+            const hibernatingCondition = clusterDeployment?.status?.conditions.find((c) => c.type === 'Hibernating')
+            // covers reason = Running or Unsupported
+            if (hibernatingCondition?.status === 'False') {
+                cdStatus = ClusterStatus.detached
+            } else {
+                switch (hibernatingCondition?.reason) {
+                    case 'Resuming':
+                        cdStatus = ClusterStatus.resuming
+                        break
+                    case 'Stopping':
+                        cdStatus = ClusterStatus.stopping
+                        break
+                    case 'Hibernating':
+                        cdStatus = ClusterStatus.hibernating
+                        break
+                }
+            }
+
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             if (provisionFailed) {
@@ -367,6 +406,10 @@ export function getClusterStatus(
 
     // if mc doesn't exist, default to cd status
     if (!managedClusterInfo && !managedCluster) {
+        return cdStatus
+
+        // return the cd status when a hibernation state is detected
+    } else if ([ClusterStatus.hibernating, ClusterStatus.resuming, ClusterStatus.stopping].includes(cdStatus)) {
         return cdStatus
     }
 
