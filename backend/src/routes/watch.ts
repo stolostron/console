@@ -43,7 +43,7 @@ function readToken() {
     }
 }
 
-let serviceAccountToken = readToken()
+const serviceAccountToken = readToken()
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
