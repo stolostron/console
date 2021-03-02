@@ -9,7 +9,7 @@ COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --no-optional
 RUN npm run postinstall
 COPY backend ./
-# RUN npm run lint
+RUN npm run lint
 # RUN npm run check
 # RUN npm run test
 RUN npm run build
