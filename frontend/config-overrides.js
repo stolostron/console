@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 const { override, addExternalBabelPlugins, removeModuleScopePlugin, addWebpackModuleRule, addWebpackPlugin } = require('customize-cra')
 
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');

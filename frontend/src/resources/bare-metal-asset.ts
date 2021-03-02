@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
 import { SecretApiVersionType, SecretKindType } from './secret'

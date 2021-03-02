@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { render, waitFor, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -25,10 +27,14 @@ const mockCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: {
-        kubeconfig: '',
-        kubeadmin: 'test-cluster-0-fk6c9-admin-password',
-        installConfig: '',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            kubeconfig: '',
+            kubeadmin: 'test-cluster-0-fk6c9-admin-password',
+            installConfig: '',
+        },
     },
     isHive: true,
     isManaged: true,

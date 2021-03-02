@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState } from 'react'
 import { render, waitFor, screen } from '@testing-library/react'
 import { ImportCommandContainer } from './ImportCommand'
@@ -30,7 +32,15 @@ const mockCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            kubeconfig: '',
+            kubeadmin: '',
+            installConfig: '',
+        },
+    },
     isHive: false,
     isManaged: true,
 }

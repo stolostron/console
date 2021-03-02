@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { createHash } from 'crypto'
 import { IncomingMessage, request as httpRequest, RequestOptions } from 'http'
 import { Agent } from 'https'

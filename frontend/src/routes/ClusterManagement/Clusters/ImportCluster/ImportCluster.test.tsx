@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -309,7 +311,8 @@ describe('Import Discovered Cluster', () => {
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const discoveredClusterNock = nockList(
             { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-            mockDiscoveredClusters
+            mockDiscoveredClusters,
+            ['isManagedCluster!=true']
         )
         const importCommandNock = nockGet(mockSecretResponse)
 

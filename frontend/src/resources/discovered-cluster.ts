@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { IResource, IResourceDefinition } from './resource'
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { listResources } from '../lib/resource-request'
@@ -47,8 +49,11 @@ export interface DiscoveredCluster extends IResource {
 }
 
 export function listDiscoveredClusters() {
-    return listResources<DiscoveredCluster>({
-        apiVersion: DiscoveredClusterApiVersion,
-        kind: DiscoveredClusterKind,
-    })
+    return listResources<DiscoveredCluster>(
+        {
+            apiVersion: DiscoveredClusterApiVersion,
+            kind: DiscoveredClusterKind,
+        },
+        ['isManagedCluster!=true']
+    ) // do not list discovered clusters that are already managed
 }
