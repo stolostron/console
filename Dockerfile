@@ -1,6 +1,6 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.access.redhat.com/ubi8/nodejs-14 as builder
+FROM registry.access.redhat.com/ubi8/nodejs-12 as builder
 USER root
 RUN mkdir -p /app
 
@@ -12,7 +12,7 @@ COPY backend ./
 RUN npm run lint
 # RUN npm run check
 # RUN npm run test
-RUN npm run build
+# RUN npm run build
 RUN npm ci --only=production --no-optional
 
 WORKDIR /app/frontend

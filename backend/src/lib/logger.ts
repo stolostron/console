@@ -43,7 +43,7 @@ export function stopLogger(): void {
     }
 }
 
-switch (process.env.LOG_LEVEL.toLowerCase()) {
+switch (process.env.LOG_LEVEL?.toLowerCase()) {
     case 'trace':
     case 'debug':
     case 'info':
