@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import React from 'react'
@@ -68,6 +70,7 @@ function getPatchSecretResourceAttributes(name: string, namespace: string) {
         namespace,
         resource: 'secrets',
         verb: 'patch',
+        group: '',
     } as ResourceAttributes
 }
 
@@ -77,6 +80,7 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
         namespace,
         resource: 'secrets',
         verb: 'delete',
+        group: '',
     } as ResourceAttributes
 }
 

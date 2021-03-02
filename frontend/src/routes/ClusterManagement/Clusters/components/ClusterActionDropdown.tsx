@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
@@ -9,6 +11,11 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../../lib/resource-request'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
+import { getResourceAttributes } from '../../../../lib/rbac-util'
+import { patchResource } from '../../../../lib/resource-request'
+import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
+import { ClusterDeploymentDefinition, ClusterDeployment } from '../../../../resources/cluster-deployment'
+import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 // import { createImportResources } from '../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean; refresh?: () => void }) {
@@ -62,14 +69,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'patch',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-            ],
+            rbac: [getResourceAttributes('patch', ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'launch-cluster',
@@ -83,14 +83,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 setShowUpgradeModal(true)
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusteractions',
-                    verb: 'create',
-                    group: 'action.open-cluster-management.io',
-                    namespace: cluster.namespace,
-                },
-            ],
+            rbac: [getResourceAttributes('create', ManagedClusterActionDefinition, cluster.namespace)],
         },
         {
             id: 'search-cluster',
@@ -130,14 +123,80 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         //             actionFn: createImportResources,
         //         })
         //     },
-        //     rbac: [
-        //         {
-        //             resource: 'managedclusters',
-        //             verb: 'create',
-        //             group: 'cluster.open-cluster-management.io',
-        //         },
-        //     ],
+        //     rbac: [getResourceAttributes('create', ManagedClusterDefinition)],
         // },
+        {
+            id: 'hibernate-cluster',
+            text: t('managed.hibernate'),
+            click: () => {
+                setModalProps({
+                    open: true,
+                    singular: t('cluster'),
+                    plural: t('clusters'),
+                    action: t('hibernate'),
+                    processing: t('hibernating'),
+                    resources: [cluster],
+                    description: t('cluster.hibernate.description'),
+                    columns: modalColumns,
+                    keyFn: (cluster) => cluster.name as string,
+                    actionFn: (cluster) => {
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                        )
+                    },
+                    close: () => {
+                        setModalProps({ open: false })
+                        props.refresh?.()
+                    },
+                })
+            },
+            isDisabled: true,
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        },
+        {
+            id: 'resume-cluster',
+            text: t('managed.resume'),
+            click: () => {
+                setModalProps({
+                    open: true,
+                    singular: t('cluster'),
+                    plural: t('clusters'),
+                    action: t('resume'),
+                    processing: t('resuming'),
+                    resources: [cluster],
+                    description: t('cluster.resume.description'),
+                    columns: modalColumns,
+                    keyFn: (cluster) => cluster.name as string,
+                    actionFn: (cluster) => {
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                        )
+                    },
+                    close: () => {
+                        setModalProps({ open: false })
+                        props.refresh?.()
+                    },
+                })
+            },
+            isDisabled: true,
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        },
         {
             id: 'detach-cluster',
             text: t('managed.detached'),
@@ -163,14 +222,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'delete',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-            ],
+            rbac: [getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'destroy-cluster',
@@ -198,22 +250,31 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: true,
             rbac: [
-                {
-                    resource: 'managedclusters',
-                    verb: 'delete',
-                    group: 'cluster.open-cluster-management.io',
-                    name: cluster.name,
-                },
-                {
-                    resource: 'clusterdeployments',
-                    verb: 'delete',
-                    group: 'hive.openshift.io',
-                    name: cluster.name,
-                    namespace: cluster.namespace,
-                },
+                getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name),
+                getResourceAttributes('delete', ClusterDeploymentDefinition, cluster.namespace, cluster.name),
             ],
         },
     ]
+
+    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
+        const disabledHibernationActions = [
+            'launch-cluster',
+            'upgrade-cluster',
+            'search-cluster',
+            'hibernate-cluster',
+            'attach-cluster',
+            'detach-cluster',
+        ]
+        actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
+    }
+
+    if (cluster.status !== ClusterStatus.hibernating) {
+        actions = actions.filter((a) => a.id !== 'resume-cluster')
+    }
+
+    if (!cluster.hive.isHibernatable) {
+        actions = actions.filter((a) => a.id !== 'hibernate-cluster')
+    }
 
     if (!cluster.consoleURL) {
         actions = actions.filter((a) => a.id !== 'launch-cluster')

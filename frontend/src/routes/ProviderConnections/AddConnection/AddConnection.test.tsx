@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -31,6 +33,7 @@ const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
             namespace: 'test-namespace',
             resource: 'secrets',
             verb: 'create',
+            group: '',
         },
     },
 }

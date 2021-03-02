@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { Fragment, useContext, useState } from 'react'
 import {
     AcmIcon,
@@ -53,22 +55,22 @@ const useStyles = makeStyles({
     },
 })
 
-export function LoginCredentials(props: { accessRestriction?: boolean }) {
+export function LoginCredentials(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<boolean>(false)
     const [credentials, setCredentials] = useState<LoginCredential | undefined>(undefined)
-    const disableButton = loading || error || props.accessRestriction
+    const disableButton = loading || error || !props.canGetSecret
     const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
 
     const onClick = async () => {
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
         /* istanbul ignore next */
-        const name = cluster?.hiveSecrets?.kubeadmin ?? ''
-        if (!credentials && !isVisible && cluster?.hiveSecrets?.kubeadmin) {
+        const name = cluster?.hive.secrets?.kubeadmin ?? ''
+        if (!credentials && !isVisible && cluster?.hive.secrets?.kubeadmin) {
             setLoading(true)
             try {
                 const secret = await getSecret({ name, namespace }).promise
@@ -85,7 +87,7 @@ export function LoginCredentials(props: { accessRestriction?: boolean }) {
         }
     }
 
-    if (cluster?.hiveSecrets?.kubeadmin) {
+    if (cluster?.hive.secrets?.kubeadmin) {
         return (
             <Fragment>
                 {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
@@ -106,7 +108,7 @@ export function LoginCredentials(props: { accessRestriction?: boolean }) {
                     variant={ButtonVariant.link}
                     className={classes.toggleButton}
                     onClick={onClick}
-                    isDisabled={disableButton || props.accessRestriction}
+                    isDisabled={disableButton}
                     id="login-credentials"
                 >
                     <Fragment>
@@ -115,7 +117,7 @@ export function LoginCredentials(props: { accessRestriction?: boolean }) {
                                 return <AcmInlineStatus type={StatusType.danger} status={t('credentials.failed')} />
                             } else if (loading) {
                                 return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
-                            } else if (props.accessRestriction) {
+                            } else if (!props.canGetSecret) {
                                 return (
                                     <Tooltip content={t('common:rbac.unauthorized')}>
                                         <div className="credentials-toggle">

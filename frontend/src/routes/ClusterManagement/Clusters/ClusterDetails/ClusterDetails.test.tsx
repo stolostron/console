@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import React from 'react'
@@ -398,7 +400,6 @@ const mockSelfSubjectAccessResponse: SelfSubjectAccessReview = {
             namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
-            version: 'v1',
         },
     },
     status: {
@@ -415,6 +416,7 @@ const mockGetSecretSelfSubjectAccessRequest: SelfSubjectAccessReview = {
             namespace: clusterName,
             resource: 'secrets',
             verb: 'get',
+            group: '',
         },
     },
 }

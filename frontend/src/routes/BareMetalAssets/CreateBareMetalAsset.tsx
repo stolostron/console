@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import {
     AcmAlertContext,
     AcmAlertGroup,
@@ -24,12 +26,13 @@ import {
     getBareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
+    BareMetalAssetDefinition,
 } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '../../resources/secret'
-import { getAuthorizedNamespaces } from '../../lib/rbac-helpers'
+import { getAuthorizedNamespaces, getResourceAttributes } from '../../lib/rbac-util'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -151,13 +154,7 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        getAuthorizedNamespaces([
-            {
-                group: 'inventory.open-cluster-management.io',
-                resource: 'baremetalassets',
-                verb: 'create',
-            },
-        ])
+        getAuthorizedNamespaces([getResourceAttributes('create', BareMetalAssetDefinition)])
             .then((namespaces: string[]) => {
                 setProjects(namespaces)
             })

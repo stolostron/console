@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render } from '@testing-library/react'
 import React from 'react'
 import { nockList, nockDelete } from '../../../lib/nock-util'
@@ -84,7 +86,8 @@ const mockDiscoveryConfigs: DiscoveryConfig[] = [mockDiscoveryConfig]
 test('DiscoveredClustersPage', async () => {
     const listNock = nockList(
         { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-        mockDiscoveredClusters
+        mockDiscoveredClusters,
+        ['isManagedCluster!=true']
     )
     const configlistNock = nockList(
         { apiVersion: DiscoveryConfigApiVersion, kind: DiscoveryConfigKind },
@@ -118,7 +121,11 @@ test('DiscoveredClustersPage', async () => {
 })
 
 test('No Discovered Clusters', async () => {
-    const listNock = nockList({ apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind }, [])
+    const listNock = nockList(
+        { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
+        [],
+        ['isManagedCluster!=true']
+    )
     render(
         <MemoryRouter>
             <DiscoveredClustersPage />

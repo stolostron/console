@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
 

@@ -1,3 +1,6 @@
+# Copyright Contributors to the Open Cluster Management project
+
+
 #!/usr/bin/env bash
 
 echo > ./backend/.env

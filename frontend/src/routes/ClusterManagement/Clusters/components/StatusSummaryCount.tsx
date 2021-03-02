@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useContext, useEffect, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'

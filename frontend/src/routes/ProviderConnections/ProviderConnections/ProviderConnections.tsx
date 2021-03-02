@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import {
     AcmAlertGroup,
     AcmAlertProvider,
@@ -148,12 +150,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                         )
                                     },
                                     rbac: [
-                                        {
-                                            name: providerConnection.metadata.name,
-                                            namespace: providerConnection.metadata.namespace,
-                                            resource: 'secrets',
-                                            verb: 'patch',
-                                        },
+                                        getResourceAttributes(
+                                            'patch',
+                                            ProviderConnectionDefinition,
+                                            providerConnection.metadata.namespace,
+                                            providerConnection.metadata.name
+                                        ),
                                     ],
                                 },
                                 {
@@ -193,12 +195,12 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                         })
                                     },
                                     rbac: [
-                                        {
-                                            name: providerConnection.metadata.name,
-                                            namespace: providerConnection.metadata.namespace,
-                                            resource: 'secrets',
-                                            verb: 'delete',
-                                        },
+                                        getResourceAttributes(
+                                            'delete',
+                                            ProviderConnectionDefinition,
+                                            providerConnection.metadata.namespace,
+                                            providerConnection.metadata.name
+                                        ),
                                     ],
                                 },
                             ]

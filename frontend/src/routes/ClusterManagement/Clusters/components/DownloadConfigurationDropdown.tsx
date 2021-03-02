@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useContext } from 'react'
 import { AcmDropdown } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
@@ -5,15 +7,15 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
 
-export function DownloadConfigurationDropdown(props: { getSecretAccessRestriction: boolean }) {
+export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
 
     const downloadConfig = async (id: string) => {
         /* istanbul ignore next */
         const map: { [key: string]: string } = {
-            'install-config.yaml': cluster?.hiveSecrets?.installConfig ?? '',
-            kubeconfig: cluster?.hiveSecrets?.kubeconfig ?? '',
+            'install-config.yaml': cluster?.hive.secrets?.installConfig ?? '',
+            kubeconfig: cluster?.hive.secrets?.kubeconfig ?? '',
         }
         /* istanbul ignore next */
         const namespace = cluster?.namespace ?? ''
@@ -30,21 +32,22 @@ export function DownloadConfigurationDropdown(props: { getSecretAccessRestrictio
         }
     }
 
-    if (cluster?.hiveSecrets) {
-        const dropdownItems = [
-            {
+    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
+        let dropdownItems = []
+        cluster?.hive.secrets?.installConfig &&
+            dropdownItems.push({
                 id: 'install-config.yaml',
                 text: 'install-config',
-                isDisabled: props.getSecretAccessRestriction,
-                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
-            },
-            {
+                isDisabled: !props.canGetSecret,
+                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+            })
+        cluster?.hive.secrets?.kubeconfig &&
+            dropdownItems.push({
                 id: 'kubeconfig',
                 text: 'kubeconfig',
-                isDisabled: props.getSecretAccessRestriction,
-                tooltip: props.getSecretAccessRestriction ? t('common:rbac.unauthorized') : undefined,
-            },
-        ]
+                isDisabled: !props.canGetSecret,
+                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+            })
         return (
             <AcmDropdown
                 isPlain={true}

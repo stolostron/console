@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { render, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -29,10 +31,14 @@ const mockCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: {
-        installConfig: 'test-cluster-install-config',
-        kubeadmin: 'test-cluster-0-fk6c9-admin-password',
-        kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: 'test-cluster-install-config',
+            kubeadmin: 'test-cluster-0-fk6c9-admin-password',
+            kubeconfig: 'test-cluster-0-fk6c9-admin-kubeconfig',
+        },
     },
     isHive: true,
     isManaged: true,
@@ -81,7 +87,7 @@ describe('DownloadConfigurationDropdown', () => {
     test('renders', () => {
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown getSecretAccessRestriction={false} />
+                <DownloadConfigurationDropdown canGetSecret={true} />
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('download-configuration')).toBeInTheDocument()
@@ -90,7 +96,7 @@ describe('DownloadConfigurationDropdown', () => {
         nockGet(mockInstallConfig)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown getSecretAccessRestriction={false} />
+                <DownloadConfigurationDropdown canGetSecret={true} />
             </ClusterContext.Provider>
         )
         userEvent.click(screen.getByTestId('download-configuration'))
@@ -103,7 +109,7 @@ describe('DownloadConfigurationDropdown', () => {
         nockGet(mockKubeconfig)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown getSecretAccessRestriction={false} />
+                <DownloadConfigurationDropdown canGetSecret={true} />
             </ClusterContext.Provider>
         )
         userEvent.click(screen.getByTestId('download-configuration'))
@@ -115,7 +121,7 @@ describe('DownloadConfigurationDropdown', () => {
     test('renders null when secrets are not available', () => {
         render(
             <ClusterContext.Provider value={{ cluster: undefined, addons: undefined }}>
-                <DownloadConfigurationDropdown getSecretAccessRestriction={true} />
+                <DownloadConfigurationDropdown canGetSecret={true} />
             </ClusterContext.Provider>
         )
         expect(screen.queryByTestId('download-configuration')).toBeNull()
@@ -125,7 +131,7 @@ describe('DownloadConfigurationDropdown', () => {
         nockGet(mockKubeconfig, mockBadRequestStatus)
         render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <DownloadConfigurationDropdown getSecretAccessRestriction={false} />
+                <DownloadConfigurationDropdown canGetSecret={true} />
             </ClusterContext.Provider>
         )
         userEvent.click(screen.getByTestId('download-configuration'))

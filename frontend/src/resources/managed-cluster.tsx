@@ -1,12 +1,19 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
-import { IResource } from './resource'
+import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterApiVersion = 'cluster.open-cluster-management.io/v1'
 export type ManagedClusterApiVersionType = 'cluster.open-cluster-management.io/v1'
 
 export const ManagedClusterKind = 'ManagedCluster'
 export type ManagedClusterKindType = 'ManagedCluster'
+
+export const ManagedClusterDefinition: IResourceDefinition = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+}
 
 export interface ClusterLabels {
     cloud: string

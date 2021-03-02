@@ -1,9 +1,12 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import {
     ResourceAttributes,
     createSubjectAccessReview,
     createSubjectAccessReviews,
 } from '../resources/self-subject-access-review'
 import { listProjects } from '../resources/project'
+import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
 
 export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]) {
     return new Promise<string[]>(async (resolve, reject) => {
@@ -57,4 +60,25 @@ export async function checkAdminAccess() {
     } catch (err) {
         return false
     }
+}
+
+type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
+
+export function getResourceAttributes(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+    let attributes = {
+        name: name ?? resource?.metadata?.name,
+        namespace: namespace ?? resource?.metadata?.namespace,
+        resource: getResourcePlural(resource),
+        verb,
+        group: getResourceGroup(resource),
+    }
+    if (!attributes.name) delete attributes.name
+    if (!attributes.namespace) delete attributes.namespace
+    return attributes
+}
+
+export function getUserAccess(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+    const resourceAttributes = getResourceAttributes(verb, resource, namespace, name)
+    const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
+    return selfSubjectAccessReview
 }

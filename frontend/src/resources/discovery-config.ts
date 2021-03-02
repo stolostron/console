@@ -1,4 +1,6 @@
-import { IResource } from './resource'
+/* Copyright Contributors to the Open Cluster Management project */
+
+import { IResource, IResourceDefinition } from './resource'
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { createResource, listResources, getResource, replaceResource } from '../lib/resource-request'
 
@@ -7,6 +9,11 @@ export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.i
 
 export const DiscoveryConfigKind = 'DiscoveryConfig'
 export type DiscoveryConfigKindType = 'DiscoveryConfig'
+
+export const DiscoveryConfigDefinition: IResourceDefinition = {
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+}
 
 export interface DiscoveryConfig extends IResource {
     apiVersion: DiscoveryConfigApiVersionType
