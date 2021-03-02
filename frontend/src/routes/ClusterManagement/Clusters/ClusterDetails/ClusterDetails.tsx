@@ -35,7 +35,6 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { usePrevious } from '../../../../components/usePrevious'
-import { MockSingleClusterResponse } from '../../../../resources/ccx-mock-cluster-responses'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -58,7 +57,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
     // Cluster
-    let { data, startPolling, stopPolling, loading, error } = useQuery(
+    const { data, startPolling, stopPolling, loading, error } = useQuery(
         useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
     )
     const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
@@ -96,13 +95,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         if (error) {
             return setClusterError(error)
-        }
-
-        // TODO remove - only here to override cluster data for CCX mocks
-        if (match.params.id === '34c3ecc5-624a-49a5-bab8-4fdc5e51a266') {
-            data = MockSingleClusterResponse('34c3ecc5-624a-49a5-bab8-4fdc5e51a266')
-        } else if (match.params.id === '74ae54aa-6577-4e80-85e7-697cb646ff37') {
-            data = MockSingleClusterResponse('74ae54aa-6577-4e80-85e7-697cb646ff37')
         }
 
         const results = data ?? []
