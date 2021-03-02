@@ -1,28 +1,27 @@
 import {
-    AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
-    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { providerConnectionsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { getErrorInfo } from '../../../components/ErrorPage'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { deleteResource } from '../../../lib/resource-request'
-import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import { ProviderConnection } from '../../../resources/provider-connection'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
@@ -51,32 +50,10 @@ const AddConnectionBtn = () => {
     )
 }
 
-let lastData: ProviderConnection[] | undefined
-let lastTime: number = 0
-
 export function ProviderConnectionsPageContent() {
-    const alertContext = useContext(AcmAlertContext)
-    const { error, data, startPolling, refresh } = useQuery(
-        listProviderConnections,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'test') {
-            lastData = data
-            lastTime = Date.now()
-        }
-    }, [data])
-    useEffect(startPolling, [startPolling])
-    usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
-    useEffect(() => {
-        alertContext.clearAlerts()
-        if (error) {
-            alertContext.addAlert(getErrorInfo(error))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
-    return <ProviderConnectionsTable providerConnections={data} refresh={refresh} />
+    const [providerConnections] = useRecoilState(providerConnectionsState)
+    usePageContext(providerConnections.length > 0, AddConnectionBtn)
+    return <ProviderConnectionsTable providerConnections={providerConnections} refresh={() => {}} />
 }
 
 function getProvider(labels: Record<string, string> | undefined) {
