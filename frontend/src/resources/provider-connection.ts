@@ -121,11 +121,15 @@ export function unpackProviderConnection(providerConnection: ProviderConnection)
         try {
             const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
             providerConnection.spec = YAML.parse(yaml)
-        } catch {}
+        } catch {
+            // blank
+        }
     } else if (providerConnection.stringData) {
         try {
             providerConnection.spec = YAML.parse(providerConnection.stringData.metadata)
-        } catch {}
+        } catch {
+            // blank
+        }
     }
     delete providerConnection.stringData
     delete providerConnection.data

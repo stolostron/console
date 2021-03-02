@@ -13,6 +13,7 @@ import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
 import { NavigationPath } from '../../NavigationPath'
 import { DOC_LINKS } from '../../lib/doc-util'
+import { noop } from '../../lib/noop'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -23,7 +24,7 @@ export const PageContext = React.createContext<{
     setActions: (actions: null | React.ReactNode) => void
 }>({
     actions: null,
-    setActions: () => {},
+    setActions: noop,
 })
 
 export const usePageContext = (showActions: boolean, Component: React.ElementType) => {

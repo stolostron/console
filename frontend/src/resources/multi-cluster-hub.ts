@@ -19,7 +19,7 @@ export interface MultiClusterHub extends IResource {
     apiVersion: MultiClusterHubApiVersionType
     kind: MultiClusterHubKindType
     metadata: V1ObjectMeta
-    spec?: {}
+    spec?: Record<string, unknown>
 }
 
 export function listMultiClusterHubs() {

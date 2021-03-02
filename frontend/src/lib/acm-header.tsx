@@ -7,7 +7,7 @@ import { fetchGet } from './resource-request'
 // CONSOLE-HEADER
 declare global {
     interface Window {
-        __PRELOADED_STATE__: object
+        __PRELOADED_STATE__: Record<string, string>
     }
 }
 
@@ -23,8 +23,8 @@ type HeaderAssets = {
         css: FilePath
         nls: FilePath
     }
-    props: object
-    state: object
+    props: Record<string, string>
+    state: Record<string, string>
 }
 
 export const fetchHeader = async () => {
@@ -77,6 +77,7 @@ export const fetchHeader = async () => {
 
             // Dependency on console-header to provide the OpenShift console url because
             // we do not have a service account to query for the url ourselves if the user does not have privileges
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const appLinks = (headerResponse?.data as any)?.state?.uiconfig?.config?.appLinks ?? []
             const openShiftConsoleApp =
                 appLinks.find((link: { name: string }) => link.name === 'Red Hat OpenShift Container Platform') ?? {}

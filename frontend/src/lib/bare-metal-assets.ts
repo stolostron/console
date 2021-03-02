@@ -4,10 +4,11 @@ import {
     createBareMetalAssetResource,
     createBareMetalAssetSecret,
     listBareMetalAssets,
+    BareMetalAsset,
 } from '../resources/bare-metal-asset'
 import { getSecret } from '../resources/secret'
 import { createProject } from '../resources/project'
-import { patchResource } from '../lib/resource-request'
+import { patchResource, IRequestResult } from '../lib/resource-request'
 import { set, get, keyBy } from 'lodash'
 import yaml from 'js-yaml'
 
@@ -44,7 +45,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
         const namespaces = Object.keys(keyBy(newAssets, 'namespace'))
         results = namespaces.map((namespace) => createProject(namespace))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
+        response.forEach(({ status, reason }) => {
             if (status === 'rejected') {
                 if (reason.code !== 409) {
                     errors.push({ message: reason.message })
@@ -55,14 +56,14 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
         // create the bma and its secret
         results = newAssets.map((asset) => createBareMetalAssetSecret(asset))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason, value }, inx) => {
+        response.forEach(({ status, reason }) => {
             if (status === 'rejected') {
                 errors.push({ message: reason.message })
             }
         })
         results = newAssets.map((asset) => createBareMetalAssetResource(asset))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason, value }, inx) => {
+        response.forEach(({ status, reason, value }) => {
             if (status === 'rejected') {
                 errors.push({ message: reason.message })
             } else {
@@ -112,9 +113,9 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     return { assets, errors }
 }
 
-export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterName: string, errors: JsonArray) {
+export async function attachBMAs(assets: BareMetalAsset[], hosts: JsonArray, clusterName: string, errors: JsonArray) {
     // mark asset as being used by this cluster
-    const results = assets.map((asset, inx) => {
+    const results: IRequestResult[] = assets.map((asset, inx: number) => {
         const patch = {
             spec: {
                 role: hosts[inx].role,
@@ -127,7 +128,7 @@ export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterNam
         return patchResource(asset, patch)
     })
     const response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason }, inx) => {
+    response.forEach(({ status, reason }) => {
         if (status === 'rejected') {
             errors.push({ message: reason.message })
         }

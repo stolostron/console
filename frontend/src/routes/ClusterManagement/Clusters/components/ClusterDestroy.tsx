@@ -19,7 +19,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
     useEffect(() => {
         const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
         canCreateCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .then((result) => setCanCreateCluster(result.status!.allowed!))
             .catch((err) => console.error(err))
         return () => canCreateCluster.abort()
     }, [])

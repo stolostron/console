@@ -4,6 +4,7 @@ import { AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { ModalVariant, ButtonVariant } from '@patternfly/react-core'
 import React from 'react'
+import { noop } from '../lib/noop'
 
 export interface IConfirmModalProps {
     open: boolean
@@ -17,10 +18,10 @@ export interface IConfirmModalProps {
 
 export const ClosedConfirmModalProps: IConfirmModalProps = {
     open: false,
-    confirm: () => {},
+    confirm: noop,
     confirmText: undefined,
     isDanger: false,
-    cancel: () => {},
+    cancel: noop,
     title: 'CLOSED', // Must have a title
     message: '',
 }

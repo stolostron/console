@@ -5,7 +5,7 @@
 import '@patternfly/react-core/dist/styles/base.css'
 import React, { lazy } from 'react'
 import { Router, Redirect, Route, Switch } from 'react-router-dom'
-import { createBrowserHistory } from 'history'
+import { createBrowserHistory, History } from 'history'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { AppContextContainer } from './components/AppContext'
@@ -21,7 +21,7 @@ const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/Di
 
 declare global {
     interface Window {
-        SHARED_HISTORY: any
+        SHARED_HISTORY: History
     }
 }
 

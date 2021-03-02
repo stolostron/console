@@ -13,6 +13,7 @@ import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import './style.css'
+import { noop } from '../../../../lib/noop'
 
 // template/data
 import { controlData } from './controlData/ControlData'
@@ -23,13 +24,12 @@ import 'temptifly/dist/styles.css'
 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-declare const window: any
+
 if (window.monaco) {
-    window.monaco.editor.defineTheme('console', {
+    window!.monaco.editor.defineTheme('console', {
         base: 'vs-dark',
         inherit: true,
         rules: [
@@ -74,7 +74,7 @@ export default function CreateClusterPage() {
     )
 
     // create button
-    const [creationStatus, setCreationStatus] = useState({})
+    const [creationStatus, setCreationStatus] = useState<Record<string, string>>({})
     const createResource = async (resourceJSON: any[]) => {
         if (resourceJSON) {
             setCreationStatus({ status: 'IN_PROGRESS' })
@@ -98,11 +98,11 @@ export default function CreateClusterPage() {
     }
 
     // pause creation to create something else
-    const pauseCreate = () => {}
+    const pauseCreate = noop
 
     // setup translation
     const { t } = useTranslation(['create'])
-    const i18n = (key: any, arg: any) => {
+    const i18n = (key: string, arg: string) => {
         return t(key, arg)
     }
 

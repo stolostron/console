@@ -77,7 +77,7 @@ export async function createCluster(resources: JsonArray) {
     const replaces = []
     let results = resources.map((resource) => createResource(resource))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason }, inx) => {
+    response.forEach(({ status, reason }, inx: number) => {
         if (status === 'rejected') {
             if (reason.code === 409) {
                 replaces.push(resources[inx])
@@ -91,7 +91,7 @@ export async function createCluster(resources: JsonArray) {
     if (errors.length === 0 && replaces.length > 0) {
         results = replaces.map((resource) => replaceResource(resource))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
+        response.forEach(({ status, reason }) => {
             if (status === 'rejected') {
                 errors.push({ message: reason.message })
             }
@@ -102,7 +102,7 @@ export async function createCluster(resources: JsonArray) {
     if (errors.length === 0 && clusterResources.length > 0) {
         results = clusterResources.map((resource) => createResource(resource))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
+        response.forEach(({ status, reason }) => {
             if (status === 'rejected') {
                 errors.push({ message: reason.message })
             }

@@ -42,6 +42,7 @@ export enum ResourceErrorCode {
     ConnectionReset = 900,
     Unknown = 999,
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ResourceErrorCodes = Object.keys(ResourceErrorCode).map((k) => Number(ResourceErrorCode[k as any]))
 
 export class ResourceError extends Error {
@@ -257,6 +258,7 @@ export async function fetchRetry<T>(options: {
         }
     }
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         let response: Response | undefined
         try {
@@ -275,7 +277,9 @@ export async function fetchRetry<T>(options: {
 
             if (retries === 0) {
                 if (err instanceof Error) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if (typeof (err as any)?.code === 'string') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         switch ((err as any)?.code) {
                             case 'ETIMEDOUT':
                                 throw new ResourceError('Request timeout.', ResourceErrorCode.Timeout)
@@ -283,15 +287,20 @@ export async function fetchRetry<T>(options: {
                                 throw new ResourceError('Request connection reset.', ResourceErrorCode.ConnectionReset)
                             default:
                                 throw new ResourceError(
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     `Unknown error. code: ${(err as any)?.code}`,
                                     ResourceErrorCode.Unknown
                                 )
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } else if (typeof (err as any)?.code === 'number') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if (ResourceErrorCodes.includes((err as any)?.code)) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             throw new ResourceError(err.message, (err as any)?.code)
                         } else {
                             throw new ResourceError(
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 `Unknown error. code: ${(err as any)?.code}`,
                                 ResourceErrorCode.Unknown
                             )
@@ -300,6 +309,7 @@ export async function fetchRetry<T>(options: {
                         throw new ResourceError('Network error', ResourceErrorCode.NetworkError)
                     }
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
             }
         }
@@ -308,8 +318,11 @@ export async function fetchRetry<T>(options: {
             let responseData: T | undefined = undefined
             try {
                 responseData = (await response.json()) as T
-            } catch {}
+            } catch {
+                // blank
+            }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((responseData as any)?.kind === StatusKind) {
                 const status = (responseData as unknown) as Status
                 if (status.status !== 'Success') {
@@ -346,7 +359,9 @@ export async function fetchRetry<T>(options: {
                     try {
                         const retryAfter = Number(response.headers.get('retry-after'))
                         if (Number.isInteger(retryAfter)) delay = retryAfter
-                    } catch {}
+                    } catch {
+                        // blank
+                    }
                     break
 
                 default:

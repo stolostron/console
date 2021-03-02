@@ -385,7 +385,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     {
                                         op: 'replace',
                                         path: `/spec/bootMACAddress`,
-                                        value: bareMetalAsset.spec?.bootMACAddress!,
+                                        value: bareMetalAsset.spec!.bootMACAddress!,
                                     },
                                 ])
                                     .promise.then(() => {

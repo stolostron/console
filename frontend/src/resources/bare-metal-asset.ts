@@ -48,7 +48,7 @@ export interface BMASecret extends V1Secret {
     }
 }
 
-export function getBareMetalAsset(metadata: Object) {
+export function getBareMetalAsset(metadata: V1ObjectMeta) {
     return getResource<BareMetalAsset>({
         kind: BareMetalAssetKind,
         apiVersion: BareMetalAssetApiVersion,

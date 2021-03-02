@@ -7,6 +7,7 @@ import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { postRequest, IRequestResult } from '../../../../lib/resource-request'
+import { noop } from '../../../../lib/noop'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -125,7 +126,7 @@ export function BatchUpgradeModal(props: {
                 if (!cluster.name || !selectVersions[cluster.name]) {
                     const emptyRes: IRequestResult<string> = {
                         promise: new Promise((resolve) => resolve('')),
-                        abort: () => {},
+                        abort: noop,
                     }
                     return emptyRes
                 }

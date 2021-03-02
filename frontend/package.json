@@ -92,7 +92,8 @@
             ],
             "@typescript-eslint/no-non-null-assertion": "off",
             "@typescript-eslint/explicit-module-boundary-types": "off",
-            "react/display-name": "off"
+            "react/display-name": "off",
+            "no-async-promise-executor": "off"
         },
         "settings": {
             "react": {

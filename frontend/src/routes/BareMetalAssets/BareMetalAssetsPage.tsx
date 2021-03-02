@@ -82,7 +82,6 @@ export function BareMetalAssets() {
         if (error) {
             alertContext.addAlert(getErrorInfo(error))
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
     return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
@@ -108,7 +107,7 @@ export function BareMetalAssetsTable(props: {
         const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
 
         canCreateCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .then((result) => setCanCreateCluster(result.status!.allowed!))
             .catch((err) => console.error(err))
         return () => canCreateCluster.abort()
     }, [])

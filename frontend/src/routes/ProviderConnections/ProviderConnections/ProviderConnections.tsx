@@ -80,7 +80,6 @@ export function ProviderConnectionsPageContent() {
         if (error) {
             alertContext.addAlert(getErrorInfo(error))
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
     return <ProviderConnectionsTable providerConnections={data} refresh={refresh} />

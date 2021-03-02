@@ -122,7 +122,6 @@ export function AddDiscoveryConfigData() {
             .finally(() => {
                 setIsLoading(false)
             })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (error) {
@@ -233,7 +232,7 @@ export function DiscoveryConfigPageContent(props: {
                     }}
                     isRequired
                 >
-                    {lastActive.map((e, i) => (
+                    {lastActive.map((e) => (
                         <SelectOption key={e.day} value={e.value}>
                             {e.stringDay}
                         </SelectOption>

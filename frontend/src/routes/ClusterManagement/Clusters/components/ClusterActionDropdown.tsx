@@ -79,7 +79,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
-            click: (cluster: Cluster) => {
+            click: () => {
                 setShowUpgradeModal(true)
             },
             isDisabled: true,

@@ -60,7 +60,7 @@ const PageActions = () => {
         const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
 
         canCreateCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .then((result) => setCanCreateCluster(result.status!.allowed!))
             .catch((err) => console.error(err))
         return () => canCreateCluster.abort()
     }, [])
@@ -138,7 +138,6 @@ export function ClustersPageContent() {
         if (error) {
             alertContext.addAlert(getErrorInfo(error))
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [error])
 
     return (

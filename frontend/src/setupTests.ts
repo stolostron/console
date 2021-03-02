@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* Copyright Contributors to the Open Cluster Management project */
 
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
@@ -31,7 +33,7 @@ console.warn = (message?: any, ..._optionalParams: any[]) => {
     consoleWarnings.push(message)
 }
 // const originalConsoleError = console.error
-console.error = (message?: any, ...optionalParams: any[]) => {
+console.error = (message?: any, ..._optionalParams: any[]) => {
     consoleErrors.push(message)
     // originalConsoleError(message, optionalParams)
 }

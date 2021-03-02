@@ -118,8 +118,11 @@ export function ImportCommand(props: ImportCommandProps) {
                                         variant="secondary"
                                         icon={<CopyIcon />}
                                         iconPosition="right"
-                                        onClick={(e: any) => {
-                                            onCopy(e, props.importCommand ?? '')
+                                        onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                                            onCopy(
+                                                (e as unknown) as ClipboardEvent<HTMLDivElement>,
+                                                props.importCommand ?? ''
+                                            )
                                             setCopied(true)
                                         }}
                                     >
@@ -157,6 +160,7 @@ export function ImportCommand(props: ImportCommandProps) {
 
 export async function pollImportYamlSecret(clusterName: string): Promise<string> {
     let retries = 10
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
             .promise.then((secret) => {
