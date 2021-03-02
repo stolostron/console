@@ -1,9 +1,11 @@
-import { AcmDonutChart, AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
-import React from 'react'
 import _ from 'lodash'
+import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
+import { AcmDonutChart, AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
+import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
 import { ISearchResult } from '../../../../lib/search'
+import { getPolicyReport } from '../../../../resources/policy-report'
 
 const useStyles = makeStyles({
     sidebarBody: {
@@ -21,15 +23,93 @@ const useStyles = makeStyles({
         fontSize: '20px',
         paddingBottom: '10px',
     },
+    backAction: {
+        border: 0,
+        cursor: 'pointer',
+        background: 'none',
+        color: 'var(--pf-global--link--Color)',
+    },
+    policyDetailLink: {
+        border: 0,
+        cursor: 'pointer',
+        background: 'none',
+        color: 'var(--pf-global--link--Color)',
+        textAlign: 'unset',
+        '&:hover': {
+            textDecoration: 'underline',
+        },
+    },
 })
+
+function DetailsView(props: {
+    setDetailsView: React.Dispatch<React.SetStateAction<boolean>>;
+    selectedPolicy: { name: string; namespace: string;
+} }) {
+    const { setDetailsView, selectedPolicy } = props
+    const { t } = useTranslation(['cluster'])
+    const [tabState, setTabState] = useState<React.ReactText>(0)
+    const [reportError, setReportError] = useState(null)
+    const [reportData, setReportData] = useState({
+        message: '',
+        remediation: '',
+        reason: '',
+    })
+    const classes = useStyles()
+
+    if (!reportError && reportData.message === '') {
+        getPolicyReport({ name: selectedPolicy.name, namespace: selectedPolicy.namespace}).promise.then(result => {
+            setReportData({
+                message: _.get(result, 'results[0].message', ''),
+                remediation: _.get(result, 'results[0].data.resolution', ''),
+                reason: _.get(result, 'results[0].data.reason', ''),
+            })
+        }).catch(e => setReportError(e))
+    }
+
+    if (reportError) {
+        return (
+            <div className={classes.sidebarBody}>
+                <div className={classes.sidebarTitleText}>
+                    <button onClick={() => setDetailsView(false)} className={classes.backAction}>
+                        {t('policy.report.flyout.back')}
+                    </button>
+                </div>
+                <div className={classes.sidebarDescText}>{reportError}</div>
+            </div>
+        )
+    }
+
+    return (
+        <div className={classes.sidebarBody}>
+            <div className={classes.sidebarTitleText}>
+                <button onClick={() => setDetailsView(false)} className={classes.backAction}>
+                {t('policy.report.flyout.back')}
+                </button>
+            </div>
+            <div className={classes.sidebarDescText}>{reportData.message}</div>
+            <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
+                <Tab eventKey={0} title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}>
+                    {reportData.remediation}
+                </Tab>
+                <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
+                    {reportData.reason}
+                </Tab>
+            </Tabs>
+        </div>
+    )
+}
 
 export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: boolean }) {
     const classes = useStyles()
     const { t } = useTranslation(['cluster'])
     const clusterIssues = _.get(props, 'data[0].data.searchResult[0].items', [])
     const clusterRiskScores = clusterIssues.map((issue: any) => issue.risk)
+    const [detailsView, setDetailsView] = useState<boolean>(false)
+    const [selectedPolicy, setSelectedPolicy] = useState({ name: '', namespace: '' })
 
-    return (
+    return detailsView ? (
+        <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
+    ) : (
         <div className={classes.sidebarBody}>
             <div className={classes.sidebarTitleText}>
                 {t('policy.report.flyout.title', { count: clusterIssues.length })}
@@ -74,7 +154,19 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                     {
                         header: 'Description',
                         sort: 'message',
-                        cell: 'message',
+                        cell: (item: any) => {
+                            return (
+                                <button
+                                    className={classes.policyDetailLink}
+                                    onClick={() => {
+                                        setDetailsView(true)
+                                        setSelectedPolicy({ name: item.name, namespace: item.namespace })
+                                    }}
+                                >
+                                    {item.message}
+                                </button>
+                            )
+                        },
                     },
                     {
                         header: 'Category',

@@ -1,6 +1,7 @@
 import { Provider } from '@open-cluster-management/ui-components'
 import { ClusterStatus } from '../lib/get-cluster'
 
+/* istanbul ignore file */
 export const MockCluster = (clusterName: string) => {
     return {
         name: clusterName,
