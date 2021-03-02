@@ -7,6 +7,7 @@ import { proxy } from './routes/proxy'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
+import { watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get('/readinessProbe', respondOK)
@@ -16,6 +17,7 @@ router.all(`/apis/*`, proxy)
 router.get(`/login`, login)
 router.get(`/login/callback?*`, loginCallback)
 router.get(`/header`, header)
+router.get(`/watch`, watch)
 router.get(`/multicloud/header/*`, header)
 router.post(`/proxy/search`, search)
 router.post(`/upgrade`, upgrade)

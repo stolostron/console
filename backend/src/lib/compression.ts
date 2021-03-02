@@ -55,7 +55,7 @@ export function getEncodeStream(
 }
 
 export function flushStream(stream: NodeJS.WritableStream): void {
-    if ((stream as any).flush) {
-        ;(stream as any).flush()
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const flush: () => void = (stream as any).flush
+    if (flush) flush()
 }

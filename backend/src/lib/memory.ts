@@ -24,5 +24,5 @@ function logMemory() {
 }
 
 export function startLoggingMemory(): void {
-    setTimeout(logMemory, 1000).unref()
+    setTimeout(logMemory, 10 * 1000).unref()
 }
