@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 export enum ProviderID {
     GCP = 'gcp',
     AWS = 'aws',

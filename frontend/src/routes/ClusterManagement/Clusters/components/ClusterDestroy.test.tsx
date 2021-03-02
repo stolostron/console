@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -20,7 +22,15 @@ const mockDestroyCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isHive: false,
     isManaged: true,
 }
@@ -39,7 +49,15 @@ const mockDetachCluster: Cluster = {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
-    hiveSecrets: undefined,
+    hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+            installConfig: '',
+            kubeadmin: '',
+            kubeconfig: '',
+        },
+    },
     isHive: false,
     isManaged: true,
 }

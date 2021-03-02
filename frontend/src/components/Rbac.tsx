@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AcmDropdown, AcmButton } from '@open-cluster-management/ui-components'

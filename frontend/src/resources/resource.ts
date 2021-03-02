@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1ObjectMeta } from '@kubernetes/client-node/dist'
 import { join } from 'path'
 

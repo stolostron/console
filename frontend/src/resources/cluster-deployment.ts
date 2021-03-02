@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
 import { getResource, listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
@@ -39,6 +41,7 @@ export interface ClusterDeployment {
                 region: string
             }
         }
+        powerState?: 'Running' | 'Hibernating'
         provisioning: {
             imageSetRef: {
                 name: string
@@ -49,6 +52,11 @@ export interface ClusterDeployment {
             sshPrivateKeySecretRef: {
                 name: string
             }
+        }
+        clusterPoolRef?: {
+            claimName: string
+            namespace: string
+            poolName: string
         }
         pullSecretRef: {
             name: string

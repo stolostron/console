@@ -1,3 +1,6 @@
+# Copyright Contributors to the Open Cluster Management project
+
+
 FROM registry.access.redhat.com/ubi8/nodejs-12 as builder
 USER root
 COPY ./ ./

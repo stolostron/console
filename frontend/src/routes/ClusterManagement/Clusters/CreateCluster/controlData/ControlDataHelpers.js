@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
 import { listClusterImageSets } from '../../../../../resources/cluster-image-set'
 import { listProviderConnections } from '../../../../../resources/provider-connection'

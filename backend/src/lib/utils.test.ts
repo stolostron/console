@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { createPollHelper, getRemoteResource, updateRemoteResource, verifyStatusFn, parseBody } from './utils'
 import * as nock from 'nock'
 import { IncomingMessage } from 'http'
