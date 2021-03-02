@@ -9,6 +9,8 @@ const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=60
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
         let url = req.url
+        if (url.startsWith('/multicloud')) url = url.substr(11)
+
         let ext = extname(url)
         if (ext === '') {
             ext = '.html'
