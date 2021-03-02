@@ -45,7 +45,7 @@ export type Cluster = {
     provider: Provider | undefined
     distribution: DistributionInfo | undefined
     labels: Record<string, string> | undefined
-    nodes: Nodes | undefined
+    nodes: Nodes
     kubeApiServer: string | undefined
     consoleURL: string | undefined
     hive: {

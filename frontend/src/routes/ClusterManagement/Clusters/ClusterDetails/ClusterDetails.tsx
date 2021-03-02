@@ -128,7 +128,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         const canGetSecret = getUserAccess('get', SecretDefinition, match.params.id)
         canGetSecret.promise
-            .then((result) => setCanGetSecret(result.status!.allowed!))
+            .then((result) => setCanGetSecret(result.status!.allowed))
             .catch((err) => console.error(err))
         return () => canGetSecret.abort()
     }, [match.params.id])
@@ -217,9 +217,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     links={addons
                                         ?.filter((addon) => addon.launchLink)
                                         ?.map((addon) => ({
-                                            id: addon.launchLink!.displayText!,
-                                            text: addon.launchLink!.displayText!,
-                                            href: addon.launchLink!.href!,
+                                            id: addon.launchLink!.displayText,
+                                            text: addon.launchLink!.displayText,
+                                            href: addon.launchLink!.href,
                                         }))}
                                 />
                                 <DownloadConfigurationDropdown canGetSecret={canGetSecret} />

@@ -32,6 +32,5 @@ export function unpackSecret(secret: Secret | Partial<Secret>) {
             secret.stringData[key] = Buffer.from(secret.data[key], 'base64').toString('ascii')
         }
     }
-    const unpackedSecret: Partial<Secret> = secret
-    return unpackedSecret
+    return secret as Partial<Secret>
 }
