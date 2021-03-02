@@ -119,6 +119,17 @@ const mockAutoSecretResponse: Secret = {
     type: 'Opaque',
 }
 
+const mockAutoSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'auto-import-secret',
+        namespace: 'foobar',
+    },
+    data: { 'autoImportRetry': '2', 'kubeconfig': 'Test text' },
+    type: 'Opaque',
+}
+
 const mockManagedCluster: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -250,11 +261,13 @@ describe('ImportCluster', () => {
         expect(getByTestId('clusterName')).toHaveValue('')
     })
     test('can create resources when auto importing', async () => {
-//        const autoProjectNock = nockCreate(mockProject, mockProjectResponse)
-//        const autoManagedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
-/*        const autoKacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
-        const importAutoSecretNock = nockGet(mockAutoSecretResponse)
-*/
+        
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+        const importSecretNock = nockGet(mockSecretResponse)
+        const importAutoSecretNock = nockGet(mockAutoSecret, mockAutoSecretResponse)
+
         const { getByTestId, getByText } = render(<Component />)
 
         userEvent.type(getByTestId('clusterName'), 'foobar')
@@ -265,15 +278,16 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('import.credential.default'))
         userEvent.click(getByText('import.config.choice'))
         userEvent.click(getByText('import.auto.config.label'))
+        userEvent.click(getByTestId('kubeConfigEntry'))
+        userEvent.type(getByTestId('kubeConfigEntry'), 'Test text')
         expect(getByText('import.auto.button')).toBeInTheDocument
         userEvent.click(getByText('import.auto.button'))
 
-//        await waitFor(() => expect(autoProjectNock.isDone()).toBeTruthy())
-//        await waitFor(() => expect(autoManagedClusterNock.isDone()).toBeTruthy())
-/*        await waitFor(() => expect(autoKacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(importAutoSecretNock.isDone()).toBeTruthy())
-*/
-        
+        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(importSecretNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(importAutoSecretNock.isDone()).toBeTruthy())        
 
     })
     test('handles project creation error', async () => {
