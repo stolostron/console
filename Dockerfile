@@ -33,4 +33,4 @@ COPY --from=builder /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/build ./
 COPY --from=builder /app/frontend/build ./public
 USER 1001
-CMD ["node", "main.js"]
+CMD ["node", "lib/main.js"]
