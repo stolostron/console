@@ -43,11 +43,12 @@ import {
     ProviderConnectionKind,
     replaceProviderConnection,
     setProviderConnectionProviderID,
+    ProviderConnectionDefinition,
 } from '../../../resources/provider-connection'
 import { AppContext } from '../../../components/AppContext'
 import { makeStyles } from '@material-ui/styles'
 import { DOC_LINKS } from '../../../lib/doc-util'
-import { getAuthorizedNamespaces } from '../../../lib/rbac-util'
+import { getAuthorizedNamespaces, getResourceAttributes } from '../../../lib/rbac-util'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -165,12 +166,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            getAuthorizedNamespaces([
-                {
-                    resource: 'secrets',
-                    verb: 'create',
-                },
-            ])
+            getAuthorizedNamespaces([getResourceAttributes('create', ProviderConnectionDefinition)])
                 .then((namespaces: string[]) => {
                     setProjects(namespaces)
                 })

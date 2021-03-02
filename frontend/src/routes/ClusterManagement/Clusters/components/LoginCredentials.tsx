@@ -53,14 +53,14 @@ const useStyles = makeStyles({
     },
 })
 
-export function LoginCredentials(props: { accessRestriction?: boolean }) {
+export function LoginCredentials(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<boolean>(false)
     const [credentials, setCredentials] = useState<LoginCredential | undefined>(undefined)
-    const disableButton = loading || error || props.accessRestriction
+    const disableButton = loading || error || !props.canGetSecret
     const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
 
     const onClick = async () => {
@@ -106,7 +106,7 @@ export function LoginCredentials(props: { accessRestriction?: boolean }) {
                     variant={ButtonVariant.link}
                     className={classes.toggleButton}
                     onClick={onClick}
-                    isDisabled={disableButton || props.accessRestriction}
+                    isDisabled={disableButton}
                     id="login-credentials"
                 >
                     <Fragment>
@@ -115,7 +115,7 @@ export function LoginCredentials(props: { accessRestriction?: boolean }) {
                                 return <AcmInlineStatus type={StatusType.danger} status={t('credentials.failed')} />
                             } else if (loading) {
                                 return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
-                            } else if (props.accessRestriction) {
+                            } else if (!props.canGetSecret) {
                                 return (
                                     <Tooltip content={t('common:rbac.unauthorized')}>
                                         <div className="credentials-toggle">

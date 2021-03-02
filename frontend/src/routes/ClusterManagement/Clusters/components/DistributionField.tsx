@@ -5,6 +5,8 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
+import { getResourceAttributes } from '../../../../lib/rbac-util'
+import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { RbacButton } from '../../../../components/Rbac'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -108,12 +110,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
                         variant={ButtonVariant.link}
                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                         rbac={[
-                            {
-                                resource: 'managedclusteractions',
-                                verb: 'create',
-                                group: 'action.open-cluster-management.io',
-                                namespace: props.cluster?.namespace,
-                            },
+                            getResourceAttributes('create', ManagedClusterActionDefinition, props.cluster?.namespace),
                         ]}
                     >
                         {t('upgrade.available')}
