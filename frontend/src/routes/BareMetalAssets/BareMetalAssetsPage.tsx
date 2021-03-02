@@ -30,6 +30,10 @@ import { RbacDropdown } from '../../components/Rbac'
 import { getUserAccess, getResourceAttributes } from '../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
+const baremetalasset = 'bare metal asset'
+const baremetalassets = 'bare metal assets'
+const noop = () => {}
+
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common', 'create'])
     return (
@@ -121,11 +125,11 @@ export function BareMetalAssetsTable(props: {
     function setImportModalProps() {
         setModalProps({
             open: true,
-            plural: t('bare metal assets'),
+            plural: t(baremetalassets),
             action: t('common:import'),
             resources: [],
             columns: [{}],
-            keyFn: () => {},
+            keyFn: noop,
             emptyState: (
                 <AcmEmptyState
                     title={t('bareMetalAsset.importAction.title')}
@@ -139,8 +143,8 @@ export function BareMetalAssetsTable(props: {
                                 const result = await importBMAs()
                                 setModalProps({
                                     open: true,
-                                    singular: t('bare metal asset'),
-                                    plural: t('bare metal assets'),
+                                    singular: t(baremetalasset),
+                                    plural: t(baremetalassets),
                                     action: t('common:import'),
                                     processing: t('common:importing'),
                                     resources: result,
@@ -319,8 +323,8 @@ export function BareMetalAssetsTable(props: {
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             setModalProps({
                                                 open: true,
-                                                singular: t('bare metal asset'),
-                                                plural: t('bare metal assets'),
+                                                singular: t(baremetalasset),
+                                                plural: t(baremetalassets),
                                                 action: t('common:delete'),
                                                 processing: t('common:deleting'),
                                                 resources: [bareMetalAsset],
@@ -395,8 +399,8 @@ export function BareMetalAssetsTable(props: {
                             click: (bareMetalAssets: BareMetalAsset[]) => {
                                 setModalProps({
                                     open: true,
-                                    singular: t('bare metal asset'),
-                                    plural: t('bare metal assets'),
+                                    singular: t(baremetalasset),
+                                    plural: t(baremetalassets),
                                     action: t('common:delete'),
                                     processing: t('common:deleting'),
                                     resources: [...bareMetalAssets],
