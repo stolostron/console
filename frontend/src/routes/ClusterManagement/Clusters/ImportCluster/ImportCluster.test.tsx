@@ -128,7 +128,8 @@ const mockAutoSecret: Secret = {
         name: 'auto-import-secret',
         namespace: 'foobar',
     },
-    data: { autoImportRetry: '2', kubeconfig: 'Test text' },
+    stringData: {
+         autoImportRetry: '2', kubeconfig: 'Test text' },
     type: 'Opaque',
 }
 
@@ -266,7 +267,7 @@ describe('ImportCluster', () => {
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const importSecretNock = nockGet(mockSecretResponse)
-        const importAutoSecretNock = nockGet(mockAutoSecret, mockAutoSecretResponse)
+        const importAutoSecretNock = nockCreate(mockAutoSecret, mockAutoSecretResponse)
 
         const { getByTestId, getByText } = render(<Component />)
 

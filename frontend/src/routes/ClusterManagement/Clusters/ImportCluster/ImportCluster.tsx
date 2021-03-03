@@ -170,9 +170,9 @@ export function ImportClusterPageContent() {
                                 }
                             }}
                         >
-                            <SelectOption key="credentials" value="credentials">
+                            {/* <SelectOption key="credentials" value="credentials">
                                 {t('import.credential.choice')}
-                            </SelectOption>
+                            </SelectOption> */}
                             <SelectOption key="kubeconfig" value="kubeconfig">
                                 {t('import.config.choice')}
                             </SelectOption>
@@ -313,7 +313,7 @@ export function ImportClusterPageContent() {
                                                         namespace: clusterName,
                                                     },
                                                     stringData: {
-                                                        autoImportRetry: '1',
+                                                        autoImportRetry: '2',
                                                         kubeconfig: kubeConfigText,
                                                     },
                                                     type: 'Opaque',
