@@ -28,10 +28,15 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.creating:
         case ClusterStatus.destroying:
         case ClusterStatus.detaching:
+        case ClusterStatus.stopping:
+        case ClusterStatus.resuming:
             type = StatusType.progress
             break
         case ClusterStatus.detached:
             type = StatusType.detached
+            break
+        case ClusterStatus.hibernating:
+            type = StatusType.sleep
             break
         case ClusterStatus.pending:
         case ClusterStatus.pendingimport:

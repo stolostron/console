@@ -311,7 +311,8 @@ describe('Import Discovered Cluster', () => {
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const discoveredClusterNock = nockList(
             { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-            mockDiscoveredClusters
+            mockDiscoveredClusters,
+            ['isManagedCluster!=true']
         )
         const importCommandNock = nockGet(mockSecretResponse)
 

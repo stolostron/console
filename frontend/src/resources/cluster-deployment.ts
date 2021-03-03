@@ -41,6 +41,7 @@ export interface ClusterDeployment {
                 region: string
             }
         }
+        powerState?: 'Running' | 'Hibernating'
         provisioning: {
             imageSetRef: {
                 name: string
@@ -51,6 +52,11 @@ export interface ClusterDeployment {
             sshPrivateKeySecretRef: {
                 name: string
             }
+        }
+        clusterPoolRef?: {
+            claimName: string
+            namespace: string
+            poolName: string
         }
         pullSecretRef: {
             name: string

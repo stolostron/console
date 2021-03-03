@@ -12,8 +12,9 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../../lib/resource-request'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { getResourceAttributes } from '../../../../lib/rbac-util'
+import { patchResource } from '../../../../lib/resource-request'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
-import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
+import { ClusterDeploymentDefinition, ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 // import { createImportResources } from '../../../lib/import-cluster'
 
@@ -125,6 +126,78 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         //     rbac: [getResourceAttributes('create', ManagedClusterDefinition)],
         // },
         {
+            id: 'hibernate-cluster',
+            text: t('managed.hibernate'),
+            click: () => {
+                setModalProps({
+                    open: true,
+                    singular: t('cluster'),
+                    plural: t('clusters'),
+                    action: t('hibernate'),
+                    processing: t('hibernating'),
+                    resources: [cluster],
+                    description: t('cluster.hibernate.description'),
+                    columns: modalColumns,
+                    keyFn: (cluster) => cluster.name as string,
+                    actionFn: (cluster) => {
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                        )
+                    },
+                    close: () => {
+                        setModalProps({ open: false })
+                        props.refresh?.()
+                    },
+                })
+            },
+            isDisabled: true,
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        },
+        {
+            id: 'resume-cluster',
+            text: t('managed.resume'),
+            click: () => {
+                setModalProps({
+                    open: true,
+                    singular: t('cluster'),
+                    plural: t('clusters'),
+                    action: t('resume'),
+                    processing: t('resuming'),
+                    resources: [cluster],
+                    description: t('cluster.resume.description'),
+                    columns: modalColumns,
+                    keyFn: (cluster) => cluster.name as string,
+                    actionFn: (cluster) => {
+                        return patchResource(
+                            {
+                                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                kind: ClusterDeploymentDefinition.kind,
+                                metadata: {
+                                    name: cluster.name!,
+                                    namespace: cluster.namespace!,
+                                },
+                            } as ClusterDeployment,
+                            [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                        )
+                    },
+                    close: () => {
+                        setModalProps({ open: false })
+                        props.refresh?.()
+                    },
+                })
+            },
+            isDisabled: true,
+            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        },
+        {
             id: 'detach-cluster',
             text: t('managed.detached'),
             click: (cluster: Cluster) => {
@@ -182,6 +255,26 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             ],
         },
     ]
+
+    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
+        const disabledHibernationActions = [
+            'launch-cluster',
+            'upgrade-cluster',
+            'search-cluster',
+            'hibernate-cluster',
+            'attach-cluster',
+            'detach-cluster',
+        ]
+        actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
+    }
+
+    if (cluster.status !== ClusterStatus.hibernating) {
+        actions = actions.filter((a) => a.id !== 'resume-cluster')
+    }
+
+    if (!cluster.hive.isHibernatable) {
+        actions = actions.filter((a) => a.id !== 'hibernate-cluster')
+    }
 
     if (!cluster.consoleURL) {
         actions = actions.filter((a) => a.id !== 'launch-cluster')
