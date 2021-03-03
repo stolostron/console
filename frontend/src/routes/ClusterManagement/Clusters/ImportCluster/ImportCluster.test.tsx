@@ -129,7 +129,9 @@ const mockAutoSecret: Secret = {
         namespace: 'foobar',
     },
     stringData: {
-         autoImportRetry: '2', kubeconfig: 'Test text' },
+        autoImportRetry: '2',
+        kubeconfig: 'Test text',
+    },
     type: 'Opaque',
 }
 
@@ -281,7 +283,6 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('import.auto.config.label'))
         userEvent.click(getByTestId('kubeConfigEntry'))
         userEvent.type(getByTestId('kubeConfigEntry'), 'Test text')
-        expect(getByText('import.auto.button')).toBeInTheDocument
         userEvent.click(getByText('import.auto.button'))
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
