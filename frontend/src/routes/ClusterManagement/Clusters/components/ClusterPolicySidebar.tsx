@@ -50,8 +50,7 @@ const useStyles = makeStyles({
     },
 })
 
-function RenderDonutChart(data: any) {
-    const { t } = useTranslation(['cluster'])
+function RenderDonutChart(data: any, innerText: string) {
     const clusterRiskScores = data.map((issue: any) => issue.risk)
     const formattedData = [
         {
@@ -77,7 +76,9 @@ function RenderDonutChart(data: any) {
         },
     ]
     const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
-    const legendData: Array<{ name?: string; link?: string }> = formattedData.map((d) => ({ name: `${d.value} ${d.key}` }))
+    const legendData: Array<{ name?: string; link?: string }> = formattedData.map((d) => ({
+        name: `${d.value} ${d.key}`,
+    }))
 
     return (
         <ChartDonut
@@ -103,7 +104,7 @@ function RenderDonutChart(data: any) {
                 top: 20,
             }}
             title={data.length}
-            subTitle={t('policy.report.flyout.donut.chart.text')}
+            subTitle={innerText}
             width={400}
             height={200}
             colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
@@ -178,9 +179,10 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
     const classes = useStyles()
     const { t } = useTranslation(['cluster'])
     const clusterIssues = _.get(props, 'data[0].data.searchResult[0].items', [])
-    // const clusterRiskScores = clusterIssues.map((issue: any) => issue.risk)
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedPolicy, setSelectedPolicy] = useState({ name: '', namespace: '' })
+    // Need to get text here - getting it in RenderDonutChart causes react hook issues due to conditional below
+    const donutChartInnerText = t('policy.report.flyout.donut.chart.text')
 
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
@@ -190,7 +192,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                 {t('policy.report.flyout.title', { count: clusterIssues.length })}
             </div>
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
-            <div className={classes.donutContainer}>{RenderDonutChart(clusterIssues)}</div>
+            <div className={classes.donutContainer}>{RenderDonutChart(clusterIssues, donutChartInnerText)}</div>
             <div className={classes.tableTitleText}>{'Recommendations with remediation'}</div>
             <AcmTable
                 plural="Recommendations"
