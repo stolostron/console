@@ -27,7 +27,6 @@ const useStyles = makeStyles({
     sidebarTitleText: {
         fontSize: '20px',
         paddingBottom: '10px',
-        marginTop: '-1.5rem',
     },
     backAction: {
         border: 0,
