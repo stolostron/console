@@ -156,6 +156,73 @@ const mockSearchResponse = {
     },
 }
 
+const mockCCXQuery = {
+    operationName: 'searchResult',
+    variables: {
+        input: [
+            {
+                filters: [
+                    { property: 'kind', values: ['policyreport'] },
+                    { property: 'namespace', values: ['test-cluster'] },
+                ],
+            },
+        ],
+    },
+    query:
+        'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    count\n    __typename\n  }\n}\n',
+}
+
+const mockCCXResponse = {
+    data: {
+        searchResult: [
+            {
+                count: 3,
+                items: [
+                    {
+                        apigroup: 'wgpolicyk8s.io',
+                        apiversion: 'v1alpha1',
+                        category: 'category,category1,category2',
+                        cluster: 'test-cluster',
+                        created: '2021-03-02T21:26:04Z',
+                        kind: 'policyreport',
+                        message: 'policyreport testing risk 1',
+                        name: 'report.risk.1',
+                        namespace: 'test-cluster',
+                        risk: '1',
+                        _hubClusterResource: 'true',
+                    },
+                    {
+                        apigroup: 'wgpolicyk8s.io',
+                        apiversion: 'v1alpha1',
+                        category: 'category,category1,category2',
+                        cluster: 'test-cluster',
+                        created: '2021-03-02T21:26:04Z',
+                        kind: 'policyreport',
+                        message: 'policyreport testing risk 2',
+                        name: 'report.risk.2',
+                        namespace: 'test-cluster',
+                        risk: '2',
+                        _hubClusterResource: 'true',
+                    },
+                    {
+                        apigroup: 'wgpolicyk8s.io',
+                        apiversion: 'v1alpha1',
+                        category: 'category,category1,category2',
+                        cluster: 'test-cluster',
+                        created: '2021-03-02T21:26:04Z',
+                        kind: 'policyreport',
+                        message: 'policyreport testing risk 3',
+                        name: 'report.risk.3',
+                        namespace: 'test-cluster',
+                        risk: '3',
+                        _hubClusterResource: 'true',
+                    },
+                ],
+            },
+        ],
+    },
+}
+
 describe('StatusSummaryCount', () => {
     const Component = () => (
         <MemoryRouter>
@@ -166,10 +233,12 @@ describe('StatusSummaryCount', () => {
     )
     test('renders', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        const ccx = nockSearch(mockCCXQuery, mockCCXResponse)
         render(<Component />)
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(ccx.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
@@ -187,6 +256,9 @@ describe('StatusSummaryCount', () => {
 
             userEvent.click(screen.getByText(6))
             await new Promise((resolve) => setTimeout(resolve, 1500))
+
+            waitFor(() => expect(screen.getByText('Identified issues')).toBeInTheDocument())
+            expect(screen.getByText('0 Critical, 1 Major, 1 Minor, 1 Low, 0 Warning')).toBeInTheDocument()
         })
     })
 })

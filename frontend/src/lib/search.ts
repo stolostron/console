@@ -7,9 +7,9 @@ export const apiSearchUrl = '/proxy/search'
 export type ISearchResult = {
     data: {
         searchResult: {
-            items: any
+            items?: any
             count: number
-            related: {
+            related?: {
                 count: number
                 kind: string
             }[]

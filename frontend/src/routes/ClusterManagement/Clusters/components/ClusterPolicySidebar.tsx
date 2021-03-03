@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmDonutChart, AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
@@ -158,6 +159,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                 columns={[
                     {
                         header: 'Description',
+                        search: 'message',
                         sort: 'message',
                         cell: (item: any) => {
                             return (
@@ -177,7 +179,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                         header: 'Category',
                         sort: 'category',
                         cell: (item: any) => {
-                            if (item.category) {
+                            if (item.category && item.category !== '') {
                                 const categories = item.category.split(',')
                                 const categoriesToHide = categories.slice(1)
                                 return <AcmLabels labels={categories} collapse={categoriesToHide} />
@@ -187,6 +189,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                     },
                     {
                         header: 'Total risk',
+                        search: 'risk',
                         sort: 'risk',
                         cell: 'risk',
                     },
@@ -195,6 +198,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                 tableActions={[]}
                 bulkActions={[]}
                 rowActions={[]}
+                gridBreakPoint={TableGridBreakpoint.none}
             />
         </div>
     )
