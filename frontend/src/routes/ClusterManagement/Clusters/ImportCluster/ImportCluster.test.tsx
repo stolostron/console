@@ -115,7 +115,7 @@ const mockAutoSecretResponse: Secret = {
         name: 'auto-import-secret',
         namespace: 'foobar',
     },
-    data: { 'autoImportRetry': '2', 'kubeconfig': 'Test text' },
+    data: { autoImportRetry: '2', kubeconfig: 'Test text' },
     type: 'Opaque',
 }
 
@@ -126,7 +126,7 @@ const mockAutoSecret: Secret = {
         name: 'auto-import-secret',
         namespace: 'foobar',
     },
-    data: { 'autoImportRetry': '2', 'kubeconfig': 'Test text' },
+    data: { autoImportRetry: '2', kubeconfig: 'Test text' },
     type: 'Opaque',
 }
 
@@ -228,7 +228,6 @@ describe('ImportCluster', () => {
         expect(getByTestId('import-cluster-form')).toBeInTheDocument()
         expect(getByTestId('clusterName-label')).toBeInTheDocument()
         expect(getByTestId('additionalLabels-label')).toBeInTheDocument()
-        
     })
 
     test('can create resources and generate the import command', async () => {
@@ -261,7 +260,6 @@ describe('ImportCluster', () => {
         expect(getByTestId('clusterName')).toHaveValue('')
     })
     test('can create resources when auto importing', async () => {
-        
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
@@ -287,8 +285,7 @@ describe('ImportCluster', () => {
         await waitFor(() => expect(managedClusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(kacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(importSecretNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(importAutoSecretNock.isDone()).toBeTruthy())        
-
+        await waitFor(() => expect(importAutoSecretNock.isDone()).toBeTruthy())
     })
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
@@ -383,7 +380,7 @@ describe('Import Discovered Cluster', () => {
         // Add labels
         userEvent.click(getByTestId('label-input-button'))
         userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-        
+
         userEvent.click(getByText('import.form.submit'))
 
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
