@@ -16,7 +16,6 @@ const BMC_USERNAME = 'bmc.username'
 const BMC_PASSWORD = 'bmc.password'
 const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
 const CREDENTIAL_NAMESPACE = 'metadata.namespace'
-const random = () => (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32).toString()
 
 export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     // make sure all hosts have a bare metal asset
@@ -110,9 +109,14 @@ export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterNam
 export async function importBMAs() {
     return new Promise((resolve, reject) => {
         const input = document.createElement('input')
+        input.setAttribute('id', 'importBMAs')
         input.type = 'file'
         input.accept = '.csv, .txt'
+        input.style.visibility = 'hidden'
+        const body = document.querySelector('body')
+        body?.appendChild(input)
         input.onchange = (e) => {
+            input.remove()
             const file = e.target.files[0]
             const reader = new FileReader()
             reader.readAsText(file, 'UTF-8')
@@ -132,7 +136,6 @@ export async function importBMAs() {
                                 headers.forEach((header, inx) => {
                                     arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
                                 })
-                                arr.push(`"id": "${random()}"`)
                                 lines.push(`{${arr.join(',')}}`)
                             }
                         })
@@ -145,7 +148,7 @@ export async function importBMAs() {
                                     namespace: bma.hostNamespace,
                                     bootMACAddress: bma.macAddress,
                                     role: bma.role,
-                                    uid: `${random()}`,
+                                    uid: `${bma.hostNamespace}/${bma.hostName}`,
                                     bmc: {
                                         address: bma.bmcAddress,
                                         username: bma.username,
