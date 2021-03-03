@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmDonutChart, AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
+import { AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
@@ -18,17 +19,25 @@ const useStyles = makeStyles({
         paddingBottom: '1rem',
     },
     donutContainer: {
-        paddingBottom: '.5rem',
+        width: '400px',
+        height: '200px',
+        paddingBottom: '1rem',
+        marginLeft: '-4rem',
     },
     sidebarTitleText: {
         fontSize: '20px',
         paddingBottom: '10px',
+        marginTop: '-1.5rem',
     },
     backAction: {
         border: 0,
         cursor: 'pointer',
         background: 'none',
         color: 'var(--pf-global--link--Color)',
+    },
+    tableTitleText: {
+        fontWeight: 700,
+        fontSize: '16px',
     },
     policyDetailLink: {
         border: 0,
@@ -41,6 +50,67 @@ const useStyles = makeStyles({
         },
     },
 })
+
+function RenderDonutChart(data: any) {
+    const { t } = useTranslation(['cluster'])
+    const clusterRiskScores = data.map((issue: any) => issue.risk)
+    const formattedData = [
+        {
+            key: 'Critical',
+            value: clusterRiskScores.filter((score: string) => score === '4').length,
+            isPrimary: true,
+        },
+        {
+            key: 'Major',
+            value: clusterRiskScores.filter((score: string) => score === '3').length,
+        },
+        {
+            key: 'Minor',
+            value: clusterRiskScores.filter((score: string) => score === '2').length,
+        },
+        {
+            key: 'Low',
+            value: clusterRiskScores.filter((score: string) => score === '1').length,
+        },
+        {
+            key: 'Warning',
+            value: clusterRiskScores.filter((score: string) => score === '0').length,
+        },
+    ]
+    const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
+    const legendData: Array<{ name?: string; link?: string }> = formattedData.map((d) => ({ name: `${d.value} ${d.key}` }))
+
+    return (
+        <ChartDonut
+            ariaTitle={'cluster-violations'}
+            ariaDesc={'cluster-violations-donut-chart'}
+            legendOrientation="vertical"
+            legendPosition="right"
+            constrainToVisibleArea={true}
+            data={chartData}
+            legendData={legendData}
+            legendComponent={
+                <ChartLegend
+                    data={legendData}
+                    labelComponent={<ChartLabel />}
+                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                />
+            }
+            labels={({ datum }) => `${datum.x}: ${datum.y}`}
+            padding={{
+                bottom: 20,
+                left: 20,
+                right: 145,
+                top: 20,
+            }}
+            title={data.length}
+            subTitle={t('policy.report.flyout.donut.chart.text')}
+            width={400}
+            height={200}
+            colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+        />
+    )
+}
 
 function DetailsView(props: {
     setDetailsView: React.Dispatch<React.SetStateAction<boolean>>
@@ -109,7 +179,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
     const classes = useStyles()
     const { t } = useTranslation(['cluster'])
     const clusterIssues = _.get(props, 'data[0].data.searchResult[0].items', [])
-    const clusterRiskScores = clusterIssues.map((issue: any) => issue.risk)
+    // const clusterRiskScores = clusterIssues.map((issue: any) => issue.risk)
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedPolicy, setSelectedPolicy] = useState({ name: '', namespace: '' })
 
@@ -121,38 +191,8 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                 {t('policy.report.flyout.title', { count: clusterIssues.length })}
             </div>
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
-            <div className={classes.donutContainer}>
-                <AcmDonutChart
-                    loading={props.loading ?? true}
-                    title="Total issues"
-                    description={'char desc'}
-                    data={[
-                        {
-                            key: 'Critical',
-                            value: clusterRiskScores.filter((score: string) => score === '4').length,
-                            isPrimary: true,
-                        },
-                        {
-                            key: 'Major',
-                            value: clusterRiskScores.filter((score: string) => score === '3').length,
-                        },
-                        {
-                            key: 'Minor',
-                            value: clusterRiskScores.filter((score: string) => score === '2').length,
-                        },
-                        {
-                            key: 'Low',
-                            value: clusterRiskScores.filter((score: string) => score === '1').length,
-                        },
-                        {
-                            key: 'Warning',
-                            value: clusterRiskScores.filter((score: string) => score === '0').length,
-                        },
-                    ]}
-                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
-                />
-            </div>
-            {/* TODO Loading table */}
+            <div className={classes.donutContainer}>{RenderDonutChart(clusterIssues)}</div>
+            <div className={classes.tableTitleText}>{'Recommendations with remediation'}</div>
             <AcmTable
                 plural="Recommendations"
                 items={clusterIssues}

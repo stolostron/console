@@ -19,24 +19,15 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 
 function DescriptionStringBuilder(PolicyReportResultData: ISearchResult[]) {
     const policyReportViolationsCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].count', 0)
-    const criticalCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '4'
-    ).length
-    const majorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '3'
-    ).length
-    const minorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '2'
-    ).length
-    const lowCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '1'
-    ).length
-    const warningCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '0'
-    ).length
     if (policyReportViolationsCount === 0) {
         return ''
     }
+    const reportList = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', [])
+    const criticalCount = reportList.filter((item: any) => item.risk === '4').length
+    const majorCount = reportList.filter((item: any) => item.risk === '3').length
+    const minorCount = reportList.filter((item: any) => item.risk === '2').length
+    const lowCount = reportList.filter((item: any) => item.risk === '1').length
+    const warningCount = reportList.filter((item: any) => item.risk === '0').length
     return `${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
 }
 
