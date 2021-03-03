@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState, useEffect } from 'react'
 import { AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { FeatureGate, listFeatureGates } from '../resources/feature-gate'

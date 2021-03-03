@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import React from 'react'

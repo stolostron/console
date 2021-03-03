@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
 import {

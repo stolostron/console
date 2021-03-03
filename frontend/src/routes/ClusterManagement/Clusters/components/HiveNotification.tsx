@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { Fragment, useContext, useEffect, useState, useCallback } from 'react'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'

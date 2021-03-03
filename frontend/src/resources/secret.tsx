@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { getResource } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'

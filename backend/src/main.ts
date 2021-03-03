@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 /* istanbul ignore file */
 import { readFileSync } from 'fs'
 if (process.env.NODE_ENV === 'development') {

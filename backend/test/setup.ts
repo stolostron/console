@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import * as axios from 'axios'
 import * as nock from 'nock'
 import { AddressInfo } from 'net'

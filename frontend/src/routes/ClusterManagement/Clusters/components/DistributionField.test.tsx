@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockCreateSelfSubjectAccessReview } from '../../../../lib/nock-util'
@@ -107,7 +109,15 @@ describe('DistributionField', () => {
             nodes: undefined,
             kubeApiServer: '',
             consoleURL: '',
-            hiveSecrets: undefined,
+            hive: {
+                isHibernatable: true,
+                clusterPool: undefined,
+                secrets: {
+                    installConfig: '',
+                    kubeadmin: '',
+                    kubeconfig: '',
+                },
+            },
             isHive: false,
             isManaged: true,
         }

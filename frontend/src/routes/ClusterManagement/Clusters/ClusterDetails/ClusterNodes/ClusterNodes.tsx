@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { ReactNode, useContext } from 'react'
 import {
     AcmPageCard,
