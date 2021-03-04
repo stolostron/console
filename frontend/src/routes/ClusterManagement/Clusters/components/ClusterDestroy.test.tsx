@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import { ClusterDestroy } from './ClusterDestroy'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
@@ -95,22 +96,22 @@ function nockCreateClusterRbac() {
 
 describe('ClusterDestroy', () => {
     test('renders the destroying state', async () => {
-        const rbacScope = nockCreateClusterRbac()
         render(<ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />)
-        await waitFor(() => expect(rbacScope.isDone()).toBeTruthy())
         expect(screen.getByText('destroying.inprogress')).toBeInTheDocument()
         expect(screen.getByText('view.logs')).toBeInTheDocument()
     })
     test('renders the detaching state', async () => {
-        const rbacScope = nockCreateClusterRbac()
         render(<ClusterDestroy isLoading={true} cluster={mockDetachCluster} />)
-        await waitFor(() => expect(rbacScope.isDone()).toBeTruthy())
         expect(screen.getByText('detaching.inprogress')).toBeInTheDocument()
         expect(screen.queryByText('view.logs')).toBeNull()
     })
     test('renders success state', async () => {
         const rbacScope = nockCreateClusterRbac()
-        render(<ClusterDestroy isLoading={false} cluster={mockDetachCluster} />)
+        render(
+            <MemoryRouter>
+                <ClusterDestroy isLoading={false} cluster={mockDetachCluster} />
+            </MemoryRouter>
+        )
         await waitFor(() => expect(rbacScope.isDone()).toBeTruthy())
         expect(screen.getByText('detaching.success')).toBeInTheDocument()
     })
