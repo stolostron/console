@@ -38,13 +38,14 @@ async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse)
         await delay(req, res)
     }
 
-    logger.info(req.url)
-
     if (req.url === '/multicloud') (req as any).url = '/'
     else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
 
     const route = router.find(req.method as Router.HTTPMethod, req.url)
-    if (!route) return notFound(req, res)
+    if (!route) {
+        logger.warn({ msg: 'route not found', url: req.url })
+        return notFound(req, res)
+    }
 
     try {
         const result: unknown = route.handler(req, res, route.params, route.store)
