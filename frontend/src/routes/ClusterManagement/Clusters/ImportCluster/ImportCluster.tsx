@@ -75,15 +75,13 @@ export function ImportClusterPageContent() {
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [submitted, setSubmitted] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
-    const [Username, setUsername] = useState<string | undefined>()
-    const [Password, setPassword] = useState<string | undefined>()
+    //    const [Username, setUsername] = useState<string | undefined>()
+    //    const [Password, setPassword] = useState<string | undefined>()
     const [importMode, setimportMode] = useState<string | undefined>()
     const [credentialMode, setcredentialMode] = useState<string | undefined>()
     const [kubeConfigText, setkubeConfigText] = useState<string | undefined>()
     const [manualButton, setmanualButton] = useState<boolean>(false)
-    const [autoButton, setautoButton] = useState<boolean>(false)
     const [credentialBool, setcredentialBool] = useState<boolean>(false)
-    const [kubeconfigBool, setkubeconfigBool] = useState<boolean>(false)
 
     const onReset = () => {
         setClusterName('')
@@ -126,16 +124,12 @@ export function ImportClusterPageContent() {
                             setimportMode(id)
                             switch (id) {
                                 case 'automatic-import':
-                                    setautoButton(true)
                                     setmanualButton(false)
                                     break
                                 case 'manual-import':
-                                    setautoButton(false)
                                     setmanualButton(true)
-
                                     break
                                 default:
-                                    setautoButton(false)
                                     setmanualButton(false)
                             }
                         }}
@@ -147,8 +141,8 @@ export function ImportClusterPageContent() {
                             {t('import.manual.choice')}
                         </SelectOption>
                     </AcmSelect>
-                    {autoButton && <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>}
-                    {autoButton && (
+                    {!manualButton && <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>}
+                    {!manualButton && (
                         <AcmSelect
                             label={t('import.credential.select')}
                             placeholder={t('import.credential.default')}
@@ -158,15 +152,12 @@ export function ImportClusterPageContent() {
                                 switch (id) {
                                     case 'credentials':
                                         setcredentialBool(true)
-                                        setkubeconfigBool(false)
                                         break
                                     case 'kubeconfig':
                                         setcredentialBool(false)
-                                        setkubeconfigBool(true)
                                         break
                                     default:
                                         setcredentialBool(false)
-                                        setkubeconfigBool(false)
                                 }
                             }}
                         >
@@ -179,7 +170,7 @@ export function ImportClusterPageContent() {
                         </AcmSelect>
                     )}
 
-                    <AcmTextInput
+                    {/* <AcmTextInput
                         id="username"
                         label={t('import.username')}
                         placeholder={t('import.username.place')}
@@ -188,7 +179,7 @@ export function ImportClusterPageContent() {
                             setUsername(username)
                         }}
                         isRequired
-                        hidden={!autoButton || !credentialBool}
+                        hidden={manualButton || !credentialBool}
                     />
                     <AcmTextInput
                         id="password"
@@ -198,10 +189,9 @@ export function ImportClusterPageContent() {
                         onChange={(password) => {
                             setPassword(password)
                         }}
-                        isRequired
-                        //                    hidden= {importMode !== 'automatic-import'}
-                        hidden={!autoButton || !credentialBool}
-                    />
+                        isRequired            
+                        hidden={manualButton || !credentialBool}
+                    /> */}
                     <AcmTextArea
                         id="kubeConfigEntry"
                         label={t('import.auto.config.label')}
@@ -210,7 +200,7 @@ export function ImportClusterPageContent() {
                         onChange={(file) => {
                             setkubeConfigText(file)
                         }}
-                        hidden={!kubeconfigBool || !autoButton}
+                        hidden={credentialBool || manualButton}
                         isRequired
                     />
 
@@ -218,92 +208,39 @@ export function ImportClusterPageContent() {
 
                     <AcmAlertGroup isInline canClose />
                     <ActionGroup>
-                        {manualButton && (
-                            <AcmSubmit
-                                id="submit"
-                                variant="primary"
-                                isDisabled={!clusterName || submitted}
-                                onClick={async () => {
-                                    setSubmitted(true)
-                                    alertContext.clearAlerts()
-                                    /* istanbul ignore next */
-                                    const clusterLabels = {
-                                        cloud: 'auto-detect',
-                                        vendor: 'auto-detect',
-                                        name: clusterName,
-                                        ...additionalLabels,
-                                    }
-                                    const createdResources: IResource[] = []
-                                    return new Promise(async (resolve, reject) => {
+                        <AcmSubmit
+                            id="submit"
+                            variant="primary"
+                            isDisabled={!clusterName || submitted}
+                            onClick={async () => {
+                                setSubmitted(true)
+                                alertContext.clearAlerts()
+                                /* istanbul ignore next */
+                                const clusterLabels = {
+                                    cloud: 'auto-detect',
+                                    vendor: 'auto-detect',
+                                    name: clusterName,
+                                    ...additionalLabels,
+                                }
+                                const createdResources: IResource[] = []
+                                return new Promise(async (resolve, reject) => {
+                                    try {
                                         try {
-                                            try {
-                                                createdResources.push(await createProject(clusterName).promise)
-                                            } catch (err) {
-                                                const resourceError = err as ResourceError
-                                                if (resourceError.code !== ResourceErrorCode.Conflict) {
-                                                    throw err
-                                                }
-                                            }
-                                            createdResources.push(
-                                                await createManagedCluster({ clusterName, clusterLabels }).promise
-                                            )
-                                            createdResources.push(
-                                                await createKlusterletAddonConfig({ clusterName, clusterLabels })
-                                                    .promise
-                                            )
-
-                                            setImportCommand(await pollImportYamlSecret(clusterName))
+                                            createdResources.push(await createProject(clusterName).promise)
                                         } catch (err) {
-                                            if (err instanceof Error) {
-                                                alertContext.addAlert({
-                                                    type: 'danger',
-                                                    title: err.name,
-                                                    message: err.message,
-                                                })
+                                            const resourceError = err as ResourceError
+                                            if (resourceError.code !== ResourceErrorCode.Conflict) {
+                                                throw err
                                             }
-                                            await deleteResources(createdResources).promise
-                                            setSubmitted(false)
-                                            reject()
-                                        } finally {
-                                            resolve(undefined)
                                         }
-                                    })
-                                }}
-                                label={submitted ? t('import.form.submitted') : t('import.form.submit')}
-                                processingLabel={t('import.generating')}
-                            />
-                        )}
+                                        createdResources.push(
+                                            await createManagedCluster({ clusterName, clusterLabels }).promise
+                                        )
+                                        createdResources.push(
+                                            await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
+                                        )
 
-                        {autoButton && (
-                            <AcmButton
-                                variant="primary"
-                                onClick={async () => {
-                                    alertContext.clearAlerts()
-
-                                    const clusterLabels = {
-                                        cloud: 'auto-detect',
-                                        vendor: 'auto-detect',
-                                        name: clusterName,
-                                        ...additionalLabels,
-                                    }
-                                    const createdResources: IResource[] = []
-                                    return new Promise(async (resolve, reject) => {
-                                        try {
-                                            try {
-                                                createdResources.push(await createProject(clusterName).promise)
-                                            } catch (err) {
-                                                const resourceError = err as ResourceError
-                                                if (resourceError.code !== ResourceErrorCode.Conflict) {
-                                                    throw err
-                                                }
-                                            }
-                                            createdResources.push(
-                                                await createManagedCluster({ clusterName, clusterLabels }).promise
-                                            )
-                                            createdResources.push(
-                                                await createKlusterletAddonConfig({ clusterName, clusterLabels })
-                                                    .promise
-                                            )
+                                        if (!manualButton) {
                                             createdResources.push(
                                                 await createResource<IResource>({
                                                     apiVersion: 'v1',
@@ -326,26 +263,35 @@ export function ImportClusterPageContent() {
                                                       )
                                                   )
                                                 : onReset()
-                                        } catch (err) {
-                                            if (err instanceof Error) {
-                                                alertContext.addAlert({
-                                                    type: 'danger',
-                                                    title: err.name,
-                                                    message: err.message,
-                                                })
-                                            }
-                                            await deleteResources(createdResources).promise
-                                            setSubmitted(false)
-                                            reject()
-                                        } finally {
-                                            resolve(undefined)
+                                        } else {
+                                            setImportCommand(await pollImportYamlSecret(clusterName))
                                         }
-                                    })
-                                }}
-                            >
-                                {t('import.auto.button')}
-                            </AcmButton>
-                        )}
+                                    } catch (err) {
+                                        if (err instanceof Error) {
+                                            alertContext.addAlert({
+                                                type: 'danger',
+                                                title: err.name,
+                                                message: err.message,
+                                            })
+                                        }
+                                        await deleteResources(createdResources).promise
+                                        setSubmitted(false)
+                                        reject()
+                                    } finally {
+                                        resolve(undefined)
+                                    }
+                                })
+                            }}
+                            label={
+                                submitted
+                                    ? t('import.form.submitted')
+                                    : manualButton
+                                    ? t('import.form.submit')
+                                    : t('import.auto.button')
+                            }
+                            processingLabel={t('import.generating')}
+                        />
+
                         {submitted ? (
                             <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
                                 {t('import.importmode.importsaved')}
