@@ -1,6 +1,5 @@
 # Copyright Contributors to the Open Cluster Management project
 
-
 -include /opt/build-harness/Makefile.prow
 
 .PHONY: build
@@ -19,12 +18,10 @@ check:
 	npm run backend:check
 	npm run frontend:check
 
-
 .PHONY: lint
 lint:
 	npm run backend:lint
 	npm run frontend:lint
-
 
 .PHONY: unit-tests
 unit-tests:
