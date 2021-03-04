@@ -86,7 +86,8 @@ export class ServerSideEvents {
                 const event = await client.eventQueue.shift()
                 if (event) {
                     const eventString = this.createEventString(event)
-                    client.writableStream.write(eventString, 'utf8')
+                    const writeResult = client.writableStream.write(eventString, 'utf8')
+                    if (!writeResult) await new Promise<void>((resolve) => client.writableStream.once('drain', resolve))
                     const watchEvent = event.data as {
                         type: string
                         object: {
@@ -95,7 +96,7 @@ export class ServerSideEvents {
                             metadata: { name: string; namespace: string }
                         }
                     }
-                    const { apiVersion, kind, metadata } = watchEvent.object
+                    const { kind, metadata } = watchEvent.object
                     const name = metadata?.name
                     const namespace = metadata?.namespace
                     logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
@@ -208,6 +209,8 @@ export class ServerSideEvents {
         }
 
         const msg: Record<string, string | number | undefined> = {
+            msg: 'OK',
+            status: 200,
             method: req.method,
             path: req.url,
             events: sentCount,
