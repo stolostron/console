@@ -1,9 +1,13 @@
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { randomBytes } from 'crypto'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
 import { getEncodeStream } from './compression'
+import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
+
+const instanceID = randomBytes(20).toString('hex')
 
 const {
     HTTP2_HEADER_CONTENT_TYPE,
@@ -201,6 +205,8 @@ export class ServerSideEvents {
         res.setTimeout(2147483647)
         req.setTimeout(2147483647)
 
+        setCookie(res, 'watch', instanceID)
+
         res.writeHead(HTTP_STATUS_OK, {
             [HTTP2_HEADER_CONTENT_TYPE]: 'text/event-stream',
             [HTTP2_HEADER_CACHE_CONTROL]: 'no-store, no-transform',
@@ -212,12 +218,16 @@ export class ServerSideEvents {
             }
         })
 
-        const lastEventID = 0
-        // TODO only support last-event-id if use is using this instance cookie...
-        // if (req.headers['last-event-id']) {
-        //     const last = Number(req.headers['last-event-id'])
-        //     if (Number.isInteger(last)) lastEventID = last
-        // }
+        let lastEventID = 0
+        if (req.headers['last-event-id']) {
+            const last = Number(req.headers['last-event-id'])
+            if (Number.isInteger(last)) {
+                const cookies = parseCookies(req)
+                if (cookies['watch'] === instanceID) {
+                    lastEventID = last
+                }
+            }
+        }
 
         let sentCount = 0
         for (const eventID in this.events) {
