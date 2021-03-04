@@ -8,6 +8,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvents } from '../lib/server-side-events'
 
 let watching = false
+const resources: Record<string, Record<string, number>> = {}
 
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED'
@@ -166,8 +167,6 @@ export function startWatching(token: string): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
 }
-
-const resources: Record<string, Record<string, number>> = {}
 
 export function watchResource(
     token: string,
