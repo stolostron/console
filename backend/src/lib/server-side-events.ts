@@ -1,3 +1,4 @@
+import { STATUS_CODES } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { clearInterval } from 'timers'
 import { flushStream, getEncodeStream } from './compression'
@@ -97,7 +98,7 @@ export class ServerSideEvents {
                     const { apiVersion, kind, metadata } = watchEvent.object
                     const name = metadata?.name
                     const namespace = metadata?.namespace
-                    logger.debug({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+                    logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
                 }
             } catch (err) {
                 logger.error(err)
@@ -179,6 +180,8 @@ export class ServerSideEvents {
         this.clients[clientID] = eventClient
 
         res.setTimeout(2147483647)
+        req.setTimeout(2147483647)
+
         res.writeHead(HTTP_STATUS_OK, {
             [HTTP2_HEADER_CONTENT_TYPE]: 'text/event-stream',
             [HTTP2_HEADER_CACHE_CONTROL]: 'no-store, no-transform',
@@ -191,18 +194,25 @@ export class ServerSideEvents {
         })
 
         let lastEventID = 0
-        if (req.headers['last-event-id']) {
-            const last = Number(req.headers['last-event-id'])
-            if (Number.isInteger(last)) lastEventID = last
-        }
+        // TODO only support last-event-id if token already in history...
+        // if (req.headers['last-event-id']) {
+        //     const last = Number(req.headers['last-event-id'])
+        //     if (Number.isInteger(last)) lastEventID = last
+        // }
 
-        writableStream.write('retry: 15000\n\n')
-        flushStream(writableStream)
-
+        let sentCount = 0
         for (const eventID in this.events) {
-            if (Number(eventID) <= lastEventID) continue
+            if (Number(eventID) < lastEventID) continue
             this.sendEvent(clientID, this.events[eventID])
+            sentCount++
         }
+
+        const msg: Record<string, string | number | undefined> = {
+            method: req.method,
+            path: req.url,
+            events: sentCount,
+        }
+        logger.debug(msg)
 
         return eventClient
     }

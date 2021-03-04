@@ -45,9 +45,9 @@ process.on('multipleResolves', (type, _promise, _reason) => {
     void stop()
 })
 
-process.on('unhandledRejection', (reason, _promise) => {
-    logger.error({ msg: 'process unhandledRejection', reason })
-    void stop()
-})
+// process.on('unhandledRejection', (reason, _promise) => {
+//     logger.error({ msg: 'process unhandledRejection', reason })
+//     void stop()
+// })
 
 void start()

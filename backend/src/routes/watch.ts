@@ -1,8 +1,6 @@
 import { readFileSync } from 'fs'
-import { IncomingMessage } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
-import { parseJsonBody } from '../lib/body-parser'
 import { parseCookies } from '../lib/cookies'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -37,9 +35,11 @@ interface WatchEvent {
 
 function readToken() {
     try {
-        return readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        const token = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        startWatching(token)
+        return token
     } catch (err) {
-        logger.error(err)
+        logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
     }
 }
 
@@ -89,7 +89,7 @@ function canAccess(
         token
     ).then((data: { status: { allowed: boolean } }) => {
         if (data.status.allowed) {
-            logger.debug({
+            logger.trace({
                 msg: 'access',
                 type: 'ALLOWED',
                 verb,
@@ -198,7 +198,7 @@ export function watchResource(
                                         },
                                     }
                                 }
-                                logger.debug({
+                                logger.trace({
                                     msg: 'watch',
                                     type: eventData.type,
                                     kind: eventData.object.kind,

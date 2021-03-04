@@ -9,7 +9,6 @@ const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=60
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
         let url = req.url
-        if (url.startsWith('/multicloud')) url = url.substr(11)
 
         let ext = extname(url)
         if (ext === '') {
@@ -42,7 +41,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                     })
                     .on('error', (err) => res.writeHead(404).end())
                 pipeline(readStream, res.stream, (err) => {
-                    console.log(err)
+                    if (err) logger.error(err)
                 })
             } catch (err) {
                 return res.writeHead(404).end()
@@ -55,7 +54,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                 })
                 .on('error', (err) => res.writeHead(404).end())
             pipeline(readStream, res.stream, (err) => {
-                console.log(err)
+                if (err) logger.error(err)
             })
         }
         return

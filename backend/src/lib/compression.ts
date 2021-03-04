@@ -1,5 +1,6 @@
-import { Readable, Writable } from 'stream'
+import { Readable } from 'stream'
 import {
+    constants,
     createBrotliCompress,
     createBrotliDecompress,
     createDeflate,
@@ -7,6 +8,7 @@ import {
     createGzip,
     createInflate,
 } from 'zlib'
+import { logger } from './logger'
 
 export function getDecodeStream(stream: Readable, contentEncoding?: string | string[]): Readable {
     switch (contentEncoding) {
@@ -34,21 +36,21 @@ export function getEncodeStream(
     else if (acceptEncoding.includes('deflate')) encoding = 'deflate'
 
     switch (encoding) {
-        case 'br': {
-            const compressionStream = createBrotliCompress()
-            compressionStream.pipe(stream)
-            return [compressionStream, encoding]
-        }
-        case 'gzip': {
-            const compressionStream = createGzip()
-            compressionStream.pipe(stream)
-            return [compressionStream, encoding]
-        }
-        case 'deflate': {
-            const compressionStream = createInflate()
-            compressionStream.pipe(stream)
-            return [compressionStream, encoding]
-        }
+        // case 'br': {
+        //     const compressionStream = createBrotliCompress()
+        //     compressionStream.pipe(stream)
+        //     return [compressionStream, encoding]
+        // }
+        // case 'gzip': {
+        //     const compressionStream = createGzip()
+        //     compressionStream.pipe(stream)
+        //     return [compressionStream, encoding]
+        // }
+        // case 'deflate': {
+        //     const compressionStream = createInflate()
+        //     compressionStream.pipe(stream)
+        //     return [compressionStream, encoding]
+        // }
         default:
             return [stream, 'identity']
     }
@@ -56,6 +58,10 @@ export function getEncodeStream(
 
 export function flushStream(stream: NodeJS.WritableStream): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const flush: () => void = (stream as any).flush
-    if (flush) flush()
+    const flush: (kind: number) => void = (stream as any).flush
+    try {
+        if (flush) flush(constants.Z_FULL_FLUSH)
+    } catch (err) {
+        logger.error(err)
+    }
 }

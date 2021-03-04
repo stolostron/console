@@ -40,7 +40,6 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
         }
         const requestQueryString = stringifyQuery(requestQuery)
         const body = await jsonRequest<{ access_token: string }>(oauthInfo.token_endpoint + '?' + requestQueryString)
-        console.log(body)
         if (body.access_token) {
             const headers = {
                 'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${

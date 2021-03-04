@@ -45,7 +45,7 @@ export function jsonPost<T = unknown>(url: string, body: unknown, token?: string
             }
         })
         clientRequest.on('error', (err) => {
-            logger.error(err)
+            // logger.error(err)
             reject(err)
         })
         clientRequest.write(JSON.stringify(body))
