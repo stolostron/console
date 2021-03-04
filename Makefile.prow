@@ -10,6 +10,7 @@ build:
 .PHONY: install
 install:
 	npm ci
+	npm run postinstall
 
 .PHONY: check
 check:
