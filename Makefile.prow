@@ -5,24 +5,31 @@
 
 .PHONY: build
 build:
-	npm run build
+	npm run backend:ci
+	npm run frontend:ci
 
 .PHONY: install
 install:
 	npm ci
-	npm run postinstall
+	npm run backend:ci
+	npm run frontend:ci
 
 .PHONY: check
 check:
-	npm run check
+	npm run backend:check
+	npm run frontend:check
+
 
 .PHONY: lint
 lint:
-	npm run lint
+	npm run backend:lint
+	npm run frontend:lint
+
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test
+	npm run backend:lint
+	npm run frontend:lint
