@@ -1,18 +1,11 @@
-import { readFileSync } from 'fs'
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { readdirSync, readFileSync } from 'fs'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
 import { parseCookies } from '../lib/cookies'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvents } from '../lib/server-side-events'
-
-const {
-    HTTP2_HEADER_CONTENT_TYPE,
-    HTTP2_HEADER_AUTHORIZATION,
-    HTTP2_HEADER_ACCEPT,
-    HTTP2_HEADER_ACCEPT_ENCODING,
-} = constants
 
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED'
@@ -34,6 +27,13 @@ interface WatchEvent {
 }
 
 function readToken() {
+    try {
+        const files = readdirSync('/var/run/secrets/kubernetes.io/serviceaccount')
+        console.log(files)
+    } catch (err) {
+        logger.error('/var/run/secrets/kubernetes.io/serviceaccount not found')
+    }
+
     try {
         const token = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
         startWatching(token)
