@@ -28,5 +28,5 @@ unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run backend:lint
-	npm run frontend:lint
+	npm run backend:test
+	npm run frontend:test
