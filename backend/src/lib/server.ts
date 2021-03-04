@@ -84,6 +84,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                         if (options.logRequest) {
                             options.logRequest(req, res)
                         } else {
+                            if (req.url === '/readinessProbe') return
                             const msg: Record<string, string | number | undefined> = {
                                 msg: STATUS_CODES[res.statusCode],
                                 status: res.statusCode,
@@ -91,16 +92,6 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                                 path: req.url,
                                 ms: 0,
                             }
-
-                            // const contentType = res.getHeader('content-type')
-                            // if (typeof contentType === 'string') {
-                            //     msg.content = contentType
-                            // }
-
-                            // const contentLength = res.getHeader('Content-Length')
-                            // if (typeof contentLength === 'string') {
-                            //     msg.length = Number(contentLength)
-                            // }
 
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
