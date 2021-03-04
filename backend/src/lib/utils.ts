@@ -4,7 +4,6 @@ import { createHash } from 'crypto'
 import { IncomingMessage, request as httpRequest, RequestOptions } from 'http'
 import { Agent } from 'https'
 import { parse as parseUrl } from 'url'
-import { logger } from './logger'
 import {
     ManagedClusterAction,
     ManagedClusterActionApiGroup,
@@ -22,6 +21,7 @@ import {
     ManagedClusterViewVersion,
 } from '../resources/managedclusterview'
 import { parseBody, parseJsonBody } from './body-parser'
+import { logger } from './logger'
 
 interface KubernetesGVR {
     apiGroup: string

@@ -216,7 +216,7 @@ export class ServerSideEvents {
             }
         })
 
-        let lastEventID = 0
+        const lastEventID = 0
         // TODO only support last-event-id if token already in history...
         // if (req.headers['last-event-id']) {
         //     const last = Number(req.headers['last-event-id'])

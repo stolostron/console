@@ -1,4 +1,4 @@
-import { Http2ServerRequest, Http2ServerResponse, constants, OutgoingHttpHeaders } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
@@ -19,7 +19,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
-    let url = req.url
+    const url = req.url
 
     const headers: OutgoingHttpHeaders = { authorization: `Bearer ${token}` }
     for (const header of proxyHeaders) {

@@ -1,4 +1,4 @@
-import { Http2ServerRequest, Http2ServerResponse, constants, OutgoingHttpHeaders } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
@@ -21,6 +21,7 @@ export function header(req: Http2ServerRequest, res: Http2ServerResponse): void 
 
     const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(req.url as any) = '/multicloud' + req.url
 
     const url = new URL(`${acmUrl}${req.url}`)

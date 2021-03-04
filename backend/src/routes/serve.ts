@@ -1,12 +1,12 @@
-import { createReadStream, stat, Stats } from 'fs'
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
+import { createReadStream } from 'fs'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { extname } from 'path'
 import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 
-export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
     try {
         let url = req.url
 

@@ -6,6 +6,7 @@ import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
 import { logger, stopLogger } from './lib/logger'
+import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
@@ -16,7 +17,6 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
 import { watch } from './routes/watch'
-import { startLoggingMemory } from './lib/memory'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, respondOK)
@@ -38,7 +38,9 @@ async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse)
         await delay(req, res)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if (req.url === '/multicloud') (req as any).url = '/'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
 
     const route = router.find(req.method as Router.HTTPMethod, req.url)

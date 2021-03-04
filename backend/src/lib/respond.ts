@@ -1,4 +1,4 @@
-import { Http2ServerResponse, constants, Http2ServerRequest } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 
 const {
     HTTP_STATUS_OK,
