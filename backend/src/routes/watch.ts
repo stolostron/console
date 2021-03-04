@@ -7,6 +7,8 @@ import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvents } from '../lib/server-side-events'
 
+let watching = false
+
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED'
     object: {
@@ -28,18 +30,18 @@ interface WatchEvent {
 
 function readToken() {
     try {
-        const files = readdirSync('/var/run/secrets/kubernetes.io')
-        console.log(files)
-    } catch (err) {
-        logger.error('/var/run/secrets/kubernetes.io not found')
-        logger.error(err)
-    }
-
-    try {
         const files = readdirSync('/var/run/secrets/kubernetes.io/serviceaccount')
         console.log(files)
     } catch (err) {
         logger.error('/var/run/secrets/kubernetes.io/serviceaccount not found')
+        logger.error(err)
+    }
+
+    try {
+        const files = readdirSync('/var/run/secrets/kubernetes.io/serviceaccount/token')
+        console.log(files)
+    } catch (err) {
+        logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
         logger.error(err)
     }
 
@@ -117,7 +119,6 @@ function canAccess(
     return promise
 }
 
-let watching = false
 export function startWatching(token: string): void {
     if (watching) return
     watching = true
