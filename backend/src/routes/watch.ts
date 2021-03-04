@@ -219,9 +219,17 @@ export function watchResource(
                         }
                     }
                 }
-            }).on('error', logger.error)
+            })
+                .on('error', logger.error)
+                .on('end', () => {
+                    // TODO handle reconnect?
+                    logger.info('watch end')
+                })
         }
     )
     client.on('error', logger.error)
     client.end()
 }
+
+// TODO stopWatching()
+// client.destroy()

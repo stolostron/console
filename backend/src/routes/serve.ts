@@ -37,7 +37,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                         logger.error(err)
                         res.writeHead(404).end()
                     })
-                pipeline(readStream, res.stream, (err) => {
+                pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
                     if (err) logger.error(err)
                 })
             } catch (err) {
@@ -57,7 +57,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                     logger.error(err)
                     res.writeHead(404).end()
                 })
-            pipeline(readStream, res.stream, (err) => {
+            pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
                 if (err) logger.error(err)
             })
         }

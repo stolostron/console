@@ -16,11 +16,5 @@ export async function delay(req: Http2ServerRequest, res: Http2ServerResponse): 
         if (process.env.RANDOM_DELAY) {
             await new Promise((resolve) => setTimeout(resolve, getRandomInt(0, Number(process.env.RANDOM_DELAY))))
         }
-        if (process.env.RANDOM_ERROR) {
-            if (getRandomInt(0, 100) < Number(process.env.RANDOM_ERROR)) {
-                res.stream.destroy()
-                return
-            }
-        }
     }
 }
