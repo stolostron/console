@@ -1,6 +1,7 @@
-import { STATUS_CODES } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Transform } from 'stream'
 import { clearInterval } from 'timers'
+import { Zlib } from 'zlib'
 import { flushStream, getEncodeStream } from './compression'
 import { logger } from './logger'
 
@@ -23,6 +24,7 @@ export interface IEventClient {
     events?: Record<string, boolean>
     namespaces?: Record<string, boolean>
     writableStream: NodeJS.WritableStream
+    compressionStream: Transform & Zlib
     eventQueue: Promise<IEvent>[]
     processing?: boolean
 }
@@ -36,6 +38,8 @@ export class ServerSideEvents {
 
     public static dispose(): Promise<void> {
         for (const clientID in this.clients) {
+            const compressionStream = this.clients[clientID].compressionStream
+            if (compressionStream) compressionStream.end()
             this.clients[clientID].writableStream.end()
         }
 
@@ -81,13 +85,24 @@ export class ServerSideEvents {
         if (!client) return
         if (client.processing) return
         client.processing = true
+        logger.info('processing true')
+
         while (client.eventQueue.length) {
             try {
                 const event = await client.eventQueue.shift()
                 if (event) {
                     const eventString = this.createEventString(event)
-                    const writeResult = client.writableStream.write(eventString, 'utf8')
-                    if (!writeResult) await new Promise<void>((resolve) => client.writableStream.once('drain', resolve))
+
+                    if (client.compressionStream) {
+                        const writeResult = client.compressionStream.write(eventString, 'utf8')
+                        if (!writeResult)
+                            await new Promise<void>((resolve) => client.compressionStream.once('drain', resolve))
+                    } else {
+                        const writeResult = client.writableStream.write(eventString, 'utf8')
+                        if (!writeResult)
+                            await new Promise<void>((resolve) => client.writableStream.once('drain', resolve))
+                    }
+
                     const watchEvent = event.data as {
                         type: string
                         object: {
@@ -105,8 +120,14 @@ export class ServerSideEvents {
                 logger.error(err)
             }
         }
-        flushStream(client.writableStream)
+        try {
+            logger.info('flush')
+            if (client.compressionStream) client.compressionStream.flush()
+        } catch (err) {
+            logger.error(err)
+        }
         client.processing = false
+        logger.info('processing false')
     }
 
     private static createEventString(event: IEvent): string {
@@ -141,7 +162,7 @@ export class ServerSideEvents {
     }
 
     public static handleRequest(clientID: string, req: Http2ServerRequest, res: Http2ServerResponse): IEventClient {
-        const [writableStream, encoding] = getEncodeStream(
+        const [writableStream, compressionStream, encoding] = getEncodeStream(
             (res as unknown) as NodeJS.WritableStream,
             req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string
         )
@@ -176,6 +197,7 @@ export class ServerSideEvents {
             events,
             namespaces,
             writableStream,
+            compressionStream,
             eventQueue: [],
         }
         this.clients[clientID] = eventClient
@@ -222,12 +244,21 @@ export class ServerSideEvents {
 
     private static keepAlivePing(): void {
         for (const clientID in this.clients) {
-            const clientStream = this.clients[clientID].writableStream
-            try {
-                clientStream.write('\n\n')
-                flushStream(clientStream)
-            } catch (err) {
-                logger.error(err)
+            const compressionStream = this.clients[clientID].compressionStream
+            if (compressionStream) {
+                try {
+                    compressionStream.write('\n\n')
+                    compressionStream.flush()
+                } catch (err) {
+                    logger.error(err)
+                }
+            } else {
+                const clientStream = this.clients[clientID].writableStream
+                try {
+                    clientStream.write('\n\n')
+                } catch (err) {
+                    logger.error(err)
+                }
             }
         }
     }

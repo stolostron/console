@@ -1,4 +1,4 @@
-import { Readable } from 'stream'
+import { pipeline, Readable, Transform } from 'stream'
 import {
     constants,
     createBrotliCompress,
@@ -7,6 +7,7 @@ import {
     createGunzip,
     createGzip,
     createInflate,
+    Zlib,
 } from 'zlib'
 import { logger } from './logger'
 
@@ -16,11 +17,17 @@ export function getDecodeStream(stream: Readable, contentEncoding?: string | str
         case 'identity':
             return stream
         case 'deflate':
-            return stream.pipe(createDeflate())
+            return pipeline(stream, createDeflate(), (err) => {
+                if (err) logger.error(err)
+            })
         case 'br':
-            return stream.pipe(createBrotliDecompress())
+            return pipeline(stream, createBrotliDecompress(), (err) => {
+                if (err) logger.error(err)
+            })
         case 'gzip':
-            return stream.pipe(createGunzip())
+            return pipeline(stream, createGunzip(), (err) => {
+                if (err) logger.error(err)
+            })
         default:
             throw new Error('Unknown content encoding')
     }
@@ -29,39 +36,30 @@ export function getDecodeStream(stream: Readable, contentEncoding?: string | str
 export function getEncodeStream(
     stream: NodeJS.WritableStream,
     acceptEncoding?: string | string[]
-): [NodeJS.WritableStream, string] {
+): [NodeJS.WritableStream, (Transform & Zlib) | undefined, string] {
     let encoding = 'identity'
-    if (acceptEncoding.includes('br')) encoding = 'br'
-    else if (acceptEncoding.includes('gzip')) encoding = 'gzip'
+    // if (acceptEncoding.includes('br')) encoding = 'br'
+    // else
+    if (acceptEncoding.includes('gzip')) encoding = 'gzip'
     else if (acceptEncoding.includes('deflate')) encoding = 'deflate'
 
+    let compressionStream: (Transform & Zlib) | undefined
     switch (encoding) {
-        // case 'br': {
-        //     const compressionStream = createBrotliCompress()
-        //     compressionStream.pipe(stream)
-        //     return [compressionStream, encoding]
-        // }
-        // case 'gzip': {
-        //     const compressionStream = createGzip()
-        //     compressionStream.pipe(stream)
-        //     return [compressionStream, encoding]
-        // }
-        // case 'deflate': {
-        //     const compressionStream = createInflate()
-        //     compressionStream.pipe(stream)
-        //     return [compressionStream, encoding]
-        // }
-        default:
-            return [stream, 'identity']
+        case 'br':
+            compressionStream = createBrotliCompress()
+            break
+        case 'gzip':
+            compressionStream = createGzip()
+            break
+        case 'deflate':
+            compressionStream = createInflate()
+            break
     }
-}
 
-export function flushStream(stream: NodeJS.WritableStream): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const flush: (kind: number) => void = (stream as any).flush
-    try {
-        if (flush) flush(constants.Z_FULL_FLUSH)
-    } catch (err) {
-        logger.error(err)
+    if (compressionStream) {
+        pipeline(compressionStream, stream, (err) => {
+            if (err) logger.error(err)
+        })
     }
+    return [stream, compressionStream, encoding]
 }

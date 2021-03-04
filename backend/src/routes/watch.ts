@@ -121,20 +121,26 @@ export function startWatching(token: string): void {
             token
         ).then((allowed) => {
             if (allowed) return event
-            return canAccess(
-                {
-                    kind: watchEvent.object.kind,
-                    apiVersion: watchEvent.object.apiVersion,
-                    metadata: { namespace: watchEvent.object.metadata.namespace },
-                },
-                'list',
-                token
-            ).then((allowed) => {
-                if (allowed) return event
+            if (watchEvent.object.metadata.namespace) {
+                return canAccess(
+                    {
+                        kind: watchEvent.object.kind,
+                        apiVersion: watchEvent.object.apiVersion,
+                        metadata: { namespace: watchEvent.object.metadata.namespace },
+                    },
+                    'list',
+                    token
+                ).then((allowed) => {
+                    if (allowed) return event
+                    return canAccess(watchEvent.object, 'get', token).then((allowed) => {
+                        if (allowed) return event
+                    })
+                })
+            } else {
                 return canAccess(watchEvent.object, 'get', token).then((allowed) => {
                     if (allowed) return event
                 })
-            })
+            }
         })
     }
 
