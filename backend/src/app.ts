@@ -38,7 +38,8 @@ async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse)
         await delay(req, res)
     }
 
-    if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
+    if (req.url === '/multicloud') (req as any).url = '/'
+    else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
 
     res.sendDate = false
 
