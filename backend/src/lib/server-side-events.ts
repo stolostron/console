@@ -2,7 +2,7 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
-import { flushStream, getEncodeStream } from './compression'
+import { getEncodeStream } from './compression'
 import { logger } from './logger'
 
 const {
