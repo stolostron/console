@@ -121,7 +121,7 @@ export function Startup(props: { children?: ReactNode }) {
             }
         }
 
-        const evtSource = new EventSource('/watch', { withCredentials: true })
+        const evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
 
         evtSource.onmessage = function (event) {
             const data = JSON.parse(event.data) as IEventData
