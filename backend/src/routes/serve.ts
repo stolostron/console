@@ -41,6 +41,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                     if (err) logger.error(err)
                 })
             } catch (err) {
+                logger.error(err)
                 return res.writeHead(404).end()
             }
         } else {
@@ -62,6 +63,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         }
         return
     } catch (err) {
+        logger.error(err)
         return res.writeHead(404).end()
     }
 }
