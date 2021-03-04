@@ -38,6 +38,8 @@ async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse)
         await delay(req, res)
     }
 
+    // TODO security headers - serve route index.html only?
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if (req.url === '/multicloud') (req as any).url = '/'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access

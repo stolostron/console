@@ -85,8 +85,6 @@ export class ServerSideEvents {
         if (!client) return
         if (client.processing) return
         client.processing = true
-        logger.info('processing true')
-
         while (client.eventQueue.length) {
             try {
                 const event = await client.eventQueue.shift()
@@ -121,13 +119,11 @@ export class ServerSideEvents {
             }
         }
         try {
-            logger.info('flush')
             if (client.compressionStream) client.compressionStream.flush()
         } catch (err) {
             logger.error(err)
         }
         client.processing = false
-        logger.info('processing false')
     }
 
     private static createEventString(event: IEvent): string {
@@ -217,7 +213,7 @@ export class ServerSideEvents {
         })
 
         const lastEventID = 0
-        // TODO only support last-event-id if token already in history...
+        // TODO only support last-event-id if use is using this instance cookie...
         // if (req.headers['last-event-id']) {
         //     const last = Number(req.headers['last-event-id'])
         //     if (Number.isInteger(last)) lastEventID = last
