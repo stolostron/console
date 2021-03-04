@@ -31,28 +31,9 @@ interface WatchEvent {
 
 function readToken() {
     try {
-        const files = readdirSync('/var/run/secrets/kubernetes.io/serviceaccount')
-        console.log(files)
-    } catch (err) {
-        logger.error('/var/run/secrets/kubernetes.io/serviceaccount not found')
-        logger.error(err)
-    }
-
-    try {
-        const files = readdirSync('/var/run/secrets/kubernetes.io/serviceaccount/token')
-        console.log(files)
+        return readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
     } catch (err) {
         logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
-        logger.error(err)
-    }
-
-    try {
-        const token = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
-        startWatching(token)
-        return token
-    } catch (err) {
-        logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
-        logger.error(err)
     }
 }
 
