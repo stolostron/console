@@ -1,5 +1,5 @@
 import { createReadStream, stat, Stats } from 'fs'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
 import { extname } from 'path'
 import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
@@ -23,23 +23,20 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         }
         if (/\bgzip\b/.test(acceptEncoding)) {
             try {
-                const stats = await new Promise<Stats>((resolve, reject) =>
-                    stat('./public' + url + '.gz', (err, stats) => {
-                        if (err) return reject(err)
-                        return resolve(stats)
-                    })
-                )
                 const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
-                            'Content-Encoding': 'gzip',
-                            'Content-Type': contentType,
-                            'Cache-Control': cacheControl,
-                            'Content-Length': stats.size.toString(),
+                            [constants.HTTP2_HEADER_CONTENT_ENCODING]: 'gzip',
+                            [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
+                            [constants.HTTP2_HEADER_CACHE_CONTROL]: cacheControl,
+                            // [constants.HTTP2_HEADER_CONTENT_LENGTH]: stats.size.toString(),
                         })
                     })
-                    .on('error', (err) => res.writeHead(404).end())
+                    .on('error', (err) => {
+                        logger.error(err)
+                        res.writeHead(404).end()
+                    })
                 pipeline(readStream, res.stream, (err) => {
                     if (err) logger.error(err)
                 })
@@ -50,9 +47,15 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             const readStream = createReadStream('./public' + url, { autoClose: true })
             readStream
                 .on('open', () => {
-                    res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl })
+                    res.writeHead(200, {
+                        [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
+                        [constants.HTTP2_HEADER_CACHE_CONTROL]: cacheControl,
+                    })
                 })
-                .on('error', (err) => res.writeHead(404).end())
+                .on('error', (err) => {
+                    logger.error(err)
+                    res.writeHead(404).end()
+                })
             pipeline(readStream, res.stream, (err) => {
                 if (err) logger.error(err)
             })

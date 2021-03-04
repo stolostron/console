@@ -43,8 +43,6 @@ async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse)
     if (req.url === '/multicloud') (req as any).url = '/'
     else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
 
-    res.sendDate = false
-
     const route = router.find(req.method as Router.HTTPMethod, req.url)
     if (!route) return notFound(req, res)
 
