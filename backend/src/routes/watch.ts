@@ -29,15 +29,16 @@ interface WatchEvent {
     }
 }
 
+let serviceAccountToken: string
 function readToken() {
     try {
-        return readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        serviceAccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        startWatching(serviceAccountToken)
     } catch (err) {
         logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
     }
 }
-
-const serviceAccountToken = readToken()
+readToken()
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
