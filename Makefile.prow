@@ -4,8 +4,8 @@
 
 .PHONY: build
 build:
-	npm run backend:ci
-	npm run frontend:ci
+	npm run backend:build
+	npm run frontend:build
 
 .PHONY: install
 install:
