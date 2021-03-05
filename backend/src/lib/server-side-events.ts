@@ -231,7 +231,7 @@ export class ServerSideEvents {
 
         let sentCount = 0
         for (const eventID in this.events) {
-            if (Number(eventID) < lastEventID) continue
+            if (Number(eventID) <= lastEventID) continue
             this.sendEvent(clientID, this.events[eventID])
             sentCount++
         }
@@ -253,7 +253,7 @@ export class ServerSideEvents {
             const compressionStream = this.clients[clientID].compressionStream
             if (compressionStream) {
                 try {
-                    compressionStream.write('\n\n')
+                    compressionStream.write(':\n\n')
                     compressionStream.flush()
                 } catch (err) {
                     logger.error(err)
@@ -261,7 +261,7 @@ export class ServerSideEvents {
             } else {
                 const clientStream = this.clients[clientID].writableStream
                 try {
-                    clientStream.write('\n\n')
+                    clientStream.write(':\n\n')
                 } catch (err) {
                     logger.error(err)
                 }
@@ -270,5 +270,5 @@ export class ServerSideEvents {
     }
     private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
         ServerSideEvents.keepAlivePing()
-    }, 110 * 1000)
+    }, 60 * 1000)
 }
