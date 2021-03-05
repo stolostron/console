@@ -3,6 +3,7 @@
 /backend/coverage/
 /backend/build/
 /backend/node_modules/
+/backend/public/
 /backend/.dockerignore
 /backend/.gitignore
 /backend/.Dockerfile

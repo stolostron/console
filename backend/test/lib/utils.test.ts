@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createPollHelper, getRemoteResource, updateRemoteResource, verifyStatusFn, parseBody } from './utils'
+import { createPollHelper, getRemoteResource, updateRemoteResource, verifyStatusFn } from '../../src/lib/utils'
 import * as nock from 'nock'
 import { IncomingMessage } from 'http'
 import { assert } from 'console'
 import { Agent } from 'https'
+import { parseBody } from '../../src/lib/body-parser'
 
 const initNock = (
     path: string | RegExp,

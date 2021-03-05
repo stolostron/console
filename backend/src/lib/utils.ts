@@ -11,7 +11,7 @@ import {
     ManagedClusterActionKind,
     ManagedClusterActionResources,
     ManagedClusterActionVersion,
-} from './managedclusteraction'
+} from '../resources/managedclusteraction'
 import {
     ManagedClusterView,
     ManagedClusterViewApiGroup,
@@ -19,8 +19,10 @@ import {
     ManagedClusterViewKind,
     ManagedClusterViewResources,
     ManagedClusterViewVersion,
-} from './managedclusterview'
-import { logger } from '../logger'
+} from '../resources/managedclusterview'
+import { parseBody, parseJsonBody } from './body-parser'
+import { logger } from './logger'
+
 interface KubernetesGVR {
     apiGroup: string
     version: string
@@ -62,34 +64,6 @@ const gvrManagedClusterAction: KubernetesGVR = {
     apiGroup: ManagedClusterActionApiGroup,
     version: ManagedClusterActionVersion,
     resources: ManagedClusterActionResources,
-}
-
-export function parseBody(req: IncomingMessage): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        let data: Buffer | undefined
-        req.on('error', reject)
-        req.on('data', (chunk) => {
-            if (chunk instanceof Buffer) {
-                if (data === undefined) {
-                    data = chunk
-                } else {
-                    data = Buffer.concat([data, chunk])
-                }
-            }
-        })
-        req.on('end', () => {
-            if (!data) {
-                reject()
-            } else {
-                resolve(data)
-            }
-        })
-    })
-}
-
-export async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
-    const buffer = await parseBody(req)
-    return JSON.parse(buffer.toString()) as T
 }
 
 // get resources on local cluster
@@ -244,7 +218,7 @@ export async function createPollHelper<TRet, TPoll>(
                 throw { code: 409, msg: JSON.stringify(createResponse) }
             }
         } else if (!(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
-            const createResponse = await parseBody(createRes)
+            const createResponse = await parseJsonBody(createRes)
             throw { code: createRes.statusCode, msg: createResponse }
         }
     }

@@ -1,14 +1,13 @@
 # Copyright Contributors to the Open Cluster Management project
 
-
 language: minimal
 services: docker
 
 addons:
-  sonarcloud:
-    organization: "open-cluster-management"
-    token:
-      secure: "k6DjbsQ/5vFIs59XeFvG4h/7Exhk8SQZfl3SwzyLv4dSAeKiaYhnSCsnIUa7pi6RXE79tfevwx8zGfTKVp1ohOZvztreLIqxzOnlM3pmfG2O4wa3+EtkH9IeBo0yYgNePBZUygrrVzERXwJOjLLwOsPachyAMEdMTUjPnw7xg4rjLIXH7xLnCic6GlS5+kYtsygtvIgH21NktnUWTYM4ZtyPK9li627h4ae+3524tJKkKFqdRZGHvPfj/dnTIEaXKy2QiCehVn7GaLyVS9mcqNNfwB+3jhmTDHZjNQPKUgE02rl2dWEpqiMKc0dQALhwURGMLuljCN6KcpojCLm/vOSgTMDFOQ7xJgpa1/7dB9qb6fcGfWvv4a1Il6DjGuUbuVETsJdEJIWQl1U78qshP/tSSNsELlv5Tmj+hzroBiY3TlgrHkqvZOCngWz3aeUlunjNwJtbebh9+jKPZwLiwY3Zlb0L1/SlAFAhCTpzoCKjm23jsDu0FhRx7MHi+YPhr85d9WrQjFG5BmSjq2T82Rmjceg/VTRSmr8AJVOjQhyw2uCmxX0/qQJKPz8Tg1QauIuA+f1NB9ilHhrH/Qbjl/uNOkVU9oxh6l8cRcIE7zy3QETtIBK0P3LKTbWbvUSmpfjzQLbonNm4SEB6GsPjUGdGp0t7E/2DDNTKGs+jptQ="
+    sonarcloud:
+        organization: "open-cluster-management"
+        token:
+            secure: "k6DjbsQ/5vFIs59XeFvG4h/7Exhk8SQZfl3SwzyLv4dSAeKiaYhnSCsnIUa7pi6RXE79tfevwx8zGfTKVp1ohOZvztreLIqxzOnlM3pmfG2O4wa3+EtkH9IeBo0yYgNePBZUygrrVzERXwJOjLLwOsPachyAMEdMTUjPnw7xg4rjLIXH7xLnCic6GlS5+kYtsygtvIgH21NktnUWTYM4ZtyPK9li627h4ae+3524tJKkKFqdRZGHvPfj/dnTIEaXKy2QiCehVn7GaLyVS9mcqNNfwB+3jhmTDHZjNQPKUgE02rl2dWEpqiMKc0dQALhwURGMLuljCN6KcpojCLm/vOSgTMDFOQ7xJgpa1/7dB9qb6fcGfWvv4a1Il6DjGuUbuVETsJdEJIWQl1U78qshP/tSSNsELlv5Tmj+hzroBiY3TlgrHkqvZOCngWz3aeUlunjNwJtbebh9+jKPZwLiwY3Zlb0L1/SlAFAhCTpzoCKjm23jsDu0FhRx7MHi+YPhr85d9WrQjFG5BmSjq2T82Rmjceg/VTRSmr8AJVOjQhyw2uCmxX0/qQJKPz8Tg1QauIuA+f1NB9ilHhrH/Qbjl/uNOkVU9oxh6l8cRcIE7zy3QETtIBK0P3LKTbWbvUSmpfjzQLbonNm4SEB6GsPjUGdGp0t7E/2DDNTKGs+jptQ="
 
 branches:
     only:
@@ -24,8 +23,6 @@ jobs:
           if: type != cron
           script:
               - set -e
-              - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/nodejs-12
-              - travis_retry timeout 2m docker pull registry.access.redhat.com/ubi8/ubi-minimal
               - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
               - make component/build
               - if [ "$DOCKER_PASS" != "" ]; then make component/push ; else echo "No DOCKER_PASS. Skipping image push."; fi
@@ -33,7 +30,7 @@ jobs:
         - stage: build test lint check push
           if: type != cron
           language: node_js
-          node_js: "12"
+          node_js: "14"
           install: npm ci
           script:
               - set -e
@@ -53,7 +50,7 @@ jobs:
         - stage: Automated Dependency Upgrade
           if: type = cron AND branch = main
           language: node_js
-          node_js: "12"
+          node_js: "14"
           install: echo skip install
           script:
               - set -e
