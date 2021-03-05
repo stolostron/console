@@ -13,6 +13,8 @@ import {
     compareStrings,
     Provider,
     AcmErrorBoundary,
+    AcmInlineStatus,
+    StatusType,
 } from '@open-cluster-management/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -118,6 +120,36 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: 'metadata.name',
+                    },
+                    {
+                        header: t('table.header.status'),
+                        search: 'metadata.name',
+                        cell: (item: ProviderConnection) => {
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            let popover
+                            let status
+                            switch (label) {
+                                case ProviderID.CRH:
+                                    popover = {
+                                        headerContent: t('table.status.actionAvailable'),
+                                        bodyContent: t('table.popover.body'),
+                                        footerContent: (
+                                            <AcmButton
+                                                component={Link}
+                                                variant={'primary'}
+                                                to={NavigationPath.discoveryConfig}
+                                            >
+                                                {t('table.popover.enablediscovery')}
+                                            </AcmButton>
+                                        ),
+                                    }
+                                    status = t('table.status.actionAvailable')
+                                    break
+                                default:
+                                    status = t('table.status.connectionValid')
+                            }
+                            return <AcmInlineStatus type={StatusType.healthy} status={status} popover={popover} />
+                        },
                     },
                     {
                         header: t('table.header.provider'),

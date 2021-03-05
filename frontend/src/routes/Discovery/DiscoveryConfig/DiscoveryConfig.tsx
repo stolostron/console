@@ -15,6 +15,7 @@ import {
     AcmFormSection,
     AcmMultiSelect,
 } from '@open-cluster-management/ui-components'
+import { ProviderID } from '../../../lib/providers'
 import { Page, SelectOption, Text, TextVariants, ButtonVariant, ActionGroup } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -80,7 +81,13 @@ export function AddDiscoveryConfigData() {
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
             .then((results) => {
-                setProviderConnections(results)
+                var CRHProviderConnections: ProviderConnection[] = []
+                results.forEach((result) => {
+                    if (result.metadata!.labels!['cluster.open-cluster-management.io/provider'] === ProviderID.CRH) {
+                        CRHProviderConnections.push(result)
+                    }
+                })
+                setProviderConnections(CRHProviderConnections)
                 setIsLoading(false)
             })
             .catch((err) => {
@@ -299,7 +306,7 @@ export function DiscoveryConfigPageContent(props: {
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
     let lastActive = discoveryConfig.spec?.filters?.lastActive
-    if (lastActive === undefined) {
+    if (lastActive === undefined || lastActive === 0) {
         return '7d'
     }
     return lastActive.toString().concat('d')

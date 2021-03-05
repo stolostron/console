@@ -35,6 +35,18 @@ const mockProviderConnection2: ProviderConnection = {
     metadata: { name: 'provider-connection-2', namespace: 'provider-connection-namespace' },
 }
 
+const cloudRedHatProviderConnection: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'provider-connection-3',
+        namespace: 'provider-connection-namespace',
+        labels: {
+            'cluster.open-cluster-management.io/provider': 'crh',
+        },
+    },
+}
+
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
 let testLocation: Location
 
@@ -293,5 +305,22 @@ describe('provider connections page', () => {
         )
         await waitForNock(listNock)
         await waitForText('Bad request')
+    })
+
+    test('If cloud.redhat.com providerconnection, show action available', async () => {
+        const listNock = nockList(
+            mockProviderConnection1,
+            [cloudRedHatProviderConnection],
+            ['cluster.open-cluster-management.io/cloudconnection=']
+        )
+        render(
+            <MemoryRouter>
+                <ProviderConnectionsPage />
+            </MemoryRouter>
+        )
+        await waitForNock(listNock)
+        await waitForText(cloudRedHatProviderConnection.metadata!.name!)
+        await clickByText('table.status.actionAvailable')
+        await waitForText('table.popover.body')
     })
 })
