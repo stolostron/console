@@ -221,7 +221,7 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                         sort: 'category',
                         cell: (item: any) => {
                             if (item.category && item.category !== '') {
-                                const categories = item.category.split(',')
+                                const categories = item.category.split('; ')
                                 const categoriesToHide = categories.slice(1)
                                 return <AcmLabels labels={categories} collapse={categoriesToHide} />
                             }
