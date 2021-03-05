@@ -13,7 +13,7 @@ import {
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -28,13 +28,15 @@ import { ProviderConnection, ProviderConnectionDefinition } from '../../../resou
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
+    const [providerConnections] = useRecoilState(providerConnectionsState)
+    usePageContext(providerConnections.length > 0, AddConnectionBtn)
     return (
         <AcmErrorBoundary>
             <AcmAlertProvider>
                 <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
                 <AcmPageCard>
                     <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsPageContent />
+                        <ProviderConnectionsTable providerConnections={providerConnections} />
                     </AcmTablePaginationContextProvider>
                 </AcmPageCard>
             </AcmAlertProvider>
@@ -53,19 +55,13 @@ const AddConnectionBtn = () => {
     )
 }
 
-export function ProviderConnectionsPageContent() {
-    const [providerConnections] = useRecoilState(providerConnectionsState)
-    usePageContext(providerConnections.length > 0, AddConnectionBtn)
-    return <ProviderConnectionsTable providerConnections={providerConnections} refresh={() => {}} />
-}
-
 function getProvider(labels: Record<string, string> | undefined) {
     const label = labels?.['cluster.open-cluster-management.io/provider']
     const provider = getProviderByKey(label as ProviderID)
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
+export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[] }) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
@@ -186,12 +182,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             ],
                                             keyFn: (providerConnection: ProviderConnection) =>
                                                 providerConnection.metadata.uid as string,
-                                            actionFn: (providerConnection: ProviderConnection) =>
-                                                deleteResource(providerConnection),
-                                            close: () => {
-                                                setModalProps({ open: false })
-                                                props.refresh()
-                                            },
+                                            actionFn: deleteResource,
+                                            close: () => setModalProps({ open: false }),
                                             isDanger: true,
                                         })
                                     },
@@ -247,12 +239,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 ],
                                 keyFn: (providerConnection: ProviderConnection) =>
                                     providerConnection.metadata.uid as string,
-                                actionFn: (providerConnection: ProviderConnection) =>
-                                    deleteResource(providerConnection),
-                                close: () => {
-                                    setModalProps({ open: false })
-                                    props.refresh()
-                                },
+                                actionFn: deleteResource,
+                                close: () => setModalProps({ open: false }),
                                 isDanger: true,
                             })
                         },
