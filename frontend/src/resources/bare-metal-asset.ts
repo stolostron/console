@@ -4,6 +4,7 @@ import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
 import { SecretApiVersionType, SecretKindType } from './secret'
 import { IResourceDefinition } from './resource'
+import { IRequestResult } from '../lib/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -48,6 +49,18 @@ export interface BMASecret extends V1Secret {
         username: string
     }
 }
+export interface ImportedBareMetalAsset {
+    name: string
+    namespace: string,
+    bootMACAddress: string,
+    role: string,
+    uid: string,
+    bmc: {
+        address: string,
+        username: string,
+        password: string,
+    },
+}
 
 export function getBareMetalAsset(metadata: Object) {
     return getResource<BareMetalAsset>({
@@ -67,6 +80,20 @@ export function listBareMetalAssets() {
             return bareMetalAssets
         }),
         abort: result.abort,
+    }
+}
+export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestResult {
+    return {
+        promise: new Promise(async (resolve, reject) => {
+            try {
+                await createBareMetalAssetSecret(asset).promise
+                await createBareMetalAssetResource(asset).promise
+                resolve({})
+            } catch (err) {
+                reject(err)
+            }
+        }),
+        abort: () => {},
     }
 }
 
@@ -114,8 +141,12 @@ export function createBareMetalAssetSecret(asset: {
         bmc: { username, password },
     } = asset
     const credentialsName = `${name}-bmc-secret`
+    const resolved:IRequestResult = {
+        promise: Promise.resolve(),
+        abort: ()=>{}
+    }
     return !username
-        ? { promise: Promise.resolve() }
+        ? resolved
         : createResource<BMASecret>({
               apiVersion: 'v1',
               kind: 'Secret',

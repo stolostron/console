@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    ImportedBareMetalAsset,
     createBareMetalAssetResource,
     createBareMetalAssetSecret,
     listBareMetalAssets,
@@ -107,7 +108,7 @@ export async function attachBMAs(assets: any[], hosts: any[], clusterName: strin
 }
 
 export async function importBMAs() {
-    return new Promise((resolve, reject) => {
+    return new Promise<ImportedBareMetalAsset[]>((resolve, reject) => {
         const input = document.createElement('input')
         input.setAttribute('id', 'importBMAs')
         input.type = 'file'
@@ -158,7 +159,7 @@ export async function importBMAs() {
                                                 username: bma.username,
                                                 password: bma.password,
                                             },
-                                        }
+                                        } as ImportedBareMetalAsset
                                     })
 
                                     resolve(bmas)

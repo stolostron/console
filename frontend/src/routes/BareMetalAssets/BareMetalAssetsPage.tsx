@@ -24,17 +24,14 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { importBMAs, createBMAs } from '../../lib/bare-metal-assets'
-import { BareMetalAsset, BareMetalAssetDefinition, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import { importBMAs } from '../../lib/bare-metal-assets'
+import { BareMetalAsset, ImportedBareMetalAsset, BareMetalAssetDefinition, listBareMetalAssets, importBareMetalAsset } from '../../resources/bare-metal-asset'
 import { RbacDropdown } from '../../components/Rbac'
 import { getUserAccess, getResourceAttributes } from '../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
 const baremetalasset = 'bare metal asset'
 const baremetalassets = 'bare metal assets'
-const noop = () => {
-    // This is intentional
-}
 
 export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common', 'create'])
@@ -108,6 +105,9 @@ export function BareMetalAssetsTable(props: {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
+    const [importedProps, setImportedProps] = useState<IBulkActionModelProps<ImportedBareMetalAsset> | { open: false }>({
+        open: false,
+    })
     const history = useHistory()
     const { t } = useTranslation(['bma', 'common'])
 
@@ -125,13 +125,17 @@ export function BareMetalAssetsTable(props: {
     }
 
     function setImportModalProps() {
-        setModalProps({
+        setImportedProps({
             open: true,
+            singular: t(baremetalasset),
             plural: t(baremetalassets),
             action: t('common:import'),
+            processing: '',
+            keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
+            actionFn: (bareMetalAsset: ImportedBareMetalAsset) =>
+              importBareMetalAsset(bareMetalAsset),
             resources: [],
-            columns: [{}],
-            keyFn: noop,
+            columns: [{header: '', cell:''}],
             emptyState: (
                 <AcmEmptyState
                     title={t('bareMetalAsset.importAction.title')}
@@ -143,7 +147,7 @@ export function BareMetalAssetsTable(props: {
                             variant="primary"
                             onClick={async () => {
                                 const result = await importBMAs()
-                                setModalProps({
+                                setImportedProps({
                                     open: true,
                                     singular: t(baremetalasset),
                                     plural: t(baremetalassets),
@@ -172,18 +176,11 @@ export function BareMetalAssetsTable(props: {
                                             sort: 'bmc.address',
                                         },
                                     ],
-                                    keyFn: (bareMetalAsset: BareMetalAsset) => bareMetalAsset.uid as string,
-                                    customFn: async (bareMetalAssets: BareMetalAsset, errors) => {
-                                        const { errors: errs } = await createBMAs(bareMetalAssets)
-                                        errs.forEach((error) => {
-                                            errors.push({
-                                                error: error.message,
-                                                item: error.item,
-                                            })
-                                        })
-                                    },
+                                    keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
+                                    actionFn: (bareMetalAsset: ImportedBareMetalAsset) =>
+                                       importBareMetalAsset(bareMetalAsset),
                                     close: () => {
-                                        setModalProps({ open: false })
+                                        setImportedProps({ open: false })
                                         props.refresh()
                                     },
                                 })
@@ -195,15 +192,16 @@ export function BareMetalAssetsTable(props: {
                 />
             ),
             close: () => {
-                setModalProps({ open: false })
+                setImportedProps({ open: false })
                 props.refresh()
             },
         })
     }
-
+    
     return (
         <AcmPageCard>
             <BulkActionModel<BareMetalAsset> {...modalProps} />
+            <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
                     emptyState={

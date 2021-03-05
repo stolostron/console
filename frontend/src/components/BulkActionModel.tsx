@@ -32,13 +32,14 @@ export interface IBulkActionModelProps<T = undefined> {
     processing: string
     resources: Array<T>
     close: () => void
-    description: string
+    description?: string
     columns?: IAcmTableColumn<T>[]
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
     confirmText?: string
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
+    emptyState?: JSX.Element
 }
 
 interface ItemError<T> {
@@ -97,6 +98,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         columns={props.columns}
                                         keyFn={props.keyFn}
                                         tableActions={[]}
+                                        emptyState={props.emptyState}
                                         rowActions={[]}
                                         bulkActions={[]}
                                         perPageOptions={[]}
@@ -180,7 +182,10 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   <AcmSubmit
                                       key="submit-bulk-action"
                                       id="submit-button"
-                                      isDisabled={props.confirmText !== undefined && confirm !== props.confirmText}
+                                      isDisabled={
+                                        !props.resources?.length ||
+                                        (props.confirmText !== undefined && confirm !== props.confirmText)
+                                      }
                                       variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                       onClick={async () => {
                                           setProgressCount(props.resources.length)
