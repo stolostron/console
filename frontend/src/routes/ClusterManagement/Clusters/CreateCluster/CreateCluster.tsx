@@ -47,6 +47,10 @@ if (window.monaco) {
         },
     })
 }
+interface CreationStatus {
+    status: string
+    messages: any[] | null
+}
 
 // where to put Create/Cancel buttons
 const Portals = Object.freeze({
@@ -74,10 +78,10 @@ export default function CreateClusterPage() {
     )
 
     // create button
-    const [creationStatus, setCreationStatus] = useState({})
+    const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: any[]) => {
         if (resourceJSON) {
-            setCreationStatus({ status: 'IN_PROGRESS' })
+            setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             const { status, messages } = await createCluster(resourceJSON)
             setCreationStatus({ status, messages })
 
@@ -165,8 +169,8 @@ export default function CreateClusterPage() {
                             createResource,
                             cancelCreate,
                             pauseCreate,
-                            creationStatus: creationStatus.status,
-                            creationMsg: creationStatus.messages,
+                            creationStatus: creationStatus?.status,
+                            creationMsg: creationStatus?.messages,
                         }}
                         i18n={i18n}
                     />

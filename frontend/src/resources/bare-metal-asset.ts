@@ -26,7 +26,7 @@ export interface BareMetalAsset {
             credentialsName: string
         }
         bootMACAddress: string
-        role: string
+        role?: string
     }
     status?: {
         conditions: Array<{
@@ -115,7 +115,7 @@ export function createBareMetalAssetSecret(asset: {
     } = asset
     const credentialsName = `${name}-bmc-secret`
     return !username
-        ? Promise.resolve()
+        ? { promise: Promise.resolve() }
         : createResource<BMASecret>({
               apiVersion: 'v1',
               kind: 'Secret',

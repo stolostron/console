@@ -96,7 +96,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         items={props.resources}
                                         columns={props.columns}
                                         keyFn={props.keyFn}
-                                        emptyState={props.emptyState}
                                         tableActions={[]}
                                         rowActions={[]}
                                         bulkActions={[]}
@@ -181,44 +180,37 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   <AcmSubmit
                                       key="submit-bulk-action"
                                       id="submit-button"
-                                      isDisabled={
-                                          !props.resources?.length ||
-                                          (props.confirmText !== undefined && confirm !== props.confirmText)
-                                      }
+                                      isDisabled={props.confirmText !== undefined && confirm !== props.confirmText}
                                       variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                       onClick={async () => {
-                                          const errors: ItemError<T>[] = []
-                                          if (props.customFn) {
-                                              props.customFn(props.resources, errors)
-                                          } else {
-                                              setProgressCount(props.resources.length)
-                                              const requestResult = resultsSettled(
-                                                  props.resources.map((resource) => {
-                                                      const r = props.actionFn(resource)
-                                                      return {
-                                                          promise: r.promise.finally(() =>
-                                                              setProgress((progress) => progress + 1)
-                                                          ),
-                                                          abort: r.abort,
-                                                      }
-                                                  })
-                                              )
-                                              const promiseResults = await requestResult.promise
-                                              promiseResults.forEach((promiseResult, index) => {
-                                                  if (promiseResult.status === 'rejected') {
-                                                      let validError = true
-                                                      if (props.isValidError) {
-                                                          validError = props.isValidError(promiseResult.reason)
-                                                      }
-                                                      if (validError) {
-                                                          errors.push({
-                                                              item: props.resources[index],
-                                                              error: promiseResult.reason,
-                                                          })
-                                                      }
+                                          setProgressCount(props.resources.length)
+                                          const requestResult = resultsSettled(
+                                              props.resources.map((resource) => {
+                                                  const r = props.actionFn(resource)
+                                                  return {
+                                                      promise: r.promise.finally(() =>
+                                                          setProgress((progress) => progress + 1)
+                                                      ),
+                                                      abort: r.abort,
                                                   }
                                               })
-                                          }
+                                          )
+                                          const promiseResults = await requestResult.promise
+                                          const errors: ItemError<T>[] = []
+                                          promiseResults.forEach((promiseResult, index) => {
+                                              if (promiseResult.status === 'rejected') {
+                                                  let validError = true
+                                                  if (props.isValidError) {
+                                                      validError = props.isValidError(promiseResult.reason)
+                                                  }
+                                                  if (validError) {
+                                                      errors.push({
+                                                          item: props.resources[index],
+                                                          error: promiseResult.reason,
+                                                      })
+                                                  }
+                                              }
+                                          })
                                           await new Promise((resolve) => setTimeout(resolve, 500))
                                           setErrors(errors)
                                           if (errors.length === 0) {

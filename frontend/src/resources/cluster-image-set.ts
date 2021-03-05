@@ -19,6 +19,7 @@ export type ClusterImageSet = {
     apiVersion: ClusterImageSetApiVersionType
     kind: ClusterImageSetKindType
     metadata: V1ObjectMeta
+    spec?: { releaseImage: string }
 }
 
 export function listClusterImageSets() {
