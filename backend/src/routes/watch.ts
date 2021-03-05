@@ -33,7 +33,6 @@ let serviceAccountToken: string
 function readToken() {
     try {
         serviceAccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
-        startWatching(serviceAccountToken)
     } catch (err) {
         logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
     }

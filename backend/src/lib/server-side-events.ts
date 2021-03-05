@@ -7,6 +7,9 @@ import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
 
+// TODO - RESET EVENT
+// TODO BOOKMARK EVENT
+
 const instanceID = randomString(8)
 
 const {
