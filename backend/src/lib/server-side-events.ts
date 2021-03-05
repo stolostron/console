@@ -1,13 +1,13 @@
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { randomBytes } from 'crypto'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
 import { getEncodeStream } from './compression'
 import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
+import { randomString } from './random-string'
 
-const instanceID = randomBytes(20).toString('hex')
+const instanceID = randomString(8)
 
 const {
     HTTP2_HEADER_CONTENT_TYPE,
