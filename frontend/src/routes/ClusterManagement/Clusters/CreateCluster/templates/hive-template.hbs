@@ -244,9 +244,9 @@ spec:
   platform:
     aws:
       rootVolume:
-        iops: 100
+        iops: 2000
         size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-        type: gp2
+        type: io1
       type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
       {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
@@ -267,7 +267,7 @@ spec:
     azure:
       osDisk:
         diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-      type: Standard_D2s_v3
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
 {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -279,11 +279,11 @@ spec:
   {{#case 'vSphere'}}
   platform:
     vsphere:
-      coresPerSocket: {{../../coresPerSocket}}
-      cpus: {{../../cpus}}
-      memoryMB: {{../../memoryMB}}
+      cpus: {{{../../cpus}}} ##workerPools.{{@index}}.cpus
+      coresPerSocket: {{{../../coresPerSocket}}} ##workerPools.{{@index}}.coresPerSocket
+      memoryMB: {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
-        diskSizeGB: {{../../diskSizeGB}}
+        diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
 {{/switch}}
