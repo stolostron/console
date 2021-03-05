@@ -141,5 +141,5 @@ export function Startup(props: { children?: ReactNode }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    return <div>{props.children}</div>
+    return props.children
 }
