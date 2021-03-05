@@ -9,18 +9,12 @@ WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 COPY backend ./
-#RUN npm run lint
-#RUN npm run check
-#RUN npm run test
 RUN npm run build
 
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend ./
-#RUN npm run lint
-#RUN npm run check
-#RUN npm run test
 RUN npm run build
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
