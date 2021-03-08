@@ -11,7 +11,7 @@ import { configure } from '@testing-library/dom'
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
 
-process.env.REACT_APP_BACKEND_HOST = 'http://www.example.com:80'
+process.env.REACT_APP_BACKEND_HOST = 'http://localhost'
 process.env.REACT_APP_BACKEND_PATH = ''
 
 async function setupBeforeAll(): Promise<void> {

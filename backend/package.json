@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
+        "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
         "build": "npm run clean && tsc --sourceMap false --declaration false",
         "clean": "rm -rf coverage build",
         "test": "jest --verbose",
@@ -11,9 +12,14 @@
         "lint:fix": "eslint src test --ext .ts --fix",
         "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
         "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=DEBUG ts-node-dev --no-notify --no-deps --respawn --transpile-only src/main.ts",
+        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=DEBUG ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
+    },
+    "dependencies": {
+        "find-my-way": "^4.0.0",
+        "pino": "^6.11.1",
+        "raw-body": "^2.4.1"
     },
     "devDependencies": {
         "@types/axios": "^0.14.0",
@@ -22,7 +28,9 @@
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.20",
         "@types/node": "^14.x.x",
+        "@types/pino": "^6.3.6",
         "@types/prettier": "^2.2.1",
+        "@types/raw-body": "^2.3.0",
         "@typescript-eslint/eslint-plugin": "^4.15.1",
         "@typescript-eslint/parser": "^4.15.1",
         "axios": "^0.21.1",
@@ -31,6 +39,7 @@
         "eslint-plugin-prettier": "^3.3.1",
         "jest": "^26.x.x",
         "nock": "^13.0.7",
+        "pino-zen": "^1.0.20",
         "prettier": "^2.2.1",
         "ts-jest": "^26.x.x",
         "ts-node": "^9.1.1",
@@ -47,6 +56,24 @@
         "preset": "ts-jest",
         "testEnvironment": "node",
         "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "collectCoverage": true,
+        "coverageThreshold": {
+            "global": {
+                "branches": 0,
+                "functions": 0,
+                "lines": 0,
+                "statements": 0
+            }
+        },
+        "coverageReporters": [
+            "text",
+            "text-summary",
+            "html"
+        ],
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!**/node_modules/**"
+        ],
         "moduleFileExtensions": [
             "ts",
             "tsx",
@@ -81,6 +108,7 @@
             "plugin:prettier/recommended"
         ],
         "rules": {
+            "@typescript-eslint/no-non-null-assertion": "off",
             "@typescript-eslint/no-use-before-define": "off",
             "@typescript-eslint/no-unused-vars": "off",
             "@typescript-eslint/no-floating-promises": [
