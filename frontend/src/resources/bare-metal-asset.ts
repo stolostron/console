@@ -12,7 +12,8 @@ export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io
 
 export const BareMetalAssetKind = 'BareMetalAsset'
 export type BareMetalAssetKindType = 'BareMetalAsset'
-const keyBy = (array:any, key:string) => (array || []).reduce((r:any, x:any) => ({ ...r, [key ? x[key] : x]: x }), {})
+const keyBy = (array: any, key: string) =>
+    (array || []).reduce((r: any, x: any) => ({ ...r, [key ? x[key] : x]: x }), {})
 
 export const BareMetalAssetDefinition: IResourceDefinition = {
     apiVersion: BareMetalAssetApiVersion,
@@ -53,15 +54,15 @@ export interface BMASecret extends V1Secret {
 }
 export interface ImportedBareMetalAsset {
     name: string
-    namespace: string,
-    bootMACAddress: string,
-    role: string,
-    uid: string,
+    namespace: string
+    bootMACAddress: string
+    role: string
+    uid: string
     bmc: {
-        address: string,
-        username: string,
-        password: string,
-    },
+        address: string
+        username: string
+        password: string
+    }
 }
 
 export function getBareMetalAsset(metadata: Object) {
@@ -89,7 +90,7 @@ export function createBareMetalAssetNamespaces(assets: ImportedBareMetalAsset[])
     const namespaces = Object.keys(keyBy(assets, 'namespace'))
     const results = namespaces.map((namespace) => createProject(namespace))
     return Promise.allSettled(results.map((result) => result.promise))
- }
+}
 
 export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestResult {
     return {
@@ -150,9 +151,9 @@ export function createBareMetalAssetSecret(asset: {
         bmc: { username, password },
     } = asset
     const credentialsName = `${name}-bmc-secret`
-    const resolved:IRequestResult = {
+    const resolved: IRequestResult = {
         promise: Promise.resolve(),
-        abort: ()=>{}
+        abort: () => {},
     }
     return !username
         ? resolved
