@@ -20,7 +20,7 @@ export async function upgrade(req: Http2ServerRequest, res: Http2ServerResponse)
         return respond(res, { message: 'requires clusterName and version' }, 400)
     }
 
-    const url = new URL(process.env.CLUSTER_API_URL as string)
+    const url = new URL(process.env.CLUSTER_API_URL)
 
     try {
         const remoteVersion = await getRemoteResource<{

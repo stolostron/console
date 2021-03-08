@@ -27,7 +27,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
         if (req.headers[header]) headers[header] = req.headers[header]
     }
 
-    const clusterUrl = new URL(process.env.CLUSTER_API_URL as string)
+    const clusterUrl = new URL(process.env.CLUSTER_API_URL)
     const options: RequestOptions = {
         protocol: clusterUrl.protocol,
         hostname: clusterUrl.hostname,

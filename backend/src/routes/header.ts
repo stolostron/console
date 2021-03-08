@@ -20,9 +20,7 @@ export function header(req: Http2ServerRequest, res: Http2ServerResponse): void 
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
-    const acmUrl = (process.env.CLUSTER_API_URL as string)
-        .replace('api', 'multicloud-console.apps')
-        .replace(':6443', '')
+    const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(req.url as any) = '/multicloud' + req.url

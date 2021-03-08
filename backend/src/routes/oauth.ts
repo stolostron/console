@@ -36,8 +36,8 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
             grant_type: `authorization_code`,
             code: code,
             redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
-            client_id: process.env.OAUTH2_CLIENT_ID as string,
-            client_secret: process.env.OAUTH2_CLIENT_SECRET as string,
+            client_id: process.env.OAUTH2_CLIENT_ID,
+            client_secret: process.env.OAUTH2_CLIENT_SECRET,
         }
         const requestQueryString = stringifyQuery(requestQuery)
         const body = await jsonRequest<{ access_token: string }>(oauthInfo.token_endpoint + '?' + requestQueryString)
