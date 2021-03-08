@@ -38,8 +38,9 @@ export function getEncodeStream(
     acceptEncoding?: string | string[]
 ): [NodeJS.WritableStream, (Transform & Zlib) | undefined, string] {
     let encoding = 'identity'
-    if (acceptEncoding?.includes('br')) encoding = 'br'
-    else if (acceptEncoding?.includes('gzip')) encoding = 'gzip'
+    // Firefox tells us it supports 'br' but it does not... disabling
+    // if (acceptEncoding?.includes('br')) encoding = 'br' else
+    if (acceptEncoding?.includes('gzip')) encoding = 'gzip'
     else if (acceptEncoding?.includes('deflate')) encoding = 'deflate'
 
     let compressionStream: (Transform & Zlib) | undefined
