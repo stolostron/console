@@ -20,7 +20,9 @@ export function header(req: Http2ServerRequest, res: Http2ServerResponse): void 
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
-    const acmUrl = process.env.CLUSTER_API_URL.replace('api', 'multicloud-console.apps').replace(':6443', '')
+    const acmUrl = (process.env.CLUSTER_API_URL as string)
+        .replace('api', 'multicloud-console.apps')
+        .replace(':6443', '')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(req.url as any) = '/multicloud' + req.url
@@ -57,9 +59,9 @@ export function header(req: Http2ServerRequest, res: Http2ServerResponse): void 
             for (const header of proxyResponseHeaders) {
                 if (response.headers[header]) responseHeaders[header] = response.headers[header]
             }
-            res.writeHead(response.statusCode, responseHeaders)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, (err) => logger.error)
+            res.writeHead(response.statusCode ?? 500, responseHeaders)
+            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
         }),
-        (err) => logger.error
+        () => logger.error
     )
 }

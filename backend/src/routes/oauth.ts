@@ -12,7 +12,7 @@ const oauthInfoPromise = jsonRequest<OAuthInfo>(
     token_endpoint: '',
 }))
 
-export async function login(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise
     const queryString = stringifyQuery({
         response_type: `code`,
@@ -31,13 +31,13 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         const code = query.code as string
-        const state = query.state
+        // const state = query.state
         const requestQuery: Record<string, string> = {
             grant_type: `authorization_code`,
             code: code,
             redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
-            client_id: process.env.OAUTH2_CLIENT_ID,
-            client_secret: process.env.OAUTH2_CLIENT_SECRET,
+            client_id: process.env.OAUTH2_CLIENT_ID as string,
+            client_secret: process.env.OAUTH2_CLIENT_SECRET as string,
         }
         const requestQueryString = stringifyQuery(requestQuery)
         const body = await jsonRequest<{ access_token: string }>(oauthInfo.token_endpoint + '?' + requestQueryString)

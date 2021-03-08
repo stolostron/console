@@ -151,11 +151,11 @@ export class ServerSideEvents {
                     eventString += `data:${JSON.stringify(event.data)}\n`
                 } catch (err) {
                     logger.error(err)
-                    return
+                    return ''
                 }
                 break
             default:
-                return
+                return ''
         }
         eventString += '\n'
         return eventString

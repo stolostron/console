@@ -27,7 +27,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
         if (req.headers[header]) headers[header] = req.headers[header]
     }
 
-    const clusterUrl = new URL(process.env.CLUSTER_API_URL)
+    const clusterUrl = new URL(process.env.CLUSTER_API_URL as string)
     const options: RequestOptions = {
         protocol: clusterUrl.protocol,
         hostname: clusterUrl.hostname,
@@ -45,8 +45,8 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
             for (const header of proxyResponseHeaders) {
                 if (response.headers[header]) responseHeaders[header] = response.headers[header]
             }
-            res.writeHead(response.statusCode, responseHeaders)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, (err) => logger.error)
+            res.writeHead(response.statusCode ?? 500, responseHeaders)
+            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
         }),
         (err) => {
             if (err) logger.error(err)
