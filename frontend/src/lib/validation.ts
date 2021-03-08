@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { TFunction } from 'i18next'
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, name: string, t: TFunction) {

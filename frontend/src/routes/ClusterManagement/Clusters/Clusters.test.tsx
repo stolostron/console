@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { render } from '@testing-library/react'
 import * as nock from 'nock'
 import { Scope } from 'nock/types'
@@ -373,6 +375,14 @@ function getClusterActionsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
+function clusterCreationResourceAttributes() {
+    return {
+        resource: 'managedclusters',
+        verb: 'create',
+        group: 'cluster.open-cluster-management.io',
+    } as ResourceAttributes
+}
+
 describe('Cluster page', () => {
     beforeEach(async () => {
         const nocks: Scope[] = [
@@ -421,6 +431,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
+        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
@@ -438,6 +449,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', 'confirm')
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
+        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
@@ -464,6 +476,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
         await clickByText('detach')
         await waitForNocks(deleteNocks)
+        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
@@ -481,6 +494,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', 'confirm')
         await clickByText('detach')
         await waitForNocks(deleteNocks)
+        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })

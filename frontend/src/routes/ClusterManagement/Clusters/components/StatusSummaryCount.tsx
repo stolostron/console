@@ -1,13 +1,15 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useContext, useEffect, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
-import _ from 'lodash'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { queryStatusCount, queryCCXReports, ISearchResult } from '../../../../lib/search'
+import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
+import { listNamespacedPolicyReports, PolicyReport } from '../../../../resources/policy-report'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
@@ -15,31 +17,17 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
     return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
 }
 
-function DescriptionStringBuilder(PolicyReportResultData: ISearchResult[]) {
-    // const { t } = useTranslation(['cluster'])
-    const policyReportViolationsCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].count', 0)
-    const criticalCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '4'
-    ).length
-    const majorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '3'
-    ).length
-    const minorCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '2'
-    ).length
-    const lowCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '1'
-    ).length
-    const warningCount = _.get(PolicyReportResultData, '[0].data.searchResult[0].items', []).filter(
-        (item: any) => item.risk === '0'
-    ).length
+function DescriptionStringBuilder(policyReportData: PolicyReport[]) {
+    const policyReportViolationsCount = policyReportData.length
     if (policyReportViolationsCount === 0) {
         return ''
     }
+    const criticalCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '4').length
+    const majorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '3').length
+    const minorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '2').length
+    const lowCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '1').length
+    const warningCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '0').length
     return `${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
-    // return `${t(
-    //     'summary.cluster.issues.description'
-    // )} ${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
 }
 
 export function StatusSummaryCount() {
@@ -51,8 +39,10 @@ export function StatusSummaryCount() {
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
-    const PolicyReportResults = useQuery(useCallback(() => queryCCXReports('34c3ecc5-624a-49a5-bab8-4fdc5e51a266'), []))
-    const policyReportViolationsCount = _.get(PolicyReportResults, 'data[0].data.searchResult[0].count', 0)
+    const { data: policyReportData = [] } = useQuery(
+        useCallback(() => listNamespacedPolicyReports(cluster?.namespace ?? ''), [cluster?.namespace])
+    )
+    const policyReportViolationsCount = (policyReportData && policyReportData.length) || 0
 
     useEffect(startPolling, [startPolling])
 
@@ -121,12 +111,7 @@ export function StatusSummaryCount() {
                             setDrawerContext({
                                 isExpanded: true,
                                 onCloseClick: () => setDrawerContext(undefined),
-                                panelContent: (
-                                    <ClusterPolicySidebar
-                                        data={PolicyReportResults.data || []}
-                                        loading={PolicyReportResults.loading}
-                                    />
-                                ),
+                                panelContent: <ClusterPolicySidebar data={policyReportData} />,
                                 panelContentProps: { minSize: '50%' },
                             })
                         },
@@ -134,10 +119,10 @@ export function StatusSummaryCount() {
                             policyReportViolationsCount > 0
                                 ? t('summary.cluster.issues')
                                 : t('summary.cluster.no.issues'),
-                        description: DescriptionStringBuilder(PolicyReportResults.data || []),
+                        description: DescriptionStringBuilder(policyReportData),
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: _.get(PolicyReportResults, 'data[0].data.searchResult[0].items', []).some(
-                            (item: any) => parseInt(item.risk, 10) >= 3
+                        isDanger: policyReportData.some(
+                            (item: any) => parseInt(item.results[0].data.total_risk, 10) >= 3
                         ),
                     },
                 ]}
