@@ -1,11 +1,12 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { lstat, readdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
-const ignoreDirectories = [".git", "node_modules", "coverage"];
+const ignoreDirectories = [".git", "node_modules", "coverage", "build"];
 
 export async function fixCopyright(
     directory: string,
-    extensions = [".ts"]
+    extensions = [".ts", ".tsx", ".js"]
 ): Promise<void> {
     const names = await readdir(directory);
     for (const name of names) {
@@ -17,7 +18,14 @@ export async function fixCopyright(
         }
         if (!extensions.find((ext) => name.endsWith(ext))) continue;
         const file = await readFile(path);
-        if (!file.includes("Copyright")) {
+        if (
+            !file
+                .toString()
+                .startsWith(
+                    "/* Copyright Contributors to the Open Cluster Management project */\n"
+                )
+        ) {
+            process.exitCode = 1;
             const fixed =
                 "/* Copyright Contributors to the Open Cluster Management project */\n" +
                 file.toString();
@@ -27,7 +35,4 @@ export async function fixCopyright(
     }
 }
 
-console.log("Copyright fix");
 void fixCopyright(".");
-
-// /* Copyright Contributors to the Open Cluster Management project */

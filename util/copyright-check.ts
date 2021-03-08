@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { lstat, readdir, readFile } from "fs/promises";
 import { join } from "path";
 
@@ -17,7 +18,13 @@ export async function checkCopyright(
         }
         if (!extensions.find((ext) => name.endsWith(ext))) continue;
         const file = await readFile(path);
-        if (!file.includes("Copyright")) {
+        if (
+            !file
+                .toString()
+                .startsWith(
+                    "/* Copyright Contributors to the Open Cluster Management project */\n"
+                )
+        ) {
             console.log("error:", path, "needs Copyright");
             process.exitCode = 1;
         }
