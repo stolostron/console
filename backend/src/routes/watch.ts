@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { readFileSync } from 'fs'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
@@ -51,7 +52,7 @@ const accessCache: Record<string, Record<string, { time: number; promise: Promis
 function canAccess(
     resource: { apiVersion: string; kind: string; metadata?: { name?: string; namespace?: string } },
     verb: 'get' | 'list',
-    token?: string
+    token: string
 ): Promise<boolean> {
     const key = `${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
     if (!accessCache[token]) accessCache[token] = {}
@@ -59,10 +60,6 @@ function canAccess(
     if (existing && existing.time > Date.now() - 60 * 1000) {
         return existing.promise
     }
-
-    const { apiVersion, kind, metadata } = resource
-    const name = metadata?.name
-    const namespace = metadata?.name
 
     const promise = jsonPost(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -127,11 +124,13 @@ export function startWatching(token: string): void {
                     if (allowed) return event
                     return canAccess(watchEvent.object, 'get', token).then((allowed) => {
                         if (allowed) return event
+                        return undefined
                     })
                 })
             } else {
                 return canAccess(watchEvent.object, 'get', token).then((allowed) => {
                     if (allowed) return event
+                    return undefined
                 })
             }
         })

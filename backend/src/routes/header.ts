@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
@@ -56,9 +57,9 @@ export function header(req: Http2ServerRequest, res: Http2ServerResponse): void 
             for (const header of proxyResponseHeaders) {
                 if (response.headers[header]) responseHeaders[header] = response.headers[header]
             }
-            res.writeHead(response.statusCode, responseHeaders)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, (err) => logger.error)
+            res.writeHead(response.statusCode ?? 500, responseHeaders)
+            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
         }),
-        (err) => logger.error
+        () => logger.error
     )
 }

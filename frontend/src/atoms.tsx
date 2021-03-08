@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode, useEffect } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'

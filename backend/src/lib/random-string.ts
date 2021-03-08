@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 const randomCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 export function randomString(length: number, base = randomCharacters.length): string {

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
@@ -64,11 +65,11 @@ export class ServerSideEvents {
         const eventID = ++this.eventID
         event.id = eventID.toString()
         this.events[eventID] = event
-        this.broadcastEvent(eventID, event, true)
+        this.broadcastEvent(event)
         return eventID
     }
 
-    private static broadcastEvent(eventID: number, event: IEvent, flush = true): void {
+    private static broadcastEvent(event: IEvent): void {
         for (const clientID in this.clients) {
             this.sendEvent(clientID, event)
         }
@@ -150,11 +151,11 @@ export class ServerSideEvents {
                     eventString += `data:${JSON.stringify(event.data)}\n`
                 } catch (err) {
                     logger.error(err)
-                    return
+                    return ''
                 }
                 break
             default:
-                return
+                return ''
         }
         eventString += '\n'
         return eventString

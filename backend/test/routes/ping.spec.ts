@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../setup'
 
 describe(`GET /ping`, function () {

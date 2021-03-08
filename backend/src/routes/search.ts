@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
@@ -30,8 +31,8 @@ export function search(req: Http2ServerRequest, res: Http2ServerResponse): void 
         request(options, (response) => {
             if (!response) return notFound(req, res)
             res.writeHead(response.statusCode, response.headers)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, (err) => logger.error)
+            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
         }),
-        (err) => logger.error
+        () => logger.error
     )
 }

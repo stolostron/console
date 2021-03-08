@@ -13,9 +13,10 @@
         "lint": "npm run frontend:lint && npm run backend:lint",
         "frontend:lint": "cd frontend && npm run lint",
         "backend:lint": "cd backend && npm run lint",
-        "check": "npm run frontend:check && npm run backend:check",
+        "check": "npm run frontend:check && npm run backend:check && npm run copyright-check",
         "frontend:check": "cd frontend && npm run check",
         "backend:check": "cd backend && npm run check",
+        "copyright-check": "ts-node util/copyright-check",
         "start": "concurrently npm:frontend npm:backend -n 'frontend, backend' -c blue,cyan",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
@@ -29,9 +30,14 @@
         "backend:clean": "cd backend && npm run clean",
         "frontend:clean": "cd frontend && npm run clean",
         "docker:build": "docker build -t console .",
-        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && docker rm -f console"
+        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "prepare": "husky install"
     },
     "dependencies": {
-        "concurrently": "^5.3.0"
+        "@types/node": "^14.14.32",
+        "concurrently": "^5.3.0",
+        "husky": "^5.1.3",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.2.3"
     }
 }
