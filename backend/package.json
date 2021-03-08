@@ -12,7 +12,7 @@
         "lint:fix": "eslint src test --ext .ts --fix",
         "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
         "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "start": "source .env && PORT=4000 NODE_ENV=development LOG_LEVEL=DEBUG ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
+        "start": "source .env && PORT=4000 NODE_ENV=development ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
         "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },

@@ -1,8 +1,6 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-amd64 as builder
-
-FROM builder as backend
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-amd64 as backend
 USER root
 RUN mkdir -p /app
 WORKDIR /app/backend
@@ -13,7 +11,7 @@ COPY backend ./
 RUN npm run build
 RUN npm ci --only=production --no-optional
 
-FROM builder as frontend
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux-amd64 as frontend
 USER root
 RUN mkdir -p /app
 WORKDIR /app/frontend

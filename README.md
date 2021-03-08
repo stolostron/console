@@ -71,6 +71,13 @@ The frontend is using react scripts to simplify dependencies.
 The react scripts internally handle all the webpacking of the frontend.
 The goal here is fewer dependencies of the frontend.
 
+### Chrome
+
+To develop with self signed certificates goto `chrome://flags/`and enable
+
+- Insecure origins treated as secure
+  - http://localhost
+
 ### Authentication
 
 Frontend has a cookie `acm-access-token-cookie` that contains the user's token.
