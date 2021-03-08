@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { jsonRequest } from '../lib/json-request'

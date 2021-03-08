@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { IncomingMessage, OutgoingHttpHeaders } from 'http'
 import { constants } from 'http2'
 import { Agent, get, request, RequestOptions } from 'https'

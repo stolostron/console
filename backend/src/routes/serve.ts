@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { createReadStream } from 'fs'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { extname } from 'path'
