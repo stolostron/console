@@ -6,8 +6,7 @@ import { AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
-import { ISearchResult } from '../../../../lib/search'
-import { getPolicyReport } from '../../../../resources/policy-report'
+import { PolicyReport } from '../../../../resources/policy-report'
 
 const useStyles = makeStyles({
     sidebarBody: {
@@ -50,8 +49,8 @@ const useStyles = makeStyles({
     },
 })
 
-function RenderDonutChart(data: any, innerText: string) {
-    const clusterRiskScores = data.map((issue: any) => issue.risk)
+function RenderDonutChart(data: PolicyReport[], innerText: string) {
+    const clusterRiskScores = data.map((issue: any) => issue.results[0].data.total_risk)
     const formattedData = [
         {
             key: 'Critical',
@@ -103,7 +102,7 @@ function RenderDonutChart(data: any, innerText: string) {
                 right: 145,
                 top: 20,
             }}
-            title={data.length}
+            title={`${data.length || 0}`}
             subTitle={innerText}
             width={400}
             height={200}
@@ -114,43 +113,12 @@ function RenderDonutChart(data: any, innerText: string) {
 
 function DetailsView(props: {
     setDetailsView: React.Dispatch<React.SetStateAction<boolean>>
-    selectedPolicy: { name: string; namespace: string }
+    selectedPolicy: PolicyReport | undefined
 }) {
     const { setDetailsView, selectedPolicy } = props
     const { t } = useTranslation(['cluster'])
     const [tabState, setTabState] = useState<React.ReactText>(0)
-    const [reportError, setReportError] = useState(null)
-    const [reportData, setReportData] = useState({
-        message: '',
-        remediation: '',
-        reason: '',
-    })
     const classes = useStyles()
-
-    if (!reportError && reportData.message === '') {
-        getPolicyReport({ name: selectedPolicy.name, namespace: selectedPolicy.namespace })
-            .promise.then((result) => {
-                setReportData({
-                    message: _.get(result, 'results[0].message', ''),
-                    remediation: _.get(result, 'results[0].data.resolution', ''),
-                    reason: _.get(result, 'results[0].data.reason', ''),
-                })
-            })
-            .catch((e) => setReportError(e))
-    }
-
-    if (reportError) {
-        return (
-            <div className={classes.sidebarBody}>
-                <div className={classes.sidebarTitleText}>
-                    <button onClick={() => setDetailsView(false)} className={classes.backAction}>
-                        {t('policy.report.flyout.back')}
-                    </button>
-                </div>
-                <div className={classes.sidebarDescText}>{reportError}</div>
-            </div>
-        )
-    }
 
     return (
         <div className={classes.sidebarBody}>
@@ -159,28 +127,27 @@ function DetailsView(props: {
                     {t('policy.report.flyout.back')}
                 </button>
             </div>
-            <div className={classes.sidebarDescText}>{reportData.message}</div>
+            <div className={classes.sidebarDescText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
             <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
                 <Tab
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    {reportData.remediation}
+                    {_.get(selectedPolicy, 'results[0].data.resolution', '')}
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    {reportData.reason}
+                    {_.get(selectedPolicy, 'results[0].data.reason', '')}
                 </Tab>
             </Tabs>
         </div>
     )
 }
 
-export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: boolean }) {
+export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
     const classes = useStyles()
     const { t } = useTranslation(['cluster'])
-    const clusterIssues = _.get(props, 'data[0].data.searchResult[0].items', [])
     const [detailsView, setDetailsView] = useState<boolean>(false)
-    const [selectedPolicy, setSelectedPolicy] = useState({ name: '', namespace: '' })
+    const [selectedPolicy, setSelectedPolicy] = useState<PolicyReport>()
     // Need to get text here - getting it in RenderDonutChart causes react hook issues due to conditional below
     const donutChartInnerText = t('policy.report.flyout.donut.chart.text')
 
@@ -189,39 +156,39 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
     ) : (
         <div className={classes.sidebarBody}>
             <div className={classes.sidebarTitleText}>
-                {t('policy.report.flyout.title', { count: clusterIssues.length })}
+                {t('policy.report.flyout.title', { count: props.data.length })}
             </div>
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
-            <div className={classes.donutContainer}>{RenderDonutChart(clusterIssues, donutChartInnerText)}</div>
-            <div className={classes.tableTitleText}>{'Recommendations with remediation'}</div>
+            <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
+            <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
             <AcmTable
                 plural="Recommendations"
-                items={clusterIssues}
+                items={props.data}
                 columns={[
                     {
                         header: 'Description',
-                        search: 'message',
-                        sort: 'message',
+                        search: 'results[0].message',
+                        sort: 'results[0].message',
                         cell: (item: any) => {
                             return (
                                 <button
                                     className={classes.policyDetailLink}
                                     onClick={() => {
                                         setDetailsView(true)
-                                        setSelectedPolicy({ name: item.name, namespace: item.namespace })
+                                        setSelectedPolicy(item)
                                     }}
                                 >
-                                    {item.message}
+                                    {item.results[0].message}
                                 </button>
                             )
                         },
                     },
                     {
                         header: 'Category',
-                        sort: 'category',
+                        sort: 'results[0].category',
                         cell: (item: any) => {
-                            if (item.category && item.category !== '') {
-                                const categories = item.category.split('; ')
+                            if (item.results[0].category && item.results[0].category !== '') {
+                                const categories = item.results[0].category.split(',')
                                 const categoriesToHide = categories.slice(1)
                                 return <AcmLabels labels={categories} collapse={categoriesToHide} />
                             }
@@ -230,12 +197,12 @@ export function ClusterPolicySidebar(props: { data: ISearchResult[]; loading: bo
                     },
                     {
                         header: 'Total risk',
-                        search: 'risk',
-                        sort: 'risk',
-                        cell: 'risk',
+                        search: 'results[0].data.total_risk',
+                        sort: 'results[0].data.total_risk',
+                        cell: 'results[0].data.total_risk',
                     },
                 ]}
-                keyFn={(item: any) => item._uid.toString()}
+                keyFn={(item: any) => item.metadata.uid}
                 tableActions={[]}
                 bulkActions={[]}
                 rowActions={[]}

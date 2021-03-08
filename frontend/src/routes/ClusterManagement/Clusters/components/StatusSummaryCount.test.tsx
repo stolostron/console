@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockSearch } from '../../../../lib/nock-util'
+import { nockSearch, nockNamespacedList } from '../../../../lib/nock-util'
 
 window.open = jest.fn()
 
@@ -156,71 +156,62 @@ const mockSearchResponse = {
     },
 }
 
-const mockCCXQuery = {
-    operationName: 'searchResult',
-    variables: {
-        input: [
-            {
-                filters: [
-                    { property: 'kind', values: ['policyreport'] },
-                    { property: 'namespace', values: ['test-cluster'] },
-                ],
+const mockPolicyReportList = {
+    kind: 'PolicyReportList',
+    apiVersion: 'v1',
+    metadata: {},
+    items: [
+        {
+            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            kind: 'PolicyReport',
+            metadata: {
+                creationTimestamp: '2021-03-06T18:38:14Z',
+                name: 'policyreport testing risk 1 policy',
+                namespace: 'test-cluster',
+                uid: 'uid.report.risk.1',
             },
-        ],
-    },
-    query:
-        'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    count\n    __typename\n  }\n}\n',
-}
-
-const mockCCXResponse = {
-    data: {
-        searchResult: [
-            {
-                count: 3,
-                items: [
-                    {
-                        apigroup: 'wgpolicyk8s.io',
-                        apiversion: 'v1alpha1',
-                        category: 'category,category1,category2',
-                        cluster: 'test-cluster',
-                        created: '2021-03-02T21:26:04Z',
-                        kind: 'policyreport',
-                        message: 'policyreport testing risk 1',
-                        name: 'report.risk.1',
-                        namespace: 'test-cluster',
-                        risk: '1',
-                        _hubClusterResource: 'true',
+            results: [
+                {
+                    category: 'category,category1,category2',
+                    data: {
+                        created_at: '2021-03-02T21:26:04Z',
+                        details: 'policyreport testing risk 1 details',
+                        reason: 'policyreport testing risk 1 reason',
+                        resolution: 'policyreport testing risk 1 resolution',
+                        total_risk: '1',
                     },
-                    {
-                        apigroup: 'wgpolicyk8s.io',
-                        apiversion: 'v1alpha1',
-                        category: 'category,category1,category2',
-                        cluster: 'test-cluster',
-                        created: '2021-03-02T21:26:04Z',
-                        kind: 'policyreport',
-                        message: 'policyreport testing risk 2',
-                        name: 'report.risk.2',
-                        namespace: 'test-cluster',
-                        risk: '2',
-                        _hubClusterResource: 'true',
-                    },
-                    {
-                        apigroup: 'wgpolicyk8s.io',
-                        apiversion: 'v1alpha1',
-                        category: 'category,category1,category2',
-                        cluster: 'test-cluster',
-                        created: '2021-03-02T21:26:04Z',
-                        kind: 'policyreport',
-                        message: 'policyreport testing risk 3',
-                        name: 'report.risk.3',
-                        namespace: 'test-cluster',
-                        risk: '3',
-                        _hubClusterResource: 'true',
-                    },
-                ],
+                    message: 'policyreport testing risk 1',
+                    policy: 'policyreport testing risk 1 policy',
+                    status: 'policyreport testing risk 1 status',
+                },
+            ],
+        },
+        {
+            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            kind: 'PolicyReport',
+            metadata: {
+                creationTimestamp: '2021-03-06T18:38:14Z',
+                name: 'policyreport testing risk 2 policy',
+                namespace: 'test-cluster',
+                uid: 'uid.report.risk.2',
             },
-        ],
-    },
+            results: [
+                {
+                    category: 'category,category1,category2',
+                    data: {
+                        created_at: '2021-03-02T21:26:04Z',
+                        details: 'policyreport testing risk 2 details',
+                        reason: 'policyreport testing risk 2 reason',
+                        resolution: 'policyreport testing risk 2 resolution',
+                        total_risk: '2',
+                    },
+                    message: 'policyreport testing risk 2',
+                    policy: 'policyreport testing risk 2 policy',
+                    status: 'policyreport testing risk 2 status',
+                },
+            ],
+        },
+    ],
 }
 
 describe('StatusSummaryCount', () => {
@@ -233,12 +224,19 @@ describe('StatusSummaryCount', () => {
     )
     test('renders', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
-        const ccx = nockSearch(mockCCXQuery, mockCCXResponse)
+        const policyReportNock = nockNamespacedList(
+            {
+                apiVersion: 'wgpolicyk8s.io/v1alpha1',
+                kind: 'PolicyReport',
+                metadata: { namespace: 'test-cluster' },
+            },
+            mockPolicyReportList
+        )
         render(<Component />)
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
-            await waitFor(() => expect(ccx.isDone()).toBeTruthy())
+            await waitFor(() => expect(policyReportNock.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
@@ -258,7 +256,7 @@ describe('StatusSummaryCount', () => {
             await new Promise((resolve) => setTimeout(resolve, 1500))
 
             waitFor(() => expect(screen.getByText('Identified issues')).toBeInTheDocument())
-            expect(screen.getByText('0 Critical, 1 Major, 1 Minor, 1 Low, 0 Warning')).toBeInTheDocument()
+            expect(screen.getByText('0 Critical, 0 Major, 1 Minor, 1 Low, 0 Warning')).toBeInTheDocument()
         })
     })
 })

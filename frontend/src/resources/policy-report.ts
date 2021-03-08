@@ -1,5 +1,5 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist'
-import { getResource } from '../lib/resource-request'
+import { listNamespacedResources } from '../lib/resource-request'
 
 export interface PolicyReport {
     apiVersion: string
@@ -22,6 +22,10 @@ export interface PolicyReport {
     ]
 }
 
-export function getPolicyReport(metadata: { name: string; namespace: string }) {
-    return getResource<PolicyReport>({ apiVersion: 'wgpolicyk8s.io/v1alpha1', kind: 'PolicyReport', metadata })
+export function listNamespacedPolicyReports(namespace: string) {
+    return listNamespacedResources<PolicyReport>({
+        apiVersion: 'wgpolicyk8s.io/v1alpha1',
+        kind: 'PolicyReport',
+        metadata: { namespace },
+    })
 }

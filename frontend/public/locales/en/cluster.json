@@ -215,6 +215,7 @@
     "policy.report.flyout.title": "{{count}} identified issues",
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "policy.report.flyout.back": "Back",
+    "policy.report.flyout.table.header": "Recommendations with remediation",
     "policy.report.flyout.donut.chart.text": "Total issues",
     "policy.report.flyout.details.tab.remediation": "How to remediate",
     "policy.report.flyout.details.tab.reason": "Reason"
