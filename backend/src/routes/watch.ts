@@ -127,11 +127,13 @@ export function startWatching(token: string): void {
                     if (allowed) return event
                     return canAccess(watchEvent.object, 'get', token).then((allowed) => {
                         if (allowed) return event
+                        return undefined
                     })
                 })
             } else {
                 return canAccess(watchEvent.object, 'get', token).then((allowed) => {
                     if (allowed) return event
+                    return undefined
                 })
             }
         })

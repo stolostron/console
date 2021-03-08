@@ -1,23 +1,29 @@
 {
     "compilerOptions": {
-        "target": "ES2019",
+        "lib": ["ES2020"],
         "module": "commonjs",
-        "allowJs": false,
-        "sourceMap": true,
-        "declaration": true,
-        "alwaysStrict": false,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "noFallthroughCasesInSwitch": true,
-        "moduleResolution": "node",
+        "target": "ES2020",
+
+        "sourceMap": false,
+        "declaration": false,
+        "declarationMap": false,
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
         "noImplicitAny": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
         "outDir": "./build",
-        "noImplicitUseStrict": true,
-        "removeComments": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "lib": ["ES2019"],
-        "skipLibCheck": true
+        "removeComments": true
     },
     "include": ["src/**/*.ts"]
 }

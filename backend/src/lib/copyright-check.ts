@@ -1,0 +1,24 @@
+import { lstat, readdir, readFile } from 'fs/promises'
+import { join } from 'path'
+
+const ignoreDirectories = ['.git', 'node_modules', 'coverage']
+
+export async function checkCopyright(directory: string, extensions = ['.ts']): Promise<void> {
+    const names = await readdir(directory)
+    for (const name of names) {
+        if (ignoreDirectories.includes(name)) continue
+        const path = join(directory, name)
+        const stats = await lstat(path)
+        if (stats.isDirectory()) {
+            void checkCopyright(path)
+        }
+        if (!extensions.find((ext) => name.endsWith(ext))) continue
+        const file = await readFile(path)
+        if (!file.includes('Copyright')) console.log('error:', path, 'needs Copyright')
+    }
+}
+
+console.log('Copyright check')
+void checkCopyright('.')
+
+// /* Copyright Contributors to the Open Cluster Management project */

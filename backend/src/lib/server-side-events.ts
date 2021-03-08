@@ -64,11 +64,11 @@ export class ServerSideEvents {
         const eventID = ++this.eventID
         event.id = eventID.toString()
         this.events[eventID] = event
-        this.broadcastEvent(eventID, event, true)
+        this.broadcastEvent(event)
         return eventID
     }
 
-    private static broadcastEvent(eventID: number, event: IEvent, flush = true): void {
+    private static broadcastEvent(event: IEvent): void {
         for (const clientID in this.clients) {
             this.sendEvent(clientID, event)
         }
