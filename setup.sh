@@ -14,13 +14,13 @@ echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./backend/.env
 OAUTH2_CLIENT_SECRET=multicloudingresssecret
 echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
 
-OAUTH2_REDIRECT_URL=http://localhost:4000/login/callback
+OAUTH2_REDIRECT_URL=https://localhost:4000/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
-BACKEND_URL=http://localhost:4000
+BACKEND_URL=https://localhost:4000
 echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://localhost:3000
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
 REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirectURIs[], \"$OAUTH2_REDIRECT_URL\"] | unique")

@@ -11,7 +11,7 @@ import {
     ManagedClusterActionKind,
     ManagedClusterActionResources,
     ManagedClusterActionVersion,
-} from './managedclusteraction'
+} from '../resources/managedclusteraction'
 import {
     ManagedClusterView,
     ManagedClusterViewApiGroup,
@@ -19,8 +19,10 @@ import {
     ManagedClusterViewKind,
     ManagedClusterViewResources,
     ManagedClusterViewVersion,
-} from './managedclusterview'
-import { logger } from '../logger'
+} from '../resources/managedclusterview'
+import { parseBody, parseJsonBody } from './body-parser'
+import { logger } from './logger'
+
 interface KubernetesGVR {
     apiGroup: string
     version: string
@@ -62,34 +64,6 @@ const gvrManagedClusterAction: KubernetesGVR = {
     apiGroup: ManagedClusterActionApiGroup,
     version: ManagedClusterActionVersion,
     resources: ManagedClusterActionResources,
-}
-
-export function parseBody(req: IncomingMessage): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        let data: Buffer | undefined
-        req.on('error', reject)
-        req.on('data', (chunk) => {
-            if (chunk instanceof Buffer) {
-                if (data === undefined) {
-                    data = chunk
-                } else {
-                    data = Buffer.concat([data, chunk])
-                }
-            }
-        })
-        req.on('end', () => {
-            if (!data) {
-                reject()
-            } else {
-                resolve(data)
-            }
-        })
-    })
-}
-
-export async function parseJsonBody<T>(req: IncomingMessage): Promise<T> {
-    const buffer = await parseBody(req)
-    return JSON.parse(buffer.toString()) as T
 }
 
 // get resources on local cluster
@@ -243,8 +217,8 @@ export async function createPollHelper<TRet, TPoll>(
                 logger.debug('unexpected error for 409')
                 throw { code: 409, msg: JSON.stringify(createResponse) }
             }
-        } else if (!(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
-            const createResponse = await parseBody(createRes)
+        } else if (createRes.statusCode && !(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
+            const createResponse = await parseJsonBody(createRes)
             throw { code: createRes.statusCode, msg: createResponse }
         }
     }
@@ -320,7 +294,7 @@ export async function getRemoteResource<T>(
     const verifyStatus: verifyStatusFn<T> = async (response: IncomingMessage) => {
         try {
             const viewObj = await parseJsonBody<ManagedClusterView>(response)
-            if (response.statusCode >= 200 && response.statusCode < 300) {
+            if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
                 if (
                     viewObj.status?.conditions &&
                     viewObj.status?.conditions[0] &&
@@ -402,7 +376,7 @@ export async function updateRemoteResource(
 
     const verifyStatus: verifyStatusFn<unknown> = async (response: IncomingMessage) => {
         try {
-            if (response.statusCode >= 200 && response.statusCode < 300) {
+            if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
                 const actionObj = await parseJsonBody<ManagedClusterAction>(response)
                 if (
                     actionObj.status?.conditions &&

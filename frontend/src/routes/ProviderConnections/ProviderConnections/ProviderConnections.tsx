@@ -1,45 +1,42 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
-    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { providerConnectionsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { getErrorInfo } from '../../../components/ErrorPage'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { deleteResource } from '../../../lib/resource-request'
-import { useQuery } from '../../../lib/useQuery'
-import { NavigationPath } from '../../../NavigationPath'
-import {
-    listProviderConnections,
-    ProviderConnection,
-    ProviderConnectionDefinition,
-} from '../../../resources/provider-connection'
 import { getResourceAttributes } from '../../../lib/rbac-util'
+import { deleteResource } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
+import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
+    const [providerConnections] = useRecoilState(providerConnectionsState)
+    usePageContext(providerConnections.length > 0, AddConnectionBtn)
     return (
         <AcmErrorBoundary>
             <AcmAlertProvider>
                 <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
                 <AcmPageCard>
                     <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsPageContent />
+                        <ProviderConnectionsTable providerConnections={providerConnections} />
                     </AcmTablePaginationContextProvider>
                 </AcmPageCard>
             </AcmAlertProvider>
@@ -58,41 +55,13 @@ const AddConnectionBtn = () => {
     )
 }
 
-let lastData: ProviderConnection[] | undefined
-let lastTime: number = 0
-
-export function ProviderConnectionsPageContent() {
-    const alertContext = useContext(AcmAlertContext)
-    const { error, data, startPolling, refresh } = useQuery(
-        listProviderConnections,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'test') {
-            lastData = data
-            lastTime = Date.now()
-        }
-    }, [data])
-    useEffect(startPolling, [startPolling])
-    usePageContext(data !== undefined && data.length > 0, AddConnectionBtn)
-    useEffect(() => {
-        alertContext.clearAlerts()
-        if (error) {
-            alertContext.addAlert(getErrorInfo(error))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
-    return <ProviderConnectionsTable providerConnections={data} refresh={refresh} />
-}
-
 function getProvider(labels: Record<string, string> | undefined) {
     const label = labels?.['cluster.open-cluster-management.io/provider']
     const provider = getProviderByKey(label as ProviderID)
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[]; refresh: () => void }) {
+export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[] }) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
@@ -213,12 +182,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                             ],
                                             keyFn: (providerConnection: ProviderConnection) =>
                                                 providerConnection.metadata.uid as string,
-                                            actionFn: (providerConnection: ProviderConnection) =>
-                                                deleteResource(providerConnection),
-                                            close: () => {
-                                                setModalProps({ open: false })
-                                                props.refresh()
-                                            },
+                                            actionFn: deleteResource,
+                                            close: () => setModalProps({ open: false }),
                                             isDanger: true,
                                         })
                                     },
@@ -274,12 +239,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                                 ],
                                 keyFn: (providerConnection: ProviderConnection) =>
                                     providerConnection.metadata.uid as string,
-                                actionFn: (providerConnection: ProviderConnection) =>
-                                    deleteResource(providerConnection),
-                                close: () => {
-                                    setModalProps({ open: false })
-                                    props.refresh()
-                                },
+                                actionFn: deleteResource,
+                                close: () => setModalProps({ open: false }),
                                 isDanger: true,
                             })
                         },
