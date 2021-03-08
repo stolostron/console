@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { readFileSync } from 'fs'
 import { STATUS_CODES } from 'http'

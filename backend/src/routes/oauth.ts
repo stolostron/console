@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { jsonRequest } from '../lib/json-request'
@@ -11,7 +12,7 @@ const oauthInfoPromise = jsonRequest<OAuthInfo>(
     token_endpoint: '',
 }))
 
-export async function login(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise
     const queryString = stringifyQuery({
         response_type: `code`,
@@ -30,7 +31,7 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         const code = query.code as string
-        const state = query.state
+        // const state = query.state
         const requestQuery: Record<string, string> = {
             grant_type: `authorization_code`,
             code: code,

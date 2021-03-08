@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { IncomingMessage, OutgoingHttpHeaders } from 'http'
 import { constants } from 'http2'
 import { Agent, get, request, RequestOptions } from 'https'
@@ -32,7 +33,7 @@ export function jsonPost<T = unknown>(url: string, body: unknown, token?: string
         if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
 
         const clientRequest = request(process.env.CLUSTER_API_URL + url, options, async (res: IncomingMessage) => {
-            if (res.statusCode < 300) {
+            if (res.statusCode && res.statusCode < 300) {
                 try {
                     const data: T = await parseJsonBody(res)
                     resolve(data)

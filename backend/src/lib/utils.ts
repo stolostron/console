@@ -217,7 +217,7 @@ export async function createPollHelper<TRet, TPoll>(
                 logger.debug('unexpected error for 409')
                 throw { code: 409, msg: JSON.stringify(createResponse) }
             }
-        } else if (!(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
+        } else if (createRes.statusCode && !(createRes.statusCode >= 200 && createRes.statusCode < 300)) {
             const createResponse = await parseJsonBody(createRes)
             throw { code: createRes.statusCode, msg: createResponse }
         }
@@ -294,7 +294,7 @@ export async function getRemoteResource<T>(
     const verifyStatus: verifyStatusFn<T> = async (response: IncomingMessage) => {
         try {
             const viewObj = await parseJsonBody<ManagedClusterView>(response)
-            if (response.statusCode >= 200 && response.statusCode < 300) {
+            if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
                 if (
                     viewObj.status?.conditions &&
                     viewObj.status?.conditions[0] &&
@@ -376,7 +376,7 @@ export async function updateRemoteResource(
 
     const verifyStatus: verifyStatusFn<unknown> = async (response: IncomingMessage) => {
         try {
-            if (response.statusCode >= 200 && response.statusCode < 300) {
+            if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
                 const actionObj = await parseJsonBody<ManagedClusterAction>(response)
                 if (
                     actionObj.status?.conditions &&

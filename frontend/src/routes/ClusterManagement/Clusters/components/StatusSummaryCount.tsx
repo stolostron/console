@@ -3,11 +3,13 @@
 import React, { useContext, useEffect, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmCountCardSection } from '@open-cluster-management/ui-components'
+import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
+import { listNamespacedPolicyReports, PolicyReport } from '../../../../resources/policy-report'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
@@ -15,14 +17,32 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
     return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
 }
 
+function DescriptionStringBuilder(policyReportData: PolicyReport[]) {
+    const policyReportViolationsCount = policyReportData.length
+    if (policyReportViolationsCount === 0) {
+        return ''
+    }
+    const criticalCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '4').length
+    const majorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '3').length
+    const minorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '2').length
+    const lowCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '1').length
+    const warningCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '0').length
+    return `${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
+}
+
 export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
     )
+    const { data: policyReportData = [] } = useQuery(
+        useCallback(() => listNamespacedPolicyReports(cluster?.namespace ?? ''), [cluster?.namespace])
+    )
+    const policyReportViolationsCount = (policyReportData && policyReportData.length) || 0
 
     useEffect(startPolling, [startPolling])
 
@@ -83,6 +103,27 @@ export function StatusSummaryCount() {
                         linkText: t('summary.violations.launch'),
                         onLinkClick: () => window.open('/multicloud/policies', '_self'),
                         isDanger: true,
+                    },
+                    {
+                        id: 'clusterIssues',
+                        count: policyReportViolationsCount,
+                        countClick: () => {
+                            setDrawerContext({
+                                isExpanded: true,
+                                onCloseClick: () => setDrawerContext(undefined),
+                                panelContent: <ClusterPolicySidebar data={policyReportData} />,
+                                panelContentProps: { minSize: '50%' },
+                            })
+                        },
+                        title:
+                            policyReportViolationsCount > 0
+                                ? t('summary.cluster.issues')
+                                : t('summary.cluster.no.issues'),
+                        description: DescriptionStringBuilder(policyReportData),
+                        // Show the card in danger mode if there is a Critical or Major violation on the cluster
+                        isDanger: policyReportData.some(
+                            (item: any) => parseInt(item.results[0].data.total_risk, 10) >= 3
+                        ),
                     },
                 ]}
             />

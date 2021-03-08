@@ -1,6 +1,6 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { pipeline, Readable, Transform } from 'stream'
 import {
-    constants,
     createBrotliCompress,
     createBrotliDecompress,
     createDeflate,
@@ -38,9 +38,9 @@ export function getEncodeStream(
     acceptEncoding?: string | string[]
 ): [NodeJS.WritableStream, (Transform & Zlib) | undefined, string] {
     let encoding = 'identity'
-    if (acceptEncoding.includes('br')) encoding = 'br'
-    else if (acceptEncoding.includes('gzip')) encoding = 'gzip'
-    else if (acceptEncoding.includes('deflate')) encoding = 'deflate'
+    if (acceptEncoding?.includes('br')) encoding = 'br'
+    else if (acceptEncoding?.includes('gzip')) encoding = 'gzip'
+    else if (acceptEncoding?.includes('deflate')) encoding = 'deflate'
 
     let compressionStream: (Transform & Zlib) | undefined
     switch (encoding) {

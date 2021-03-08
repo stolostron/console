@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockSearch } from '../../../../lib/nock-util'
+import { nockSearch, nockNamespacedList } from '../../../../lib/nock-util'
 
 window.open = jest.fn()
 
@@ -156,6 +156,64 @@ const mockSearchResponse = {
     },
 }
 
+const mockPolicyReportList = {
+    kind: 'PolicyReportList',
+    apiVersion: 'v1',
+    metadata: {},
+    items: [
+        {
+            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            kind: 'PolicyReport',
+            metadata: {
+                creationTimestamp: '2021-03-06T18:38:14Z',
+                name: 'policyreport testing risk 1 policy',
+                namespace: 'test-cluster',
+                uid: 'uid.report.risk.1',
+            },
+            results: [
+                {
+                    category: 'category,category1,category2',
+                    data: {
+                        created_at: '2021-03-02T21:26:04Z',
+                        details: 'policyreport testing risk 1 details',
+                        reason: 'policyreport testing risk 1 reason',
+                        resolution: 'policyreport testing risk 1 resolution',
+                        total_risk: '1',
+                    },
+                    message: 'policyreport testing risk 1',
+                    policy: 'policyreport testing risk 1 policy',
+                    status: 'policyreport testing risk 1 status',
+                },
+            ],
+        },
+        {
+            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            kind: 'PolicyReport',
+            metadata: {
+                creationTimestamp: '2021-03-06T18:38:14Z',
+                name: 'policyreport testing risk 2 policy',
+                namespace: 'test-cluster',
+                uid: 'uid.report.risk.2',
+            },
+            results: [
+                {
+                    category: 'category,category1,category2',
+                    data: {
+                        created_at: '2021-03-02T21:26:04Z',
+                        details: 'policyreport testing risk 2 details',
+                        reason: 'policyreport testing risk 2 reason',
+                        resolution: 'policyreport testing risk 2 resolution',
+                        total_risk: '2',
+                    },
+                    message: 'policyreport testing risk 2',
+                    policy: 'policyreport testing risk 2 policy',
+                    status: 'policyreport testing risk 2 status',
+                },
+            ],
+        },
+    ],
+}
+
 describe('StatusSummaryCount', () => {
     const Component = () => (
         <MemoryRouter>
@@ -166,10 +224,19 @@ describe('StatusSummaryCount', () => {
     )
     test('renders', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        const policyReportNock = nockNamespacedList(
+            {
+                apiVersion: 'wgpolicyk8s.io/v1alpha1',
+                kind: 'PolicyReport',
+                metadata: { namespace: 'test-cluster' },
+            },
+            mockPolicyReportList
+        )
         render(<Component />)
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(policyReportNock.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
@@ -187,6 +254,9 @@ describe('StatusSummaryCount', () => {
 
             userEvent.click(screen.getByText(6))
             await new Promise((resolve) => setTimeout(resolve, 1500))
+
+            waitFor(() => expect(screen.getByText('Identified issues')).toBeInTheDocument())
+            expect(screen.getByText('0 Critical, 0 Major, 1 Minor, 1 Low, 0 Warning')).toBeInTheDocument()
         })
     })
 })
