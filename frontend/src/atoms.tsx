@@ -11,6 +11,7 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
+import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { IResource } from './resources/resource'
 
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -29,6 +30,7 @@ export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedCluste
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
+export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED'
@@ -54,6 +56,7 @@ export function Startup(props: { children?: ReactNode }) {
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
+    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
 
     useEffect(() => {
         const eventQueue: IEventData[] = []
@@ -93,6 +96,8 @@ export function Startup(props: { children?: ReactNode }) {
                     return updateResource<Namespace>(event, setNamespaces)
                 case ProviderConnectionKind:
                     return updateResource<ProviderConnection>(event, setProviderConnections)
+                case DiscoveryConfigKind:
+                    return updateResource<DiscoveryConfig>(event, setDiscoveryConfigs)
                 default:
                     console.log(`Unknown event resource kind: ${event.object.kind}`)
             }

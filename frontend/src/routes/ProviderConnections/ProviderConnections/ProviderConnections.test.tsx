@@ -5,7 +5,7 @@ import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { providerConnectionsState } from '../../../atoms'
+import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
 import { mockBadRequestStatus, nockCreate, nockDelete } from '../../../lib/nock-util'
 import {
     clickByLabel,
@@ -22,6 +22,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import ProviderConnectionsPage from './ProviderConnections'
 
@@ -41,11 +42,27 @@ const cloudRedHatProviderConnection: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     metadata: {
-        name: 'provider-connection-3',
-        namespace: 'provider-connection-namespace',
+        name: 'ocm-api-token',
+        namespace: 'ocm',
         labels: {
             'cluster.open-cluster-management.io/provider': 'crh',
         },
+    },
+}
+
+const discoveryConfig: DiscoveryConfig = {
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+    metadata: {
+        name: 'discovery',
+        namespace: 'ocmm',
+    },
+    spec: {
+        filters: {
+            lastActive: 7,
+            openShiftVersions: ['4.6'],
+        },
+        providerConnections: ['ocm-api-token'],
     },
 }
 
@@ -96,9 +113,17 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
     } as ResourceAttributes
 }
 
-function TestProviderConnectionsPage(props: { providerConnections: ProviderConnection[] }) {
+function TestProviderConnectionsPage(props: {
+    providerConnections: ProviderConnection[]
+    discoveryConfigs?: DiscoveryConfig[]
+}) {
     return (
-        <RecoilRoot initializeState={(snapshot) => snapshot.set(providerConnectionsState, props.providerConnections)}>
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(providerConnectionsState, props.providerConnections)
+                snapshot.set(discoveryConfigState, props.discoveryConfigs || [])
+            }}
+        >
             <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
                 <Route
                     path={NavigationPath.providerConnections}
@@ -219,20 +244,21 @@ describe('provider connections page', () => {
         await waitForNotText('common:cancel')
     })
 
-    test('If cloud.redhat.com providerconnection, show action available', async () => {
-        const listNock = nockList(
-            mockProviderConnection1,
-            [cloudRedHatProviderConnection],
-            ['cluster.open-cluster-management.io/cloudconnection=']
-        )
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
+    test('If cloud.redhat.com providerconnection and no discoveryconfig configured, show action available', async () => {
+        render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
         await clickByText('table.status.actionAvailable')
         await waitForText('table.popover.body')
+    })
+
+    test('If cloud.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
+        render(
+            <TestProviderConnectionsPage
+                providerConnections={[cloudRedHatProviderConnection]}
+                discoveryConfigs={[discoveryConfig]}
+            />
+        )
+        await waitForText(cloudRedHatProviderConnection.metadata!.name!)
+        await waitForText('table.status.connectionValid')
     })
 })

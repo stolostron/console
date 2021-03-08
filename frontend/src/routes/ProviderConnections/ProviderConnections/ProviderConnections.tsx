@@ -19,7 +19,7 @@ import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { providerConnectionsState } from '../../../atoms'
+import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
@@ -27,10 +27,12 @@ import { getResourceAttributes } from '../../../lib/rbac-util'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
+import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
+    const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     usePageContext(providerConnections.length > 0, AddConnectionBtn)
     return (
         <AcmErrorBoundary>
@@ -38,7 +40,10 @@ export default function ProviderConnectionsPage() {
                 <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
                 <AcmPageCard>
                     <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable providerConnections={providerConnections} />
+                        <ProviderConnectionsTable
+                            providerConnections={providerConnections}
+                            discoveryConfigs={discoveryConfigs}
+                        />
                     </AcmTablePaginationContextProvider>
                 </AcmPageCard>
             </AcmAlertProvider>
@@ -63,12 +68,24 @@ function getProvider(labels: Record<string, string> | undefined) {
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[] }) {
+export function ProviderConnectionsTable(props: {
+    providerConnections?: ProviderConnection[]
+    discoveryConfigs?: DiscoveryConfig[]
+}) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
         open: false,
     })
+
+    var configuredCRHConnections: String[] = []
+    if (props.discoveryConfigs) {
+        props.discoveryConfigs.forEach((discoveryConfig) => {
+            if (discoveryConfig.spec.providerConnections) {
+                configuredCRHConnections = configuredCRHConnections.concat(discoveryConfig.spec.providerConnections)
+            }
+        })
+    }
 
     return (
         <Fragment>
@@ -97,25 +114,23 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             let popover
                             let status
-                            switch (label) {
-                                case ProviderID.CRH:
-                                    popover = {
-                                        headerContent: t('table.status.actionAvailable'),
-                                        bodyContent: t('table.popover.body'),
-                                        footerContent: (
-                                            <AcmButton
-                                                component={Link}
-                                                variant={'primary'}
-                                                to={NavigationPath.discoveryConfig}
-                                            >
-                                                {t('table.popover.enablediscovery')}
-                                            </AcmButton>
-                                        ),
-                                    }
-                                    status = t('table.status.actionAvailable')
-                                    break
-                                default:
-                                    status = t('table.status.connectionValid')
+                            if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
+                                popover = {
+                                    headerContent: t('table.status.actionAvailable'),
+                                    bodyContent: t('table.popover.body'),
+                                    footerContent: (
+                                        <AcmButton
+                                            component={Link}
+                                            variant={'primary'}
+                                            to={NavigationPath.discoveryConfig}
+                                        >
+                                            {t('table.popover.enablediscovery')}
+                                        </AcmButton>
+                                    ),
+                                }
+                                status = t('table.status.actionAvailable')
+                            } else {
+                                status = t('table.status.connectionValid')
                             }
                             return <AcmInlineStatus type={StatusType.healthy} status={status} popover={popover} />
                         },

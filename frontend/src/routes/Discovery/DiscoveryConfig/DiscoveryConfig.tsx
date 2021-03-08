@@ -305,8 +305,8 @@ export function DiscoveryConfigPageContent(props: {
 }
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    let lastActive = discoveryConfig.spec?.filters?.lastActive
-    if (lastActive === undefined || lastActive === 0) {
+    let lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
+    if (lastActive === undefined) {
         return '7d'
     }
     return lastActive.toString().concat('d')
