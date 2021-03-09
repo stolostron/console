@@ -36,9 +36,11 @@ export interface IBulkActionModelProps<T = undefined> {
     columns?: IAcmTableColumn<T>[]
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
+    preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
     confirmText?: string
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
+    emptyState?: JSX.Element
 }
 
 interface ItemError<T> {
@@ -96,8 +98,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         items={props.resources}
                                         columns={props.columns}
                                         keyFn={props.keyFn}
-                                        emptyState={props.emptyState}
                                         tableActions={[]}
+                                        emptyState={props.emptyState}
                                         rowActions={[]}
                                         bulkActions={[]}
                                         perPageOptions={[]}
@@ -188,9 +190,10 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                       onClick={async () => {
                                           const errors: ItemError<T>[] = []
-                                          if (props.customFn) {
-                                              props.customFn(props.resources, errors)
-                                          } else {
+                                          if (props.preActionFn) {
+                                              props.preActionFn(props.resources, errors)
+                                          }
+                                          if (errors.length === 0) {
                                               setProgressCount(props.resources.length)
                                               const requestResult = resultsSettled(
                                                   props.resources.map((resource) => {

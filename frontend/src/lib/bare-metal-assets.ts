@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    ImportedBareMetalAsset,
     createBareMetalAssetResource,
     createBareMetalAssetSecret,
     listBareMetalAssets,
@@ -17,19 +18,19 @@ const BMC_PASSWORD = 'bmc.password'
 const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
 const CREDENTIAL_NAMESPACE = 'metadata.namespace'
 
-export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
+export async function syncBMAs(hosts: any[], resources: any[]) {
     // make sure all hosts have a bare metal asset
     // (bma's may have been imported from a csv)
     let results
-    const assets = []
-    const errors = []
+    const assets: any[] = []
+    const errors: any[] = []
     let response = await listBareMetalAssets().promise
     const assetsMap = keyBy(response, (item) => {
         const name = get(item, 'metadata.name')
         const namespace = get(item, 'metadata.namespace')
         return `${name}-${namespace}`
     })
-    const newAssets = []
+    const newAssets: any[] = []
     hosts.forEach((host) => {
         const { name, namespace } = host
         const asset = assetsMap[`${name}-${namespace}`]
@@ -48,12 +49,12 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     const installConfig = resources.find(({ data }) => data && data[INSTALL_CONFIG])
     const installConfigData = yaml.safeLoad(Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii'))
     const installConfigHosts = get(installConfigData, 'platform.baremetal.hosts', [])
-    const installConfigHostsWithoutCred = installConfigHosts.filter((host) => !get(host, BMC_USERNAME))
+    const installConfigHostsWithoutCred = installConfigHosts.filter((host: any) => !get(host, BMC_USERNAME))
     if (hostsWithoutCred.length > 0 || installConfigHostsWithoutCred.length > 0) {
         results = hostsWithoutCred.map(({ namespace, name }) => {
             const asset = assetsMap[`${name}-${namespace}`]
             return !asset
-                ? Promise.resolve()
+                ? { promise: Promise.resolve() }
                 : getSecret({ namespace: get(asset, CREDENTIAL_NAMESPACE), name: get(asset, CREDENTIAL_NAME) })
         })
         const secrets = await Promise.allSettled(results.map((result) => result.promise))
@@ -62,7 +63,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
             const namespace = get(secret, 'value.metadata.namespace')
             return `${name}-${namespace}`
         })
-        const setSecrets = (fhosts) => {
+        const setSecrets = (fhosts: any[]) => {
             fhosts.forEach((host) => {
                 const { name, namespace } = host
                 const asset = assetsMap[`${name}-${namespace}`]
@@ -84,7 +85,7 @@ export async function syncBMAs(hosts: JsonArray, resources: JsonArray) {
     return { assets, errors }
 }
 
-export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterName: string, errors: JsonArray) {
+export async function attachBMAs(assets: any[], hosts: any[], clusterName: string, errors: any[]) {
     // mark asset as being used by this cluster
     let results = assets.map((asset, inx) => {
         const patch = {
@@ -99,15 +100,15 @@ export async function attachBMAs(assets: JsonArray, hosts: JsonArray, clusterNam
         return patchResource(asset, patch)
     })
     const response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason }, inx) => {
-        if (status === 'rejected') {
-            errors.push({ message: reason.message })
+    response.forEach((result, inx) => {
+        if (result.status === 'rejected') {
+            errors.push({ message: result.reason.message })
         }
     })
 }
 
 export async function importBMAs() {
-    return new Promise((resolve, reject) => {
+    return new Promise<ImportedBareMetalAsset[]>((resolve, reject) => {
         const input = document.createElement('input')
         input.setAttribute('id', 'importBMAs')
         input.type = 'file'
@@ -115,71 +116,77 @@ export async function importBMAs() {
         input.style.visibility = 'hidden'
         const body = document.querySelector('body')
         body?.appendChild(input)
-        input.onchange = (e) => {
+        input.onchange = (e: Event) => {
             input.remove()
-            const file = e.target.files[0]
+            const target = e.target as HTMLInputElement
+            const file: File = (target.files as FileList)[0]
             const reader = new FileReader()
             reader.readAsText(file, 'UTF-8')
             reader.onload = async (readerEvent) => {
-                const content = readerEvent.target.result
+                const content = readerEvent.target?.result
 
                 // parse csv
-                setTimeout(() => {
-                    const allTextLines = content.split(/\r\n|\n/)
-                    const headers = allTextLines.shift().split(',')
-                    if (headers.length > 3) {
-                        const lines = []
-                        allTextLines.forEach((line) => {
-                            const data = line.split(',')
-                            if (data.length === headers.length) {
-                                const arr = []
-                                headers.forEach((header, inx) => {
-                                    arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
+                if (typeof content === 'string') {
+                    setTimeout(() => {
+                        const allTextLines = content.split(/\r\n|\n/)
+                        const headers = allTextLines.shift()
+                        if (headers) {
+                            const header = headers.split(',')
+                            if (header.length > 3) {
+                                const lines: string[] = []
+                                allTextLines.forEach((line) => {
+                                    const data = line.split(',')
+                                    if (data.length === header.length) {
+                                        const arr: string[] = []
+                                        header.forEach((header, inx) => {
+                                            arr.push(`"${header.trim()}": "${data[inx].trim()}"`)
+                                        })
+                                        lines.push(`{${arr.join(',')}}`)
+                                    }
                                 })
-                                lines.push(`{${arr.join(',')}}`)
-                            }
-                        })
 
-                        try {
-                            let bmas = JSON.parse(`[${lines.join(',')}]`)
-                            bmas = bmas.map((bma) => {
-                                return {
-                                    name: bma.hostName,
-                                    namespace: bma.hostNamespace,
-                                    bootMACAddress: bma.macAddress,
-                                    role: bma.role,
-                                    uid: `${bma.hostNamespace}/${bma.hostName}`,
-                                    bmc: {
-                                        address: bma.bmcAddress,
-                                        username: bma.username,
-                                        password: bma.password,
-                                    },
+                                try {
+                                    let bmas = JSON.parse(`[${lines.join(',')}]`)
+                                    bmas = bmas.map((bma: any) => {
+                                        return {
+                                            name: bma.hostName,
+                                            namespace: bma.hostNamespace,
+                                            bootMACAddress: bma.macAddress,
+                                            role: bma.role,
+                                            uid: `${bma.hostNamespace}/${bma.hostName}`,
+                                            bmc: {
+                                                address: bma.bmcAddress,
+                                                username: bma.username,
+                                                password: bma.password,
+                                            },
+                                        } as ImportedBareMetalAsset
+                                    })
+
+                                    resolve(bmas)
+                                } catch (err) {
+                                    reject(err)
                                 }
-                            })
-
-                            resolve(bmas)
-                        } catch (err) {
-                            reject(err)
+                            }
                         }
-                    }
-                }, 100)
+                    }, 100)
+                }
             }
         }
         input.click()
     })
 }
 
-export async function createBMAs(bmas: JsonArray, assets = [], errors = []) {
+export async function createBMAs(bmas: any[], assets: any[] = [], errors: any[] = []) {
     let results
     let response
     // determine the namespaces required and create them
     const namespaces = Object.keys(keyBy(bmas, 'namespace'))
     results = namespaces.map((namespace) => createProject(namespace))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason }, inx) => {
-        if (status === 'rejected') {
-            if (reason.code !== 409) {
-                errors.push({ message: reason.message })
+    response.forEach((result, inx) => {
+        if (result.status === 'rejected') {
+            if (result.reason.code !== 409) {
+                errors.push({ message: result.reason.message })
             }
         }
     })
@@ -187,18 +194,18 @@ export async function createBMAs(bmas: JsonArray, assets = [], errors = []) {
     // create the bma and its secret
     results = bmas.map((asset) => createBareMetalAssetSecret(asset))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason, value }, inx) => {
-        if (status === 'rejected') {
-            errors.push({ message: reason.message, item: bmas[inx] })
+    response.forEach((result, inx) => {
+        if (result.status === 'rejected') {
+            errors.push({ message: result.reason.message, item: bmas[inx] })
         }
     })
     results = bmas.map((asset) => createBareMetalAssetResource(asset))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason, value }, inx) => {
-        if (status === 'rejected') {
-            errors.push({ message: reason.message, item: bmas[inx] })
+    response.forEach((result, inx) => {
+        if (result.status === 'rejected') {
+            errors.push({ message: result.reason.message, item: bmas[inx] })
         } else {
-            assets.push(value)
+            assets.push(result.value)
         }
     })
     return { assets, errors }

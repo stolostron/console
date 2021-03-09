@@ -144,7 +144,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
             datastore: '',
 
             libvirtURI: '',
-            sshKnownHosts: '',
+            sshKnownHosts: [''],
             imageMirror: '',
             bootstrapOSImage: '',
             clusterOSImage: '',
