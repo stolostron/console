@@ -6,8 +6,8 @@ import { listNamespacedResources } from '../lib/resource-request'
 export interface PolicyReport {
     apiVersion: string
     kind: string
-    metadata?: V1ObjectMeta
-    results?: [
+    metadata: V1ObjectMeta
+    results: [
         {
             category: string
             data: {
