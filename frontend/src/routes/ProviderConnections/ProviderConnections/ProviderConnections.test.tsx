@@ -4,7 +4,9 @@ import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockList } from '../../../lib/nock-util'
+import { RecoilRoot } from 'recoil'
+import { providerConnectionsState } from '../../../atoms'
+import { mockBadRequestStatus, nockCreate, nockDelete } from '../../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -82,12 +84,9 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
     } as ResourceAttributes
 }
 
-describe('provider connections page', () => {
-    test('should render the table with provider connections', async () => {
-        const listProviderConnectionNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
-        render(
+function TestProviderConnectionsPage(props: { providerConnections: ProviderConnection[] }) {
+    return (
+        <RecoilRoot initializeState={(snapshot) => snapshot.set(providerConnectionsState, props.providerConnections)}>
             <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
                 <Route
                     path={NavigationPath.providerConnections}
@@ -97,16 +96,18 @@ describe('provider connections page', () => {
                     }}
                 />
             </MemoryRouter>
-        )
-        await waitForNock(listProviderConnectionNock)
+        </RecoilRoot>
+    )
+}
+
+describe('provider connections page', () => {
+    test('should render the table with provider connections', async () => {
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
     })
 
-    test('should go to the edit connection page', async () => {
-        const listProviderConnectionNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
+    test('should goto the edit connection page', async () => {
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccesssRequest(
                 getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
@@ -115,18 +116,7 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        render(
-            <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
-                <Route
-                    path={NavigationPath.providerConnections}
-                    render={(props: any) => {
-                        testLocation = props.location
-                        return <ProviderConnectionsPage {...props} />
-                    }}
-                />
-            </MemoryRouter>
-        )
-        await waitForNock(listProviderConnectionNock)
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
@@ -142,13 +132,7 @@ describe('provider connections page', () => {
     })
 
     test('should be able to delete a provider connection', async () => {
-        const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         const deleteNock = nockDelete(mockProviderConnection1)
-        const refreshNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccesssRequest(
                 getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
@@ -157,25 +141,16 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
         await clickByText('delete')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
-        await waitForNock(refreshNock)
     })
 
     test('should show error if delete a provider connection fails', async () => {
-        const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccesssRequest(
                 getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
@@ -185,12 +160,7 @@ describe('provider connections page', () => {
             ),
         ]
         const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
@@ -201,9 +171,6 @@ describe('provider connections page', () => {
     })
 
     test('should be able to cancel delete a provider connection', async () => {
-        const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         const rbacNocks: Scope[] = [
             nockCreateSelfSubjectAccesssRequest(
                 getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
@@ -212,86 +179,31 @@ describe('provider connections page', () => {
                 getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
             ),
         ]
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
         await clickByText('delete')
-        const refreshNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
-        await waitForNock(refreshNock)
     })
 
     test('should be able to bulk delete provider connections', async () => {
-        const listNock = nockList(
-            mockProviderConnection1,
-            [mockProviderConnection1],
-            ['cluster.open-cluster-management.io/cloudconnection=']
-        )
         const deleteNock = nockDelete(mockProviderConnection1)
-        const refreshNock = nockList(
-            mockProviderConnection1,
-            [],
-            ['cluster.open-cluster-management.io/cloudconnection=']
-        )
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-
-        await waitForNock(listNock)
+        render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByRole('checkbox', 1) // Select first item
         await clickByText('delete.batch')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
-        await waitForNock(refreshNock)
-        await waitForNotText(mockProviderConnection1.metadata!.name!)
     })
 
     test('should be able to cancel bulk delete provider connections', async () => {
-        const listNock = nockList(mockProviderConnection1, mockProviderConnections, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
-        const refreshNock = nockList(
-            mockProviderConnection1,
-            [],
-            ['cluster.open-cluster-management.io/cloudconnection=']
-        )
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
+        render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 0) // Select all
+        await clickByRole('checkbox', 1) // Select all
         await clickByText('delete.batch')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
-        await waitForNock(refreshNock)
-        await waitForNotText(mockProviderConnection1.metadata!.name!)
-    })
-
-    test('should show error if the connections fail to query', async () => {
-        const listNock = nockList(mockProviderConnection1, mockBadRequestStatus, [
-            'cluster.open-cluster-management.io/cloudconnection=',
-        ])
-        render(
-            <MemoryRouter>
-                <ProviderConnectionsPage />
-            </MemoryRouter>
-        )
-        await waitForNock(listNock)
-        await waitForText('Bad request')
     })
 })
