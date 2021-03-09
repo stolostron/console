@@ -22,29 +22,27 @@
         "raw-body": "^2.4.1"
     },
     "devDependencies": {
-        "@types/axios": "^0.14.0",
-        "@types/eslint": "^7.2.6",
+        "@types/eslint": "^7.2.7",
         "@types/eslint-config-prettier": "^6.11.0",
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.20",
         "@types/node": "^14.x.x",
         "@types/pino": "^6.3.6",
-        "@types/prettier": "^2.2.1",
+        "@types/prettier": "^2.2.2",
         "@types/raw-body": "^2.3.0",
-        "@typescript-eslint/eslint-plugin": "^4.15.1",
-        "@typescript-eslint/parser": "^4.15.1",
-        "axios": "^0.21.1",
-        "eslint": "^7.20.0",
-        "eslint-config-prettier": "^7.2.0",
+        "@typescript-eslint/eslint-plugin": "^4.17.0",
+        "@typescript-eslint/parser": "^4.17.0",
+        "eslint": "^7.21.0",
+        "eslint-config-prettier": "^8.1.0",
         "eslint-plugin-prettier": "^3.3.1",
         "jest": "^26.x.x",
-        "nock": "^13.0.7",
+        "nock": "^13.0.11",
         "pino-zen": "^1.0.20",
         "prettier": "^2.2.1",
         "ts-jest": "^26.x.x",
         "ts-node": "^9.1.1",
-        "ts-node-dev": "^1.1.1",
-        "typescript": "^4.1.5"
+        "ts-node-dev": "^1.1.6",
+        "typescript": "^4.2.3"
     },
     "prettier": {
         "printWidth": 120,
@@ -104,7 +102,7 @@
             "plugin:@typescript-eslint/eslint-recommended",
             "plugin:@typescript-eslint/recommended",
             "plugin:@typescript-eslint/recommended-requiring-type-checking",
-            "prettier/@typescript-eslint",
+            "prettier",
             "plugin:prettier/recommended"
         ],
         "rules": {
