@@ -165,7 +165,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
                 const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
                 const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
                 resolve(
-                    `echo ${klusterletCRD} | base64 --decode | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 --decode | kubectl apply -f - || echo "${alreadyImported64}" | base64 -D`
+                    `echo ${klusterletCRD} | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
                 )
             })
             .catch((err) => {

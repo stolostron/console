@@ -75,7 +75,8 @@ The goal here is fewer dependencies of the frontend.
 
 To develop with self signed certificates goto `chrome://flags/`and enable
 
-- Insecure origins treated as secure
+- Allow invalid certificates for resources loaded from localhost.
+- Insecure origins treated as secure.
   - http://localhost
 
 ### Authentication
