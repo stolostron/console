@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { readFileSync } from 'fs'
+import { ClientRequest } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
 import { parseCookies } from '../lib/cookies'
@@ -23,10 +24,6 @@ interface WatchEvent {
             name: string
             namespace: string
             resourceVersion?: string
-            // creationTimestamp: string
-            // labels: Record<string, string>
-            // annotations: Record<string, string>
-            // ownerReferences: unknown
             managedFields?: unknown
             selfLink?: string
         }
@@ -41,10 +38,14 @@ function readToken() {
         if (process.env.NODE_ENV === 'production') {
             logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
         } else {
+<<<<<<< HEAD
             serviceAccountToken = process.env.TOKEN
             if (!serviceAccountToken) {
                 logger.error('serviceaccount token not found')
             }
+=======
+            logger.warn('development - kubernetes watch will use first token using in /watch route')
+>>>>>>> main
         }
     }
 }
@@ -158,6 +159,8 @@ export function startWatching(token: string): void {
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
 }
 
+const watchRequests: Record<string, ClientRequest> = {}
+
 export function watchResource(
     token: string,
     apiVersion: string,
@@ -179,7 +182,7 @@ export function watchResource(
     const url = `${process.env.CLUSTER_API_URL}${path}`
 
     let data = ''
-    const client = request(
+    const clientRequest = request(
         url,
         { headers: { authorization: `Bearer ${token}` }, agent: new Agent({ rejectUnauthorized: false }) },
         (res) => {
@@ -228,7 +231,7 @@ export function watchResource(
                     }
                 }
             })
-                .on('error', logger.error)
+                .on('error', console.error)
                 .on('end', () => {
                     // TODO handle 410
                     // TODO request using last resourceVersion - ?resourceVersion=10245
@@ -238,12 +241,21 @@ export function watchResource(
                     //     "object": {"kind": "Pod", "apiVersion": "v1", "metadata": {"resourceVersion": "12746"} }
                     // }
                     logger.info('watch end')
+                    if (stopping) return
+                    watchResource(token, apiVersion, kind, labelSelector)
                 })
         }
     )
-    client.on('error', logger.error)
-    client.end()
+    watchRequests[kind] = clientRequest
+    clientRequest.on('error', logger.error)
+    clientRequest.end()
 }
 
-// TODO stopWatching()
-// client.destroy()
+let stopping = false
+export function stopWatching(): void {
+    stopping = true
+    for (const kind in watchRequests) {
+        const clientRequest = watchRequests[kind]
+        clientRequest.destroy()
+    }
+}

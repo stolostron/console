@@ -4,7 +4,7 @@ import _ from 'lodash'
 import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable } from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
@@ -163,15 +163,19 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
             <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
             <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
-            <AcmTable
+            <AcmTable<PolicyReport>
                 plural="Recommendations"
                 items={props.data}
                 columns={[
                     {
                         header: 'Description',
-                        search: 'results[0].message',
-                        sort: 'results[0].message',
-                        cell: (item: any) => {
+                        search: (policyReport) => {
+                            return policyReport.results[0].message
+                        },
+                        sort: (a: PolicyReport, b: PolicyReport) => {
+                            return compareStrings(a.results[0].message, b.results[0].message)
+                        },
+                        cell: (item: PolicyReport) => {
                             return (
                                 <button
                                     className={classes.policyDetailLink}
@@ -187,8 +191,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                     },
                     {
                         header: 'Category',
-                        sort: 'results[0].category',
-                        cell: (item: any) => {
+                        cell: (item: PolicyReport) => {
                             if (item.results[0].category && item.results[0].category !== '') {
                                 const categories = item.results[0].category.split(',')
                                 const categoriesToHide = categories.slice(1)
@@ -199,9 +202,15 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                     },
                     {
                         header: 'Total risk',
-                        search: 'results[0].data.total_risk',
-                        sort: 'results[0].data.total_risk',
-                        cell: 'results[0].data.total_risk',
+                        search: (policyReport) => {
+                            return policyReport.results[0].data.total_risk
+                        },
+                        sort: (a: PolicyReport, b: PolicyReport) => {
+                            return compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk)
+                        },
+                        cell: (item: PolicyReport) => {
+                            return item.results[0].data.total_risk
+                        },
                     },
                 ]}
                 keyFn={(item: any) => item.metadata.uid}

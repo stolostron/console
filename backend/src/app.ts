@@ -16,7 +16,7 @@ import { proxy } from './routes/proxy'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
-import { watch } from './routes/watch'
+import { stopWatching, watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, respondOK)
@@ -70,8 +70,9 @@ export async function stop(): Promise<void> {
             process.exit(1)
         }, 0.5 * 1000).unref()
     }
-    const stopServerPromise = stopServer()
     await ServerSideEvents.dispose()
+    stopWatching()
+    const stopServerPromise = stopServer()
     await stopServerPromise
     stopLogger()
 }
