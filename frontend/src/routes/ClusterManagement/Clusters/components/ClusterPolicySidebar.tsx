@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { Tabs, Tab, TabTitleText, Text, TextVariants } from '@patternfly/react-core'
+import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
