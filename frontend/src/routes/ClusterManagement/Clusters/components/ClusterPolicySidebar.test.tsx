@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
-import { render, screen, waitFor, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, act } from '@testing-library/react'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { PolicyReport } from '../../../../resources/policy-report'
 import { clickByText, waitForText } from '../../../../lib/test-util'
