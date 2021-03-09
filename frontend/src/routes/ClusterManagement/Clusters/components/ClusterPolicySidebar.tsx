@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
+import { Tabs, Tab, TabTitleText, Text, TextVariants } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
@@ -50,6 +50,15 @@ const useStyles = makeStyles({
         },
     },
 })
+
+function FormatText(text: string) {
+ return text.split('\n').map((str: string) => {
+    if (str === '') {
+        return <br/>
+    }
+    return <p>{str}</p>
+})
+}
 
 function RenderDonutChart(data: PolicyReport[], innerText: string) {
     const clusterRiskScores = data.map((issue: any) => issue.results[0].data.total_risk)
@@ -135,10 +144,10 @@ function DetailsView(props: {
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    {_.get(selectedPolicy, 'results[0].data.resolution', '')}
+                    {FormatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    {_.get(selectedPolicy, 'results[0].data.reason', '')}
+                    {FormatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}
                 </Tab>
             </Tabs>
         </div>
@@ -191,6 +200,12 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                     },
                     {
                         header: 'Category',
+                        search: (policyReport) => {
+                            if (policyReport.results[0].category && policyReport.results[0].category !== '') {
+                                return policyReport.results[0].category.split(',')
+                            }
+                            return ''
+                        },
                         cell: (item: PolicyReport) => {
                             if (item.results[0].category && item.results[0].category !== '') {
                                 const categories = item.results[0].category.split(',')
