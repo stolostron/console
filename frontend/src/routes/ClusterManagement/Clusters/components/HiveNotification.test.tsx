@@ -9,6 +9,7 @@ import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { nockNamespacedList } from '../../../../lib/nock-util'
 import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
 import { PodApiVersion, PodKind } from '../../../../resources/pod'
+import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -125,11 +126,8 @@ describe('HiveNotification', () => {
             mockClusterProvisionList
         )
         render(<Component />)
-        await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
-        await act(async () => {
-            expect(screen.queryByTestId('view-logs')).toBeNull()
-            await new Promise((resolve) => setTimeout(resolve, 100))
-        })
+        await waitForNock(clusterProvisionScope)
+        await waitForNotTestId('view-logs')
     })
     test('renders the danger notification for failed provision status', async () => {
         mockCluster.status = ClusterStatus.provisionfailed
@@ -151,18 +149,15 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster']
         )
         render(<Component />)
-        await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
-        await act(async () => {
-            expect(screen.getByTestId('hive-notification-provisionfailed')).toBeInTheDocument()
-            expect(screen.getByText('provision.notification.provisionfailed')).toBeInTheDocument()
-            await waitFor(() => expect(screen.getByText('Invalid GCP project ID')).toBeInTheDocument())
-            expect(screen.getByTestId('view-logs')).toBeInTheDocument()
-            userEvent.click(screen.getByTestId('view-logs'))
-            await waitFor(() => expect(podScope.isDone()).toBeTruthy())
-            await new Promise((resolve) => setTimeout(resolve, 100))
+        await waitForNock(clusterProvisionScope)
+        await waitForTestId('hive-notification-provisionfailed')
+        await waitForText('provision.notification.provisionfailed')
+        await waitForText('Invalid GCP project ID')
+        await clickByTestId('view-logs')
+        await waitForNock(podScope)
+        await waitFor(() =>
             expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
-            await new Promise((resolve) => setTimeout(resolve, 100))
-        })
+        )
     })
     test('renders the info notification variant for creating status', async () => {
         mockCluster.status = ClusterStatus.creating
@@ -184,17 +179,15 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
         )
         render(<Component />)
-        await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
-        await act(async () => {
-            expect(screen.getByTestId('hive-notification-creating')).toBeInTheDocument()
-            expect(screen.getByText('provision.notification.creating')).toBeInTheDocument()
-            expect(screen.getByTestId('view-logs')).toBeInTheDocument()
-            userEvent.click(screen.getByTestId('view-logs'))
-            await waitFor(() => expect(podScope.isDone()).toBeTruthy())
-            await new Promise((resolve) => setTimeout(resolve, 100))
+        await waitForNock(clusterProvisionScope)
+        await waitForTestId('hive-notification-creating')
+        await waitForText('provision.notification.creating')
+        await waitForTestId('hive-notification-creating')
+        await clickByTestId('view-logs')
+        await waitForNock(podScope)
+        await waitFor(() =>
             expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
-            await new Promise((resolve) => setTimeout(resolve, 100))
-        })
+        )
     })
     test('renders the info notification variant for destroying status', async () => {
         mockCluster.status = ClusterStatus.destroying
@@ -216,15 +209,13 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster', 'job-name=test-cluster-uninstall']
         )
         render(<Component />)
-        await waitFor(() => expect(clusterProvisionScope.isDone()).toBeTruthy())
-        await act(async () => {
-            expect(screen.getByTestId('hive-notification-destroying')).toBeInTheDocument()
-            expect(screen.getByText('provision.notification.destroying')).toBeInTheDocument()
-            userEvent.click(screen.getByTestId('view-logs'))
-            await waitFor(() => expect(podScope.isDone()).toBeTruthy())
-            await new Promise((resolve) => setTimeout(resolve, 100))
+        await waitForNock(clusterProvisionScope)
+        await waitForTestId('hive-notification-destroying')
+        await waitForText('provision.notification.destroying')
+        await clickByTestId('view-logs')
+        await waitForNock(podScope)
+        await waitFor(() =>
             expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
-            await new Promise((resolve) => setTimeout(resolve, 100))
-        })
+        )
     })
 })
