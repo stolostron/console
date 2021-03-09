@@ -52,12 +52,12 @@ const useStyles = makeStyles({
 })
 
 function FormatText(text: string) {
- return text.split('\n').map((str: string) => {
-    if (str === '') {
-        return <br/>
-    }
-    return <p>{str}</p>
-})
+    return text.split('\n').map((str: string) => {
+        if (str === '') {
+            return <br />
+        }
+        return <p>{str}</p>
+    })
 }
 
 function RenderDonutChart(data: PolicyReport[], innerText: string) {
