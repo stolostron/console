@@ -2,13 +2,22 @@
 
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
-import { nockList, nockDelete, nockCreate } from '../../lib/nock-util'
+import { nockDelete, nockCreate } from '../../lib/nock-util'
 import { BareMetalAsset } from '../../resources/bare-metal-asset'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { Scope } from 'nock/types'
+import { RecoilRoot } from 'recoil'
+import { bareMetalAssetsState } from '../../atoms'
+import {
+    clickByLabel,
+    clickByRole,
+    clickByText,
+    waitForNock,
+    waitForNocks,
+    waitForText,
+} from '../../lib/test-util'
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -113,22 +122,20 @@ function nocksAreDone(nocks: Scope[]) {
 
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
-        const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
 
-        const { getAllByText } = render(
-            <MemoryRouter>
-                <BareMetalAssetsPage />
-            </MemoryRouter>
+        render(
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
+                <MemoryRouter>
+                    <BareMetalAssetsPage />
+                </MemoryRouter>
+            </RecoilRoot>
         )
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call
-        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0))
-        expect(getAllByText(mockBareMetalAssets[0].metadata.namespace!).length > 0)
+        await waitForText(mockBareMetalAssets[0].metadata.name!)
     })
 
     test('can delete asset from overflow menu', async () => {
-        const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
         const rbacNocks: Scope[] = [
@@ -139,46 +146,42 @@ describe('bare metal asset page', () => {
                 getDeleteBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
             ),
         ]
-        const { getByText, getAllByText, getAllByLabelText, queryByText } = render(
-            <MemoryRouter>
-                <BareMetalAssetsPage />
-            </MemoryRouter>
+        render(
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
+                <MemoryRouter>
+                    <BareMetalAssetsPage />
+                </MemoryRouter>
+            </RecoilRoot>
         )
 
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
-        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
-        userEvent.click(getAllByLabelText('Actions')[0])
+        await waitForText(mockBareMetalAssets[0].metadata!.name!)
+        await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
-        userEvent.click(getByText('bareMetalAsset.rowAction.deleteAsset.title')) // click the delete action
-        expect(getByText('common:delete')).toBeInTheDocument()
-        userEvent.click(getByText('common:delete')) // click confirm on the delete dialog
-        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect the delete api call to finish
-        expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
+        await waitForNocks(rbacNocks)
+        await clickByText('bareMetalAsset.rowAction.deleteAsset.title')
+        await clickByText('common:delete')
+        await waitForNock(deleteNock)
     })
 
     test('can delete asset(s) from batch action menu', async () => {
-        const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
-        const deleteNock = nockDelete(mockBareMetalAssets[0])
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
-        const listNockii = nockList(bareMetalAsset, [])
+        const deleteNock = nockDelete(mockBareMetalAssets[0])
 
-        const { getByText, getAllByText, getByLabelText, queryByText } = render(
-            <MemoryRouter>
-                <BareMetalAssetsPage />
-            </MemoryRouter>
+        const { getAllByText } = render(
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
+                <MemoryRouter>
+                    <BareMetalAssetsPage />
+                </MemoryRouter>
+            </RecoilRoot>
         )
 
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
+        await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
-        expect(getByLabelText('Select all rows')).toBeVisible()
-        userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText('bareMetalAsset.bulkAction.deleteAsset'))
-        expect(getByText('common:delete')).toBeInTheDocument()
-        userEvent.click(getByText('common:delete'))
-        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
-        await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
-        expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
+        await clickByRole('checkbox', 1) // Select first item
+        await clickByText('bareMetalAsset.bulkAction.deleteAsset')
+        await clickByText('common:delete')
+        await waitForNock(deleteNock)
     })
 })
