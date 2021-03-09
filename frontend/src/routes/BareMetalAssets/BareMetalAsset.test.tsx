@@ -10,14 +10,7 @@ import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/sel
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
-import {
-    clickByLabel,
-    clickByRole,
-    clickByText,
-    waitForNock,
-    waitForNocks,
-    waitForText,
-} from '../../lib/test-util'
+import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
