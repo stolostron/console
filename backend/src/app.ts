@@ -32,7 +32,7 @@ router.post(`/proxy/search`, search)
 router.post(`/upgrade`, upgrade)
 router.get(`/*`, serve)
 
-async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
         cors(req, res)
         await delay(req, res)
@@ -72,8 +72,7 @@ export async function stop(): Promise<void> {
     }
     await ServerSideEvents.dispose()
     stopWatching()
-    const stopServerPromise = stopServer()
-    await stopServerPromise
+    await stopServer()
     stopLogger()
 }
 
