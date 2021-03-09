@@ -247,8 +247,7 @@ describe('provider connections page', () => {
     test('If cloud.redhat.com providerconnection and no discoveryconfig configured, show action available', async () => {
         render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await clickByText('table.status.actionAvailable')
-        await waitForText('table.popover.body')
+        await waitForText('connections.actions.enableClusterDiscovery')
     })
 
     test('If cloud.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
@@ -259,6 +258,6 @@ describe('provider connections page', () => {
             />
         )
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await waitForText('table.status.connectionValid')
+        await !waitForText('connections.actions.enableClusterDiscovery')
     })
 })

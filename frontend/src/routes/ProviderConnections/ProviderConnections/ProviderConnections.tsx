@@ -87,6 +87,14 @@ export function ProviderConnectionsTable(props: {
         })
     }
 
+    function getAdditionalActions(item: ProviderConnection) {
+        const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+        if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
+            return t("connections.actions.enableClusterDiscovery")
+        }
+        return "-"
+    }
+
     return (
         <Fragment>
             <BulkActionModel<ProviderConnection> {...modalProps} />
@@ -108,31 +116,22 @@ export function ProviderConnectionsTable(props: {
                         cell: 'metadata.name',
                     },
                     {
-                        header: t('table.header.status'),
-                        search: 'metadata.name',
+                        header: t('table.header.additionalActions'),
+                        search: (item: ProviderConnection) => {
+                            return getAdditionalActions(item)
+                        },
                         cell: (item: ProviderConnection) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            let popover
-                            let status
                             if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
-                                popover = {
-                                    headerContent: t('table.status.actionAvailable'),
-                                    bodyContent: t('table.popover.body'),
-                                    footerContent: (
-                                        <AcmButton
-                                            component={Link}
-                                            variant={'primary'}
-                                            to={NavigationPath.discoveryConfig}
-                                        >
-                                            {t('table.popover.enablediscovery')}
-                                        </AcmButton>
-                                    ),
-                                }
-                                status = t('table.status.actionAvailable')
+                                return <Link to={NavigationPath.discoveryConfig}>
+                                    {t("connections.actions.enableClusterDiscovery")}
+                                </Link>
                             } else {
-                                status = t('table.status.connectionValid')
+                                return <span>-</span>
                             }
-                            return <AcmInlineStatus type={StatusType.healthy} status={status} popover={popover} />
+                        },
+                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
                         },
                     },
                     {
