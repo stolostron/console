@@ -6,14 +6,13 @@ import { SecretApiVersionType, SecretKindType } from './secret'
 import { IResourceDefinition } from './resource'
 import { IRequestResult } from '../lib/resource-request'
 import { createProject } from '../resources/project'
+import { keyBy } from 'lodash'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
 
 export const BareMetalAssetKind = 'BareMetalAsset'
 export type BareMetalAssetKindType = 'BareMetalAsset'
-const keyBy = (array: any, key: string) =>
-    (array || []).reduce((r: any, x: any) => ({ ...r, [key ? x[key] : x]: x }), {})
 
 export const BareMetalAssetDefinition: IResourceDefinition = {
     apiVersion: BareMetalAssetApiVersion,
