@@ -70,7 +70,7 @@ export function AddDiscoveryConfigData() {
         },
         spec: {
             filters: {
-                lastActive: 0,
+                lastActive: 7,
             },
             providerConnections: [],
         },
@@ -83,7 +83,8 @@ export function AddDiscoveryConfigData() {
             .then((results) => {
                 var CRHProviderConnections: ProviderConnection[] = []
                 results.forEach((result) => {
-                    if (result.metadata!.labels!['cluster.open-cluster-management.io/provider'] === ProviderID.CRH) {
+                    let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
+                    if (labels === ProviderID.CRH) {
                         CRHProviderConnections.push(result)
                     }
                 })
@@ -305,7 +306,7 @@ export function DiscoveryConfigPageContent(props: {
 }
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    let lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
+    const lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
     if (lastActive === undefined) {
         return '7d'
     }
@@ -313,7 +314,7 @@ export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryC
 }
 
 export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<DiscoveryConfig>) {
-    let providerConnection = discoveryConfig.spec?.providerConnections
+    const providerConnection = discoveryConfig.spec?.providerConnections
     if (providerConnection !== undefined && providerConnection[0] !== undefined) {
         return providerConnection[0]
     }

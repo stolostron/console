@@ -76,7 +76,7 @@ export function ProviderConnectionsTable(props: {
         open: false,
     })
 
-    var configuredCRHConnections: String[] = []
+    var configuredCRHConnections: string[] = []
     if (props.discoveryConfigs) {
         props.discoveryConfigs.forEach((discoveryConfig) => {
             if (discoveryConfig.spec.providerConnections) {
@@ -87,7 +87,7 @@ export function ProviderConnectionsTable(props: {
 
     function getAdditionalActions(item: ProviderConnection) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-        if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
+        if (label === ProviderID.CRH && item.metadata.name && !configuredCRHConnections.includes(item.metadata.name)) {
             return t('connections.actions.enableClusterDiscovery')
         }
         return '-'
@@ -120,7 +120,11 @@ export function ProviderConnectionsTable(props: {
                         },
                         cell: (item: ProviderConnection) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
+                            if (
+                                label === ProviderID.CRH &&
+                                item.metadata.name &&
+                                !configuredCRHConnections.includes(item.metadata.name)
+                            ) {
                                 return (
                                     <Link to={NavigationPath.discoveryConfig}>
                                         {t('connections.actions.enableClusterDiscovery')}
