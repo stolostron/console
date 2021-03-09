@@ -38,14 +38,10 @@ function readToken() {
         if (process.env.NODE_ENV === 'production') {
             logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
         } else {
-<<<<<<< HEAD
             serviceAccountToken = process.env.TOKEN
             if (!serviceAccountToken) {
                 logger.error('serviceaccount token not found')
             }
-=======
-            logger.warn('development - kubernetes watch will use first token using in /watch route')
->>>>>>> main
         }
     }
 }
@@ -158,8 +154,6 @@ export function startWatching(token: string): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
 }
-
-const watchRequests: Record<string, ClientRequest> = {}
 
 export function watchResource(
     token: string,
