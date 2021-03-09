@@ -14,14 +14,19 @@ echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./backend/.env
 OAUTH2_CLIENT_SECRET=multicloudingresssecret
 echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
 
-OAUTH2_REDIRECT_URL=http://localhost:4000/login/callback
+OAUTH2_REDIRECT_URL=https://localhost:4000/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
-BACKEND_URL=http://localhost:4000
+BACKEND_URL=https://localhost:4000
 echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://localhost:3000
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
+
+SA_SECRET=`oc get pods -n open-cluster-management --selector=app=console-chart-v2,component=console -o="jsonpath={.items[0].spec.volumes[1].secret.secretName}"`
+SA_TOKEN=`oc get secret -n open-cluster-management ${SA_SECRET} -o="jsonpath={.data.token}"`
+SA_TOKEN=`echo ${SA_TOKEN} | base64 -d -`
+echo TOKEN=$SA_TOKEN >> ./backend/.env
 
 REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirectURIs[], \"$OAUTH2_REDIRECT_URL\"] | unique")
 oc patch OAuthClient multicloudingress --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"

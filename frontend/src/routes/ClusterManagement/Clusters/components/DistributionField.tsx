@@ -10,7 +10,7 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { getResourceAttributes } from '../../../../lib/rbac-util'
 import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { RbacButton } from '../../../../components/Rbac'
-export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}`
+export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: { cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])
