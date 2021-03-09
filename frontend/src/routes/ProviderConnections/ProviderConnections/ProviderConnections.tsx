@@ -12,8 +12,6 @@ import {
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
-    AcmInlineStatus,
-    StatusType,
 } from '@open-cluster-management/ui-components'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -90,9 +88,9 @@ export function ProviderConnectionsTable(props: {
     function getAdditionalActions(item: ProviderConnection) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
         if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
-            return t("connections.actions.enableClusterDiscovery")
+            return t('connections.actions.enableClusterDiscovery')
         }
-        return "-"
+        return '-'
     }
 
     return (
@@ -123,9 +121,11 @@ export function ProviderConnectionsTable(props: {
                         cell: (item: ProviderConnection) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             if (label === ProviderID.CRH && !configuredCRHConnections.includes(item.metadata.name!)) {
-                                return <Link to={NavigationPath.discoveryConfig}>
-                                    {t("connections.actions.enableClusterDiscovery")}
-                                </Link>
+                                return (
+                                    <Link to={NavigationPath.discoveryConfig}>
+                                        {t('connections.actions.enableClusterDiscovery')}
+                                    </Link>
+                                )
                             } else {
                                 return <span>-</span>
                             }
