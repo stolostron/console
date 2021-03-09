@@ -9,8 +9,11 @@ import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvents } from '../lib/server-side-events'
 
+// https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes
+
 let watching = false
 const resources: Record<string, Record<string, number>> = {}
+const watchRequests: Record<string, ClientRequest> = {}
 
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED'
@@ -35,7 +38,10 @@ function readToken() {
         if (process.env.NODE_ENV === 'production') {
             logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
         } else {
-            logger.warn('development - kubernetes watch will use first token using in /watch route')
+            serviceAccountToken = process.env.TOKEN
+            if (!serviceAccountToken) {
+                logger.error('serviceaccount token not found')
+            }
         }
     }
 }
@@ -149,8 +155,6 @@ export function startWatching(token: string): void {
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
 }
 
-const watchRequests: Record<string, ClientRequest> = {}
-
 export function watchResource(
     token: string,
     apiVersion: string,
@@ -223,6 +227,13 @@ export function watchResource(
             })
                 .on('error', console.error)
                 .on('end', () => {
+                    // TODO handle 410
+                    // TODO request using last resourceVersion - ?resourceVersion=10245
+                    // TODO handle BOOKMARKS for resourceVersion window - ?allowWatchBookmarks=true
+                    // {
+                    //     "type": "BOOKMARK",
+                    //     "object": {"kind": "Pod", "apiVersion": "v1", "metadata": {"resourceVersion": "12746"} }
+                    // }
                     logger.info('watch end')
                     if (stopping) return
                     watchResource(token, apiVersion, kind, labelSelector)
