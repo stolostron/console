@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { render, waitFor } from '@testing-library/react'
 import React from 'react'
-import { render, screen, waitFor, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { HiveNotification } from './HiveNotification'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockNamespacedList } from '../../../../lib/nock-util'
+import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
 import { PodApiVersion, PodKind } from '../../../../resources/pod'
-import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { HiveNotification } from './HiveNotification'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
