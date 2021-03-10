@@ -21,6 +21,10 @@
    ```
    npm ci
    ```
+   For the husky pre commit hook (may need to use sudo)
+   ```
+   npm install -g ts-node
+   ```
 
 3. Setup environment
 
