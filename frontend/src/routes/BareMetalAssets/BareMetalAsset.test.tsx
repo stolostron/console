@@ -1,13 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
 import { nockList, nockDelete, nockCreate } from '../../lib/nock-util'
-import { BareMetalAsset } from '../../resources/bare-metal-asset'
+import { clickByText } from '../../lib/test-util'
+import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
+import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
+import {
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+} from '../../resources/project'
 import { Scope } from 'nock/types'
 
 const bareMetalAsset: BareMetalAsset = {
@@ -24,6 +34,59 @@ const bareMetalAsset: BareMetalAsset = {
         },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
+}
+
+const mockBmaProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: 'test-namespace' },
+}
+
+const mockBmaProjectResponse: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+        name: 'test-namespace',
+    },
+}
+
+const createBareMetalAsset: BareMetalAsset = {
+    kind: BareMetalAssetKind,
+    apiVersion: BareMetalAssetApiVersion,
+    metadata: {
+        name: 'test-bma',
+        namespace: 'test-namespace',
+    },
+    spec: {
+        bmc: {
+            address: 'example.com:80',
+            credentialsName: 'test-bma-bmc-secret',
+        },
+        bootMACAddress: '00:90:7F:12:DE:7F',
+    },
+}
+
+const createBmaSecret: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        name: 'test-bma-bmc-secret',
+        namespace: 'test-namespace',
+    },
+    stringData: {
+        password: 'test',
+        username: 'test',
+    },
+}
+
+const bmaSecret: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        namespace: 'test-namespace',
+        name: 'test-bma-bmc-secret',
+    },
+    data: { password: 'encoded', username: 'encoded' },
 }
 
 function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
@@ -163,7 +226,7 @@ describe('bare metal asset page', () => {
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
         const listNockii = nockList(bareMetalAsset, [])
 
-        const { getByText, getAllByText, getByLabelText, queryByText } = render(
+        const { getAllByText, getByLabelText, queryByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
@@ -174,11 +237,56 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         expect(getByLabelText('Select all rows')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
-        userEvent.click(getByText('bareMetalAsset.bulkAction.deleteAsset'))
-        expect(getByText('common:delete')).toBeInTheDocument()
-        userEvent.click(getByText('common:delete'))
+        await clickByText('bareMetalAsset.bulkAction.deleteAsset')
+        await clickByText('common:delete')
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
+    })
+
+    test('can import assets from csv', async () => {
+        const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
+        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const projectCreateNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
+        const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
+        const bmaCreateNock = nockCreate(createBareMetalAsset)
+        const newListNock = nockList(bareMetalAsset, mockBareMetalAssets)
+        const rows = [
+            'hostName,hostNamespace,bmcAddress,macAddress,username,password',
+            'test-bma,test-namespace,example.com:80,00:90:7F:12:DE:7F,test,test',
+        ]
+        const file = new File([rows.join('\n')], 'some.csv')
+
+        const { getByTestId } = render(
+            <MemoryRouter>
+                <BareMetalAssetsPage />
+            </MemoryRouter>
+        )
+
+        // wait for list to fill in with one dummy bma
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+
+        // click the Import button
+        await clickByText('bareMetalAsset.bulkAction.importAssets')
+
+        // click the "Open file" button
+        await clickByText('bareMetalAsset.importAction.button')
+
+        // "click" the file input button
+        const fileInput = getByTestId('importBMAs')
+        Object.defineProperty(fileInput, 'files', { value: [file] })
+        fireEvent.change(fileInput)
+
+        // click the Import button on the dialog
+        await clickByText('common:import')
+
+        // wait for bma to be created
+        await waitFor(() => expect(projectCreateNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
+
+        // wait for list to be refreshed
+        await waitFor(() => expect(newListNock.isDone()).toBeTruthy())
     })
 })

@@ -244,7 +244,7 @@ export function nocksAreDone(nocks: Scope[]) {
 }
 
 export async function waitForNocks(nocks: Scope[]) {
-    await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy(), options)
+    await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy(), { timeout: options.timeout * nocks.length })
 }
 
 export async function waitForNock(nock: Scope) {
