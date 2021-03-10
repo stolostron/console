@@ -15,6 +15,7 @@ import {
     AcmFormSection,
     AcmMultiSelect,
 } from '@open-cluster-management/ui-components'
+import { ProviderID } from '../../../lib/providers'
 import { Page, SelectOption, Text, TextVariants, ButtonVariant, ActionGroup } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -69,7 +70,7 @@ export function AddDiscoveryConfigData() {
         },
         spec: {
             filters: {
-                lastActive: 0,
+                lastActive: 7,
             },
             providerConnections: [],
         },
@@ -80,7 +81,14 @@ export function AddDiscoveryConfigData() {
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
             .then((results) => {
-                setProviderConnections(results)
+                var CRHProviderConnections: ProviderConnection[] = []
+                results.forEach((result) => {
+                    let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
+                    if (labels === ProviderID.CRH) {
+                        CRHProviderConnections.push(result)
+                    }
+                })
+                setProviderConnections(CRHProviderConnections)
                 setIsLoading(false)
             })
             .catch((err) => {
@@ -298,7 +306,7 @@ export function DiscoveryConfigPageContent(props: {
 }
 
 export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    let lastActive = discoveryConfig.spec?.filters?.lastActive
+    const lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
     if (lastActive === undefined) {
         return '7d'
     }
@@ -306,7 +314,7 @@ export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryC
 }
 
 export function getDiscoveryConfigProviderConnection(discoveryConfig: Partial<DiscoveryConfig>) {
-    let providerConnection = discoveryConfig.spec?.providerConnections
+    const providerConnection = discoveryConfig.spec?.providerConnections
     if (providerConnection !== undefined && providerConnection[0] !== undefined) {
         return providerConnection[0]
     }

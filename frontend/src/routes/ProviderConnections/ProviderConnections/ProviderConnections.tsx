@@ -17,7 +17,7 @@ import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { providerConnectionsState } from '../../../atoms'
+import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
@@ -25,10 +25,12 @@ import { getResourceAttributes } from '../../../lib/rbac-util'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
+import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
+    const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     usePageContext(providerConnections.length > 0, AddConnectionBtn)
     return (
         <AcmErrorBoundary>
@@ -36,7 +38,10 @@ export default function ProviderConnectionsPage() {
                 <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
                 <AcmPageCard>
                     <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable providerConnections={providerConnections} />
+                        <ProviderConnectionsTable
+                            providerConnections={providerConnections}
+                            discoveryConfigs={discoveryConfigs}
+                        />
                     </AcmTablePaginationContextProvider>
                 </AcmPageCard>
             </AcmAlertProvider>
@@ -61,12 +66,32 @@ function getProvider(labels: Record<string, string> | undefined) {
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[] }) {
+export function ProviderConnectionsTable(props: {
+    providerConnections?: ProviderConnection[]
+    discoveryConfigs?: DiscoveryConfig[]
+}) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
         open: false,
     })
+
+    var discoveryEnabled = false
+    if (props.discoveryConfigs) {
+        props.discoveryConfigs.forEach((discoveryConfig) => {
+            if (discoveryConfig.spec.providerConnections && discoveryConfig.spec.providerConnections.length > 0) {
+                discoveryEnabled = true
+            }
+        })
+    }
+
+    function getAdditionalActions(item: ProviderConnection) {
+        const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+        if (label === ProviderID.CRH && !discoveryEnabled) {
+            return t('connections.actions.enableClusterDiscovery')
+        }
+        return '-'
+    }
 
     return (
         <Fragment>
@@ -87,6 +112,27 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: 'metadata.name',
+                    },
+                    {
+                        header: t('table.header.additionalActions'),
+                        search: (item: ProviderConnection) => {
+                            return getAdditionalActions(item)
+                        },
+                        cell: (item: ProviderConnection) => {
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (label === ProviderID.CRH && !discoveryEnabled) {
+                                return (
+                                    <Link to={NavigationPath.discoveryConfig}>
+                                        {t('connections.actions.enableClusterDiscovery')}
+                                    </Link>
+                                )
+                            } else {
+                                return <span>-</span>
+                            }
+                        },
+                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
+                        },
                     },
                     {
                         header: t('table.header.provider'),
