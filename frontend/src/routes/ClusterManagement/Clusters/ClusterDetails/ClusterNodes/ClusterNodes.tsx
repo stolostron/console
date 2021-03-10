@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { ReactNode, useContext } from 'react'
 import {
-    AcmPageCard,
-    AcmTable,
     AcmInlineStatus,
-    StatusType,
+    AcmTable,
     compareNumbers,
     IAcmTableColumn,
-    AcmErrorBoundary,
+    StatusType,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
+import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
@@ -17,9 +16,9 @@ import { ClusterContext } from '../ClusterDetails'
 export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
     return (
-        <AcmErrorBoundary>
+        <PageSection variant="light">
             <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
-        </AcmErrorBoundary>
+        </PageSection>
     )
 }
 
@@ -154,17 +153,15 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     }
 
     return (
-        <AcmPageCard>
-            <AcmTable<NodeInfo>
-                plural="nodes"
-                items={props.nodes}
-                columns={columns}
-                keyFn={keyFn}
-                tableActions={[]}
-                bulkActions={[]}
-                rowActions={[]}
-            />
-        </AcmPageCard>
+        <AcmTable<NodeInfo>
+            plural="nodes"
+            items={props.nodes}
+            columns={columns}
+            keyFn={keyFn}
+            tableActions={[]}
+            bulkActions={[]}
+            rowActions={[]}
+        />
     )
 }
 

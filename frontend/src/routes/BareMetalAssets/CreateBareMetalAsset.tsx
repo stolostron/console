@@ -6,33 +6,33 @@ import {
     AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmForm,
     AcmLoadingPage,
-    AcmPageCard,
     AcmPageHeader,
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
-    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Page, SelectOption } from '@patternfly/react-core'
-import React, { useContext, useEffect, useState } from 'react'
+import { ActionGroup, Button, Divider, Page, PageSection, SelectOption } from '@patternfly/react-core'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { createResource, patchResource } from '../../../src/lib/resource-request'
 import {
     BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetDefinition,
+    BareMetalAssetKind,
     BMASecret,
     getBareMetalAsset,
-    BareMetalAssetApiVersion,
-    BareMetalAssetKind,
-    BareMetalAssetDefinition,
 } from '../../../src/resources/bare-metal-asset'
 import { ErrorPage } from '../../components/ErrorPage'
+import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { NavigationPath } from '../../NavigationPath'
-import { Secret, unpackSecret, getSecret, SecretApiVersion, SecretKind } from '../../resources/secret'
 import { getAuthorizedNamespaces, getResourceAttributes } from '../../lib/rbac-util'
+import { NavigationPath } from '../../NavigationPath'
+import { getSecret, Secret, SecretApiVersion, SecretKind, unpackSecret } from '../../resources/secret'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -63,7 +63,10 @@ export default function CreateBareMetalAssetPage() {
                         ]}
                     />
                     <AcmErrorBoundary>
-                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                        <Divider />
+                        <PageSection variant="light" isFilled={true}>
+                            <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                        </PageSection>
                     </AcmErrorBoundary>
                 </AcmAlertProvider>
             </Page>
@@ -93,7 +96,10 @@ export default function CreateBareMetalAssetPage() {
                     ]}
                 />
                 <AcmErrorBoundary>
-                    <CreateBareMetalAssetPageData />
+                    <Divider />
+                    <PageSection variant="light" isFilled={true}>
+                        <CreateBareMetalAssetPageData />
+                    </PageSection>
                 </AcmErrorBoundary>
             </AcmAlertProvider>
         </Page>
@@ -128,7 +134,7 @@ export function EditBareMetalAssetPageData(props: { name: string; namespace: str
     if (resourceError) {
         return <ErrorPage error={resourceError} />
     } else if (isLoading) {
-        return <AcmLoadingPage />
+        return <LoadingPage />
     }
 
     return (
@@ -178,13 +184,11 @@ export function CreateBareMetalAssetPageData() {
     if (projects.length === 0) {
         // returns empty state when user cannot create secret in any namespace
         return (
-            <AcmPageCard>
-                <AcmEmptyState
-                    title={t('common:rbac.title.unauthorized')}
-                    message={t('common:rbac.namespaces.unauthorized')}
-                    showIcon={false}
-                />
-            </AcmPageCard>
+            <AcmEmptyState
+                title={t('common:rbac.title.unauthorized')}
+                message={t('common:rbac.namespaces.unauthorized')}
+                showIcon={false}
+            />
         )
     }
 
@@ -250,222 +254,220 @@ export function CreateBareMetalAssetPageContent(props: {
     }, [props.editBareMetalAsset, props.editSecret])
 
     return (
-        <AcmPageCard>
-            <AcmForm>
-                <AcmTextInput
-                    id="bareMetalAssetName"
-                    label={t('createBareMetalAsset.assetName.label')}
-                    placeholder={t('createBareMetalAsset.assetName.placeholder')}
-                    value={bareMetalAsset.metadata?.name}
-                    onChange={(name) => {
-                        updateBMASecret((bmaSecrets) => {
-                            bmaSecrets.metadata!.name = name + '-bmc-secret'
-                        })
-                        updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.metadata!.name = name
-                        })
-                    }}
-                    isRequired
-                    isDisabled={isEdit}
-                />
-                <AcmSelect
-                    id="namespaceName"
-                    toggleId="namespaceName-button"
-                    label={t('createBareMetalAsset.namespaceName.label')}
-                    placeholder={t('createBareMetalAsset.namespaceName.placeholder')}
-                    value={bareMetalAsset.metadata?.namespace}
-                    onChange={(namespace) => {
-                        updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.metadata!.namespace = namespace
-                        })
-                        updateBMASecret((bmaSecrets) => {
-                            bmaSecrets.metadata!.namespace = namespace
-                        })
-                    }}
-                    isRequired
-                    isDisabled={isEdit}
-                    variant="typeahead"
-                >
-                    {props.projects.map((project) => (
-                        <SelectOption key={project} value={project}>
-                            {project}
-                        </SelectOption>
-                    ))}
-                </AcmSelect>
-                <AcmTextInput
-                    id="baseboardManagementControllerAddress"
-                    label={t('createBareMetalAsset.address.label')}
-                    placeholder={t('createBareMetalAsset.address.placeholder')}
-                    labelHelp={t('createBareMetalAsset.address.labelHelp')}
-                    value={bareMetalAsset.spec!.bmc.address}
-                    onChange={(address) => {
-                        updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.spec!.bmc.address = address
-                        })
-                    }}
-                    isRequired
-                    validation={(value) => {
-                        const VALID_BMC_ADDR_REGEXP = new RegExp(
-                            '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
-                                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                                '((\\d{1,3}\\.){3}\\d{1,3})|' + // OR ip (v4) address
-                                '\\[?(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])]))\\]?' + // OR ip (v6) address
-                                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                                '(\\#[-a-z\\d_]*)?$',
-                            'i'
-                        )
+        <AcmForm>
+            <AcmTextInput
+                id="bareMetalAssetName"
+                label={t('createBareMetalAsset.assetName.label')}
+                placeholder={t('createBareMetalAsset.assetName.placeholder')}
+                value={bareMetalAsset.metadata?.name}
+                onChange={(name) => {
+                    updateBMASecret((bmaSecrets) => {
+                        bmaSecrets.metadata!.name = name + '-bmc-secret'
+                    })
+                    updateBareMetalAsset((bareMetalAsset) => {
+                        bareMetalAsset.metadata!.name = name
+                    })
+                }}
+                isRequired
+                isDisabled={isEdit}
+            />
+            <AcmSelect
+                id="namespaceName"
+                toggleId="namespaceName-button"
+                label={t('createBareMetalAsset.namespaceName.label')}
+                placeholder={t('createBareMetalAsset.namespaceName.placeholder')}
+                value={bareMetalAsset.metadata?.namespace}
+                onChange={(namespace) => {
+                    updateBareMetalAsset((bareMetalAsset) => {
+                        bareMetalAsset.metadata!.namespace = namespace
+                    })
+                    updateBMASecret((bmaSecrets) => {
+                        bmaSecrets.metadata!.namespace = namespace
+                    })
+                }}
+                isRequired
+                isDisabled={isEdit}
+                variant="typeahead"
+            >
+                {props.projects.map((project) => (
+                    <SelectOption key={project} value={project}>
+                        {project}
+                    </SelectOption>
+                ))}
+            </AcmSelect>
+            <AcmTextInput
+                id="baseboardManagementControllerAddress"
+                label={t('createBareMetalAsset.address.label')}
+                placeholder={t('createBareMetalAsset.address.placeholder')}
+                labelHelp={t('createBareMetalAsset.address.labelHelp')}
+                value={bareMetalAsset.spec!.bmc.address}
+                onChange={(address) => {
+                    updateBareMetalAsset((bareMetalAsset) => {
+                        bareMetalAsset.spec!.bmc.address = address
+                    })
+                }}
+                isRequired
+                validation={(value) => {
+                    const VALID_BMC_ADDR_REGEXP = new RegExp(
+                        '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
+                            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+                            '((\\d{1,3}\\.){3}\\d{1,3})|' + // OR ip (v4) address
+                            '\\[?(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:)|fe80:(:[0-9a-f]{0,4}){0,4}%[0-9a-z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])]))\\]?' + // OR ip (v6) address
+                            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+                            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+                            '(\\#[-a-z\\d_]*)?$',
+                        'i'
+                    )
 
-                        if (value && value.length && !value.includes('://')) {
-                            value = 'ipmi://' + value
+                    if (value && value.length && !value.includes('://')) {
+                        value = 'ipmi://' + value
+                    }
+                    if (!VALID_BMC_ADDR_REGEXP.test(value)) {
+                        return t('createBareMetalAsset.form.invalidBmcAddress')
+                    }
+                }}
+            />
+            <AcmTextInput
+                id="username"
+                label={t('createBareMetalAsset.username.label')}
+                placeholder={t('createBareMetalAsset.username.placeholder')}
+                value={bmaSecret.stringData!.username}
+                onChange={(username) => {
+                    updateBMASecret((bmaSecret) => {
+                        bmaSecret.stringData!.username = username
+                    })
+                }}
+                isRequired
+            />
+            <AcmTextInput
+                id="password"
+                label={t('createBareMetalAsset.password.label')}
+                placeholder={t('createBareMetalAsset.password.placeholder')}
+                value={bmaSecret.stringData!.password}
+                onChange={(password) => {
+                    updateBMASecret((bmaSecret) => {
+                        bmaSecret.stringData!.password = password
+                    })
+                }}
+                isRequired
+                type="password"
+            />
+            <AcmTextInput
+                id="bootMACAddress"
+                label={t('createBareMetalAsset.bootMACAddress.label')}
+                placeholder={t('createBareMetalAsset.bootMACAddress.placeholder')}
+                labelHelp={t('createBareMetalAsset.bootMACAddress.labelHelp')}
+                value={bareMetalAsset.spec?.bootMACAddress}
+                onChange={(bootMACAddress) => {
+                    updateBareMetalAsset((bareMetalAsset) => {
+                        bareMetalAsset.spec!.bootMACAddress = bootMACAddress
+                    })
+                }}
+                isRequired
+                validation={(value) => {
+                    const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
+                    if (!VALID_BOOT_MAC_REGEXP.test(value)) {
+                        return t('createBareMetalAsset.form.invalidMacAddress')
+                    }
+                }}
+            />
+            <AcmAlertGroup isInline canClose />
+            <ActionGroup>
+                <AcmSubmit
+                    id="submit"
+                    variant="primary"
+                    onClick={() => {
+                        alertContext.clearAlerts()
+                        if (isEdit) {
+                            return patchResource(bareMetalAsset as BareMetalAsset, [
+                                {
+                                    op: 'replace',
+                                    path: `/spec/bmc`,
+                                    value: bareMetalAsset.spec?.bmc,
+                                },
+                                {
+                                    op: 'replace',
+                                    path: `/spec/bootMACAddress`,
+                                    value: bareMetalAsset.spec?.bootMACAddress!,
+                                },
+                            ])
+                                .promise.then(() => {
+                                    return patchResource(bmaSecret as BMASecret, [
+                                        {
+                                            op: 'replace',
+                                            path: `/stringData`,
+                                            value: bmaSecret.stringData,
+                                        },
+                                    ])
+                                        .promise.then(() => {
+                                            history.push(NavigationPath.bareMetalAssets)
+                                        })
+                                        .catch((e) => {
+                                            /* istanbul ignore else */
+                                            if (e instanceof Error) {
+                                                alertContext.addAlert({
+                                                    type: 'danger',
+                                                    title: t('common:request.failed'),
+                                                    message: e.message,
+                                                })
+                                            }
+                                        })
+                                })
+                                .catch((e) => {
+                                    /* istanbul ignore else */
+                                    if (e instanceof Error) {
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: t('common:request.failed'),
+                                            message: e.message,
+                                        })
+                                    }
+                                })
+                        } else {
+                            return createResource(bmaSecret as BMASecret)
+                                .promise.then((result) => {
+                                    if (bareMetalAsset.spec) {
+                                        bareMetalAsset.spec.bmc.credentialsName = result.metadata.name ?? ''
+                                    }
+                                    return createResource(bareMetalAsset as BareMetalAsset)
+                                        .promise.then(() => {
+                                            history.push(NavigationPath.bareMetalAssets)
+                                        })
+                                        .catch((e) => {
+                                            /* istanbul ignore else */
+                                            if (e instanceof Error) {
+                                                alertContext.addAlert({
+                                                    type: 'danger',
+                                                    title: t('common:request.failed'),
+                                                    message: e.message,
+                                                })
+                                            }
+                                        })
+                                })
+                                .catch((e) => {
+                                    /* istanbul ignore else */
+                                    if (e instanceof Error) {
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: t('common:request.failed'),
+                                            message: e.message,
+                                        })
+                                    }
+                                })
                         }
-                        if (!VALID_BMC_ADDR_REGEXP.test(value)) {
-                            return t('createBareMetalAsset.form.invalidBmcAddress')
-                        }
                     }}
-                />
-                <AcmTextInput
-                    id="username"
-                    label={t('createBareMetalAsset.username.label')}
-                    placeholder={t('createBareMetalAsset.username.placeholder')}
-                    value={bmaSecret.stringData!.username}
-                    onChange={(username) => {
-                        updateBMASecret((bmaSecret) => {
-                            bmaSecret.stringData!.username = username
-                        })
+                >
+                    {isEdit ? t('editBareMetalAsset.button.submit') : t('createBareMetalAsset.button.create')}
+                </AcmSubmit>
+                <Button
+                    variant="link"
+                    onClick={() => {
+                        history.push(NavigationPath.bareMetalAssets)
                     }}
-                    isRequired
-                />
-                <AcmTextInput
-                    id="password"
-                    label={t('createBareMetalAsset.password.label')}
-                    placeholder={t('createBareMetalAsset.password.placeholder')}
-                    value={bmaSecret.stringData!.password}
-                    onChange={(password) => {
-                        updateBMASecret((bmaSecret) => {
-                            bmaSecret.stringData!.password = password
-                        })
-                    }}
-                    isRequired
-                    type="password"
-                />
-                <AcmTextInput
-                    id="bootMACAddress"
-                    label={t('createBareMetalAsset.bootMACAddress.label')}
-                    placeholder={t('createBareMetalAsset.bootMACAddress.placeholder')}
-                    labelHelp={t('createBareMetalAsset.bootMACAddress.labelHelp')}
-                    value={bareMetalAsset.spec?.bootMACAddress}
-                    onChange={(bootMACAddress) => {
-                        updateBareMetalAsset((bareMetalAsset) => {
-                            bareMetalAsset.spec!.bootMACAddress = bootMACAddress
-                        })
-                    }}
-                    isRequired
-                    validation={(value) => {
-                        const VALID_BOOT_MAC_REGEXP = /^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/
-                        if (!VALID_BOOT_MAC_REGEXP.test(value)) {
-                            return t('createBareMetalAsset.form.invalidMacAddress')
-                        }
-                    }}
-                />
-                <AcmAlertGroup isInline canClose />
-                <ActionGroup>
-                    <AcmSubmit
-                        id="submit"
-                        variant="primary"
-                        onClick={() => {
-                            alertContext.clearAlerts()
-                            if (isEdit) {
-                                return patchResource(bareMetalAsset as BareMetalAsset, [
-                                    {
-                                        op: 'replace',
-                                        path: `/spec/bmc`,
-                                        value: bareMetalAsset.spec?.bmc,
-                                    },
-                                    {
-                                        op: 'replace',
-                                        path: `/spec/bootMACAddress`,
-                                        value: bareMetalAsset.spec?.bootMACAddress!,
-                                    },
-                                ])
-                                    .promise.then(() => {
-                                        return patchResource(bmaSecret as BMASecret, [
-                                            {
-                                                op: 'replace',
-                                                path: `/stringData`,
-                                                value: bmaSecret.stringData,
-                                            },
-                                        ])
-                                            .promise.then(() => {
-                                                history.push(NavigationPath.bareMetalAssets)
-                                            })
-                                            .catch((e) => {
-                                                /* istanbul ignore else */
-                                                if (e instanceof Error) {
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: t('common:request.failed'),
-                                                        message: e.message,
-                                                    })
-                                                }
-                                            })
-                                    })
-                                    .catch((e) => {
-                                        /* istanbul ignore else */
-                                        if (e instanceof Error) {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: t('common:request.failed'),
-                                                message: e.message,
-                                            })
-                                        }
-                                    })
-                            } else {
-                                return createResource(bmaSecret as BMASecret)
-                                    .promise.then((result) => {
-                                        if (bareMetalAsset.spec) {
-                                            bareMetalAsset.spec.bmc.credentialsName = result.metadata.name ?? ''
-                                        }
-                                        return createResource(bareMetalAsset as BareMetalAsset)
-                                            .promise.then(() => {
-                                                history.push(NavigationPath.bareMetalAssets)
-                                            })
-                                            .catch((e) => {
-                                                /* istanbul ignore else */
-                                                if (e instanceof Error) {
-                                                    alertContext.addAlert({
-                                                        type: 'danger',
-                                                        title: t('common:request.failed'),
-                                                        message: e.message,
-                                                    })
-                                                }
-                                            })
-                                    })
-                                    .catch((e) => {
-                                        /* istanbul ignore else */
-                                        if (e instanceof Error) {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: t('common:request.failed'),
-                                                message: e.message,
-                                            })
-                                        }
-                                    })
-                            }
-                        }}
-                    >
-                        {isEdit ? t('editBareMetalAsset.button.submit') : t('createBareMetalAsset.button.create')}
-                    </AcmSubmit>
-                    <Button
-                        variant="link"
-                        onClick={() => {
-                            history.push(NavigationPath.bareMetalAssets)
-                        }}
-                    >
-                        {t('createBareMetalAsset.button.cancel')}
-                    </Button>
-                </ActionGroup>
-            </AcmForm>
-        </AcmPageCard>
+                >
+                    {t('createBareMetalAsset.button.cancel')}
+                </Button>
+            </ActionGroup>
+        </AcmForm>
     )
 }

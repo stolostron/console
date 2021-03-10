@@ -1,18 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmInlineProvider,
-    AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -25,22 +22,15 @@ import { getResourceAttributes } from '../../../lib/rbac-util'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
-import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
-    usePageContext(providerConnections.length > 0, AddConnectionBtn)
     return (
-        <AcmErrorBoundary>
-            <AcmAlertProvider>
-                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                <AcmPageCard>
-                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable providerConnections={providerConnections} />
-                    </AcmTablePaginationContextProvider>
-                </AcmPageCard>
-            </AcmAlertProvider>
-        </AcmErrorBoundary>
+        <PageSection variant="light" isFilled={true}>
+            <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
+                <ProviderConnectionsTable providerConnections={providerConnections} />
+            </AcmTablePaginationContextProvider>
+        </PageSection>
     )
 }
 
@@ -86,7 +76,17 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         header: t('table.header.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
-                        cell: 'metadata.name',
+                        cell: (providerConnection) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.editConnection
+                                        .replace(':namespace', providerConnection.metadata.namespace as string)
+                                        .replace(':name', providerConnection.metadata.name as string)}
+                                >
+                                    {providerConnection.metadata.name}
+                                </Link>
+                            </span>
+                        ),
                     },
                     {
                         header: t('table.header.provider'),
@@ -211,7 +211,15 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                     },
                 ]}
                 keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
-                tableActions={[]}
+                tableActions={[
+                    {
+                        id: 'add',
+                        title: t('add'),
+                        click: () => {
+                            history.push(NavigationPath.addConnection)
+                        },
+                    },
+                ]}
                 bulkActions={[
                     {
                         id: 'deleteConnection',
