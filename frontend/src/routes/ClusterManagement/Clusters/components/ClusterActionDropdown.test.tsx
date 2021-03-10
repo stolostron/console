@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { nockPatch, nockCreateSelfSubjectAccessReview } from '../../../../lib/nock-util'
+import { nockPatch, nockRBAC } from '../../../../lib/nock-util'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
@@ -78,11 +77,11 @@ describe('ClusterActionDropdown', () => {
     test('hibernate action', async () => {
         const cluster = { ...mockCluster }
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getPatchClusterDeploymentResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getDeleteDeploymentResourceAttributes()),
+            nockRBAC(getPatchClusterResourceAttributes()),
+            nockRBAC(getPatchClusterDeploymentResourceAttributes()),
+            nockRBAC(getDeleteClusterResourceAttributes()),
+            nockRBAC(getDeleteClusterResourceAttributes()),
+            nockRBAC(getDeleteDeploymentResourceAttributes()),
         ]
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
         await clickByLabel('Actions')
@@ -96,10 +95,10 @@ describe('ClusterActionDropdown', () => {
         const cluster = { ...mockCluster }
         cluster.status = ClusterStatus.hibernating
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getPatchClusterDeploymentResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes()),
-            nockCreateSelfSubjectAccessReview(getDeleteDeploymentResourceAttributes()),
+            nockRBAC(getPatchClusterResourceAttributes()),
+            nockRBAC(getPatchClusterDeploymentResourceAttributes()),
+            nockRBAC(getDeleteClusterResourceAttributes()),
+            nockRBAC(getDeleteDeploymentResourceAttributes()),
         ]
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
         await clickByLabel('Actions')

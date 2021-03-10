@@ -81,6 +81,10 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
 }
 
 export function deleteResource<Resource extends IResource>(resource: Resource): IRequestResult {
+    if (process.env.LOG_NOCK === 'true') {
+        console.log(`nockDelete(${JSON.stringify(resource)})`)
+    }
+
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     const url = backendUrl + getResourceNameApiPath(resource)

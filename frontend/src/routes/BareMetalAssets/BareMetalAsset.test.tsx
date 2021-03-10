@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
-import BareMetalAssetsPage from './BareMetalAssetsPage'
-import { nockList, nockDelete, nockCreate } from '../../lib/nock-util'
-import { BareMetalAsset } from '../../resources/bare-metal-asset'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
 import { Scope } from 'nock/types'
+import { MemoryRouter } from 'react-router-dom'
+import { nockRBAC, nockDelete, nockList } from '../../lib/nock-util'
+import { BareMetalAsset } from '../../resources/bare-metal-asset'
+import { ResourceAttributes } from '../../resources/self-subject-access-review'
+import BareMetalAssetsPage from './BareMetalAssetsPage'
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -26,30 +25,6 @@ const bareMetalAsset: BareMetalAsset = {
     },
 }
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
-
 function clusterCreationResourceAttributes() {
     return {
         resource: 'managedclusters',
@@ -59,30 +34,6 @@ function clusterCreationResourceAttributes() {
 }
 
 const mockBareMetalAssets = [bareMetalAsset]
-
-function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
 
 function getEditBMAResourceAttributes(name: string, namespace: string) {
     return {
@@ -114,7 +65,7 @@ function nocksAreDone(nocks: Scope[]) {
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
 
         const { getAllByText } = render(
             <MemoryRouter>
@@ -130,14 +81,10 @@ describe('bare metal asset page', () => {
     test('can delete asset from overflow menu', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getEditBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
-            ),
+            nockRBAC(getEditBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')),
+            nockRBAC(getDeleteBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')),
         ]
         const { getByText, getAllByText, getAllByLabelText, queryByText } = render(
             <MemoryRouter>
@@ -160,7 +107,7 @@ describe('bare metal asset page', () => {
     test('can delete asset(s) from batch action menu', async () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const deleteNock = nockDelete(mockBareMetalAssets[0])
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const listNockii = nockList(bareMetalAsset, [])
 
         const { getByText, getAllByText, getByLabelText, queryByText } = render(

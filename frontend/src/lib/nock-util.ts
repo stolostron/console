@@ -166,7 +166,30 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
     return scope
 }
 
-export function nockCreateSelfSubjectAccessReview(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+export function nockIgnoreRBAC() {
+    const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .persist()
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body) => true)
+        .optionally()
+        .reply(
+            201,
+            {
+                apiVersion: SelfSubjectAccessReviewApiVersion,
+                kind: SelfSubjectAccessReviewKind,
+                metadata: {},
+                spec: {},
+                status: { allowed: true },
+            } as SelfSubjectAccessReview,
+            {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true',
+            }
+        )
+    return scope
+}
+
+export function nockRBAC(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
     return nockCreate(
         {
             apiVersion: SelfSubjectAccessReviewApiVersion,
