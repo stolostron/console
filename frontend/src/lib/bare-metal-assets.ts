@@ -20,7 +20,7 @@ const BMC_PASSWORD = 'bmc.password'
 const CREDENTIAL_NAME = 'spec.bmc.credentialsName'
 const CREDENTIAL_NAMESPACE = 'metadata.namespace'
 
-export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IResource[] ) {
+export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IResource[]) {
     // make sure all hosts have a bare metal asset
     // (bma's may have been imported from a csv)
     let results
@@ -50,7 +50,9 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
     const hostsWithoutCred = hosts.filter((host) => !get(host, BMC_USERNAME))
     const installConfig = (resources as Secret[]).find(({ data }) => data && data[INSTALL_CONFIG])
     if (installConfig?.data) {
-        const installConfigData = yaml.safeLoad(Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii'))
+        const installConfigData = yaml.safeLoad(
+            Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii')
+        )
         const installConfigHosts = get(installConfigData, 'platform.baremetal.hosts', [])
         const installConfigHostsWithoutCred = installConfigHosts.filter((host: any) => !get(host, BMC_USERNAME))
         if (hostsWithoutCred.length > 0 || installConfigHostsWithoutCred.length > 0) {
@@ -74,8 +76,16 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
                     const secret = secretMap[`${credName}-${namespace}`]
                     if (secret) {
                         const { username, password } = get(secret, 'value.data', {})
-                        set(host, BMC_USERNAME, username ? Buffer.from(username, 'base64').toString('ascii') : undefined)
-                        set(host, BMC_PASSWORD, password ? Buffer.from(password, 'base64').toString('ascii') : undefined)
+                        set(
+                            host,
+                            BMC_USERNAME,
+                            username ? Buffer.from(username, 'base64').toString('ascii') : undefined
+                        )
+                        set(
+                            host,
+                            BMC_PASSWORD,
+                            password ? Buffer.from(password, 'base64').toString('ascii') : undefined
+                        )
                     }
                 })
             }
@@ -89,7 +99,12 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
     return { assets, errors }
 }
 
-export async function attachBMAs(assets: BareMetalAsset[], hosts: ImportedBareMetalAsset[], clusterName: string, errors: Error[]) {
+export async function attachBMAs(
+    assets: BareMetalAsset[],
+    hosts: ImportedBareMetalAsset[],
+    clusterName: string,
+    errors: Error[]
+) {
     // mark asset as being used by this cluster
     let results = assets.map((asset, inx) => {
         const patch = {
