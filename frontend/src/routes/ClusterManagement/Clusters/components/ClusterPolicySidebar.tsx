@@ -4,18 +4,21 @@ import _ from 'lodash'
 import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmTable, compareStrings, AcmDropdown } from '@open-cluster-management/ui-components'
+import { AngleLeftIcon, ExternalLinkAltIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
+import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles({
-    sidebarBody: {
+    body: {
         position: 'relative',
         top: '-35px',
+        padding: '0 8px',
     },
-    sidebarDescText: {
+    descText: {
         fontSize: '14px',
         paddingBottom: '1rem',
     },
@@ -24,16 +27,6 @@ const useStyles = makeStyles({
         height: '200px',
         paddingBottom: '1rem',
         marginLeft: '-4rem',
-    },
-    sidebarTitleText: {
-        fontSize: '20px',
-        paddingBottom: '10px',
-    },
-    backAction: {
-        border: 0,
-        cursor: 'pointer',
-        background: 'none',
-        color: 'var(--pf-global--link--Color)',
     },
     tableTitleText: {
         fontWeight: 700,
@@ -47,6 +40,66 @@ const useStyles = makeStyles({
         textAlign: 'unset',
         '&:hover': {
             textDecoration: 'underline',
+        },
+    },
+    backAction: {
+        fontSize: '14px',
+        color: 'var(--pf-global--Color--400)',
+        paddingBottom: '16px',
+        '& button': {
+            border: 0,
+            cursor: 'pointer',
+            background: 'none',
+            color: 'var(--pf-global--link--Color)',
+        },
+    },
+    detailTitleGroup: {
+        display: 'flex',
+        justifyContent: 'space-between',
+    },
+    titleText: {
+        fontSize: '20px',
+        color: 'var(--pf-global--Color--100)',
+    },
+    detailActions: {
+        '& button': {
+            backgroundColor: 'transparent',
+            fontSize: '16px',
+            '&::before': {
+                border: '0',
+            },
+            '& span': {
+                color: 'var(--pf-global--Color--100)',
+            },
+        },
+    },
+    detailText: {
+        fontSize: '16px',
+        lineHeight: '21px',
+        color: 'var(--pf-global--Color--200)',
+        padding: '22px 0',
+    },
+    knowledgebaseLink: {
+        paddingBottom: '27px',
+    },
+    subDetailContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '27px 0 20px 0',
+    },
+    subDetail: {
+        color: 'var(--pf-global--Color--100)',
+        '& > div': {
+            display: 'flex',
+            '& h3': {
+                fontSize: '14px',
+                fontWeight: 700,
+                lineHeight: '18px',
+            },
+            '& svg': {
+                alignSelf: 'center',
+                marginRight: '10px',
+            },
         },
     },
 })
@@ -131,14 +184,84 @@ function DetailsView(props: {
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
+    const onSelect = (id: string) => {
+        switch (id) {
+            case 'action 1':
+                console.log('perform action 1')
+                break
+            case 'action 2':
+                console.log('perform action 2')
+                break
+        }
+    }
+
+    function matchedDate() {
+        let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
+        return d
+    }
+
+    function categories() {
+        let categories = _.get(selectedPolicy, 'results[0].category', '')
+        if (categories && categories !== '') {
+            const categoriesToHide = categories.slice(1)
+            return <AcmLabels labels={categories.split(',')} collapse={categoriesToHide} />
+        }
+    }
+
     return (
-        <div className={classes.sidebarBody}>
-            <div className={classes.sidebarTitleText}>
-                <button onClick={() => setDetailsView(false)} className={classes.backAction}>
-                    {t('policy.report.flyout.back')}
-                </button>
+        <div className={classes.body}>
+            <div className={classes.backAction}>
+                <AngleLeftIcon />
+                <button onClick={() => setDetailsView(false)}>{t('policy.report.flyout.back')}</button>
             </div>
-            <div className={classes.sidebarDescText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
+            <div className={classes.detailTitleGroup}>
+                <div className={classes.titleText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
+                <div className={classes.detailActions}>
+                    <AcmDropdown
+                        dropdownItems={[
+                            {
+                                id: 'action 1',
+                                text: t('policy.report.flyout.details.action1'),
+                            },
+                            {
+                                id: 'action 2',
+                                text: t('policy.report.flyout.details.action2'),
+                            },
+                        ]}
+                        text={t('policy.report.flyout.details.actions')}
+                        onSelect={onSelect}
+                        id="policy-actions"
+                        isKebab={false}
+                        isPrimary={false}
+                    />
+                </div>
+            </div>
+            <div className={classes.detailText}>{_.get(selectedPolicy, 'results[0].data.details', '')}</div>
+            <Link className={classes.knowledgebaseLink} to="/">
+                Knowledgebase article <ExternalLinkAltIcon />
+            </Link>
+            <div className={classes.subDetailContainer}>
+                <div className={classes.subDetail}>
+                    <div>
+                        <FlagIcon />
+                        <h3>{t('policy.report.flyout.risk')}</h3>
+                    </div>
+                </div>
+                <div className={classes.subDetail}>
+                    <div>
+                        <ListIcon />
+                        <h3>{t('policy.report.flyout.category')}</h3>
+                    </div>
+                    {categories()}
+                </div>
+                <div className={classes.subDetail}>
+                    <div>
+                        <OutlinedClockIcon />
+                        <h3>{t('policy.report.flyout.matched')}</h3>
+                    </div>
+                    {matchedDate()}
+                </div>
+            </div>
             <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
                 <Tab
                     eventKey={0}
@@ -165,11 +288,9 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
     ) : (
-        <div className={classes.sidebarBody}>
-            <div className={classes.sidebarTitleText}>
-                {t('policy.report.flyout.title', { count: props.data.length })}
-            </div>
-            <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
+        <div className={classes.body}>
+            <div className={classes.titleText}>{t('policy.report.flyout.title', { count: props.data.length })}</div>
+            <div className={classes.descText}>{t('policy.report.flyout.description')}</div>
             <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
             <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
             <AcmTable<PolicyReport>
@@ -177,7 +298,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                 items={props.data}
                 columns={[
                     {
-                        header: 'Description',
+                        header: t('policy.report.flyout.table.description'),
                         search: (policyReport) => {
                             return policyReport.results[0].message
                         },
@@ -199,7 +320,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                         },
                     },
                     {
-                        header: 'Category',
+                        header: t('policy.report.flyout.category'),
                         search: (policyReport) => {
                             if (policyReport.results[0].category && policyReport.results[0].category !== '') {
                                 return policyReport.results[0].category.split(',')
@@ -216,7 +337,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                         },
                     },
                     {
-                        header: 'Total risk',
+                        header: t('policy.report.flyout.risk'),
                         search: (policyReport) => {
                             return policyReport.results[0].data.total_risk
                         },

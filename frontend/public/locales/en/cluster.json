@@ -233,7 +233,14 @@
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "policy.report.flyout.back": "Back",
     "policy.report.flyout.table.header": "Recommendations with remediation",
+    "policy.report.flyout.table.description": "Description",
+    "policy.report.flyout.risk": "Total risk",
+    "policy.report.flyout.category": "Category",
+    "policy.report.flyout.matched": "Matched on",
     "policy.report.flyout.donut.chart.text": "Total issues",
     "policy.report.flyout.details.tab.remediation": "How to remediate",
-    "policy.report.flyout.details.tab.reason": "Reason"
+    "policy.report.flyout.details.tab.reason": "Reason",
+    "policy.report.flyout.details.actions": "Actions",
+    "policy.report.flyout.details.action1": "Action 1",
+    "policy.report.flyout.details.action2": "Action 2"
 }
