@@ -153,13 +153,20 @@ compute:
 
 {{#if_ne infrastructure 'vSphere'}}
 networking:
-  clusterNetwork:
-  - cidr: {{{../clusterNetwork}}} ##clusterNetwork
-    hostPrefix: {{{../hostPrefix}}} ##hostPrefix
-  machineCIDR: {{{../machineCIDR}}} ##machineCIDR
   networkType: {{{../networkType}}} ##networkType
+  clusterNetwork:
+{{#each ../networks}}
+  - cidr: {{{clusterNetwork}}} ##clusterNetwork
+    hostPrefix: {{{hostPrefix}}} ##hostPrefix
+{{/each}}  
+  machineCIDR: 
+{{#each ../networks}}
+  - {{{machineCIDR}}} ##machineCIDR
+{{/each}}  
   serviceNetwork:
-  - {{{../serviceNetwork}}} ##serviceNetwork
+{{#each ../networks}}
+  - {{{serviceNetwork}}} ##serviceNetwork
+{{/each}}  
 {{/if_ne}}
 
 
