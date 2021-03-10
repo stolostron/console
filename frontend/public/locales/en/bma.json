@@ -23,20 +23,29 @@
   "createBareMetalAsset.form.invalidBmcAddress":"Invalid format of BMC address",
   "createBareMetalAsset.form.invalidMacAddress":"Invalid format of MAC address",
   "createBareMetalAsset.emptyState.Namespaces.title":"No namespaces found.",
-  
+  "importBareMetalAssets.title": "Import bare metal assets",
+
   "editBareMetalAsset.title": "Edit bare metal asset",
   "editBareMetalAsset.button.submit":"Apply",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
   "bareMetalAsset.tableHeader.name":"Name",
   "bareMetalAsset.tableHeader.namespace":"Namespace",
+  "bareMetalAsset.tableHeader.macaddress":"MAC address",
+  "bareMetalAsset.tableHeader.address":"Controller address",
   "bareMetalAsset.tableHeader.cluster":"Cluster",
   "bareMetalAsset.tableHeader.role":"Role",
   "bareMetalAsset.tableHeader.status":"Status",
   "bareMetalAsset.tableHeader.labels":"Labels",
+  "bareMetalAsset.bulkAction.importAssets":"Import assets",
+  "bareMetalAsset.bulkAction.importing":"Importing assets",
   "bareMetalAsset.bulkAction.createAsset":"Create asset",
   "bareMetalAsset.bulkAction.deleteAsset":"Delete asset(s)",
   "bareMetalAsset.bulkAction.createCluster":"Create cluster",
+  
+  "bareMetalAsset.importAction.title":"Specify CSV file",
+  "bareMetalAsset.importAction.button":"Open file",
+  "bareMetalAsset.importAction.message": "The first line of the CSV file must be a comma deliniated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role (optional), username, password.",
 
   "bareMetalAsset.modal.deleteMultiple.title":"Delete bare metal assets",
   "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
@@ -46,6 +55,8 @@
 
   "modal.delete.title.batch": "Delete {{number}} bare metal assets",
   "modal.delete.content.batch": "Deleting a bare metal asset is irreversible.",
+  "modal.import.content.batch": "Importing bare metal assets will also create required namespaces.",
+  
 
   "bareMetalAsset.rowAction.deleteAsset.title":"Delete asset",
   "bareMetalAsset.rowAction.editAsset.title":"Edit asset",

@@ -94,7 +94,7 @@ const mockBareMetalAssets = Array.from({ length: 5 }, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma.metadata.uid = `uid-${inx}`
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
-    mockedBma.spec.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
+    mockedBma!.spec!.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
     return mockedBma
 })
 
@@ -118,7 +118,7 @@ const mockBareMetalSecrets = Array.from({ length: 5 }, (val, inx) => {
 const mockBareMetalAssets2 = Array.from({ length: 4 }, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
-    mockedBma.spec.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
+    mockedBma!.spec!.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
     return mockedBma
 })
 
@@ -138,8 +138,9 @@ const mockBmaProjectResponse: Project = {
 
 const mockBareMetalAssets3 = Array.from({ length: 1 }, (val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
+    mockedBma!.spec!.role = 'worker'
     mockedBma.metadata.name = `test-bare-metal-asset-${inx + 4}`
-    mockedBma.spec.bmc.credentialsName = `test-bare-metal-asset-${inx + 4}-bmc-secret`
+    mockedBma!.spec!.bmc.credentialsName = `test-bare-metal-asset-${inx + 4}-bmc-secret`
     return mockedBma
 })
 
@@ -447,11 +448,14 @@ describe('CreateCluster', () => {
         await waitForNocks(initialNocks)
 
         // finish the form
-        await typeByTestId('imageSet', clusterImageSet.spec.releaseImage!)
+        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
         await clickByRole('option', 0)
 
-        userEvent.click(container.querySelector('[name="check-all"]'))
+        const checkAll = container.querySelector('[name="check-all"]')
+        if (checkAll) {
+            userEvent.click(checkAll)
+        }
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
 
         // nocks for cluster creation
