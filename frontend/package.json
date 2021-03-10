@@ -33,7 +33,7 @@
         "react-router-dom": "^5.2.0",
         "react-scripts": "4.0.2",
         "recoil": "^0.1.2",
-        "temptifly": "^0.3.5",
+        "temptifly": "^0.3.7",
         "typescript": "^4.1.5",
         "yamljs": "^0.3.0"
     },
