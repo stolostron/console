@@ -199,7 +199,7 @@ describe('provider connections page', () => {
             />
         )
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await !waitForText('connections.actions.enableClusterDiscovery')
+        await waitForNotText('connections.actions.enableClusterDiscovery')
     })
 })
 
