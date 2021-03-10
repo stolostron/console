@@ -2,11 +2,10 @@
 
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
-import { mockBadRequestStatus, nockCreate, nockDelete } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -23,7 +22,7 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
+import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ProviderConnectionsPage from './ProviderConnections'
 
 const mockProviderConnection1: ProviderConnection = {
@@ -68,30 +67,6 @@ const discoveryConfig: DiscoveryConfig = {
 
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
 let testLocation: Location
-
-function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
 
 function getPatchSecretResourceAttributes(name: string, namespace: string) {
     return {
@@ -138,6 +113,8 @@ function TestProviderConnectionsPage(props: {
 }
 
 describe('provider connections page', () => {
+    beforeEach(nockIgnoreRBAC)
+
     test('should render the table with provider connections', async () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
@@ -145,18 +122,9 @@ describe('provider connections page', () => {
     })
 
     test('should goto the edit connection page', async () => {
-        const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-        ]
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitForNocks(rbacNocks)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
         await clickByText('edit')
         await waitFor(() =>
@@ -170,37 +138,19 @@ describe('provider connections page', () => {
 
     test('should be able to delete a provider connection', async () => {
         const deleteNock = nockDelete(mockProviderConnection1)
-        const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-        ]
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitForNocks(rbacNocks)
         await clickByText('delete')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
     })
 
     test('should show error if delete a provider connection fails', async () => {
-        const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-        ]
         const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitForNocks(rbacNocks)
         await clickByText('delete')
         await clickByText('common:delete')
         await waitForNock(badRequestStatus)
@@ -208,18 +158,9 @@ describe('provider connections page', () => {
     })
 
     test('should be able to cancel delete a provider connection', async () => {
-        const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')
-            ),
-        ]
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitForNocks(rbacNocks)
         await clickByText('delete')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
@@ -259,5 +200,18 @@ describe('provider connections page', () => {
         )
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
         await !waitForText('connections.actions.enableClusterDiscovery')
+    })
+})
+
+describe('provider connections page RBAC', () => {
+    test('should check rbac on row action menu', async () => {
+        const rbacNocks: Scope[] = [
+            nockRBAC(getPatchSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')),
+            nockRBAC(getDeleteSecretResourceAttributes('provider-connection-1', 'provider-connection-namespace')),
+        ]
+        render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+        await waitForText(mockProviderConnection1.metadata!.name!)
+        await clickByLabel('Actions', 0) // Click the action button on the first table row
+        await waitForNocks(rbacNocks)
     })
 })

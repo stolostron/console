@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { nockCreateSelfSubjectAccessReview } from '../../../../lib/nock-util'
+import { nockRBAC } from '../../../../lib/nock-util'
 import { Cluster, DistributionInfo, ClusterStatus } from '../../../../lib/get-cluster'
 import { DistributionField } from './DistributionField'
 import { ResourceAttributes } from '../../../../resources/self-subject-access-review'
@@ -93,10 +92,7 @@ describe('DistributionField', () => {
     ) => {
         let nockAction: nock.Scope | undefined = undefined
         if (hasUpgrade) {
-            nockAction = nockCreateSelfSubjectAccessReview(
-                getClusterActionsResourceAttributes('clusterName'),
-                allowUpgrade
-            )
+            nockAction = nockRBAC(getClusterActionsResourceAttributes('clusterName'), allowUpgrade)
         }
 
         const mockCluster: Cluster = {

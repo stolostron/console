@@ -4,6 +4,9 @@ import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import { createResource, listResources, getResource } from '../lib/resource-request'
 import { SecretApiVersionType, SecretKindType } from './secret'
 import { IResourceDefinition } from './resource'
+import { IRequestResult } from '../lib/resource-request'
+import { createProject } from '../resources/project'
+import { keyBy } from 'lodash'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'
@@ -26,6 +29,7 @@ export interface BareMetalAsset {
             credentialsName: string
         }
         bootMACAddress: string
+        role?: string
     }
     status?: {
         conditions: Array<{
@@ -45,6 +49,18 @@ export interface BMASecret extends V1Secret {
     stringData: {
         password: string
         username: string
+    }
+}
+export interface ImportedBareMetalAsset {
+    name: string
+    namespace: string
+    bootMACAddress: string
+    role: string
+    uid: string
+    bmc: {
+        address: string
+        username: string
+        password: string
     }
 }
 
@@ -69,16 +85,39 @@ export function listBareMetalAssets() {
     }
 }
 
+export function createBareMetalAssetNamespaces(assets: ImportedBareMetalAsset[]) {
+    const namespaces = Object.keys(keyBy(assets, 'namespace'))
+    const results = namespaces.map((namespace) => createProject(namespace))
+    return Promise.allSettled(results.map((result) => result.promise))
+}
+
+export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestResult {
+    return {
+        promise: new Promise(async (resolve, reject) => {
+            try {
+                await createBareMetalAssetSecret(asset).promise
+                await createBareMetalAssetResource(asset).promise
+                resolve({})
+            } catch (err) {
+                reject(err)
+            }
+        }),
+        abort: () => {},
+    }
+}
+
 export function createBareMetalAssetResource(asset: {
     name: string
     namespace: string
     bootMACAddress: string
+    role: string
     bmc: { address: string }
 }) {
     const {
         name,
         namespace,
         bootMACAddress,
+        role,
         bmc: { address },
     } = asset
     const credentialsName = `${name}-bmc-secret`
@@ -95,6 +134,7 @@ export function createBareMetalAssetResource(asset: {
                 credentialsName: credentialsName,
             },
             bootMACAddress,
+            role,
         },
     })
 }
@@ -110,8 +150,12 @@ export function createBareMetalAssetSecret(asset: {
         bmc: { username, password },
     } = asset
     const credentialsName = `${name}-bmc-secret`
+    const resolved: IRequestResult = {
+        promise: Promise.resolve(),
+        abort: () => {},
+    }
     return !username
-        ? Promise.resolve()
+        ? resolved
         : createResource<BMASecret>({
               apiVersion: 'v1',
               kind: 'Secret',

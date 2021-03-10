@@ -2,13 +2,13 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import React from 'react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
 import {
     mockBadRequestStatus,
     nockClusterList,
     nockCreate,
+    nockRBAC,
     nockDelete,
     nockGet,
     nockNamespacedList,
@@ -604,30 +604,6 @@ const nockGetManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, moc
 const nockGetClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
 const nockListManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
-
 function getPatchClusterResourceAttributes(name: string) {
     return {
         resource: 'managedclusters',
@@ -674,7 +650,7 @@ function defaultNocks() {
         nockListHiveProvisionJobs(),
         nockListClusterProvision(),
         nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-        nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+        nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
     ]
     return nocks
 }
@@ -761,7 +737,7 @@ describe('ClusterDetails', () => {
             nockGetManagedCluster(),
             nockListClusterProvision(),
             nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
+            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
         ]
         render(<Component />)
         await waitForNocks(nocks)
@@ -773,10 +749,10 @@ describe('ClusterDetails', () => {
     test('overview page handles detach', async () => {
         const nocks = defaultNocks()
         const rbacNocks = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
         await waitForNocks(nocks)
@@ -795,10 +771,10 @@ describe('ClusterDetails', () => {
     test('overview page handles destroy', async () => {
         const nocks = defaultNocks()
         const rbacNocks = [
-            nockcreateSelfSubjectAccesssRequest(getPatchClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
-            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
+            nockRBAC(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
         await waitForNocks(nocks)
