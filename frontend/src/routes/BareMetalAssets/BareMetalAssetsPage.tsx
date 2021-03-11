@@ -33,7 +33,6 @@ const baremetalassets = 'bare metal assets'
 
 export default function BareMetalAssetsPage() {
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
-    const { t } = useTranslation(['bma', 'common'])
     return (
         <Page>
             <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
