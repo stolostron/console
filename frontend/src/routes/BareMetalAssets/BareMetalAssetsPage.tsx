@@ -2,72 +2,41 @@
 
 import {
     AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmPageCard,
-    AcmPageHeader,
-    AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
-    AcmErrorBoundary,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
-import React, { useContext, useEffect, useState } from 'react'
+import { Page, PageSection } from '@patternfly/react-core'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { getErrorInfo } from '../../components/ErrorPage'
+import { RbacDropdown } from '../../components/Rbac'
+import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { importBMAs } from '../../lib/bare-metal-assets'
 import {
     BareMetalAsset,
-    ImportedBareMetalAsset,
     BareMetalAssetDefinition,
-    listBareMetalAssets,
-    importBareMetalAsset,
     createBareMetalAssetNamespaces,
+    importBareMetalAsset,
+    ImportedBareMetalAsset,
+    listBareMetalAssets,
 } from '../../resources/bare-metal-asset'
-import { RbacDropdown } from '../../components/Rbac'
-import { getUserAccess, getResourceAttributes } from '../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
 const baremetalasset = 'bare metal asset'
 const baremetalassets = 'bare metal assets'
 
 export default function BareMetalAssetsPage() {
-    const { t } = useTranslation(['bma', 'common', 'create'])
     return (
         <Page>
-            <AcmPageHeader
-                title={t('bmas')}
-                titleTooltip={
-                    <>
-                        {t('bmas.tooltip')}
-                        <a
-                            href={DOC_LINKS.BARE_METAL_ASSETS}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('common:learn.more')}
-                        </a>
-                    </>
-                }
-            />
-            <AcmErrorBoundary>
-                <AcmScrollable>
-                    <AcmAlertProvider>
-                        <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                        <BareMetalAssets />
-                    </AcmAlertProvider>
-                </AcmScrollable>
-            </AcmErrorBoundary>
+            <BareMetalAssets />
         </Page>
     )
 }
@@ -222,7 +191,7 @@ export function BareMetalAssetsTable(props: {
     }
 
     return (
-        <AcmPageCard>
+        <PageSection variant="light" isFilled={true}>
             <BulkActionModel<BareMetalAsset> {...modalProps} />
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
@@ -257,9 +226,19 @@ export function BareMetalAssetsTable(props: {
                     columns={[
                         {
                             header: t('bareMetalAsset.tableHeader.name'),
-                            cell: 'metadata.name',
                             sort: 'metadata.name',
                             search: 'metadata.name',
+                            cell: (bareMetalAsset) => (
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    <Link
+                                        to={NavigationPath.editBareMetalAsset
+                                            .replace(':namespace', bareMetalAsset.metadata.namespace as string)
+                                            .replace(':name', bareMetalAsset.metadata.name as string)}
+                                    >
+                                        {bareMetalAsset.metadata.name}
+                                    </Link>
+                                </span>
+                            ),
                         },
                         {
                             header: t('bareMetalAsset.tableHeader.namespace'),
@@ -466,6 +445,6 @@ export function BareMetalAssetsTable(props: {
                     rowActions={[]}
                 />
             </AcmTablePaginationContextProvider>
-        </AcmPageCard>
+        </PageSection>
     )
 }

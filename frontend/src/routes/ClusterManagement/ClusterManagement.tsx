@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertGroup,
+    AcmAlertProvider,
+    AcmErrorBoundary,
     AcmPage,
     AcmPageHeader,
     AcmScrollable,
@@ -13,10 +16,12 @@ import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
 import { NavigationPath } from '../../NavigationPath'
 import { DOC_LINKS } from '../../lib/doc-util'
+import { Divider, PageSection } from '@patternfly/react-core'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
+const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
 export const PageContext = React.createContext<{
     readonly actions: null | React.ReactNode
@@ -48,69 +53,87 @@ export default function ClusterManagementPage() {
     const { featureGates } = useContext(AppContext)
 
     return (
-        <AcmPage hasDrawer>
-            <PageContext.Provider value={{ actions, setActions }}>
-                <AcmPageHeader
-                    title={t('page.header.cluster-management')}
-                    titleTooltip={
-                        <>
-                            {t('page.header.cluster-management.tooltip')}
-                            <a
-                                href={DOC_LINKS.CLUSTERS}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
-                    navigation={
-                        <AcmSecondaryNav>
-                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
-                                <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
-                            </AcmSecondaryNavItem>
-                            {featureGates['open-cluster-management-discovery'] && (
-                                <AcmSecondaryNavItem
-                                    isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
+        <AcmAlertProvider>
+            <AcmPage hasDrawer>
+                <PageContext.Provider value={{ actions, setActions }}>
+                    <AcmPageHeader
+                        title={t('page.header.cluster-management')}
+                        titleTooltip={
+                            <>
+                                {t('page.header.cluster-management.tooltip')}
+                                <a
+                                    href={DOC_LINKS.CLUSTERS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
                                 >
-                                    <Link to={NavigationPath.discoveredClusters}>
-                                        {t('cluster:clusters.discovered')}
-                                    </Link>
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
+                        navigation={
+                            <AcmSecondaryNav>
+                                <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
+                                    <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
                                 </AcmSecondaryNavItem>
-                            )}
-                            <AcmSecondaryNavItem
-                                isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
-                            >
-                                <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
-                            </AcmSecondaryNavItem>
-                        </AcmSecondaryNav>
-                    }
-                    actions={actions}
-                />
-                <AcmScrollable>
-                    <Suspense fallback={<Fragment />}>
-                        <Switch>
-                            <Route exact path={NavigationPath.clusters} component={ClustersPage} />
-                            {featureGates['open-cluster-management-discovery'] && (
-                                <Route
-                                    exact
-                                    path={NavigationPath.discoveredClusters}
-                                    component={DiscoveredClustersPage}
-                                />
-                            )}
-                            <Route
-                                exact
-                                path={NavigationPath.providerConnections}
-                                component={ProviderConnectionsPage}
-                            />
-                            <Route exact path={NavigationPath.console}>
-                                <Redirect to={NavigationPath.clusters} />
-                            </Route>
-                        </Switch>
-                    </Suspense>
-                </AcmScrollable>
-            </PageContext.Provider>
-        </AcmPage>
+                                {featureGates['open-cluster-management-discovery'] && (
+                                    <AcmSecondaryNavItem
+                                        isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
+                                    >
+                                        <Link to={NavigationPath.discoveredClusters}>
+                                            {t('cluster:clusters.discovered')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                )}
+                                <AcmSecondaryNavItem
+                                    isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
+                                >
+                                    <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
+                                </AcmSecondaryNavItem>
+                                <AcmSecondaryNavItem
+                                    isActive={location.pathname.startsWith(NavigationPath.bareMetalAssets)}
+                                >
+                                    <Link to={NavigationPath.bareMetalAssets}>{t('bma:bmas')}</Link>
+                                </AcmSecondaryNavItem>
+                            </AcmSecondaryNav>
+                        }
+                        actions={actions}
+                    />
+                    <AcmErrorBoundary>
+                        <AcmScrollable>
+                            <Divider />
+                            <PageSection variant="light" padding={{ default: 'noPadding' }}>
+                                <AcmAlertGroup isInline canClose alertMargin="0px 0px 8px 0px" />
+                            </PageSection>
+                            <Suspense fallback={<Fragment />}>
+                                <Switch>
+                                    <Route exact path={NavigationPath.clusters} component={ClustersPage} />
+                                    {featureGates['open-cluster-management-discovery'] && (
+                                        <Route
+                                            exact
+                                            path={NavigationPath.discoveredClusters}
+                                            component={DiscoveredClustersPage}
+                                        />
+                                    )}
+                                    <Route
+                                        exact
+                                        path={NavigationPath.providerConnections}
+                                        component={ProviderConnectionsPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.bareMetalAssets}
+                                        component={BareMetalAssetsPage}
+                                    />
+                                    <Route exact path={NavigationPath.console}>
+                                        <Redirect to={NavigationPath.clusters} />
+                                    </Route>
+                                </Switch>
+                            </Suspense>
+                        </AcmScrollable>
+                    </AcmErrorBoundary>
+                </PageContext.Provider>
+            </AcmPage>
+        </AcmAlertProvider>
     )
 }

@@ -1,36 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmButton,
-    AcmEmptyState,
-    AcmPageCard,
-    AcmTable,
-    AcmErrorBoundary,
-    IAcmTableColumn,
     AcmAlertContext,
     AcmAlertGroup,
+    AcmButton,
+    AcmEmptyState,
+    AcmTable,
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Page } from '@patternfly/react-core'
+import { Page, PageSection } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
-import React, { useState, Fragment, useEffect, useContext } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
+import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
-import { ResourceError } from '../../../lib/resource-request'
+import { deleteResource, ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
-import { deleteResource } from '../../../lib/resource-request'
-import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import {
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
     listDiscoveryConfigs,
 } from '../../../resources/discovery-config'
-import { Link } from 'react-router-dom'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -151,11 +147,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
 
 export default function DiscoveredClustersPage() {
     return (
-        <AcmErrorBoundary>
-            <Page>
+        <Page>
+            <PageSection variant="light">
                 <DiscoveredClustersPageContent />
-            </Page>
-        </AcmErrorBoundary>
+            </PageSection>
+        </Page>
     )
 }
 
@@ -199,19 +195,11 @@ export function DiscoveredClustersPageContent() {
 
     if (error) {
         if (error instanceof ResourceError && error.code === 404) {
-            return (
-                <AcmPageCard>
-                    <DiscoveredClustersEmptyState />
-                </AcmPageCard>
-            )
+            return <DiscoveredClustersEmptyState />
         }
         return <ErrorPage error={error} />
     }
-    return (
-        <AcmPageCard>
-            <DiscoveredClustersTable discoveredClusters={data} />
-        </AcmPageCard>
-    )
+    return <DiscoveredClustersTable discoveredClusters={data} />
 }
 
 export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {

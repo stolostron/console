@@ -3,26 +3,20 @@
 import {
     AcmActionGroup,
     AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmInlineProvider,
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
-    AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { PageSection } from '@patternfly/react-core'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { DistributionField } from './components/DistributionField'
-import { StatusField } from './components/StatusField'
-import { AddCluster } from './components/AddCluster'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
@@ -30,18 +24,18 @@ import { Cluster, getAllClusters } from '../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { usePageContext } from '../../ClusterManagement/ClusterManagement'
+import { usePageContext } from '../ClusterManagement'
+import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
+import { DistributionField } from './components/DistributionField'
+import { StatusField } from './components/StatusField'
 
 export default function ClustersPage() {
     return (
-        <AcmErrorBoundary>
-            <AcmAlertProvider>
-                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                <ClustersPageContent />
-            </AcmAlertProvider>
-        </AcmErrorBoundary>
+        <PageSection variant="light" isFilled={true}>
+            <ClustersPageContent />
+        </PageSection>
     )
 }
 
@@ -94,11 +88,9 @@ export function ClustersPageContent() {
     }, [error])
 
     return (
-        <AcmPageCard>
-            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-                <ClustersTable clusters={data} refresh={refresh} />
-            </AcmTablePaginationContextProvider>
-        </AcmPageCard>
+        <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+            <ClustersTable clusters={data} refresh={refresh} />
+        </AcmTablePaginationContextProvider>
     )
 }
 
