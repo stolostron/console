@@ -170,7 +170,7 @@ describe('bare metal asset page', () => {
         const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const deleteNock = nockDelete(mockBareMetalAssets[0])
 
-        const { getAllByText } = render(
+        render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
                 <MemoryRouter>
                     <BareMetalAssetsPage />

@@ -5,89 +5,25 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import CreateBareMetalAssetPage from './CreateBareMetalAsset'
-import { nockClusterList, nockGet, nockPatch, nockOptions, nockCreate } from '../../lib/nock-util'
+import { nockClusterList, nockGet, nockPatch, nockOptions, nockCreate, nockRBAC } from '../../lib/nock-util'
 import { Project, ProjectApiVersion, ProjectKind } from '../../resources/project'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
 import { Secret, SecretKind, SecretApiVersion } from '../../resources/secret'
-import { SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
+import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
 
-const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: 'test-namespace',
-            group: 'inventory.open-cluster-management.io',
-            resource: 'baremetalassets',
-            verb: 'create',
-        },
-    },
+const bmaNamespace: ResourceAttributes = {
+    namespace: 'test-namespace',
+    group: 'inventory.open-cluster-management.io',
+    resource: 'baremetalassets',
+    verb: 'create',
 }
 
-const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-}
-
-const mockSelfSubjectAccessResponseFalse: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            namespace: 'test-namespace',
-            resource: 'baremetalassets',
-            group: 'inventory.open-cluster-management.io',
-            verb: 'create',
-        },
-    },
-    status: {
-        allowed: false,
-    },
-}
-
-const mockSelfSubjectAccessResponseNonAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-    status: {
-        allowed: false,
-    },
-}
-const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-    status: {
-        allowed: true,
-    },
+const adminAccess: ResourceAttributes = {
+    name: '*',
+    namespace: '*',
+    resource: '*',
+    verb: '*',
 }
 
 const testProject: Project = {
@@ -140,7 +76,7 @@ describe('CreateBareMetalAsset', () => {
         }
 
         const listProjectNock = nockClusterList(testProject, [testProject])
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
+        const rbacNock = nockRBAC(adminAccess, true)
         const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
         const bmaCreateNock = nockCreate(createBareMetalAsset)
 
@@ -278,8 +214,8 @@ describe('CreateBareMetalAsset', () => {
 
     test('renders unauthorized page when rbac access is restricted', async () => {
         const listProjectNock = nockClusterList(testProject, [testProject])
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
-        const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
+        const rbacNock = nockRBAC(adminAccess, false)
+        const rbacNockii = nockRBAC(bmaNamespace, false)
         const { getByText } = render(
             <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
                 <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
