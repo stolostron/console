@@ -26,8 +26,8 @@ lint:
 
 .PHONY: unit-tests
 unit-tests:
-#	if [ ! -d "test-output" ]; then \
-#		mkdir test-output; \
-#	fi
+	if [ ! -d "test-output" ]; then \
+		mkdir test-output; \
+	fi
 	npm run backend:test
 	npm run frontend:test
