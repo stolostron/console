@@ -1,14 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AcmInlineStatus, AcmTable, StatusType } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-    AcmPageCard,
-    AcmTable,
-    AcmInlineStatus,
-    StatusType,
-    AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'
@@ -16,9 +11,9 @@ import { ClusterContext } from '../ClusterDetails'
 export function ClustersSettingsPageContent() {
     const { addons, addonsError } = useContext(ClusterContext)
     return (
-        <AcmErrorBoundary>
+        <PageSection variant="light">
             <ClusterSettingsTable addons={addons} addonsError={addonsError} />
-        </AcmErrorBoundary>
+        </PageSection>
     )
 }
 
@@ -30,52 +25,50 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined; addon
     }
 
     return (
-        <AcmPageCard>
-            <AcmTable<Addon>
-                plural="add-ons"
-                items={props.addons}
-                columns={[
-                    {
-                        header: t('table.name'),
-                        sort: 'name',
-                        search: 'name',
-                        cell: 'name',
+        <AcmTable<Addon>
+            plural="add-ons"
+            items={props.addons}
+            columns={[
+                {
+                    header: t('table.name'),
+                    sort: 'name',
+                    search: 'name',
+                    cell: 'name',
+                },
+                {
+                    header: t('table.status'),
+                    cell: (item: Addon) => {
+                        let type
+                        switch (item.status) {
+                            case AddonStatus.Available:
+                                type = StatusType.healthy
+                                break
+                            case AddonStatus.Degraded:
+                                type = StatusType.danger
+                                break
+                            case AddonStatus.Progressing:
+                                type = StatusType.progress
+                                break
+                            case AddonStatus.Disabled:
+                                type = StatusType.pending
+                                break
+                            case AddonStatus.Unknown:
+                            default:
+                                type = StatusType.unknown
+                        }
+                        return <AcmInlineStatus type={type} status={item.status} />
                     },
-                    {
-                        header: t('table.status'),
-                        cell: (item: Addon) => {
-                            let type
-                            switch (item.status) {
-                                case AddonStatus.Available:
-                                    type = StatusType.healthy
-                                    break
-                                case AddonStatus.Degraded:
-                                    type = StatusType.danger
-                                    break
-                                case AddonStatus.Progressing:
-                                    type = StatusType.progress
-                                    break
-                                case AddonStatus.Disabled:
-                                    type = StatusType.pending
-                                    break
-                                case AddonStatus.Unknown:
-                                default:
-                                    type = StatusType.unknown
-                            }
-                            return <AcmInlineStatus type={type} status={item.status} />
-                        },
-                        search: 'status',
-                    },
-                    {
-                        header: t('table.message'),
-                        cell: 'message',
-                    },
-                ]}
-                keyFn={(addon: Addon) => addon.name}
-                tableActions={[]}
-                bulkActions={[]}
-                rowActions={[]}
-            />
-        </AcmPageCard>
+                    search: 'status',
+                },
+                {
+                    header: t('table.message'),
+                    cell: 'message',
+                },
+            ]}
+            keyFn={(addon: Addon) => addon.name}
+            tableActions={[]}
+            bulkActions={[]}
+            rowActions={[]}
+        />
     )
 }

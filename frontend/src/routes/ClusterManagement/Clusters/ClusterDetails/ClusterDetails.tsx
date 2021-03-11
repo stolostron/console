@@ -3,6 +3,7 @@
 import {
     AcmActionGroup,
     AcmButton,
+    AcmErrorBoundary,
     AcmLaunchLink,
     AcmPage,
     AcmPageHeader,
@@ -35,6 +36,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { usePrevious } from '../../../../components/usePrevious'
+import { Divider } from '@patternfly/react-core'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -228,24 +230,27 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </Fragment>
                     }
                 />
-                <AcmScrollable>
-                    <Suspense fallback={<Fragment />}>
-                        <Switch>
-                            <Route exact path={NavigationPath.clusterOverview}>
-                                <ClusterOverviewPageContent canGetSecret={canGetSecret} />
-                            </Route>
-                            <Route exact path={NavigationPath.clusterNodes}>
-                                <NodePoolsPageContent />
-                            </Route>
-                            <Route exact path={NavigationPath.clusterSettings}>
-                                <ClustersSettingsPageContent />
-                            </Route>
-                            <Route exact path={NavigationPath.clusterDetails}>
-                                <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
-                            </Route>
-                        </Switch>
-                    </Suspense>
-                </AcmScrollable>
+                <AcmErrorBoundary>
+                    <AcmScrollable>
+                        <Divider />
+                        <Suspense fallback={<Fragment />}>
+                            <Switch>
+                                <Route exact path={NavigationPath.clusterOverview}>
+                                    <ClusterOverviewPageContent canGetSecret={canGetSecret} />
+                                </Route>
+                                <Route exact path={NavigationPath.clusterNodes}>
+                                    <NodePoolsPageContent />
+                                </Route>
+                                <Route exact path={NavigationPath.clusterSettings}>
+                                    <ClustersSettingsPageContent />
+                                </Route>
+                                <Route exact path={NavigationPath.clusterDetails}>
+                                    <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
+                                </Route>
+                            </Switch>
+                        </Suspense>
+                    </AcmScrollable>
+                </AcmErrorBoundary>
             </ClusterContext.Provider>
         </AcmPage>
     )

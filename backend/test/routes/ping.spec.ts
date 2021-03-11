@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { request } from '../setup'
+import { request } from '../mock-request'
 
-describe(`GET /ping`, function () {
-    it(`should return 200`, async function () {
-        const result = await request.get(`/ping`)
-        expect(result.status).toBe(200)
+describe(`Ping Route`, function () {
+    it(`GET /ping should return status code 200`, async function () {
+        const res = await request('GET', '/ping')
+        expect(res.statusCode).toEqual(200)
     })
 })

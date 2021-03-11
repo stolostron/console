@@ -50,7 +50,7 @@ export interface ProviderConnection extends V1Secret {
         imageMirror?: string
         bootstrapOSImage?: string
         clusterOSImage?: string
-        additionalTrustBundle?: string[]
+        additionalTrustBundle?: string
 
         ocmAPIToken?: string
 

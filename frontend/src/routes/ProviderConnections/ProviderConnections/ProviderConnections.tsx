@@ -1,46 +1,42 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmInlineProvider,
-    AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { providerConnectionsState } from '../../../atoms'
+import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { getResourceAttributes } from '../../../lib/rbac-util'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
-import { usePageContext } from '../../ClusterManagement/ClusterManagement'
 
 export default function ProviderConnectionsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
-    usePageContext(providerConnections.length > 0, AddConnectionBtn)
+    const [discoveryConfigs] = useRecoilState(discoveryConfigState)
+
     return (
-        <AcmErrorBoundary>
-            <AcmAlertProvider>
-                <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                <AcmPageCard>
-                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable providerConnections={providerConnections} />
-                    </AcmTablePaginationContextProvider>
-                </AcmPageCard>
-            </AcmAlertProvider>
-        </AcmErrorBoundary>
+        <PageSection variant="light" isFilled={true}>
+            <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
+                <ProviderConnectionsTable
+                    providerConnections={providerConnections}
+                    discoveryConfigs={discoveryConfigs}
+                />
+            </AcmTablePaginationContextProvider>
+        </PageSection>
     )
 }
 
@@ -61,12 +57,32 @@ function getProvider(labels: Record<string, string> | undefined) {
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: { providerConnections?: ProviderConnection[] }) {
+export function ProviderConnectionsTable(props: {
+    providerConnections?: ProviderConnection[]
+    discoveryConfigs?: DiscoveryConfig[]
+}) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
         open: false,
     })
+
+    var discoveryEnabled = false
+    if (props.discoveryConfigs) {
+        props.discoveryConfigs.forEach((discoveryConfig) => {
+            if (discoveryConfig.spec.providerConnections && discoveryConfig.spec.providerConnections.length > 0) {
+                discoveryEnabled = true
+            }
+        })
+    }
+
+    function getAdditionalActions(item: ProviderConnection) {
+        const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+        if (label === ProviderID.CRH && !discoveryEnabled) {
+            return t('connections.actions.enableClusterDiscovery')
+        }
+        return '-'
+    }
 
     return (
         <Fragment>
@@ -86,7 +102,38 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                         header: t('table.header.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
-                        cell: 'metadata.name',
+                        cell: (providerConnection) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.editConnection
+                                        .replace(':namespace', providerConnection.metadata.namespace as string)
+                                        .replace(':name', providerConnection.metadata.name as string)}
+                                >
+                                    {providerConnection.metadata.name}
+                                </Link>
+                            </span>
+                        ),
+                    },
+                    {
+                        header: t('table.header.additionalActions'),
+                        search: (item: ProviderConnection) => {
+                            return getAdditionalActions(item)
+                        },
+                        cell: (item: ProviderConnection) => {
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (label === ProviderID.CRH && !discoveryEnabled) {
+                                return (
+                                    <Link to={NavigationPath.discoveryConfig}>
+                                        {t('connections.actions.enableClusterDiscovery')}
+                                    </Link>
+                                )
+                            } else {
+                                return <span>-</span>
+                            }
+                        },
+                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
+                        },
                     },
                     {
                         header: t('table.header.provider'),
@@ -211,7 +258,15 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
                     },
                 ]}
                 keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
-                tableActions={[]}
+                tableActions={[
+                    {
+                        id: 'add',
+                        title: t('add'),
+                        click: () => {
+                            history.push(NavigationPath.addConnection)
+                        },
+                    },
+                ]}
                 bulkActions={[
                     {
                         id: 'deleteConnection',
