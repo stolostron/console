@@ -1,12 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
+import {
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+} from '../../resources/project'
+import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret'
+import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
-import { nockDelete, nockCreate } from '../../lib/nock-util'
-import { BareMetalAsset } from '../../resources/bare-metal-asset'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../resources/self-subject-access-review'
+import { nockDelete, nockCreate, nockRBAC } from '../../lib/nock-util'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
@@ -28,28 +36,57 @@ const bareMetalAsset: BareMetalAsset = {
     },
 }
 
-function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
+const mockBmaProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: 'test-namespace' },
+}
+
+const mockBmaProjectResponse: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+        name: 'test-namespace',
+    },
+}
+
+const createBareMetalAsset: BareMetalAsset = {
+    kind: BareMetalAssetKind,
+    apiVersion: BareMetalAssetApiVersion,
+    metadata: {
+        name: 'test-bma',
+        namespace: 'test-namespace',
+    },
+    spec: {
+        bmc: {
+            address: 'example.com:80',
+            credentialsName: 'test-bma-bmc-secret',
+        },
+        bootMACAddress: '00:90:7F:12:DE:7F',
+    },
+}
+
+const createBmaSecret: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        name: 'test-bma-bmc-secret',
+        namespace: 'test-namespace',
+    },
+    stringData: {
+        password: 'test',
+        username: 'test',
+    },
+}
+
+const bmaSecret: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        namespace: 'test-namespace',
+        name: 'test-bma-bmc-secret',
+    },
+    data: { password: 'encoded', username: 'encoded' },
 }
 
 function clusterCreationResourceAttributes() {
@@ -61,30 +98,6 @@ function clusterCreationResourceAttributes() {
 }
 
 const mockBareMetalAssets = [bareMetalAsset]
-
-function nockCreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
-    return nockCreate(
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-        } as SelfSubjectAccessReview,
-        {
-            apiVersion: 'authorization.k8s.io/v1',
-            kind: 'SelfSubjectAccessReview',
-            metadata: {},
-            spec: {
-                resourceAttributes,
-            },
-            status: {
-                allowed,
-            },
-        } as SelfSubjectAccessReview
-    )
-}
 
 function getEditBMAResourceAttributes(name: string, namespace: string) {
     return {
@@ -115,7 +128,7 @@ function nocksAreDone(nocks: Scope[]) {
 
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
 
         render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
@@ -130,14 +143,10 @@ describe('bare metal asset page', () => {
 
     test('can delete asset from overflow menu', async () => {
         const deleteNock = nockDelete(mockBareMetalAssets[0])
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccesssRequest(
-                getEditBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
-            ),
-            nockCreateSelfSubjectAccesssRequest(
-                getDeleteBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')
-            ),
+            nockRBAC(getEditBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')),
+            nockRBAC(getDeleteBMAResourceAttributes('test-bare-metal-asset-001', 'test-bare-metal-asset-namespace')),
         ]
         render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
@@ -158,7 +167,7 @@ describe('bare metal asset page', () => {
     })
 
     test('can delete asset(s) from batch action menu', async () => {
-        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const deleteNock = nockDelete(mockBareMetalAssets[0])
 
         const { getAllByText } = render(
@@ -176,5 +185,48 @@ describe('bare metal asset page', () => {
         await clickByText('bareMetalAsset.bulkAction.deleteAsset')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
+    })
+
+    test('can import assets from csv', async () => {
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
+        const projectCreateNock = nockCreate(mockBmaProject, mockBmaProjectResponse)
+        const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
+        const bmaCreateNock = nockCreate(createBareMetalAsset)
+        const rows = [
+            'hostName,hostNamespace,bmcAddress,macAddress,username,password',
+            'test-bma,test-namespace,example.com:80,00:90:7F:12:DE:7F,test,test',
+        ]
+        const file = new File([rows.join('\n')], 'some.csv')
+
+        const { getByTestId } = render(
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
+                <MemoryRouter>
+                    <BareMetalAssetsPage />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // wait for list to fill in with one dummy bma
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+
+        // click the Import button
+        await clickByText('bareMetalAsset.bulkAction.importAssets')
+
+        // click the "Open file" button
+        await clickByText('bareMetalAsset.importAction.button')
+
+        // "click" the file input button
+        const fileInput = getByTestId('importBMAs')
+        Object.defineProperty(fileInput, 'files', { value: [file] })
+        fireEvent.change(fileInput)
+
+        // click the Import button on the dialog
+        await clickByText('common:import')
+
+        // wait for bma to be created
+        await waitFor(() => expect(projectCreateNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
+
     })
 })
