@@ -1,37 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useContext } from 'react'
 import {
     AcmDescriptionList,
-    AcmLabels,
-    AcmInlineProvider,
-    AcmInlineCopy,
-    AcmErrorBoundary,
     AcmDrawerContext,
+    AcmInlineCopy,
+    AcmInlineProvider,
+    AcmLabels,
 } from '@open-cluster-management/ui-components'
-import { PageSection, ButtonVariant } from '@patternfly/react-core'
-import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
+import React, { Fragment, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ClusterContext } from '../ClusterDetails'
-import { DistributionField } from '../../components/DistributionField'
-import { StatusField } from '../../components/StatusField'
-import { LoginCredentials } from '../../components/LoginCredentials'
-import { HiveNotification } from '../../components/HiveNotification'
-import { EditLabels } from '../../components/EditLabels'
-import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
-import { StatusSummaryCount } from '../../components/StatusSummaryCount'
-import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { RbacButton } from '../../../../../components/Rbac'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { getResourceAttributes } from '../../../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
+import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
+import { DistributionField } from '../../components/DistributionField'
+import { EditLabels } from '../../components/EditLabels'
+import { HiveNotification } from '../../components/HiveNotification'
+import { LoginCredentials } from '../../components/LoginCredentials'
+import { StatusField } from '../../components/StatusField'
+import { StatusSummaryCount } from '../../components/StatusSummaryCount'
+import { ClusterContext } from '../ClusterDetails'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
     return (
-        <PageSection>
-            <AcmErrorBoundary>
+        <Fragment>
+            <PageSection>
                 <HiveNotification />
                 <ImportCommandContainer />
                 <AcmDescriptionList
@@ -120,7 +119,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     ]}
                 />
                 {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
-            </AcmErrorBoundary>
-        </PageSection>
+            </PageSection>
+        </Fragment>
     )
 }
