@@ -180,7 +180,6 @@ describe('bare metal asset page', () => {
 
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
-        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
         await clickByRole('checkbox', 1) // Select first item
         await clickByText('bareMetalAsset.bulkAction.deleteAsset')
         await clickByText('common:delete')
