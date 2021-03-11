@@ -14,13 +14,24 @@ import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { RbacDropdown } from '../../components/Rbac'
+import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
 import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { BareMetalAsset, BareMetalAssetDefinition, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import {
+    BareMetalAsset,
+    BareMetalAssetDefinition,
+    createBareMetalAssetNamespaces,
+    importBareMetalAsset,
+    ImportedBareMetalAsset,
+    listBareMetalAssets,
+} from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
+
+const baremetalasset = 'bare metal asset'
+const baremetalassets = 'bare metal assets'
 
 export default function BareMetalAssetsPage() {
     return (
@@ -70,6 +81,11 @@ export function BareMetalAssetsTable(props: {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
         open: false,
     })
+    const [importedProps, setImportedProps] = useState<IBulkActionModelProps<ImportedBareMetalAsset> | { open: false }>(
+        {
+            open: false,
+        }
+    )
     const history = useHistory()
     const { t } = useTranslation(['bma', 'common'])
 
@@ -86,23 +102,122 @@ export function BareMetalAssetsTable(props: {
         return bareMetalAsset.metadata.uid as string
     }
 
+    function setImportModalProps() {
+        setImportedProps({
+            open: true,
+            singular: t(baremetalasset),
+            plural: t(baremetalassets),
+            action: t('common:import'),
+            processing: '',
+            description: '',
+            keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
+            actionFn: (bareMetalAsset: ImportedBareMetalAsset) => importBareMetalAsset(bareMetalAsset),
+            resources: [],
+            columns: [{ header: '', cell: '' }],
+            emptyState: (
+                <AcmEmptyState
+                    title={t('bareMetalAsset.importAction.title')}
+                    message={t('bareMetalAsset.importAction.message')}
+                    showIcon={false}
+                    action={
+                        <AcmButton
+                            id="import-button"
+                            variant="primary"
+                            onClick={async () => {
+                                const result = await importBMAs()
+                                setImportedProps({
+                                    open: true,
+                                    singular: t(baremetalasset),
+                                    plural: t(baremetalassets),
+                                    action: t('common:import'),
+                                    processing: t('common:importing'),
+                                    description: t('modal.import.content.batch'),
+                                    resources: result,
+                                    columns: [
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.name'),
+                                            cell: 'name',
+                                            sort: 'name',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.namespace'),
+                                            cell: 'namespace',
+                                            sort: 'namespace',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.macaddress'),
+                                            cell: 'bootMACAddress',
+                                            sort: 'bootMACAddress',
+                                        },
+                                        {
+                                            header: t('bareMetalAsset.tableHeader.address'),
+                                            cell: 'bmc.address',
+                                            sort: 'bmc.address',
+                                        },
+                                    ],
+                                    keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
+                                    preActionFn: async (bareMetalAssets: ImportedBareMetalAsset[], errors) => {
+                                        const responses = await createBareMetalAssetNamespaces(bareMetalAssets)
+                                        responses.forEach((response) => {
+                                            if (response.status === 'rejected') {
+                                                if (response.reason.code !== 409) {
+                                                    errors.push({
+                                                        error: response.reason.message,
+                                                        item: bareMetalAssets[0],
+                                                    })
+                                                }
+                                            }
+                                        })
+                                    },
+                                    actionFn: (bareMetalAsset: ImportedBareMetalAsset) =>
+                                        importBareMetalAsset(bareMetalAsset),
+                                    close: () => {
+                                        setImportedProps({ open: false })
+                                        props.refresh()
+                                    },
+                                })
+                            }}
+                        >
+                            {t('bareMetalAsset.importAction.button')}
+                        </AcmButton>
+                    }
+                />
+            ),
+            close: () => {
+                setImportedProps({ open: false })
+                props.refresh()
+            },
+        })
+    }
+
     return (
         <PageSection variant="light" isFilled={true}>
             <BulkActionModel<BareMetalAsset> {...modalProps} />
+            <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
                     emptyState={
                         <AcmEmptyState
                             title={t('bareMetalAsset.emptyState.title')}
                             action={
-                                <AcmButton
-                                    variant="primary"
-                                    onClick={() => {
-                                        history.push(NavigationPath.createBareMetalAsset)
-                                    }}
-                                >
-                                    {t('createBareMetalAsset.title')}
-                                </AcmButton>
+                                <div style={{ display: 'flex', justifyContent: 'space-evenly', margin: 'auto' }}>
+                                    <AcmButton
+                                        variant="primary"
+                                        onClick={() => {
+                                            history.push(NavigationPath.createBareMetalAsset)
+                                        }}
+                                    >
+                                        {t('createBareMetalAsset.title')}
+                                    </AcmButton>
+                                    <AcmButton
+                                        variant="primary"
+                                        onClick={() => {
+                                            setImportModalProps()
+                                        }}
+                                    >
+                                        {t('importBareMetalAssets.title')}
+                                    </AcmButton>
+                                </div>
                             }
                         />
                     }
@@ -210,8 +325,8 @@ export function BareMetalAssetsTable(props: {
                                         click: (bareMetalAsset: BareMetalAsset) => {
                                             setModalProps({
                                                 open: true,
-                                                singular: t('bare metal asset'),
-                                                plural: t('bare metal assets'),
+                                                singular: t(baremetalasset),
+                                                plural: t(baremetalassets),
                                                 action: t('common:delete'),
                                                 processing: t('common:deleting'),
                                                 resources: [bareMetalAsset],
@@ -271,6 +386,13 @@ export function BareMetalAssetsTable(props: {
                                 history.push(NavigationPath.createBareMetalAsset)
                             },
                         },
+                        {
+                            id: 'importAsset',
+                            title: t('bareMetalAsset.bulkAction.importAssets'),
+                            click: () => {
+                                setImportModalProps()
+                            },
+                        },
                     ]}
                     bulkActions={[
                         {
@@ -279,8 +401,8 @@ export function BareMetalAssetsTable(props: {
                             click: (bareMetalAssets: BareMetalAsset[]) => {
                                 setModalProps({
                                     open: true,
-                                    singular: t('bare metal asset'),
-                                    plural: t('bare metal assets'),
+                                    singular: t(baremetalasset),
+                                    plural: t(baremetalassets),
                                     action: t('common:delete'),
                                     processing: t('common:deleting'),
                                     resources: [...bareMetalAssets],

@@ -3,9 +3,8 @@
 import { render } from '@testing-library/react'
 import * as nock from 'nock'
 import { Scope } from 'nock/types'
-import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { nockCreateSelfSubjectAccessReview, nockDelete, nockList, nockCreate } from '../../../lib/nock-util'
+import { nockRBAC, nockDelete, nockList, nockCreate } from '../../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -393,10 +392,7 @@ describe('Cluster page', () => {
         ]
         const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map(
             (mockManagedCluster) => {
-                return nockCreateSelfSubjectAccessReview(
-                    getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!),
-                    true
-                )
+                return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!), true)
             }
         )
         render(
@@ -411,12 +407,10 @@ describe('Cluster page', () => {
 
     it('deletes cluster', async () => {
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)),
         ]
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
         const refreshNocks: Scope[] = [
@@ -431,7 +425,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
+        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
@@ -449,19 +443,17 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', 'confirm')
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
+        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     it('detaches cluster', async () => {
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
-            ),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
+            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)),
         ]
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         const refreshNocks: Scope[] = [
@@ -476,7 +468,7 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
         await clickByText('detach')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
+        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
@@ -494,15 +486,15 @@ describe('Cluster page', () => {
         await typeByText('type.to.confirm', 'confirm')
         await clickByText('detach')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockCreateSelfSubjectAccessReview(clusterCreationResourceAttributes())])
+        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
         await waitForNocks(refreshNocks)
         await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
         ]
         await waitForText(mockManagedCluster3.metadata.name!)
         await clickByLabel('Actions', 2) // Click the action button on the 3rd table row
@@ -513,8 +505,8 @@ describe('Cluster page', () => {
 
     test('overflow menu should hide upgrade option if currently upgrading', async () => {
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
         ]
         await waitForText(mockManagedCluster5.metadata.name!)
         await clickByLabel('Actions', 4) // Click the action button on the 5th table row
@@ -525,9 +517,9 @@ describe('Cluster page', () => {
 
     test('overflow menu should allow upgrade if has available upgrade', async () => {
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
         ]
         await waitForText(mockManagedCluster4.metadata.name!)
         await clickByLabel('Actions', 3) // Click the action button on the 4th table row
@@ -599,12 +591,8 @@ describe('Cluster page', () => {
             },
         }
         const rbacNocks: Scope[] = [
-            nockCreateSelfSubjectAccessReview(
-                getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)
-            ),
-            nockCreateSelfSubjectAccessReview(
-                getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)
-            ),
+            nockRBAC(getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)),
+            nockRBAC(getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)),
         ]
         const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
         const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)

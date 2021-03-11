@@ -11,6 +11,9 @@
     "table.header.provider": "Provider",
     "table.header.name": "Name",
     "table.header.namespace": "Namespace",
+    "table.header.additionalActions": "Additional actions",
+
+    "connections.actions.enableClusterDiscovery": "Enable cluster discovery",
 
     "modal.delete.title.single": "Delete provider connection",
     "modal.delete.content.single": "Deleting <bold>{{name}}</bold> is irreversible. The provider connection will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. Are you sure that you want to continue?",
