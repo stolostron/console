@@ -1,24 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertContext,
     AcmButton,
     AcmEmptyState,
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
-import { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { bareMetalAssetsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
-import { getErrorInfo } from '../../components/ErrorPage'
 import { RbacDropdown } from '../../components/Rbac'
 import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
 import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
-import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import {
     BareMetalAsset,
@@ -26,7 +25,6 @@ import {
     createBareMetalAssetNamespaces,
     importBareMetalAsset,
     ImportedBareMetalAsset,
-    listBareMetalAssets,
 } from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
@@ -34,38 +32,12 @@ const baremetalasset = 'bare metal asset'
 const baremetalassets = 'bare metal assets'
 
 export default function BareMetalAssetsPage() {
+    const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
     return (
         <Page>
-            <BareMetalAssets />
+            <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
         </Page>
     )
-}
-
-let lastData: BareMetalAsset[] | undefined
-let lastTime: number = 0
-
-export function BareMetalAssets() {
-    const alertContext = useContext(AcmAlertContext)
-    const { data, error, startPolling, refresh } = useQuery(
-        listBareMetalAssets,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
-    useEffect(startPolling, [startPolling])
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'test') {
-            lastData = data
-            lastTime = Date.now()
-        }
-    }, [data])
-    useEffect(() => {
-        alertContext.clearAlerts()
-        if (error) {
-            alertContext.addAlert(getErrorInfo(error))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
-    return <BareMetalAssetsTable bareMetalAssets={data} deleteBareMetalAsset={deleteResource} refresh={refresh} />
 }
 
 export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
@@ -75,7 +47,6 @@ export function deleteBareMetalAssets(bareMetalAssets: BareMetalAsset[]) {
 export function BareMetalAssetsTable(props: {
     bareMetalAssets?: BareMetalAsset[]
     deleteBareMetalAsset: (bareMetalAsset: BareMetalAsset) => IRequestResult
-    refresh: () => void
 }) {
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(true)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<BareMetalAsset> | { open: false }>({
@@ -173,7 +144,6 @@ export function BareMetalAssetsTable(props: {
                                         importBareMetalAsset(bareMetalAsset),
                                     close: () => {
                                         setImportedProps({ open: false })
-                                        props.refresh()
                                     },
                                 })
                             }}
@@ -185,7 +155,6 @@ export function BareMetalAssetsTable(props: {
             ),
             close: () => {
                 setImportedProps({ open: false })
-                props.refresh()
             },
         })
     }
@@ -349,7 +318,6 @@ export function BareMetalAssetsTable(props: {
                                                     deleteResource(bareMetalAsset),
                                                 close: () => {
                                                     setModalProps({ open: false })
-                                                    props.refresh()
                                                 },
                                                 isDanger: true,
                                             })
@@ -423,7 +391,6 @@ export function BareMetalAssetsTable(props: {
                                     actionFn: (bareMetalAsset: BareMetalAsset) => deleteResource(bareMetalAsset),
                                     close: () => {
                                         setModalProps({ open: false })
-                                        props.refresh()
                                     },
                                     isDanger: true,
                                 })
