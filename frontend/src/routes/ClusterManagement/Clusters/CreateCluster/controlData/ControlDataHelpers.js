@@ -9,7 +9,7 @@ import _ from 'lodash'
 export const CREATE_CLOUD_CONNECTION = {
     prompt: 'creation.ocp.cloud.add.connection',
     type: 'link',
-    url: NavigationPath.addConnection,
+    url: NavigationPath.addCredentials,
     positionBottomRight: true,
     id: 'add-provider-connection',
 }

@@ -182,7 +182,7 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
         await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
         await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
-        expect(getByLabelText('Select all rows')).toBeVisible()
+        expect(getByLabelText('Select all')).toBeVisible()
         userEvent.click(getByLabelText('Select all rows'))
         await clickByText('bareMetalAsset.bulkAction.deleteAsset')
         await clickByText('common:delete')

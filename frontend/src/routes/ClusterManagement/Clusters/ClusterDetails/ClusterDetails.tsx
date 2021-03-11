@@ -231,8 +231,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     }
                 />
                 <AcmErrorBoundary>
-                    <AcmScrollable>
-                        <Divider />
+                    <AcmScrollable borderTop>
                         <Suspense fallback={<Fragment />}>
                             <Switch>
                                 <Route exact path={NavigationPath.clusterOverview}>

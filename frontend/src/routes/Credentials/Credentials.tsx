@@ -4,6 +4,9 @@ import {
     AcmButton,
     AcmEmptyState,
     AcmInlineProvider,
+    AcmPage,
+    AcmPageHeader,
+    AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
@@ -14,29 +17,34 @@ import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { RbacDropdown } from '../../../components/Rbac'
-import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { getResourceAttributes } from '../../../lib/rbac-util'
-import { deleteResource } from '../../../lib/resource-request'
-import { NavigationPath } from '../../../NavigationPath'
-import { DiscoveryConfig } from '../../../resources/discovery-config'
-import { ProviderConnection, ProviderConnectionDefinition } from '../../../resources/provider-connection'
+import { discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
+import { RbacDropdown } from '../../components/Rbac'
+import { getProviderByKey, ProviderID } from '../../lib/providers'
+import { getResourceAttributes } from '../../lib/rbac-util'
+import { deleteResource } from '../../lib/resource-request'
+import { NavigationPath } from '../../NavigationPath'
+import { DiscoveryConfig } from '../../resources/discovery-config'
+import { ProviderConnection, ProviderConnectionDefinition } from '../../resources/provider-connection'
 
-export default function ProviderConnectionsPage() {
+export default function CredentialsPage() {
+    const { t } = useTranslation(['connection'])
     const [providerConnections] = useRecoilState(providerConnectionsState)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
-
     return (
-        <PageSection variant="light" isFilled={true}>
-            <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                <ProviderConnectionsTable
-                    providerConnections={providerConnections}
-                    discoveryConfigs={discoveryConfigs}
-                />
-            </AcmTablePaginationContextProvider>
-        </PageSection>
+        <AcmPage>
+            <AcmPageHeader title={t('manageCredentials')} />
+            <AcmScrollable borderTop>
+                <PageSection variant="light" isFilled={true}>
+                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
+                        <ProviderConnectionsTable
+                            providerConnections={providerConnections}
+                            discoveryConfigs={discoveryConfigs}
+                        />
+                    </AcmTablePaginationContextProvider>
+                </PageSection>
+            </AcmScrollable>
+        </AcmPage>
     )
 }
 
@@ -45,7 +53,7 @@ export default function ProviderConnectionsPage() {
 const AddConnectionBtn = () => {
     const { t } = useTranslation(['connection'])
     return (
-        <AcmButton component={Link} to={NavigationPath.addConnection}>
+        <AcmButton component={Link} to={NavigationPath.addCredentials}>
             {t('add')}
         </AcmButton>
     )
@@ -105,7 +113,7 @@ export function ProviderConnectionsTable(props: {
                         cell: (providerConnection) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link
-                                    to={NavigationPath.editConnection
+                                    to={NavigationPath.editCredentials
                                         .replace(':namespace', providerConnection.metadata.namespace as string)
                                         .replace(':name', providerConnection.metadata.name as string)}
                                 >
@@ -188,7 +196,7 @@ export function ProviderConnectionsTable(props: {
                                     isDisabled: true,
                                     click: (providerConnection: ProviderConnection) => {
                                         history.push(
-                                            NavigationPath.editConnection
+                                            NavigationPath.editCredentials
                                                 .replace(':namespace', providerConnection.metadata.namespace!)
                                                 .replace(':name', providerConnection.metadata.name!)
                                         )
@@ -263,7 +271,7 @@ export function ProviderConnectionsTable(props: {
                         id: 'add',
                         title: t('add'),
                         click: () => {
-                            history.push(NavigationPath.addConnection)
+                            history.push(NavigationPath.addCredentials)
                         },
                     },
                 ]}
