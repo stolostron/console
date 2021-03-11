@@ -4,13 +4,12 @@ import _ from 'lodash'
 import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings, AcmDropdown } from '@open-cluster-management/ui-components'
-import { AngleLeftIcon, ExternalLinkAltIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { AngleLeftIcon, /*ExternalLinkAltIcon,*/ FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
-import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles({
     body: {
@@ -79,18 +78,24 @@ const useStyles = makeStyles({
         color: 'var(--pf-global--Color--200)',
         padding: '22px 0',
     },
-    knowledgebaseLink: {
-        paddingBottom: '27px',
-    },
+    // knowledgebaseLink: {
+    //     border: 0,
+    //     cursor: 'pointer',
+    //     background: 'none',
+    //     color: 'var(--pf-global--link--Color)',
+    //     padding: 0,
+    // },
     subDetailContainer: {
-        display: 'flex',
-        justifyContent: 'space-between',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        columnGap: '10px',
         padding: '27px 0 20px 0',
     },
     subDetail: {
         color: 'var(--pf-global--Color--100)',
         '& > div': {
             display: 'flex',
+            paddingBottom: '16px',
             '& h3': {
                 fontSize: '14px',
                 fontWeight: 700,
@@ -184,17 +189,6 @@ function DetailsView(props: {
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
-    const onSelect = (id: string) => {
-        switch (id) {
-            case 'action 1':
-                console.log('perform action 1')
-                break
-            case 'action 2':
-                console.log('perform action 2')
-                break
-        }
-    }
-
     function matchedDate() {
         let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
         return d
@@ -216,30 +210,11 @@ function DetailsView(props: {
             </div>
             <div className={classes.detailTitleGroup}>
                 <div className={classes.titleText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
-                <div className={classes.detailActions}>
-                    <AcmDropdown
-                        dropdownItems={[
-                            {
-                                id: 'action 1',
-                                text: t('policy.report.flyout.details.action1'),
-                            },
-                            {
-                                id: 'action 2',
-                                text: t('policy.report.flyout.details.action2'),
-                            },
-                        ]}
-                        text={t('policy.report.flyout.details.actions')}
-                        onSelect={onSelect}
-                        id="policy-actions"
-                        isKebab={false}
-                        isPrimary={false}
-                    />
-                </div>
             </div>
             <div className={classes.detailText}>{_.get(selectedPolicy, 'results[0].data.details', '')}</div>
-            <Link className={classes.knowledgebaseLink} to="/">
+            {/* <button className={classes.knowledgebaseLink}>
                 Knowledgebase article <ExternalLinkAltIcon />
-            </Link>
+            </button> */}
             <div className={classes.subDetailContainer}>
                 <div className={classes.subDetail}>
                     <div>
