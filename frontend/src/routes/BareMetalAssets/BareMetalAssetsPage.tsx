@@ -1,13 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
-    AcmPageHeader,
-    AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
@@ -21,7 +16,6 @@ import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkAct
 import { RbacDropdown } from '../../components/Rbac'
 import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
-import { DOC_LINKS } from '../../lib/doc-util'
 import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
@@ -42,31 +36,7 @@ export default function BareMetalAssetsPage() {
     const { t } = useTranslation(['bma', 'common'])
     return (
         <Page>
-            <AcmPageHeader
-                title={t('bmas')}
-                titleTooltip={
-                    <>
-                        {t('bmas.tooltip')}
-                        <a
-                            href={DOC_LINKS.BARE_METAL_ASSETS}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('common:learn.more')}
-                        </a>
-                    </>
-                }
-            />
-            <AcmErrorBoundary>
-                <AcmScrollable>
-                    <AcmAlertProvider>
-                        <AcmAlertGroup isInline canClose alertMargin="24px 24px 0px 24px" />
-                        {/* <BareMetalAssets bareMetalAssets={bareMetalAssets} /> */}
-                        <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
-                    </AcmAlertProvider>
-                </AcmScrollable>
-            </AcmErrorBoundary>
+            <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
         </Page>
     )
 }
