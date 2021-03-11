@@ -189,9 +189,30 @@ function DetailsView(props: {
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
-    function matchedDate() {
-        let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
-        return d
+    function riskLevel() {
+        const riskScore = _.get(selectedPolicy, 'results[0].data.total_risk')
+        let totalRisk
+
+        switch (riskScore) {
+            case '4':
+                totalRisk = t('policy.report.flyout.details.risk.critical')
+                return totalRisk
+
+            case '3':
+                totalRisk = t('policy.report.flyout.details.risk.major')
+                return totalRisk
+            case '2':
+                totalRisk = t('policy.report.flyout.details.risk.minor')
+                return totalRisk
+            case '1':
+                totalRisk = t('policy.report.flyout.details.risk.low')
+                return totalRisk
+            case '0':
+                totalRisk = t('policy.report.flyout.details.risk.warning')
+                return totalRisk
+            default:
+                return null
+        }
     }
 
     function categories() {
@@ -200,6 +221,11 @@ function DetailsView(props: {
             const categoriesToHide = categories.slice(1)
             return <AcmLabels labels={categories.split(',')} collapse={categoriesToHide} />
         }
+    }
+
+    function matchedDate() {
+        let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
+        return d
     }
 
     return (
@@ -221,6 +247,7 @@ function DetailsView(props: {
                         <FlagIcon />
                         <h3>{t('policy.report.flyout.risk')}</h3>
                     </div>
+                    {riskLevel()}
                 </div>
                 <div className={classes.subDetail}>
                     <div>
