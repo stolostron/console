@@ -6,26 +6,29 @@ import { syncBMAs, attachBMAs } from './bare-metal-assets'
 import { createProject } from '../resources/project'
 import { get, keyBy } from 'lodash'
 
-export async function createCluster(resources: JsonArray) {
+export async function createCluster(resources: any[]) {
     // if creating a bare metal cluster
     // make sure all the bare metal assets exist
     let assets
-    let errors = []
+    let errors: any[] = []
     const resourcesMap = keyBy(resources, 'kind')
     const hosts = get(resourcesMap, 'ClusterDeployment.spec.platform.baremetal.hosts')
     if (hosts) {
         ;({ assets, errors } = await syncBMAs(hosts, resources))
         if (errors.length) {
-            return errors
+            return {
+                status: 'ERROR',
+                messages: errors,
+            }
         }
     }
 
     // get namespace and filter out any namespace resource
     // get ClusterDeployment and filter it out to create at the very end
     let response
-    let namespace
-    const clusterResources = []
-    resources = resources.filter((resource) => {
+    let namespace: string = ''
+    const clusterResources: any = []
+    resources = resources.filter((resource: any) => {
         const { kind, metadata = {}, spec = {} } = resource
         switch (kind) {
             case 'Namespace':
@@ -74,15 +77,15 @@ export async function createCluster(resources: JsonArray) {
 
     // create cluster resources
     errors = []
-    const replaces = []
-    let results = resources.map((resource) => createResource(resource))
-    response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach(({ status, reason }, inx) => {
-        if (status === 'rejected') {
-            if (reason.code === 409) {
+    const replaces: any[] = []
+    let results = resources.map((resource: any) => createResource(resource))
+    response = await Promise.allSettled(results.map((result: any) => result.promise))
+    response.forEach((result, inx) => {
+        if (result.status === 'rejected') {
+            if (result.reason.code === 409) {
                 replaces.push(resources[inx])
             } else {
-                errors.push({ message: reason.message })
+                errors.push({ message: result.reason.message })
             }
         }
     })
@@ -90,21 +93,21 @@ export async function createCluster(resources: JsonArray) {
     // if the only errors were "already existing", rerplace those resources
     if (errors.length === 0 && replaces.length > 0) {
         results = replaces.map((resource) => replaceResource(resource))
-        response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
-            if (status === 'rejected') {
-                errors.push({ message: reason.message })
+        response = await Promise.allSettled(results.map((result: any) => result.promise))
+        response.forEach((result, inx) => {
+            if (result.status === 'rejected') {
+                errors.push({ message: result.reason.message })
             }
         })
     }
 
     // create cluster resources
     if (errors.length === 0 && clusterResources.length > 0) {
-        results = clusterResources.map((resource) => createResource(resource))
+        results = clusterResources.map((resource: any) => createResource(resource))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach(({ status, reason }, inx) => {
-            if (status === 'rejected') {
-                errors.push({ message: reason.message })
+        response.forEach((result, inx) => {
+            if (result.status === 'rejected') {
+                errors.push({ message: result.reason.message })
             }
         })
     }
