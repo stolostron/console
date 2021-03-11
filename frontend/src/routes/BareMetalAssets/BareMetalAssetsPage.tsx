@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
     AcmButton,
@@ -13,20 +12,18 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
-import { getErrorInfo } from '../../components/ErrorPage'
 import { RbacDropdown } from '../../components/Rbac'
 import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
-import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import {
     BareMetalAsset,
@@ -34,7 +31,6 @@ import {
     createBareMetalAssetNamespaces,
     importBareMetalAsset,
     ImportedBareMetalAsset,
-    listBareMetalAssets,
 } from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 

@@ -227,6 +227,5 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(projectCreateNock.isDone()).toBeTruthy())
         await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
         await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-
     })
 })
