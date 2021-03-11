@@ -3,6 +3,7 @@ import { readFileSync } from 'fs'
 import { ClientRequest } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
+import { STATUS_CODES } from 'http'
 import { parseCookies } from '../lib/cookies'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -34,11 +35,13 @@ let serviceAccountToken: string
 function readToken() {
     try {
         serviceAccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        startWatching(serviceAccountToken)
     } catch (err) {
         if (process.env.NODE_ENV === 'production') {
             logger.error('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
         } else {
             serviceAccountToken = process.env.TOKEN
+            startWatching(serviceAccountToken)
             if (!serviceAccountToken) {
                 logger.error('serviceaccount token not found')
             }
@@ -51,7 +54,6 @@ export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
     ServerSideEvents.handleRequest(token, req, res)
-    startWatching(serviceAccountToken ?? token)
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
@@ -181,64 +183,72 @@ export function watchResource(
         url,
         { headers: { authorization: `Bearer ${token}` }, agent: new Agent({ rejectUnauthorized: false }) },
         (res) => {
-            res.on('data', (chunk) => {
-                if (chunk instanceof Buffer) {
-                    data += chunk.toString()
-                    while (data.includes('\n')) {
-                        const parts = data.split('\n')
-                        data = parts.slice(1).join('\n')
-                        try {
-                            const eventData = JSON.parse(parts[0]) as WatchEvent
-                            if (eventData.object) {
-                                delete eventData.object.metadata.managedFields
-                                delete eventData.object.metadata.selfLink
-                                if (eventData.type === 'DELETED') {
-                                    eventData.object = {
-                                        kind: eventData.object.kind,
-                                        apiVersion: eventData.object.apiVersion,
-                                        metadata: {
-                                            name: eventData.object.metadata.name,
-                                            namespace: eventData.object.metadata.namespace,
-                                        },
+            if (res.statusCode === 200) {
+                res.on('data', (chunk) => {
+                    if (chunk instanceof Buffer) {
+                        data += chunk.toString()
+                        while (data.includes('\n')) {
+                            const parts = data.split('\n')
+                            data = parts.slice(1).join('\n')
+                            try {
+                                const eventData = JSON.parse(parts[0]) as WatchEvent
+                                if (eventData.object) {
+                                    delete eventData.object.metadata.managedFields
+                                    delete eventData.object.metadata.selfLink
+                                    if (eventData.type === 'DELETED') {
+                                        eventData.object = {
+                                            kind: eventData.object.kind,
+                                            apiVersion: eventData.object.apiVersion,
+                                            metadata: {
+                                                name: eventData.object.metadata.name,
+                                                namespace: eventData.object.metadata.namespace,
+                                            },
+                                        }
                                     }
+                                    logger.trace({
+                                        msg: 'watch',
+                                        type: eventData.type,
+                                        kind: eventData.object.kind,
+                                        name: eventData.object.metadata.name,
+                                        namespace: eventData.object.metadata.namespace,
+                                    })
+                                    const eventID = ServerSideEvents.pushEvent({ data: eventData })
+                                    const resourceKey = `${eventData.object.metadata.name}:${eventData.object.metadata.namespace}`
+                                    if (resourceEvents[resourceKey]) {
+                                        ServerSideEvents.removeEvent(resourceEvents[resourceKey])
+                                    }
+                                    if (eventData.type !== 'DELETED') {
+                                        resourceEvents[resourceKey] = eventID
+                                    }
+                                } else {
+                                    console.log(eventData)
                                 }
-                                logger.trace({
-                                    msg: 'watch',
-                                    type: eventData.type,
-                                    kind: eventData.object.kind,
-                                    name: eventData.object.metadata.name,
-                                    namespace: eventData.object.metadata.namespace,
-                                })
-                                const eventID = ServerSideEvents.pushEvent({ data: eventData })
-                                const resourceKey = `${eventData.object.metadata.name}:${eventData.object.metadata.namespace}`
-                                if (resourceEvents[resourceKey]) {
-                                    ServerSideEvents.removeEvent(resourceEvents[resourceKey])
-                                }
-                                if (eventData.type !== 'DELETED') {
-                                    resourceEvents[resourceKey] = eventID
-                                }
-                            } else {
-                                console.log(eventData)
+                            } catch (err) {
+                                logger.error(err)
                             }
-                        } catch (err) {
-                            logger.error(err)
                         }
                     }
-                }
-            })
-                .on('error', console.error)
-                .on('end', () => {
-                    // TODO handle 410
-                    // TODO request using last resourceVersion - ?resourceVersion=10245
-                    // TODO handle BOOKMARKS for resourceVersion window - ?allowWatchBookmarks=true
-                    // {
-                    //     "type": "BOOKMARK",
-                    //     "object": {"kind": "Pod", "apiVersion": "v1", "metadata": {"resourceVersion": "12746"} }
-                    // }
-                    logger.info('watch end')
-                    if (stopping) return
-                    watchResource(token, apiVersion, kind, labelSelector)
                 })
+                    .on('error', console.error)
+                    .on('end', () => {
+                        // TODO handle 410
+                        // TODO request using last resourceVersion - ?resourceVersion=10245
+                        // TODO handle BOOKMARKS for resourceVersion window - ?allowWatchBookmarks=true
+                        // {
+                        //     "type": "BOOKMARK",
+                        //     "object": {"kind": "Pod", "apiVersion": "v1", "metadata": {"resourceVersion": "12746"} }
+                        // }
+                        if (stopping) return
+                        watchResource(token, apiVersion, kind, labelSelector)
+                    })
+            } else {
+                logger.error({
+                    msg: 'watch error',
+                    kind,
+                    statusCode: res.statusCode,
+                    message: STATUS_CODES[res.statusCode],
+                })
+            }
         }
     )
     watchRequests[kind] = clientRequest
