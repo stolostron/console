@@ -7,6 +7,7 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -165,6 +166,7 @@ export function BareMetalAssetsTable(props: {
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
+                    gridBreakPoint={TableGridBreakpoint.none}
                     emptyState={
                         <AcmEmptyState
                             title={t('bareMetalAsset.emptyState.title')}
