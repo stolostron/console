@@ -34,7 +34,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -93,9 +93,10 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [])
 
     useEffect(() => {
-        let eventQueue: IEventData[] = []
+        let eventQueue: IEventData[] | undefined = []
 
         async function processEvents() {
+            if (!eventQueue) return
             const eventsToProcess = eventQueue
             for (const kind in setters) {
                 const setter = setters[kind]
@@ -120,7 +121,7 @@ export function LoadData(props: { children?: ReactNode }) {
                     return newResources
                 })
             }
-            eventQueue = []
+            eventQueue = undefined
         }
 
         function processEvent(event: IEventData): void {
@@ -153,13 +154,16 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'ADDED':
                         case 'MODIFIED':
                         case 'DELETED':
-                            if (loading) {
+                            if (eventQueue) {
                                 eventQueue.push(data)
                             } else {
                                 processEvent(event.data)
                             }
                             break
-                        case 'LOADED':
+                        case 'START':
+                            if (eventQueue === undefined) eventQueue = []
+                            break
+                        case 'BOOKMARK':
                             processEvents()
                             setLoading(false)
                             break
@@ -171,6 +175,7 @@ export function LoadData(props: { children?: ReactNode }) {
         }
 
         evtSource.onerror = function (err) {
+            // TODO restart watch after some time
             console.error('EventSource failed:', err)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
