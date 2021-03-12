@@ -34,7 +34,6 @@ describe('Cluster Management', () => {
             </AppContext.Provider>
         )
         await waitForText('cluster:clusters')
-        await waitForText('connection:connections')
         await waitForText('cluster:clusters.discovered')
     })
 
@@ -52,7 +51,6 @@ describe('Cluster Management', () => {
             </AppContext.Provider>
         )
         await waitForText('cluster:clusters')
-        await waitForText('connection:connections')
         await waitForNotText('cluster:clusters.discovered')
     })
 })

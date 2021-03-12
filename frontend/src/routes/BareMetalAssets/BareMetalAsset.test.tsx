@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
+import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { bareMetalAssetsState } from '../../atoms'
+import { nockCreate, nockDelete, nockRBAC } from '../../lib/nock-util'
+import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
 import {
     Project,
@@ -14,24 +19,13 @@ import {
 import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
-import { nockDelete, nockCreate, nockRBAC } from '../../lib/nock-util'
-import { Scope } from 'nock/types'
-import { RecoilRoot } from 'recoil'
-import { bareMetalAssetsState } from '../../atoms'
-import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
     kind: 'BareMetalAsset',
-    metadata: {
-        name: 'test-bare-metal-asset-001',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
+    metadata: { name: 'test-bare-metal-asset-001', namespace: 'test-bare-metal-asset-namespace' },
     spec: {
-        bmc: {
-            address: 'example.com:80',
-            credentialsName: 'secret-test-bare-metal-asset',
-        },
+        bmc: { address: 'example.com:80', credentialsName: 'secret-test-bare-metal-asset' },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
@@ -45,23 +39,15 @@ const mockBmaProject: ProjectRequest = {
 const mockBmaProjectResponse: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
-    metadata: {
-        name: 'test-namespace',
-    },
+    metadata: { name: 'test-namespace' },
 }
 
 const createBareMetalAsset: BareMetalAsset = {
     kind: BareMetalAssetKind,
     apiVersion: BareMetalAssetApiVersion,
-    metadata: {
-        name: 'test-bma',
-        namespace: 'test-namespace',
-    },
+    metadata: { name: 'test-bma', namespace: 'test-namespace' },
     spec: {
-        bmc: {
-            address: 'example.com:80',
-            credentialsName: 'test-bma-bmc-secret',
-        },
+        bmc: { address: 'example.com:80', credentialsName: 'test-bma-bmc-secret' },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
@@ -69,23 +55,14 @@ const createBareMetalAsset: BareMetalAsset = {
 const createBmaSecret: Secret = {
     kind: SecretKind,
     apiVersion: SecretApiVersion,
-    metadata: {
-        name: 'test-bma-bmc-secret',
-        namespace: 'test-namespace',
-    },
-    stringData: {
-        password: 'test',
-        username: 'test',
-    },
+    metadata: { name: 'test-bma-bmc-secret', namespace: 'test-namespace' },
+    stringData: { password: 'test', username: 'test' },
 }
 
 const bmaSecret: Secret = {
     kind: SecretKind,
     apiVersion: SecretApiVersion,
-    metadata: {
-        namespace: 'test-namespace',
-        name: 'test-bma-bmc-secret',
-    },
+    metadata: { namespace: 'test-namespace', name: 'test-bma-bmc-secret' },
     data: { password: 'encoded', username: 'encoded' },
 }
 
@@ -119,17 +96,9 @@ function getDeleteBMAResourceAttributes(name: string, namespace: string) {
     } as ResourceAttributes
 }
 
-function nocksAreDone(nocks: Scope[]) {
-    for (const nock of nocks) {
-        if (!nock.isDone()) return false
-    }
-    return true
-}
-
 describe('bare metal asset page', () => {
     test('bare metal assets page renders', async () => {
         const clusterNock = nockRBAC(clusterCreationResourceAttributes())
-
         render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
                 <MemoryRouter>
@@ -137,7 +106,7 @@ describe('bare metal asset page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata.name!)
     })
 
@@ -155,11 +124,9 @@ describe('bare metal asset page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitFor(() => expect(nocksAreDone(rbacNocks)).toBeTruthy())
         await waitForNocks(rbacNocks)
         await clickByText('bareMetalAsset.rowAction.deleteAsset.title')
         await clickByText('common:delete')
@@ -169,7 +136,6 @@ describe('bare metal asset page', () => {
     test('can delete asset(s) from batch action menu', async () => {
         const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const deleteNock = nockDelete(mockBareMetalAssets[0])
-
         render(
             <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
                 <MemoryRouter>
@@ -177,8 +143,7 @@ describe('bare metal asset page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await clickByRole('checkbox', 1) // Select first item
         await clickByText('bareMetalAsset.bulkAction.deleteAsset')
@@ -206,7 +171,7 @@ describe('bare metal asset page', () => {
         )
 
         // wait for list to fill in with one dummy bma
-        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitForNock(clusterNock)
 
         // click the Import button
         await clickByText('bareMetalAsset.bulkAction.importAssets')
@@ -223,8 +188,8 @@ describe('bare metal asset page', () => {
         await clickByText('common:import')
 
         // wait for bma to be created
-        await waitFor(() => expect(projectCreateNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
+        await waitForNock(projectCreateNock)
+        await waitForNock(secretCreateNock)
+        await waitForNock(bmaCreateNock)
     })
 })

@@ -4,8 +4,8 @@ import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { providerConnectionsState, discoveryConfigState } from '../../../atoms'
-import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { providerConnectionsState, discoveryConfigState } from '../../atoms'
+import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -14,16 +14,16 @@ import {
     waitForNocks,
     waitForNotText,
     waitForText,
-} from '../../../lib/test-util'
-import { NavigationPath } from '../../../NavigationPath'
+} from '../../lib/test-util'
+import { NavigationPath } from '../../NavigationPath'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-} from '../../../resources/provider-connection'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { ResourceAttributes } from '../../../resources/self-subject-access-review'
-import ProviderConnectionsPage from './ProviderConnections'
+} from '../../resources/provider-connection'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
+import { ResourceAttributes } from '../../resources/self-subject-access-review'
+import CredentialsPage from './Credentials'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -99,12 +99,12 @@ function TestProviderConnectionsPage(props: {
                 snapshot.set(discoveryConfigState, props.discoveryConfigs || [])
             }}
         >
-            <MemoryRouter initialEntries={[NavigationPath.providerConnections]}>
+            <MemoryRouter initialEntries={[NavigationPath.credentials]}>
                 <Route
-                    path={NavigationPath.providerConnections}
+                    path={NavigationPath.credentials}
                     render={(props: any) => {
                         testLocation = props.location
-                        return <ProviderConnectionsPage {...props} />
+                        return <CredentialsPage {...props} />
                     }}
                 />
             </MemoryRouter>
@@ -118,18 +118,18 @@ describe('provider connections page', () => {
     test('should render the table with provider connections', async () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
+        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
     })
 
     test('should goto the edit connection page', async () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.providerConnections))
+        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
         await clickByText('edit')
         await waitFor(() =>
             expect(testLocation.pathname).toEqual(
-                NavigationPath.editConnection
+                NavigationPath.editCredentials
                     .replace(':namespace', mockProviderConnection1.metadata.namespace!)
                     .replace(':name', mockProviderConnection1.metadata.name!)
             )

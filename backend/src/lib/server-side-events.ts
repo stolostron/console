@@ -44,19 +44,19 @@ export class ServerSideEvents {
 
     public static eventFilter: (clientID: string, event: Readonly<IEvent>) => Promise<IEvent | undefined>
 
-    public static dispose(): Promise<void> {
-        for (const clientID in this.clients) {
-            const compressionStream = this.clients[clientID].compressionStream
-            if (compressionStream) compressionStream.end()
-            this.clients[clientID].writableStream.end()
-        }
-
-        this.clients = {}
-
+    public static async dispose(): Promise<void> {
         if (ServerSideEvents.intervalTimer !== undefined) {
             clearInterval(ServerSideEvents.intervalTimer)
             ServerSideEvents.intervalTimer = undefined
         }
+
+        for (const clientID in this.clients) {
+            const compressionStream = this.clients[clientID].compressionStream
+            if (compressionStream) compressionStream.end()
+            await new Promise<void>((resolve) => this.clients[clientID].writableStream.end(resolve))
+        }
+
+        this.clients = {}
 
         return Promise.resolve()
     }
@@ -117,10 +117,13 @@ export class ServerSideEvents {
                             metadata: { name: string; namespace: string }
                         }
                     }
-                    const { kind, metadata } = watchEvent.object
-                    const name = metadata?.name
-                    const namespace = metadata?.namespace
-                    logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+
+                    if (watchEvent.object) {
+                        const { kind, metadata } = watchEvent.object
+                        const name = metadata?.name
+                        const namespace = metadata?.namespace
+                        logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+                    }
                 }
             } catch (err) {
                 logger.error(err)
@@ -239,6 +242,13 @@ export class ServerSideEvents {
             this.sendEvent(clientID, this.events[eventID])
             sentCount++
         }
+        eventClient.eventQueue.push(
+            Promise.resolve({
+                data: {
+                    type: 'LOADED',
+                },
+            })
+        )
 
         const msg: Record<string, string | number | undefined> = {
             msg: 'OK',
@@ -247,7 +257,7 @@ export class ServerSideEvents {
             path: req.url,
             events: sentCount,
         }
-        logger.debug(msg)
+        logger.info(msg)
 
         return eventClient
     }
