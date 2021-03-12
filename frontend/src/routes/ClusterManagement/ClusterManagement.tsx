@@ -10,13 +10,13 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
 import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
-import { NavigationPath } from '../../NavigationPath'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { Divider, PageSection } from '@patternfly/react-core'
+import { NavigationPath } from '../../NavigationPath'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))

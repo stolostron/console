@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
+import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { bareMetalAssetsState } from '../../atoms'
+import { nockCreate, nockDelete, nockRBAC } from '../../lib/nock-util'
+import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
 import {
     Project,
@@ -14,11 +19,6 @@ import {
 import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
-import { nockDelete, nockCreate, nockRBAC } from '../../lib/nock-util'
-import { Scope } from 'nock/types'
-import { RecoilRoot } from 'recoil'
-import { bareMetalAssetsState } from '../../atoms'
-import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
