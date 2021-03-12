@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-import '@patternfly/react-core/dist/styles/base.css'
 import { AcmHeader } from '@open-cluster-management/ui-components'
 import { createBrowserHistory } from 'history'
 import { lazy } from 'react'
