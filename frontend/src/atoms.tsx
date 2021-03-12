@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { identity } from 'lodash'
 import { ReactNode, useEffect } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
