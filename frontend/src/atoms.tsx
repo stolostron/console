@@ -144,9 +144,7 @@ export function LoadData(props: { children?: ReactNode }) {
             })
         }
 
-        const evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
-
-        evtSource.onmessage = function (event) {
+        function processMessage(event: MessageEvent) {
             if (event.data) {
                 try {
                     const data = JSON.parse(event.data) as IEventData
@@ -174,10 +172,28 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        evtSource.onerror = function (err) {
-            // TODO restart watch after some time
-            console.error('EventSource failed:', err)
+        let evtSource: EventSource | undefined
+        function startWatch() {
+            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
+            evtSource.onmessage = processMessage
+            evtSource.onerror = function (err) {
+                try {
+                    if (evtSource) evtSource.close()
+                } catch {
+                    // Do nothing
+                }
+                evtSource = undefined
+                console.error('EventSource failed:', err)
+                setTimeout(() => {
+                    startWatch()
+                }, 10 * 1000)
+            }
         }
+        startWatch()
+        return () => {
+            if (evtSource) evtSource.close()
+        }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
