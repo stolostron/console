@@ -27,6 +27,7 @@ interface WatchEvent {
             resourceVersion?: string
             managedFields?: unknown
             selfLink?: string
+            data?: unknown
         }
     }
 }
