@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { type } from 'node:os'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
