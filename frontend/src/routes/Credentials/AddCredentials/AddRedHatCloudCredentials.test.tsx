@@ -136,6 +136,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(location.pathname).toBe(NavigationPath.providerConnections))
+        await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })
 })

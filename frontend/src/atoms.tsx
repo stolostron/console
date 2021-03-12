@@ -1,19 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode, useEffect } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { LoadingPage } from './components/LoadingPage'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
+import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
-import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { IResource } from './resources/resource'
 
+export const loadingState = atom<boolean>({ key: 'loading', default: true })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
@@ -25,15 +27,15 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
-export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED'
     object: {
         kind: string
         apiVersion: string
@@ -46,6 +48,7 @@ interface IEventData {
 }
 
 export function Startup(props: { children?: ReactNode }) {
+    const [loading, setLoading] = useRecoilState(loadingState)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterdDeployments] = useRecoilState(clusterDeploymentsState)
@@ -61,17 +64,12 @@ export function Startup(props: { children?: ReactNode }) {
     useEffect(() => {
         const eventQueue: IEventData[] = []
 
-        let isProcessEvents = 0
         async function processEvents() {
-            if (isProcessEvents >= 6) return
-            isProcessEvents++
-            while (eventQueue.length) {
-                const event = eventQueue.shift()
-                if (!event) continue
-
-                await processEvent(event)
+            let event = eventQueue.shift()
+            while (event) {
+                processEvent(event)
+                event = eventQueue.shift()
             }
-            isProcessEvents--
         }
 
         function processEvent(event: IEventData): void {
@@ -133,8 +131,16 @@ export function Startup(props: { children?: ReactNode }) {
             if (event.data) {
                 try {
                     const data = JSON.parse(event.data) as IEventData
-                    eventQueue.push(data)
-                    processEvents()
+                    if (loading) {
+                        if (data.type === 'LOADED') {
+                            processEvents()
+                            setLoading(false)
+                        } else {
+                            eventQueue.push(data)
+                        }
+                    } else {
+                        processEvent(event.data)
+                    }
                 } catch (err) {
                     console.error(err)
                 }
@@ -146,6 +152,8 @@ export function Startup(props: { children?: ReactNode }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    if (loading) return <LoadingPage />
 
     return props.children
 }

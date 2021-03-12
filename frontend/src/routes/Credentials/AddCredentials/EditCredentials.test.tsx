@@ -55,13 +55,13 @@ function TestEditConnectionPage() {
     return (
         <MemoryRouter
             initialEntries={[
-                NavigationPath.editConnection
+                NavigationPath.editCredentials
                     .replace(':namespace', awsProviderConnection.metadata.namespace!)
                     .replace(':name', awsProviderConnection.metadata.name!),
             ]}
         >
             <Route
-                path={NavigationPath.editConnection}
+                path={NavigationPath.editCredentials}
                 render={(props: any) => {
                     return <AddConnectionPage {...props} />
                 }}

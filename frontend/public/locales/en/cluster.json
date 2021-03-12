@@ -147,7 +147,7 @@
     "status.notaccepted": "Not accepted",
     "status.needsapproval": "Needs approval",
     "status.pendingimport": "Pending import",
-    "status.ready": "Connected",
+    "status.ready": "Ready",
     "status.offline": "Offline",
     "status.hibernating": "Hibernating",
     "status.resuming": "Resuming",

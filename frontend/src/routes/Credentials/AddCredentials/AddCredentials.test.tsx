@@ -158,9 +158,9 @@ describe('add connection page', () => {
     it('should show empty page if there are no projects', async () => {
         const projectsNock = nockClusterList(mockProject, [])
         const { getAllByText } = render(
-            <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                 <Route
-                    path={NavigationPath.addConnection}
+                    path={NavigationPath.addCredentials}
                     component={(props: any) => <AddConnectionPage {...props} />}
                 />
             </MemoryRouter>
@@ -174,9 +174,9 @@ describe('add connection page', () => {
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNockii = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseFalse)
         const { getByText } = render(
-            <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                 <Route
-                    path={NavigationPath.addConnection}
+                    path={NavigationPath.addCredentials}
                     component={(props: any) => <AddConnectionPage {...props} />}
                 />
             </MemoryRouter>
@@ -191,9 +191,9 @@ describe('add connection page', () => {
         const projectsNock = nockClusterList(mockProject, [mockProject])
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const { getByText, container } = render(
-            <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                 <Route
-                    path={NavigationPath.addConnection}
+                    path={NavigationPath.addCredentials}
                     component={(props: any) => <AddConnectionPage {...props} />}
                 />
             </MemoryRouter>
@@ -210,9 +210,9 @@ describe('add connection page', () => {
         nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseTrue)
         const { getByText, container } = render(
-            <MemoryRouter initialEntries={[NavigationPath.addConnection]}>
+            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                 <Route
-                    path={NavigationPath.addConnection}
+                    path={NavigationPath.addCredentials}
                     component={(props: any) => <AddConnectionPage {...props} />}
                 />
             </MemoryRouter>
