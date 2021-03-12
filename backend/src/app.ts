@@ -76,6 +76,6 @@ export async function stop(): Promise<void> {
     stopLogger()
 }
 
-if (process.env.NODE_ENV === 'development' || process.env.LOG_MEMORY === 'true') {
+if (process.env.LOG_MEMORY === 'true') {
     startLoggingMemory()
 }

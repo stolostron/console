@@ -18,15 +18,15 @@ export function getDecodeStream(stream: Readable, contentEncoding?: string | str
             return stream
         case 'deflate':
             return pipeline(stream, createDeflate(), (err) => {
-                if (err) logger.error(err)
+                if (err) logger.warn(err)
             })
         case 'br':
             return pipeline(stream, createBrotliDecompress(), (err) => {
-                if (err) logger.error(err)
+                if (err) logger.warn(err)
             })
         case 'gzip':
             return pipeline(stream, createGunzip(), (err) => {
-                if (err) logger.error(err)
+                if (err) logger.warn(err)
             })
         default:
             throw new Error('Unknown content encoding')
@@ -58,7 +58,11 @@ export function getEncodeStream(
 
     if (compressionStream) {
         pipeline(compressionStream, stream, (err) => {
-            if (err) logger.error(err)
+            // Client might close stream while we are still writing to it
+            // ignore it for now as there is no issue here
+            // TODO - long term should we close the compression stream
+            // when client request ends?
+            // if (err) logger.warn(err)
         })
     }
     return [stream, compressionStream, encoding]
