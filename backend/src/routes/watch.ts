@@ -28,6 +28,7 @@ interface WatchEvent {
             managedFields?: unknown
             selfLink?: string
         }
+        data?: unknown
     }
 }
 
@@ -114,6 +115,8 @@ export function startWatching(token: string): void {
     ServerSideEvents.eventFilter = (token, event) => {
         const watchEvent = event.data as WatchEvent
         if (watchEvent.type === 'DELETED') return Promise.resolve(event)
+        // TODO - track what is sent to s specific token and only send delete
+
         return canAccess(
             { kind: watchEvent.object.kind, apiVersion: watchEvent.object.apiVersion },
             'list',
@@ -195,6 +198,7 @@ export function watchResource(
                                 if (eventData.object) {
                                     delete eventData.object.metadata.managedFields
                                     delete eventData.object.metadata.selfLink
+                                    if (eventData.object.kind === 'Secret') delete eventData.object.data
                                     if (eventData.type === 'DELETED') {
                                         eventData.object = {
                                             kind: eventData.object.kind,

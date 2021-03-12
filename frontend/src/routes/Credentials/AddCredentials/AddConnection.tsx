@@ -18,7 +18,7 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, Button, Divider, Page, PageSection, SelectOption, Title } from '@patternfly/react-core'
+import { ActionGroup, Button, Page, PageSection, SelectOption, Title } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
@@ -74,7 +74,7 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                             </>
                         }
                         breadcrumb={[
-                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('connections'), to: NavigationPath.credentials },
                             { text: t('editConnection.title'), to: '' },
                         ]}
                     />
@@ -95,13 +95,12 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                             </>
                         }
                         breadcrumb={[
-                            { text: t('connections'), to: NavigationPath.providerConnections },
+                            { text: t('connections'), to: NavigationPath.credentials },
                             { text: t('addConnection.title'), to: '' },
                         ]}
                     />
                 )}
                 <AcmErrorBoundary>
-                    <Divider component="div" />
                     <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </AcmErrorBoundary>
             </Page>
@@ -259,7 +258,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
     const classes = useStyles()
 
     return (
-        <AcmScrollable>
+        <AcmScrollable borderTop>
             <PageSection variant="light" isFilled>
                 <AcmForm>
                     <Title headingLevel="h4" size="xl">
@@ -839,7 +838,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                                 }
                                 return result.promise
                                     .then(() => {
-                                        history.push(NavigationPath.providerConnections)
+                                        history.push(NavigationPath.credentials)
                                     })
                                     .catch((err) => {
                                         /* istanbul ignore else */
@@ -865,7 +864,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                             variant="link"
                             onClick={
                                 /* istanbul ignore next */ () => {
-                                    history.push(NavigationPath.providerConnections)
+                                    history.push(NavigationPath.credentials)
                                 }
                             }
                         >

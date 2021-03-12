@@ -117,10 +117,13 @@ export class ServerSideEvents {
                             metadata: { name: string; namespace: string }
                         }
                     }
-                    const { kind, metadata } = watchEvent.object
-                    const name = metadata?.name
-                    const namespace = metadata?.namespace
-                    logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+
+                    if (watchEvent.object) {
+                        const { kind, metadata } = watchEvent.object
+                        const name = metadata?.name
+                        const namespace = metadata?.namespace
+                        logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+                    }
                 }
             } catch (err) {
                 logger.error(err)
@@ -239,6 +242,13 @@ export class ServerSideEvents {
             this.sendEvent(clientID, this.events[eventID])
             sentCount++
         }
+        eventClient.eventQueue.push(
+            Promise.resolve({
+                data: {
+                    type: 'LOADED',
+                },
+            })
+        )
 
         const msg: Record<string, string | number | undefined> = {
             msg: 'OK',

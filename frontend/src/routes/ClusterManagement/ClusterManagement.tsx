@@ -10,17 +10,16 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
 import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
-import { NavigationPath } from '../../NavigationPath'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { Divider, PageSection } from '@patternfly/react-core'
+import { NavigationPath } from '../../NavigationPath'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
-const ProviderConnectionsPage = lazy(() => import('../ProviderConnections/ProviderConnections/ProviderConnections'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
 export const PageContext = React.createContext<{
@@ -49,7 +48,7 @@ export const usePageContext = (showActions: boolean, Component: React.ElementTyp
 export default function ClusterManagementPage() {
     const [actions, setActions] = useState<undefined | React.ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['cluster', 'connection', 'bma'])
+    const { t } = useTranslation(['cluster', 'bma'])
     const { featureGates } = useContext(AppContext)
 
     return (
@@ -86,11 +85,6 @@ export default function ClusterManagementPage() {
                                     </AcmSecondaryNavItem>
                                 )}
                                 <AcmSecondaryNavItem
-                                    isActive={location.pathname.startsWith(NavigationPath.providerConnections)}
-                                >
-                                    <Link to={NavigationPath.providerConnections}>{t('connection:connections')}</Link>
-                                </AcmSecondaryNavItem>
-                                <AcmSecondaryNavItem
                                     isActive={location.pathname.startsWith(NavigationPath.bareMetalAssets)}
                                 >
                                     <Link to={NavigationPath.bareMetalAssets}>{t('bma:bmas')}</Link>
@@ -100,8 +94,7 @@ export default function ClusterManagementPage() {
                         actions={actions}
                     />
                     <AcmErrorBoundary>
-                        <AcmScrollable>
-                            <Divider />
+                        <AcmScrollable borderTop>
                             <PageSection variant="light" padding={{ default: 'noPadding' }}>
                                 <AcmAlertGroup isInline canClose alertMargin="0px 0px 8px 0px" />
                             </PageSection>
@@ -115,11 +108,6 @@ export default function ClusterManagementPage() {
                                             component={DiscoveredClustersPage}
                                         />
                                     )}
-                                    <Route
-                                        exact
-                                        path={NavigationPath.providerConnections}
-                                        component={ProviderConnectionsPage}
-                                    />
                                     <Route
                                         exact
                                         path={NavigationPath.bareMetalAssets}

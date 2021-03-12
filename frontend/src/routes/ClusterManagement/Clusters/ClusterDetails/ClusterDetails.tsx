@@ -17,26 +17,25 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { usePrevious } from '../../../../components/usePrevious'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
+import { getUserAccess } from '../../../../lib/rbac-util'
 import { ResourceError } from '../../../../lib/resource-request'
 import { useQuery } from '../../../../lib/useQuery'
-import { getUserAccess } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../../../../resources/cluster-deployment'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
-import { SecretDefinition } from '../../../../resources/secret'
 import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
 import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
-import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { ClusterDestroy } from '../components/ClusterDestroy'
+import { SecretDefinition } from '../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
+import { ClusterDestroy } from '../components/ClusterDestroy'
+import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import { usePrevious } from '../../../../components/usePrevious'
-import { Divider } from '@patternfly/react-core'
 
 export const ClusterContext = React.createContext<{
     readonly cluster: Cluster | undefined
@@ -231,8 +230,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     }
                 />
                 <AcmErrorBoundary>
-                    <AcmScrollable>
-                        <Divider />
+                    <AcmScrollable borderTop>
                         <Suspense fallback={<Fragment />}>
                             <Switch>
                                 <Route exact path={NavigationPath.clusterOverview}>
