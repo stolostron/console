@@ -38,17 +38,17 @@ process.on('SIGTERM', () => {
 
 process.on('uncaughtException', (err) => {
     logger.error({ msg: `process uncaughtException`, error: err.message })
-    void stop()
+    // void stop()
 })
 
 process.on('multipleResolves', (type, _promise, _reason) => {
     logger.error({ msg: 'process multipleResolves', type })
-    void stop()
+    // void stop()
 })
 
-// process.on('unhandledRejection', (reason, _promise) => {
-//     logger.error({ msg: 'process unhandledRejection', reason })
-//     void stop()
-// })
+process.on('unhandledRejection', (reason, _promise) => {
+    logger.error({ msg: 'process unhandledRejection', reason })
+    // void stop()
+})
 
 void start()
