@@ -93,27 +93,30 @@ export function LoadData(props: { children?: ReactNode }) {
     }, [])
 
     useEffect(() => {
-        let eventQueue: IEventData[] | undefined = []
+        let eventDataQueue: IEventData[] | undefined = []
 
         async function processEvents() {
-            if (!eventQueue) return
-            const eventsToProcess = eventQueue
+            if (!eventDataQueue) return
+            const dataToProcess = eventDataQueue
             for (const kind in setters) {
                 const setter = setters[kind]
                 setter((resources) => {
                     let newResources = [...resources]
-                    for (const event of eventsToProcess) {
-                        if (event.object?.kind === kind) {
+                    for (const data of dataToProcess) {
+                        if (data.object?.kind === kind) {
                             const index = newResources.findIndex(
                                 (resource) =>
-                                    resource.metadata?.name === event.object.metadata.name &&
-                                    resource.metadata?.namespace === event.object.metadata.namespace
+                                    resource.metadata?.name === data.object.metadata.name &&
+                                    resource.metadata?.namespace === data.object.metadata.namespace
                             )
-                            if (index !== -1) newResources.splice(index, 1)
-                            switch (event.type) {
+                            switch (data.type) {
                                 case 'ADDED':
                                 case 'MODIFIED':
-                                    newResources.push(event.object)
+                                    if (index !== -1) newResources[index] = data.object
+                                    else newResources.push(data.object)
+                                    break
+                                case 'DELETED':
+                                    if (index !== -1) newResources.splice(index, 1)
                                     break
                             }
                         }
@@ -121,26 +124,33 @@ export function LoadData(props: { children?: ReactNode }) {
                     return newResources
                 })
             }
-            eventQueue = undefined
+            eventDataQueue = undefined
         }
 
-        function processEvent(event: IEventData): void {
-            if (!event.object) return
-            const setter = setters[event.object.kind]
+        function processEventData(data: IEventData): void {
+            if (!data.object) return
+            const setter = setters[data.object.kind]
+            if (!setter) return
+            console.log(data.object.kind)
             setter((resources) => {
+                let newResources = [...resources]
                 const index = resources.findIndex(
                     (resource) =>
-                        resource.metadata?.name === event.object.metadata.name &&
-                        resource.metadata?.namespace === event.object.metadata.namespace
+                        resource.metadata?.name === data.object.metadata.name &&
+                        resource.metadata?.namespace === data.object.metadata.namespace
                 )
-                if (index !== -1) resources.splice(index, 1)
-                switch (event.type) {
+                if (index !== -1) newResources.splice(index, 1)
+                switch (data.type) {
                     case 'ADDED':
                     case 'MODIFIED':
-                        resources.push(event.object)
+                        if (index !== -1) newResources[index] = data.object
+                        else newResources.push(data.object)
+                        break
+                    case 'DELETED':
+                        if (index !== -1) newResources.splice(index, 1)
                         break
                 }
-                return [...resources]
+                return newResources
             })
         }
 
@@ -152,14 +162,11 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'ADDED':
                         case 'MODIFIED':
                         case 'DELETED':
-                            if (eventQueue) {
-                                eventQueue.push(data)
-                            } else {
-                                processEvent(event.data)
-                            }
+                            if (eventDataQueue) eventDataQueue.push(data)
+                            else processEventData(data)
                             break
                         case 'START':
-                            if (eventQueue === undefined) eventQueue = []
+                            if (eventDataQueue === undefined) eventDataQueue = []
                             break
                         case 'BOOKMARK':
                             processEvents()
@@ -184,9 +191,7 @@ export function LoadData(props: { children?: ReactNode }) {
                 }
                 evtSource = undefined
                 console.error('EventSource failed:', err)
-                setTimeout(() => {
-                    startWatch()
-                }, 10 * 1000)
+                setTimeout(() => startWatch(), 10 * 1000)
             }
         }
         startWatch()
