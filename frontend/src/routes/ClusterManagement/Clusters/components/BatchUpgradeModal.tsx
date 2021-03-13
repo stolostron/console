@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import './style.css'
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
-import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { postRequest, IRequestResult } from '../../../../lib/resource-request'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
+import { IRequestResult, postRequest } from '../../../../lib/resource-request'
+import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 // compare version
@@ -35,11 +35,13 @@ const isUpgradeable = (c: Cluster) => {
 
 const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
     const res = {} as Record<string, string>
-    clusters?.forEach((c: Cluster) => {
-        if (c.name) {
-            const availableUpdates = c.distribution?.ocp?.availableUpdates?.sort(compareVersion)
+    clusters?.forEach((cluster: Cluster) => {
+        if (cluster.name) {
+            const availableUpdates =
+                cluster.distribution?.ocp?.availableUpdates &&
+                [...cluster.distribution.ocp.availableUpdates].sort(compareVersion)
             const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
-            res[c.name] = res[c.name] ? res[c.name] : latestVersion
+            res[cluster.name] = res[cluster.name] ? res[cluster.name] : latestVersion
         }
     })
     return res
@@ -87,29 +89,29 @@ export function BatchUpgradeModal(props: {
                 },
                 {
                     header: t('upgrade.table.newversion'),
-                    cell: (item: Cluster) => {
+                    cell: (cluster: Cluster) => {
                         const availableUpdates =
-                            item.distribution?.ocp?.availableUpdates &&
-                            item.distribution?.ocp?.availableUpdates.sort(compareVersion)
+                            cluster.distribution?.ocp?.availableUpdates &&
+                            [...cluster.distribution.ocp.availableUpdates].sort(compareVersion)
                         const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
                         return (
                             <div>
                                 {hasAvailableUpgrades && (
                                     <AcmSelect
-                                        value={selectVersions[item.name || ''] || ''}
-                                        id={`${item.name}-upgrade-selector`}
+                                        value={selectVersions[cluster.name || ''] || ''}
+                                        id={`${cluster.name}-upgrade-selector`}
                                         maxHeight={'6em'}
                                         label=""
                                         isRequired
                                         onChange={(version) => {
-                                            if (item.name && version) {
-                                                selectVersions[item.name] = version
+                                            if (cluster.name && version) {
+                                                selectVersions[cluster.name] = version
                                                 setSelectVersions({ ...selectVersions })
                                             }
                                         }}
                                     >
                                         {availableUpdates?.map((version) => (
-                                            <SelectOption key={`${item.name}-${version}`} value={version}>
+                                            <SelectOption key={`${cluster.name}-${version}`} value={version}>
                                                 {version}
                                             </SelectOption>
                                         ))}

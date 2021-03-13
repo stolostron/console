@@ -159,7 +159,9 @@ export function startWatching(token: string): void {
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
-    watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests')
+    watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
+        'open-cluster-management.io/cluster-name': '',
+    })
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
