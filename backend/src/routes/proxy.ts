@@ -10,8 +10,9 @@ import { notFound, unauthorized } from '../lib/respond'
 const proxyHeaders = [
     constants.HTTP2_HEADER_ACCEPT,
     constants.HTTP2_HEADER_ACCEPT_ENCODING,
-    constants.HTTP2_HEADER_CONTENT_TYPE,
     constants.HTTP2_HEADER_CONTENT_ENCODING,
+    constants.HTTP2_HEADER_CONTENT_LENGTH,
+    constants.HTTP2_HEADER_CONTENT_TYPE,
 ]
 const proxyResponseHeaders = [
     constants.HTTP2_HEADER_CACHE_CONTROL,
