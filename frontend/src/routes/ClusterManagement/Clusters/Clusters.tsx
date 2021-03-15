@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmActionGroup,
     AcmAlertContext,
     AcmEmptyState,
     AcmInlineProvider,
@@ -15,7 +14,7 @@ import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     certificateSigningRequestsState,
@@ -28,8 +27,10 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../com
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, mapClusters } from '../../../lib/get-cluster'
+import { canUser } from '../../../lib/rbac-util'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
@@ -67,18 +68,15 @@ const PageActions = () => {
     const addons = mapAddons(clusterManagementAddons)
 
     return (
-        <AcmActionGroup>
-            <AcmLaunchLink
-                links={addons
-                    ?.filter((addon) => addon.launchLink)
-                    ?.map((addon) => ({
-                        id: addon.launchLink?.displayText ?? '',
-                        text: addon.launchLink?.displayText ?? '',
-                        href: addon.launchLink?.href ?? '',
-                    }))}
-            />
-            <AddCluster type="dropdown" />
-        </AcmActionGroup>
+        <AcmLaunchLink
+            links={addons
+                ?.filter((addon) => addon.launchLink)
+                ?.map((addon) => ({
+                    id: addon.launchLink?.displayText ?? '',
+                    text: addon.launchLink?.displayText ?? '',
+                    href: addon.launchLink?.href ?? '',
+                }))}
+        />
     )
 }
 
@@ -90,6 +88,16 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
+
+    const history = useHistory()
+    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
+        canCreateManagedCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateManagedCluster.abort()
+    }, [])
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -228,7 +236,22 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
-                tableActions={[]}
+                tableActions={[
+                    {
+                        id: 'createCluster',
+                        title: t('managed.createCluster'),
+                        click: () => history.push(NavigationPath.createCluster),
+                        isDisabled: !canCreateCluster,
+                        tooltip: t('common:rbac.unauthorized'),
+                    },
+                    {
+                        id: 'importCluster',
+                        title: t('managed.importCluster'),
+                        click: () => history.push(NavigationPath.importCluster),
+                        isDisabled: !canCreateCluster,
+                        tooltip: t('common:rbac.unauthorized'),
+                    },
+                ]}
                 bulkActions={[
                     {
                         id: 'destroyCluster',

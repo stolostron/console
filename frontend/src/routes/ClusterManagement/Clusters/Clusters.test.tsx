@@ -11,11 +11,13 @@ import {
     managedClustersState,
 } from '../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
+import { rbacCreate } from '../../../lib/rbac-util'
 import {
     clickByLabel,
     clickByRole,
     clickByText,
     typeByText,
+    waitForNock,
     waitForNocks,
     waitForNotText,
     waitForText,
@@ -35,7 +37,12 @@ import {
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
 } from '../../../resources/klusterlet-add-on-config'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources/managed-cluster'
+import {
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterDefinition,
+    ManagedClusterKind,
+} from '../../../resources/managed-cluster'
 import {
     ManagedClusterInfo,
     ManagedClusterInfoApiVersion,
@@ -466,6 +473,7 @@ describe('Clusters Page', () => {
 
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
+        const rbacCreateManagedClusterNock = nockRBAC(rbacCreate(ManagedClusterDefinition))
         const upgradeRBACNocks = upgradeableMockManagedClusters.map((mockManagedCluster) => {
             return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!))
         })
@@ -484,6 +492,7 @@ describe('Clusters Page RBAC', () => {
             </RecoilRoot>
         )
         await waitForText(mockManagedCluster0.metadata.name!)
+        await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
 
         const rbacNocks: Scope[] = [
