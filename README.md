@@ -89,3 +89,6 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 2. Backend redirects to the cluster `/authorize` endpoint.
 3. Cluster OAuth redirects back to the backend `/login/callback` endpoint.
 4. Backend redirects to the frontend and sets the `acm-access-token-cookie`.
+
+## References
+`console` is part of the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
