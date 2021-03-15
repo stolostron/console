@@ -9,11 +9,11 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
-import React, { Fragment, useContext } from 'react'
+import { Fragment, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
-import { getResourceAttributes } from '../../../../../lib/rbac-util'
+import { rbacPatch } from '../../../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 import { DistributionField } from '../../components/DistributionField'
@@ -68,14 +68,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                                     }}
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
-                                    rbac={[
-                                        getResourceAttributes(
-                                            'patch',
-                                            ManagedClusterDefinition,
-                                            undefined,
-                                            cluster?.name
-                                        ),
-                                    ]}
+                                    rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
                                 >
                                     <PencilAltIcon />
                                 </RbacButton>

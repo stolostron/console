@@ -64,7 +64,7 @@ export async function checkAdminAccess() {
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
 
-export function getResourceAttributes(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+export function rbacResource(verb: Verb, resource: IResource, namespace?: string, name?: string) {
     let attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
@@ -77,8 +77,28 @@ export function getResourceAttributes(verb: Verb, resource: IResource, namespace
     return attributes
 }
 
-export function getUserAccess(verb: Verb, resource: IResource, namespace?: string, name?: string) {
-    const resourceAttributes = getResourceAttributes(verb, resource, namespace, name)
+export function rbacGet(resource: IResource, namespace?: string, name?: string) {
+    return rbacResource('get', resource, namespace, name)
+}
+
+export function rbacPatch(resource: IResource, namespace?: string, name?: string) {
+    return rbacResource('patch', resource, namespace, name)
+}
+
+export function rbacCreate(resource: IResource, namespace?: string, name?: string) {
+    return rbacResource('create', resource, namespace, name)
+}
+
+export function rbacDelete(resource: IResource, namespace?: string, name?: string) {
+    return rbacResource('delete', resource, namespace, name)
+}
+
+export function rbacUpdate(resource: IResource, namespace?: string, name?: string) {
+    return rbacResource('update', resource, namespace, name)
+}
+
+export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+    const resourceAttributes = rbacResource(verb, resource, namespace, name)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview
 }

@@ -27,7 +27,7 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ProviderID, providers } from '../../../lib/providers'
-import { getAuthorizedNamespaces, getResourceAttributes } from '../../../lib/rbac-util'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { IRequestResult } from '../../../lib/resource-request'
 import {
     validateCertificate,
@@ -168,7 +168,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            getAuthorizedNamespaces([getResourceAttributes('create', ProviderConnectionDefinition)])
+            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)])
                 .then((namespaces: string[]) => {
                     setProjects(namespaces)
                 })
