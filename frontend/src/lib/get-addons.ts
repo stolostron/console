@@ -70,6 +70,9 @@ function getDisplayStatus(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn
     if (managedClusterAddOnConditionAvailable?.status === 'True') {
         return AddonStatus.Available
     }
+    if (managedClusterAddOnConditionAvailable?.status === 'Unknown') {
+        return AddonStatus.Unknown
+    }
     if (
         managedClusterAddOnConditionAvailable?.status === 'False' ||
         managedClusterAddOnConditionProgressing?.status === 'False' ||
@@ -102,6 +105,9 @@ function getDisplayMessage(cma: ClusterManagementAddOn, mcas: ManagedClusterAddO
         (condition) => condition.type === AddonStatus.Available
     )
     if (managedClusterAddOnConditionAvailable?.status === 'True') {
+        return managedClusterAddOnConditionAvailable.message
+    }
+    if (managedClusterAddOnConditionAvailable?.status === 'Unknown') {
         return managedClusterAddOnConditionAvailable.message
     }
     if (
