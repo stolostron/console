@@ -1,28 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmErrorBoundary, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import React, { useState } from 'react'
+import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
+import { createCluster } from '../../../../lib/create-cluster'
+import { useTranslation } from 'react-i18next'
+import { useHistory, useLocation } from 'react-router-dom'
+import { NavigationPath } from '../../../../NavigationPath'
 import fs from 'fs'
+import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
-import path from 'path'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import MonacoEditor from 'react-monaco-editor'
-import { useHistory, useLocation } from 'react-router-dom'
-import TemplateEditor from 'temptifly'
-import 'temptifly/dist/styles.css'
-import { createCluster } from '../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { NavigationPath } from '../../../../NavigationPath'
-import { controlData } from './controlData/ControlData'
 import './style.css'
+
+// template/data
+import { controlData } from './controlData/ControlData'
 import hiveTemplate from './templates/hive-template.hbs'
 
+import TemplateEditor from 'temptifly'
+import 'temptifly/dist/styles.css'
+
+// include monaco editor
+import MonacoEditor from 'react-monaco-editor'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 declare const window: any
 if (window.monaco) {
     window.monaco.editor.defineTheme('console', {
