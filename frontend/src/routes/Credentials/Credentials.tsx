@@ -13,7 +13,7 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -97,6 +97,7 @@ export function ProviderConnectionsTable(props: {
         <Fragment>
             <BulkActionModel<ProviderConnection> {...modalProps} />
             <AcmTable<ProviderConnection>
+                gridBreakPoint={TableGridBreakpoint.none}
                 emptyState={
                     <AcmEmptyState
                         title={t('empty.title')}

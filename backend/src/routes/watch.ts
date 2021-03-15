@@ -17,7 +17,7 @@ const resources: Record<string, Record<string, number>> = {}
 const watchRequests: Record<string, ClientRequest> = {}
 
 interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -114,8 +114,15 @@ export function startWatching(token: string): void {
 
     ServerSideEvents.eventFilter = (token, event) => {
         const watchEvent = event.data as WatchEvent
+        if (watchEvent.type === 'START') return Promise.resolve(event)
+        if (watchEvent.type === 'BOOKMARK') return Promise.resolve(event)
         if (watchEvent.type === 'DELETED') return Promise.resolve(event)
         // TODO - track what is sent to s specific token and only send delete
+
+        if (!watchEvent.object) {
+            console.log(watchEvent)
+            return Promise.reject()
+        }
 
         return canAccess(
             { kind: watchEvent.object.kind, apiVersion: watchEvent.object.apiVersion },
@@ -159,6 +166,9 @@ export function startWatching(token: string): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
+    watchResource(token, 'config.openshift.io/v1', 'featureGates', {
+        'open-cluster-management': '',
+    })
 }
 
 export function watchResource(

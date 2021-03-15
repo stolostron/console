@@ -13,7 +13,6 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
-import { IResource } from './resources/resource'
 
 export const loadingState = atom<boolean>({ key: 'loading', default: true })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -35,7 +34,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -47,99 +46,132 @@ interface IEventData {
     }
 }
 
-export function Startup(props: { children?: ReactNode }) {
+export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useRecoilState(loadingState)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterdDeployments] = useRecoilState(clusterDeploymentsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
-    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+
+    const setters: Record<string, SetterOrUpdater<any[]>> = {
+        [BareMetalAssetKind]: setBareMetalAssets,
+        [CertificateSigningRequestKind]: setCertificateSigningRequests,
+        [ClusterDeploymentKind]: setClusterdDeployments,
+        [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterManagementAddOnKind]: setClusterManagementAddons,
+        [ManagedClusterAddOnKind]: setManagedClusterAddons,
+        [ManagedClusterKind]: setManagedClusters,
+        [ManagedClusterInfoKind]: setManagedClusterInfos,
+        [NamespaceKind]: setNamespaces,
+        [ProviderConnectionKind]: setProviderConnections,
+        [DiscoveryConfigKind]: setDiscoveryConfigs,
+    }
+
+    // Temporary fix for checking for login
+    useEffect(() => {
+        function checkLoggedIn() {
+            fetch(`${process.env.REACT_APP_BACKEND_PATH}/api/`, {
+                credentials: 'include',
+                headers: { accept: 'application/json' },
+            }).then((res) => {
+                switch (res.status) {
+                    case 401:
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        break
+                }
+                setTimeout(checkLoggedIn, 30 * 1000)
+            })
+        }
+        checkLoggedIn()
+    }, [])
 
     useEffect(() => {
-        const eventQueue: IEventData[] = []
+        let eventDataQueue: IEventData[] | undefined = []
 
         async function processEvents() {
-            let event = eventQueue.shift()
-            while (event) {
-                processEvent(event)
-                event = eventQueue.shift()
+            if (!eventDataQueue) return
+            const dataToProcess = eventDataQueue
+            for (const kind in setters) {
+                const setter = setters[kind]
+                setter((resources) => {
+                    let newResources = [...resources]
+                    for (const data of dataToProcess) {
+                        if (data.object?.kind === kind) {
+                            const index = newResources.findIndex(
+                                (resource) =>
+                                    resource.metadata?.name === data.object.metadata.name &&
+                                    resource.metadata?.namespace === data.object.metadata.namespace
+                            )
+                            switch (data.type) {
+                                case 'ADDED':
+                                case 'MODIFIED':
+                                    if (index !== -1) newResources[index] = data.object
+                                    else newResources.push(data.object)
+                                    break
+                                case 'DELETED':
+                                    if (index !== -1) newResources.splice(index, 1)
+                                    break
+                            }
+                        }
+                    }
+                    return newResources
+                })
             }
+            eventDataQueue = undefined
         }
 
-        function processEvent(event: IEventData): void {
-            switch (event.object.kind) {
-                case BareMetalAssetKind:
-                    return updateResource<BareMetalAsset>(event, setBareMetalAssets)
-                case CertificateSigningRequestKind:
-                    return updateResource<CertificateSigningRequest>(event, setCertificateSigningRequests)
-                case ClusterDeploymentKind:
-                    return updateResource<ClusterDeployment>(event, setClusterdDeployments)
-                case ClusterImageSetKind:
-                    return updateResource<ClusterImageSet>(event, setClusterImageSets)
-                case ClusterManagementAddOnKind:
-                    return updateResource<ClusterManagementAddOn>(event, setClusterManagementAddons)
-                case ManagedClusterAddOnKind:
-                    return updateResource<ManagedClusterAddOn>(event, setManagedClusterAddons)
-                case ManagedClusterKind:
-                    return updateResource<ManagedCluster>(event, setManagedClusters)
-                case ManagedClusterInfoKind:
-                    return updateResource<ManagedClusterInfo>(event, setManagedClusterInfos)
-                case NamespaceKind:
-                    return updateResource<Namespace>(event, setNamespaces)
-                case ProviderConnectionKind:
-                    return updateResource<ProviderConnection>(event, setProviderConnections)
-                case DiscoveryConfigKind:
-                    return updateResource<DiscoveryConfig>(event, setDiscoveryConfigs)
-                default:
-                    console.log(`Unknown event resource kind: ${event.object.kind}`)
-            }
+        function processEventData(data: IEventData): void {
+            if (!data.object) return
+            const setter = setters[data.object.kind]
+            if (!setter) return
+            console.log(data.object.kind)
+            setter((resources) => {
+                let newResources = [...resources]
+                const index = resources.findIndex(
+                    (resource) =>
+                        resource.metadata?.name === data.object.metadata.name &&
+                        resource.metadata?.namespace === data.object.metadata.namespace
+                )
+                if (index !== -1) newResources.splice(index, 1)
+                switch (data.type) {
+                    case 'ADDED':
+                    case 'MODIFIED':
+                        if (index !== -1) newResources[index] = data.object
+                        else newResources.push(data.object)
+                        break
+                    case 'DELETED':
+                        if (index !== -1) newResources.splice(index, 1)
+                        break
+                }
+                return newResources
+            })
         }
 
-        function updateResource<T extends IResource>(data: IEventData, setResources: SetterOrUpdater<T[]>): void {
-            switch (data.type) {
-                case 'ADDED':
-                case 'MODIFIED':
-                    return setResources((resources) => [
-                        ...resources.filter(
-                            (resource) =>
-                                resource.metadata?.name !== data.object.metadata.name ||
-                                resource.metadata?.namespace !== data.object.metadata.namespace
-                        ),
-                        data.object as T,
-                    ])
-
-                case 'DELETED':
-                    return setResources((resources) => [
-                        ...resources.filter(
-                            (resource) =>
-                                resource.metadata?.name !== data.object.metadata.name ||
-                                resource.metadata?.namespace !== data.object.metadata.namespace
-                        ),
-                    ])
-            }
-        }
-
-        const evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
-
-        evtSource.onmessage = function (event) {
+        function processMessage(event: MessageEvent) {
             if (event.data) {
                 try {
                     const data = JSON.parse(event.data) as IEventData
-                    if (loading) {
-                        if (data.type === 'LOADED') {
+                    switch (data.type) {
+                        case 'ADDED':
+                        case 'MODIFIED':
+                        case 'DELETED':
+                            if (eventDataQueue) eventDataQueue.push(data)
+                            else processEventData(data)
+                            break
+                        case 'START':
+                            if (eventDataQueue === undefined) eventDataQueue = []
+                            break
+                        case 'BOOKMARK':
                             processEvents()
                             setLoading(false)
-                        } else {
-                            eventQueue.push(data)
-                        }
-                    } else {
-                        processEvent(event.data)
+                            break
                     }
                 } catch (err) {
                     console.error(err)
@@ -147,9 +179,26 @@ export function Startup(props: { children?: ReactNode }) {
             }
         }
 
-        evtSource.onerror = function (err) {
-            console.error('EventSource failed:', err)
+        let evtSource: EventSource | undefined
+        function startWatch() {
+            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
+            evtSource.onmessage = processMessage
+            evtSource.onerror = function (err) {
+                try {
+                    if (evtSource) evtSource.close()
+                } catch {
+                    // Do nothing
+                }
+                evtSource = undefined
+                console.error('EventSource failed:', err)
+                setTimeout(() => startWatch(), 10 * 1000)
+            }
         }
+        startWatch()
+        return () => {
+            if (evtSource) evtSource.close()
+        }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

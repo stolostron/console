@@ -35,11 +35,11 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                         })
                     })
                     .on('error', (err) => {
-                        logger.error(err)
+                        // logger.error(err)
                         res.writeHead(404).end()
                     })
                 pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
-                    if (err) logger.error(err)
+                    // if (err) logger.error(err)
                 })
             } catch (err) {
                 logger.error(err)
@@ -55,11 +55,11 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                     })
                 })
                 .on('error', (err) => {
-                    logger.error(err)
+                    // logger.error(err)
                     res.writeHead(404).end()
                 })
             pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
-                if (err) logger.error(err)
+                // if (err) logger.error(err)
             })
         }
         return

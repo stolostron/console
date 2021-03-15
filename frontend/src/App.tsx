@@ -6,7 +6,7 @@ import { createBrowserHistory } from 'history'
 import { lazy } from 'react'
 import { Redirect, Route, Router, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { Startup } from './atoms'
+import { LoadData } from './atoms'
 import { AppContextContainer } from './components/AppContext'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
@@ -32,7 +32,7 @@ export default function App() {
     return (
         <AcmHeader>
             <RecoilRoot>
-                <Startup>
+                <LoadData>
                     <AppContextContainer>
                         <Router history={window.SHARED_HISTORY}>
                             <Switch>
@@ -60,7 +60,7 @@ export default function App() {
                             </Switch>
                         </Router>
                     </AppContextContainer>
-                </Startup>
+                </LoadData>
             </RecoilRoot>
         </AcmHeader>
     )

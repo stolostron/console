@@ -12,7 +12,7 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -149,6 +149,7 @@ export function ClustersTable(props: {
                 }}
             />
             <AcmTable<Cluster>
+                gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusters"
                 items={props.clusters}
                 columns={[
