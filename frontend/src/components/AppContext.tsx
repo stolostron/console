@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState, useEffect } from 'react'
 import { AcmErrorBoundary } from '@open-cluster-management/ui-components'
-import { FeatureGate, listFeatureGates } from '../resources/feature-gate'
+import { createContext, ReactNode, useEffect, useState } from 'react'
 import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
+import { FeatureGate, listFeatureGates } from '../resources/feature-gate'
 
-export const AppContext = React.createContext<{
+export const AppContext = createContext<{
     readonly featureGates: Record<string, FeatureGate>
     readonly clusterManagementAddons: ClusterManagementAddOn[]
 }>({
@@ -13,7 +13,7 @@ export const AppContext = React.createContext<{
     clusterManagementAddons: [],
 })
 
-export function AppContextContainer(props: { children: React.ReactNode[] | React.ReactNode }) {
+export function AppContextContainer(props: { children: ReactNode[] | ReactNode }) {
     const [featureGates, setFeatureGates] = useState<Record<string, FeatureGate>>({})
     const [clusterManagementAddons, setClusterManagementAddons] = useState<ClusterManagementAddOn[]>([])
 

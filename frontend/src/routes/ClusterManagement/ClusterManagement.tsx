@@ -11,7 +11,7 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import React, { Fragment, lazy, Suspense, useContext, useEffect, useState } from 'react'
+import { createContext, ElementType, Fragment, lazy, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { AppContext } from '../../components/AppContext'
@@ -22,15 +22,15 @@ const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
-export const PageContext = React.createContext<{
-    readonly actions: null | React.ReactNode
-    setActions: (actions: null | React.ReactNode) => void
+export const PageContext = createContext<{
+    readonly actions: null | ReactNode
+    setActions: (actions: null | ReactNode) => void
 }>({
     actions: null,
     setActions: () => {},
 })
 
-export const usePageContext = (showActions: boolean, Component: React.ElementType) => {
+export const usePageContext = (showActions: boolean, Component: ElementType) => {
     const { setActions } = useContext(PageContext)
 
     useEffect(() => {
@@ -46,7 +46,7 @@ export const usePageContext = (showActions: boolean, Component: React.ElementTyp
 }
 
 export default function ClusterManagementPage() {
-    const [actions, setActions] = useState<undefined | React.ReactNode>(undefined)
+    const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'bma'])
     const { featureGates } = useContext(AppContext)

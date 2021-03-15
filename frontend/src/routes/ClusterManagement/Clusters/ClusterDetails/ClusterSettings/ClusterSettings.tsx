@@ -2,7 +2,7 @@
 
 import { AcmInlineStatus, AcmTable, StatusType } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'

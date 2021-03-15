@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AcmDropdown, AcmButton } from '@open-cluster-management/ui-components'
-import { ButtonProps } from '@patternfly/react-core'
-import { ResourceAttributes, createSubjectAccessReview } from '../resources/self-subject-access-review'
 import { makeStyles } from '@material-ui/styles'
+import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
+import { ButtonProps } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { createSubjectAccessReview, ResourceAttributes } from '../resources/self-subject-access-review'
 
 type RbacDropdownProps<T = unknown> = {
     actions: Actions<T>[]

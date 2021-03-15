@@ -2,7 +2,7 @@
 
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'

@@ -3,7 +3,7 @@
 import { AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../components/Rbac'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'

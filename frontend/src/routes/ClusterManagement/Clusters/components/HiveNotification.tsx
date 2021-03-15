@@ -1,20 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Fragment, useContext, useEffect, useState, useCallback } from 'react'
+import { makeStyles } from '@material-ui/styles'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRecoilState } from 'recoil'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { getHivePod } from '../../../../resources/pod'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { useQuery } from '../../../../lib/useQuery'
 import { getLatest } from '../../../../lib/utils'
 import { ClusterProvision, listClusterProvisions } from '../../../../resources/cluster-provision'
-import { ConfigMap } from '../../../../resources/configmap'
+import { getHivePod } from '../../../../resources/pod'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { configMapsState } from '../../../../atoms'
+import { ConfigMap } from '../../../../resources/configmap'
+import { useRecoilState } from 'recoil'
 
 const useStyles = makeStyles({
     logsButton: {
