@@ -194,7 +194,8 @@ export function watchResource(
     }
 
     if (fieldSelector) {
-        path += Object.keys(fieldSelector).map((key) => `&fieldSelector=${key}=${fieldSelector[key]}`)
+        path += '&fieldSelector='
+        path += Object.keys(fieldSelector).map((key) => `${key}=${fieldSelector[key]}`)
     }
 
     const resourceEvents: Record<string, number> = {}

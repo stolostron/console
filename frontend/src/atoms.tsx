@@ -33,7 +33,7 @@ export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedCluste
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
-export const openshiftConfig = atom<ConfigMap | undefined>({ key: 'openshiftConfig', default: undefined })
+export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
@@ -62,7 +62,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
 
-    const [, setOpenShiftConfig] = useRecoilState(openshiftConfig)
+    const [, setConfigMaps] = useRecoilState(configMapsState)
 
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
@@ -77,7 +77,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
-        'openshiftConfig': setOpenShiftConfig,
+        [ConfigMapKind]: setConfigMaps,
     }
 
     // Temporary fix for checking for login
