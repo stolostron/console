@@ -2,13 +2,13 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockPatch, nockRBAC } from '../../../../lib/nock-util'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
+import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
+import { clickByLabel, clickByText, waitForNock, waitForNocks } from '../../../../lib/test-util'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
-import { clickByLabel, clickByText, waitForNocks, waitForText } from '../../../../lib/test-util'
-import { getResourceAttributes } from '../../../../lib/rbac-util'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -43,23 +43,23 @@ const mockCluster: Cluster = {
     isManaged: true,
 }
 
-function getPatchClusterResourceAttributes() {
-    return getResourceAttributes('patch', ManagedClusterDefinition, undefined, mockCluster.name)
+function rbacPatchManagedCluster() {
+    return rbacPatch(ManagedClusterDefinition, undefined, mockCluster.name)
 }
 
-function getPatchClusterDeploymentResourceAttributes() {
-    return getResourceAttributes('patch', ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
+function rbacPatchClusterDeployment() {
+    return rbacPatch(ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
 }
 
-function getDeleteClusterResourceAttributes() {
-    return getResourceAttributes('delete', ManagedClusterDefinition, undefined, mockCluster.name)
+function rbacDeleteManagedCluster() {
+    return rbacDelete(ManagedClusterDefinition, undefined, mockCluster.name)
 }
 
-function getDeleteDeploymentResourceAttributes() {
-    return getResourceAttributes('delete', ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
+function rbacDeleteClusterDeployment() {
+    return rbacDelete(ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
 }
 
-function patchClusterDeployment(powerState: 'Running' | 'Hibernating') {
+function nockPatchClusterDeployment(powerState: 'Running' | 'Hibernating') {
     return nockPatch(
         {
             apiVersion: ClusterDeploymentDefinition.apiVersion,
@@ -73,39 +73,40 @@ function patchClusterDeployment(powerState: 'Running' | 'Hibernating') {
     )
 }
 
-describe('ClusterActionDropdown', () => {
-    test('hibernate action', async () => {
+describe('Cluster Action Dropdown', () => {
+    test('hibernate action should patch cluster deployment', async () => {
         const cluster = { ...mockCluster }
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes()),
-            nockRBAC(getPatchClusterDeploymentResourceAttributes()),
-            nockRBAC(getDeleteClusterResourceAttributes()),
-            nockRBAC(getDeleteClusterResourceAttributes()),
-            nockRBAC(getDeleteDeploymentResourceAttributes()),
-        ]
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
+        const rbacNocks: Scope[] = [
+            nockRBAC(rbacPatchManagedCluster()),
+            nockRBAC(rbacPatchClusterDeployment()),
+            nockRBAC(rbacDeleteManagedCluster()),
+            nockRBAC(rbacDeleteManagedCluster()),
+            nockRBAC(rbacDeleteClusterDeployment()),
+        ]
         await clickByLabel('Actions')
-        await waitForText('managed.hibernate')
         await waitForNocks(rbacNocks)
         await clickByText('managed.hibernate')
+        const nockPatch = nockPatchClusterDeployment('Hibernating')
         await clickByText('hibernate')
-        await waitForNocks([patchClusterDeployment('Hibernating')])
+        await waitForNock(nockPatch)
     })
-    test('resume action', async () => {
+
+    test('resume action should patch cluster deployment', async () => {
         const cluster = { ...mockCluster }
         cluster.status = ClusterStatus.hibernating
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes()),
-            nockRBAC(getPatchClusterDeploymentResourceAttributes()),
-            nockRBAC(getDeleteClusterResourceAttributes()),
-            nockRBAC(getDeleteDeploymentResourceAttributes()),
-        ]
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
+        const rbacNocks: Scope[] = [
+            nockRBAC(rbacPatchManagedCluster()),
+            nockRBAC(rbacPatchClusterDeployment()),
+            nockRBAC(rbacDeleteManagedCluster()),
+            nockRBAC(rbacDeleteClusterDeployment()),
+        ]
         await clickByLabel('Actions')
         await waitForNocks(rbacNocks)
-        await waitForText('managed.resume')
         await clickByText('managed.resume')
+        const nockPatch = nockPatchClusterDeployment('Running')
         await clickByText('resume')
-        await waitForNocks([patchClusterDeployment('Running')])
+        await waitForNock(nockPatch)
     })
 })

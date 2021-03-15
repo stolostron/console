@@ -1,10 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import * as nock from 'nock'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
-import { nockRBAC, nockDelete, nockList, nockCreate } from '../../../lib/nock-util'
+import { RecoilRoot } from 'recoil'
+import {
+    certificateSigningRequestsState,
+    clusterDeploymentsState,
+    managedClusterInfosState,
+    managedClustersState,
+} from '../../../atoms'
+import { nockCreate, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
 import {
     clickByLabel,
     clickByRole,
@@ -24,24 +30,24 @@ import {
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
 } from '../../../resources/cluster-deployment'
+import {
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+} from '../../../resources/klusterlet-add-on-config'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources/managed-cluster'
 import {
     ManagedClusterInfo,
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
-import {
-    KlusterletAddonConfig,
-    KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind,
-} from '../../../resources/klusterlet-add-on-config'
 import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
 
-const mockManagedCluster1: ManagedCluster = {
+const mockManagedCluster0: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-1' },
+    metadata: { name: 'managed-cluster-0' },
     spec: { hubAcceptsClient: true },
     status: {
         allocatable: { cpu: '', memory: '' },
@@ -51,10 +57,10 @@ const mockManagedCluster1: ManagedCluster = {
         version: { kubernetes: '' },
     },
 }
-const mockManagedCluster2: ManagedCluster = {
+const mockManagedCluster1: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-2' },
+    metadata: { name: 'managed-cluster-1' },
     spec: { hubAcceptsClient: true },
 }
 const readyManagedClusterConditions = [
@@ -63,78 +69,64 @@ const readyManagedClusterConditions = [
     { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
 ]
 const readyManagedClusterStatus = {
-    allocatable: {
-        cpu: '',
-        memory: '',
-    },
-    capacity: {
-        cpu: '',
-        memory: '',
-    },
-    version: {
-        kubernetes: '1.17',
-    },
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    version: { kubernetes: '1.17' },
     clusterClaims: [],
     conditions: readyManagedClusterConditions,
+}
+const mockManagedCluster2: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: { name: 'managed-cluster-2-no-upgrade' },
+    spec: { hubAcceptsClient: true },
+    status: readyManagedClusterStatus,
 }
 const mockManagedCluster3: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-3-no-upgrade' },
+    metadata: { name: 'managed-cluster-3-upgrade-available' },
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
 const mockManagedCluster4: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-4-upgrade-available' },
+    metadata: { name: 'managed-cluster-4-upgrading' },
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
 const mockManagedCluster5: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-5-upgrading' },
+    metadata: { name: 'managed-cluster-5-upgrade-available' },
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
-const mockManagedCluster6: ManagedCluster = {
-    apiVersion: ManagedClusterApiVersion,
-    kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-name-6-upgrade-available' },
-    spec: { hubAcceptsClient: true },
-    status: readyManagedClusterStatus,
-}
-const allMockManagedClusters: ManagedCluster[] = [
+const mockManagedClusters: ManagedCluster[] = [
+    mockManagedCluster0,
     mockManagedCluster1,
     mockManagedCluster2,
     mockManagedCluster3,
     mockManagedCluster4,
     mockManagedCluster5,
-    mockManagedCluster6,
 ]
-const allUpgradeAvailableMockManagedClusters: ManagedCluster[] = [mockManagedCluster4, mockManagedCluster6]
-function nockListManagedClusters(managedClusters?: ManagedCluster[]) {
-    return nockList(
-        { apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind },
-        managedClusters ?? allMockManagedClusters
-    )
-}
+const upgradeableMockManagedClusters: ManagedCluster[] = [mockManagedCluster3, mockManagedCluster5]
 
 const mockManagedClusterInfo0: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
+    metadata: { name: 'managed-cluster-0', namespace: 'managed-cluster-0' },
 }
 const mockManagedClusterInfo1: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name-2', namespace: 'managed-cluster-name-2', labels: { cloud: 'Google' } },
+    metadata: { name: 'managed-cluster-1', namespace: 'managed-cluster-1', labels: { cloud: 'Google' } },
 }
-const mockManagedClusterInfo3: ManagedClusterInfo = {
+const mockManagedClusterInfo2: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name-3-no-upgrade', namespace: 'managed-cluster-name-3-no-upgrade' },
+    metadata: { name: 'managed-cluster-2-no-upgrade', namespace: 'managed-cluster-2-no-upgrade' },
     status: {
         conditions: readyManagedClusterConditions,
         version: '1.17',
@@ -149,13 +141,12 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
         },
     },
 }
-
-const mockManagedClusterInfo4: ManagedClusterInfo = {
+const mockManagedClusterInfo3: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
     metadata: {
-        name: 'managed-cluster-name-4-upgrade-available',
-        namespace: 'managed-cluster-name-4-upgrade-available',
+        name: 'managed-cluster-3-upgrade-available',
+        namespace: 'managed-cluster-3-upgrade-available',
     },
     status: {
         conditions: readyManagedClusterConditions,
@@ -171,10 +162,10 @@ const mockManagedClusterInfo4: ManagedClusterInfo = {
         },
     },
 }
-const mockManagedClusterInfo5: ManagedClusterInfo = {
+const mockManagedClusterInfo4: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-name-5-upgrading', namespace: 'managed-cluster-name-5-upgrading' },
+    metadata: { name: 'managed-cluster-4-upgrading', namespace: 'managed-cluster-4-upgrading' },
     status: {
         conditions: readyManagedClusterConditions,
         version: '1.17',
@@ -189,12 +180,12 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
         },
     },
 }
-const mockManagedClusterInfo6: ManagedClusterInfo = {
+const mockManagedClusterInfo5: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
     metadata: {
-        name: 'managed-cluster-name-6-upgrade-available',
-        namespace: 'managed-cluster-name-6-upgrade-available',
+        name: 'managed-cluster-5-upgrade-available',
+        namespace: 'managed-cluster-5-upgrade-available',
     },
     status: {
         conditions: readyManagedClusterConditions,
@@ -218,12 +209,7 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
                     'node-role.kubernetes.io/worker': '',
                     'node.kubernetes.io/instance-type': 'm5.xlarge',
                 },
-                conditions: [
-                    {
-                        status: 'True',
-                        type: 'Ready',
-                    },
-                ],
+                conditions: [{ status: 'True', type: 'Ready' }],
             },
             {
                 name: 'ip-10-0-130-30.ec2.internal',
@@ -234,16 +220,8 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
                     'node-role.kubernetes.io/master': '',
                     'node.kubernetes.io/instance-type': 'm5.xlarge',
                 },
-                capacity: {
-                    cpu: '4',
-                    memory: '15944104Ki',
-                },
-                conditions: [
-                    {
-                        status: 'Unknown',
-                        type: 'Ready',
-                    },
-                ],
+                capacity: { cpu: '4', memory: '15944104Ki' },
+                conditions: [{ status: 'Unknown', type: 'Ready' }],
             },
             {
                 name: 'ip-10-0-151-254.ec2.internal',
@@ -254,57 +232,41 @@ const mockManagedClusterInfo6: ManagedClusterInfo = {
                     'node-role.kubernetes.io/master': '',
                     'node.kubernetes.io/instance-type': 'm5.xlarge',
                 },
-                capacity: {
-                    cpu: '4',
-                    memory: '8194000Pi',
-                },
-                conditions: [
-                    {
-                        status: 'False',
-                        type: 'Ready',
-                    },
-                ],
+                capacity: { cpu: '4', memory: '8194000Pi' },
+                conditions: [{ status: 'False', type: 'Ready' }],
             },
         ],
     },
 }
-function nockListManagedClusterInfos(managedClusterInfos?: ManagedClusterInfo[]) {
-    return nockList(
-        { apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind },
-        managedClusterInfos ?? [
-            mockManagedClusterInfo0,
-            mockManagedClusterInfo1,
-            mockManagedClusterInfo3,
-            mockManagedClusterInfo4,
-            mockManagedClusterInfo5,
-            mockManagedClusterInfo6,
-        ],
-        undefined,
-        { managedNamespacesOnly: '' }
-    )
-}
+const mockManagedClusterInfos = [
+    mockManagedClusterInfo0,
+    mockManagedClusterInfo1,
+    mockManagedClusterInfo2,
+    mockManagedClusterInfo3,
+    mockManagedClusterInfo4,
+    mockManagedClusterInfo5,
+]
 
-const mockClusterDeployment: ClusterDeployment = {
+const mockClusterDeployment0: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
     metadata: {
-        name: 'managed-cluster-name-1',
-        namespace: 'managed-cluster-name-1',
+        name: 'managed-cluster-0',
+        namespace: 'managed-cluster-0',
         labels: { 'hive.openshift.io/cluster-platform': 'aws' },
     },
 }
-
-// there must not be a ManagedCluster7
-const mockClusterDeployment7: ClusterDeployment = {
+// ClusterDeployment without a ManagedCluster
+const mockClusterDeployment6: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
     metadata: {
-        name: 'managed-cluster-name-7',
-        namespace: 'managed-cluster-name-7',
+        name: 'managed-cluster-6-no-managed-cluster',
+        namespace: 'managed-cluster-6-no-managed-cluster',
         labels: { 'hive.openshift.io/cluster-platform': 'aws' },
     },
     spec: {
-        clusterName: 'managed-cluster-name-7',
+        clusterName: 'managed-cluster-6-no-managed-cluster',
         installed: true,
         provisioning: {
             imageSetRef: { name: '' },
@@ -314,30 +276,14 @@ const mockClusterDeployment7: ClusterDeployment = {
         pullSecretRef: { name: '' },
     },
 }
+const mockClusterDeployments = [mockClusterDeployment0, mockClusterDeployment6]
 
-function nockListClusterDeployments(clusterDeployments?: ClusterDeployment[]) {
-    return nockList(
-        mockClusterDeployment,
-        clusterDeployments ?? [mockClusterDeployment, mockClusterDeployment7],
-        undefined,
-        {
-            managedNamespacesOnly: '',
-        }
-    )
-}
-
-const mockCertifigate: CertificateSigningRequest = {
+const mockCertificateSigningRequest0: CertificateSigningRequest = {
     apiVersion: CertificateSigningRequestApiVersion,
     kind: CertificateSigningRequestKind,
-    metadata: { name: 'managed-cluster-name-1', namespace: 'managed-cluster-name-1' },
+    metadata: { name: 'managed-cluster-0', namespace: 'managed-cluster-0' },
 }
-function nockListCertificateSigningRequests(certificateSigningRequest?: CertificateSigningRequest[]) {
-    return nockList(
-        { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-        certificateSigningRequest ?? [mockCertifigate],
-        ['open-cluster-management.io/cluster-name']
-    )
-}
+const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
 function getPatchClusterResourceAttributes(name: string) {
     return {
@@ -374,182 +320,68 @@ function getClusterActionsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-function clusterCreationResourceAttributes() {
-    return {
-        resource: 'managedclusters',
-        verb: 'create',
-        group: 'cluster.open-cluster-management.io',
-    } as ResourceAttributes
-}
+// function clusterCreationResourceAttributes() {
+//     return {
+//         resource: 'managedclusters',
+//         verb: 'create',
+//         group: 'cluster.open-cluster-management.io',
+//     } as ResourceAttributes
+// }
 
-describe('Cluster page', () => {
+describe('Clusters Page', () => {
     beforeEach(async () => {
-        const nocks: Scope[] = [
-            nockListManagedClusterInfos(),
-            nockListCertificateSigningRequests(),
-            nockListClusterDeployments(),
-            nockListManagedClusters(),
-        ]
-        const allActionPermissionNock: nock.Scope[] = allUpgradeAvailableMockManagedClusters.map(
-            (mockManagedCluster) => {
-                return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!), true)
-            }
-        )
+        nockIgnoreRBAC()
         render(
-            <MemoryRouter>
-                <ClustersPage />
-            </MemoryRouter>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+                    snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
+                    snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                }}
+            >
+                <MemoryRouter>
+                    <ClustersPage />
+                </MemoryRouter>
+            </RecoilRoot>
         )
-        await waitForNocks(nocks)
-        await waitForText(mockManagedCluster1.metadata.name!)
-        await waitForNocks(allActionPermissionNock)
+        await waitForText(mockManagedCluster0.metadata.name!)
     })
 
-    it('deletes cluster', async () => {
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)),
-        ]
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
-        const refreshNocks: Scope[] = [
-            nockListManagedClusterInfos([]),
-            nockListCertificateSigningRequests([]),
-            nockListClusterDeployments([]),
-            nockListManagedClusters([]),
-        ]
-        await clickByLabel('Actions', 0) // Click the action button on row
-        await waitForNocks(rbacNocks)
+    test('should be able to delete cluster using row action', async () => {
+        await clickByLabel('Actions', 0)
         await clickByText('managed.destroySelected')
-        await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
+        await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
-        await waitForNocks(refreshNocks)
-        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
-    it('bulk deletes cluster', async () => {
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
-        const refreshNocks: Scope[] = [
-            nockListManagedClusterInfos([]),
-            nockListCertificateSigningRequests([]),
-            nockListClusterDeployments([]),
-            nockListManagedClusters([]),
-        ]
-        await clickByRole('checkbox', 1) // select row 1
+    test('should be able to delete cluster using bulk action', async () => {
+        await clickByRole('checkbox', 1)
         await clickByText('managed.destroy')
         await typeByText('type.to.confirm', 'confirm')
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
-        await waitForNocks(refreshNocks)
-        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
-    it('detaches cluster', async () => {
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster1.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)),
-        ]
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
-        const refreshNocks: Scope[] = [
-            nockListManagedClusterInfos([]),
-            nockListCertificateSigningRequests([]),
-            nockListClusterDeployments([]),
-            nockListManagedClusters([]),
-        ]
-        await clickByLabel('Actions', 0) // Click the action button on row
-        await waitForNocks(rbacNocks)
+    test('should be able to detach cluster using row action', async () => {
+        await clickByLabel('Actions', 0)
         await clickByText('managed.detached')
-        await typeByText('type.to.confirm', mockManagedCluster1.metadata!.name!)
+        await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
         await clickByText('detach')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
-        await waitForNocks(refreshNocks)
-        await waitForNotText(mockManagedCluster1.metadata.name!)
     })
 
-    it('bulk detaches cluster', async () => {
-        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster2)]
-        const refreshNocks: Scope[] = [
-            nockListManagedClusterInfos([]),
-            nockListCertificateSigningRequests([]),
-            nockListClusterDeployments([]),
-            nockListManagedClusters([]),
-        ]
-        await clickByRole('checkbox', 2) // select row 2
+    test('should be able to detach cluster using bulk action', async () => {
+        await clickByRole('checkbox', 2)
         await clickByText('managed.detachSelected')
         await typeByText('type.to.confirm', 'confirm')
+        const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         await clickByText('detach')
         await waitForNocks(deleteNocks)
-        await waitForNocks([nockRBAC(clusterCreationResourceAttributes())])
-        await waitForNocks(refreshNocks)
-        await waitForNotText(mockManagedCluster1.metadata.name!)
-    })
-
-    test('overflow menu should hide upgrade option if no available upgrade', async () => {
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
-        ]
-        await waitForText(mockManagedCluster3.metadata.name!)
-        await clickByLabel('Actions', 2) // Click the action button on the 3rd table row
-        await waitForNocks(rbacNocks)
-        await waitForNotText('managed.upgrade')
-        await waitForText(mockManagedCluster3.metadata.name!)
-    })
-
-    test('overflow menu should hide upgrade option if currently upgrading', async () => {
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
-        ]
-        await waitForText(mockManagedCluster5.metadata.name!)
-        await clickByLabel('Actions', 4) // Click the action button on the 5th table row
-        await waitForNocks(rbacNocks)
-        await waitForNotText('managed.upgrade')
-        await waitForText(mockManagedCluster5.metadata.name!)
-    })
-
-    test('overflow menu should allow upgrade if has available upgrade', async () => {
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
-            nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
-        ]
-        await waitForText(mockManagedCluster4.metadata.name!)
-        await clickByLabel('Actions', 3) // Click the action button on the 4th table row
-        await waitForNocks(rbacNocks)
-        await clickByText('managed.upgrade')
-        await waitForText('upgrade.table.name')
-        await clickByText('common:cancel')
-        await waitForText(mockManagedCluster4.metadata.name!)
-    })
-
-    test('batch upgrade support when upgrading single cluster', async () => {
-        await waitForText(mockManagedCluster4.metadata.name!)
-        await clickByLabel('Select row 3')
-        await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.submit upgrade.multiple.singular`)
-        await clickByText('common:cancel')
-        await waitForText(mockManagedCluster4.metadata.name!)
-    })
-
-    test('batch upgrade support when upgrading multiple clusters', async () => {
-        await waitForText(mockManagedCluster4.metadata.name!)
-        await waitForText(mockManagedCluster6.metadata.name!)
-        await clickByLabel('Select row 3')
-        await clickByLabel('Select row 5')
-        await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.multiple.note`)
-        await waitForText(`upgrade.submit upgrade.multiple.plural`)
-        await clickByText('common:cancel')
-        await waitForText(mockManagedCluster4.metadata.name!)
-        await waitForText(mockManagedCluster6.metadata.name!)
     })
 
     // TODO re-enable when re-attach is supported
@@ -558,11 +390,11 @@ describe('Cluster page', () => {
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
             metadata: {
-                name: mockClusterDeployment7.metadata.name!,
+                name: mockClusterDeployment6.metadata.name!,
                 labels: {
                     cloud: 'auto-detect',
                     vendor: 'auto-detect',
-                    name: mockClusterDeployment7.metadata.name!,
+                    name: mockClusterDeployment6.metadata.name!,
                 },
             },
             spec: { hubAcceptsClient: true },
@@ -571,16 +403,16 @@ describe('Cluster page', () => {
             apiVersion: KlusterletAddonConfigApiVersion,
             kind: KlusterletAddonConfigKind,
             metadata: {
-                name: mockClusterDeployment7.metadata.name!,
-                namespace: mockClusterDeployment7.metadata.name!,
+                name: mockClusterDeployment6.metadata.name!,
+                namespace: mockClusterDeployment6.metadata.name!,
             },
             spec: {
-                clusterName: mockClusterDeployment7.metadata.name!,
-                clusterNamespace: mockClusterDeployment7.metadata.name!,
+                clusterName: mockClusterDeployment6.metadata.name!,
+                clusterNamespace: mockClusterDeployment6.metadata.name!,
                 clusterLabels: {
                     cloud: 'auto-detect',
                     vendor: 'auto-detect',
-                    name: mockClusterDeployment7.metadata.name!,
+                    name: mockClusterDeployment6.metadata.name!,
                 },
                 applicationManager: { enabled: true, argocdCluster: false },
                 policyController: { enabled: true },
@@ -590,20 +422,77 @@ describe('Cluster page', () => {
                 version: '2.2.0',
             },
         }
-        const rbacNocks: Scope[] = [
-            nockRBAC(getDeleteClusterResourceAttributes(mockClusterDeployment7.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockClusterDeployment7.metadata.name!)),
-        ]
         const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
         const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
-        await waitForText(mockClusterDeployment7.metadata.name!)
-        await clickByLabel('Actions', 6) // Click the action button on the 7th table row
-        await waitForNocks(rbacNocks)
+        await waitForText(mockClusterDeployment6.metadata.name!)
+        await clickByLabel('Actions', 6)
         await waitForText('managed.import')
         await clickByText('managed.import')
         await waitForText('cluster.import.description')
         await clickByText('import')
         await waitForNocks([createMcNock, createKacNock])
         await waitForNotText('cluster.import.description')
+    })
+
+    test('overflow menu should hide upgrade option if no available upgrade', async () => {
+        await clickByLabel('Actions', 2)
+        await waitForNotText('managed.upgrade')
+    })
+
+    test('overflow menu should hide upgrade option if currently upgrading', async () => {
+        await clickByLabel('Actions', 4)
+        await waitForNotText('managed.upgrade')
+    })
+
+    test('overflow menu should allow upgrade if has available upgrade', async () => {
+        await clickByLabel('Actions', 3)
+        await clickByText('managed.upgrade')
+        await waitForText('upgrade.table.name')
+    })
+
+    test('batch upgrade support when upgrading single cluster', async () => {
+        await clickByLabel('Select row 3')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.multiple.note`)
+    })
+
+    test('batch upgrade support when upgrading multiple clusters', async () => {
+        await clickByLabel('Select row 3')
+        await clickByLabel('Select row 5')
+        await clickByText('managed.upgradeSelected')
+        await waitForText(`upgrade.multiple.note`)
+    })
+})
+
+describe('Clusters Page RBAC', () => {
+    test('should perform RBAC checks', async () => {
+        const upgradeRBACNocks = upgradeableMockManagedClusters.map((mockManagedCluster) => {
+            return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!))
+        })
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+                    snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
+                    snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+                }}
+            >
+                <MemoryRouter>
+                    <ClustersPage />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForText(mockManagedCluster0.metadata.name!)
+        await waitForNocks(upgradeRBACNocks)
+
+        const rbacNocks: Scope[] = [
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
+            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
+            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster0.metadata.name!)),
+        ]
+        await clickByLabel('Actions', 0)
+        await waitForNocks(rbacNocks)
     })
 })

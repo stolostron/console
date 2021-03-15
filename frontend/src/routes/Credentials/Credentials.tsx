@@ -22,11 +22,11 @@ import { discoveryConfigState, providerConnectionsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../lib/providers'
-import { getResourceAttributes } from '../../lib/rbac-util'
+import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection, ProviderConnectionDefinition } from '../../resources/provider-connection'
+import { ProviderConnection } from '../../resources/provider-connection'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
@@ -204,14 +204,7 @@ export function ProviderConnectionsTable(props: {
                                                 .replace(':name', providerConnection.metadata.name!)
                                         )
                                     },
-                                    rbac: [
-                                        getResourceAttributes(
-                                            'patch',
-                                            ProviderConnectionDefinition,
-                                            providerConnection.metadata.namespace,
-                                            providerConnection.metadata.name
-                                        ),
-                                    ],
+                                    rbac: [rbacPatch(providerConnection)],
                                 },
                                 {
                                     id: 'deleteConnection',
@@ -245,14 +238,7 @@ export function ProviderConnectionsTable(props: {
                                             isDanger: true,
                                         })
                                     },
-                                    rbac: [
-                                        getResourceAttributes(
-                                            'delete',
-                                            ProviderConnectionDefinition,
-                                            providerConnection.metadata.namespace,
-                                            providerConnection.metadata.name
-                                        ),
-                                    ],
+                                    rbac: [rbacDelete(providerConnection)],
                                 },
                             ]
 

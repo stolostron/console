@@ -16,6 +16,23 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
             ext = '.html'
             url = '/index.html'
         }
+
+        // Security headers
+        if (url === '/index.html') {
+            res.setHeader('Cache-Control', 'no-cache')
+            res.setHeader('Strict-Transport-Security', 'max-age=31536000')
+            res.setHeader('X-Frame-Options', 'deny')
+            res.setHeader('X-XSS-Protection', '1; mode=block')
+            res.setHeader('X-Content-Type-Options', 'nosniff')
+            res.setHeader('X-Permitted-Cross-Domain-Policies', 'none')
+            res.setHeader('Referrer-Policy', 'no-referrer')
+            res.setHeader('X-DNS-Prefetch-Control', 'off')
+            res.setHeader('Expect-CT', 'enforce, max-age=30')
+            // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
+        } else {
+            res.setHeader('Cache-Control', cacheControl)
+        }
+
         const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
@@ -30,7 +47,6 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                         res.writeHead(200, {
                             [constants.HTTP2_HEADER_CONTENT_ENCODING]: 'gzip',
                             [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
-                            [constants.HTTP2_HEADER_CACHE_CONTROL]: cacheControl,
                             // [constants.HTTP2_HEADER_CONTENT_LENGTH]: stats.size.toString(),
                         })
                     })
@@ -51,7 +67,6 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                 .on('open', () => {
                     res.writeHead(200, {
                         [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
-                        [constants.HTTP2_HEADER_CACHE_CONTROL]: cacheControl,
                     })
                 })
                 .on('error', (err) => {

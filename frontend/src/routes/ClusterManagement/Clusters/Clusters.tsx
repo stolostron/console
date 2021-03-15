@@ -16,14 +16,19 @@ import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import {
+    certificateSigningRequestsState,
+    clusterDeploymentsState,
+    managedClusterInfosState,
+    managedClustersState,
+} from '../../../atoms'
 import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
-import { Cluster, getAllClusters } from '../../../lib/get-cluster'
+import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { ResourceErrorCode } from '../../../lib/resource-request'
-import { useQuery } from '../../../lib/useQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
@@ -33,9 +38,26 @@ import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 
 export default function ClustersPage() {
+    const alertContext = useContext(AcmAlertContext)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => alertContext.clearAlerts, [])
+
+    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
+    const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+
+    const clusters = useMemo(
+        () => mapClusters(clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters),
+        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters]
+    )
+    usePageContext(clusters.length > 0, PageActions)
+
     return (
         <PageSection variant="light" isFilled={true}>
-            <ClustersPageContent />
+            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                <ClustersTable clusters={clusters} />
+            </AcmTablePaginationContextProvider>{' '}
         </PageSection>
     )
 }
@@ -60,46 +82,7 @@ const PageActions = () => {
     )
 }
 
-let lastData: Cluster[] | undefined
-let lastTime: number = 0
-
-export function ClustersPageContent() {
-    const alertContext = useContext(AcmAlertContext)
-
-    const { data, error, startPolling, refresh } = useQuery(
-        getAllClusters,
-        Date.now() - lastTime < 5 * 60 * 1000 ? lastData : undefined
-    )
-    useEffect(startPolling, [startPolling])
-    usePageContext(data !== undefined && data.length > 0, PageActions)
-
-    useEffect(() => {
-        if (process.env.NODE_ENV !== 'test') {
-            lastData = data
-            lastTime = Date.now()
-        }
-    }, [data])
-
-    useEffect(() => {
-        alertContext.clearAlerts()
-        if (error) {
-            alertContext.addAlert(getErrorInfo(error))
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [error])
-
-    return (
-        <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-            <ClustersTable clusters={data} refresh={refresh} />
-        </AcmTablePaginationContextProvider>
-    )
-}
-
-export function ClustersTable(props: {
-    clusters?: Cluster[]
-    deleteCluster?: (managedCluster: Cluster) => void
-    refresh: () => void
-}) {
+export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (managedCluster: Cluster) => void }) {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
@@ -238,7 +221,7 @@ export function ClustersTable(props: {
                     {
                         header: '',
                         cell: (cluster: Cluster) => {
-                            return <ClusterActionDropdown cluster={cluster} isKebab={true} refresh={props.refresh} />
+                            return <ClusterActionDropdown cluster={cluster} isKebab={true} />
                         },
                         cellTransforms: [fitContent],
                     },
@@ -262,10 +245,7 @@ export function ClustersTable(props: {
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
-                                close: () => {
-                                    setModalProps({ open: false })
-                                    props.refresh()
-                                },
+                                close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
@@ -287,10 +267,7 @@ export function ClustersTable(props: {
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),
-                                close: () => {
-                                    setModalProps({ open: false })
-                                    props.refresh()
-                                },
+                                close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
@@ -301,10 +278,7 @@ export function ClustersTable(props: {
                         id: 'upgradeClusters',
                         title: t('managed.upgradeSelected'),
                         click: (managedClusters: Array<Cluster>) => {
-                            if (!managedClusters) {
-                                return
-                            }
-
+                            if (!managedClusters) return
                             setUpgradeClusters(managedClusters)
                         },
                     },
