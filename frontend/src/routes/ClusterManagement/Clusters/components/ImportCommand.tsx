@@ -14,9 +14,9 @@ import {
     TabTitleText,
     Tooltip,
 } from '@patternfly/react-core'
-import i18next from 'i18next'
 import { CopyIcon } from '@patternfly/react-icons'
-import React, { useContext, useEffect, useState } from 'react'
+import i18next from 'i18next'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
@@ -104,7 +104,7 @@ export function ImportCommand(props: ImportCommandProps) {
     }
 
     return (
-        <React.Fragment>
+        <Fragment>
             <Card style={{ marginBottom: '24px' }}>
                 <Tabs activeKey={'first'}>
                     <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
@@ -151,7 +151,7 @@ export function ImportCommand(props: ImportCommandProps) {
                 </Tabs>
             </Card>
             {props.children}
-        </React.Fragment>
+        </Fragment>
     )
 }
 

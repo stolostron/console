@@ -1,38 +1,37 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState, useContext } from 'react'
 import {
-    AcmAlertProvider,
     AcmAlertContext,
+    AcmAlertGroup,
+    AcmAlertProvider,
+    AcmButton,
+    AcmErrorBoundary,
     AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
     AcmPage,
     AcmPageCard,
     AcmPageHeader,
-    AcmTextInput,
-    AcmSubmit,
-    AcmButton,
-    AcmErrorBoundary,
-    AcmAlertGroup,
-    AcmTextArea,
     AcmSelect,
+    AcmSubmit,
+    AcmTextArea,
+    AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Label, Text, TextVariants, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Button, Label, SelectOption, Text, TextVariants } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
+import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { deleteResources } from '../../../../lib/delete-resources'
-import { ResourceError, ResourceErrorCode, createResource } from '../../../../lib/resource-request'
+import { DOC_LINKS } from '../../../../lib/doc-util'
+import { createResource, ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-add-on-config'
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
-import { useHistory } from 'react-router-dom'
-import { DOC_LINKS } from '../../../../lib/doc-util'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -303,7 +302,7 @@ export function ImportClusterPageContent() {
                         )}
                     </ActionGroup>
                     {importCommand && (
-                        <React.Fragment>
+                        <Fragment>
                             <ImportCommand importCommand={importCommand}>
                                 <ActionGroup>
                                     <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
@@ -322,7 +321,7 @@ export function ImportClusterPageContent() {
                                     </AcmButton>
                                 </ActionGroup>
                             </ImportCommand>
-                        </React.Fragment>
+                        </Fragment>
                     )}
                 </AcmForm>
             </AcmExpandableSection>

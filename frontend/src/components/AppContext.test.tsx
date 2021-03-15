@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { mockBadRequestStatus, nockClusterList } from '../lib/nock-util'
 import { waitForNock, waitForText, waitTimeout } from '../lib/test-util'
 import { ClusterManagementAddOnApiVersion, ClusterManagementAddOnKind } from '../resources/cluster-management-add-on'

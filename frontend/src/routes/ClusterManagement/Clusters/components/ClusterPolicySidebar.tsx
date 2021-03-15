@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
-import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
-import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
+import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
+import _ from 'lodash'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
 

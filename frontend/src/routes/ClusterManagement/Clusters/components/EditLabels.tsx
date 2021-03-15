@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertContext,
     AcmAlertGroup,
     AcmForm,
     AcmLabelsInput,
     AcmSubmit,
-    AcmAlertContext,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button } from '@patternfly/react-core'
-import React, { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../components/ErrorPage'
 import { Cluster } from '../../../../lib/get-cluster'

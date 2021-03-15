@@ -12,7 +12,7 @@ import {
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
@@ -37,7 +37,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 
-export const ClusterContext = React.createContext<{
+export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
     readonly addonsError?: Error
