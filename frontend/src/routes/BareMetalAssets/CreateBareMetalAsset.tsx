@@ -30,7 +30,7 @@ import {
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { getAuthorizedNamespaces, getResourceAttributes } from '../../lib/rbac-util'
+import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { getSecret, Secret, SecretApiVersion, SecretKind, unpackSecret } from '../../resources/secret'
 
@@ -160,7 +160,7 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        getAuthorizedNamespaces([getResourceAttributes('create', BareMetalAssetDefinition)])
+        getAuthorizedNamespaces([rbacCreate(BareMetalAssetDefinition)])
             .then((namespaces: string[]) => {
                 setProjects(namespaces)
             })

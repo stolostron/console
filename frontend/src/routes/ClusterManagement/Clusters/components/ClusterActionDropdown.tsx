@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { getResourceAttributes } from '../../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
@@ -67,7 +67,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('patch', ManagedClusterDefinition, undefined, cluster.name)],
+            rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'launch-cluster',
@@ -79,7 +79,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             text: t('managed.upgrade'),
             click: (cluster: Cluster) => setShowUpgradeModal(true),
             isDisabled: true,
-            rbac: [getResourceAttributes('create', ManagedClusterActionDefinition, cluster.namespace)],
+            rbac: [rbacCreate(ManagedClusterActionDefinition, cluster.namespace)],
         },
         {
             id: 'search-cluster',
@@ -119,7 +119,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         //             actionFn: createImportResources,
         //         })
         //     },
-        //     rbac: [getResourceAttributes('create', ManagedClusterDefinition)],
+        //     rbac: [rbacCreate(ManagedClusterDefinition)],
         // },
         {
             id: 'hibernate-cluster',
@@ -155,7 +155,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+            rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
         {
             id: 'resume-cluster',
@@ -191,7 +191,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('patch', ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+            rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
         },
         {
             id: 'detach-cluster',
@@ -218,7 +218,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name)],
+            rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
             id: 'destroy-cluster',
@@ -246,8 +246,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: true,
             rbac: [
-                getResourceAttributes('delete', ManagedClusterDefinition, undefined, cluster.name),
-                getResourceAttributes('delete', ClusterDeploymentDefinition, cluster.namespace, cluster.name),
+                rbacDelete(ManagedClusterDefinition, undefined, cluster.name),
+                rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name),
             ],
         },
     ]

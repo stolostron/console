@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, Link } from 'react-router-dom'
-import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
-import { getUserAccess } from '../../../../lib/rbac-util'
-import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
+import { Link, useHistory } from 'react-router-dom'
+import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 
 export function AddCluster(props: {
     type: 'button' | 'dropdown'
@@ -17,12 +17,11 @@ export function AddCluster(props: {
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
     useEffect(() => {
-        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
-
-        canCreateCluster.promise
+        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
+        canCreateManagedCluster.promise
             .then((result) => setCanCreateCluster(result.status?.allowed!))
             .catch((err) => console.error(err))
-        return () => canCreateCluster.abort()
+        return () => canCreateManagedCluster.abort()
     }, [])
 
     if (props.type === 'button') {
