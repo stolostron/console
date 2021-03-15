@@ -7,7 +7,7 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -266,6 +266,7 @@ export function BareMetalAssetsTable(props: {
                         },
                         {
                             header: '',
+                            cellTransforms: [fitContent],
                             cell: (bareMetalAsset) => {
                                 const actions = [
                                     {

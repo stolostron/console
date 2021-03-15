@@ -12,7 +12,7 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -240,6 +240,7 @@ export function ClustersTable(props: {
                         cell: (cluster: Cluster) => {
                             return <ClusterActionDropdown cluster={cluster} isKebab={true} refresh={props.refresh} />
                         },
+                        cellTransforms: [fitContent],
                     },
                 ]}
                 keyFn={mckeyFn}
