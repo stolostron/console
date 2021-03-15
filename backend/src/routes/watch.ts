@@ -203,6 +203,7 @@ export function watchResource(
                     if (chunk instanceof Buffer) {
                         data += chunk.toString()
                         while (data.includes('\n')) {
+                            // TODO - use buffers and zero fill secrets
                             const parts = data.split('\n')
                             data = parts.slice(1).join('\n')
                             try {
