@@ -1,40 +1,37 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
-    AcmSubmit,
     AcmButton,
     AcmForm,
+    AcmFormSection,
     AcmLoadingPage,
+    AcmMultiSelect,
     AcmPageCard,
     AcmPageHeader,
     AcmSelect,
-    AcmFormSection,
-    AcmMultiSelect,
+    AcmSubmit,
 } from '@open-cluster-management/ui-components'
-import { ProviderID } from '../../../lib/providers'
-import { Page, SelectOption, Text, TextVariants, ButtonVariant, ActionGroup } from '@patternfly/react-core'
+import { ActionGroup, ButtonVariant, Page, SelectOption, Text, TextVariants } from '@patternfly/react-core'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { NavigationPath } from '../../../NavigationPath'
-import { Link } from 'react-router-dom'
+import { ProviderID } from '../../../lib/providers'
 import { ResourceErrorCode } from '../../../lib/resource-request'
-
-import { listMultiClusterHubs } from '../../../resources/multi-cluster-hub'
-
-import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     createDiscoveryConfig,
-    replaceDiscoveryConfig,
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
     listDiscoveryConfigs,
+    replaceDiscoveryConfig,
 } from '../../../resources/discovery-config'
+import { listMultiClusterHubs } from '../../../resources/multi-cluster-hub'
+import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])

@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useContext, useEffect, useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
 import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
-import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useCallback, useContext, useEffect } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { listNamespacedPolicyReports, PolicyReport } from '../../../../resources/policy-report'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
