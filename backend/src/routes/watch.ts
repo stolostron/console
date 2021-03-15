@@ -169,13 +169,18 @@ export function startWatching(token: string): void {
     watchResource(token, 'config.openshift.io/v1', 'featureGates', {
         'open-cluster-management': '',
     })
+    watchResource(token, 'v1', 'configmaps', undefined, {
+        'metadata.namespace': 'openshift-config-managed',
+        'metadata.name': 'console-public',
+    })
 }
 
 export function watchResource(
     token: string,
     apiVersion: string,
     kind: string,
-    labelSelector?: Record<string, string>
+    labelSelector?: Record<string, string>,
+    fieldSelector?: Record<string, string>
 ): void {
     let path = apiVersion.includes('/') ? '/apis' : '/api'
     path += `/${apiVersion}/${kind.toLowerCase()}`
@@ -184,6 +189,10 @@ export function watchResource(
         path += Object.keys(labelSelector).map((key) =>
             labelSelector[key] ? `&labelSelector=${key}=${labelSelector[key]}` : `&labelSelector=${key}=`
         )
+    }
+
+    if (fieldSelector) {
+        path += Object.keys(fieldSelector).map((key) => `&fieldSelector=${key}=${fieldSelector[key]}`)
     }
 
     const resourceEvents: Record<string, number> = {}
