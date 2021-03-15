@@ -61,9 +61,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
-
     const [, setConfigMaps] = useRecoilState(configMapsState)
-
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
