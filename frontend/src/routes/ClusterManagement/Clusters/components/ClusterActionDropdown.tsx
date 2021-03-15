@@ -15,7 +15,6 @@ import { ManagedClusterActionDefinition } from '../../../../resources/managedclu
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
-// import { createImportResources } from '../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean; refresh?: () => void }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
@@ -78,9 +77,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
-            click: (cluster: Cluster) => {
-                setShowUpgradeModal(true)
-            },
+            click: (cluster: Cluster) => setShowUpgradeModal(true),
             isDisabled: true,
             rbac: [rbacCreate(ManagedClusterActionDefinition, cluster.namespace)],
         },
@@ -282,7 +279,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (
         cluster.distribution?.isManagedOpenShift ||
         cluster.status !== ClusterStatus.ready ||
-        !(cluster.distribution?.ocp?.availableUpdates && cluster.distribution?.ocp?.availableUpdates.length > 0) ||
+        cluster.distribution?.ocp?.availableUpdates === undefined ||
+        cluster.distribution?.ocp?.availableUpdates.length === 0 ||
         (cluster.distribution?.ocp?.version &&
             cluster.distribution?.ocp?.desiredVersion &&
             cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion)
