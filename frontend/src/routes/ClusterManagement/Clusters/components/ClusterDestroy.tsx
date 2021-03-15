@@ -36,7 +36,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
                             variant="link"
                             icon={<ExternalLinkAltIcon />}
                             iconPosition="right"
-                            onClick={() => launchLogs(props.cluster, configMaps)}
+                            onClick={() => launchLogs(props.cluster!, configMaps)}
                         >
                             {t('view.logs')}
                         </AcmButton>

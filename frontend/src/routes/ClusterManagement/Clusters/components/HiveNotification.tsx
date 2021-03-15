@@ -86,7 +86,7 @@ export function HiveNotification() {
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
                         <AcmButton
-                            onClick={() => launchLogs(cluster, configMaps)}
+                            onClick={() => launchLogs(cluster!, configMaps)}
                             variant={ButtonVariant.link}
                             role="link"
                             id="view-logs"
@@ -103,23 +103,14 @@ export function HiveNotification() {
     )
 }
 
-export function launchLogs(cluster?: Cluster, configMaps?: ConfigMap[]) {
-    const openShiftConsoleConfig = configMaps?.find((configmap) => configmap.metadata.name === 'console-public')
+export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
     if (cluster && openShiftConsoleUrl) {
-        /* istanbul ignore next */
-        const name = cluster?.name ?? ''
-        /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
-        /* istanbul ignore next */
-        const status = cluster?.status ?? ''
-        /* istanbul ignore else */
-        if (name && namespace) {
-            const response = getHivePod(namespace, name, status)
-            response.then((job) => {
-                const podName = job?.metadata.name
-                podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
-            })
-        }
+        const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+        response.then((job) => {
+            const podName = job?.metadata.name
+            podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
+        })
     }
 }
