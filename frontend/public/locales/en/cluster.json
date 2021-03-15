@@ -28,7 +28,7 @@
     "managed.resume": "Resume cluster",
     "managed.detachSelected": "Detach",
     "managed.upgradeSelected": "Upgrade",
-    "managed.importCluster": "Import existing cluster",
+    "managed.importCluster": "Import cluster",
     "managed.createCluster": "Create cluster",
     "managed.addCluster": "Add cluster",
     "managed.destroy": "Destroy",
