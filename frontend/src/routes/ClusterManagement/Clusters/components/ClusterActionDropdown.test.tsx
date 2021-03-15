@@ -85,6 +85,7 @@ describe('ClusterActionDropdown', () => {
         ]
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
         await clickByLabel('Actions')
+        await waitForText('managed.hibernate')
         await waitForNocks(rbacNocks)
         await clickByText('managed.hibernate')
         await clickByText('hibernate')
@@ -102,6 +103,7 @@ describe('ClusterActionDropdown', () => {
         render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
         await clickByLabel('Actions')
         await waitForNocks(rbacNocks)
+        await waitForText('managed.resume')
         await clickByText('managed.resume')
         await clickByText('resume')
         await waitForNocks([patchClusterDeployment('Running')])
