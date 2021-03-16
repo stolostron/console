@@ -10,25 +10,17 @@ import {
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-    AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
-import { createContext, Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useRecoilState } from 'recoil'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { AppContext } from '../../../../components/AppContext'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { usePrevious } from '../../../../components/usePrevious'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
-import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
+import { Cluster, ClusterStatus, getCluster } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { ResourceError } from '../../../../lib/resource-request'
-import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
-import { CertificateSigningRequest } from '../../../../resources/certificate-signing-requests'
-import { ClusterDeployment } from '../../../../resources/cluster-deployment'
-import { ManagedCluster } from '../../../../resources/managed-cluster'
-import { listManagedClusterAddOns } from '../../../../resources/managed-cluster-add-on'
-import { ManagedClusterInfo } from '../../../../resources/managed-cluster-info'
 import { SecretDefinition } from '../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
@@ -36,11 +28,18 @@ import { DownloadConfigurationDropdown } from '../components/DownloadConfigurati
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
+import {
+    managedClustersState,
+    managedClusterInfosState,
+    clusterDeploymentsState,
+    certificateSigningRequestsState,
+    clusterManagementAddonsState,
+    managedClusterAddonsState,
+} from '../../../../atoms'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
-    readonly addonsError?: Error
     readonly importCommand?: string
     readonly importCommandError?: string
     setImportCommand?: (command: string) => void
@@ -48,7 +47,6 @@ export const ClusterContext = createContext<{
 }>({
     cluster: undefined,
     addons: undefined,
-    addonsError: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -57,74 +55,41 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const { t } = useTranslation(['cluster'])
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
+
     // Cluster
-    const { data, startPolling, stopPolling, loading, error } = useQuery(
-        useCallback(() => getSingleCluster(match.params.id, match.params.id), [match.params.id])
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
+    const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
+
+    const managedCluster = managedClusters.find((mc) => mc.metadata.name === match.params.id)
+    const clusterDeployment = clusterDeployments.find(
+        (cd) => cd.metadata.name === match.params.id && cd.metadata.namespace === match.params.id
     )
-    const [cluster, setCluster] = useState<Cluster | undefined>(undefined)
-    const [clusterError, setClusterError] = useState<ResourceError | undefined>(undefined)
+    const managedClusterInfo = managedClusterInfos.find(
+        (mci) => mci.metadata.name === match.params.id && mci.metadata.namespace === match.params.id
+    )
+
+    const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
+
+    const [cluster, setCluster] = useState<Cluster | undefined>(
+        getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster)
+    )
+    useEffect(() => {
+        // Need to keep cluster data for detach/destroy
+        if (clusterExists) {
+            setCluster(getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster))
+        }
+    }, [managedCluster, clusterDeployment, managedClusterInfo, certificateSigningRequests, clusterExists])
+    // End cluster
+
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
 
     // Addons
-    const {
-        data: addonData,
-        startPolling: addonStartPolling,
-        stopPolling: addonStopPolling,
-        error: addonError,
-    } = useQuery(useCallback(() => listManagedClusterAddOns(match.params.id), [match.params.id]))
-    const [addons, setAddons] = useState<Addon[] | undefined>(undefined)
-    const [addonsError, setAddonsError] = useState<Error | undefined>(undefined)
-    const { clusterManagementAddons } = useContext(AppContext)
-
-    useEffect(addonStartPolling, [addonStartPolling])
-    useEffect(() => {
-        if (addonError) {
-            return setAddonsError(addonError)
-        }
-        if (addonData) {
-            setAddons(mapAddons(clusterManagementAddons, addonData))
-        }
-    }, [addonData, addonError, clusterManagementAddons])
+    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
+    const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const addons = mapAddons(clusterManagementAddons, managedClusterAddons)
     // End addons
-
-    // handle detach/destroy of clusters
-    const prevStatus = usePrevious(cluster?.status)
-    const prevIsHive = usePrevious(cluster?.isHive)
-    const [clusterIsRemoved, setClusterIsRemoved] = useState<boolean>(false)
-
-    useEffect(startPolling, [startPolling])
-    useEffect(() => {
-        if (error) {
-            return setClusterError(error)
-        }
-
-        const results = data ?? []
-        if (results.length > 0) {
-            if (results[0].status === 'rejected' && results[3].status === 'rejected') {
-                // show cluster detach/destroy success state
-                if (
-                    (prevIsHive && prevStatus === ClusterStatus.destroying) ||
-                    (!prevIsHive && prevStatus === ClusterStatus.detaching)
-                ) {
-                    stopPolling()
-                    addonStopPolling()
-                    setClusterIsRemoved(true)
-                } else {
-                    setClusterError(results[3].reason)
-                }
-            } else {
-                const items = results.map((d) => (d.status === 'fulfilled' ? d.value : undefined))
-                setCluster(
-                    getCluster(
-                        items[1] as ManagedClusterInfo,
-                        items[0] as ClusterDeployment,
-                        items[2] as CertificateSigningRequest[],
-                        items[3] as ManagedCluster
-                    )
-                )
-            }
-        }
-    }, [data, error, prevStatus, prevIsHive, stopPolling, addonStopPolling])
 
     useEffect(() => {
         const canGetSecret = canUser('get', SecretDefinition, match.params.id)
@@ -134,23 +99,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return () => canGetSecret.abort()
     }, [match.params.id])
 
-    if (loading) {
-        return <AcmSpinnerBackdrop />
-    }
-
     if (
-        cluster?.status === ClusterStatus.destroying ||
-        (!cluster?.isHive && cluster?.status === ClusterStatus.detaching) ||
-        clusterIsRemoved
+        (cluster?.isHive && cluster?.status === ClusterStatus.destroying) ||
+        (!cluster?.isHive && cluster?.status === ClusterStatus.detaching)
     ) {
-        return <ClusterDestroy isLoading={!clusterIsRemoved} cluster={cluster} />
+        return <ClusterDestroy isLoading={clusterExists} cluster={cluster!} />
     }
 
-    if (clusterError) {
+    if (!clusterExists) {
         return (
             <AcmPage>
                 <ErrorPage
-                    error={clusterError}
+                    error={new ResourceError('Not found', 404)}
                     actions={
                         <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
                             {t('button.backToClusters')}
@@ -167,7 +127,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 value={{
                     cluster,
                     addons,
-                    addonsError,
                     importCommand,
                     setImportCommand,
                     importCommandError,

@@ -4,16 +4,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { AppContext } from '../../../../components/AppContext'
-import {
-    mockBadRequestStatus,
-    nockClusterList,
-    nockCreate,
-    nockRBAC,
-    nockDelete,
-    nockGet,
-    nockNamespacedList,
-} from '../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     clickByLabel,
     clickByText,
@@ -26,8 +17,6 @@ import {
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
-    CertificateSigningRequestApiVersion,
-    CertificateSigningRequestKind,
     CertificateSigningRequestList,
     CertificateSigningRequestListApiVersion,
     CertificateSigningRequestListKind,
@@ -51,9 +40,18 @@ import {
     ManagedClusterInfoKind,
 } from '../../../../resources/managed-cluster-info'
 import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
-import { ResourceAttributes, SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
+import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
-import { configMapsState } from '../../../../atoms'
+import {
+    managedClustersState,
+    managedClusterInfosState,
+    clusterDeploymentsState,
+    certificateSigningRequestsState,
+    clusterManagementAddonsState,
+    managedClusterAddonsState,
+    configMapsState,
+    loadingState,
+} from '../../../../atoms'
 import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 
 const clusterName = 'test-cluster'
@@ -235,16 +233,6 @@ const mockHiveProvisionPods: PodList = {
             },
         },
     ],
-}
-
-const mockmanagedClusterAddOn: ManagedClusterAddOn = {
-    apiVersion: ManagedClusterAddOnApiVersion,
-    kind: ManagedClusterAddOnKind,
-    metadata: {
-        name: 'application-manager',
-        namespace: clusterName,
-    },
-    spec: {},
 }
 
 const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
@@ -514,7 +502,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     },
 ]
 
-const mockmanagedClusterAddOns: ManagedClusterAddOn[] = [
+const mockManagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnApp,
     mockManagedClusterAddOnWork,
     mockManagedClusterAddOnCert,
@@ -575,15 +563,6 @@ const mockClusterProvisionList = {
     },
 }
 
-const nockGetManagedClusterInfo = () => nockGet(mockManagedClusterInfo, undefined, 200, true)
-const nockGetClusterDeployment = () => nockGet(mockClusterDeployment)
-const nockListCertificateSigningRequests = () =>
-    nockClusterList(
-        { apiVersion: CertificateSigningRequestApiVersion, kind: CertificateSigningRequestKind },
-        mockCertificateSigningRequestList,
-        ['open-cluster-management.io/cluster-name=test-cluster']
-    )
-const nockGetManagedCluster = () => nockGet(mockManagedCluster)
 const nockListClusterProvision = () =>
     nockNamespacedList(
         {
@@ -594,7 +573,6 @@ const nockListClusterProvision = () =>
         mockClusterProvisionList
     )
 
-const nockGetManagedClusterAddons = () => nockNamespacedList(mockmanagedClusterAddOn, mockmanagedClusterAddOns)
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
         { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
@@ -602,108 +580,56 @@ const nockListHiveProvisionJobs = () =>
         ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
     )
 
-const nockGetManagedClusterError = () => nockGet(mockManagedCluster, mockBadRequestStatus, 400)
-const nockGetManagedClusterInfoError = () => nockGet(mockManagedClusterInfo, mockBadRequestStatus, 400)
-const nockGetClusterDeploymentError = () => nockGet(mockClusterDeployment, mockBadRequestStatus, 400)
-const nockListManagedClusterAddonsError = () => nockNamespacedList(mockmanagedClusterAddOn, mockBadRequestStatus)
-
-function getPatchClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'patch',
-        group: 'cluster.open-cluster-management.io',
-        name,
-    } as ResourceAttributes
-}
-function getDeleteClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'delete',
-        group: 'cluster.open-cluster-management.io',
-        name: name,
-    } as ResourceAttributes
-}
-function getDeleteDeploymentResourceAttributes(name: string) {
-    return {
-        resource: 'clusterdeployments',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        name,
-        namespace: name,
-    } as ResourceAttributes
-}
-
 const Component = () => (
     <RecoilRoot
         initializeState={(snapshot) => {
+            snapshot.set(managedClustersState, [mockManagedCluster])
+            snapshot.set(clusterDeploymentsState, [mockClusterDeployment])
+            snapshot.set(managedClusterInfosState, [mockManagedClusterInfo])
+            snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequestList.items)
+            snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
+            snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
             snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+            snapshot.set(loadingState, false)
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-            <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
-                <Switch>
-                    <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-                </Switch>
-            </AppContext.Provider>
+            <Switch>
+                <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+            </Switch>
         </MemoryRouter>
     </RecoilRoot>
 )
 
 function defaultNocks() {
     const nocks: Scope[] = [
-        nockGetManagedClusterInfo(),
-        nockGetClusterDeployment(),
-        nockListCertificateSigningRequests(),
-        nockGetManagedClusterAddons(),
-        nockGetManagedCluster(),
         nockListHiveProvisionJobs(),
         nockListClusterProvision(),
         nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-        nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
     ]
     return nocks
 }
 
 describe('ClusterDetails', () => {
-    test('page renders error state', async () => {
-        const nocks = [
-            nockGetManagedClusterError(),
-            nockGetManagedClusterInfoError(),
-            nockGetClusterDeploymentError(),
-            nockListCertificateSigningRequests(),
-            nockGetManagedClusterAddons(),
-            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-        ]
-        render(<Component />)
-        await waitForNocks(nocks)
-        await waitForText('Bad request')
-    })
-
-    test('overview page renders', async () => {
+    beforeEach(async () => {
         const nocks = defaultNocks()
+        nockIgnoreRBAC()
         render(<Component />)
         await waitForNocks(nocks)
-
+    })
+    test('overview page renders', async () => {
         await waitForText(clusterName, true)
         await waitForText('tab.overview')
         await waitForText('table.details')
     })
 
     test('overview page opens logs', async () => {
-        const nocks = defaultNocks()
-        render(<Component />)
-        await waitForNocks(nocks)
-
         window.open = jest.fn()
         await clickByText('view.logs')
         await waitForCalled(window.open as jest.Mock)
     })
 
     test('overview page opens edit labels', async () => {
-        const nocks = defaultNocks()
-        render(<Component />)
-        await waitForNocks(nocks)
-
         await waitForText(clusterName, true)
 
         await clickByLabel('common:labels.edit.title')
@@ -714,10 +640,6 @@ describe('ClusterDetails', () => {
     })
 
     test('nodes page renders', async () => {
-        const nocks = defaultNocks()
-        render(<Component />)
-        await waitForNocks(nocks)
-
         await clickByText('tab.nodes')
         await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
 
@@ -729,45 +651,12 @@ describe('ClusterDetails', () => {
     })
 
     test('settings page renders', async () => {
-        const nocks = defaultNocks()
-        render(<Component />)
-        await waitForNocks(nocks)
-
         await clickByText('tab.settings')
-        await waitForText(mockmanagedClusterAddOns[0].metadata.name!)
-    })
-
-    test('should show error if the ManagedClusterAddons fail to query', async () => {
-        const nocks = [
-            nockGetManagedClusterInfo(),
-            nockGetClusterDeployment(),
-            nockListCertificateSigningRequests(),
-            nockListManagedClusterAddonsError(),
-            nockGetManagedCluster(),
-            nockListClusterProvision(),
-            nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
-        ]
-        render(<Component />)
-        await waitForNocks(nocks)
-
-        await clickByText('tab.settings')
-        await waitForText('Bad request')
+        await waitForText(mockManagedClusterAddOns[0].metadata.name!)
     })
 
     test('overview page handles detach', async () => {
-        const nocks = defaultNocks()
-        const rbacNocks = [
-            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteDeploymentResourceAttributes('test-cluster')),
-        ]
-        render(<Component />)
-        await waitForNocks(nocks)
-
         await clickByText('actions')
-        await waitForNocks(rbacNocks)
 
         await clickByText('managed.detached')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
@@ -778,23 +667,40 @@ describe('ClusterDetails', () => {
     })
 
     test('overview page handles destroy', async () => {
-        const nocks = defaultNocks()
-        const rbacNocks = [
-            nockRBAC(getPatchClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteClusterResourceAttributes('test-cluster')),
-            nockRBAC(getDeleteDeploymentResourceAttributes('test-cluster')),
-        ]
-        render(<Component />)
-        await waitForNocks(nocks)
-
         await clickByText('actions')
-        await waitForNocks(rbacNocks)
         await clickByText('managed.destroySelected')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
         await clickByText('destroy')
         await waitForNocks(deleteNocks)
+    })
+})
+
+describe('ClusterDetails', () => {
+    test('page renders error state', async () => {
+        const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(configMapsState, [])
+                    snapshot.set(loadingState, false)
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
+                    <Switch>
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+                    </Switch>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForNocks([nock])
+        await waitForText('Not found')
     })
 })

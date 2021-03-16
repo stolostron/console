@@ -4,26 +4,20 @@ import { AcmInlineStatus, AcmTable, StatusType } from '@open-cluster-management/
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {
-    const { addons, addonsError } = useContext(ClusterContext)
+    const { addons } = useContext(ClusterContext)
     return (
         <PageSection variant="light">
-            <ClusterSettingsTable addons={addons} addonsError={addonsError} />
+            <ClusterSettingsTable addons={addons} />
         </PageSection>
     )
 }
 
-export function ClusterSettingsTable(props: { addons: Addon[] | undefined; addonsError: Error | undefined }) {
+export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
     const { t } = useTranslation(['cluster'])
-
-    if (props.addonsError) {
-        return <ErrorPage error={props.addonsError} />
-    }
-
     return (
         <AcmTable<Addon>
             plural="add-ons"

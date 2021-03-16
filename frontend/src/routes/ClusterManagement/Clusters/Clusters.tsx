@@ -21,8 +21,8 @@ import {
     clusterDeploymentsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterManagementAddonsState,
 } from '../../../atoms'
-import { AppContext } from '../../../components/AppContext'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
@@ -64,7 +64,7 @@ export default function ClustersPage() {
 }
 
 const PageActions = () => {
-    const { clusterManagementAddons } = useContext(AppContext)
+    const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const addons = mapAddons(clusterManagementAddons)
 
     return (
