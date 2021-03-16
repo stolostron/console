@@ -2,9 +2,8 @@
 /* istanbul ignore file */
 
 import { AcmHeader } from '@open-cluster-management/ui-components'
-import { createBrowserHistory } from 'history'
 import { lazy } from 'react'
-import { Redirect, Route, Router, Switch } from 'react-router-dom'
+import { Redirect, Route, BrowserRouter, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { LoadData } from './atoms'
 import { AppContextContainer } from './components/AppContext'
@@ -20,21 +19,13 @@ const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/Cre
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 
-declare global {
-    interface Window {
-        SHARED_HISTORY: any
-    }
-}
-
-window.SHARED_HISTORY = window.SHARED_HISTORY ?? createBrowserHistory()
-
 export default function App() {
     return (
         <AcmHeader>
             <RecoilRoot>
                 <LoadData>
                     <AppContextContainer>
-                        <Router history={window.SHARED_HISTORY}>
+                        <BrowserRouter>
                             <Switch>
                                 <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                 <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
@@ -58,7 +49,7 @@ export default function App() {
                                     <Redirect to={NavigationPath.console} />
                                 </Route>
                             </Switch>
-                        </Router>
+                        </BrowserRouter>
                     </AppContextContainer>
                 </LoadData>
             </RecoilRoot>
