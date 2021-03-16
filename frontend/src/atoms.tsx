@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
@@ -14,8 +14,10 @@ import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
 import { ConfigMap, ConfigMapKind } from './resources/configmap'
+import { AcmRoute } from '@open-cluster-management/ui-components'
 
-export const loadingState = atom<boolean>({ key: 'loading', default: true })
+export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
+
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
@@ -49,7 +51,7 @@ interface IEventData {
 }
 
 export function LoadData(props: { children?: ReactNode }) {
-    const [loading, setLoading] = useRecoilState(loadingState)
+    const [loading, setLoading] = useState(true)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterdDeployments] = useRecoilState(clusterDeploymentsState)

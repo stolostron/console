@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { AppContext } from '../../components/AppContext'
 import { waitForNotText, waitForText } from '../../lib/test-util'
 import { FeatureGate } from '../../resources/feature-gate'
@@ -22,16 +22,18 @@ const mockFeatureGate: FeatureGate = {
 describe('Cluster Management', () => {
     test('Discovery Feature Flag Enabled', async () => {
         render(
-            <AppContext.Provider
-                value={{
-                    featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
-                    clusterManagementAddons: [],
-                }}
-            >
-                <MemoryRouter>
-                    <ClusterManagementPage />
-                </MemoryRouter>
-            </AppContext.Provider>
+            <RecoilRoot>
+                <AppContext.Provider
+                    value={{
+                        featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
+                        clusterManagementAddons: [],
+                    }}
+                >
+                    <MemoryRouter>
+                        <ClusterManagementPage />
+                    </MemoryRouter>
+                </AppContext.Provider>
+            </RecoilRoot>
         )
         await waitForText('cluster:clusters')
         await waitForText('cluster:clusters.discovered')
@@ -39,16 +41,18 @@ describe('Cluster Management', () => {
 
     test('No Discovery Feature Flag', async () => {
         render(
-            <AppContext.Provider
-                value={{
-                    featureGates: {},
-                    clusterManagementAddons: [],
-                }}
-            >
-                <MemoryRouter>
-                    <ClusterManagementPage />
-                </MemoryRouter>
-            </AppContext.Provider>
+            <RecoilRoot>
+                <AppContext.Provider
+                    value={{
+                        featureGates: {},
+                        clusterManagementAddons: [],
+                    }}
+                >
+                    <MemoryRouter>
+                        <ClusterManagementPage />
+                    </MemoryRouter>
+                </AppContext.Provider>
+            </RecoilRoot>
         )
         await waitForText('cluster:clusters')
         await waitForNotText('cluster:clusters.discovered')

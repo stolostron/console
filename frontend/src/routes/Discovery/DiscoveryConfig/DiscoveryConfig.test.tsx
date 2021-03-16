@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { AppContext } from '../../../components/AppContext'
 import { mockBadRequestStatus, nockCreate, nockGet, nockList, nockReplace } from '../../../lib/nock-util'

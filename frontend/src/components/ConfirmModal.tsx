@@ -3,15 +3,15 @@
 import { AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { ModalVariant, ButtonVariant } from '@patternfly/react-core'
-import React from 'react'
+import { ReactNode } from 'react'
 
 export interface IConfirmModalProps {
     open: boolean
     confirm: () => void
     confirmText?: string
     cancel: () => void
-    title: string | React.ReactNode
-    message: string | React.ReactNode
+    title: string | ReactNode
+    message: string | ReactNode
     isDanger?: boolean
 }
 
