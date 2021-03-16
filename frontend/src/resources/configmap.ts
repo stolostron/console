@@ -18,4 +18,5 @@ export interface ConfigMap extends V1ConfigMap, IResource {
     apiVersion: ConfigMapApiVersionType
     kind: ConfigMapKindType
     metadata: V1ObjectMeta
+    data?: Record<string, any>
 }
