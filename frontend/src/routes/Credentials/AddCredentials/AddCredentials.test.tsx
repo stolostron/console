@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate,  } from '../../../lib/nock-util'
+import { nockCreate } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
@@ -142,7 +142,7 @@ describe('add connection page', () => {
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                     <Route
                         path={NavigationPath.addCredentials}
-                        component={(props: any) => <AddConnectionPage {...props} />}
+                        component={(props: any) => <AddCredentialPage {...props} />}
                     />
                 </MemoryRouter>
             </RecoilRoot>
@@ -163,7 +163,7 @@ describe('add connection page', () => {
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                     <Route
                         path={NavigationPath.addCredentials}
-                        component={(props: any) => <AddConnectionPage {...props} />}
+                        component={(props: any) => <AddCredentialPage {...props} />}
                     />
                 </MemoryRouter>
             </RecoilRoot>
@@ -186,7 +186,7 @@ describe('add connection page', () => {
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                     <Route
                         path={NavigationPath.addCredentials}
-                        component={(props: any) => <AddConnectionPage {...props} />}
+                        component={(props: any) => <AddCredentialPage {...props} />}
                     />
                 </MemoryRouter>
             </RecoilRoot>

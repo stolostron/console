@@ -32,14 +32,14 @@ function TestAddConnectionPage() {
                 snapshot.set(namespacesState, [mockNamespace])
             }}
         >
-                <MemoryRouter>
-                    <Route
-                        render={(props: any) => {
-                            location = props.location
-                            return <AddCredentialPage {...props} />
-                        }}
-                    />
-                </MemoryRouter>
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        location = props.location
+                        return <AddCredentialPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
         </RecoilRoot>
     )
 }
