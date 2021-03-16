@@ -7,7 +7,8 @@ import {
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
-import React, { useEffect, useState } from 'react'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -16,12 +17,11 @@ import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkAct
 import { RbacDropdown } from '../../components/Rbac'
 import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
-import { getResourceAttributes, getUserAccess } from '../../lib/rbac-util'
+import { canUser, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import {
     BareMetalAsset,
-    BareMetalAssetDefinition,
     createBareMetalAssetNamespaces,
     importBareMetalAsset,
     ImportedBareMetalAsset,
@@ -53,20 +53,17 @@ export function BareMetalAssetsTable(props: {
         open: false,
     })
     const [importedProps, setImportedProps] = useState<IBulkActionModelProps<ImportedBareMetalAsset> | { open: false }>(
-        {
-            open: false,
-        }
+        { open: false }
     )
     const history = useHistory()
     const { t } = useTranslation(['bma', 'common'])
 
     useEffect(() => {
-        const canCreateCluster = getUserAccess('create', ManagedClusterDefinition)
-
-        canCreateCluster.promise
+        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
+        canCreateManagedCluster.promise
             .then((result) => setCanCreateCluster(result.status?.allowed!))
             .catch((err) => console.error(err))
-        return () => canCreateCluster.abort()
+        return () => canCreateManagedCluster.abort()
     }, [])
 
     function keyFn(bareMetalAsset: BareMetalAsset) {
@@ -165,6 +162,7 @@ export function BareMetalAssetsTable(props: {
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTablePaginationContextProvider localStorageKey="table-bare-metal-assets">
                 <AcmTable<BareMetalAsset>
+                    gridBreakPoint={TableGridBreakpoint.none}
                     emptyState={
                         <AcmEmptyState
                             title={t('bareMetalAsset.emptyState.title')}
@@ -264,6 +262,7 @@ export function BareMetalAssetsTable(props: {
                         },
                         {
                             header: '',
+                            cellTransforms: [fitContent],
                             cell: (bareMetalAsset) => {
                                 const actions = [
                                     {
@@ -278,14 +277,7 @@ export function BareMetalAssetsTable(props: {
                                                 )
                                             )
                                         },
-                                        rbac: [
-                                            getResourceAttributes(
-                                                'patch',
-                                                BareMetalAssetDefinition,
-                                                bareMetalAsset.metadata?.namespace,
-                                                bareMetalAsset.metadata?.name
-                                            ),
-                                        ],
+                                        rbac: [rbacPatch(bareMetalAsset)],
                                     },
                                     {
                                         id: 'deleteAsset',
@@ -322,14 +314,7 @@ export function BareMetalAssetsTable(props: {
                                                 isDanger: true,
                                             })
                                         },
-                                        rbac: [
-                                            getResourceAttributes(
-                                                'delete',
-                                                BareMetalAssetDefinition,
-                                                bareMetalAsset.metadata?.namespace,
-                                                bareMetalAsset.metadata?.name
-                                            ),
-                                        ],
+                                        rbac: [rbacDelete(bareMetalAsset)],
                                     },
                                 ]
 

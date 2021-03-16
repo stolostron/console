@@ -12,7 +12,7 @@ import {
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
-import React, { Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, Fragment, Suspense, useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { AppContext } from '../../../../components/AppContext'
@@ -20,7 +20,7 @@ import { ErrorPage } from '../../../../components/ErrorPage'
 import { usePrevious } from '../../../../components/usePrevious'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster, getSingleCluster } from '../../../../lib/get-cluster'
-import { getUserAccess } from '../../../../lib/rbac-util'
+import { canUser } from '../../../../lib/rbac-util'
 import { ResourceError } from '../../../../lib/resource-request'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -37,7 +37,7 @@ import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 
-export const ClusterContext = React.createContext<{
+export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
     readonly addons: Addon[] | undefined
     readonly addonsError?: Error
@@ -127,7 +127,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [data, error, prevStatus, prevIsHive, stopPolling, addonStopPolling])
 
     useEffect(() => {
-        const canGetSecret = getUserAccess('get', SecretDefinition, match.params.id)
+        const canGetSecret = canUser('get', SecretDefinition, match.params.id)
         canGetSecret.promise
             .then((result) => setCanGetSecret(result.status?.allowed!))
             .catch((err) => console.error(err))

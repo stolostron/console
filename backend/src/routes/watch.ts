@@ -17,7 +17,7 @@ const resources: Record<string, Record<string, number>> = {}
 const watchRequests: Record<string, ClientRequest> = {}
 
 interface WatchEvent {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -114,8 +114,15 @@ export function startWatching(token: string): void {
 
     ServerSideEvents.eventFilter = (token, event) => {
         const watchEvent = event.data as WatchEvent
+        if (watchEvent.type === 'START') return Promise.resolve(event)
+        if (watchEvent.type === 'BOOKMARK') return Promise.resolve(event)
         if (watchEvent.type === 'DELETED') return Promise.resolve(event)
         // TODO - track what is sent to s specific token and only send delete
+
+        if (!watchEvent.object) {
+            console.log(watchEvent)
+            return Promise.reject()
+        }
 
         return canAccess(
             { kind: watchEvent.object.kind, apiVersion: watchEvent.object.apiVersion },
@@ -152,13 +159,18 @@ export function startWatching(token: string): void {
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
-    watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests')
+    watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
+        'open-cluster-management.io/cluster-name': '',
+    })
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
+    watchResource(token, 'config.openshift.io/v1', 'featureGates', {
+        'open-cluster-management': '',
+    })
 }
 
 export function watchResource(
@@ -191,6 +203,7 @@ export function watchResource(
                     if (chunk instanceof Buffer) {
                         data += chunk.toString()
                         while (data.includes('\n')) {
+                            // TODO - use buffers and zero fill secrets
                             const parts = data.split('\n')
                             data = parts.slice(1).join('\n')
                             try {

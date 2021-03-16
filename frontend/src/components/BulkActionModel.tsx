@@ -2,8 +2,8 @@
 
 import {
     AcmAlert,
-    AcmFormProvider,
     AcmForm,
+    AcmFormProvider,
     AcmModal,
     AcmSubmit,
     AcmTable,
@@ -19,7 +19,7 @@ import {
     Progress,
     ProgressMeasureLocation,
 } from '@patternfly/react-core'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
 import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'

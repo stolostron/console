@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useContext } from 'react'
 import { AcmDropdown } from '@open-cluster-management/ui-components'
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { getSecret, unpackSecret } from '../../../../resources/secret'
 import { createDownloadFile } from '../../../../lib/utils'
+import { getSecret, unpackSecret } from '../../../../resources/secret'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
     const { cluster } = useContext(ClusterContext)

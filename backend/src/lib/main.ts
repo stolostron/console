@@ -7,7 +7,7 @@ import { cpus, totalmem } from 'os'
 import { logger, logLevel } from './logger'
 import { start, stop } from '../app'
 
-logger.info({
+logger.debug({
     msg: `process start`,
     NODE_ENV: process.env.NODE_ENV,
     cpus: `${Object.keys(cpus()).length}`,
@@ -20,7 +20,7 @@ process.on('exit', function processExit(code) {
     if (code !== 0) {
         logger.error({ msg: `process exit`, code: code })
     } else {
-        logger.info({ msg: `process exit`, code: code })
+        logger.debug({ msg: `process exit`, code: code })
     }
 })
 
@@ -32,23 +32,24 @@ process.on('SIGINT', () => {
 })
 
 process.on('SIGTERM', () => {
-    logger.info({ msg: 'process SIGTERM' })
+    logger.debug({ msg: 'process SIGTERM' })
     void stop()
 })
 
 process.on('uncaughtException', (err) => {
     logger.error({ msg: `process uncaughtException`, error: err.message })
-    void stop()
+    console.log(err.stack)
+    // void stop()
 })
 
 process.on('multipleResolves', (type, _promise, _reason) => {
     logger.error({ msg: 'process multipleResolves', type })
-    void stop()
+    // void stop()
 })
 
-// process.on('unhandledRejection', (reason, _promise) => {
-//     logger.error({ msg: 'process unhandledRejection', reason })
-//     void stop()
-// })
+process.on('unhandledRejection', (reason, _promise) => {
+    logger.error({ msg: 'process unhandledRejection', reason })
+    // void stop()
+})
 
 void start()

@@ -38,25 +38,29 @@ export interface IEventClient {
 }
 
 export class ServerSideEvents {
-    private static eventID = 0
-    private static events: Record<number, IEvent> = {}
+    private static eventID = 2
+    private static lastDoneID = 2
+    private static events: Record<number, IEvent> = {
+        1: { id: '1', data: { type: 'START' } },
+        2: { id: '2', data: { type: 'BOOKMARK' } },
+    }
     private static clients: Record<string, IEventClient> = {}
 
     public static eventFilter: (clientID: string, event: Readonly<IEvent>) => Promise<IEvent | undefined>
 
-    public static dispose(): Promise<void> {
-        for (const clientID in this.clients) {
-            const compressionStream = this.clients[clientID].compressionStream
-            if (compressionStream) compressionStream.end()
-            this.clients[clientID].writableStream.end()
-        }
-
-        this.clients = {}
-
+    public static async dispose(): Promise<void> {
         if (ServerSideEvents.intervalTimer !== undefined) {
             clearInterval(ServerSideEvents.intervalTimer)
             ServerSideEvents.intervalTimer = undefined
         }
+
+        for (const clientID in this.clients) {
+            const compressionStream = this.clients[clientID].compressionStream
+            if (compressionStream) compressionStream.end()
+            await new Promise<void>((resolve) => this.clients[clientID].writableStream.end(resolve))
+        }
+
+        this.clients = {}
 
         return Promise.resolve()
     }
@@ -66,6 +70,16 @@ export class ServerSideEvents {
         event.id = eventID.toString()
         this.events[eventID] = event
         this.broadcastEvent(event)
+
+        this.removeEvent(this.lastDoneID)
+        this.lastDoneID = ++this.eventID
+        const doneEvent = {
+            id: this.lastDoneID.toString(),
+            data: { type: 'BOOKMARK' },
+        }
+        this.events[this.lastDoneID] = doneEvent
+        this.broadcastEvent(doneEvent)
+
         return eventID
     }
 
@@ -118,7 +132,7 @@ export class ServerSideEvents {
                         }
                     }
 
-                    if (watchEvent.object) {
+                    if (watchEvent?.object) {
                         const { kind, metadata } = watchEvent.object
                         const name = metadata?.name
                         const namespace = metadata?.namespace
@@ -242,22 +256,15 @@ export class ServerSideEvents {
             this.sendEvent(clientID, this.events[eventID])
             sentCount++
         }
-        eventClient.eventQueue.push(
-            Promise.resolve({
-                data: {
-                    type: 'LOADED',
-                },
-            })
-        )
 
         const msg: Record<string, string | number | undefined> = {
-            msg: 'OK',
+            msg: 'Streaming',
             status: 200,
             method: req.method,
             path: req.url,
             events: sentCount,
         }
-        logger.debug(msg)
+        logger.info(msg)
 
         return eventClient
     }
@@ -284,5 +291,5 @@ export class ServerSideEvents {
     }
     private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
         ServerSideEvents.keepAlivePing()
-    }, 60 * 1000)
+    }, 110 * 1000)
 }
