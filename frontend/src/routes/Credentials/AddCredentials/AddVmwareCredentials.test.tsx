@@ -14,7 +14,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import AddConnectionPage from './AddConnection'
+import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState } from '../../../atoms'
 
@@ -41,7 +41,7 @@ function TestAddConnectionPage() {
                     path={NavigationPath.addCredentials}
                     render={(props: any) => {
                         location = props.location
-                        return <AddConnectionPage {...props} />
+                        return <AddCredentialPage {...props} />
                     }}
                 />
                 <Route

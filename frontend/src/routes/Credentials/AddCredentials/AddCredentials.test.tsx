@@ -8,7 +8,7 @@ import { nockCreate,  } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
-import AddConnectionPage from './AddConnection'
+import AddCredentialPage from './AddCredentials'
 import { namespacesState } from '../../../atoms'
 
 const mockNamespace: Namespace = {
@@ -122,7 +122,7 @@ describe('add connection page', () => {
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
                     <Route
                         path={NavigationPath.addCredentials}
-                        component={(props: any) => <AddConnectionPage {...props} />}
+                        component={(props: any) => <AddCredentialPage {...props} />}
                     />
                 </MemoryRouter>
             </RecoilRoot>

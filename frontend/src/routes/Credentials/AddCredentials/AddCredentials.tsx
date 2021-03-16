@@ -54,7 +54,7 @@ import {
 } from '../../../resources/provider-connection'
 import { namespacesState } from '../../../atoms'
 
-export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
+export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
     return (
         <AcmAlertProvider>
@@ -103,14 +103,14 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                     />
                 )}
                 <AcmErrorBoundary>
-                    <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                    <AddCredentialPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </AcmErrorBoundary>
             </Page>
         </AcmAlertProvider>
     )
 }
 
-export function AddConnectionPageData(props: { namespace: string; name: string }) {
+export function AddCredentialPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection', 'common'])
     const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
@@ -225,7 +225,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
         )
     }
 
-    return <AddConnectionPageContent providerConnection={providerConnection} projects={projects} />
+    return <AddCredentialPageContent providerConnection={providerConnection} projects={projects} />
 }
 
 const useStyles = makeStyles({
@@ -236,7 +236,7 @@ const useStyles = makeStyles({
     },
 })
 
-export function AddConnectionPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
+export function AddCredentialPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
     const { featureGates } = useContext(AppContext)

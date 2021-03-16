@@ -14,7 +14,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import AddConnectionPage from './AddConnection'
+import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState } from '../../../atoms'
 
@@ -62,7 +62,7 @@ function TestEditConnectionPage() {
                 <Route
                     path={NavigationPath.editCredentials}
                     render={(props: any) => {
-                        return <AddConnectionPage {...props} />
+                        return <AddCredentialPage {...props} />
                     }}
                 />
             </MemoryRouter>
