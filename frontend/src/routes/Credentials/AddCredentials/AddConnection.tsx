@@ -22,6 +22,7 @@ import { ActionGroup, Button, Page, PageSection, SelectOption, Title } from '@pa
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import { AppContext } from '../../../components/AppContext'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
@@ -51,6 +52,7 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
+import { namespacesState } from '../../../atoms'
 
 export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -110,6 +112,7 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
 
 export function AddConnectionPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection', 'common'])
+    const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
@@ -168,14 +171,12 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)])
-                .then((namespaces: string[]) => {
-                    setProjects(namespaces)
-                })
+            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)], namespaces)
+                .then((namespaces: string[]) => setProjects(namespaces))
                 .catch(setError)
                 .finally(() => setIsLoading(false))
         }
-    }, [props.namespace])
+    }, [props.namespace, namespaces])
 
     // edit connection
     useEffect(() => {
