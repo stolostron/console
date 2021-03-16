@@ -2,13 +2,16 @@
 
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
+import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockNamespacedList } from '../../../../lib/nock-util'
+import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
 import { PodApiVersion, PodKind } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification } from './HiveNotification'
+import { configMapsState } from '../../../../atoms'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -18,6 +21,7 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -110,9 +114,15 @@ describe('HiveNotification', () => {
     window.open = jest.fn()
     const Component = () => {
         return (
-            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <HiveNotification />
-            </ClusterContext.Provider>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+                }}
+            >
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+                    <HiveNotification />
+                </ClusterContext.Provider>
+            </RecoilRoot>
         )
     }
     test('renders null for exempt cluster status', async () => {
@@ -155,7 +165,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
     test('renders the info notification variant for creating status', async () => {
@@ -185,7 +199,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
     test('renders the info notification variant for destroying status', async () => {
@@ -214,7 +232,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith('/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive')
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
 })

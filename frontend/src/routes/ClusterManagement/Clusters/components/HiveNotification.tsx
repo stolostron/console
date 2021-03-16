@@ -12,6 +12,9 @@ import { getLatest } from '../../../../lib/utils'
 import { ClusterProvision, listClusterProvisions } from '../../../../resources/cluster-provision'
 import { getHivePod } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { configMapsState } from '../../../../atoms'
+import { ConfigMap } from '../../../../resources/configmap'
+import { useRecoilState } from 'recoil'
 
 const useStyles = makeStyles({
     logsButton: {
@@ -28,6 +31,8 @@ export function HiveNotification() {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster'])
     const classes = useStyles()
+
+    const [configMaps] = useRecoilState(configMapsState)
 
     const { data, startPolling, stopPolling } = useQuery(
         useCallback(() => listClusterProvisions(/* istanbul ignore next */ cluster?.namespace ?? ''), [
@@ -81,7 +86,7 @@ export function HiveNotification() {
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
                         <AcmButton
-                            onClick={() => launchLogs(cluster)}
+                            onClick={() => launchLogs(cluster!, configMaps)}
                             variant={ButtonVariant.link}
                             role="link"
                             id="view-logs"
@@ -98,24 +103,15 @@ export function HiveNotification() {
     )
 }
 
-export function launchLogs(cluster?: Cluster) {
-    if (cluster) {
-        const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector('#openshift-console-url')
-        /* istanbul ignore next */
-        const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
-        /* istanbul ignore next */
-        const name = cluster?.name ?? ''
-        /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
-        /* istanbul ignore next */
-        const status = cluster?.status ?? ''
-        /* istanbul ignore else */
-        if (name && namespace) {
-            const response = getHivePod(namespace, name, status)
-            response.then((job) => {
-                const podName = job?.metadata.name
-                podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
-            })
-        }
+export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+    if (cluster && openShiftConsoleUrl) {
+        const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+        response.then((job) => {
+            const podName = job?.metadata.name
+            podName &&
+                window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
+        })
     }
 }

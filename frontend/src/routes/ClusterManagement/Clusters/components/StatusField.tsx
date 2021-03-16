@@ -4,11 +4,15 @@ import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useRecoilState } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'
+import { configMapsState } from '../../../../atoms'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
+    const [configMaps] = useRecoilState(configMapsState)
+
     let type: StatusType
 
     switch (props.cluster?.status) {
@@ -55,7 +59,7 @@ export function StatusField(props: { cluster: Cluster }) {
                 <AcmButton
                     style={{ padding: 0, fontSize: 'inherit' }}
                     key={props.cluster.name}
-                    onClick={() => launchLogs(props.cluster)}
+                    onClick={() => launchLogs(props.cluster, configMaps)}
                     variant="link"
                     role="link"
                     icon={<ExternalLinkAltIcon />}

@@ -13,6 +13,7 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
+import { ConfigMap, ConfigMapKind } from './resources/configmap'
 
 export const loadingState = atom<boolean>({ key: 'loading', default: true })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -32,6 +33,7 @@ export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedCluste
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
+export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
@@ -59,6 +61,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
+    const [, setConfigMaps] = useRecoilState(configMapsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -72,6 +75,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
+        [ConfigMapKind]: setConfigMaps,
     }
 
     // Temporary fix for checking for login
