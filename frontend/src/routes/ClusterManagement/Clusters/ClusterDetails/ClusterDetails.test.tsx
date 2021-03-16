@@ -4,12 +4,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-    nockCreate,
-    nockDelete,
-    nockNamespacedList,
-    nockIgnoreRBAC,
-} from '../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     clickByLabel,
     clickByText,
@@ -685,24 +680,26 @@ describe('ClusterDetails', () => {
 describe('ClusterDetails', () => {
     test('page renders error state', async () => {
         const nock = nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse)
-        render(<RecoilRoot
-            initializeState={(snapshot) => {
-                snapshot.set(managedClustersState, [])
-                snapshot.set(clusterDeploymentsState, [])
-                snapshot.set(managedClusterInfosState, [])
-                snapshot.set(certificateSigningRequestsState, [])
-                snapshot.set(clusterManagementAddonsState, [])
-                snapshot.set(managedClusterAddonsState, [])
-                snapshot.set(configMapsState, [])
-                snapshot.set(loadingState, false)
-            }}
-        >
-            <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-                <Switch>
-                    <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-                </Switch>
-            </MemoryRouter>
-        </RecoilRoot>)
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
+                    snapshot.set(clusterDeploymentsState, [])
+                    snapshot.set(managedClusterInfosState, [])
+                    snapshot.set(certificateSigningRequestsState, [])
+                    snapshot.set(clusterManagementAddonsState, [])
+                    snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(configMapsState, [])
+                    snapshot.set(loadingState, false)
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
+                    <Switch>
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+                    </Switch>
+                </MemoryRouter>
+            </RecoilRoot>
+        )
         await waitForNocks([nock])
         await waitForText('Not found')
     })

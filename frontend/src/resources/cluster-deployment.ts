@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
-import { getResource, listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
@@ -101,23 +100,4 @@ export interface ClusterDeployment {
         }
         webConsoleURL?: string
     }
-}
-
-export function listClusterDeployments() {
-    return listResources<ClusterDeployment>(
-        {
-            apiVersion: ClusterDeploymentApiVersion,
-            kind: ClusterDeploymentKind,
-        },
-        undefined,
-        { managedNamespacesOnly: '' }
-    )
-}
-
-export function getClusterDeployment(namespace: string, name: string) {
-    return getResource<ClusterDeployment>({
-        apiVersion: ClusterDeploymentApiVersion,
-        kind: ClusterDeploymentKind,
-        metadata: { name, namespace },
-    })
 }

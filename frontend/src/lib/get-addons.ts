@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
-import { ManagedClusterAddOn, listManagedClusterAddOns } from '../resources/managed-cluster-add-on'
-import { IRequestResult } from './resource-request'
+import { ClusterManagementAddOn } from '../resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
 
 export type Addon = {
     name: string
@@ -22,16 +21,6 @@ export enum AddonStatus {
 export type LaunchLink = {
     displayText: string
     href: string
-}
-
-export function getAllAddons(
-    cluster: string
-): IRequestResult<PromiseSettledResult<ClusterManagementAddOn[] | ManagedClusterAddOn[]>[]> {
-    const results = [listClusterManagementAddOns(), listManagedClusterAddOns(cluster)]
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
 }
 
 export function mapAddons(

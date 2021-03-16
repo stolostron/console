@@ -10,7 +10,6 @@ import {
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-    AcmSpinnerBackdrop,
 } from '@open-cluster-management/ui-components'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -36,7 +35,6 @@ import {
     certificateSigningRequestsState,
     clusterManagementAddonsState,
     managedClusterAddonsState,
-    loadingState,
 } from '../../../../atoms'
 
 export const ClusterContext = createContext<{
@@ -58,8 +56,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
 
-    const [loading] = useRecoilState(loadingState)
-
     // Cluster
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
@@ -76,12 +72,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
-    const [cluster, setCluster] = useState<Cluster | undefined | null>()
+    const [cluster, setCluster] = useState<Cluster | undefined>(
+        getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster)
+    )
     useEffect(() => {
+        // Need to keep cluster data for detach/destroy
         if (clusterExists) {
             setCluster(getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster))
-        } else {
-            setCluster(null)
         }
     }, [managedCluster, clusterDeployment, managedClusterInfo, certificateSigningRequests, clusterExists])
     // End cluster
@@ -94,17 +91,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const addons = mapAddons(clusterManagementAddons, managedClusterAddons)
     // End addons
 
-    // handle detach/destroy of clusters
-    const [clusterIsRemoved, setClusterIsRemoved] = useState<boolean>(false)
-    useEffect(() => {
-        if (
-            (cluster?.isHive && cluster?.status === ClusterStatus.destroying) ||
-            (!cluster?.isHive && cluster?.status === ClusterStatus.detaching)
-        ) {
-            setClusterIsRemoved(true)
-        }
-    }, [cluster])
-
     useEffect(() => {
         const canGetSecret = canUser('get', SecretDefinition, match.params.id)
         canGetSecret.promise
@@ -113,11 +99,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         return () => canGetSecret.abort()
     }, [match.params.id])
 
-    if (loading || cluster === undefined) {
-        return <AcmSpinnerBackdrop />
-    }
-
-    if (clusterIsRemoved) {
+    if (
+        (cluster?.isHive && cluster?.status === ClusterStatus.destroying) ||
+        (!cluster?.isHive && cluster?.status === ClusterStatus.detaching)
+    ) {
         return <ClusterDestroy isLoading={clusterExists} cluster={cluster!} />
     }
 
@@ -140,7 +125,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         <AcmPage hasDrawer>
             <ClusterContext.Provider
                 value={{
-                    cluster: cluster!,
+                    cluster,
                     addons,
                     importCommand,
                     setImportCommand,
