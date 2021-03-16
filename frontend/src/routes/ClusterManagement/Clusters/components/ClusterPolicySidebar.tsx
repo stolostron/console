@@ -1,7 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
+import {
+    Tabs,
+    Tab,
+    TabTitleText,
+    Grid,
+    GridItem,
+    Flex,
+    FlexItem,
+    Text,
+    TextContent,
+    TextVariants,
+    Button,
+} from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
@@ -25,10 +37,6 @@ const useStyles = makeStyles({
         top: '-35px',
         padding: '0 8px',
     },
-    descText: {
-        fontSize: '14px',
-        paddingBottom: '1rem',
-    },
     donutContainer: {
         width: '400px',
         height: '200px',
@@ -47,72 +55,6 @@ const useStyles = makeStyles({
         textAlign: 'unset',
         '&:hover': {
             textDecoration: 'underline',
-        },
-    },
-    backAction: {
-        fontSize: '14px',
-        color: 'var(--pf-global--Color--400)',
-        paddingBottom: '16px',
-        '& button': {
-            border: 0,
-            cursor: 'pointer',
-            background: 'none',
-            color: 'var(--pf-global--link--Color)',
-        },
-    },
-    detailTitleGroup: {
-        display: 'flex',
-        justifyContent: 'space-between',
-    },
-    titleText: {
-        fontSize: '20px',
-        color: 'var(--pf-global--Color--100)',
-    },
-    detailActions: {
-        '& button': {
-            backgroundColor: 'transparent',
-            fontSize: '16px',
-            '&::before': {
-                border: '0',
-            },
-            '& span': {
-                color: 'var(--pf-global--Color--100)',
-            },
-        },
-    },
-    detailText: {
-        fontSize: '16px',
-        lineHeight: '21px',
-        color: 'var(--pf-global--Color--200)',
-        padding: '22px 0',
-    },
-    // knowledgebaseLink: {
-    //     border: 0,
-    //     cursor: 'pointer',
-    //     background: 'none',
-    //     color: 'var(--pf-global--link--Color)',
-    //     padding: 0,
-    // },
-    subDetailContainer: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 1fr',
-        columnGap: '10px',
-        padding: '27px 0 20px 0',
-    },
-    subDetail: {
-        color: 'var(--pf-global--Color--100)',
-        '& > div': {
-            display: 'flex',
-            paddingBottom: '16px',
-            '& h3': {
-                fontSize: '14px',
-                fontWeight: 700,
-                lineHeight: '18px',
-            },
-            '& svg': {
-                alignSelf: 'center',
-                marginRight: '10px',
-            },
         },
     },
 })
@@ -251,40 +193,63 @@ function DetailsView(props: {
 
     return (
         <div className={classes.body}>
-            <div className={classes.backAction}>
-                <AngleLeftIcon />
-                <button onClick={() => setDetailsView(false)}>{t('policy.report.flyout.back')}</button>
-            </div>
-            <div className={classes.detailTitleGroup}>
-                <div className={classes.titleText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
-            </div>
-            <div className={classes.detailText}>{_.get(selectedPolicy, 'results[0].data.details', '')}</div>
-            {/* <button className={classes.knowledgebaseLink}>
-                Knowledgebase article <ExternalLinkAltIcon />
-            </button> */}
-            <div className={classes.subDetailContainer}>
-                <div className={classes.subDetail}>
-                    <div>
-                        <FlagIcon />
-                        <h3>{t('policy.report.flyout.risk')}</h3>
-                    </div>
+            <Flex>
+                <FlexItem spacer={{ default: 'spacerSm' }}>
+                    <AngleLeftIcon fill={'var(--pf-global--palette--black-500)'} />
+                </FlexItem>
+                <FlexItem>
+                    <Button variant="link" isInline component="span" onClick={() => setDetailsView(false)}>
+                        {t('policy.report.flyout.back')}
+                    </Button>
+                </FlexItem>
+            </Flex>
+            <TextContent>
+                <Text component={TextVariants.h2}>{_.get(selectedPolicy, 'results[0].message', '')}</Text>
+            </TextContent>
+            <TextContent>
+                <Text component={TextVariants.p}>{_.get(selectedPolicy, 'results[0].data.details', '')}</Text>
+            </TextContent>
+            <Grid hasGutter>
+                <GridItem span={5}>
+                    <Flex>
+                        <FlexItem>
+                            <FlagIcon />
+                        </FlexItem>
+                        <FlexItem>
+                            <TextContent>
+                                <Text component={TextVariants.h4}>{t('policy.report.flyout.risk')}</Text>
+                            </TextContent>
+                        </FlexItem>
+                    </Flex>
                     {riskLevel()}
-                </div>
-                <div className={classes.subDetail}>
-                    <div>
-                        <ListIcon />
-                        <h3>{t('policy.report.flyout.category')}</h3>
-                    </div>
+                </GridItem>
+                <GridItem span={4}>
+                    <Flex>
+                        <FlexItem>
+                            <ListIcon />
+                        </FlexItem>
+                        <FlexItem>
+                            <TextContent>
+                                <Text component={TextVariants.h4}>{t('policy.report.flyout.category')}</Text>
+                            </TextContent>
+                        </FlexItem>
+                    </Flex>
                     {categories()}
-                </div>
-                <div className={classes.subDetail}>
-                    <div>
-                        <OutlinedClockIcon />
-                        <h3>{t('policy.report.flyout.matched')}</h3>
-                    </div>
+                </GridItem>
+                <GridItem span={3}>
+                    <Flex>
+                        <FlexItem>
+                            <OutlinedClockIcon />
+                        </FlexItem>
+                        <FlexItem>
+                            <TextContent>
+                                <Text component={TextVariants.h4}>{t('policy.report.flyout.matched')}</Text>
+                            </TextContent>
+                        </FlexItem>
+                    </Flex>
                     {matchedDate()}
-                </div>
-            </div>
+                </GridItem>
+            </Grid>
             <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
                 <Tab
                     eventKey={0}
@@ -312,8 +277,10 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
     ) : (
         <div className={classes.body}>
-            <div className={classes.titleText}>{t('policy.report.flyout.title', { count: props.data.length })}</div>
-            <div className={classes.descText}>{t('policy.report.flyout.description')}</div>
+            <TextContent>
+                <Text component={TextVariants.h2}>{t('policy.report.flyout.title', { count: props.data.length })}</Text>
+                <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
+            </TextContent>
             <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
             <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
             <AcmTable<PolicyReport>
