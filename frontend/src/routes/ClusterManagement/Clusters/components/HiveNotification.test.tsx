@@ -165,7 +165,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith(`${mockOpenShiftConsoleConfigMap.data!.consoleURL}/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`)
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
     test('renders the info notification variant for creating status', async () => {
@@ -195,7 +199,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith(`${mockOpenShiftConsoleConfigMap.data!.consoleURL}/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`)
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
     test('renders the info notification variant for destroying status', async () => {
@@ -224,7 +232,11 @@ describe('HiveNotification', () => {
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith(`${mockOpenShiftConsoleConfigMap.data!.consoleURL}/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`)
+            expect(window.open).toHaveBeenCalledWith(
+                `${
+                    mockOpenShiftConsoleConfigMap.data!.consoleURL
+                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+            )
         )
     })
 })

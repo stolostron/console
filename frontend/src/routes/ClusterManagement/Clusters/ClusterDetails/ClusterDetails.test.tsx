@@ -3,6 +3,7 @@
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { AppContext } from '../../../../components/AppContext'
 import {
     mockBadRequestStatus,
@@ -52,6 +53,8 @@ import {
 import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
 import { ResourceAttributes, SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
+import { configMapsState } from '../../../../atoms'
+import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 
 const clusterName = 'test-cluster'
 
@@ -631,13 +634,19 @@ function getDeleteDeploymentResourceAttributes(name: string) {
 }
 
 const Component = () => (
-    <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-        <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
-            <Switch>
-                <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-            </Switch>
-        </AppContext.Provider>
-    </MemoryRouter>
+    <RecoilRoot
+        initializeState={(snapshot) => {
+            snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+        }}
+    >
+        <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
+            <AppContext.Provider value={{ clusterManagementAddons: mockClusterManagementAddons, featureGates: {} }}>
+                <Switch>
+                    <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
+                </Switch>
+            </AppContext.Provider>
+        </MemoryRouter>
+    </RecoilRoot>
 )
 
 function defaultNocks() {
