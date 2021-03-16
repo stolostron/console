@@ -20,13 +20,22 @@ import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmMod
 import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource, ResourceError } from '../../../lib/resource-request'
 import { useQuery } from '../../../lib/useQuery'
+import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
-import { DiscoveredCluster, listDiscoveredClusters } from '../../../resources/discovered-cluster'
+import { DiscoveredCluster } from '../../../resources/discovered-cluster'
+import { ProviderConnection } from '../../../resources/provider-connection'
+import { useRecoilState } from 'recoil'
 import {
+    DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
     listDiscoveryConfigs,
 } from '../../../resources/discovery-config'
+import {
+    providerConnectionsState,
+    discoveredClusterState
+} from '../../../atoms'
+import { Cp } from '@kubernetes/client-node'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -161,7 +170,7 @@ async function disableDiscovery(): Promise<void> {
     discConfig.forEach(deleteDiscoveryConfig)
 }
 
-function deleteDiscoveryConfig(config) {
+function deleteDiscoveryConfig(config: DiscoveryConfig) {
     deleteResource({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
@@ -169,46 +178,80 @@ function deleteDiscoveryConfig(config) {
     })
 }
 
-function DiscoveredClustersEmptyState() {
-    const { t } = useTranslation(['cluster'])
+function EmptyStateNoProviderConnections() {
+    const { t } = useTranslation(['discovery'])
     return (
         <AcmEmptyState
-            action={
-                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
-                    {t('discovery.enablediscoverybtn')}
-                </AcmButton>
-            }
-            title={t('discovery.emptyStateHeader')}
-            message={t('discovery.emptyStateMsg')}
+            title={t('emptystate.defaultState.title')}
+            message={t('emptystate.defaultState.msg')}
             key="dcEmptyState"
             showIcon={false}
         />
     )
 }
 
+function EmptyStateProviderConnections(props: { providerConnections?: ProviderConnection[] }) {
+    const { t } = useTranslation(['discovery'])
+    return (
+        <AcmEmptyState
+            action={
+                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                    {t('emptystate.enableClusterDiscovery')}
+                </AcmButton>
+            }
+            title={t('emptystate.providerConnections.title')}
+            message={t('emptystate.providerConnections.msg', {
+                discoveryConfigTotal: props.providerConnections?.length,
+            })}
+            key="dcEmptyState"
+            showIcon={true}
+        />
+    )
+}
+
 export function DiscoveredClustersPageContent() {
-    const { data, error, startPolling } = useQuery(listDiscoveredClusters)
-    useEffect(startPolling, [startPolling])
+    const alertContext = useContext(AcmAlertContext)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => alertContext.clearAlerts, [])
+
+    const [discoveredClusters] = useRecoilState(discoveredClusterState)
+    const [providerConnections] = useRecoilState(providerConnectionsState)
+
+    let cloudRedHatCredentials: ProviderConnection[] = []
+    providerConnections.forEach(credential => {
+        let labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+        if (labels === ProviderID.CRH) {
+            cloudRedHatCredentials.push(credential)
+        }
+    });
 
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
-    if (error) {
-        if (error instanceof ResourceError && error.code === 404) {
-            return <DiscoveredClustersEmptyState />
-        }
-        return <ErrorPage error={error} />
-    }
-    return <DiscoveredClustersTable discoveredClusters={data} />
+    return <DiscoveredClustersTable discoveredClusters={discoveredClusters} providerConnections={cloudRedHatCredentials} />
 }
 
-export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[] }) {
+export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[]; providerConnections?: ProviderConnection[] }) {
     const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
+        confirm: () => {},
+        cancel: () => {},
+        title: "",
+        message: "",
     })
+
+    function getDiscoveredClustersEmptyState() {
+        if (props.providerConnections?.length === 0) {
+            return <EmptyStateNoProviderConnections />
+        } else if(props.discoveredClusters?.length === 0 && props.providerConnections && props.providerConnections.length > 0) {
+            return <EmptyStateProviderConnections providerConnections={props.providerConnections} />
+        }
+    }
+
+
     return (
         <Fragment>
             <AcmAlertGroup />
@@ -237,7 +280,13 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                 confirm: async () => {
                                     try {
                                         await disableDiscovery()
-                                        setModalProps({ open: false })
+                                        setModalProps({
+                                            open: false,
+                                            confirm: () => {},
+                                            cancel: () => {},
+                                            title: "",
+                                            message: "",
+                                        })
                                     } catch (err) {
                                         alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                                     }
@@ -246,7 +295,13 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                 message: t('disable.message'),
                                 isDanger: true,
                                 cancel: () => {
-                                    setModalProps({ open: false })
+                                    setModalProps({
+                                        open: false,
+                                        confirm: () => {},
+                                        cancel: () => {},
+                                        title: "",
+                                        message: "",
+                                    })
                                 },
                             })
                         },
@@ -264,7 +319,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                         },
                     },
                 ]}
-                emptyState={<DiscoveredClustersEmptyState />}
+                emptyState={getDiscoveredClustersEmptyState()}
             />
         </Fragment>
     )

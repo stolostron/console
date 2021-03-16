@@ -37,9 +37,7 @@
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",
-    "discovery.enablediscoverybtn": "Enable cluster discovery",
-    "discovery.emptyStateHeader": "No clusters are discovered, yet",
-    "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
+    
     "button.backToClusters": "Back to Cluster management",
 
     "cluster.import.description": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",

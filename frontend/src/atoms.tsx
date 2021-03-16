@@ -8,6 +8,7 @@ import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-de
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
+import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
@@ -27,6 +28,7 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     default: [],
 })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
@@ -54,6 +56,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
@@ -72,6 +75,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
+        [DiscoveredClusterKind]: setDiscoveredClusters,
     }
 
     // Temporary fix for checking for login
