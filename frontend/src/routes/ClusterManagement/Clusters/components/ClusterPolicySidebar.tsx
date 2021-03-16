@@ -5,7 +5,15 @@ import { Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
-import { AngleLeftIcon, /*ExternalLinkAltIcon,*/ FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
+import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
+import {
+    AngleLeftIcon,
+    /*ExternalLinkAltIcon,*/
+    FlagIcon,
+    ListIcon,
+    OutlinedClockIcon,
+    ExclamationTriangleIcon,
+} from '@patternfly/react-icons'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
@@ -191,25 +199,40 @@ function DetailsView(props: {
 
     function riskLevel() {
         const riskScore = _.get(selectedPolicy, 'results[0].data.total_risk')
-        let totalRisk
+        let totalRisk, riskIcon
+
+        const riskComponent = (totalRisk: string, riskIcon: any) => {
+            // const riskIcons = { CriticalRiskIcon, ImportantRiskIcon, ModerateRiskIcon, LowRiskIcon }
+
+            return (
+                <div>
+                    {riskIcon}
+                    <span>{totalRisk}</span>
+                </div>
+            )
+        }
 
         switch (riskScore) {
             case '4':
                 totalRisk = t('policy.report.flyout.details.risk.critical')
-                return totalRisk
-
+                riskIcon = <CriticalRiskIcon />
+                return riskComponent(totalRisk, riskIcon)
             case '3':
                 totalRisk = t('policy.report.flyout.details.risk.major')
-                return totalRisk
+                riskIcon = <ImportantRiskIcon />
+                return riskComponent(totalRisk, riskIcon)
             case '2':
                 totalRisk = t('policy.report.flyout.details.risk.minor')
-                return totalRisk
+                riskIcon = <ModerateRiskIcon />
+                return riskComponent(totalRisk, riskIcon)
             case '1':
                 totalRisk = t('policy.report.flyout.details.risk.low')
-                return totalRisk
+                riskIcon = <LowRiskIcon />
+                return riskComponent(totalRisk, riskIcon)
             case '0':
                 totalRisk = t('policy.report.flyout.details.risk.warning')
-                return totalRisk
+                riskIcon = <ExclamationTriangleIcon />
+                return riskComponent(totalRisk, riskIcon)
             default:
                 return null
         }
