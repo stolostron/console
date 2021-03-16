@@ -19,7 +19,6 @@ const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/Cre
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 
-
 export default function App() {
     return (
         <AcmHeader>

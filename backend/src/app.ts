@@ -10,7 +10,6 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
-import { header } from './routes/header'
 import { login, loginCallback } from './routes/oauth'
 import { proxy } from './routes/proxy'
 import { search } from './routes/search'
@@ -25,9 +24,7 @@ router.all(`/api/*`, proxy)
 router.all(`/apis/*`, proxy)
 router.get(`/login`, login)
 router.get(`/login/callback?*`, loginCallback)
-router.get(`/header`, header)
 router.get(`/watch`, watch)
-router.get(`/header/*`, header)
 router.post(`/proxy/search`, search)
 router.post(`/upgrade`, upgrade)
 router.get(`/*`, serve)
