@@ -4,65 +4,25 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { nockClusterList, nockCreate, nockGet } from '../../../lib/nock-util'
+import { RecoilRoot } from 'recoil'
+import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
-import { FeatureGate } from '../../../resources/feature-gate'
-import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
-import AddConnectionPage from './AddConnection'
+import AddCredentialPage from './AddCredentials'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
+import { namespacesState } from '../../../atoms'
 
-const mockProject: Project = {
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
+const mockNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
 }
-
-const mockSelfSubjectAccessRequestAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-}
-
-const mockSelfSubjectAccessResponseAdmin: SelfSubjectAccessReview = {
-    apiVersion: 'authorization.k8s.io/v1',
-    kind: 'SelfSubjectAccessReview',
-    metadata: {},
-    spec: {
-        resourceAttributes: {
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        },
-    },
-    status: {
-        allowed: true,
-    },
-}
-
-const mockFeatureGate: FeatureGate = {
-    apiVersion: 'config.openshift.io/v1',
-    kind: 'FeatureGate',
-    metadata: { name: 'open-cluster-management-discovery' },
-    spec: { featureSet: 'DiscoveryEnabled' },
-}
-
-const mockProjects: Project[] = [mockProject]
 
 function EmptyPage() {
     return <div></div>
@@ -71,38 +31,42 @@ function EmptyPage() {
 let location: Location
 function TestAddConnectionPage() {
     return (
-        <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
-            <Route
-                path={NavigationPath.addCredentials}
-                render={(props: any) => {
-                    location = props.location
-                    return <AddConnectionPage {...props} />
-                }}
-            />
-            <Route
-                path={NavigationPath.credentials}
-                render={(props: any) => {
-                    location = props.location
-                    return <EmptyPage />
-                }}
-            />
-        </MemoryRouter>
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(namespacesState, [mockNamespace])
+            }}
+        >
+            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
+                <Route
+                    path={NavigationPath.addCredentials}
+                    render={(props: any) => {
+                        location = props.location
+                        return <AddCredentialPage {...props} />
+                    }}
+                />
+                <Route
+                    path={NavigationPath.credentials}
+                    render={(props: any) => {
+                        location = props.location
+                        return <EmptyPage />
+                    }}
+                />
+            </MemoryRouter>
+        </RecoilRoot>
     )
 }
 
-beforeEach(() => {
-    sessionStorage.clear()
-    nockGet(mockFeatureGate, undefined, 200, true)
-})
-
 describe('add connection page', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
     it('should create vmw provider connection', async () => {
         const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
             metadata: {
                 name: 'connection',
-                namespace: mockProject.metadata.name,
+                namespace: mockNamespace.metadata.name,
                 labels: {
                     'cluster.open-cluster-management.io/provider': ProviderID.VMW,
                     'cluster.open-cluster-management.io/cloudconnection': '',
@@ -123,12 +87,8 @@ describe('add connection page', () => {
             },
         }
 
-        const projectsNock = nockClusterList(mockProject, mockProjects)
-        const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
-        await waitFor(() => expect(projectsNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )

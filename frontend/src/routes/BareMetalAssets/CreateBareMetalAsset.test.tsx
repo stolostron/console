@@ -4,13 +4,15 @@ import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import CreateBareMetalAssetPage from './CreateBareMetalAsset'
-import { nockClusterList, nockGet, nockPatch, nockOptions, nockCreate, nockRBAC } from '../../lib/nock-util'
-import { Project, ProjectApiVersion, ProjectKind } from '../../resources/project'
+import { nockGet, nockPatch, nockOptions, nockCreate, nockRBAC, nockIgnoreRBAC } from '../../lib/nock-util'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
 import { Secret, SecretKind, SecretApiVersion } from '../../resources/secret'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import { NavigationPath } from '../../NavigationPath'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../resources/namespace'
+import { namespacesState } from '../../atoms'
 
 const bmaNamespace: ResourceAttributes = {
     namespace: 'test-namespace',
@@ -26,15 +28,16 @@ const adminAccess: ResourceAttributes = {
     verb: '*',
 }
 
-const testProject: Project = {
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
-    metadata: {
-        name: 'test-namespace',
-    },
+const mockNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'test-namespace' },
 }
 
 describe('CreateBareMetalAsset', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
     test('can create asset', async () => {
         const createBareMetalAsset: BareMetalAsset = {
             kind: BareMetalAssetKind,
@@ -75,20 +78,21 @@ describe('CreateBareMetalAsset', () => {
             data: { password: 'encoded', username: 'encoded' },
         }
 
-        const listProjectNock = nockClusterList(testProject, [testProject])
-        const rbacNock = nockRBAC(adminAccess, true)
         const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
         const bmaCreateNock = nockCreate(createBareMetalAsset)
 
         const { getByText, queryAllByText, getByTestId } = render(
-            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
-                <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
-                <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
-            </MemoryRouter>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(namespacesState, [mockNamespace])
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
+                    <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+                    <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
+                </MemoryRouter>
+            </RecoilRoot>
         )
-
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
 
         await waitFor(() => expect(getByTestId('bareMetalAssetName')))
 
@@ -191,10 +195,16 @@ describe('CreateBareMetalAsset', () => {
         ])
 
         const { getByTestId, getByText } = render(
-            <MemoryRouter initialEntries={[editPath]}>
-                <Route path={NavigationPath.editBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
-                <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
-            </MemoryRouter>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(namespacesState, [mockNamespace])
+                }}
+            >
+                <MemoryRouter initialEntries={[editPath]}>
+                    <Route path={NavigationPath.editBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+                    <Route path={NavigationPath.bareMetalAssets} render={() => <div id="redirected" />} />
+                </MemoryRouter>
+            </RecoilRoot>
         )
 
         await waitFor(() => expect(getBMANock.isDone()).toBeTruthy())
@@ -211,18 +221,24 @@ describe('CreateBareMetalAsset', () => {
 
         await waitFor(() => expect(getByTestId('redirected')).toBeInTheDocument())
     })
+})
 
+describe('CreateBareMetalAsset', () => {
     test('renders unauthorized page when rbac access is restricted', async () => {
-        const listProjectNock = nockClusterList(testProject, [testProject])
         const rbacNock = nockRBAC(adminAccess, false)
         const rbacNockii = nockRBAC(bmaNamespace, false)
         const { getByText } = render(
-            <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
-                <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
-            </MemoryRouter>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(namespacesState, [mockNamespace])
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.createBareMetalAsset]}>
+                    <Route path={NavigationPath.createBareMetalAsset} render={() => <CreateBareMetalAssetPage />} />
+                </MemoryRouter>
+            </RecoilRoot>
         )
 
-        await waitFor(() => expect(listProjectNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())

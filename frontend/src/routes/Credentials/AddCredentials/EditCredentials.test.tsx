@@ -4,30 +4,24 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { nockGet, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
-import { FeatureGate } from '../../../resources/feature-gate'
-import { Project, ProjectApiVersion, ProjectKind } from '../../../resources/project'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import AddConnectionPage from './AddConnection'
+import AddCredentialPage from './AddCredentials'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
+import { namespacesState } from '../../../atoms'
 
-const mockProject: Project = {
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
+const mockNamespace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
-}
-
-const mockFeatureGate: FeatureGate = {
-    apiVersion: 'config.openshift.io/v1',
-    kind: 'FeatureGate',
-    metadata: { name: 'open-cluster-management-discovery' },
-    spec: { featureSet: 'DiscoveryEnabled' },
 }
 
 const awsProviderConnection: ProviderConnection = {
@@ -35,7 +29,7 @@ const awsProviderConnection: ProviderConnection = {
     kind: ProviderConnectionKind,
     metadata: {
         name: 'connection',
-        namespace: mockProject.metadata.name,
+        namespace: mockNamespace.metadata.name,
         labels: {
             'cluster.open-cluster-management.io/provider': ProviderID.AWS,
             'cluster.open-cluster-management.io/cloudconnection': '',
@@ -53,27 +47,28 @@ const awsProviderConnection: ProviderConnection = {
 
 function TestEditConnectionPage() {
     return (
-        <MemoryRouter
-            initialEntries={[
-                NavigationPath.editCredentials
-                    .replace(':namespace', awsProviderConnection.metadata.namespace!)
-                    .replace(':name', awsProviderConnection.metadata.name!),
-            ]}
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(namespacesState, [mockNamespace])
+            }}
         >
-            <Route
-                path={NavigationPath.editCredentials}
-                render={(props: any) => {
-                    return <AddConnectionPage {...props} />
-                }}
-            />
-        </MemoryRouter>
+            <MemoryRouter
+                initialEntries={[
+                    NavigationPath.editCredentials
+                        .replace(':namespace', awsProviderConnection.metadata.namespace!)
+                        .replace(':name', awsProviderConnection.metadata.name!),
+                ]}
+            >
+                <Route
+                    path={NavigationPath.editCredentials}
+                    render={(props: any) => {
+                        return <AddCredentialPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </RecoilRoot>
     )
 }
-
-beforeEach(() => {
-    sessionStorage.clear()
-    nockGet(mockFeatureGate, undefined, 200, true)
-})
 
 describe('edit connection page', () => {
     it('should edit provider connection', async () => {
