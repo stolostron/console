@@ -208,8 +208,6 @@ function DetailsView(props: {
         let totalRisk, riskIcon
 
         const riskComponent = (totalRisk: string, riskIcon: any) => {
-            // const riskIcons = { CriticalRiskIcon, ImportantRiskIcon, ModerateRiskIcon, LowRiskIcon }
-
             return (
                 <div>
                     {riskIcon}
