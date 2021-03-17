@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_CLOUD_CONNECTIONS,

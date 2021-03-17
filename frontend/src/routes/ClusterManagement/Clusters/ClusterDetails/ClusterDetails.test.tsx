@@ -50,7 +50,6 @@ import {
     clusterManagementAddonsState,
     managedClusterAddonsState,
     configMapsState,
-    loadingState,
 } from '../../../../atoms'
 import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 
@@ -590,7 +589,6 @@ const Component = () => (
             snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
             snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
             snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
-            snapshot.set(loadingState, false)
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -690,7 +688,6 @@ describe('ClusterDetails', () => {
                     snapshot.set(clusterManagementAddonsState, [])
                     snapshot.set(managedClusterAddonsState, [])
                     snapshot.set(configMapsState, [])
-                    snapshot.set(loadingState, false)
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>

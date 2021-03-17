@@ -3,9 +3,9 @@
 
 import { AcmHeader } from '@open-cluster-management/ui-components'
 import { lazy } from 'react'
-import { Redirect, Route, BrowserRouter, Switch } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
-import { LoadData } from './atoms'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { acmRouteState, LoadData } from './atoms'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
@@ -19,9 +19,10 @@ const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/Di
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 
 export default function App() {
+    const [route] = useRecoilState(acmRouteState)
     return (
-        <AcmHeader>
-            <RecoilRoot>
+        <BrowserRouter>
+            <AcmHeader route={route}>
                 <LoadData>
                     <BrowserRouter>
                         <Switch>
@@ -49,7 +50,7 @@ export default function App() {
                         </Switch>
                     </BrowserRouter>
                 </LoadData>
-            </RecoilRoot>
-        </AcmHeader>
+            </AcmHeader>
+        </BrowserRouter>
     )
 }

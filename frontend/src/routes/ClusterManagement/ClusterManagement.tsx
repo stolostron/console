@@ -6,6 +6,7 @@ import {
     AcmErrorBoundary,
     AcmPage,
     AcmPageHeader,
+    AcmRoute,
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
@@ -15,6 +16,8 @@ import { createContext, ElementType, Fragment, lazy, ReactNode, Suspense, useCon
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import { acmRouteState } from '../../atoms'
+import { AppContext } from '../../components/AppContext'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 import { featureGatesState } from '../../atoms'
@@ -53,6 +56,8 @@ export default function ClusterManagementPage() {
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
 
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.ClusterManagement), [setRoute])
     return (
         <AcmAlertProvider>
             <AcmPage hasDrawer>

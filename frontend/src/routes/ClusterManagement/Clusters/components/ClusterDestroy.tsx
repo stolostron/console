@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
