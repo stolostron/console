@@ -79,16 +79,17 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: any[]) => {
+    const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
+            const { createResources } = resourceJSON
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            const { status, messages } = await createCluster(resourceJSON)
+            const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })
 
             // redirect to created cluster
             if (status === 'DONE') {
                 setTimeout(() => {
-                    const map = keyBy(resourceJSON, 'kind')
+                    const map = keyBy(createResources, 'kind')
                     const clusterName = get(map, 'ClusterDeployment.metadata.name')
                     history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
                 }, 2000)

@@ -3,13 +3,14 @@
 
 import { AcmHeader } from '@open-cluster-management/ui-components'
 import { createBrowserHistory } from 'history'
-import { lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { Redirect, Route, Router, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { LoadData } from './atoms'
 import { AppContextContainer } from './components/AppContext'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
+import { LoadingPage } from './components/LoadingPage'
 
 const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
 const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))
@@ -35,29 +36,31 @@ export default function App() {
                 <LoadData>
                     <AppContextContainer>
                         <Router history={window.SHARED_HISTORY}>
-                            <Switch>
-                                <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                <Route exact path={NavigationPath.addCredentials} component={AddConnectionPage} />
-                                <Route exact path={NavigationPath.editCredentials} component={AddConnectionPage} />
-                                <Route
-                                    exact
-                                    path={NavigationPath.editBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route
-                                    exact
-                                    path={NavigationPath.createBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
-                                <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                                <Route exact path="*">
-                                    <Redirect to={NavigationPath.console} />
-                                </Route>
-                            </Switch>
+                            <Suspense fallback={<LoadingPage />}>
+                                <Switch>
+                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                                    <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                                    <Route exact path={NavigationPath.addCredentials} component={AddConnectionPage} />
+                                    <Route exact path={NavigationPath.editCredentials} component={AddConnectionPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.editBareMetalAsset}
+                                        component={CreateBareMetalAssetPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createBareMetalAsset}
+                                        component={CreateBareMetalAssetPage}
+                                    />
+                                    <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
+                                    <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                                    <Route exact path="*">
+                                        <Redirect to={NavigationPath.console} />
+                                    </Route>
+                                </Switch>
+                            </Suspense>
                         </Router>
                     </AppContextContainer>
                 </LoadData>
