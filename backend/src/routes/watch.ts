@@ -164,6 +164,7 @@ export function startWatching(token: string): void {
     })
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
+    watchResource(token, 'hive.openshift.io/v1', 'clusterProvisions')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
@@ -171,13 +172,19 @@ export function startWatching(token: string): void {
     watchResource(token, 'config.openshift.io/v1', 'featureGates', {
         'open-cluster-management': '',
     })
+    watchResource(token, 'v1', 'configmaps', undefined, {
+        'metadata.namespace': 'openshift-config-managed',
+        'metadata.name': 'console-public',
+    })
+    watchResource(token, 'config.openshift.io/v1', 'featuregates')
 }
 
 export function watchResource(
     token: string,
     apiVersion: string,
     kind: string,
-    labelSelector?: Record<string, string>
+    labelSelector?: Record<string, string>,
+    fieldSelector?: Record<string, string>
 ): void {
     let path = apiVersion.includes('/') ? '/apis' : '/api'
     path += `/${apiVersion}/${kind.toLowerCase()}`
@@ -186,6 +193,11 @@ export function watchResource(
         path += Object.keys(labelSelector).map((key) =>
             labelSelector[key] ? `&labelSelector=${key}=${labelSelector[key]}` : `&labelSelector=${key}=`
         )
+    }
+
+    if (fieldSelector) {
+        path += '&fieldSelector='
+        path += Object.keys(fieldSelector).map((key) => `${key}=${fieldSelector[key]}`)
     }
 
     const resourceEvents: Record<string, number> = {}

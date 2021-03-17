@@ -2,6 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
+import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockPatch, nockRBAC } from '../../../../lib/nock-util'
 import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
@@ -76,7 +77,11 @@ function nockPatchClusterDeployment(powerState: 'Running' | 'Hibernating') {
 describe('Cluster Action Dropdown', () => {
     test('hibernate action should patch cluster deployment', async () => {
         const cluster = { ...mockCluster }
-        render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
+        render(
+            <RecoilRoot>
+                <ClusterActionDropdown cluster={cluster} isKebab={true} />
+            </RecoilRoot>
+        )
         const rbacNocks: Scope[] = [
             nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchClusterDeployment()),
@@ -95,7 +100,11 @@ describe('Cluster Action Dropdown', () => {
     test('resume action should patch cluster deployment', async () => {
         const cluster = { ...mockCluster }
         cluster.status = ClusterStatus.hibernating
-        render(<ClusterActionDropdown cluster={cluster} isKebab={true} />)
+        render(
+            <RecoilRoot>
+                <ClusterActionDropdown cluster={cluster} isKebab={true} />
+            </RecoilRoot>
+        )
         const rbacNocks: Scope[] = [
             nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchClusterDeployment()),

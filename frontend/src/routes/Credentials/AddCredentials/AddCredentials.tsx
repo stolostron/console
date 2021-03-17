@@ -22,7 +22,7 @@ import { ActionGroup, Button, Page, PageSection, SelectOption, Title } from '@pa
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { AppContext } from '../../../components/AppContext'
+import { useRecoilState } from 'recoil'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -51,8 +51,9 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
+import { namespacesState, featureGatesState } from '../../../atoms'
 
-export default function AddConnectionPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
+export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
     return (
         <AcmAlertProvider>
@@ -101,15 +102,16 @@ export default function AddConnectionPage({ match }: RouteComponentProps<{ names
                     />
                 )}
                 <AcmErrorBoundary>
-                    <AddConnectionPageData namespace={match?.params.namespace} name={match?.params.name} />
+                    <AddCredentialPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </AcmErrorBoundary>
             </Page>
         </AcmAlertProvider>
     )
 }
 
-export function AddConnectionPageData(props: { namespace: string; name: string }) {
+export function AddCredentialPageData(props: { namespace: string; name: string }) {
     const { t } = useTranslation(['connection', 'common'])
+    const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
@@ -168,14 +170,12 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
     // create connection
     useEffect(() => {
         if (!props.namespace) {
-            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)])
-                .then((namespaces: string[]) => {
-                    setProjects(namespaces)
-                })
+            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)], namespaces)
+                .then((namespaces: string[]) => setProjects(namespaces))
                 .catch(setError)
                 .finally(() => setIsLoading(false))
         }
-    }, [props.namespace])
+    }, [props.namespace, namespaces])
 
     // edit connection
     useEffect(() => {
@@ -224,7 +224,7 @@ export function AddConnectionPageData(props: { namespace: string; name: string }
         )
     }
 
-    return <AddConnectionPageContent providerConnection={providerConnection} projects={projects} />
+    return <AddCredentialPageContent providerConnection={providerConnection} projects={projects} />
 }
 
 const useStyles = makeStyles({
@@ -235,10 +235,11 @@ const useStyles = makeStyles({
     },
 })
 
-export function AddConnectionPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
+export function AddCredentialPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
-    const { featureGates } = useContext(AppContext)
+    const [featureGates] = useRecoilState(featureGatesState)
+    const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
 
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
@@ -281,10 +282,7 @@ export function AddConnectionPageContent(props: { providerConnection: ProviderCo
                     >
                         {providers
                             .filter((provider) => {
-                                if (
-                                    !featureGates['open-cluster-management-discovery'] &&
-                                    provider.key === ProviderID.CRH
-                                ) {
+                                if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
                                     return false // skip
                                 }
                                 return true

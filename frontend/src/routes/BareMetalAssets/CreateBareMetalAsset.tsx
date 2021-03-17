@@ -18,6 +18,7 @@ import { ActionGroup, Button, Divider, Page, PageSection, SelectOption } from '@
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import { createResource, patchResource } from '../../../src/lib/resource-request'
 import {
     BareMetalAsset,
@@ -33,6 +34,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { getSecret, Secret, SecretApiVersion, SecretKind, unpackSecret } from '../../resources/secret'
+import { namespacesState } from '../../atoms'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -148,6 +150,7 @@ export function EditBareMetalAssetPageData(props: { name: string; namespace: str
 
 export function CreateBareMetalAssetPageData() {
     const { t } = useTranslation(['bma', 'common'])
+    const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
     const [retry, setRetry] = useState(0)
@@ -160,13 +163,11 @@ export function CreateBareMetalAssetPageData() {
     }, [retry])
 
     useEffect(() => {
-        getAuthorizedNamespaces([rbacCreate(BareMetalAssetDefinition)])
-            .then((namespaces: string[]) => {
-                setProjects(namespaces)
-            })
+        getAuthorizedNamespaces([rbacCreate(BareMetalAssetDefinition)], namespaces)
+            .then((namespaces: string[]) => setProjects(namespaces))
             .catch(setError)
             .finally(() => setIsLoading(false))
-    }, [])
+    }, [namespaces])
 
     if (error) {
         return (

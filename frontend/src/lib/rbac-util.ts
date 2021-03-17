@@ -5,26 +5,25 @@ import {
     createSubjectAccessReview,
     createSubjectAccessReviews,
 } from '../resources/self-subject-access-review'
-import { listProjects } from '../resources/project'
+import { Namespace } from '../resources/namespace'
 import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
 
-export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]) {
+export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
     return new Promise<string[]>(async (resolve, reject) => {
         try {
-            const projects = await listProjects().promise
-            const namespaces: string[] = projects.map((project) => project.metadata.name!)
+            const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
-            if (namespaces.length === 0) {
+            if (namespaceList.length === 0) {
                 return resolve([])
             }
 
             if (await checkAdminAccess()) {
-                return resolve(namespaces)
+                return resolve(namespaceList)
             }
 
             const resourceList: Array<ResourceAttributes> = []
 
-            namespaces.forEach((namespace) => {
+            namespaceList.forEach((namespace) => {
                 resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
             })
 

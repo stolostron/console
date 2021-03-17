@@ -4,14 +4,16 @@ import { makeStyles } from '@material-ui/styles'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { useQuery } from '../../../../lib/useQuery'
 import { getLatest } from '../../../../lib/utils'
-import { ClusterProvision, listClusterProvisions } from '../../../../resources/cluster-provision'
+import { ClusterProvision } from '../../../../resources/cluster-provision'
 import { getHivePod } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { configMapsState, clusterProvisionsState } from '../../../../atoms'
+import { ConfigMap } from '../../../../resources/configmap'
+import { useRecoilState } from 'recoil'
 
 const useStyles = makeStyles({
     logsButton: {
@@ -29,32 +31,26 @@ export function HiveNotification() {
     const { t } = useTranslation(['cluster'])
     const classes = useStyles()
 
-    const { data, startPolling, stopPolling } = useQuery(
-        useCallback(() => listClusterProvisions(/* istanbul ignore next */ cluster?.namespace ?? ''), [
-            cluster?.namespace,
-        ])
-    )
+    const [clusterProvisions] = useRecoilState(clusterProvisionsState)
+    const [configMaps] = useRecoilState(configMapsState)
+
+    const clusterProvisionList = clusterProvisions.filter((cp) => cp.metadata.namespace === cluster?.namespace)
 
     const [clusterProvisionStatus, setClusterProvisionStatus] = useState<string | undefined>()
     useEffect(() => {
         if (cluster?.status === ClusterStatus.provisionfailed) {
-            startPolling()
+            const latestProvision = getLatest<ClusterProvision>(clusterProvisionList, 'metadata.creationTimestamp')
+            const provisionFailedCondition = latestProvision?.status?.conditions.find(
+                (c) => c.type === 'ClusterProvisionFailed'
+            )
             /* istanbul ignore else */
-            if (data) {
-                const latestProvision = getLatest<ClusterProvision>(data, 'metadata.creationTimestamp')
-                const provisionFailedCondition = latestProvision?.status?.conditions.find(
-                    (c) => c.type === 'ClusterProvisionFailed'
-                )
-                /* istanbul ignore else */
-                if (provisionFailedCondition?.status === 'True') {
-                    setClusterProvisionStatus(provisionFailedCondition.message)
-                }
+            if (provisionFailedCondition?.status === 'True') {
+                setClusterProvisionStatus(provisionFailedCondition.message)
             }
         } else {
-            stopPolling()
             setClusterProvisionStatus(undefined)
         }
-    }, [cluster?.status, data, startPolling, stopPolling, clusterProvisionStatus])
+    }, [cluster?.status, clusterProvisionList])
 
     const provisionStatuses: string[] = [
         ClusterStatus.creating,
@@ -81,7 +77,7 @@ export function HiveNotification() {
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
                         <AcmButton
-                            onClick={() => launchLogs(cluster)}
+                            onClick={() => launchLogs(cluster!, configMaps)}
                             variant={ButtonVariant.link}
                             role="link"
                             id="view-logs"
@@ -98,24 +94,15 @@ export function HiveNotification() {
     )
 }
 
-export function launchLogs(cluster?: Cluster) {
-    if (cluster) {
-        const openShiftConsoleUrlNode: HTMLInputElement | null = document.querySelector('#openshift-console-url')
-        /* istanbul ignore next */
-        const openShiftConsoleUrl = openShiftConsoleUrlNode ? openShiftConsoleUrlNode.value : ''
-        /* istanbul ignore next */
-        const name = cluster?.name ?? ''
-        /* istanbul ignore next */
-        const namespace = cluster?.namespace ?? ''
-        /* istanbul ignore next */
-        const status = cluster?.status ?? ''
-        /* istanbul ignore else */
-        if (name && namespace) {
-            const response = getHivePod(namespace, name, status)
-            response.then((job) => {
-                const podName = job?.metadata.name
-                podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/pods/${podName}/logs?container=hive`)
-            })
-        }
+export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+    if (cluster && openShiftConsoleUrl) {
+        const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+        response.then((job) => {
+            const podName = job?.metadata.name
+            podName &&
+                window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
+        })
     }
 }

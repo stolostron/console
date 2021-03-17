@@ -19,9 +19,9 @@ import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
 
 const useStyles = makeStyles({
@@ -73,7 +73,7 @@ const useStyles = makeStyles({
     },
 })
 
-function FormatText(text: string) {
+function formatText(text: string) {
     return text.split('\n').map((str: string) => {
         if (str === '') {
             return <br />
@@ -82,28 +82,28 @@ function FormatText(text: string) {
     })
 }
 
-function RenderDonutChart(data: PolicyReport[], innerText: string) {
-    const clusterRiskScores = data.map((issue: any) => issue.results[0].data.total_risk)
+function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
+    const clusterRiskScores = data.map((issue) => issue.results[0].data.total_risk)
     const formattedData = [
         {
-            key: 'Critical',
+            key: t('policy.report.critical'),
             value: clusterRiskScores.filter((score: string) => score === '4').length,
             isPrimary: true,
         },
         {
-            key: 'Major',
+            key: t('policy.report.major'),
             value: clusterRiskScores.filter((score: string) => score === '3').length,
         },
         {
-            key: 'Minor',
+            key: t('policy.report.minor'),
             value: clusterRiskScores.filter((score: string) => score === '2').length,
         },
         {
-            key: 'Low',
+            key: t('policy.report.low'),
             value: clusterRiskScores.filter((score: string) => score === '1').length,
         },
         {
-            key: 'Warning',
+            key: t('policy.report.warning'),
             value: clusterRiskScores.filter((score: string) => score === '0').length,
         },
     ]
@@ -114,8 +114,8 @@ function RenderDonutChart(data: PolicyReport[], innerText: string) {
 
     return (
         <ChartDonut
-            ariaTitle={'cluster-violations'}
-            ariaDesc={'cluster-violations-donut-chart'}
+            ariaTitle={t('policy.report.flyout.donut.chart.ariaTitle')}
+            ariaDesc={t('policy.report.flyout.donut.chart.ariaDesc')}
             legendOrientation="vertical"
             legendPosition="right"
             constrainToVisibleArea={true}
@@ -135,8 +135,8 @@ function RenderDonutChart(data: PolicyReport[], innerText: string) {
                 right: 145,
                 top: 20,
             }}
-            title={`${data.length || 0}`}
-            subTitle={innerText}
+            title={`${data.length}`}
+            subTitle={t('policy.report.flyout.donut.chart.text')}
             width={400}
             height={200}
             colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
@@ -177,7 +177,7 @@ function DetailsView(props: {
                     <FlexItem>
                         <TextContent>
                             <Text component={TextVariants.p}>
-                                {t('poliicy.report.flyout.details.risklevel', { totalRisk: totalRisk })}
+                                {t('poliicy.report.risklevel', { totalRisk: totalRisk })}
                             </Text>
                         </TextContent>
                     </FlexItem>
@@ -187,23 +187,23 @@ function DetailsView(props: {
 
         switch (riskScore) {
             case '4':
-                totalRisk = t('policy.report.flyout.details.risk.critical')
+                totalRisk = t('policy.report.critical')
                 riskIcon = <CriticalRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '3':
-                totalRisk = t('policy.report.flyout.details.risk.major')
+                totalRisk = t('policy.report.major')
                 riskIcon = <ImportantRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '2':
-                totalRisk = t('policy.report.flyout.details.risk.minor')
+                totalRisk = t('policy.report.minor')
                 riskIcon = <ModerateRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '1':
-                totalRisk = t('policy.report.flyout.details.risk.low')
+                totalRisk = t('policy.report.low')
                 riskIcon = <LowRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '0':
-                totalRisk = t('policy.report.flyout.details.risk.warning')
+                totalRisk = t('policy.report.warning')
                 riskIcon = <ExclamationTriangleIcon />
                 return riskComponent(totalRisk, riskIcon)
             default:
@@ -248,7 +248,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.small}>{t('policy.report.flyout.risk')}</Text>
+                                <Text component={TextVariants.small}>{t('policy.report.table.totalRisk')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -261,7 +261,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.small}>{t('policy.report.flyout.category')}</Text>
+                                <Text component={TextVariants.small}>{t('policy.report.table.category')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -287,12 +287,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Text>{FormatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}</Text>
+                        <Text>{formatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}</Text>
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Text>{FormatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}</Text>
+                        <Text>{formatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}</Text>
                     </TextContent>
                 </Tab>
             </Tabs>
@@ -305,8 +305,6 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
     const { t } = useTranslation(['cluster'])
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedPolicy, setSelectedPolicy] = useState<PolicyReport>()
-    // Need to get text here - getting it in RenderDonutChart causes react hook issues due to conditional below
-    const donutChartInnerText = t('policy.report.flyout.donut.chart.text')
 
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
@@ -316,7 +314,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                 <Text component={TextVariants.h2}>{t('policy.report.flyout.title', { count: props.data.length })}</Text>
                 <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
             </TextContent>
-            <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
+            <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
             <TextContent className={classes.tableTitle}>
                 <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
             </TextContent>
@@ -325,31 +323,26 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                 items={props.data}
                 columns={[
                     {
-                        header: t('policy.report.flyout.table.description'),
-                        search: (policyReport) => {
-                            return policyReport.results[0].message
-                        },
-                        sort: (a: PolicyReport, b: PolicyReport) => {
-                            return compareStrings(a.results[0].message, b.results[0].message)
-                        },
-                        cell: (item: PolicyReport) => {
-                            return (
-                                <Button
-                                    variant="link"
-                                    onClick={() => {
-                                        setDetailsView(true)
-                                        setSelectedPolicy(item)
-                                    }}
-                                    isInline
-                                    component="span"
-                                >
-                                    {item.results[0].message}
-                                </Button>
-                            )
-                        },
+                        header: t('policy.report.table.description'),
+                        search: (policyReport) => policyReport.results[0].message,
+                        sort: (a: PolicyReport, b: PolicyReport) =>
+                            compareStrings(a.results[0].message, b.results[0].message),
+                        cell: (item: PolicyReport) => (
+                            <Button
+                                variant="link"
+                                onClick={() => {
+                                    setDetailsView(true)
+                                    setSelectedPolicy(item)
+                                }}
+                                isInline
+                                component="span"
+                            >
+                                {item.results[0].message}
+                            </Button>
+                        ),
                     },
                     {
-                        header: t('policy.report.flyout.category'),
+                        header: t('policy.report.table.category'),
                         search: (policyReport) => {
                             if (policyReport.results[0].category && policyReport.results[0].category !== '') {
                                 return policyReport.results[0].category.split(',')
@@ -366,16 +359,11 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                         },
                     },
                     {
-                        header: t('policy.report.flyout.risk'),
-                        search: (policyReport) => {
-                            return policyReport.results[0].data.total_risk
-                        },
-                        sort: (a: PolicyReport, b: PolicyReport) => {
-                            return compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk)
-                        },
-                        cell: (item: PolicyReport) => {
-                            return item.results[0].data.total_risk
-                        },
+                        header: t('policy.report.table.totalRisk'),
+                        search: (policyReport) => policyReport.results[0].data.total_risk,
+                        sort: (a: PolicyReport, b: PolicyReport) =>
+                            compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk),
+                        cell: (item: PolicyReport) => item.results[0].data.total_risk,
                     },
                 ]}
                 keyFn={(item: any) => item.metadata.uid}
