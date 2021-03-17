@@ -24,31 +24,21 @@ export default function App() {
         <BrowserRouter>
             <AcmHeader route={route}>
                 <LoadData>
-                    <BrowserRouter>
-                        <Switch>
-                            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                            <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                            <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
-                            <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
-                            <Route
-                                exact
-                                path={NavigationPath.editBareMetalAsset}
-                                component={CreateBareMetalAssetPage}
-                            />
-                            <Route
-                                exact
-                                path={NavigationPath.createBareMetalAsset}
-                                component={CreateBareMetalAssetPage}
-                            />
-                            <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
-                            <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                            <Route exact path="*">
-                                <Redirect to={NavigationPath.console} />
-                            </Route>
-                        </Switch>
-                    </BrowserRouter>
+                    <Switch>
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                        <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                        <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                        <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                        <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
+                        <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
+                        <Route exact path={NavigationPath.editBareMetalAsset} component={CreateBareMetalAssetPage} />
+                        <Route exact path={NavigationPath.createBareMetalAsset} component={CreateBareMetalAssetPage} />
+                        <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
+                        <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                        <Route exact path="*">
+                            <Redirect to={NavigationPath.console} />
+                        </Route>
+                    </Switch>
                 </LoadData>
             </AcmHeader>
         </BrowserRouter>
