@@ -7,7 +7,11 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockNamespacedList } from '../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
-import { ClusterProvision, ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
+import {
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+} from '../../../../resources/cluster-provision'
 import { PodApiVersion, PodKind } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification } from './HiveNotification'

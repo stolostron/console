@@ -282,10 +282,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     >
                         {providers
                             .filter((provider) => {
-                                if (
-                                    !discoveryFeatureGate &&
-                                    provider.key === ProviderID.CRH
-                                ) {
+                                if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
                                     return false // skip
                                 }
                                 return true
