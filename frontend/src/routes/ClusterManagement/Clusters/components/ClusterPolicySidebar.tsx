@@ -167,9 +167,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                 {t('policy.report.flyout.title', { count: props.data.length })}
             </div>
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
-            <div className={classes.donutContainer}>
-                {renderDonutChart(props.data, t)}
-            </div>
+            <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
             <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
             <AcmTable<PolicyReport>
                 plural="Recommendations"
