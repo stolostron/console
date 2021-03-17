@@ -3,15 +3,28 @@
 
 import '@patternfly/react-core/dist/styles/base.css'
 import { AcmHeader } from '@open-cluster-management/ui-components'
-import React from 'react'
+import { PageSection } from '@patternfly/react-core'
+import { StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
+import { RecoilRoot } from 'recoil'
+import { MemoryRouter } from 'react-router'
 
 ReactDOM.render(
-    <React.StrictMode>
-        <React.Suspense fallback={<AcmHeader />}>
-            <App />
-        </React.Suspense>
-    </React.StrictMode>,
+    <StrictMode>
+        <Suspense
+            fallback={
+                <MemoryRouter>
+                    <AcmHeader>
+                        <PageSection variant="light" isFilled />
+                    </AcmHeader>
+                </MemoryRouter>
+            }
+        >
+            <RecoilRoot>
+                <App />
+            </RecoilRoot>
+        </Suspense>
+    </StrictMode>,
     document.getElementById('root')
 )

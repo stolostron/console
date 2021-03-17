@@ -6,6 +6,7 @@ import {
     AcmErrorBoundary,
     AcmPage,
     AcmPageHeader,
+    AcmRoute,
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
@@ -14,6 +15,8 @@ import { PageSection } from '@patternfly/react-core'
 import { createContext, ElementType, Fragment, lazy, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { acmRouteState } from '../../atoms'
 import { AppContext } from '../../components/AppContext'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
@@ -50,7 +53,8 @@ export default function ClusterManagementPage() {
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'bma'])
     const { featureGates } = useContext(AppContext)
-
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.ClusterManagement), [setRoute])
     return (
         <AcmAlertProvider>
             <AcmPage hasDrawer>

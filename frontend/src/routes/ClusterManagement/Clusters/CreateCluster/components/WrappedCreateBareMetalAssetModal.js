@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { Button } from '@patternfly/react-core'
+import { Component } from 'react'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-class WrappedCreateBareMetalAssetModal extends React.Component {
+class WrappedCreateBareMetalAssetModal extends Component {
     render() {
         const { t, history } = this.props
         const onClick = () => {

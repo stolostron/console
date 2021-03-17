@@ -7,6 +7,7 @@ import {
     AcmLaunchLink,
     AcmPage,
     AcmPageHeader,
+    AcmRoute,
     AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
@@ -35,6 +36,7 @@ import {
     certificateSigningRequestsState,
     clusterManagementAddonsState,
     managedClusterAddonsState,
+    acmRouteState,
 } from '../../../../atoms'
 
 export const ClusterContext = createContext<{
@@ -55,6 +57,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const { t } = useTranslation(['cluster'])
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.ClusterManagement), [setRoute])
 
     // Cluster
     const [managedClusters] = useRecoilState(managedClustersState)
