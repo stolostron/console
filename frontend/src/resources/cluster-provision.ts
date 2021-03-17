@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { listNamespacedResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterProvisionApiVersion = 'hive.openshift.io/v1'
@@ -21,16 +20,12 @@ export interface ClusterProvision {
     metadata: V1ObjectMeta
     spec?: {
         attempt: number
+        clusterDeploymentRef: {
+            name: string
+        }
+        installLog: string
     }
     status?: {
         conditions: V1CustomResourceDefinitionCondition[]
     }
-}
-
-export function listClusterProvisions(namespace: string) {
-    return listNamespacedResources<ClusterProvision>({
-        apiVersion: ClusterProvisionApiVersion,
-        kind: ClusterProvisionKind,
-        metadata: { namespace },
-    })
 }

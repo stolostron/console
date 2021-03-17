@@ -17,9 +17,9 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../atoms'
-import { AppContext } from '../../components/AppContext'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
+import { featureGatesState } from '../../atoms'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
@@ -52,7 +52,9 @@ export default function ClusterManagementPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'bma'])
-    const { featureGates } = useContext(AppContext)
+    const [featureGates] = useRecoilState(featureGatesState)
+    const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
+
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.ClusterManagement), [setRoute])
     return (
@@ -79,7 +81,7 @@ export default function ClusterManagementPage() {
                                 <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
                                     <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
                                 </AcmSecondaryNavItem>
-                                {featureGates['open-cluster-management-discovery'] && (
+                                {discoveryFeatureGate && (
                                     <AcmSecondaryNavItem
                                         isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                                     >
@@ -105,7 +107,7 @@ export default function ClusterManagementPage() {
                             <Suspense fallback={<Fragment />}>
                                 <Switch>
                                     <Route exact path={NavigationPath.clusters} component={ClustersPage} />
-                                    {featureGates['open-cluster-management-discovery'] && (
+                                    {discoveryFeatureGate && (
                                         <Route
                                             exact
                                             path={NavigationPath.discoveredClusters}

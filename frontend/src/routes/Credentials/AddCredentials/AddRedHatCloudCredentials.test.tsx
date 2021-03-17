@@ -6,7 +6,6 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { FeatureGate } from '../../../resources/feature-gate'
 import {
     packProviderConnection,
     ProviderConnection,
@@ -14,22 +13,15 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
-import { AppContext } from '../../../components/AppContext'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, featureGatesState } from '../../../atoms'
+import { mockDiscoveryFeatureGate } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
-}
-
-const mockFeatureGate: FeatureGate = {
-    apiVersion: 'config.openshift.io/v1',
-    kind: 'FeatureGate',
-    metadata: { name: 'open-cluster-management-discovery' },
-    spec: { featureSet: 'DiscoveryEnabled' },
 }
 
 let location: Location
@@ -39,23 +31,17 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
             }}
         >
-            <AppContext.Provider
-                value={{
-                    featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
-                    clusterManagementAddons: [],
-                }}
-            >
-                <MemoryRouter>
-                    <Route
-                        render={(props: any) => {
-                            location = props.location
-                            return <AddCredentialPage {...props} />
-                        }}
-                    />
-                </MemoryRouter>
-            </AppContext.Provider>
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        location = props.location
+                        return <AddCredentialPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
         </RecoilRoot>
     )
 }

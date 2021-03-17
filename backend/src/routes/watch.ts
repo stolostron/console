@@ -164,6 +164,7 @@ export function startWatching(token: string): void {
     })
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
+    watchResource(token, 'hive.openshift.io/v1', 'clusterProvisions')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', { 'cluster.open-cluster-management.io/cloudconnection': '' })
@@ -175,6 +176,7 @@ export function startWatching(token: string): void {
         'metadata.namespace': 'openshift-config-managed',
         'metadata.name': 'console-public',
     })
+    watchResource(token, 'config.openshift.io/v1', 'featuregates')
 }
 
 export function watchResource(

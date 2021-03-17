@@ -23,7 +23,6 @@ import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { AppContext } from '../../../components/AppContext'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -52,7 +51,7 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, featureGatesState } from '../../../atoms'
 
 export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -239,7 +238,8 @@ const useStyles = makeStyles({
 export function AddCredentialPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
-    const { featureGates } = useContext(AppContext)
+    const [featureGates] = useRecoilState(featureGatesState)
+    const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
 
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
@@ -282,10 +282,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     >
                         {providers
                             .filter((provider) => {
-                                if (
-                                    !featureGates['open-cluster-management-discovery'] &&
-                                    provider.key === ProviderID.CRH
-                                ) {
+                                if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
                                     return false // skip
                                 }
                                 return true

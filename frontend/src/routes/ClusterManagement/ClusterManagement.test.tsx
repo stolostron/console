@@ -3,36 +3,22 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { AppContext } from '../../components/AppContext'
 import { waitForNotText, waitForText } from '../../lib/test-util'
-import { FeatureGate } from '../../resources/feature-gate'
 import ClusterManagementPage from './ClusterManagement'
-
-const mockFeatureGate: FeatureGate = {
-    apiVersion: 'config.openshift.io/v1',
-    kind: 'FeatureGate',
-    metadata: {
-        name: 'open-cluster-management-discovery',
-    },
-    spec: {
-        featureSet: 'DiscoveryEnabled',
-    },
-}
+import { mockDiscoveryFeatureGate } from '../../lib/test-metadata'
+import { featureGatesState } from '../../atoms'
 
 describe('Cluster Management', () => {
     test('Discovery Feature Flag Enabled', async () => {
         render(
-            <RecoilRoot>
-                <AppContext.Provider
-                    value={{
-                        featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
-                        clusterManagementAddons: [],
-                    }}
-                >
-                    <MemoryRouter>
-                        <ClusterManagementPage />
-                    </MemoryRouter>
-                </AppContext.Provider>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterManagementPage />
+                </MemoryRouter>
             </RecoilRoot>
         )
         await waitForText('cluster:clusters')
@@ -41,17 +27,14 @@ describe('Cluster Management', () => {
 
     test('No Discovery Feature Flag', async () => {
         render(
-            <RecoilRoot>
-                <AppContext.Provider
-                    value={{
-                        featureGates: {},
-                        clusterManagementAddons: [],
-                    }}
-                >
-                    <MemoryRouter>
-                        <ClusterManagementPage />
-                    </MemoryRouter>
-                </AppContext.Provider>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(featureGatesState, [])
+                }}
+            >
+                <MemoryRouter>
+                    <ClusterManagementPage />
+                </MemoryRouter>
             </RecoilRoot>
         )
         await waitForText('cluster:clusters')

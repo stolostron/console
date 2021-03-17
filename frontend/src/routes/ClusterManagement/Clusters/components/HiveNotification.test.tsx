@@ -6,11 +6,15 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockNamespacedList } from '../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../lib/test-util'
-import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
+import {
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+} from '../../../../resources/cluster-provision'
 import { PodApiVersion, PodKind } from '../../../../resources/pod'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification } from './HiveNotification'
-import { configMapsState } from '../../../../atoms'
+import { configMapsState, clusterProvisionsState } from '../../../../atoms'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -39,56 +43,42 @@ const mockCluster: Cluster = {
     isManaged: true,
 }
 
-const mockClusterProvisionList = {
-    apiVersion: 'hive.openshift.io/v1',
-    items: [
-        {
-            apiVersion: 'hive.openshift.io/v1',
-            kind: 'ClusterProvision',
-            metadata: {
-                creationTimestamp: '2021-01-04T18:23:30Z',
-                labels: {
-                    cloud: 'GCP',
-                    'hive.openshift.io/cluster-deployment-name': 'test-cluster',
-                    'hive.openshift.io/cluster-platform': 'gcp',
-                    'hive.openshift.io/cluster-region': 'us-east1',
-                    region: 'us-east1',
-                    vendor: 'OpenShift',
-                },
-                name: 'test-cluster-0-hmd44',
-                namespace: 'test-cluster',
-            },
-            spec: {
-                attempt: 0,
-                clusterDeploymentRef: { name: 'test-cluster' },
-                installLog:
-                    'level=info msg="Credentials loaded from environment variable \\"GOOGLE_CREDENTIALS\\", file \\"/.gcp/osServiceAccount.json\\""\nlevel=fatal msg="failed to fetch Master Machines: failed to load asset \\"Install Config\\": platform.gcp.project: Invalid value: \\"gc-acm-dev-fake\\": invalid project ID"\n',
-            },
-            status: {
-                conditions: [
-                    {
-                        lastProbeTime: '2021-01-04T18:23:30Z',
-                        lastTransitionTime: '2021-01-04T18:23:30Z',
-                        message: 'Install job has been created',
-                        reason: 'JobCreated',
-                        status: 'True',
-                        type: 'ClusterProvisionJobCreated',
-                    },
-                    {
-                        lastProbeTime: '2021-01-04T18:23:37Z',
-                        lastTransitionTime: '2021-01-04T18:23:37Z',
-                        message: 'Invalid GCP project ID',
-                        reason: 'GCPInvalidProjectID',
-                        status: 'True',
-                        type: 'ClusterProvisionFailed',
-                    },
-                ],
-            },
-        },
-    ],
-    kind: 'ClusterProvisionList',
+const mockClusterProvision: ClusterProvision = {
+    apiVersion: ClusterProvisionApiVersion,
+    kind: ClusterProvisionKind,
     metadata: {
-        selfLink: '/apis/hive.openshift.io/v1/namespaces/test-cluster/clusterprovisions',
+        labels: {
+            cloud: 'GCP',
+            'hive.openshift.io/cluster-deployment-name': 'test-cluster',
+            'hive.openshift.io/cluster-platform': 'gcp',
+            'hive.openshift.io/cluster-region': 'us-east1',
+            region: 'us-east1',
+            vendor: 'OpenShift',
+        },
+        name: 'test-cluster-0-hmd44',
+        namespace: 'test-cluster',
+    },
+    spec: {
+        attempt: 0,
+        clusterDeploymentRef: { name: 'test-cluster' },
+        installLog:
+            'level=info msg="Credentials loaded from environment variable \\"GOOGLE_CREDENTIALS\\", file \\"/.gcp/osServiceAccount.json\\""\nlevel=fatal msg="failed to fetch Master Machines: failed to load asset \\"Install Config\\": platform.gcp.project: Invalid value: \\"gc-acm-dev-fake\\": invalid project ID"\n',
+    },
+    status: {
+        conditions: [
+            {
+                message: 'Install job has been created',
+                reason: 'JobCreated',
+                status: 'True',
+                type: 'ClusterProvisionJobCreated',
+            },
+            {
+                message: 'Invalid GCP project ID',
+                reason: 'GCPInvalidProjectID',
+                status: 'True',
+                type: 'ClusterProvisionFailed',
+            },
+        ],
     },
 }
 
@@ -116,6 +106,7 @@ describe('HiveNotification', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+                    snapshot.set(clusterProvisionsState, [mockClusterProvision])
                 }}
             >
                 <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
@@ -125,28 +116,11 @@ describe('HiveNotification', () => {
         )
     }
     test('renders null for exempt cluster status', async () => {
-        const clusterProvisionScope = nockNamespacedList(
-            {
-                apiVersion: ClusterProvisionApiVersion,
-                kind: ClusterProvisionKind,
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockClusterProvisionList
-        )
         render(<Component />)
-        await waitForNock(clusterProvisionScope)
         await waitForNotTestId('view-logs')
     })
     test('renders the danger notification for failed provision status', async () => {
         mockCluster.status = ClusterStatus.provisionfailed
-        const clusterProvisionScope = nockNamespacedList(
-            {
-                apiVersion: ClusterProvisionApiVersion,
-                kind: ClusterProvisionKind,
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockClusterProvisionList
-        )
         const podScope = nockNamespacedList(
             {
                 apiVersion: PodApiVersion,
@@ -157,7 +131,6 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster']
         )
         render(<Component />)
-        await waitForNock(clusterProvisionScope)
         await waitForTestId('hive-notification-provisionfailed')
         await waitForText('provision.notification.provisionfailed')
         await waitForText('Invalid GCP project ID')
@@ -173,14 +146,6 @@ describe('HiveNotification', () => {
     })
     test('renders the info notification variant for creating status', async () => {
         mockCluster.status = ClusterStatus.creating
-        const clusterProvisionScope = nockNamespacedList(
-            {
-                apiVersion: ClusterProvisionApiVersion,
-                kind: ClusterProvisionKind,
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockClusterProvisionList
-        )
         const podScope = nockNamespacedList(
             {
                 apiVersion: PodApiVersion,
@@ -191,7 +156,6 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
         )
         render(<Component />)
-        await waitForNock(clusterProvisionScope)
         await waitForTestId('hive-notification-creating')
         await waitForText('provision.notification.creating')
         await waitForTestId('hive-notification-creating')
@@ -207,14 +171,6 @@ describe('HiveNotification', () => {
     })
     test('renders the info notification variant for destroying status', async () => {
         mockCluster.status = ClusterStatus.destroying
-        const clusterProvisionScope = nockNamespacedList(
-            {
-                apiVersion: ClusterProvisionApiVersion,
-                kind: ClusterProvisionKind,
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockClusterProvisionList
-        )
         const podScope = nockNamespacedList(
             {
                 apiVersion: PodApiVersion,
@@ -225,7 +181,6 @@ describe('HiveNotification', () => {
             ['hive.openshift.io/cluster-deployment-name=test-cluster', 'job-name=test-cluster-uninstall']
         )
         render(<Component />)
-        await waitForNock(clusterProvisionScope)
         await waitForTestId('hive-notification-destroying')
         await waitForText('provision.notification.destroying')
         await clickByTestId('view-logs')
