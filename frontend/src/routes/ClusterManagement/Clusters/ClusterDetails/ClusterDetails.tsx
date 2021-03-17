@@ -92,7 +92,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     // Addons
     const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
-    const addons = mapAddons(clusterManagementAddons, managedClusterAddons)
+    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === cluster?.namespace)
+    const addons = mapAddons(clusterManagementAddons, clusterAddons)
     // End addons
 
     useEffect(() => {
