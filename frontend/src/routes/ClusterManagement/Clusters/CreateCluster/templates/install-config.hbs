@@ -158,10 +158,10 @@ networking:
 {{#each ../networks}}
   - cidr: {{{clusterNetwork}}} ##clusterNetwork
     hostPrefix: {{{hostPrefix}}} ##hostPrefix
-{{/each}}  
-  machineCIDR: 
+{{/each}}
+  machineNetwork: 
 {{#each ../networks}}
-  - {{{machineCIDR}}} ##machineCIDR
+  - cidr: {{{machineCIDR}}} ##machineCIDR
 {{/each}}  
   serviceNetwork:
 {{#each ../networks}}
