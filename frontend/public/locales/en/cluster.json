@@ -245,5 +245,5 @@
     "policy.report.flyout.details.risk.minor": "Minor",
     "policy.report.flyout.details.risk.low": "Low",
     "policy.report.flyout.details.risk.warning": "Warning",
-    "poliicy.report.flyout.details.risklevel": "The impact of the problem would be {0} if it occurred"
+    "poliicy.report.flyout.details.risklevel": "The impact of the problem would be {{totalRisk}} if it occurred"
 }

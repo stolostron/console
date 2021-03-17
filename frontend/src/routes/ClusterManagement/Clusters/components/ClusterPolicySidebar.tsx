@@ -18,14 +18,7 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import {
-    AngleLeftIcon,
-    /*ExternalLinkAltIcon,*/
-    FlagIcon,
-    ListIcon,
-    OutlinedClockIcon,
-    ExclamationTriangleIcon,
-} from '@patternfly/react-icons'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from 'react-i18next'
@@ -36,25 +29,46 @@ const useStyles = makeStyles({
         position: 'relative',
         top: '-35px',
         padding: '0 8px',
+        '& h2, h4, p, span, thead': {
+            fontFamily: 'RedHatText-Regular',
+        },
+        '& section': {
+            paddingTop: 'var(--pf-global--spacer--lg)',
+        },
+    },
+    titleText: {
+        paddingBottom: 'var(--pf-global--spacer--xl)',
+        '& h4': {
+            color: 'var(--pf-global--Color--200)',
+        },
     },
     donutContainer: {
-        width: '400px',
-        height: '200px',
-        paddingBottom: '1rem',
+        maxWidth: '450px',
+        paddingBottom: 'var(--pf-global--spacer--md)',
         marginLeft: '-4rem',
     },
-    tableTitleText: {
-        fontWeight: 700,
-        fontSize: '16px',
+    tableTitle: {
+        paddingBottom: 'var(--pf-global--spacer--md)',
+        '& h4': {
+            fontFamily: 'RedHatText-Medium',
+        },
     },
-    policyDetailLink: {
-        border: 0,
-        cursor: 'pointer',
-        background: 'none',
-        color: 'var(--pf-global--link--Color)',
-        textAlign: 'unset',
-        '&:hover': {
-            textDecoration: 'underline',
+    backAction: {
+        paddingBottom: 'var(--pf-global--spacer--lg)',
+    },
+    subDetailComponents: {
+        paddingBottom: 'var(--pf-global--spacer--xl)',
+        '& small': {
+            fontFamily: 'RedHatText-Medium',
+            color: 'inherit',
+            paddingBottom: 'var(--pf-global--spacer--sm)',
+        },
+    },
+    riskSubDetail: {
+        paddingLeft: 'var(--pf-global--spacer--lg)',
+        '& p': {
+            fontSize: 'var(--pf-global--FontSize--xs)',
+            color: '#5A6872',
         },
     },
 })
@@ -64,7 +78,7 @@ function FormatText(text: string) {
         if (str === '') {
             return <br />
         }
-        return <p>{str}</p>
+        return <Text component={TextVariants.p}>{str}</Text>
     })
 }
 
@@ -145,10 +159,29 @@ function DetailsView(props: {
 
         const riskComponent = (totalRisk: string, riskIcon: any) => {
             return (
-                <div>
-                    {riskIcon}
-                    <span>{totalRisk}</span>
-                </div>
+                <Flex
+                    className={classes.riskSubDetail}
+                    direction={{ default: 'column' }}
+                    spaceItems={{ default: 'spaceItemsNone' }}
+                >
+                    <FlexItem>
+                        <Flex>
+                            <FlexItem>{riskIcon}</FlexItem>
+                            <FlexItem>
+                                <TextContent>
+                                    <Text component={TextVariants.h4}>{totalRisk}</Text>
+                                </TextContent>
+                            </FlexItem>
+                        </Flex>
+                    </FlexItem>
+                    <FlexItem>
+                        <TextContent>
+                            <Text component={TextVariants.p}>
+                                {t('poliicy.report.flyout.details.risklevel', { totalRisk: totalRisk })}
+                            </Text>
+                        </TextContent>
+                    </FlexItem>
+                </Flex>
             )
         }
 
@@ -193,7 +226,7 @@ function DetailsView(props: {
 
     return (
         <div className={classes.body}>
-            <Flex>
+            <Flex className={classes.backAction}>
                 <FlexItem spacer={{ default: 'spacerSm' }}>
                     <AngleLeftIcon fill={'var(--pf-global--palette--black-500)'} />
                 </FlexItem>
@@ -203,13 +236,11 @@ function DetailsView(props: {
                     </Button>
                 </FlexItem>
             </Flex>
-            <TextContent>
+            <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>{_.get(selectedPolicy, 'results[0].message', '')}</Text>
+                <Text component={TextVariants.h4}>{_.get(selectedPolicy, 'results[0].data.details', '')}</Text>
             </TextContent>
-            <TextContent>
-                <Text component={TextVariants.p}>{_.get(selectedPolicy, 'results[0].data.details', '')}</Text>
-            </TextContent>
-            <Grid hasGutter>
+            <Grid className={classes.subDetailComponents} hasGutter>
                 <GridItem span={5}>
                     <Flex>
                         <FlexItem>
@@ -217,7 +248,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.h4}>{t('policy.report.flyout.risk')}</Text>
+                                <Text component={TextVariants.small}>{t('policy.report.flyout.risk')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -230,7 +261,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.h4}>{t('policy.report.flyout.category')}</Text>
+                                <Text component={TextVariants.small}>{t('policy.report.flyout.category')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -243,7 +274,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.h4}>{t('policy.report.flyout.matched')}</Text>
+                                <Text component={TextVariants.small}>{t('policy.report.flyout.matched')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -255,10 +286,14 @@ function DetailsView(props: {
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    {FormatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}
+                    <TextContent>
+                        <Text>{FormatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}</Text>
+                    </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    {FormatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}
+                    <TextContent>
+                        <Text>{FormatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}</Text>
+                    </TextContent>
                 </Tab>
             </Tabs>
         </div>
@@ -277,12 +312,14 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
     ) : (
         <div className={classes.body}>
-            <TextContent>
+            <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>{t('policy.report.flyout.title', { count: props.data.length })}</Text>
                 <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
             </TextContent>
             <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
-            <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
+            <TextContent className={classes.tableTitle}>
+                <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
+            </TextContent>
             <AcmTable<PolicyReport>
                 plural="Recommendations"
                 items={props.data}
@@ -297,15 +334,17 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                         },
                         cell: (item: PolicyReport) => {
                             return (
-                                <button
-                                    className={classes.policyDetailLink}
+                                <Button
+                                    variant="link"
                                     onClick={() => {
                                         setDetailsView(true)
                                         setSelectedPolicy(item)
                                     }}
+                                    isInline
+                                    component="span"
                                 >
                                     {item.results[0].message}
-                                </button>
+                                </Button>
                             )
                         },
                     },
