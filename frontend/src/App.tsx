@@ -6,7 +6,6 @@ import { lazy } from 'react'
 import { Redirect, Route, BrowserRouter, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { LoadData } from './atoms'
-import { AppContextContainer } from './components/AppContext'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
@@ -24,33 +23,31 @@ export default function App() {
         <AcmHeader>
             <RecoilRoot>
                 <LoadData>
-                    <AppContextContainer>
-                        <BrowserRouter>
-                            <Switch>
-                                <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
-                                <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
-                                <Route
-                                    exact
-                                    path={NavigationPath.editBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route
-                                    exact
-                                    path={NavigationPath.createBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
-                                <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                                <Route exact path="*">
-                                    <Redirect to={NavigationPath.console} />
-                                </Route>
-                            </Switch>
-                        </BrowserRouter>
-                    </AppContextContainer>
+                    <BrowserRouter>
+                        <Switch>
+                            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                            <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                            <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
+                            <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
+                            <Route
+                                exact
+                                path={NavigationPath.editBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route
+                                exact
+                                path={NavigationPath.createBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
+                            <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                            <Route exact path="*">
+                                <Redirect to={NavigationPath.console} />
+                            </Route>
+                        </Switch>
+                    </BrowserRouter>
                 </LoadData>
             </RecoilRoot>
         </AcmHeader>

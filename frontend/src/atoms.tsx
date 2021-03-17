@@ -6,6 +6,7 @@ import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
+import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
@@ -14,6 +15,7 @@ import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
 import { ConfigMap, ConfigMapKind } from './resources/configmap'
+import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
 
 export const loadingState = atom<boolean>({ key: 'loading', default: true })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -23,6 +25,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
 })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
+export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
@@ -34,6 +37,7 @@ export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'manag
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
+export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
@@ -52,7 +56,8 @@ export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useRecoilState(loadingState)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
-    const [, setClusterdDeployments] = useRecoilState(clusterDeploymentsState)
+    const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
@@ -62,12 +67,14 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
+    const [, setFeatureGates] = useRecoilState(featureGatesState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
-        [ClusterDeploymentKind]: setClusterdDeployments,
+        [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterKind]: setManagedClusters,
@@ -76,6 +83,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
         [ConfigMapKind]: setConfigMaps,
+        [FeatureGateKind]: setFeatureGates,
     }
 
     // Temporary fix for checking for login

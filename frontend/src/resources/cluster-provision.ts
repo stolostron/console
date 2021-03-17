@@ -21,16 +21,12 @@ export interface ClusterProvision {
     metadata: V1ObjectMeta
     spec?: {
         attempt: number
+        clusterDeploymentRef: {
+            name: string
+        }
+        installLog: string
     }
     status?: {
         conditions: V1CustomResourceDefinitionCondition[]
     }
-}
-
-export function listClusterProvisions(namespace: string) {
-    return listNamespacedResources<ClusterProvision>({
-        apiVersion: ClusterProvisionApiVersion,
-        kind: ClusterProvisionKind,
-        metadata: { namespace },
-    })
 }
