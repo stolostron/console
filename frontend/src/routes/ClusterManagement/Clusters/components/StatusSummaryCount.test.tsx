@@ -254,8 +254,8 @@ describe('StatusSummaryCount', () => {
             userEvent.click(screen.getByText(6))
             await new Promise((resolve) => setTimeout(resolve, 1500))
 
-            waitFor(() => expect(screen.getByText('Identified issues')).toBeInTheDocument())
-            expect(screen.getByText('0 Critical, 0 Major, 1 Minor, 1 Low, 0 Warning')).toBeInTheDocument()
+            waitFor(() => expect(screen.getByText('summary.cluster.issues')).toBeInTheDocument())
+            expect(screen.getByText('summary.cluster.issues.description.count')).toBeInTheDocument()
         })
     })
 })

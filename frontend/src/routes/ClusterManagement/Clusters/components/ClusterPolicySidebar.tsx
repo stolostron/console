@@ -5,9 +5,8 @@ import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import _ from 'lodash'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
 
 const useStyles = makeStyles({
@@ -51,7 +50,7 @@ const useStyles = makeStyles({
     },
 })
 
-function FormatText(text: string) {
+function formatText(text: string) {
     return text.split('\n').map((str: string) => {
         if (str === '') {
             return <br />
@@ -60,28 +59,28 @@ function FormatText(text: string) {
     })
 }
 
-function RenderDonutChart(data: PolicyReport[], innerText: string) {
-    const clusterRiskScores = data.map((issue: any) => issue.results[0].data.total_risk)
+function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
+    const clusterRiskScores = data.map((issue) => issue.results[0].data.total_risk)
     const formattedData = [
         {
-            key: 'Critical',
+            key: t('policy.report.critical'),
             value: clusterRiskScores.filter((score: string) => score === '4').length,
             isPrimary: true,
         },
         {
-            key: 'Major',
+            key: t('policy.report.major'),
             value: clusterRiskScores.filter((score: string) => score === '3').length,
         },
         {
-            key: 'Minor',
+            key: t('policy.report.minor'),
             value: clusterRiskScores.filter((score: string) => score === '2').length,
         },
         {
-            key: 'Low',
+            key: t('policy.report.low'),
             value: clusterRiskScores.filter((score: string) => score === '1').length,
         },
         {
-            key: 'Warning',
+            key: t('policy.report.warning'),
             value: clusterRiskScores.filter((score: string) => score === '0').length,
         },
     ]
@@ -92,8 +91,8 @@ function RenderDonutChart(data: PolicyReport[], innerText: string) {
 
     return (
         <ChartDonut
-            ariaTitle={'cluster-violations'}
-            ariaDesc={'cluster-violations-donut-chart'}
+            ariaTitle={t('policy.report.flyout.donut.chart.ariaTitle')}
+            ariaDesc={t('policy.report.flyout.donut.chart.ariaDesc')}
             legendOrientation="vertical"
             legendPosition="right"
             constrainToVisibleArea={true}
@@ -113,8 +112,8 @@ function RenderDonutChart(data: PolicyReport[], innerText: string) {
                 right: 145,
                 top: 20,
             }}
-            title={`${data.length || 0}`}
-            subTitle={innerText}
+            title={`${data.length}`}
+            subTitle={t('policy.report.flyout.donut.chart.text')}
             width={400}
             height={200}
             colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
@@ -138,16 +137,16 @@ function DetailsView(props: {
                     {t('policy.report.flyout.back')}
                 </button>
             </div>
-            <div className={classes.sidebarDescText}>{_.get(selectedPolicy, 'results[0].message', '')}</div>
+            <div className={classes.sidebarDescText}>{selectedPolicy?.results?.[0]?.message ?? ''}</div>
             <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
                 <Tab
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    {FormatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}
+                    {formatText(selectedPolicy?.results?.[0]?.data?.resolution ?? '')}
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    {FormatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}
+                    {formatText(selectedPolicy?.results?.[0]?.data?.reason ?? '')}
                 </Tab>
             </Tabs>
         </div>
@@ -159,8 +158,6 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
     const { t } = useTranslation(['cluster'])
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedPolicy, setSelectedPolicy] = useState<PolicyReport>()
-    // Need to get text here - getting it in RenderDonutChart causes react hook issues due to conditional below
-    const donutChartInnerText = t('policy.report.flyout.donut.chart.text')
 
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
@@ -170,36 +167,31 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                 {t('policy.report.flyout.title', { count: props.data.length })}
             </div>
             <div className={classes.sidebarDescText}>{t('policy.report.flyout.description')}</div>
-            <div className={classes.donutContainer}>{RenderDonutChart(props.data, donutChartInnerText)}</div>
+            <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
             <div className={classes.tableTitleText}>{t('policy.report.flyout.table.header')}</div>
             <AcmTable<PolicyReport>
                 plural="Recommendations"
                 items={props.data}
                 columns={[
                     {
-                        header: 'Description',
-                        search: (policyReport) => {
-                            return policyReport.results[0].message
-                        },
-                        sort: (a: PolicyReport, b: PolicyReport) => {
-                            return compareStrings(a.results[0].message, b.results[0].message)
-                        },
-                        cell: (item: PolicyReport) => {
-                            return (
-                                <button
-                                    className={classes.policyDetailLink}
-                                    onClick={() => {
-                                        setDetailsView(true)
-                                        setSelectedPolicy(item)
-                                    }}
-                                >
-                                    {item.results[0].message}
-                                </button>
-                            )
-                        },
+                        header: t('policy.report.table.description'),
+                        search: (policyReport) => policyReport.results[0].message,
+                        sort: (a: PolicyReport, b: PolicyReport) =>
+                            compareStrings(a.results[0].message, b.results[0].message),
+                        cell: (item: PolicyReport) => (
+                            <button
+                                className={classes.policyDetailLink}
+                                onClick={() => {
+                                    setDetailsView(true)
+                                    setSelectedPolicy(item)
+                                }}
+                            >
+                                {item.results[0].message}
+                            </button>
+                        ),
                     },
                     {
-                        header: 'Category',
+                        header: t('policy.report.table.category'),
                         search: (policyReport) => {
                             if (policyReport.results[0].category && policyReport.results[0].category !== '') {
                                 return policyReport.results[0].category.split(',')
@@ -216,16 +208,11 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                         },
                     },
                     {
-                        header: 'Total risk',
-                        search: (policyReport) => {
-                            return policyReport.results[0].data.total_risk
-                        },
-                        sort: (a: PolicyReport, b: PolicyReport) => {
-                            return compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk)
-                        },
-                        cell: (item: PolicyReport) => {
-                            return item.results[0].data.total_risk
-                        },
+                        header: t('policy.report.table.totalRisk'),
+                        search: (policyReport) => policyReport.results[0].data.total_risk,
+                        sort: (a: PolicyReport, b: PolicyReport) =>
+                            compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk),
+                        cell: (item: PolicyReport) => item.results[0].data.total_risk,
                     },
                 ]}
                 keyFn={(item: any) => item.metadata.uid}
