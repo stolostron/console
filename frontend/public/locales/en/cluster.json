@@ -219,6 +219,7 @@
     "summary.violations": "Policy violations",
     "summary.cluster.issues": "Identified issues",
     "summary.cluster.no.issues": "No potential issues found",
+    "summary.cluster.issues.description.count": "{{criticalCount}} Critical, {{majorCount}} Major, {{minorCount}} Minor, {{lowCount}} Low, {{warningCount}} Warning",
     "summary.nodes.inactive": "{{number}} node(s) inactive",
     "summary.applications.launch": "Go to Applications",
     "summary.violations.launch": "Go to Policies",
@@ -233,7 +234,17 @@
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "policy.report.flyout.back": "Back",
     "policy.report.flyout.table.header": "Recommendations with remediation",
+    "policy.report.flyout.donut.chart.ariaTitle": "Cluster violations",
+    "policy.report.flyout.donut.chart.ariaDesc": "Donut chart of cluster violations",
     "policy.report.flyout.donut.chart.text": "Total issues",
     "policy.report.flyout.details.tab.remediation": "How to remediate",
-    "policy.report.flyout.details.tab.reason": "Reason"
+    "policy.report.flyout.details.tab.reason": "Reason",
+    "policy.report.table.description": "Description",
+    "policy.report.table.category": "Category",
+    "policy.report.table.totalRisk": "Total risk",
+    "policy.report.critical": "Critical",
+    "policy.report.major": "Major",
+    "policy.report.minor": "Minor",
+    "policy.report.low": "Low",
+    "policy.report.warning": "Warning"
 }

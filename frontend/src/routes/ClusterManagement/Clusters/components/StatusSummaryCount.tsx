@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom'
 import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
-import { listNamespacedPolicyReports, PolicyReport } from '../../../../resources/policy-report'
+import { listNamespacedPolicyReports } from '../../../../resources/policy-report'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
@@ -17,19 +17,6 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
     return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
 }
 
-function DescriptionStringBuilder(policyReportData: PolicyReport[]) {
-    const policyReportViolationsCount = policyReportData.length
-    if (policyReportViolationsCount === 0) {
-        return ''
-    }
-    const criticalCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '4').length
-    const majorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '3').length
-    const minorCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '2').length
-    const lowCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '1').length
-    const warningCount = policyReportData.filter((item: any) => item.results[0].data.total_risk === '0').length
-    return `${criticalCount} Critical, ${majorCount} Major, ${minorCount} Minor, ${lowCount} Low, ${warningCount} Warning`
-}
-
 export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
@@ -37,17 +24,20 @@ export function StatusSummaryCount() {
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(
-        useCallback(() => queryStatusCount(cluster?.name ?? ''), [cluster?.name])
+        useCallback(() => queryStatusCount(cluster?.name!), [cluster?.name])
     )
     const { data: policyReportData = [] } = useQuery(
-        useCallback(() => listNamespacedPolicyReports(cluster?.namespace ?? ''), [cluster?.namespace])
+        useCallback(() => listNamespacedPolicyReports(cluster?.namespace!), [cluster?.namespace])
     )
-    const policyReportViolationsCount = (policyReportData && policyReportData.length) || 0
 
     useEffect(startPolling, [startPolling])
 
-    /* istanbul ignore next */
-    const clusterName = cluster?.name ?? ''
+    const policyReportViolationsCount = policyReportData.length
+    const criticalCount = policyReportData.filter((item) => item.results[0].data.total_risk === '4').length
+    const majorCount = policyReportData.filter((item) => item.results[0].data.total_risk === '3').length
+    const minorCount = policyReportData.filter((item) => item.results[0].data.total_risk === '2').length
+    const lowCount = policyReportData.filter((item) => item.results[0].data.total_risk === '1').length
+    const warningCount = policyReportData.filter((item) => item.results[0].data.total_risk === '0').length
 
     return (
         <div style={{ marginTop: '24px' }}>
@@ -60,7 +50,7 @@ export function StatusSummaryCount() {
                     {
                         id: 'nodes',
                         count: /* istanbul ignore next */ cluster?.nodes?.nodeList?.length ?? 0,
-                        countClick: () => push(NavigationPath.clusterNodes.replace(':id', clusterName)),
+                        countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
                         title: t('summary.nodes'),
                         description: (
                             <Trans
@@ -79,7 +69,7 @@ export function StatusSummaryCount() {
                         count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]?.count ?? 0,
                         countClick: () =>
                             window.open(
-                                buildSearchLink({ cluster: clusterName, kind: 'subscription' }, 'application'),
+                                buildSearchLink({ cluster: cluster?.name!, kind: 'subscription' }, 'application'),
                                 '_self'
                             ),
                         title: t('summary.applications'),
@@ -94,7 +84,7 @@ export function StatusSummaryCount() {
                                 buildSearchLink({
                                     cluster: 'local-cluster',
                                     kind: 'policy',
-                                    namespace: /* istanbul ignore next */ cluster?.namespace ?? '',
+                                    namespace: cluster?.namespace!,
                                     compliant: '!Compliant',
                                 }),
                                 '_self'
@@ -119,11 +109,18 @@ export function StatusSummaryCount() {
                             policyReportViolationsCount > 0
                                 ? t('summary.cluster.issues')
                                 : t('summary.cluster.no.issues'),
-                        description: DescriptionStringBuilder(policyReportData),
+                        description:
+                            policyReportViolationsCount > 0
+                                ? t('summary.cluster.issues.description.count', {
+                                      criticalCount,
+                                      majorCount,
+                                      minorCount,
+                                      lowCount,
+                                      warningCount,
+                                  })
+                                : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: policyReportData.some(
-                            (item: any) => parseInt(item.results[0].data.total_risk, 10) >= 3
-                        ),
+                        isDanger: policyReportData.some((item) => parseInt(item.results[0].data.total_risk, 10) >= 3),
                     },
                 ]}
             />
