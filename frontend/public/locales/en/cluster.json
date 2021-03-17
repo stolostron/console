@@ -248,5 +248,5 @@
     "policy.report.low": "Low",
     "policy.report.warning": "Warning",
     "policy.report.flyout.matched": "Matched on",
-    "policy.report.risklevel": "The impact of the problem would be {{totalRisk}} if it occurred"
+    "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred"
 }

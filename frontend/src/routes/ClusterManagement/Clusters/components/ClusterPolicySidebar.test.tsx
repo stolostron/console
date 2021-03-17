@@ -69,7 +69,7 @@ describe('ClusterPolicySidebar', () => {
             await clickByText('policyreport testing risk 1')
 
             // wait for drilldown risk subdetail component
-            await waitForText('policy.report.flyout.details.risk.low')
+            await waitForText('policy.report.low')
 
             // Wait for the policyreport remediation text to be displayed
             await waitForText('policy.report.flyout.details.tab.remediation')

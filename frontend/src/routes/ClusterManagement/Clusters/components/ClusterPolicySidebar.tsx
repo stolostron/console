@@ -177,7 +177,7 @@ function DetailsView(props: {
                     <FlexItem>
                         <TextContent>
                             <Text component={TextVariants.p}>
-                                {t('poliicy.report.risklevel', { totalRisk: totalRisk })}
+                                {t('policy.report.riskLevel', { totalRisk: totalRisk })}
                             </Text>
                         </TextContent>
                     </FlexItem>
