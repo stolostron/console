@@ -16,6 +16,7 @@ import AddCredentialPage from './AddCredentials'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState } from '../../../atoms'
+import { waitForText } from '../../../lib/test-util'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -94,7 +95,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), awsProviderConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitForText(mockBadRequestStatus.message, true)
         await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
