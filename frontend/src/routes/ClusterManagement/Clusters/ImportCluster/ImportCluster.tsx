@@ -298,7 +298,6 @@ export function ImportClusterPageContent() {
                                                 message: err.message,
                                             })
                                         }
-                                        console.log('ERROR', err)
                                         await deleteResources(createdResources).promise
                                         setSubmitted(false)
                                         reject()
