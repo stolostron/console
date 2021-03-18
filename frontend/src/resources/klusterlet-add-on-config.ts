@@ -2,7 +2,6 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
-import { ClusterLabels } from './managed-cluster'
 import { createResource } from '../lib/resource-request'
 
 export const KlusterletAddonConfigApiVersion = 'agent.open-cluster-management.io/v1'

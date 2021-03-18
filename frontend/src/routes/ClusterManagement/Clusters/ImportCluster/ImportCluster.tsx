@@ -35,6 +35,7 @@ import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secr
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { managedClusterSetsState } from '../../../../atoms'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -243,7 +244,7 @@ export function ImportClusterPageContent() {
                                     ...additionalLabels,
                                 }
                                 if (managedClusterSet) {
-                                    clusterLabels['cluster.open-cluster-management.io/clusterset'] = managedClusterSet
+                                    clusterLabels[managedClusterSetLabel] = managedClusterSet
                                 }
 
                                 const createdResources: IResource[] = []

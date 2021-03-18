@@ -31,6 +31,7 @@ import { canUser } from '../../../lib/rbac-util'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
+import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
@@ -178,6 +179,19 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
                         cell: (cluster) => <DistributionField cluster={cluster} />,
+                    },
+                    {
+                        header: t('table.groups'),
+                        cell: (cluster) => {
+                            if (cluster.hive.clusterPool || cluster.labels?.[managedClusterSetLabel]) {
+                                const labels = []
+                                cluster.hive.clusterPool && labels.push(`Pool: ${cluster.hive.clusterPool}`)
+                                cluster.labels?.[managedClusterSetLabel] &&
+                                    labels.push(`Set: ${cluster.labels?.[managedClusterSetLabel]}`)
+                                return <AcmLabels labels={labels} />
+                            }
+                            return '-'
+                        },
                     },
                     {
                         header: t('table.labels'),

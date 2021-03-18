@@ -23,3 +23,5 @@ export interface ManagedClusterSet extends IResource {
         conditions: V1CustomResourceDefinitionCondition[]
     }
 }
+
+export const managedClusterSetLabel = 'cluster.open-cluster-management.io/clusterset'
