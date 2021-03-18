@@ -221,9 +221,6 @@ export function watchResource(
                             data = parts.slice(1).join('\n')
                             try {
                                 const eventData = JSON.parse(parts[0]) as WatchEvent
-                                if (kind === 'managedClusterSets') {
-                                    console.log('DATA', eventData.object)
-                                }
                                 if (eventData.object) {
                                     delete eventData.object.metadata.managedFields
                                     delete eventData.object.metadata.selfLink
