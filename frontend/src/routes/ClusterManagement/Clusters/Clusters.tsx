@@ -2,17 +2,13 @@
 
 import {
     AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmInlineProvider,
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
-    AcmScrollable,
+    AcmPageContent,
     AcmTable,
-    AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -23,9 +19,9 @@ import { useRecoilState } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
+    clusterManagementAddonsState,
     managedClusterInfosState,
     managedClustersState,
-    clusterManagementAddonsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -58,18 +54,11 @@ export default function ClustersPage() {
     )
     usePageContext(clusters.length > 0, PageActions)
     return (
-        <AcmErrorBoundary>
-            <AcmAlertProvider>
-                <AcmAlertGroup isInline canClose />
-                <AcmScrollable>
-                    <PageSection variant="light" isFilled={true}>
-                        <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-                            <ClustersTable clusters={clusters} />
-                        </AcmTablePaginationContextProvider>{' '}
-                    </PageSection>
-                </AcmScrollable>
-            </AcmAlertProvider>
-        </AcmErrorBoundary>
+        <AcmPageContent id="clusters">
+            <PageSection variant="light" isFilled={true}>
+                <ClustersTable clusters={clusters} />
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

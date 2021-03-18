@@ -2,12 +2,9 @@
 
 import {
     AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
-    AcmScrollable,
+    AcmPageContent,
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
@@ -150,16 +147,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
 
 export default function DiscoveredClustersPage() {
     return (
-        <AcmErrorBoundary>
-            <AcmAlertProvider>
-                <AcmAlertGroup isInline canClose />
-                <AcmScrollable>
-                    <PageSection variant="light">
-                        <DiscoveredClustersPageContent />
-                    </PageSection>
-                </AcmScrollable>
-            </AcmAlertProvider>
-        </AcmErrorBoundary>
+        <AcmPageContent id="discovered-clusters">
+            <PageSection variant="light" isFilled={true}>
+                <DiscoveredClustersPageContent />
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

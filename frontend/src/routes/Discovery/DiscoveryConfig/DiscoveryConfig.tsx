@@ -288,7 +288,7 @@ export function DiscoveryConfigPageContent(props: {
                         </SelectOption>
                     ))}
                 </AcmSelect>
-                <AcmAlertGroup isInline canClose />
+                <AcmAlertGroup isInline canClose padTop />
                 <ActionGroup>
                     <AcmSubmit id="applyDiscoveryConfig" onClick={onSubmit} variant={ButtonVariant.primary}>
                         {t('discoveryConfig.enable')}

@@ -3,18 +3,18 @@
 import {
     AcmAlertContext,
     AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmForm,
     AcmLoadingPage,
+    AcmPage,
+    AcmPageContent,
     AcmPageHeader,
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Divider, Page, PageSection, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -28,13 +28,13 @@ import {
     BMASecret,
     getBareMetalAsset,
 } from '../../../src/resources/bare-metal-asset'
+import { namespacesState } from '../../atoms'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { getSecret, Secret, SecretApiVersion, SecretKind, unpackSecret } from '../../resources/secret'
-import { namespacesState } from '../../atoms'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])
@@ -42,43 +42,9 @@ export default function CreateBareMetalAssetPage() {
 
     if (params.namespace && params.name) {
         return (
-            <Page>
-                <AcmAlertProvider>
-                    <AcmPageHeader
-                        title={t('bma:editBareMetalAsset.title')}
-                        titleTooltip={
-                            <>
-                                {t('bma:createBareMetalAsset.title.tooltip')}
-                                <a
-                                    href={DOC_LINKS.BARE_METAL_ASSETS}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    style={{ display: 'block', marginTop: '4px' }}
-                                >
-                                    {t('common:learn.more')}
-                                </a>
-                            </>
-                        }
-                        breadcrumb={[
-                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                            { text: t('bma:editBareMetalAsset.title'), to: '' },
-                        ]}
-                    />
-                    <AcmErrorBoundary>
-                        <Divider />
-                        <PageSection variant="light" isFilled={true}>
-                            <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
-                        </PageSection>
-                    </AcmErrorBoundary>
-                </AcmAlertProvider>
-            </Page>
-        )
-    }
-    return (
-        <Page>
-            <AcmAlertProvider>
+            <AcmPage>
                 <AcmPageHeader
-                    title={t('bma:createBareMetalAsset.title')}
+                    title={t('bma:editBareMetalAsset.title')}
                     titleTooltip={
                         <>
                             {t('bma:createBareMetalAsset.title.tooltip')}
@@ -94,17 +60,45 @@ export default function CreateBareMetalAssetPage() {
                     }
                     breadcrumb={[
                         { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                        { text: t('bma:createBareMetalAsset.title'), to: '' },
+                        { text: t('bma:editBareMetalAsset.title'), to: '' },
                     ]}
                 />
-                <AcmErrorBoundary>
-                    <Divider />
+                <AcmPageContent id="edit-bare-metal-asset">
                     <PageSection variant="light" isFilled={true}>
-                        <CreateBareMetalAssetPageData />
+                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
                     </PageSection>
-                </AcmErrorBoundary>
-            </AcmAlertProvider>
-        </Page>
+                </AcmPageContent>
+            </AcmPage>
+        )
+    }
+    return (
+        <AcmPage>
+            <AcmPageHeader
+                title={t('bma:createBareMetalAsset.title')}
+                titleTooltip={
+                    <>
+                        {t('bma:createBareMetalAsset.title.tooltip')}
+                        <a
+                            href={DOC_LINKS.BARE_METAL_ASSETS}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('common:learn.more')}
+                        </a>
+                    </>
+                }
+                breadcrumb={[
+                    { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                    { text: t('bma:createBareMetalAsset.title'), to: '' },
+                ]}
+            />
+            <AcmPageContent id="create-bare-metal-asset">
+                <PageSection variant="light" isFilled={true}>
+                    <CreateBareMetalAssetPageData />
+                </PageSection>
+            </AcmPageContent>
+        </AcmPage>
     )
 }
 
@@ -372,7 +366,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     }
                 }}
             />
-            <AcmAlertGroup isInline canClose />
+            <AcmAlertGroup isInline canClose padTop />
             <ActionGroup>
                 <AcmSubmit
                     id="submit"

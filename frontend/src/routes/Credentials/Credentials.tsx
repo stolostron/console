@@ -1,18 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
-    AcmErrorBoundary,
     AcmInlineProvider,
     AcmPage,
+    AcmPageContent,
     AcmPageHeader,
     AcmRoute,
-    AcmScrollable,
     AcmTable,
-    AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
@@ -41,21 +37,14 @@ export default function CredentialsPage() {
     return (
         <AcmPage>
             <AcmPageHeader title={t('manageCredentials')} />
-            <AcmErrorBoundary>
-                <AcmAlertProvider>
-                    <AcmAlertGroup isInline canClose />
-                    <AcmScrollable>
-                        <PageSection variant="light" isFilled={true}>
-                            <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                                <ProviderConnectionsTable
-                                    providerConnections={providerConnections}
-                                    discoveryConfigs={discoveryConfigs}
-                                />
-                            </AcmTablePaginationContextProvider>
-                        </PageSection>
-                    </AcmScrollable>
-                </AcmAlertProvider>
-            </AcmErrorBoundary>
+            <AcmPageContent id="credentials">
+                <PageSection variant="light" isFilled={true}>
+                    <ProviderConnectionsTable
+                        providerConnections={providerConnections}
+                        discoveryConfigs={discoveryConfigs}
+                    />
+                </PageSection>
+            </AcmPageContent>
         </AcmPage>
     )
 }
