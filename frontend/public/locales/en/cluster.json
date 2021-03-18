@@ -246,5 +246,7 @@
     "policy.report.major": "Major",
     "policy.report.minor": "Minor",
     "policy.report.low": "Low",
-    "policy.report.warning": "Warning"
+    "policy.report.warning": "Warning",
+    "policy.report.flyout.matched": "Matched on",
+    "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred"
 }
