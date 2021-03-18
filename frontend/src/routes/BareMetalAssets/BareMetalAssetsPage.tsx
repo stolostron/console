@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmButton,
-    AcmEmptyState,
-    AcmPageContent,
-    AcmTable
-} from '@open-cluster-management/ui-components'
+import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -24,7 +19,7 @@ import {
     BareMetalAsset,
     createBareMetalAssetNamespaces,
     importBareMetalAsset,
-    ImportedBareMetalAsset
+    ImportedBareMetalAsset,
 } from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
