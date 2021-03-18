@@ -156,6 +156,7 @@ export function startWatching(token: string): void {
     }
 
     watchResource(token, 'v1', 'namespaces')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
@@ -176,7 +177,7 @@ export function startWatching(token: string): void {
         'metadata.namespace': 'openshift-config-managed',
         'metadata.name': 'console-public',
     })
-    watchResource(token, 'config.openshift.io/v1', 'featuregates')
+    watchResource(token, 'config.openshift.io/v1', 'featureGates')
 }
 
 export function watchResource(
@@ -220,6 +221,9 @@ export function watchResource(
                             data = parts.slice(1).join('\n')
                             try {
                                 const eventData = JSON.parse(parts[0]) as WatchEvent
+                                if (kind === 'managedClusterSets') {
+                                    console.log('DATA', eventData.object)
+                                }
                                 if (eventData.object) {
                                     delete eventData.object.metadata.managedFields
                                     delete eventData.object.metadata.selfLink

@@ -23,7 +23,7 @@ export interface KlusterletAddonConfig extends IResource {
     spec: {
         clusterName: string
         clusterNamespace: string
-        clusterLabels: ClusterLabels
+        clusterLabels: Record<string, string>
         applicationManager: { enabled: boolean; argocdCluster: boolean }
         policyController: { enabled: boolean }
         searchCollector: { enabled: boolean }
@@ -35,7 +35,7 @@ export interface KlusterletAddonConfig extends IResource {
 
 export const createKlusterletAddonConfig = (data: {
     clusterName: string | undefined
-    clusterLabels: ClusterLabels
+    clusterLabels: Record<string, string>
 }) => {
     if (!data.clusterName) throw new Error('Cluster name not set')
     return createResource<KlusterletAddonConfig>({

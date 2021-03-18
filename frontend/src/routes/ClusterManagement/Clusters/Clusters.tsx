@@ -196,6 +196,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                                         'installer.namespace',
                                         'name',
                                         'vendor',
+                                        'cluster.open-cluster-management.io/clusterset',
                                     ].filter((label) => labelKeys.includes(label)) ?? []
 
                                 return (
