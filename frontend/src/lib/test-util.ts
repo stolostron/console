@@ -53,100 +53,100 @@ export async function clickByText(text: string, index?: number) {
     }
 }
 
-export async function typeByText(text: string, type: string, index?: number) {
+export async function typeByText(text: string, value: string, index?: number) {
     await waitForInputByText(text, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByText(text)[index], type)
+        userEvent.type(screen.getAllByText(text)[index], value)
     } else {
-        userEvent.type(screen.getByText(text), type)
+        userEvent.type(screen.getByText(text), value)
     }
 }
 
 // By Role
 
-export async function waitForRole(text: string, multipleAllowed?: boolean) {
+export async function waitForRole(role: string, multipleAllowed?: boolean) {
     if (multipleAllowed) {
-        await waitFor(() => expect(screen.queryAllByRole(text).length).toBeGreaterThan(0), options)
+        await waitFor(() => expect(screen.queryAllByRole(role).length).toBeGreaterThan(0), options)
     } else {
-        await waitFor(() => expect(screen.getByRole(text)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByRole(role)).toBeDefined(), options)
     }
 }
 
-export async function waitForNotRole(text: string) {
-    await waitFor(() => expect(screen.queryAllByRole(text)).toHaveLength(0), options)
+export async function waitForNotRole(role: string) {
+    await waitFor(() => expect(screen.queryAllByRole(role)).toHaveLength(0), options)
 }
 
-export async function waitForInputByRole(text: string, index?: number) {
+export async function waitForInputByRole(role: string, index?: number) {
     if (index !== undefined) {
-        await waitFor(() => expect(screen.getAllByRole(text).length).toBeGreaterThan(index), options)
-        await waitFor(() => expect(screen.getAllByRole(text)[index]).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getAllByRole(role).length).toBeGreaterThan(index), options)
+        await waitFor(() => expect(screen.getAllByRole(role)[index]).not.toBeDisabled(), options)
         await waitFor(
             () =>
                 expect(
-                    (screen.getAllByRole(text)[index] as HTMLInputElement).getAttribute('aria-disabled')
+                    (screen.getAllByRole(role)[index] as HTMLInputElement).getAttribute('aria-disabled')
                 ).not.toEqual('true'),
             options
         )
     } else {
-        await waitFor(() => expect(screen.getByRole(text)).toBeDefined(), options)
-        await waitFor(() => expect(screen.getByRole(text)).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getByRole(role)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByRole(role)).not.toBeDisabled(), options)
         await waitFor(
             () =>
-                expect((screen.getByRole(text) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual('true'),
+                expect((screen.getByRole(role) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual('true'),
             options
         )
     }
 }
 
-export async function clickByRole(text: string, index?: number) {
-    await waitForInputByRole(text, index)
+export async function clickByRole(role: string, index?: number) {
+    await waitForInputByRole(role, index)
     if (index !== undefined) {
-        userEvent.click(screen.getAllByRole(text)[index])
+        userEvent.click(screen.getAllByRole(role)[index])
     } else {
-        userEvent.click(screen.getByRole(text))
+        userEvent.click(screen.getByRole(role))
     }
 }
 
-export async function typeByRole(text: string, type: string, index?: number) {
-    await waitForInputByRole(text, index)
+export async function typeByRole(role: string, value: string, index?: number) {
+    await waitForInputByRole(role, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByRole(text)[index], type)
+        userEvent.type(screen.getAllByRole(role)[index], value)
     } else {
-        userEvent.type(screen.getByRole(text), type)
+        userEvent.type(screen.getByRole(role), value)
     }
 }
 
 // By TestId
 
-export async function waitForTestId(text: string, multipleAllowed?: boolean) {
+export async function waitForTestId(testId: string, multipleAllowed?: boolean) {
     if (multipleAllowed) {
-        await waitFor(() => expect(screen.queryAllByTestId(text).length).toBeGreaterThan(0), options)
+        await waitFor(() => expect(screen.queryAllByTestId(testId).length).toBeGreaterThan(0), options)
     } else {
-        await waitFor(() => expect(screen.getByTestId(text)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByTestId(testId)).toBeDefined(), options)
     }
 }
 
-export async function waitForNotTestId(text: string) {
-    await waitFor(() => expect(screen.queryAllByTestId(text)).toHaveLength(0), options)
+export async function waitForNotTestId(testId: string) {
+    await waitFor(() => expect(screen.queryAllByTestId(testId)).toHaveLength(0), options)
 }
 
-export async function waitForInputByTestId(text: string, index?: number) {
+export async function waitForInputByTestId(testId: string, index?: number) {
     if (index !== undefined) {
-        await waitFor(() => expect(screen.getAllByTestId(text).length).toBeGreaterThan(index), options)
-        await waitFor(() => expect(screen.getAllByTestId(text)[index]).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getAllByTestId(testId).length).toBeGreaterThan(index), options)
+        await waitFor(() => expect(screen.getAllByTestId(testId)[index]).not.toBeDisabled(), options)
         await waitFor(
             () =>
                 expect(
-                    (screen.getAllByTestId(text)[index] as HTMLInputElement).getAttribute('aria-disabled')
+                    (screen.getAllByTestId(testId)[index] as HTMLInputElement).getAttribute('aria-disabled')
                 ).not.toEqual('true'),
             options
         )
     } else {
-        await waitFor(() => expect(screen.getByTestId(text)).toBeDefined(), options)
-        await waitFor(() => expect(screen.getByTestId(text)).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getByTestId(testId)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByTestId(testId)).not.toBeDisabled(), options)
         await waitFor(
             () =>
-                expect((screen.getByTestId(text) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual(
+                expect((screen.getByTestId(testId) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual(
                     'true'
                 ),
             options
@@ -154,55 +154,55 @@ export async function waitForInputByTestId(text: string, index?: number) {
     }
 }
 
-export async function clickByTestId(text: string, index?: number) {
-    await waitForInputByTestId(text, index)
+export async function clickByTestId(testId: string, index?: number) {
+    await waitForInputByTestId(testId, index)
     if (index !== undefined) {
-        userEvent.click(screen.getAllByTestId(text)[index])
+        userEvent.click(screen.getAllByTestId(testId)[index])
     } else {
-        userEvent.click(screen.getByTestId(text))
+        userEvent.click(screen.getByTestId(testId))
     }
 }
 
-export async function typeByTestId(text: string, type: string, index?: number) {
-    await waitForInputByTestId(text, index)
+export async function typeByTestId(testId: string, value: string, index?: number) {
+    await waitForInputByTestId(testId, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByTestId(text)[index], type)
+        userEvent.type(screen.getAllByTestId(testId)[index], value)
     } else {
-        userEvent.type(screen.getByTestId(text), type)
+        userEvent.type(screen.getByTestId(testId), value)
     }
 }
 
 // By Label Text
 
-export async function waitForLabelText(text: string, multipleAllowed?: boolean) {
+export async function waitForLabel(label: string, multipleAllowed?: boolean) {
     if (multipleAllowed) {
-        await waitFor(() => expect(screen.queryAllByLabelText(text).length).toBeGreaterThan(0), options)
+        await waitFor(() => expect(screen.queryAllByLabelText(label).length).toBeGreaterThan(0), options)
     } else {
-        await waitFor(() => expect(screen.getByLabelText(text)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByLabelText(label)).toBeDefined(), options)
     }
 }
 
-export async function waitForNotLabelText(text: string) {
-    await waitFor(() => expect(screen.queryAllByLabelText(text)).toHaveLength(0), options)
+export async function waitForNotLabel(label: string) {
+    await waitFor(() => expect(screen.queryAllByLabelText(label)).toHaveLength(0), options)
 }
 
-export async function waitForInputByLabelText(text: string, index?: number) {
+export async function waitForInputByLabel(label: string, index?: number) {
     if (index !== undefined) {
-        await waitFor(() => expect(screen.getAllByLabelText(text).length).toBeGreaterThan(index), options)
-        await waitFor(() => expect(screen.getAllByLabelText(text)[index]).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getAllByLabelText(label).length).toBeGreaterThan(index), options)
+        await waitFor(() => expect(screen.getAllByLabelText(label)[index]).not.toBeDisabled(), options)
         await waitFor(
             () =>
                 expect(
-                    (screen.getAllByLabelText(text)[index] as HTMLInputElement).getAttribute('aria-disabled')
+                    (screen.getAllByLabelText(label)[index] as HTMLInputElement).getAttribute('aria-disabled')
                 ).not.toEqual('true'),
             options
         )
     } else {
-        await waitFor(() => expect(screen.getByLabelText(text)).toBeDefined(), options)
-        await waitFor(() => expect(screen.getByLabelText(text)).not.toBeDisabled(), options)
+        await waitFor(() => expect(screen.getByLabelText(label)).toBeDefined(), options)
+        await waitFor(() => expect(screen.getByLabelText(label)).not.toBeDisabled(), options)
         await waitFor(
             () =>
-                expect((screen.getByLabelText(text) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual(
+                expect((screen.getByLabelText(label) as HTMLInputElement).getAttribute('aria-disabled')).not.toEqual(
                     'true'
                 ),
             options
@@ -210,21 +210,79 @@ export async function waitForInputByLabelText(text: string, index?: number) {
     }
 }
 
-export async function clickByLabel(text: string, index?: number) {
-    await waitForInputByLabelText(text, index)
+export async function clickByLabel(label: string, index?: number) {
+    await waitForInputByLabel(label, index)
     if (index !== undefined) {
-        userEvent.click(screen.getAllByLabelText(text)[index])
+        userEvent.click(screen.getAllByLabelText(label)[index])
     } else {
-        userEvent.click(screen.getByLabelText(text))
+        userEvent.click(screen.getByLabelText(label))
     }
 }
 
-export async function typeByLabel(text: string, type: string, index?: number) {
-    await waitForInputByLabelText(text, index)
+export async function typeByLabel(label: string, value: string, index?: number) {
+    await waitForInputByLabel(label, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByLabelText(text)[index], type)
+        userEvent.type(screen.getAllByLabelText(label)[index], value)
     } else {
-        userEvent.type(screen.getByLabelText(text), type)
+        userEvent.type(screen.getByLabelText(label), value)
+    }
+}
+
+// Container
+
+// By Selector
+
+export async function waitForSelector(container: HTMLElement, selector: string, multipleAllowed?: boolean) {
+    if (multipleAllowed) {
+        await waitFor(() => expect(container.querySelectorAll(selector).length).toBeGreaterThan(0), options)
+    } else {
+        await waitFor(() => expect(container.querySelector(selector)).toBeDefined(), options)
+    }
+}
+
+export async function waitForNotSelector(container: HTMLElement, selector: string) {
+    await waitFor(() => expect(container.querySelectorAll(selector)).toHaveLength(0), options)
+}
+
+export async function waitForInputBySelector(container: HTMLElement, selector: string, index?: number) {
+    if (index !== undefined) {
+        await waitFor(() => expect(container.querySelectorAll(selector).length).toBeGreaterThan(index), options)
+        await waitFor(() => expect(container.querySelectorAll(selector)[index]).not.toBeDisabled(), options)
+        await waitFor(
+            () =>
+                expect(
+                    (container.querySelectorAll(selector)[index] as HTMLInputElement).getAttribute('aria-disabled')
+                ).not.toEqual('true'),
+            options
+        )
+    } else {
+        await waitFor(() => expect(container.querySelector(selector)).toBeDefined(), options)
+        await waitFor(() => expect(container.querySelector(selector)).not.toBeDisabled(), options)
+        await waitFor(
+            () =>
+                expect(
+                    (container.querySelector(selector) as HTMLInputElement).getAttribute('aria-disabled')
+                ).not.toEqual('true'),
+            options
+        )
+    }
+}
+
+export async function clickBySelector(container: HTMLElement, selector: string, index?: number) {
+    await waitForInputBySelector(container, selector, index)
+    if (index !== undefined) {
+        userEvent.click(container.querySelectorAll(selector)[index])
+    } else {
+        userEvent.click(container.querySelector(selector)!)
+    }
+}
+
+export async function typeBySelector(container: HTMLElement, selector: string, value: string, index?: number) {
+    await waitForInputBySelector(container, selector, index)
+    if (index !== undefined) {
+        userEvent.type(container.querySelectorAll(selector)[index], value)
+    } else {
+        userEvent.type(container.querySelector(selector)!, value)
     }
 }
 
