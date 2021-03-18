@@ -1,7 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertGroup,
+    AcmAlertProvider,
+    AcmErrorBoundary,
     AcmInlineStatus,
+    AcmScrollable,
     AcmTable,
     compareNumbers,
     IAcmTableColumn,
@@ -16,9 +20,16 @@ import { ClusterContext } from '../ClusterDetails'
 export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
     return (
-        <PageSection variant="light">
-            <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
-        </PageSection>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose />
+                <AcmScrollable>
+                    <PageSection variant="light">
+                        <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+                    </PageSection>
+                </AcmScrollable>
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 

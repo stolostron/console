@@ -1,8 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
     AcmPage,
     AcmPageHeader,
@@ -34,20 +37,25 @@ export default function CredentialsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.ManageCredentials), [setRoute])
+    useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
     return (
         <AcmPage>
             <AcmPageHeader title={t('manageCredentials')} />
-            <AcmScrollable borderTop>
-                <PageSection variant="light" isFilled={true}>
-                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable
-                            providerConnections={providerConnections}
-                            discoveryConfigs={discoveryConfigs}
-                        />
-                    </AcmTablePaginationContextProvider>
-                </PageSection>
-            </AcmScrollable>
+            <AcmErrorBoundary>
+                <AcmAlertProvider>
+                    <AcmAlertGroup isInline canClose />
+                    <AcmScrollable>
+                        <PageSection variant="light" isFilled={true}>
+                            <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
+                                <ProviderConnectionsTable
+                                    providerConnections={providerConnections}
+                                    discoveryConfigs={discoveryConfigs}
+                                />
+                            </AcmTablePaginationContextProvider>
+                        </PageSection>
+                    </AcmScrollable>
+                </AcmAlertProvider>
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }

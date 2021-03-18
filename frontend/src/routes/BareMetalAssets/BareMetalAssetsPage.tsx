@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmButton,
     AcmEmptyState,
+    AcmErrorBoundary,
+    AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
-import { Page, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -34,9 +38,14 @@ const baremetalassets = 'bare metal assets'
 export default function BareMetalAssetsPage() {
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
     return (
-        <Page>
-            <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
-        </Page>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose />
+                <AcmScrollable>
+                    <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
+                </AcmScrollable>
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 

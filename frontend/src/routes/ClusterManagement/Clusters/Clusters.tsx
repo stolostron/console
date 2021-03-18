@@ -2,11 +2,15 @@
 
 import {
     AcmAlertContext,
+    AcmAlertGroup,
+    AcmAlertProvider,
     AcmEmptyState,
+    AcmErrorBoundary,
     AcmInlineProvider,
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
+    AcmScrollable,
     AcmTable,
     AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
@@ -53,13 +57,19 @@ export default function ClustersPage() {
         [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters]
     )
     usePageContext(clusters.length > 0, PageActions)
-
     return (
-        <PageSection variant="light" isFilled={true}>
-            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
-                <ClustersTable clusters={clusters} />
-            </AcmTablePaginationContextProvider>{' '}
-        </PageSection>
+        <AcmErrorBoundary>
+            <AcmAlertProvider>
+                <AcmAlertGroup isInline canClose />
+                <AcmScrollable>
+                    <PageSection variant="light" isFilled={true}>
+                        <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+                            <ClustersTable clusters={clusters} />
+                        </AcmTablePaginationContextProvider>{' '}
+                    </PageSection>
+                </AcmScrollable>
+            </AcmAlertProvider>
+        </AcmErrorBoundary>
     )
 }
 
