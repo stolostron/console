@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
-import { waitForNocks } from '../../../../lib/test-util'
+import { waitForNocks, waitForText, clickByText, clickByTestId, typeByTestId } from '../../../../lib/test-util'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
@@ -253,27 +253,24 @@ describe('ImportCluster', () => {
 
         const { getByTestId, getByText, queryByTestId, container } = render(<Component />)
 
-        userEvent.type(getByTestId('clusterName'), 'foobar')
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="managedClusterSet-label"]`)).toHaveLength(1)
-        )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="managedClusterSet-label"]`)!.click()
-        await waitFor(() => expect(getByText(mockManagedClusterSet.metadata.name!)).toBeInTheDocument())
-        getByText(mockManagedClusterSet.metadata.name!).click()
-        userEvent.click(getByTestId('label-input-button'))
-        userEvent.type(getByTestId('additionalLabels'), 'foo=bar{enter}')
-        userEvent.click(getByText('import.mode.default'))
-        userEvent.click(getByText('import.manual.choice'))
+        await typeByTestId('clusterName', 'foobar')
+
+        await clickByText('import.form.managedClusterSet.placeholder')
+        await clickByText(mockManagedClusterSet.metadata.name!)
+        await clickByTestId('label-input-button')
+        await typeByTestId('additionalLabels', 'foo=bar{enter}')
+        await clickByText('import.mode.default')
+        await clickByText('import.manual.choice')
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
-        userEvent.click(getByText('import.form.submit'))
+        await clickByText('import.form.submit')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importSecretNock])
 
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
 
         // reset form
-        expect(getByText('import.footer.importanother')).toBeInTheDocument()
-        userEvent.click(getByText('import.footer.importanother'))
+        await waitForText('import.footer.importanother')
+        await clickByText('import.footer.importanother')
         await waitFor(() => expect(queryByTestId('import-command')).toBeNull())
         expect(getByTestId('clusterName')).toHaveValue('')
     })

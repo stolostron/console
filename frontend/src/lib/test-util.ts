@@ -163,12 +163,12 @@ export async function clickByTestId(text: string, index?: number) {
     }
 }
 
-export async function typeByTestId(text: string, type: string, index?: number) {
-    await waitForInputByTestId(text, index)
+export async function typeByTestId(id: string, type: string, index?: number) {
+    await waitForInputByTestId(id, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByTestId(text)[index], type)
+        userEvent.type(screen.getAllByTestId(id)[index], type)
     } else {
-        userEvent.type(screen.getByTestId(text), type)
+        userEvent.type(screen.getByTestId(id), type)
     }
 }
 
