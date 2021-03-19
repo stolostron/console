@@ -58,6 +58,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
+    // Addons
+    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
+    const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === match.params.id)
+    const addons = mapAddons(clusterManagementAddons, clusterAddons)
+    // End addons
+
     // Cluster
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
@@ -75,24 +82,17 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
     const [cluster, setCluster] = useState<Cluster | undefined>(
-        getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster)
+        getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons)
     )
     useEffect(() => {
         // Need to keep cluster data for detach/destroy
         if (clusterExists) {
-            setCluster(getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster))
+            setCluster(getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons))
         }
-    }, [managedCluster, clusterDeployment, managedClusterInfo, certificateSigningRequests, clusterExists])
+    }, [managedCluster, clusterDeployment, managedClusterInfo, certificateSigningRequests, clusterAddons, clusterExists])
     // End cluster
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
-
-    // Addons
-    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
-    const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
-    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === cluster?.namespace)
-    const addons = mapAddons(clusterManagementAddons, clusterAddons)
-    // End addons
 
     useEffect(() => {
         const canGetSecret = canUser('get', SecretDefinition, match.params.id)
@@ -174,21 +174,19 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </AcmSecondaryNav>
                     }
                     actions={
-                        <Fragment>
-                            {/* <AcmActionGroup> */}
-                                <AcmLaunchLink
-                                    links={addons
-                                        ?.filter((addon) => addon.launchLink)
-                                        ?.map((addon) => ({
-                                            id: addon.launchLink?.displayText!,
-                                            text: addon.launchLink?.displayText!,
-                                            href: addon.launchLink?.href!,
-                                        }))}
-                                />
-                                <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
-                                <ClusterActionDropdown cluster={cluster!} isKebab={false} />
-                            {/* </AcmActionGroup> */}
-                        </Fragment>
+                        <AcmActionGroup>
+                            <AcmLaunchLink
+                                links={addons
+                                    ?.filter((addon) => addon.launchLink)
+                                    ?.map((addon) => ({
+                                        id: addon.launchLink?.displayText!,
+                                        text: addon.launchLink?.displayText!,
+                                        href: addon.launchLink?.href!,
+                                    }))}
+                            />
+                            <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
+                            <ClusterActionDropdown cluster={cluster!} isKebab={false} />
+                        </AcmActionGroup>
                     }
                 />
 

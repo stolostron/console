@@ -282,12 +282,11 @@ export function BareMetalAssetsTable(props: {
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
-                                            singular: t(baremetalasset),
-                                            plural: t(baremetalassets),
+                                            title: t('bulk.title.delete'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
                                             resources: [bareMetalAsset],
-                                            description: t('modal.delete.content.batch'),
+                                            description: t('bulk.message.delete'),
                                             columns: [
                                                 {
                                                     header: t('bareMetalAsset.tableHeader.name'),
@@ -350,12 +349,11 @@ export function BareMetalAssetsTable(props: {
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setModalProps({
                                 open: true,
-                                singular: t(baremetalasset),
-                                plural: t(baremetalassets),
+                                title: t('bulk.title.delete'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [...bareMetalAssets],
-                                description: t('modal.delete.content.batch'),
+                                description: t('bulk.message.delete'),
                                 columns: [
                                     {
                                         header: t('bareMetalAsset.tableHeader.name'),

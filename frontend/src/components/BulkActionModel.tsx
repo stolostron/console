@@ -26,9 +26,8 @@ import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true
-    plural: string
-    singular: string
     action: string
+    title: string
     processing: string
     resources: Array<T>
     close: () => void
@@ -79,14 +78,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
 
     return (
         <AcmFormProvider>
-            <AcmModal
-                variant={ModalVariant.medium}
-                title={`${props.action} ${
-                    props.resources.length === 1 ? props.singular.toLowerCase() : props.plural.toLowerCase()
-                }`}
-                isOpen={true}
-                onClose={props.close}
-            >
+            <AcmModal variant={ModalVariant.medium} title={props.title} isOpen={true} onClose={props.close}>
                 <AcmForm style={{ gap: 0 }}>
                     {!errors ? (
                         <Fragment>

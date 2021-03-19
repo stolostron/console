@@ -121,7 +121,7 @@ export function ImportClusterPageContent() {
                             id="managedClusterSet"
                             label={t('import.form.managedClusterSet.label')}
                             placeholder={t('import.form.managedClusterSet.placeholder')}
-                            labelHelp={t('')}
+                            labelHelp={t('import.form.managedClusterSet.labelHelp')}
                             value={managedClusterSet}
                             onChange={(mcs) => setManagedClusterSet(mcs)}
                             isDisabled={managedClusterSets.length === 0 || submitted}

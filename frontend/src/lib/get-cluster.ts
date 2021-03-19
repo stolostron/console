@@ -98,7 +98,7 @@ export function getCluster(
     clusterDeployment: ClusterDeployment | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
-    managedClusterAddOns?: ManagedClusterAddOn[]
+    managedClusterAddOns: ManagedClusterAddOn[]
 ): Cluster {
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -294,8 +294,9 @@ export function getClusterStatus(
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
-    managedClusterAddOns?: ManagedClusterAddOn[]
+    managedClusterAddOns: ManagedClusterAddOn[]
 ) {
+    console.log('mca', managedClusterAddOns)
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
@@ -403,6 +404,7 @@ export function getClusterStatus(
             const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
                 checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
             )
+            console.log('hasDegradedAddons', hasDegradedAddons)
             mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
         } else {
             mcStatus = ClusterStatus.offline

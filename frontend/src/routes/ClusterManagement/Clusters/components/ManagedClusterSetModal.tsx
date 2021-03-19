@@ -49,6 +49,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                             maxHeight={'6em'}
                             isRequired
                             label=""
+                            placeholder={t('common:select')}
                             value={managedClusterSet}
                             onChange={(mcs) => {
                                 setManagedClusterSet(mcs)
@@ -70,8 +71,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            plural={t('cluster')}
-            singular={t('clusters')}
+            title={t('bulk.title.addSet')}
             action={t('add')}
             processing={t('adding')}
             resources={props.clusters}
@@ -79,7 +79,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                 props.close()
                 setManagedClusterSet(undefined)
             }}
-            description={t('cluster.addSet.description')}
+            description={t('bulk.message.addSet')}
             columns={modalColumns}
             keyFn={(cluster) => cluster.name as string}
             actionFn={(cluster) => {

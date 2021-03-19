@@ -32,7 +32,6 @@ import { canUser } from '../../../lib/rbac-util'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
@@ -267,12 +266,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.destroy'),
                                 action: t('destroy'),
                                 processing: t('destroying'),
                                 resources: clusters,
-                                description: t('cluster.destroy.description'),
+                                description: t('bulk.message.destroy'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
@@ -289,12 +287,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.detach'),
                                 action: t('detach'),
                                 processing: t('detaching'),
                                 resources: clusters,
-                                description: t('cluster.detach.description'),
+                                description: t('bulk.message.detach'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),

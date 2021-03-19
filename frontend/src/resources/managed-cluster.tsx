@@ -40,7 +40,10 @@ export interface ManagedCluster extends IResource {
     }
 }
 
-export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: Record<string, string> }) => {
+export const createManagedCluster = (data: {
+    clusterName: string | undefined
+    clusterLabels: Record<string, string>
+}) => {
     return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
