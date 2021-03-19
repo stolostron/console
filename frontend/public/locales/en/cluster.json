@@ -166,7 +166,7 @@
     "status.hibernating.message": "The cluster is powered down. Virtual machine and network resources are not being utilized.",
     "status.resuming.message": "The cluster is powering back on. Cluster operations and consumption of virtual machine and network resources will resume.",
     "status.stopping.message": "The cluster is powering down. Cluster operations and consumption of virtual machine and network resources will be suspended.",
-    "status.degraded.message": "One or more of the cluster's add-ons are in an degraded state.",
+    "status.degraded.message": "One or more of the cluster's add-ons are in a degraded state.",
     "node.status.ready": "Ready",
     "node.status.unhealthy": "Unhealthy",
     "node.status.unknown": "Unknown",
@@ -196,6 +196,7 @@
     "provision.notification.provisionfailed": "Cluster creation failed:",
     "provision.notification.destroying": "Cluster creation is in progress:",
     "view.logs": "View logs",
+    "view.addons": "View add-ons",
 
     "modal.destroy.title": "Destroy managed cluster",
     "modal.detach.title": "Detach managed cluster",
