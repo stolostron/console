@@ -5,6 +5,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
+import { waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import {
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+} from '../../../../resources/discovered-cluster'
 import {
     waitForNocks,
     waitForText,
@@ -27,17 +34,16 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../../resources/discovered-cluster'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
+<<<<<<< HEAD
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import { NavigationPath } from '../../../../NavigationPath'
 import { managedClusterSetsState } from '../../../../atoms'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
+=======
+>>>>>>> de2c3b98c8bbd0c93bf6e3a9e6cdddb1376ed858
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -315,10 +321,17 @@ describe('ImportCluster', () => {
         await clickByText('import.mode.default')
         await clickByText('import.manual.choice')
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
+<<<<<<< HEAD
         await clickByText('import.form.submit')
         await waitForText('import.generating')
         await waitForNocks([projectNock])
         await waitForText(mockBadRequestStatus.message)
+=======
+        userEvent.click(getByText('import.form.submit'))
+        await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
+        await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
+        await waitForText(mockBadRequestStatus.message, true)
+>>>>>>> de2c3b98c8bbd0c93bf6e3a9e6cdddb1376ed858
     })
 
     test('handles resource creation errors', async () => {
@@ -337,7 +350,7 @@ describe('ImportCluster', () => {
 
         await waitForNocks([createProjectNock, badRequestNock, deleteProjectNock])
 
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitForText(mockBadRequestStatus.message, true)
     })
 })
 

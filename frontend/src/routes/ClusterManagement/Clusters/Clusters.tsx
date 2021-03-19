@@ -7,8 +7,8 @@ import {
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
+    AcmPageContent,
     AcmTable,
-    AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -22,6 +22,7 @@ import {
     managedClusterInfosState,
     managedClustersState,
     clusterManagementAddonsState,
+    managedClusterAddonsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -48,19 +49,26 @@ export default function ClustersPage() {
     const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 
     const clusters = useMemo(
-        () => mapClusters(clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters),
-        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters]
+        () =>
+            mapClusters(
+                clusterDeployments,
+                managedClusterInfos,
+                certificateSigningRequests,
+                managedClusters,
+                managedClusterAddons
+            ),
+        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
     usePageContext(clusters.length > 0, PageActions)
-
     return (
-        <PageSection variant="light" isFilled={true}>
-            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+        <AcmPageContent id="clusters">
+            <PageSection variant="light" isFilled={true}>
                 <ClustersTable clusters={clusters} />
-            </AcmTablePaginationContextProvider>{' '}
-        </PageSection>
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

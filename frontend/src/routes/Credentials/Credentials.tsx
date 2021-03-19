@@ -5,11 +5,10 @@ import {
     AcmEmptyState,
     AcmInlineProvider,
     AcmPage,
+    AcmPageContent,
     AcmPageHeader,
     AcmRoute,
-    AcmScrollable,
     AcmTable,
-    AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
@@ -34,20 +33,18 @@ export default function CredentialsPage() {
     const [providerConnections] = useRecoilState(providerConnectionsState)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.ManageCredentials), [setRoute])
+    useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
     return (
         <AcmPage>
             <AcmPageHeader title={t('manageCredentials')} />
-            <AcmScrollable borderTop>
+            <AcmPageContent id="credentials">
                 <PageSection variant="light" isFilled={true}>
-                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable
-                            providerConnections={providerConnections}
-                            discoveryConfigs={discoveryConfigs}
-                        />
-                    </AcmTablePaginationContextProvider>
+                    <ProviderConnectionsTable
+                        providerConnections={providerConnections}
+                        discoveryConfigs={discoveryConfigs}
+                    />
                 </PageSection>
-            </AcmScrollable>
+            </AcmPageContent>
         </AcmPage>
     )
 }

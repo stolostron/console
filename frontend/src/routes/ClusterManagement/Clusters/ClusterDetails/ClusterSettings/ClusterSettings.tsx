@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineStatus, AcmTable, StatusType } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,9 +10,11 @@ import { ClusterContext } from '../ClusterDetails'
 export function ClustersSettingsPageContent() {
     const { addons } = useContext(ClusterContext)
     return (
-        <PageSection variant="light">
-            <ClusterSettingsTable addons={addons} />
-        </PageSection>
+        <AcmPageContent id="addons">
+            <PageSection variant="light" isFilled>
+                <ClusterSettingsTable addons={addons} />
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

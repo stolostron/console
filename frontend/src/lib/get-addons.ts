@@ -36,7 +36,7 @@ export function mapAddons(
     return addons
 }
 
-function getDisplayStatus(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[]): string {
+function getDisplayStatus(cma: ClusterManagementAddOn | undefined, mcas: ManagedClusterAddOn[]): string {
     const mcaStatus = mcas?.find((mca) => mca.metadata.name === cma.metadata.name)
     if (mcaStatus?.status?.conditions === undefined) {
         return AddonStatus.Disabled
