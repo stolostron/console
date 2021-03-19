@@ -133,7 +133,6 @@
     "validate.imageMirror.repositorypath": "Value for the repository path must consist of alphanumeric characters, '-', '.' or '_', and must start and end with an alphanumeric character",
     "validate.baseDnsName.char": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
     "validate.baseDnsName.start": "The base DNS domain must not begin with a period.",
-    "end": "",
 
     "bulk.title.delete": "Delete credential(s)",
     "bulk.message.delete": "Deleting credential(s) is irreversible. The credentials will no longer be available for creating new clusters, but clusters that were previously created using the credential will not be affected."

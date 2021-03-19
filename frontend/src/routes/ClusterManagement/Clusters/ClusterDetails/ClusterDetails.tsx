@@ -87,9 +87,24 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     useEffect(() => {
         // Need to keep cluster data for detach/destroy
         if (clusterExists) {
-            setCluster(getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons))
+            setCluster(
+                getCluster(
+                    managedClusterInfo,
+                    clusterDeployment,
+                    certificateSigningRequests,
+                    managedCluster,
+                    clusterAddons
+                )
+            )
         }
-    }, [managedCluster, clusterDeployment, managedClusterInfo, certificateSigningRequests, clusterAddons, clusterExists])
+    }, [
+        managedCluster,
+        clusterDeployment,
+        managedClusterInfo,
+        certificateSigningRequests,
+        clusterAddons,
+        clusterExists,
+    ])
     // End cluster
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
