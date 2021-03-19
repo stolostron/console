@@ -128,15 +128,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                 isInline
                                 noClose
                                 variant="danger"
-                                title={
-                                    errors.length === 1
-                                        ? `${t('common:there.was.an.error')
-                                              .replace('{0}', props.processing.toLowerCase())
-                                              .replace('{1}', props.singular.toLowerCase())}`
-                                        : `${t('common:there.were.errors')
-                                              .replace('{0}', props.processing.toLowerCase())
-                                              .replace('{1}', props.plural.toLowerCase())}`
-                                }
+                                title={t('common:there.were.errors')}
                             />
                             {props.columns && props.keyFn && (
                                 <AcmTablePaginationContextProvider localStorageKey="model">
