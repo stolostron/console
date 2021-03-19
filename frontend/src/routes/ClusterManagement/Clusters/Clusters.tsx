@@ -19,9 +19,10 @@ import { useRecoilState } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
-    clusterManagementAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterManagementAddonsState,
+    managedClusterAddonsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -47,10 +48,18 @@ export default function ClustersPage() {
     const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 
     const clusters = useMemo(
-        () => mapClusters(clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters),
-        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters]
+        () =>
+            mapClusters(
+                clusterDeployments,
+                managedClusterInfos,
+                certificateSigningRequests,
+                managedClusters,
+                managedClusterAddons
+            ),
+        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
     usePageContext(clusters.length > 0, PageActions)
     return (
