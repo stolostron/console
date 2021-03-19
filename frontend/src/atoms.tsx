@@ -152,7 +152,6 @@ export function LoadData(props: { children?: ReactNode }) {
                         resource.metadata?.name === data.object.metadata.name &&
                         resource.metadata?.namespace === data.object.metadata.namespace
                 )
-                if (index !== -1) newResources.splice(index, 1)
                 switch (data.type) {
                     case 'ADDED':
                     case 'MODIFIED':
