@@ -308,7 +308,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
     }
 
-    if (managedClusterSets.length === 0) {
+    if (!cluster?.labels?.[managedClusterSetLabel] && managedClusterSets.length === 0) {
         actions = actions.filter((a) => a.id !== 'manage-set')
     }
 

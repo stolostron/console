@@ -177,7 +177,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     }
                     actions={
                         <Fragment>
-                            <AcmActionGroup>
+                            {/* <AcmActionGroup> */}
                                 <AcmLaunchLink
                                     links={addons
                                         ?.filter((addon) => addon.launchLink)
@@ -189,7 +189,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                 />
                                 <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
                                 <ClusterActionDropdown cluster={cluster!} isKebab={false} />
-                            </AcmActionGroup>
+                            {/* </AcmActionGroup> */}
                         </Fragment>
                     }
                 />
