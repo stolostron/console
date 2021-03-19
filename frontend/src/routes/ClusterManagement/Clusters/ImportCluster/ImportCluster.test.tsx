@@ -318,7 +318,7 @@ describe('ImportCluster', () => {
         await clickByText('import.form.submit')
         await waitForText('import.generating')
         await waitForNocks([projectNock])
-        await waitForText(mockBadRequestStatus.message)
+        await waitForText(mockBadRequestStatus.message, true)
     })
 
     test('handles resource creation errors', async () => {
