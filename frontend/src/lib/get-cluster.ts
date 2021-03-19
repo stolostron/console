@@ -27,7 +27,7 @@ export enum ClusterStatus {
     'hibernating' = 'hibernating',
     'stopping' = 'stopping',
     'resuming' = 'resuming',
-    'degraded' = 'degraded'
+    'degraded' = 'degraded',
 }
 
 export type Cluster = {
@@ -103,7 +103,13 @@ export function getCluster(
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
-        status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster, managedClusterAddOns),
+        status: getClusterStatus(
+            clusterDeployment,
+            managedClusterInfo,
+            certificateSigningRequests,
+            managedCluster,
+            managedClusterAddOns
+        ),
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
@@ -394,7 +400,9 @@ export function getClusterStatus(
         }
     } else {
         if (clusterAvailable) {
-            const hasDegradedAddons= !!managedClusterAddOns?.some((mca) => checkForCondition(AddonStatus.Degraded, mca.status?.conditions!))
+            const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
+                checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
+            )
             mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
         } else {
             mcStatus = ClusterStatus.offline
