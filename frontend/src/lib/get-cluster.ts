@@ -396,7 +396,6 @@ export function getClusterStatus(
         if (clusterAvailable) {
             const hasDegradedAddons= !!managedClusterAddOns?.some((mca) => checkForCondition(AddonStatus.Degraded, mca.status?.conditions!))
             mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
-
         } else {
             mcStatus = ClusterStatus.offline
         }
