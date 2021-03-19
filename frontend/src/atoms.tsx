@@ -145,7 +145,6 @@ export function LoadData(props: { children?: ReactNode }) {
             if (!data.object) return
             const setter = setters[data.object.kind]
             if (!setter) return
-            console.log(data.object.kind)
             setter((resources) => {
                 let newResources = [...resources]
                 const index = resources.findIndex(

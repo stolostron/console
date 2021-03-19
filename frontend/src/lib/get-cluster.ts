@@ -8,7 +8,7 @@ import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { getLatest } from './utils'
 import { Provider } from '@open-cluster-management/ui-components'
-import { getDisplayStatus } from './get-addons'
+import { AddonStatus } from './get-addons'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -27,6 +27,7 @@ export enum ClusterStatus {
     'hibernating' = 'hibernating',
     'stopping' = 'stopping',
     'resuming' = 'resuming',
+    'degraded' = 'degraded'
 }
 
 export type Cluster = {
@@ -393,9 +394,8 @@ export function getClusterStatus(
         }
     } else {
         if (clusterAvailable) {
-            const addonStatuses = managedClusterAddOns.map((mca) => getDisplayStatus([], managedClusterAddOns))
-
-            mcStatus = ClusterStatus.ready
+            const hasDegradedAddons= !!managedClusterAddOns?.some((mca) => checkForCondition(AddonStatus.Degraded, mca.status?.conditions!))
+            mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
 
         } else {
             mcStatus = ClusterStatus.offline

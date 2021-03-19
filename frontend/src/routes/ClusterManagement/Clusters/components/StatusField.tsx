@@ -3,10 +3,12 @@
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'
 import { configMapsState } from '../../../../atoms'
+import { NavigationPath } from '../../../../NavigationPath'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
@@ -26,6 +28,7 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.deprovisionfailed:
         case ClusterStatus.notaccepted:
         case ClusterStatus.offline:
+        case ClusterStatus.degraded:
             type = StatusType.danger
             break
         case ClusterStatus.creating:
@@ -66,6 +69,14 @@ export function StatusField(props: { cluster: Cluster }) {
                 >
                     {t('view.logs')}
                 </AcmButton>
+            )
+            break
+        case ClusterStatus.degraded:
+            hasAction = true
+            Action = () => (
+                <Link to={`${NavigationPath.clusterSettings.replace(':id', props.cluster?.name!)}`}>
+                    {t('view.addons')}
+                </Link>
             )
             break
     }
