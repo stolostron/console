@@ -124,12 +124,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         </Fragment>
                     ) : (
                         <Fragment>
-                            <AcmAlert
-                                isInline
-                                noClose
-                                variant="danger"
-                                title={t('common:there.were.errors')}
-                            />
+                            <AcmAlert isInline noClose variant="danger" title={t('common:there.were.errors')} />
                             {props.columns && props.keyFn && (
                                 <AcmTablePaginationContextProvider localStorageKey="model">
                                     <AcmTable<T>
