@@ -7,8 +7,8 @@ import {
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
+    AcmPageContent,
     AcmTable,
-    AcmTablePaginationContextProvider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -55,13 +55,12 @@ export default function ClustersPage() {
         [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
     usePageContext(clusters.length > 0, PageActions)
-
     return (
-        <PageSection variant="light" isFilled={true}>
-            <AcmTablePaginationContextProvider localStorageKey="table-clusters">
+        <AcmPageContent id="clusters">
+            <PageSection variant="light" isFilled={true}>
                 <ClustersTable clusters={clusters} />
-            </AcmTablePaginationContextProvider>{' '}
-        </PageSection>
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

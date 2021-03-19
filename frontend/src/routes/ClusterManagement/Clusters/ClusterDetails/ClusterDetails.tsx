@@ -3,19 +3,26 @@
 import {
     AcmActionGroup,
     AcmButton,
-    AcmErrorBoundary,
     AcmLaunchLink,
     AcmPage,
     AcmPageHeader,
     AcmRoute,
-    AcmScrollable,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRecoilState } from 'recoil'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import {
+    acmRouteState,
+    certificateSigningRequestsState,
+    clusterDeploymentsState,
+    clusterManagementAddonsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
+} from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster } from '../../../../lib/get-cluster'
@@ -29,15 +36,6 @@ import { DownloadConfigurationDropdown } from '../components/DownloadConfigurati
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import {
-    managedClustersState,
-    managedClusterInfosState,
-    clusterDeploymentsState,
-    certificateSigningRequestsState,
-    clusterManagementAddonsState,
-    managedClusterAddonsState,
-    acmRouteState,
-} from '../../../../atoms'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -58,7 +56,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [importCommandError, setImportCommandError] = useState<string | undefined>()
     const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.ClusterManagement), [setRoute])
+    useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
     // Cluster
     const [managedClusters] = useRecoilState(managedClustersState)
@@ -176,43 +174,38 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </AcmSecondaryNav>
                     }
                     actions={
-                        <Fragment>
-                            <AcmActionGroup>
-                                <AcmLaunchLink
-                                    links={addons
-                                        ?.filter((addon) => addon.launchLink)
-                                        ?.map((addon) => ({
-                                            id: addon.launchLink?.displayText!,
-                                            text: addon.launchLink?.displayText!,
-                                            href: addon.launchLink?.href!,
-                                        }))}
-                                />
-                                <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
-                                <ClusterActionDropdown cluster={cluster!} isKebab={false} />
-                            </AcmActionGroup>
-                        </Fragment>
+                        <AcmActionGroup>
+                            <AcmLaunchLink
+                                links={addons
+                                    ?.filter((addon) => addon.launchLink)
+                                    ?.map((addon) => ({
+                                        id: addon.launchLink?.displayText!,
+                                        text: addon.launchLink?.displayText!,
+                                        href: addon.launchLink?.href!,
+                                    }))}
+                            />
+                            <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
+                            <ClusterActionDropdown cluster={cluster!} isKebab={false} />
+                        </AcmActionGroup>
                     }
                 />
-                <AcmErrorBoundary>
-                    <AcmScrollable borderTop>
-                        <Suspense fallback={<Fragment />}>
-                            <Switch>
-                                <Route exact path={NavigationPath.clusterOverview}>
-                                    <ClusterOverviewPageContent canGetSecret={canGetSecret} />
-                                </Route>
-                                <Route exact path={NavigationPath.clusterNodes}>
-                                    <NodePoolsPageContent />
-                                </Route>
-                                <Route exact path={NavigationPath.clusterSettings}>
-                                    <ClustersSettingsPageContent />
-                                </Route>
-                                <Route exact path={NavigationPath.clusterDetails}>
-                                    <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
-                                </Route>
-                            </Switch>
-                        </Suspense>
-                    </AcmScrollable>
-                </AcmErrorBoundary>
+
+                <Suspense fallback={<Fragment />}>
+                    <Switch>
+                        <Route exact path={NavigationPath.clusterOverview}>
+                            <ClusterOverviewPageContent canGetSecret={canGetSecret} />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterNodes}>
+                            <NodePoolsPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterSettings}>
+                            <ClustersSettingsPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterDetails}>
+                            <Redirect to={NavigationPath.clusterOverview.replace(':id', match.params.id)} />
+                        </Route>
+                    </Switch>
+                </Suspense>
             </ClusterContext.Provider>
         </AcmPage>
     )

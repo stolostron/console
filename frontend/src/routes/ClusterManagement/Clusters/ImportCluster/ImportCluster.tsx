@@ -3,21 +3,29 @@
 import {
     AcmAlertContext,
     AcmAlertGroup,
-    AcmAlertProvider,
     AcmButton,
-    AcmErrorBoundary,
     AcmExpandableSection,
     AcmForm,
     AcmLabelsInput,
     AcmPage,
-    AcmPageCard,
+    AcmPageContent,
     AcmPageHeader,
     AcmSelect,
     AcmSubmit,
     AcmTextArea,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Label, SelectOption, Text, TextVariants } from '@patternfly/react-core'
+import {
+    ActionGroup,
+    Button,
+    Label,
+    PageSection,
+    SelectOption,
+    Stack,
+    StackItem,
+    Text,
+    TextVariants,
+} from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
@@ -36,33 +44,33 @@ import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
-        <AcmAlertProvider>
-            <AcmPage>
-                <AcmPageHeader
-                    title={t('page.header.import-cluster')}
-                    breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.import-cluster'), to: '' },
-                    ]}
-                    titleTooltip={
-                        <>
-                            {t('page.header.import-cluster.tooltip')}
-                            <a
-                                href={DOC_LINKS.IMPORT_CLUSTER}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
-                />
-                <AcmErrorBoundary>
+        <AcmPage>
+            <AcmPageHeader
+                title={t('page.header.import-cluster')}
+                breadcrumb={[
+                    { text: t('clusters'), to: NavigationPath.clusters },
+                    { text: t('page.header.import-cluster'), to: '' },
+                ]}
+                titleTooltip={
+                    <>
+                        {t('page.header.import-cluster.tooltip')}
+                        <a
+                            href={DOC_LINKS.IMPORT_CLUSTER}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ display: 'block', marginTop: '4px' }}
+                        >
+                            {t('common:learn.more')}
+                        </a>
+                    </>
+                }
+            />
+            <AcmPageContent id="import-cluster">
+                <PageSection variant="light" isFilled={true}>
                     <ImportClusterPageContent />
-                </AcmErrorBoundary>
-            </AcmPage>
-        </AcmAlertProvider>
+                </PageSection>
+            </AcmPageContent>
+        </AcmPage>
     )
 }
 
@@ -90,86 +98,91 @@ export function ImportClusterPageContent() {
     }
 
     return (
-        <AcmPageCard>
-            <AcmExpandableSection label={t('import.form.header')} expanded={true}>
-                <AcmForm id="import-cluster-form">
-                    <AcmTextInput
-                        id="clusterName"
-                        label={t('import.form.clusterName.label')}
-                        value={clusterName}
-                        isDisabled={submitted}
-                        onChange={(name) => setClusterName(name)}
-                        placeholder={t('import.form.clusterName.placeholder')}
-                        isRequired
-                    />
-                    <AcmLabelsInput
-                        id="additionalLabels"
-                        label={t('import.form.labels.label')}
-                        buttonLabel={t('common:label.add')}
-                        value={additionalLabels}
-                        onChange={(label) => setAdditionaLabels(label)}
-                        placeholder={t('labels.edit.placeholder')}
-                        isDisabled={submitted}
-                    />
-                </AcmForm>
-            </AcmExpandableSection>
-            <AcmExpandableSection label={t('import.mode.header')} expanded={true}>
-                <AcmForm>
-                    <AcmSelect
-                        label={t('import.mode.select')}
-                        placeholder={t('import.mode.default')}
-                        value={importMode}
-                        onChange={(id) => {
-                            setimportMode(id)
-                            switch (id) {
-                                case 'automatic-import':
-                                    setmanualButton(false)
-                                    break
-                                case 'manual-import':
-                                    setmanualButton(true)
-                                    break
-                                default:
-                                    setmanualButton(false)
-                            }
-                        }}
-                    >
-                        <SelectOption key="automatic-import" value="automatic-import">
-                            {t('import.auto.choice')}
-                        </SelectOption>
-                        <SelectOption key="manual-import" value="manual-import">
-                            {t('import.manual.choice')}
-                        </SelectOption>
-                    </AcmSelect>
-                    {!manualButton && <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>}
-                    {!manualButton && (
+        <Stack hasGutter>
+            <StackItem>
+                <AcmExpandableSection label={t('import.form.header')} expanded={true}>
+                    <AcmForm id="import-cluster-form">
+                        <AcmTextInput
+                            id="clusterName"
+                            label={t('import.form.clusterName.label')}
+                            value={clusterName}
+                            isDisabled={submitted}
+                            onChange={(name) => setClusterName(name)}
+                            placeholder={t('import.form.clusterName.placeholder')}
+                            isRequired
+                        />
+                        <AcmLabelsInput
+                            id="additionalLabels"
+                            label={t('import.form.labels.label')}
+                            buttonLabel={t('common:label.add')}
+                            value={additionalLabels}
+                            onChange={(label) => setAdditionaLabels(label)}
+                            placeholder={t('labels.edit.placeholder')}
+                            isDisabled={submitted}
+                        />
+                    </AcmForm>
+                </AcmExpandableSection>
+            </StackItem>
+            <StackItem>
+                <AcmExpandableSection label={t('import.mode.header')} expanded={true}>
+                    <AcmForm>
                         <AcmSelect
-                            label={t('import.credential.select')}
-                            placeholder={t('import.credential.default')}
-                            value={credentialMode}
+                            label={t('import.mode.select')}
+                            placeholder={t('import.mode.default')}
+                            value={importMode}
                             onChange={(id) => {
-                                setcredentialMode(id)
+                                setimportMode(id)
                                 switch (id) {
-                                    case 'credentials':
-                                        setcredentialBool(true)
+                                    case 'automatic-import':
+                                        setmanualButton(false)
                                         break
-                                    case 'kubeconfig':
-                                        setcredentialBool(false)
+                                    case 'manual-import':
+                                        setmanualButton(true)
                                         break
                                     default:
-                                        setcredentialBool(false)
+                                        setmanualButton(false)
                                 }
                             }}
                         >
-                            {/* <SelectOption key="credentials" value="credentials">
-                                {t('import.credential.choice')}
-                            </SelectOption> */}
-                            <SelectOption key="kubeconfig" value="kubeconfig">
-                                {t('import.config.choice')}
+                            <SelectOption key="automatic-import" value="automatic-import">
+                                {t('import.auto.choice')}
+                            </SelectOption>
+                            <SelectOption key="manual-import" value="manual-import">
+                                {t('import.manual.choice')}
                             </SelectOption>
                         </AcmSelect>
-                    )}
+                        {!manualButton && (
+                            <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>
+                        )}
+                        {!manualButton && (
+                            <AcmSelect
+                                label={t('import.credential.select')}
+                                placeholder={t('import.credential.default')}
+                                value={credentialMode}
+                                onChange={(id) => {
+                                    setcredentialMode(id)
+                                    switch (id) {
+                                        case 'credentials':
+                                            setcredentialBool(true)
+                                            break
+                                        case 'kubeconfig':
+                                            setcredentialBool(false)
+                                            break
+                                        default:
+                                            setcredentialBool(false)
+                                    }
+                                }}
+                            >
+                                {/* <SelectOption key="credentials" value="credentials">
+                                {t('import.credential.choice')}
+                            </SelectOption> */}
+                                <SelectOption key="kubeconfig" value="kubeconfig">
+                                    {t('import.config.choice')}
+                                </SelectOption>
+                            </AcmSelect>
+                        )}
 
-                    {/* <AcmTextInput
+                        {/* <AcmTextInput
                         id="username"
                         label={t('import.username')}
                         placeholder={t('import.username.place')}
@@ -191,140 +204,142 @@ export function ImportClusterPageContent() {
                         isRequired            
                         hidden={manualButton || !credentialBool}
                     /> */}
-                    <AcmTextArea
-                        id="kubeConfigEntry"
-                        label={t('import.auto.config.label')}
-                        placeholder={t('import.auto.config.prompt')}
-                        value={kubeConfigText}
-                        onChange={(file) => {
-                            setkubeConfigText(file)
-                        }}
-                        hidden={credentialBool || manualButton}
-                        isRequired
-                    />
-
-                    {manualButton && <Text component={TextVariants.small}>{t('import.description')}; </Text>}
-
-                    <AcmAlertGroup isInline canClose />
-                    <ActionGroup>
-                        <AcmSubmit
-                            id="submit"
-                            variant="primary"
-                            isDisabled={!clusterName || submitted}
-                            onClick={async () => {
-                                setSubmitted(true)
-                                alertContext.clearAlerts()
-                                /* istanbul ignore next */
-                                const clusterLabels = {
-                                    cloud: 'auto-detect',
-                                    vendor: 'auto-detect',
-                                    name: clusterName,
-                                    ...additionalLabels,
-                                }
-                                const createdResources: IResource[] = []
-                                return new Promise(async (resolve, reject) => {
-                                    try {
-                                        try {
-                                            createdResources.push(await createProject(clusterName).promise)
-                                        } catch (err) {
-                                            const resourceError = err as ResourceError
-                                            if (resourceError.code !== ResourceErrorCode.Conflict) {
-                                                throw err
-                                            }
-                                        }
-                                        createdResources.push(
-                                            await createManagedCluster({ clusterName, clusterLabels }).promise
-                                        )
-                                        createdResources.push(
-                                            await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
-                                        )
-
-                                        if (!manualButton) {
-                                            createdResources.push(
-                                                await createResource<IResource>({
-                                                    apiVersion: 'v1',
-                                                    kind: 'Secret',
-                                                    metadata: {
-                                                        name: 'auto-import-secret',
-                                                        namespace: clusterName,
-                                                    },
-                                                    stringData: {
-                                                        autoImportRetry: '2',
-                                                        kubeconfig: kubeConfigText,
-                                                    },
-                                                    type: 'Opaque',
-                                                }).promise
-                                            )
-                                                ? history.push(
-                                                      NavigationPath.clusterDetails.replace(
-                                                          ':id',
-                                                          clusterName as string
-                                                      )
-                                                  )
-                                                : onReset()
-                                        } else {
-                                            setImportCommand(await pollImportYamlSecret(clusterName))
-                                        }
-                                    } catch (err) {
-                                        if (err instanceof Error) {
-                                            alertContext.addAlert({
-                                                type: 'danger',
-                                                title: err.name,
-                                                message: err.message,
-                                            })
-                                        }
-                                        await deleteResources(createdResources).promise
-                                        setSubmitted(false)
-                                        reject()
-                                    } finally {
-                                        resolve(undefined)
-                                    }
-                                })
+                        <AcmTextArea
+                            id="kubeConfigEntry"
+                            label={t('import.auto.config.label')}
+                            placeholder={t('import.auto.config.prompt')}
+                            value={kubeConfigText}
+                            onChange={(file) => {
+                                setkubeConfigText(file)
                             }}
-                            label={
-                                submitted
-                                    ? t('import.form.submitted')
-                                    : manualButton
-                                    ? t('import.form.submit')
-                                    : t('import.auto.button')
-                            }
-                            processingLabel={t('import.generating')}
+                            hidden={credentialBool || manualButton}
+                            isRequired
                         />
 
-                        {submitted ? (
-                            <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
-                                {t('import.importmode.importsaved')}
-                            </Label>
-                        ) : (
-                            <Link to={NavigationPath.clusters} id="cancel">
-                                <Button variant="link">{t('common:cancel')}</Button>
-                            </Link>
+                        {manualButton && <Text component={TextVariants.small}>{t('import.description')}; </Text>}
+
+                        <AcmAlertGroup isInline canClose padTop />
+                        <ActionGroup>
+                            <AcmSubmit
+                                id="submit"
+                                variant="primary"
+                                isDisabled={!clusterName || submitted}
+                                onClick={async () => {
+                                    setSubmitted(true)
+                                    alertContext.clearAlerts()
+                                    /* istanbul ignore next */
+                                    const clusterLabels = {
+                                        cloud: 'auto-detect',
+                                        vendor: 'auto-detect',
+                                        name: clusterName,
+                                        ...additionalLabels,
+                                    }
+                                    const createdResources: IResource[] = []
+                                    return new Promise(async (resolve, reject) => {
+                                        try {
+                                            try {
+                                                createdResources.push(await createProject(clusterName).promise)
+                                            } catch (err) {
+                                                const resourceError = err as ResourceError
+                                                if (resourceError.code !== ResourceErrorCode.Conflict) {
+                                                    throw err
+                                                }
+                                            }
+                                            createdResources.push(
+                                                await createManagedCluster({ clusterName, clusterLabels }).promise
+                                            )
+                                            createdResources.push(
+                                                await createKlusterletAddonConfig({ clusterName, clusterLabels })
+                                                    .promise
+                                            )
+
+                                            if (!manualButton) {
+                                                createdResources.push(
+                                                    await createResource<IResource>({
+                                                        apiVersion: 'v1',
+                                                        kind: 'Secret',
+                                                        metadata: {
+                                                            name: 'auto-import-secret',
+                                                            namespace: clusterName,
+                                                        },
+                                                        stringData: {
+                                                            autoImportRetry: '2',
+                                                            kubeconfig: kubeConfigText,
+                                                        },
+                                                        type: 'Opaque',
+                                                    }).promise
+                                                )
+                                                    ? history.push(
+                                                          NavigationPath.clusterDetails.replace(
+                                                              ':id',
+                                                              clusterName as string
+                                                          )
+                                                      )
+                                                    : onReset()
+                                            } else {
+                                                setImportCommand(await pollImportYamlSecret(clusterName))
+                                            }
+                                        } catch (err) {
+                                            if (err instanceof Error) {
+                                                alertContext.addAlert({
+                                                    type: 'danger',
+                                                    title: err.name,
+                                                    message: err.message,
+                                                })
+                                            }
+                                            await deleteResources(createdResources).promise
+                                            setSubmitted(false)
+                                            reject()
+                                        } finally {
+                                            resolve(undefined)
+                                        }
+                                    })
+                                }}
+                                label={
+                                    submitted
+                                        ? t('import.form.submitted')
+                                        : manualButton
+                                        ? t('import.form.submit')
+                                        : t('import.auto.button')
+                                }
+                                processingLabel={t('import.generating')}
+                            />
+
+                            {submitted ? (
+                                <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
+                                    {t('import.importmode.importsaved')}
+                                </Label>
+                            ) : (
+                                <Link to={NavigationPath.clusters} id="cancel">
+                                    <Button variant="link">{t('common:cancel')}</Button>
+                                </Link>
+                            )}
+                        </ActionGroup>
+                        {importCommand && (
+                            <Fragment>
+                                <ImportCommand importCommand={importCommand}>
+                                    <ActionGroup>
+                                        <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
+                                            <Button variant="primary">{t('import.footer.viewcluster')}</Button>
+                                        </Link>
+                                        <AcmButton
+                                            variant="secondary"
+                                            role="link"
+                                            onClick={() => {
+                                                sessionStorage.getItem('DiscoveredClusterConsoleURL')
+                                                    ? history.push(NavigationPath.discoveredClusters)
+                                                    : onReset()
+                                            }}
+                                        >
+                                            {t('import.footer.importanother')}
+                                        </AcmButton>
+                                    </ActionGroup>
+                                </ImportCommand>
+                            </Fragment>
                         )}
-                    </ActionGroup>
-                    {importCommand && (
-                        <Fragment>
-                            <ImportCommand importCommand={importCommand}>
-                                <ActionGroup>
-                                    <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
-                                        <Button variant="primary">{t('import.footer.viewcluster')}</Button>
-                                    </Link>
-                                    <AcmButton
-                                        variant="secondary"
-                                        role="link"
-                                        onClick={() => {
-                                            sessionStorage.getItem('DiscoveredClusterConsoleURL')
-                                                ? history.push(NavigationPath.discoveredClusters)
-                                                : onReset()
-                                        }}
-                                    >
-                                        {t('import.footer.importanother')}
-                                    </AcmButton>
-                                </ActionGroup>
-                            </ImportCommand>
-                        </Fragment>
-                    )}
-                </AcmForm>
-            </AcmExpandableSection>
-        </AcmPageCard>
+                    </AcmForm>
+                </AcmExpandableSection>
+            </StackItem>
+        </Stack>
     )
 }
