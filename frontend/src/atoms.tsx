@@ -42,7 +42,7 @@ export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [
 export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -181,7 +181,7 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'START':
                             if (eventDataQueue === undefined) eventDataQueue = []
                             break
-                        case 'BOOKMARK':
+                        case 'LOADED':
                             processEvents()
                             setLoading(false)
                             break
