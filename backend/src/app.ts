@@ -15,14 +15,17 @@ import { proxy } from './routes/proxy'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
-import { stopWatching, watch } from './routes/watch'
+import { startWatching, stopWatching, watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, respondOK)
 router.get(`/ping`, respondOK)
+router.all(`/api`, proxy)
 router.all(`/api/*`, proxy)
+router.all(`/apis`, proxy)
 router.all(`/apis/*`, proxy)
 router.all(`/version`, proxy)
+router.all(`/version/`, proxy)
 router.get(`/login`, login)
 router.get(`/login/callback?*`, loginCallback)
 router.get(`/watch`, watch)
@@ -59,6 +62,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 }
 
 export function start(): Promise<Http2Server | undefined> {
+    startWatching()
     return startServer({ requestHandler })
 }
 
