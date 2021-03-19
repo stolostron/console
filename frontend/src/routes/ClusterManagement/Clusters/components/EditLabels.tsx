@@ -40,9 +40,7 @@ export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
                         onChange={(labels) => setLabels(labels!)}
                         placeholder={t('labels.edit.placeholder')}
                     />
-                    <div style={{ marginTop: '24px' }}>
-                        <AcmAlertGroup isInline canClose />
-                    </div>
+                    <AcmAlertGroup isInline canClose padTop />
                     <ActionGroup>
                         <AcmSubmit
                             id="add-labels"

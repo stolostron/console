@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-import { AcmHeader } from '@open-cluster-management/ui-components'
+import { AcmHeader, AcmTablePaginationContextProvider } from '@open-cluster-management/ui-components'
 import { lazy } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -24,21 +24,31 @@ export default function App() {
         <BrowserRouter>
             <AcmHeader route={route}>
                 <LoadData>
-                    <Switch>
-                        <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                        <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                        <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                        <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                        <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
-                        <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
-                        <Route exact path={NavigationPath.editBareMetalAsset} component={CreateBareMetalAssetPage} />
-                        <Route exact path={NavigationPath.createBareMetalAsset} component={CreateBareMetalAssetPage} />
-                        <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
-                        <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                        <Route exact path="*">
-                            <Redirect to={NavigationPath.console} />
-                        </Route>
-                    </Switch>
+                    <AcmTablePaginationContextProvider localStorageKey="clusters">
+                        <Switch>
+                            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                            <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                            <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
+                            <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
+                            <Route
+                                exact
+                                path={NavigationPath.editBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route
+                                exact
+                                path={NavigationPath.createBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
+                            <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                            <Route exact path="*">
+                                <Redirect to={NavigationPath.console} />
+                            </Route>
+                        </Switch>
+                    </AcmTablePaginationContextProvider>
                 </LoadData>
             </AcmHeader>
         </BrowserRouter>

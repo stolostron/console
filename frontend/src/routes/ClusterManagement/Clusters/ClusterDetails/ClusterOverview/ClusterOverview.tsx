@@ -6,10 +6,11 @@ import {
     AcmInlineCopy,
     AcmInlineProvider,
     AcmLabels,
+    AcmPageContent,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext } from 'react'
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
@@ -29,7 +30,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
     return (
-        <Fragment>
+        <AcmPageContent id="overview">
             <PageSection>
                 <HiveNotification />
                 <ImportCommandContainer />
@@ -113,6 +114,6 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 />
                 {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
             </PageSection>
-        </Fragment>
+        </AcmPageContent>
     )
 }

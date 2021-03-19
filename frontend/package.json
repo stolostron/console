@@ -6,7 +6,7 @@
     "proxy": "https://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.14.0",
-        "@open-cluster-management/ui-components": "^0.1.238",
+        "@open-cluster-management/ui-components": "^0.1.250",
         "@patternfly/react-core": "^4.101.3",
         "@patternfly/react-table": "^4.23.14",
         "@types/lodash": "^4.14.168",
@@ -42,14 +42,14 @@
         "@testing-library/react": "^11.2.5",
         "@testing-library/user-event": "^12.8.3",
         "@types/get-value": "^3.0.1",
-        "@types/jest": "^26.0.20",
+        "@types/jest": "^26.0.21",
         "@types/node": "^14.14.35",
         "babel-jest": "^26.6.3",
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "jest-sonar-reporter": "^2.0.0",
         "nock": "^13.0.11",
         "prettier": "^2.2.1",
-        "ts-jest": "^26.5.3"
+        "ts-jest": "^26.5.4"
     },
     "scripts": {
         "start": "react-app-rewired start",
