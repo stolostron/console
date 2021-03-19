@@ -181,19 +181,6 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         cell: (cluster) => <DistributionField cluster={cluster} />,
                     },
                     {
-                        header: t('table.groups'),
-                        cell: (cluster) => {
-                            if (cluster.hive.clusterPool || cluster.labels?.[managedClusterSetLabel]) {
-                                const labels = []
-                                cluster.hive.clusterPool && labels.push(`Pool: ${cluster.hive.clusterPool}`)
-                                cluster.labels?.[managedClusterSetLabel] &&
-                                    labels.push(`Set: ${cluster.labels?.[managedClusterSetLabel]}`)
-                                return <AcmLabels labels={labels} />
-                            }
-                            return '-'
-                        },
-                    },
-                    {
                         header: t('table.labels'),
                         search: (cluster) =>
                             cluster.labels
@@ -210,9 +197,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                                         'installer.namespace',
                                         'name',
                                         'vendor',
-                                        'cluster.open-cluster-management.io/clusterset',
                                     ].filter((label) => labelKeys.includes(label)) ?? []
-
                                 return (
                                     <AcmLabels
                                         labels={cluster.labels}
