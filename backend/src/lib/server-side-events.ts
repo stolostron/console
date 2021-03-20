@@ -65,20 +65,22 @@ export class ServerSideEvents {
         return Promise.resolve()
     }
 
-    public static pushEvent(event: ServerSideEvent): number {
+    public static pushEvent(event: ServerSideEvent, sendLoaded = true): number {
         const eventID = ++this.eventID
         event.id = eventID.toString()
         this.events[eventID] = event
         this.broadcastEvent(event)
 
-        this.removeEvent(this.lastLoadedID)
-        this.lastLoadedID = ++this.eventID
-        const doneEvent = {
-            id: this.lastLoadedID.toString(),
-            data: { type: 'LOADED' },
+        if (sendLoaded) {
+            this.removeEvent(this.lastLoadedID)
+            this.lastLoadedID = ++this.eventID
+            const loadedEvent = {
+                id: this.lastLoadedID.toString(),
+                data: { type: 'LOADED' },
+            }
+            this.events[this.lastLoadedID] = loadedEvent
+            this.broadcastEvent(loadedEvent)
         }
-        this.events[this.lastLoadedID] = doneEvent
-        this.broadcastEvent(doneEvent)
 
         return eventID
     }
@@ -277,25 +279,12 @@ export class ServerSideEvents {
         return eventClient
     }
 
+    private static lastPingEvent = 0
     private static keepAlivePing(): void {
-        for (const clientID in this.clients) {
-            const compressionStream = this.clients[clientID].compressionStream
-            if (compressionStream) {
-                try {
-                    compressionStream.write(':\n\n')
-                    compressionStream.flush()
-                } catch (err) {
-                    logger.error(err)
-                }
-            } else {
-                const clientStream = this.clients[clientID].writableStream
-                try {
-                    clientStream.write(':\n\n')
-                } catch (err) {
-                    logger.error(err)
-                }
-            }
+        if (this.lastPingEvent) {
+            this.removeEvent(this.lastPingEvent)
         }
+        this.lastPingEvent = this.pushEvent({}, false)
     }
     private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
         ServerSideEvents.keepAlivePing()
