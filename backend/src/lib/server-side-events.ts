@@ -265,14 +265,13 @@ export class ServerSideEvents {
             sentCount++
         }
 
-        const msg: Record<string, string | number | undefined> = {
-            msg: 'Streaming',
+        logger.info({
+            msg: 'stream start',
             status: 200,
             method: req.method,
             path: req.url,
             events: sentCount,
-        }
-        logger.info(msg)
+        })
 
         return eventClient
     }
