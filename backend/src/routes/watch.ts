@@ -155,10 +155,15 @@ export function watchResource(
 
                 res.on('data', (chunk) => {
                     if (chunk instanceof Buffer) {
+                        let oldBuffer = buffer
                         buffer = Buffer.concat([buffer, chunk])
+                        oldBuffer.fill(0)
+                        chunk.fill(0)
+
                         let index = buffer.indexOf('\n')
                         while (index !== -1) {
-                            // TODO - use buffers and zero fill secrets
+                            // TODO - Security: Search for secret and zero out secret
+
                             const data = buffer.slice(0, index)
                             try {
                                 const watchEvent = JSON.parse(data.toString()) as WatchEvent
@@ -170,6 +175,10 @@ export function watchResource(
                             buffer = buffer.slice(index + 1)
                             index = buffer.indexOf('\n')
                         }
+
+                        oldBuffer = buffer
+                        buffer = Buffer.from(buffer)
+                        oldBuffer.fill(0)
                     }
                 })
                     .on('error', (err: Error) => {
