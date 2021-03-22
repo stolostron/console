@@ -27,6 +27,9 @@ spec:
 {{/switch}}
     vendor: {{{distribution}}}
   applicationManager:
+    {{#if argocdcluster}}
+    argocdCluster: true
+    {{/if}}
     enabled: true
   policyController:
     enabled: true
@@ -36,4 +39,3 @@ spec:
     enabled: true
   iamPolicyController:
     enabled: true
-  version: 2.2.0
