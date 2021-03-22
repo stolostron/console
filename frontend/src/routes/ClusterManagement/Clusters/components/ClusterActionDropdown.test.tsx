@@ -138,7 +138,7 @@ describe('Cluster Action Dropdown', () => {
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
         await clickByText('managed.addSet')
-        await clickByText('select')
+        await clickByText('common:select')
         await clickByText(mockManagedClusterSet.metadata.name!)
         await clickByText('add')
         await waitForNock(nockPatch)

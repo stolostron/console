@@ -257,7 +257,7 @@ describe('BattchUpgradeModal', () => {
         await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
         await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
         await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
-        await waitFor(() => expect(queryByText('common:there.was.an.error')).toBeTruthy())
+        await waitFor(() => expect(queryByText('common:there.were.errors')).toBeTruthy())
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
         expect(queryByText('common:error')).toBeTruthy()
         expect(queryByText('cluster-1-ready1')).toBeFalsy()

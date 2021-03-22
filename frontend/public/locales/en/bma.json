@@ -62,5 +62,6 @@
   "bareMetalAsset.statusMessage.ready":"Ready",
 
   "bulk.title.delete": "Delete bare metal asset(s)",
-  "bulk.message.delete": "You are about to delete bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible."
+  "bulk.message.delete": "You are about to delete bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
+  "bulk.title.import": "Import bare metal asset(s)"
 }

@@ -50,11 +50,12 @@ const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string,
 export function BatchUpgradeModal(props: {
     close: () => void
     open: boolean
-    clusters: Array<Cluster> | undefined
+    clusters: Cluster[] | undefined
 }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
     const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+
     useEffect(() => {
         // set up latest if not selected
         const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
@@ -65,15 +66,14 @@ export function BatchUpgradeModal(props: {
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            plural={t('upgrade.multiple.plural')}
-            singular={t('upgrade.multiple.singular')}
+            title={t('bulk.title.upgrade')}
             action={t('upgrade.submit')}
             processing={t('upgrade.submit.processing')}
             resources={upgradeableClusters}
             close={() => {
                 props.close()
             }}
-            description={t('upgrade.multiple.note')}
+            description={t('bulk.message.upgrade')}
             columns={[
                 {
                     header: t('upgrade.table.name'),

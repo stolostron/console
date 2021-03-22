@@ -13,7 +13,7 @@ import {
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
     certificateSigningRequestsState,
@@ -36,6 +36,7 @@ import { DownloadConfigurationDropdown } from '../components/DownloadConfigurati
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
+import { usePrevious } from '../../../../components/usePrevious'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -58,18 +59,23 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
-    // Addons
-    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
-    const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
-    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === match.params.id)
-    const addons = mapAddons(clusterManagementAddons, clusterAddons)
-    // End addons
-
-    // Cluster
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
-    const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
-    const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
+    const [
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddons,
+        clusterManagementAddons,
+    ] = useRecoilValue(
+        waitForAll([
+            managedClustersState,
+            clusterDeploymentsState,
+            managedClusterInfosState,
+            certificateSigningRequestsState,
+            managedClusterAddonsState,
+            clusterManagementAddonsState,
+        ])
+    )
 
     const managedCluster = managedClusters.find((mc) => mc.metadata.name === match.params.id)
     const clusterDeployment = clusterDeployments.find(
@@ -78,37 +84,15 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const managedClusterInfo = managedClusterInfos.find(
         (mci) => mci.metadata.name === match.params.id && mci.metadata.namespace === match.params.id
     )
+    const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === match.params.id)
+    const addons = mapAddons(clusterManagementAddons, clusterAddons)
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
-    const [cluster, setCluster] = useState<Cluster | undefined>(
-        getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons)
-    )
-    useEffect(() => {
-        // Need to keep cluster data for detach/destroy
-        if (clusterExists) {
-            setCluster(
-                getCluster(
-                    managedClusterInfo,
-                    clusterDeployment,
-                    certificateSigningRequests,
-                    managedCluster,
-                    clusterAddons
-                )
-            )
-        }
-    }, [
-        managedCluster,
-        clusterDeployment,
-        managedClusterInfo,
-        certificateSigningRequests,
-        clusterAddons,
-        clusterExists,
-    ])
-    // End cluster
+    const cluster = getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons)
+    const prevCluster = usePrevious(cluster)
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
-
     useEffect(() => {
         const canGetSecret = canUser('get', SecretDefinition, match.params.id)
         canGetSecret.promise
@@ -118,10 +102,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     }, [match.params.id])
 
     if (
-        (cluster?.isHive && cluster?.status === ClusterStatus.destroying) ||
-        (!cluster?.isHive && cluster?.status === ClusterStatus.detaching)
+        (prevCluster?.isHive && prevCluster?.status === ClusterStatus.destroying) ||
+        (!prevCluster?.isHive && prevCluster?.status === ClusterStatus.detaching)
     ) {
-        return <ClusterDestroy isLoading={clusterExists} cluster={cluster!} />
+        return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} />
     }
 
     if (!clusterExists) {

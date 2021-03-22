@@ -70,8 +70,7 @@ export function BareMetalAssetsTable(props: {
     function setImportModalProps() {
         setImportedProps({
             open: true,
-            singular: t(baremetalasset),
-            plural: t(baremetalassets),
+            title: t('bulk.title.import'),
             action: t('common:import'),
             processing: '',
             description: '',
@@ -92,8 +91,7 @@ export function BareMetalAssetsTable(props: {
                                 const result = await importBMAs()
                                 setImportedProps({
                                     open: true,
-                                    singular: t(baremetalasset),
-                                    plural: t(baremetalassets),
+                                    title: t('bulk.title.import'),
                                     action: t('common:import'),
                                     processing: t('common:importing'),
                                     description: t('modal.import.content.batch'),
