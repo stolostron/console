@@ -262,7 +262,7 @@ function handleWatchEvent(watchEvent: WatchEvent): string {
 }
 
 function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideEventData>): Promise<boolean> {
-    switch (serverSideEvent.data.type) {
+    switch (serverSideEvent.data?.type) {
         case 'START':
         case 'LOADED':
             return Promise.resolve(true)
