@@ -1,8 +1,8 @@
 
 apiVersion: v1
 metadata:
-  name: {{{name}}}
-baseDomain: {{{baseDomain}}}
+  name: '{{{name}}}'
+baseDomain: '{{{baseDomain}}}'
 
 
 {{! ========================================================== }}
@@ -88,7 +88,7 @@ compute:
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
-  name: {{{workerName}}}
+  name: '{{{workerName}}}'
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
 {{#switch ../infrastructure}}
 
@@ -203,49 +203,49 @@ platform:
 {{/if}}
     hosts:
 {{#each ../../hosts}}
-      - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
-        namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
-        role: {{{role}}}  ##hosts.{{@index}}.role
+      - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
+        namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
+        role: '{{{role}}}'  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
 {{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
-          username: {{{username}}}  ##hosts.{{@index}}.username
-          password: {{{password}}}  ##hosts.{{@index}}.password
-        bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
+          username: '{{{username}}}'  ##hosts.{{@index}}.username
+          password: '{{{password}}}'  ##hosts.{{@index}}.password
+        bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
         hardwareProfile: default
 {{/each}}
 {{/case}}
 
 {{#case 'AWS'}}
   aws:
-    region: {{{../../region}}}
+    region: '{{{../../region}}}'
 {{/case}}
 
 {{#case 'GCP'}}
   gcp:
-    projectID: {{{../../gcProjectID}}} ##gcProjectID
-    region: {{{../../region}}}
+    projectID: '{{{../../gcProjectID}}}' ##gcProjectID
+    region: '{{{../../region}}}'
 {{/case}}
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
-    region: {{{../../region}}}
+    baseDomainResourceGroupName: '{{{../../baseDomainResourceGroupName}}}'
+    region: '{{{../../region}}}'
 {{/case}}
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{../../vcenter}}}
-    username: {{{../../username}}}
-    password: {{{../../password}}}
-    datacenter: {{{../../datacenter}}}
-    defaultDatastore: {{{../../datastore}}}
-    cluster: {{{../../vmClusterName}}}
-    apiVIP: {{{../../apiVIP}}}    ##apiVIP
-    ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
-    network: {{{../../networkType}}}
+    vCenter: '{{{../../vcenter}}}'
+    username: '{{{../../username}}}'
+    password: '{{{../../password}}}'
+    datacenter: '{{{../../datacenter}}}'
+    defaultDatastore: '{{{../../datastore}}}'
+    cluster: '{{{../../vmClusterName}}}'
+    apiVIP: '{{{../../apiVIP}}}'    ##apiVIP
+    ingressVIP: '{{{../../ingressVIP}}}'  ##ingressVIP
+    network: '{{{../../networkType}}}'
 {{/case}}
 
 {{/switch}}
