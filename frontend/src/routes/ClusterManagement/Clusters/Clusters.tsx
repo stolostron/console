@@ -227,9 +227,8 @@ export function ClustersTable(props: {
                 }}
             />
             <UpgradeModal
-                data={upgradeSingleCluster?.distribution}
+                cluster={upgradeSingleCluster}
                 open={!!upgradeSingleCluster}
-                clusterName={upgradeSingleCluster?.name || ''}
                 close={() => {
                     setUpgradeSingleCluster(undefined)
                 }}
