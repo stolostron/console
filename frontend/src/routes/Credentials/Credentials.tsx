@@ -5,20 +5,20 @@ import {
     AcmEmptyState,
     AcmInlineProvider,
     AcmPage,
+    AcmPageContent,
     AcmPageHeader,
-    AcmScrollable,
+    AcmRoute,
     AcmTable,
-    AcmTablePaginationContextProvider,
     compareStrings,
     Provider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { acmRouteState, discoveryConfigState, providerConnectionsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../lib/providers'
@@ -32,19 +32,19 @@ export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
     const [providerConnections] = useRecoilState(providerConnectionsState)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
     return (
         <AcmPage>
             <AcmPageHeader title={t('manageCredentials')} />
-            <AcmScrollable borderTop>
+            <AcmPageContent id="credentials">
                 <PageSection variant="light" isFilled={true}>
-                    <AcmTablePaginationContextProvider localStorageKey="table-provider-connections">
-                        <ProviderConnectionsTable
-                            providerConnections={providerConnections}
-                            discoveryConfigs={discoveryConfigs}
-                        />
-                    </AcmTablePaginationContextProvider>
+                    <ProviderConnectionsTable
+                        providerConnections={providerConnections}
+                        discoveryConfigs={discoveryConfigs}
+                    />
                 </PageSection>
-            </AcmScrollable>
+            </AcmPageContent>
         </AcmPage>
     )
 }

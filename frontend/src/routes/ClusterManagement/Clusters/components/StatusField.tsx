@@ -1,14 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Link } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'
+import { configMapsState } from '../../../../atoms'
+import { NavigationPath } from '../../../../NavigationPath'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
+    const [configMaps] = useRecoilState(configMapsState)
+
     let type: StatusType
 
     switch (props.cluster?.status) {
@@ -23,6 +28,7 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.deprovisionfailed:
         case ClusterStatus.notaccepted:
         case ClusterStatus.offline:
+        case ClusterStatus.degraded:
             type = StatusType.danger
             break
         case ClusterStatus.creating:
@@ -55,7 +61,7 @@ export function StatusField(props: { cluster: Cluster }) {
                 <AcmButton
                     style={{ padding: 0, fontSize: 'inherit' }}
                     key={props.cluster.name}
-                    onClick={() => launchLogs(props.cluster)}
+                    onClick={() => launchLogs(props.cluster, configMaps)}
                     variant="link"
                     role="link"
                     icon={<ExternalLinkAltIcon />}
@@ -63,6 +69,14 @@ export function StatusField(props: { cluster: Cluster }) {
                 >
                     {t('view.logs')}
                 </AcmButton>
+            )
+            break
+        case ClusterStatus.degraded:
+            hasAction = true
+            Action = () => (
+                <Link to={`${NavigationPath.clusterSettings.replace(':id', props.cluster?.name!)}`}>
+                    {t('view.addons')}
+                </Link>
             )
             break
     }

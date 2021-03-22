@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import React from 'react'
 import { MemoryRouter, Route } from 'react-router-dom'
-import { AppContext } from '../../../components/AppContext'
 import { mockBadRequestStatus, nockCreate, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { clickByText, waitForNock, waitForNocks, waitForText } from '../../../lib/test-util'
@@ -88,20 +86,13 @@ const discoveryConfigUpdated: DiscoveryConfig = {
 
 function TestDiscoveryConfigPage() {
     return (
-        <AppContext.Provider
-            value={{
-                featureGates: { 'open-cluster-management-discovery': mockFeatureGate },
-                clusterManagementAddons: [],
-            }}
-        >
-            <MemoryRouter>
-                <Route
-                    render={(props: any) => {
-                        return <DiscoveryConfigPage {...props} />
-                    }}
-                />
-            </MemoryRouter>
-        </AppContext.Provider>
+        <MemoryRouter>
+            <Route
+                render={(props: any) => {
+                    return <DiscoveryConfigPage {...props} />
+                }}
+            />
+        </MemoryRouter>
     )
 }
 
@@ -111,7 +102,7 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
-    it('Error Retrieving discoveryConfigs', async () => {
+    it('Error retrieving discoveryConfigs', async () => {
         const nocks = [
             nockList(discoveryConfig, mockBadRequestStatus),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),

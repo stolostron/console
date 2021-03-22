@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Fragment, useContext, useState } from 'react'
+import { makeStyles } from '@material-ui/styles'
 import {
+    AcmButton,
     AcmIcon,
     AcmIconVariant,
-    AcmButton,
-    AcmInlineStatus,
     AcmInlineCopy,
+    AcmInlineStatus,
     StatusType,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
+import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'
-import { makeStyles } from '@material-ui/styles'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export type LoginCredential = {
     username: string

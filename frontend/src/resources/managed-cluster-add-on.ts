@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node'
-import { listNamespacedResources } from '../lib/resource-request'
+import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
@@ -21,13 +20,7 @@ export interface ManagedClusterAddOn extends IResource {
     metadata: V1ObjectMeta
     spec: {}
     status?: {
-        conditions: {
-            lastTransitionTime: string
-            message: string
-            reason: string
-            status: string
-            type: string
-        }[]
+        conditions: V1CustomResourceDefinitionCondition[]
         addOnMeta: {
             displayName: string
             description: string
@@ -37,12 +30,4 @@ export interface ManagedClusterAddOn extends IResource {
             crName: string
         }
     }
-}
-
-export function listManagedClusterAddOns(namespace: string) {
-    return listNamespacedResources<ManagedClusterAddOn>({
-        apiVersion: ManagedClusterAddOnApiVersion,
-        kind: ManagedClusterAddOnKind,
-        metadata: { namespace },
-    })
 }

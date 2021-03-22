@@ -1,10 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
+import { waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import {
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+} from '../../../../resources/discovered-cluster'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
@@ -19,15 +25,9 @@ import {
     ProjectRequestApiVersion,
     ProjectRequestKind,
 } from '../../../../resources/project'
-import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../../resources/discovered-cluster'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-import { NavigationPath } from '../../../../NavigationPath'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -301,7 +301,7 @@ describe('ImportCluster', () => {
         userEvent.click(getByText('import.form.submit'))
         await waitFor(() => expect(getByText('import.generating')).toBeInTheDocument())
         await waitFor(() => expect(projectNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitForText(mockBadRequestStatus.message, true)
     })
 
     test('handles resource creation errors', async () => {
@@ -322,7 +322,7 @@ describe('ImportCluster', () => {
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
         await waitFor(() => expect(deleteProjectNock.isDone()).toBeTruthy())
 
-        await waitFor(() => expect(getByText(mockBadRequestStatus.message)).toBeInTheDocument())
+        await waitForText(mockBadRequestStatus.message, true)
     })
 })
 

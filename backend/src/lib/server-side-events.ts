@@ -21,32 +21,32 @@ const {
     HTTP2_HEADER_ACCEPT_ENCODING,
 } = constants
 
-export interface IEvent {
+export interface ServerSideEvent<DataT = unknown> {
     id?: string
     name?: string
     namespace?: string
-    data?: unknown
+    data?: DataT
 }
 
-export interface IEventClient {
+export interface ServerSideEventClient {
     events?: Record<string, boolean>
     namespaces?: Record<string, boolean>
     writableStream: NodeJS.WritableStream
     compressionStream: Transform & Zlib
-    eventQueue: Promise<IEvent>[]
+    eventQueue: Promise<ServerSideEvent>[]
     processing?: boolean
 }
 
 export class ServerSideEvents {
     private static eventID = 2
-    private static lastDoneID = 2
-    private static events: Record<number, IEvent> = {
+    private static lastLoadedID = 2
+    private static events: Record<number, ServerSideEvent> = {
         1: { id: '1', data: { type: 'START' } },
-        2: { id: '2', data: { type: 'BOOKMARK' } },
+        2: { id: '2', data: { type: 'LOADED' } },
     }
-    private static clients: Record<string, IEventClient> = {}
+    private static clients: Record<string, ServerSideEventClient> = {}
 
-    public static eventFilter: (clientID: string, event: Readonly<IEvent>) => Promise<IEvent | undefined>
+    public static eventFilter: (clientID: string, event: Readonly<ServerSideEvent>) => Promise<boolean>
 
     public static async dispose(): Promise<void> {
         if (ServerSideEvents.intervalTimer !== undefined) {
@@ -65,37 +65,43 @@ export class ServerSideEvents {
         return Promise.resolve()
     }
 
-    public static pushEvent(event: IEvent): number {
+    public static pushEvent(event: ServerSideEvent, sendLoaded = true): number {
         const eventID = ++this.eventID
         event.id = eventID.toString()
         this.events[eventID] = event
         this.broadcastEvent(event)
 
-        this.removeEvent(this.lastDoneID)
-        this.lastDoneID = ++this.eventID
-        const doneEvent = {
-            id: this.lastDoneID.toString(),
-            data: { type: 'BOOKMARK' },
+        if (sendLoaded) {
+            this.removeEvent(this.lastLoadedID)
+            this.lastLoadedID = ++this.eventID
+            const loadedEvent = {
+                id: this.lastLoadedID.toString(),
+                data: { type: 'LOADED' },
+            }
+            this.events[this.lastLoadedID] = loadedEvent
+            this.broadcastEvent(loadedEvent)
         }
-        this.events[this.lastDoneID] = doneEvent
-        this.broadcastEvent(doneEvent)
 
         return eventID
     }
 
-    private static broadcastEvent(event: IEvent): void {
+    private static broadcastEvent(event: ServerSideEvent): void {
         for (const clientID in this.clients) {
             this.sendEvent(clientID, event)
         }
     }
 
-    private static sendEvent(clientID: string, event: IEvent): void {
+    private static sendEvent(clientID: string, event: ServerSideEvent): void {
         const client = this.clients[clientID]
         if (!client) return
         if (client.events && !client.events[event.name]) return
         if (client.namespaces && !client.namespaces[event.namespace]) return
         if (this.eventFilter) {
-            client.eventQueue.push(this.eventFilter(clientID, event).catch((err) => undefined))
+            client.eventQueue.push(
+                this.eventFilter(clientID, event)
+                    .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
+                    .catch((err) => undefined)
+            )
         } else {
             client.eventQueue.push(Promise.resolve(event))
         }
@@ -151,7 +157,7 @@ export class ServerSideEvents {
         client.processing = false
     }
 
-    private static createEventString(event: IEvent): string {
+    private static createEventString(event: ServerSideEvent): string {
         let eventString = `id:${event.id}\n`
         if (event.name) eventString += `event:${event.name}\n`
         switch (typeof event.data) {
@@ -182,7 +188,11 @@ export class ServerSideEvents {
         delete this.events[eventID]
     }
 
-    public static handleRequest(clientID: string, req: Http2ServerRequest, res: Http2ServerResponse): IEventClient {
+    public static handleRequest(
+        clientID: string,
+        req: Http2ServerRequest,
+        res: Http2ServerResponse
+    ): ServerSideEventClient {
         const [writableStream, compressionStream, encoding] = getEncodeStream(
             (res as unknown) as NodeJS.WritableStream,
             req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string
@@ -214,7 +224,7 @@ export class ServerSideEvents {
                 }
             }
         }
-        const eventClient: IEventClient = {
+        const eventClient: ServerSideEventClient = {
             events,
             namespaces,
             writableStream,
@@ -269,25 +279,12 @@ export class ServerSideEvents {
         return eventClient
     }
 
+    private static lastPingEvent = 0
     private static keepAlivePing(): void {
-        for (const clientID in this.clients) {
-            const compressionStream = this.clients[clientID].compressionStream
-            if (compressionStream) {
-                try {
-                    compressionStream.write(':\n\n')
-                    compressionStream.flush()
-                } catch (err) {
-                    logger.error(err)
-                }
-            } else {
-                const clientStream = this.clients[clientID].writableStream
-                try {
-                    clientStream.write(':\n\n')
-                } catch (err) {
-                    logger.error(err)
-                }
-            }
+        if (this.lastPingEvent) {
+            this.removeEvent(this.lastPingEvent)
         }
+        this.lastPingEvent = this.pushEvent({}, false)
     }
     private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
         ServerSideEvents.keepAlivePing()

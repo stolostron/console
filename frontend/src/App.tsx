@@ -1,13 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-import { AcmHeader } from '@open-cluster-management/ui-components'
-import { createBrowserHistory } from 'history'
-import { Suspense, lazy } from 'react'
-import { Redirect, Route, Router, Switch } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
-import { LoadData } from './atoms'
-import { AppContextContainer } from './components/AppContext'
+import { AcmHeader, AcmTablePaginationContextProvider } from '@open-cluster-management/ui-components'
+import { lazy } from 'react'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { acmRouteState, LoadData } from './atoms'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
@@ -16,55 +14,44 @@ const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/Clus
 const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))
 const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
-const AddConnectionPage = lazy(() => import('./routes/Credentials/AddCredentials/AddConnection'))
+const AddCredentialPage = lazy(() => import('./routes/Credentials/AddCredentials/AddCredentials'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 
-declare global {
-    interface Window {
-        SHARED_HISTORY: any
-    }
-}
-
-window.SHARED_HISTORY = window.SHARED_HISTORY ?? createBrowserHistory()
-
 export default function App() {
+    const [route] = useRecoilState(acmRouteState)
     return (
-        <AcmHeader>
-            <RecoilRoot>
+        <BrowserRouter>
+            <AcmHeader route={route}>
                 <LoadData>
-                    <AppContextContainer>
-                        <Router history={window.SHARED_HISTORY}>
-                            <Suspense fallback={<LoadingPage />}>
-                                <Switch>
-                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                    <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                    <Route exact path={NavigationPath.addCredentials} component={AddConnectionPage} />
-                                    <Route exact path={NavigationPath.editCredentials} component={AddConnectionPage} />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.editBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
-                                    />
-                                    <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
-                                    <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                                    <Route exact path="*">
-                                        <Redirect to={NavigationPath.console} />
-                                    </Route>
-                                </Switch>
-                            </Suspense>
-                        </Router>
-                    </AppContextContainer>
+                    <AcmTablePaginationContextProvider localStorageKey="clusters">
+                        <Switch>
+                            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                            <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                            <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
+                            <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
+                            <Route
+                                exact
+                                path={NavigationPath.editBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route
+                                exact
+                                path={NavigationPath.createBareMetalAsset}
+                                component={CreateBareMetalAssetPage}
+                            />
+                            <Route exact path={NavigationPath.discoveryConfig} component={DiscoveryConfig} />
+                            <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                            <Route exact path="*">
+                                <Redirect to={NavigationPath.console} />
+                            </Route>
+                        </Switch>
+                    </AcmTablePaginationContextProvider>
                 </LoadData>
-            </RecoilRoot>
-        </AcmHeader>
+            </AcmHeader>
+        </BrowserRouter>
     )
 }

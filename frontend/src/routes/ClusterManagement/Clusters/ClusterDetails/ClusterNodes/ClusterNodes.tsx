@@ -2,6 +2,7 @@
 
 import {
     AcmInlineStatus,
+    AcmPageContent,
     AcmTable,
     compareNumbers,
     IAcmTableColumn,
@@ -16,9 +17,11 @@ import { ClusterContext } from '../ClusterDetails'
 export function NodePoolsPageContent() {
     const { cluster } = useContext(ClusterContext)
     return (
-        <PageSection variant="light">
-            <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
-        </PageSection>
+        <AcmPageContent id="nodes">
+            <PageSection variant="light" isFilled>
+                <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+            </PageSection>
+        </AcmPageContent>
     )
 }
 

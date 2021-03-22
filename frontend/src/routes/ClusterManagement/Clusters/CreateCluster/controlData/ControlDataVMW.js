@@ -63,7 +63,7 @@ const controlDataVMW = [
         name: 'creation.ocp.cluster.vmw.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
         type: 'text',
-        active: 'Public Network',
+        active: '',
     },
     {
         id: 'apiVIP',
