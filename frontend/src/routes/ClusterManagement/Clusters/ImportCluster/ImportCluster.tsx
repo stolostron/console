@@ -31,6 +31,7 @@ import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import { deleteResources } from '../../../../lib/delete-resources'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { createResource, ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -38,8 +39,11 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-add-on-config'
 import { createManagedCluster } from '../../../../resources/managed-cluster'
 import { createProject } from '../../../../resources/project'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
+import { managedClusterSetsState } from '../../../../atoms'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -78,7 +82,9 @@ export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
+    const [managedClusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
+    const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [submitted, setSubmitted] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
@@ -89,9 +95,9 @@ export function ImportClusterPageContent() {
     const [kubeConfigText, setkubeConfigText] = useState<string | undefined>()
     const [manualButton, setmanualButton] = useState<boolean>(false)
     const [credentialBool, setcredentialBool] = useState<boolean>(false)
-
     const onReset = () => {
         setClusterName('')
+        setManagedClusterSet(undefined)
         setAdditionaLabels({})
         setSubmitted(false)
         setImportCommand(undefined)
@@ -111,6 +117,21 @@ export function ImportClusterPageContent() {
                             placeholder={t('import.form.clusterName.placeholder')}
                             isRequired
                         />
+                        <AcmSelect
+                            id="managedClusterSet"
+                            label={t('import.form.managedClusterSet.label')}
+                            placeholder={t('import.form.managedClusterSet.placeholder')}
+                            labelHelp={t('import.form.managedClusterSet.labelHelp')}
+                            value={managedClusterSet}
+                            onChange={(mcs) => setManagedClusterSet(mcs)}
+                            isDisabled={managedClusterSets.length === 0 || submitted}
+                        >
+                            {managedClusterSets.map((mcs) => (
+                                <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
+                                    {mcs.metadata.name}
+                                </SelectOption>
+                            ))}
+                        </AcmSelect>
                         <AcmLabelsInput
                             id="additionalLabels"
                             label={t('import.form.labels.label')}
@@ -127,6 +148,7 @@ export function ImportClusterPageContent() {
                 <AcmExpandableSection label={t('import.mode.header')} expanded={true}>
                     <AcmForm>
                         <AcmSelect
+                            id="import-mode"
                             label={t('import.mode.select')}
                             placeholder={t('import.mode.default')}
                             value={importMode}
@@ -234,6 +256,9 @@ export function ImportClusterPageContent() {
                                         name: clusterName,
                                         ...additionalLabels,
                                     }
+                                    if (managedClusterSet) {
+                                        clusterLabels[managedClusterSetLabel] = managedClusterSet
+                                    }
                                     const createdResources: IResource[] = []
                                     return new Promise(async (resolve, reject) => {
                                         try {
@@ -255,9 +280,9 @@ export function ImportClusterPageContent() {
 
                                             if (!manualButton) {
                                                 createdResources.push(
-                                                    await createResource<IResource>({
-                                                        apiVersion: 'v1',
-                                                        kind: 'Secret',
+                                                    await createResource<Secret>({
+                                                        apiVersion: SecretApiVersion,
+                                                        kind: SecretKind,
                                                         metadata: {
                                                             name: 'auto-import-secret',
                                                             namespace: clusterName,
@@ -267,7 +292,7 @@ export function ImportClusterPageContent() {
                                                             kubeconfig: kubeConfigText,
                                                         },
                                                         type: 'Opaque',
-                                                    }).promise
+                                                    } as Secret).promise
                                                 )
                                                     ? history.push(
                                                           NavigationPath.clusterDetails.replace(

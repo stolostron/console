@@ -213,12 +213,11 @@ export function ProviderConnectionsTable(props: {
                                     click: (providerConnection: ProviderConnection) => {
                                         setModalProps({
                                             open: true,
-                                            singular: t('connection'),
-                                            plural: t('connections'),
+                                            title: t('bulk.title.delete'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
                                             resources: [providerConnection],
-                                            description: t('modal.delete.content.batch'),
+                                            description: t('bulk.message.delete'),
                                             columns: [
                                                 {
                                                     header: t('table.header.name'),
@@ -271,12 +270,11 @@ export function ProviderConnectionsTable(props: {
                         click: (providerConnections: ProviderConnection[]) => {
                             setModalProps({
                                 open: true,
-                                singular: t('connection'),
-                                plural: t('connections'),
+                                title: t('bulk.title.delete'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [...providerConnections],
-                                description: t('modal.delete.content.batch'),
+                                description: t('bulk.message.delete'),
                                 columns: [
                                     {
                                         header: t('table.header.name'),

@@ -16,11 +16,6 @@
 
     "connections.actions.enableClusterDiscovery": "Enable cluster discovery",
 
-    "modal.delete.title.single": "Delete credentials",
-    "modal.delete.content.single": "Deleting <bold>{{name}}</bold> is irreversible. The credentials will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected. Are you sure that you want to continue?",
-    "modal.delete.title.batch": "Delete {{number}} credentials",
-    "modal.delete.content.batch": "Deleting credentials is irreversible. The pcredentials will no longer be available for creating new clusters, but clusters that were previously created using the connection are not affected.",
-
     "addConnection.error.noNamespacesFound": "No namespaces found.",
     "addConnection.addButton.label": "Add",
     "addConnection.addingButton.label": "Adding",
@@ -138,5 +133,7 @@
     "validate.imageMirror.repositorypath": "Value for the repository path must consist of alphanumeric characters, '-', '.' or '_', and must start and end with an alphanumeric character",
     "validate.baseDnsName.char": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
     "validate.baseDnsName.start": "The base DNS domain must not begin with a period.",
-    "end": ""
+
+    "bulk.title.delete": "Delete credential(s)",
+    "bulk.message.delete": "Deleting credential(s) is irreversible. The credentials will no longer be available for creating new clusters, but clusters that were previously created using the credential will not be affected."
 }

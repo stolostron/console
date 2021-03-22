@@ -15,13 +15,6 @@ export const ManagedClusterDefinition: IResourceDefinition = {
     kind: ManagedClusterKind,
 }
 
-export interface ClusterLabels {
-    cloud: string
-    vendor: string
-    name: string
-    [key: string]: string
-}
-
 export interface ManagedCluster extends IResource {
     apiVersion: ManagedClusterApiVersionType
     kind: ManagedClusterKindType
@@ -47,7 +40,10 @@ export interface ManagedCluster extends IResource {
     }
 }
 
-export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: ClusterLabels }) => {
+export const createManagedCluster = (data: {
+    clusterName: string | undefined
+    clusterLabels: Record<string, string>
+}) => {
     return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,

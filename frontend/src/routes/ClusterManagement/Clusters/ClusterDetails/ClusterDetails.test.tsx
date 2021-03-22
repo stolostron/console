@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { AcmRoute } from '@open-cluster-management/ui-components'
 import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     clickByLabel,
@@ -17,17 +18,16 @@ import {
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
-    CertificateSigningRequestList,
-    CertificateSigningRequestListApiVersion,
-    CertificateSigningRequestListKind,
-} from '../../../../resources/certificate-signing-requests'
-import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
 } from '../../../../resources/cluster-deployment'
 import { ClusterManagementAddOn } from '../../../../resources/cluster-management-add-on'
-import { ClusterProvisionApiVersion, ClusterProvisionKind } from '../../../../resources/cluster-provision'
+import {
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+} from '../../../../resources/cluster-provision'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 import {
     ManagedClusterAddOn,
@@ -50,8 +50,11 @@ import {
     clusterManagementAddonsState,
     managedClusterAddonsState,
     configMapsState,
+    managedClusterSetsState,
+    acmRouteState,
+    clusterProvisionsState,
 } from '../../../../atoms'
-import { mockOpenShiftConsoleConfigMap } from '../../../../lib/test-metadata'
+import { mockOpenShiftConsoleConfigMap, mockManagedClusterSet } from '../../../../lib/test-metadata'
 
 const clusterName = 'test-cluster'
 
@@ -134,6 +137,13 @@ const mockManagedCluster: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: { name: clusterName },
     spec: { hubAcceptsClient: true },
+    status: {
+        allocatable: { cpu: '', memory: '' },
+        capacity: { cpu: '', memory: '' },
+        version: { kubernetes: '' },
+        clusterClaims: [],
+        conditions: [],
+    },
 }
 
 const mockClusterDeployment: ClusterDeployment = {
@@ -149,9 +159,6 @@ const mockClusterDeployment: ClusterDeployment = {
         },
         name: clusterName,
         namespace: clusterName,
-        resourceVersion: '47731421',
-        selfLink: '/apis/hive.openshift.io/v1/namespaces/test-cluster/clusterdeployments/test-cluster',
-        uid: 'f8014b27-4756-4c0e-83ea-42833be4bf52',
     },
     spec: {
         baseDomain: 'dev02.test-chesterfield.com',
@@ -190,16 +197,6 @@ const mockClusterDeployment: ClusterDeployment = {
             name: 'test-cluster-31-26h5q',
         },
     },
-}
-
-const mockCertificateSigningRequestList: CertificateSigningRequestList = {
-    apiVersion: CertificateSigningRequestListApiVersion,
-    kind: CertificateSigningRequestListKind,
-    metadata: {
-        selfLink: '/apis/certificates.k8s.io/v1beta1/certificatesigningrequests',
-        resourceVersion: '48341234',
-    },
-    items: [],
 }
 
 const mockHiveProvisionPods: PodList = {
@@ -509,68 +506,48 @@ const mockManagedClusterAddOns: ManagedClusterAddOn[] = [
     mockManagedClusterAddOnSearch,
 ]
 
-const mockClusterProvisionList = {
-    apiVersion: 'hive.openshift.io/v1',
-    items: [
-        {
-            apiVersion: 'hive.openshift.io/v1',
-            kind: 'ClusterProvision',
-            metadata: {
-                creationTimestamp: '2021-01-04T18:23:30Z',
-                labels: {
-                    cloud: 'GCP',
-                    'hive.openshift.io/cluster-deployment-name': 'test-cluster',
-                    'hive.openshift.io/cluster-platform': 'gcp',
-                    'hive.openshift.io/cluster-region': 'us-east1',
-                    region: 'us-east1',
-                    vendor: 'OpenShift',
-                },
-                name: 'test-cluster-0-hmd44',
-                namespace: 'test-cluster',
-            },
-            spec: {
-                attempt: 0,
-                clusterDeploymentRef: { name: 'test-cluster' },
-                installLog:
-                    'level=info msg="Credentials loaded from environment variable \\"GOOGLE_CREDENTIALS\\", file \\"/.gcp/osServiceAccount.json\\""\nlevel=fatal msg="failed to fetch Master Machines: failed to load asset \\"Install Config\\": platform.gcp.project: Invalid value: \\"gc-acm-dev-fake\\": invalid project ID"\n',
-            },
-            status: {
-                conditions: [
-                    {
-                        lastProbeTime: '2021-01-04T18:23:30Z',
-                        lastTransitionTime: '2021-01-04T18:23:30Z',
-                        message: 'Install job has been created',
-                        reason: 'JobCreated',
-                        status: 'True',
-                        type: 'ClusterProvisionJobCreated',
-                    },
-                    {
-                        lastProbeTime: '2021-01-04T18:23:37Z',
-                        lastTransitionTime: '2021-01-04T18:23:37Z',
-                        message: 'Invalid GCP project ID',
-                        reason: 'GCPInvalidProjectID',
-                        status: 'True',
-                        type: 'ClusterProvisionFailed',
-                    },
-                ],
-            },
-        },
-    ],
-    kind: 'ClusterProvisionList',
+const mockClusterProvisions: ClusterProvision = {
+    apiVersion: ClusterProvisionApiVersion,
+    kind: ClusterProvisionKind,
     metadata: {
-        selfLink: '/apis/hive.openshift.io/v1/namespaces/test-cluster/clusterprovisions',
+        labels: {
+            cloud: 'GCP',
+            'hive.openshift.io/cluster-deployment-name': clusterName,
+            'hive.openshift.io/cluster-platform': 'gcp',
+            'hive.openshift.io/cluster-region': 'us-east1',
+            region: 'us-east1',
+            vendor: 'OpenShift',
+        },
+        name: 'test-cluster-0-hmd44',
+        namespace: clusterName,
+    },
+    spec: {
+        attempt: 0,
+        clusterDeploymentRef: { name: clusterName },
+        installLog:
+            'level=info msg="Credentials loaded from environment variable \\"GOOGLE_CREDENTIALS\\", file \\"/.gcp/osServiceAccount.json\\""\nlevel=fatal msg="failed to fetch Master Machines: failed to load asset \\"Install Config\\": platform.gcp.project: Invalid value: \\"gc-acm-dev-fake\\": invalid project ID"\n',
+    },
+    status: {
+        conditions: [
+            {
+                lastProbeTime: '2021-01-04T18:23:30Z',
+                lastTransitionTime: '2021-01-04T18:23:30Z',
+                message: 'Install job has been created',
+                reason: 'JobCreated',
+                status: 'True',
+                type: 'ClusterProvisionJobCreated',
+            },
+            {
+                lastProbeTime: '2021-01-04T18:23:37Z',
+                lastTransitionTime: '2021-01-04T18:23:37Z',
+                message: 'Invalid GCP project ID',
+                reason: 'GCPInvalidProjectID',
+                status: 'True',
+                type: 'ClusterProvisionFailed',
+            },
+        ],
     },
 }
-
-const nockListClusterProvision = () =>
-    nockNamespacedList(
-        {
-            apiVersion: ClusterProvisionApiVersion,
-            kind: ClusterProvisionKind,
-            metadata: { namespace: 'test-cluster' },
-        },
-        mockClusterProvisionList
-    )
 
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
@@ -582,13 +559,16 @@ const nockListHiveProvisionJobs = () =>
 const Component = () => (
     <RecoilRoot
         initializeState={(snapshot) => {
+            snapshot.set(acmRouteState, AcmRoute.Clusters)
+            snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
+            snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
             snapshot.set(managedClustersState, [mockManagedCluster])
             snapshot.set(clusterDeploymentsState, [mockClusterDeployment])
             snapshot.set(managedClusterInfosState, [mockManagedClusterInfo])
-            snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequestList.items)
-            snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
-            snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
+            snapshot.set(certificateSigningRequestsState, [])
+            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
             snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+            snapshot.set(clusterProvisionsState, [mockClusterProvisions])
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -599,22 +579,12 @@ const Component = () => (
     </RecoilRoot>
 )
 
-function defaultNocks() {
-    const nocks: Scope[] = [
-        nockListHiveProvisionJobs(),
-        nockListClusterProvision(),
-        nockCreate(mockGetSecretSelfSubjectAccessRequest, mockSelfSubjectAccessResponse),
-    ]
-    return nocks
-}
-
 describe('ClusterDetails', () => {
     beforeEach(async () => {
-        const nocks = defaultNocks()
         nockIgnoreRBAC()
         render(<Component />)
-        await waitForNocks(nocks)
     })
+
     test('overview page renders', async () => {
         await waitForText(clusterName, true)
         await waitForText('tab.overview')
@@ -622,8 +592,10 @@ describe('ClusterDetails', () => {
     })
 
     test('overview page opens logs', async () => {
+        const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
         await clickByText('view.logs')
+        await waitForNocks(nocks)
         await waitForCalled(window.open as jest.Mock)
     })
 
@@ -687,6 +659,7 @@ describe('ClusterDetails', () => {
                     snapshot.set(certificateSigningRequestsState, [])
                     snapshot.set(clusterManagementAddonsState, [])
                     snapshot.set(managedClusterAddonsState, [])
+                    snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
                     snapshot.set(configMapsState, [])
                 }}
             >

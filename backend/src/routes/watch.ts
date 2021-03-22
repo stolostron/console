@@ -55,6 +55,7 @@ export function startWatching(): void {
     ServerSideEvents.eventFilter = eventFilter
 
     watchResource(token, 'v1', 'namespaces')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
@@ -85,7 +86,7 @@ export function startWatching(): void {
             'metadata.name': 'console-public',
         },
     })
-    watchResource(token, 'config.openshift.io/v1', 'featuregates')
+    watchResource(token, 'config.openshift.io/v1', 'featureGates')
 }
 
 const watchRequests: Record<string, ClientRequest> = {}

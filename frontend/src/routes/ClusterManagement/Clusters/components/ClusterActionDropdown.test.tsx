@@ -4,12 +4,15 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { nockPatch, nockRBAC } from '../../../../lib/nock-util'
+import { nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { clickByLabel, clickByText, waitForNock, waitForNocks } from '../../../../lib/test-util'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
+import { managedClusterSetsState } from '../../../../atoms'
+import { mockManagedClusterSet } from '../../../../lib/test-metadata'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -74,38 +77,92 @@ function nockPatchClusterDeployment(powerState: 'Running' | 'Hibernating') {
     )
 }
 
+function nockPatchManagedCluster(op: string, value?: string) {
+    const patch: { op: string; path: string; value?: string } = {
+        op,
+        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    }
+    if (value) {
+        patch.value = value
+    }
+    return nockPatch(
+        {
+            apiVersion: ManagedClusterDefinition.apiVersion,
+            kind: ManagedClusterDefinition.kind,
+            metadata: {
+                name: mockCluster.name,
+            },
+        },
+        [patch]
+    )
+}
+
+const Component = (props: { cluster: Cluster }) => (
+    <RecoilRoot
+        initializeState={(snapshot) => {
+            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+        }}
+    >
+        <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
+    </RecoilRoot>
+)
+
 describe('Cluster Action Dropdown', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
     test('hibernate action should patch cluster deployment', async () => {
-        const cluster = { ...mockCluster }
-        render(
-            <RecoilRoot>
-                <ClusterActionDropdown cluster={cluster} isKebab={true} />
-            </RecoilRoot>
-        )
-        const rbacNocks: Scope[] = [
-            nockRBAC(rbacPatchManagedCluster()),
-            nockRBAC(rbacPatchClusterDeployment()),
-            nockRBAC(rbacDeleteManagedCluster()),
-            nockRBAC(rbacDeleteManagedCluster()),
-            nockRBAC(rbacDeleteClusterDeployment()),
-        ]
-        await clickByLabel('Actions')
-        await waitForNocks(rbacNocks)
-        await clickByText('managed.hibernate')
         const nockPatch = nockPatchClusterDeployment('Hibernating')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.hibernate')
         await clickByText('hibernate')
         await waitForNock(nockPatch)
     })
 
     test('resume action should patch cluster deployment', async () => {
-        const cluster = { ...mockCluster }
+        const nockPatch = nockPatchClusterDeployment('Running')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
         cluster.status = ClusterStatus.hibernating
-        render(
-            <RecoilRoot>
-                <ClusterActionDropdown cluster={cluster} isKebab={true} />
-            </RecoilRoot>
-        )
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.resume')
+        await clickByText('resume')
+        await waitForNock(nockPatch)
+    })
+
+    test('can add a cluster to a managed cluster set', async () => {
+        const nockPatch = nockPatchManagedCluster('add', mockManagedClusterSet.metadata.name)
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.addSet')
+        await clickByText('common:select')
+        await clickByText(mockManagedClusterSet.metadata.name!)
+        await clickByText('add')
+        await waitForNock(nockPatch)
+    })
+
+    test('can remove a cluster from a managed cluster set', async () => {
+        const nockPatch = nockPatchManagedCluster('remove')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.removeSet')
+        await clickByText('remove')
+        await waitForNock(nockPatch)
+    })
+})
+
+describe('ClusterActionDropdown', () => {
+    test("disables menu items based on the user's permissions", async () => {
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        cluster.status = ClusterStatus.hibernating
+        render(<Component cluster={cluster} />)
         const rbacNocks: Scope[] = [
+            nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchClusterDeployment()),
             nockRBAC(rbacDeleteManagedCluster()),
@@ -113,9 +170,5 @@ describe('Cluster Action Dropdown', () => {
         ]
         await clickByLabel('Actions')
         await waitForNocks(rbacNocks)
-        await clickByText('managed.resume')
-        const nockPatch = nockPatchClusterDeployment('Running')
-        await clickByText('resume')
-        await waitForNock(nockPatch)
     })
 })

@@ -47,12 +47,6 @@
   "bareMetalAsset.importAction.button":"Open file",
   "bareMetalAsset.importAction.message": "The first line of the CSV file must be a comma deliniated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role (optional), username, password.",
 
-  "bareMetalAsset.modal.deleteMultiple.title":"Delete bare metal assets",
-  "bareMetalAsset.modal.deleteMultiple.message":"You are about to delete {{assetNum}} bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
-  "bareMetalAsset.modal.delete.title":"Delete bare metal asset",
-  "bareMetalAsset.modal.delete.message":"You are about to delete <bold>{{assetName}}</bold>. The bare metal asset will no longer be available. This action is irreversible.",
-  "bareMetalAsset.modal.edit.title":"Delete bare metal asset",
-
   "modal.delete.title.batch": "Delete {{number}} bare metal assets",
   "modal.delete.content.batch": "Deleting a bare metal asset is irreversible.",
   "modal.import.content.batch": "Importing bare metal assets will also create required namespaces.",
@@ -65,6 +59,9 @@
   "bareMetalAsset.statusMessage.assetSyncStarted":"Asset syncing",
   "bareMetalAsset.statusMessage.clusterDeploymentFound":"No cluster deployment",
   "bareMetalAsset.statusMessage.assetSyncCompleted":"Asset sync failed",
-  "bareMetalAsset.statusMessage.ready":"Ready"
+  "bareMetalAsset.statusMessage.ready":"Ready",
 
+  "bulk.title.delete": "Delete bare metal asset(s)",
+  "bulk.message.delete": "You are about to delete bare metal asset(s). The bare metal asset(s) will no longer be available. This action is irreversible.",
+  "bulk.title.import": "Import bare metal asset(s)"
 }

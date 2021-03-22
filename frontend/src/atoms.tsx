@@ -10,6 +10,7 @@ import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-prov
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
+import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
@@ -19,7 +20,6 @@ import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
-
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
@@ -32,14 +32,15 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
+export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
-export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
-export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
@@ -62,14 +63,15 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const [, setConfigMaps] = useRecoilState(configMapsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
+    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
-    const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setFeatureGates] = useRecoilState(featureGatesState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -78,14 +80,15 @@ export function LoadData(props: { children?: ReactNode }) {
         [ClusterImageSetKind]: setClusterImageSets,
         [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
+        [ConfigMapKind]: setConfigMaps,
+        [DiscoveryConfigKind]: setDiscoveryConfigs,
+        [FeatureGateKind]: setFeatureGates,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
+        [ManagedClusterSetKind]: setManagedClusterSets,
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
-        [DiscoveryConfigKind]: setDiscoveryConfigs,
-        [ConfigMapKind]: setConfigMaps,
-        [FeatureGateKind]: setFeatureGates,
     }
 
     // Temporary fix for checking for login

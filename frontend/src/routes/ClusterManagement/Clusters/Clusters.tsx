@@ -205,7 +205,6 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                                         'name',
                                         'vendor',
                                     ].filter((label) => labelKeys.includes(label)) ?? []
-
                                 return (
                                     <AcmLabels
                                         labels={cluster.labels}
@@ -267,12 +266,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.destroy'),
                                 action: t('destroy'),
                                 processing: t('destroying'),
                                 resources: clusters,
-                                description: t('cluster.destroy.description'),
+                                description: t('bulk.message.destroy'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
@@ -289,12 +287,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.detach'),
                                 action: t('detach'),
                                 processing: t('detaching'),
                                 resources: clusters,
-                                description: t('cluster.detach.description'),
+                                description: t('bulk.message.detach'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),

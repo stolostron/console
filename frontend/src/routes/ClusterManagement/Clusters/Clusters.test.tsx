@@ -460,14 +460,14 @@ describe('Clusters Page', () => {
     test('batch upgrade support when upgrading single cluster', async () => {
         await clickByLabel('Select row 3')
         await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`bulk.title.upgrade`)
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
         await clickByLabel('Select row 3')
         await clickByLabel('Select row 5')
         await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`bulk.title.upgrade`)
     })
 })
 
