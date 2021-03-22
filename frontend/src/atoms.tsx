@@ -199,14 +199,7 @@ export function LoadData(props: { children?: ReactNode }) {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function (err) {
-                try {
-                    if (evtSource) evtSource.close()
-                } catch {
-                    // Do nothing
-                }
-                evtSource = undefined
                 console.error('EventSource failed:', err)
-                setTimeout(() => startWatch(), 10 * 1000)
             }
         }
         startWatch()
