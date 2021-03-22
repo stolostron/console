@@ -77,7 +77,7 @@ export function getResourceApiPath(options: {
         path = join(path, options.kind.toLowerCase() + 's')
     }
 
-    return path.replace(/\\/g, '/')
+    return path
 }
 
 export function getResourceNameApiPath(options: {
@@ -93,5 +93,5 @@ export function getResourceNameApiPath(options: {
         path = join(path, name)
     }
 
-    return path.replace(/\\/g, '/')
+    return path
 }

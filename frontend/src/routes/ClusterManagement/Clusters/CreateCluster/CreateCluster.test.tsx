@@ -242,7 +242,6 @@ const mockKlusterletAddonSecret = {
         iamPolicyController: {
             enabled: true,
         },
-        version: '2.2.0',
     },
 }
 
