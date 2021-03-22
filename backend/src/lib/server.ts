@@ -86,13 +86,21 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             options.logRequest(req, res)
                         } else {
                             if (req.url === '/readinessProbe') return
-                            const msg: Record<string, string | number | undefined> = {
-                                msg: STATUS_CODES[res.statusCode],
-                                status: res.statusCode,
-                                method: req.method,
-                                path: req.url,
-                                ms: 0,
-                            }
+
+                            let msg: Record<string, string | number | undefined>
+                            res.getHeader('content-type') === 'test/event/stream'
+                                ? (msg = {
+                                      msg: 'stream closed',
+                                      path: req.url,
+                                      ms: 0,
+                                  })
+                                : (msg = {
+                                      msg: STATUS_CODES[res.statusCode],
+                                      status: res.statusCode,
+                                      method: req.method,
+                                      path: req.url,
+                                      ms: 0,
+                                  })
 
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
