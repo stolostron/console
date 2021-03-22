@@ -88,23 +88,23 @@ export function DistributionField(props: { cluster?: Cluster }) {
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
-                                  bodyContent: t('upgrade.upgradefailed.message', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
-                                  footerContent: (
-                                      <a
-                                          href={`${props.cluster?.consoleURL}/settings/cluster`}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                      >
-                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
-                                      </a>
-                                  ),
-                              }
+                                headerContent: t('upgrade.upgradefailed', {
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                }),
+                                bodyContent: t('upgrade.upgradefailed.message', {
+                                    clusterName: props.cluster?.name,
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                }),
+                                footerContent: (
+                                    <a
+                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                    </a>
+                                ),
+                            }
                             : undefined
                     }
                 />
@@ -126,23 +126,23 @@ export function DistributionField(props: { cluster?: Cluster }) {
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgrading', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
-                                  bodyContent: t('upgrade.upgrading.message', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
-                                  footerContent: (
-                                      <a
-                                          href={`${props.cluster?.consoleURL}/settings/cluster`}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                      >
-                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
-                                      </a>
-                                  ),
-                              }
+                                headerContent: t('upgrade.upgrading', {
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                }),
+                                bodyContent: t('upgrade.upgrading.message', {
+                                    clusterName: props.cluster?.name,
+                                    version: props.cluster?.distribution.ocp?.desiredVersion,
+                                }),
+                                footerContent: (
+                                    <a
+                                        href={`${props.cluster?.consoleURL}/settings/cluster`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                    </a>
+                                ),
+                            }
                             : undefined
                     }
                 />
@@ -176,7 +176,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
     }
 }
 
-export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster }): JSX.Element {
+export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster | undefined }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectVersion, setSelectVersion] = useState<string>()
     const [upgradeError, setUpgradeError] = useState<string>()

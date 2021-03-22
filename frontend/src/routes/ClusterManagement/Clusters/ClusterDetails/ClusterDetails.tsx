@@ -252,9 +252,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <BulkActionModel<Cluster> {...modalProps} />
 
                 <UpgradeModal
-                    data={upgradeSingleCluster?.distribution}
+                    cluster={upgradeSingleCluster}
                     open={!!upgradeSingleCluster}
-                    clusterName={upgradeSingleCluster?.name || ''}
                     close={() => {
                         setUpgradeSingleCluster(undefined)
                     }}
@@ -424,7 +423,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         (cluster?.distribution?.ocp?.version &&
                                             cluster?.distribution?.ocp?.desiredVersion &&
                                             cluster?.distribution?.ocp?.version !==
-                                                cluster?.distribution?.ocp?.desiredVersion)
+                                            cluster?.distribution?.ocp?.desiredVersion)
                                     ) {
                                         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
                                     }
