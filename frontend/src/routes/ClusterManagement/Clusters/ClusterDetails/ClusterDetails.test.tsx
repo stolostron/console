@@ -18,11 +18,6 @@ import {
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
-    CertificateSigningRequestList,
-    CertificateSigningRequestListApiVersion,
-    CertificateSigningRequestListKind,
-} from '../../../../resources/certificate-signing-requests'
-import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,

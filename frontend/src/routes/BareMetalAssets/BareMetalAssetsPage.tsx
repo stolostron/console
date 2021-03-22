@@ -23,9 +23,6 @@ import {
 } from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
-const baremetalasset = 'bare metal asset'
-const baremetalassets = 'bare metal assets'
-
 export default function BareMetalAssetsPage() {
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
     return (

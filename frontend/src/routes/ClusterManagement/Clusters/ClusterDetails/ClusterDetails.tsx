@@ -89,7 +89,13 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
-    const cluster = getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, clusterAddons)
+    const cluster = getCluster(
+        managedClusterInfo,
+        clusterDeployment,
+        certificateSigningRequests,
+        managedCluster,
+        clusterAddons
+    )
     const prevCluster = usePrevious(cluster)
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
