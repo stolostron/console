@@ -176,7 +176,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
     }
 }
 
-export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster }): JSX.Element {
+export function UpgradeModal(props: { close: () => void; open: boolean; cluster: Cluster | Undefined }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectVersion, setSelectVersion] = useState<string>()
     const [upgradeError, setUpgradeError] = useState<string>()

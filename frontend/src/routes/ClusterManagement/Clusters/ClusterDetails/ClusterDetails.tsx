@@ -252,9 +252,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <BulkActionModel<Cluster> {...modalProps} />
 
                 <UpgradeModal
-                    data={upgradeSingleCluster?.distribution}
+                    cluster={upgradeSingleCluster}
                     open={!!upgradeSingleCluster}
-                    clusterName={upgradeSingleCluster?.name || ''}
                     close={() => {
                         setUpgradeSingleCluster(undefined)
                     }}
