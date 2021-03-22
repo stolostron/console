@@ -43,7 +43,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -155,7 +155,6 @@ export function LoadData(props: { children?: ReactNode }) {
                         resource.metadata?.name === data.object.metadata.name &&
                         resource.metadata?.namespace === data.object.metadata.namespace
                 )
-                if (index !== -1) newResources.splice(index, 1)
                 switch (data.type) {
                     case 'ADDED':
                     case 'MODIFIED':
@@ -184,7 +183,7 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'START':
                             if (eventDataQueue === undefined) eventDataQueue = []
                             break
-                        case 'BOOKMARK':
+                        case 'LOADED':
                             processEvents()
                             setLoading(false)
                             break
