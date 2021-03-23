@@ -82,9 +82,6 @@ export default function CreateClusterPage() {
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (createResources: any[]) => {
-        console.log('CREATERESOURCE CALLED', createResources)
-        const mc = createResources.find((cr) => cr.kind === 'ManagedCluster')
-        console.log('MC LABELS', mc.metadata.labels)
         if (createResources) {
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             const { status, messages } = await createCluster(createResources)
