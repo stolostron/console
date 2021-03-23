@@ -193,7 +193,8 @@ export class ServerSideEvents {
     ): ServerSideEventClient {
         const [writableStream, compressionStream, encoding] = getEncodeStream(
             (res as unknown) as NodeJS.WritableStream,
-            req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string
+            req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string,
+            process.env.DISABLE_STREAM_COMPRESSION === 'true'
         )
 
         let events: Record<string, boolean>
