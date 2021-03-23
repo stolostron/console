@@ -85,11 +85,7 @@ function getClusterActionsResourceAttributes(name: string) {
 }
 
 describe('DistributionField', () => {
-    const renderDistributionInfoField = async (
-        data: DistributionInfo,
-        allowUpgrade: boolean,
-        hasUpgrade: boolean = false
-    ) => {
+    const renderDistributionInfoField = async (data: DistributionInfo, allowUpgrade: boolean, hasUpgrade = false) => {
         let nockAction: nock.Scope | undefined = undefined
         if (hasUpgrade) {
             nockAction = nockRBAC(getClusterActionsResourceAttributes('clusterName'), allowUpgrade)

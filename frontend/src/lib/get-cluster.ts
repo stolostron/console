@@ -213,11 +213,11 @@ export function getDistributionInfo(
     let displayVersion: string | undefined
 
     if (managedCluster) {
-        let k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
+        const k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
             (cc) => cc.name === 'kubeversion.open-cluster-management.io'
         )
         if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
-        let versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
+        const versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
         if (versionClaim) displayVersion = `OpenShift ${versionClaim.value}`
     }
 
@@ -259,7 +259,7 @@ export function getConsoleUrl(
     managedClusterInfo: ManagedClusterInfo | undefined,
     managedCluster: ManagedCluster | undefined
 ) {
-    let consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
+    const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
     )
     if (consoleUrlClaim) return consoleUrlClaim.value
@@ -363,7 +363,7 @@ export function getClusterStatus(
         return cdStatus
     }
 
-    let mc = managedCluster ?? managedClusterInfo!
+    const mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status
     let mcStatus = ClusterStatus.pending

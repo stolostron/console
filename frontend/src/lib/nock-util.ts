@@ -17,13 +17,13 @@ import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 export function nockGet<Resource extends IResource>(
     resource: Resource,
     response?: IResource,
-    statusCode: number = 200,
-    polling: boolean = true
+    statusCode = 200,
+    polling = true
 ) {
-    let nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+    const nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
         getResourceNameApiPath(resource)
     )
-    let finalNockScope = nockScope.reply(statusCode, response ?? resource, {
+    const finalNockScope = nockScope.reply(statusCode, response ?? resource, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Credentials': 'true',
@@ -41,11 +41,7 @@ export function nockGet<Resource extends IResource>(
     return finalNockScope
 }
 
-export function nockOptions<Resource extends IResource>(
-    resource: Resource,
-    response?: IResource,
-    statusCode: number = 200
-) {
+export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
@@ -95,7 +91,7 @@ export function nockClusterList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     resources: Resource[] | IResource,
     labels?: string[],
-    polling: boolean = true
+    polling = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
     let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
@@ -106,7 +102,7 @@ export function nockClusterList<Resource extends IResource>(
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     }
 
-    let finalNetworkMock = networkMock.reply(200, data, {
+    const finalNetworkMock = networkMock.reply(200, data, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Credentials': 'true',
@@ -127,7 +123,7 @@ export function nockNamespacedList<Resource extends IResource>(
     resource: { apiVersion: string; kind: string; metadata: { namespace?: string } },
     resources: Resource[] | IResource,
     labels?: string[],
-    polling: boolean = true
+    polling = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
     let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
@@ -138,7 +134,7 @@ export function nockNamespacedList<Resource extends IResource>(
         networkMock = networkMock.query({ labelSelector: encodeURIComponent(labels.join(',')) })
     }
 
-    let finalNetworkMock = networkMock.reply(200, data, {
+    const finalNetworkMock = networkMock.reply(200, data, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Credentials': 'true',
@@ -155,7 +151,7 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource, response?: IResource, statusCode: number = 201) {
+export function nockCreate(resource: IResource, response?: IResource, statusCode = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), (body) => isEqual(body, resource))
         .reply(statusCode, response ?? resource, {
@@ -189,7 +185,7 @@ export function nockIgnoreRBAC() {
     return scope
 }
 
-export function nockRBAC(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
+export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true) {
     return nockCreate(
         {
             apiVersion: SelfSubjectAccessReviewApiVersion,
@@ -207,7 +203,7 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed: boolea
     )
 }
 
-export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode: number = 204) {
+export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode = 204) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
@@ -224,7 +220,7 @@ export function nockPatch(resource: IResource, data: unknown, response?: IResour
         })
 }
 
-export function nockReplace(resource: IResource, response?: IResource, statusCode: number = 200) {
+export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
@@ -258,12 +254,7 @@ export function nockDelete(resource: IResource, response?: IResource) {
         })
 }
 
-export function nockSearch(
-    query: SearchQuery,
-    response?: ISearchResult,
-    statusCode: number = 201,
-    polling: boolean = true
-) {
+export function nockSearch(query: SearchQuery, response?: ISearchResult, statusCode = 201, polling = true) {
     nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
@@ -273,12 +264,12 @@ export function nockSearch(
             'Access-Control-Allow-Credentials': 'true',
         })
 
-    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).post(
+    const networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).post(
         apiSearchUrl,
         JSON.stringify(query)
     )
 
-    let finalNetworkMock = networkMock.reply(statusCode, response, {
+    const finalNetworkMock = networkMock.reply(statusCode, response, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Credentials': 'true',
@@ -295,13 +286,7 @@ export function nockSearch(
     return finalNetworkMock
 }
 
-export function nockUpgrade(
-    clusterName: string,
-    version: string,
-    response?: string,
-    statusCode: number = 201,
-    delay: number = 0
-) {
+export function nockUpgrade(clusterName: string, version: string, response?: string, statusCode = 201, delay = 0) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post('/upgrade', (body) => isEqual(body, { clusterName, version }))
         .delay(delay)

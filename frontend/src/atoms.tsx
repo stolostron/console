@@ -118,7 +118,7 @@ export function LoadData(props: { children?: ReactNode }) {
             for (const kind in setters) {
                 const setter = setters[kind]
                 setter((resources) => {
-                    let newResources = [...resources]
+                    const newResources = [...resources]
                     for (const data of dataToProcess) {
                         if (data.object?.kind === kind) {
                             const index = newResources.findIndex(
@@ -149,7 +149,7 @@ export function LoadData(props: { children?: ReactNode }) {
             const setter = setters[data.object.kind]
             if (!setter) return
             setter((resources) => {
-                let newResources = [...resources]
+                const newResources = [...resources]
                 const index = resources.findIndex(
                     (resource) =>
                         resource.metadata?.name === data.object.metadata.name &&
