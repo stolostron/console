@@ -6,6 +6,6 @@ kind: FeatureGate
 metadata:
   name: open-cluster-management-discovery
   labels:
-    open-cluster-management: ''
+    console.open-cluster-management.io: ''
 spec:
   featureSet: DiscoveryEnabled
