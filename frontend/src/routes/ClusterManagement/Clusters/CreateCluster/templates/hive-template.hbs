@@ -159,6 +159,9 @@ metadata:
 {{/switch}}
     name: {{{name}}}
     vendor: {{{distribution}}}
+{{#if clusterSet}}
+    cluster.open-cluster-management.io/clusterSet: {{{clusterSet}}}
+{{/if}}
     {{#each additional}}
     {{{key}}}: '{{{value}}}'
     {{/each}}

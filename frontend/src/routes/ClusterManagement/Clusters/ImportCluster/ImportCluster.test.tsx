@@ -38,6 +38,7 @@ import ImportClusterPage from './ImportCluster'
 import { NavigationPath } from '../../../../NavigationPath'
 import { managedClusterSetsState } from '../../../../atoms'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -250,13 +251,13 @@ describe('ImportCluster', () => {
         const mockClusterResponse = JSON.parse(JSON.stringify(mockManagedClusterResponse))
         const mockKac = JSON.parse(JSON.stringify(mockKlusterletAddonConfig))
         const mockKacResponse = JSON.parse(JSON.stringify(mockKlusterletAddonConfigResponse))
-        mockCluster.metadata.labels['cluster.open-cluster-management.io/clusterset'] =
+        mockCluster.metadata.labels[managedClusterSetLabel] =
             mockManagedClusterSet.metadata.name
-        mockClusterResponse.metadata.labels['cluster.open-cluster-management.io/clusterset'] =
+        mockClusterResponse.metadata.labels[managedClusterSetLabel] =
             mockManagedClusterSet.metadata.name
-        mockKac.spec.clusterLabels['cluster.open-cluster-management.io/clusterset'] =
+        mockKac.spec.clusterLabels[managedClusterSetLabel] =
             mockManagedClusterSet.metadata.name
-        mockKacResponse.spec.clusterLabels['cluster.open-cluster-management.io/clusterset'] =
+        mockKacResponse.spec.clusterLabels[managedClusterSetLabel] =
             mockManagedClusterSet.metadata.name
         const managedClusterNock = nockCreate(mockCluster, mockClusterResponse)
         const kacNock = nockCreate(mockKac, mockKacResponse)
