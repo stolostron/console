@@ -81,9 +81,11 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }) => {
-        if (resourceJSON) {
-            const { createResources } = resourceJSON
+    const createResource = async (createResources: any[]) => {
+        console.log('CREATERESOURCE CALLED', createResources)
+        const mc = createResources.find((cr) => cr.kind === 'ManagedCluster')
+        console.log('MC LABELS', mc.metadata.labels)
+        if (createResources) {
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })
@@ -136,7 +138,7 @@ export default function CreateClusterPage() {
 
     const [managedClusterSets] = useRecoilState(managedClusterSetsState)
     for (let i = 0; i < controlData.length; i++) {
-        if (controlData[i].id === 'clusterSet') {
+        if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = managedClusterSets.map((mcs) => mcs.metadata.name)
             break
         }
