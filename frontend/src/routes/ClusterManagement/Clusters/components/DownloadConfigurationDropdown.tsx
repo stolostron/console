@@ -33,7 +33,7 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
     }
 
     if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
-        let dropdownItems = []
+        const dropdownItems = []
         cluster?.hive.secrets?.installConfig &&
             dropdownItems.push({
                 id: 'install-config.yaml',

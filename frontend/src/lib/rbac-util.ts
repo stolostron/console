@@ -64,7 +64,7 @@ export async function checkAdminAccess() {
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
 
 export function rbacResource(verb: Verb, resource: IResource, namespace?: string, name?: string) {
-    let attributes = {
+    const attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
         resource: getResourcePlural(resource),

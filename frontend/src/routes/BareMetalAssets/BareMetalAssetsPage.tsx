@@ -221,7 +221,7 @@ export function BareMetalAssetsTable(props: {
                             if (bareMetalAsset.status) {
                                 let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
                                 let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
-                                for (let conditions of bareMetalAsset.status!.conditions) {
+                                for (const conditions of bareMetalAsset.status!.conditions) {
                                     if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
                                         mostCurrentStatusTime = conditions.lastTransitionTime
                                         mostCurrentStatus = conditions.type
