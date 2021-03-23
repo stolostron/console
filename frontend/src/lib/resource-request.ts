@@ -71,7 +71,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     data: unknown
 ): IRequestResult<ResultType> {
     const url = backendUrl + getResourceNameApiPath(resource)
-    let headers: Record<string, string> = {}
+    const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
     } else {
@@ -107,7 +107,7 @@ export function getResource<Resource extends IResource>(
     let queryString = undefined
 
     if (options?.labelSelector) {
-        let labels: string[] = []
+        const labels: string[] = []
         for (const key in options.labelSelector) {
             const value = options.labelSelector[key] !== undefined ? options.labelSelector[key] : ''
             labels.push(`${key}=${value}`)
@@ -116,7 +116,7 @@ export function getResource<Resource extends IResource>(
     }
 
     if (options?.fieldSelector) {
-        let fields: string[] = []
+        const fields: string[] = []
         for (const key in options.fieldSelector) {
             const value = options.fieldSelector[key] !== undefined ? options.fieldSelector[key] : ''
             fields.push(`${key}=${value}`)
@@ -403,7 +403,7 @@ export async function fetchRetry<T>(options: {
             }
         }
 
-        let ms = delay
+        const ms = delay
         await new Promise((resolve) => setTimeout(resolve, ms))
         delay *= 2
         retries--

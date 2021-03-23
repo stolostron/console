@@ -1,26 +1,37 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": [
-    "src"
-  ]
+    "compilerOptions": {
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "esnext",
+        "target": "es5",
+        "jsx": "react-jsx",
+
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true
+    },
+    "include": ["src"]
 }

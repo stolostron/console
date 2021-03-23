@@ -35,13 +35,17 @@ export function getDecodeStream(stream: Readable, contentEncoding?: string | str
 
 export function getEncodeStream(
     stream: NodeJS.WritableStream,
-    acceptEncoding?: string | string[]
+    acceptEncoding?: string | string[],
+    disabled = false
 ): [NodeJS.WritableStream, (Transform & Zlib) | undefined, string] {
     let encoding = 'identity'
-    // Firefox tells us it supports 'br' but it does not... disabling
-    // if (acceptEncoding?.includes('br')) encoding = 'br' else
-    if (acceptEncoding?.includes('gzip')) encoding = 'gzip'
-    else if (acceptEncoding?.includes('deflate')) encoding = 'deflate'
+
+    if (!disabled) {
+        // Firefox tells us it supports 'br' but it does not... disabling
+        // if (acceptEncoding?.includes('br')) encoding = 'br' else
+        if (acceptEncoding?.includes('gzip')) encoding = 'gzip'
+        else if (acceptEncoding?.includes('deflate')) encoding = 'deflate'
+    }
 
     let compressionStream: (Transform & Zlib) | undefined
     switch (encoding) {

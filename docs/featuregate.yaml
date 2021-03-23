@@ -5,5 +5,7 @@ apiVersion: config.openshift.io/v1
 kind: FeatureGate
 metadata:
   name: open-cluster-management-discovery
+  labels:
+    console.open-cluster-management.io: ''
 spec:
   featureSet: DiscoveryEnabled
