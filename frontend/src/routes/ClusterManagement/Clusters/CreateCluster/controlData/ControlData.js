@@ -61,7 +61,7 @@ export const controlData = [
         id: 'clusterSet',
         type: 'singleselect',
         placeholder: 'placeholder.creation.ocp.clusterSet',
-        available: []
+        available: [],
     },
     {
         id: 'showSecrets',

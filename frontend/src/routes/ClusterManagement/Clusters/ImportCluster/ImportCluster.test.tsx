@@ -251,14 +251,10 @@ describe('ImportCluster', () => {
         const mockClusterResponse = JSON.parse(JSON.stringify(mockManagedClusterResponse))
         const mockKac = JSON.parse(JSON.stringify(mockKlusterletAddonConfig))
         const mockKacResponse = JSON.parse(JSON.stringify(mockKlusterletAddonConfigResponse))
-        mockCluster.metadata.labels[managedClusterSetLabel] =
-            mockManagedClusterSet.metadata.name
-        mockClusterResponse.metadata.labels[managedClusterSetLabel] =
-            mockManagedClusterSet.metadata.name
-        mockKac.spec.clusterLabels[managedClusterSetLabel] =
-            mockManagedClusterSet.metadata.name
-        mockKacResponse.spec.clusterLabels[managedClusterSetLabel] =
-            mockManagedClusterSet.metadata.name
+        mockCluster.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockClusterResponse.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockKac.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockKacResponse.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
         const managedClusterNock = nockCreate(mockCluster, mockClusterResponse)
         const kacNock = nockCreate(mockKac, mockKacResponse)
         const importSecretNock = nockGet(mockSecretResponse)
