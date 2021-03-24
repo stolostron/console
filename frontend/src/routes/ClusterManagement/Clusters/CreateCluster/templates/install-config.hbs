@@ -206,7 +206,7 @@ platform:
 {{/if}}
           username: '{{{username}}}'  ##hosts.{{@index}}.username
           password: '{{{password}}}'  ##hosts.{{@index}}.password
-        bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
+        bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
         hardwareProfile: default
 {{/each}}
 {{/case}}
@@ -224,7 +224,7 @@ platform:
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
+    baseDomainResourceGroupName: '{{{../../baseDomainResourceGroupName}}}'
     region: '{{{../../region}}}'
 {{/case}}
 
