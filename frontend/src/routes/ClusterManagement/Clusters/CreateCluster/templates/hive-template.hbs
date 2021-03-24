@@ -8,8 +8,8 @@
 apiVersion: hive.openshift.io/v1
 kind: ClusterDeployment
 metadata:
-  name: {{{name}}} ##name
-  namespace: {{{name}}}
+  name: '{{{name}}}' ##name
+  namespace: '{{{name}}}'
   labels:
     cloud: '{{infrastructure}}'
 {{#if region}}
@@ -22,8 +22,8 @@ metadata:
 {{/if_eq}}
 
 spec:
-  baseDomain: {{{baseDomain}}}  ##baseDomain
-  clusterName: {{{name}}}
+  baseDomain: '{{{baseDomain}}}'  ##baseDomain
+  clusterName: '{{{name}}}'
   controlPlaneConfig:
     servingCertificates: {}
   installAttemptsLimit: 2
@@ -36,19 +36,19 @@ spec:
   {{#case 'BMC'}}
     baremetal:
       libvirtSSHPrivateKeySecretRef:
-        name: {{{../../name}}}-ssh-private-key
+        name: '{{{../../name}}}-ssh-private-key'
       hosts:
         {{#each ../../hosts}}
-        - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
-          namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
-          role: {{{role}}}  ##hosts.{{@index}}.role
+        - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
+          namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
+          role: '{{{role}}}'  ##hosts.{{@index}}.role
           bmc:
             address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
 {{#if ../../../disableCertificateVerification}}
             disableCertificateVerification: true
 {{/if}}
-            username: {{{username}}}  ##hosts.{{@index}}.username
-            password: {{{password}}}  ##hosts.{{@index}}.password
+            username: '{{{username}}}'  ##hosts.{{@index}}.username
+            password: '{{{password}}}'  ##hosts.{{@index}}.password
           bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
           hardwareProfile: default
         {{/each}}
@@ -57,36 +57,36 @@ spec:
   {{#case 'AWS'}}
     aws:
       credentialsSecretRef:
-        name: {{{../../name}}}-aws-creds
-      region: {{{../../region}}}
+        name: '{{{../../name}}}-aws-creds'
+      region: '{{{../../region}}}'
   {{/case}}
 
   {{#case 'GCP'}}
     gcp:
       credentialsSecretRef:
-        name: {{{../../name}}}-gcp-creds
-      region: {{{../../region}}}
+        name: '{{{../../name}}}-gcp-creds'
+      region: '{{{../../region}}}'
   {{/case}}
 
   {{#case 'Azure'}}
     azure:
       baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
-        name: {{{../../name}}}-azure-creds
-      region: {{{../../region}}}
+        name: '{{{../../name}}}-azure-creds'
+      region: '{{{../../region}}}'
   {{/case}}
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{../../vmClusterName}}}
+      cluster: '{{{../../vmClusterName}}}'
       certificatesSecretRef:
-        name: {{{../../name}}}-vsphere-certs
+        name: '{{{../../name}}}-vsphere-certs'
       credentialsSecretRef:
-        name: {{{../../name}}}-vsphere-creds
-      vCenter: {{{../../vcenter}}}
-      datacenter: {{{../../datacenter}}}
-      defaultDatastore: {{{../../datastore}}}
-      network: {{{../../networkType}}}
+        name: '{{{../../name}}}-vsphere-creds'
+      vCenter: '{{{../../vcenter}}}'
+      datacenter: '{{{../../datacenter}}}'
+      defaultDatastore: '{{{../../datastore}}}'
+      network: '{{{../../networkType}}}'
   {{/case}}
 
 {{/switch}}
@@ -95,28 +95,28 @@ spec:
 
   provisioning:
     installConfigSecretRef:
-      name: {{{name}}}-install-config
+      name: '{{{name}}}-install-config'
     sshPrivateKeySecretRef:
-      name: {{{name}}}-ssh-private-key
+      name: '{{{name}}}-ssh-private-key'
 
 {{#if releaseImage}}
     imageSet:
-      name: {{{releaseImage}}}
+      name: '{{{releaseImage}}}'
 {{/if}}
 {{#if releaseImageReference}}
     imageSetRef:
        #{{{clusterImageSetComment}}}
-      name: {{{releaseImageReference}}}
+      name: '{{{releaseImageReference}}}'
 {{/if}}
 {{#if clusterReleaseImage}}
     imageSetRef:
-      name: {{{clusterImageSetName}}}
+      name: '{{{clusterImageSetName}}}'
 {{/if}}
 
 {{#if_eq infrastructure 'BMC'}}
 {{#if ../configMap}}
     manifestsConfigMapRef:
-      name: {{{../../name}}}-install-manifests
+      name: '{{{../../name}}}-install-manifests'
 {{/if}}
     sshKnownHosts:
 {{#each ../sshKnownHosts}}
@@ -124,7 +124,7 @@ spec:
 {{/each}}
 {{/if_eq}}
   pullSecretRef:
-    name: {{{name}}}-pull-secret
+    name: '{{{name}}}-pull-secret'
 
 {{! ========================================================== }}
 {{! ========================================================== }}
@@ -140,15 +140,15 @@ metadata:
 {{#switch infrastructure}}
   {{#case 'AWS'}}
     cloud: Amazon
-    region: {{{../../region}}}
+    region: '{{{../../region}}}'
   {{/case}}
   {{#case 'GCP'}}
     cloud: Google
-    region: {{{../../region}}}
+    region: '{{{../../region}}}'
   {{/case}}
   {{#case 'Azure'}}
     cloud: Azure
-    region: {{{../../region}}}
+    region: '{{{../../region}}}'
   {{/case}}
   {{#case 'BMC'}}
     cloud: Bare-Metal
@@ -157,12 +157,12 @@ metadata:
     cloud: vSphere
   {{/case}}
 {{/switch}}
-    name: {{{name}}}
-    vendor: {{{distribution}}}
+    name: '{{{name}}}'
+    vendor: '{{{distribution}}}'
     {{#each additional}}
     {{{key}}}: '{{{value}}}'
     {{/each}}
-  name: {{{name}}}
+  name: '{{{name}}}'
 spec:
   hubAcceptsClient: true
 
@@ -178,9 +178,9 @@ spec:
 apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
-  name: {{{clusterImageSetName}}}
+  name: '{{{clusterImageSetName}}}'
 spec:
-  releaseImage: {{{clusterReleaseImage}}}
+  releaseImage: '{{{clusterReleaseImage}}}'
 {{/if}}
 
 
@@ -195,7 +195,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{{../../name}}}-install-manifests
+  name: '{{{../../name}}}-install-manifests'
   namespace: hive
 data:
   99_metal3-config.yaml: |
@@ -231,12 +231,12 @@ data:
 apiVersion: hive.openshift.io/v1
 kind: MachinePool
 metadata:
-  name: {{{../name}}}-{{{workerName}}}
-  namespace: {{{../name}}}
+  name: '{{{../name}}}-{{{workerName}}}'
+  namespace: '{{{../name}}}'
 spec:
   clusterDeploymentRef:
-    name: {{{../name}}}
-  name: {{{workerName}}} ##workerPools.{{@index}}.workerName
+    name: '{{{../name}}}'
+  name: '{{{workerName}}}' ##workerPools.{{@index}}.workerName
 
 {{#switch ../infrastructure}}
 
@@ -247,7 +247,7 @@ spec:
         iops: 2000
         size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
       {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -259,7 +259,7 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -267,7 +267,7 @@ spec:
     azure:
       osDisk:
         diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
 {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -301,8 +301,8 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{{name}}}-pull-secret
-  namespace: {{{name}}}
+  name: '{{{name}}}-pull-secret'
+  namespace: '{{{name}}}'
 stringData:
 {{#if showSecrets}}
   .dockerconfigjson: |-
@@ -316,8 +316,8 @@ type: kubernetes.io/dockerconfigjson
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{{name}}}-install-config
-  namespace: {{{name}}}
+  name: '{{{name}}}-install-config'
+  namespace: '{{{name}}}'
 type: Opaque
 data:
   # Base64 encoding of install-config yaml
@@ -327,8 +327,8 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{{name}}}-ssh-private-key
-  namespace: {{{name}}}
+  name: '{{{name}}}-ssh-private-key'
+  namespace: '{{{name}}}'
 stringData:
 {{#if showSecrets}}
   ssh-privatekey: |-
@@ -352,12 +352,12 @@ type: Opaque
 
 {{#case 'AWS'}}
 metadata:
-  name: {{{../../name}}}-aws-creds
-  namespace: {{{../../name}}}
+  name: '{{{../../name}}}-aws-creds'
+  namespace: '{{{../../name}}}'
 stringData:
-  aws_access_key_id: {{{../../awsAccessKeyID}}}
+  aws_access_key_id: '{{{../../awsAccessKeyID}}}'
 {{#if ../../showSecrets}}
-  aws_secret_access_key: {{{../../awsSecretAccessKeyID}}}
+  aws_secret_access_key: '{{{../../awsSecretAccessKeyID}}}'
 {{else}}
   aws_secret_access_key: # injected on create
 {{/if}}
@@ -365,8 +365,8 @@ stringData:
 
 {{#case 'GCP'}}
 metadata:
-  name: {{{../../name}}}-gcp-creds
-  namespace: {{{../../name}}}
+  name: '{{{../../name}}}-gcp-creds'
+  namespace: '{{{../../name}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
@@ -380,8 +380,8 @@ stringData:
 
 {{#case 'Azure'}}
 metadata:
-  name: {{{../../name}}}-azure-creds
-  namespace: {{{../../name}}}
+  name: '{{{../../name}}}-azure-creds'
+  namespace: '{{{../../name}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
@@ -393,11 +393,11 @@ stringData:
 
 {{#case 'vSphere'}}
 metadata:
-  name: {{{../../name}}}-vsphere-creds
-  namespace: {{{../../name}}}
+  name: '{{{../../name}}}-vsphere-creds'
+  namespace: '{{{../../name}}}'
 stringData:
-  username: {{{../../username}}}
-  password: {{{../../password}}}
+  username: '{{{../../username}}}'
+  password: '{{{../../password}}}'
 
 ---
 
@@ -405,8 +405,8 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: {{{../../name}}}-vsphere-certs
-  namespace: {{{../../name}}}
+  name: '{{{../../name}}}-vsphere-certs'
+  namespace: '{{{../../name}}}'
 data:
 
 {{#if ../../showSecrets}}
