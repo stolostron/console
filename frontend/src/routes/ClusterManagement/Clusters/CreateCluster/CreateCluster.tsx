@@ -81,9 +81,9 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (createResources: any[]) => {
-        console.log('CreateCluster createResource', createResources)
-        if (createResources) {
+    const createResource = async (resourceJSON: { createResources: any[] }) => {
+        if (resourceJSON) {
+            const { createResources } = resourceJSON
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })

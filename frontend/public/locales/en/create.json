@@ -201,7 +201,7 @@
     "creation.ocp.dns.vip": "DNS VIP",
     "creation.ocp.ingress.vip": "Ingress VIP",
     "creation.ocp.name": "Cluster name",
-    "creation.ocp.clusterSet": "Set",
+    "creation.ocp.clusterSet": "Cluster set",
     "creation.ocp.namespace": "Cluster namespace",
     "creation.ocp.baseDomain": "Base DNS domain",
     "creation.ocp.imageMirror": "Image Registry Mirror",
@@ -308,7 +308,7 @@
     "tooltip.cloud.provider.vmw.datastore": "The name of the default vSphere datastore to use.",
     "tooltip.creation.ocp.imageMirror": "Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.",
 
-    "placeholder.creation.ocp.clusterSet": "Select a set",
+    "placeholder.creation.ocp.clusterSet": "Select a cluster set",
 
     "modal.import-acmbaremetalasset.button.text": "Import assets",
     "modal.import-acmbaremetalasset.button.tooltip": "Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.",
