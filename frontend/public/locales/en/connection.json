@@ -105,6 +105,8 @@
     "addConnection.baseDomain.label": "Base DNS domain",
     "addConnection.baseDomain.placeholder": "Enter the base DNS domain",
     "addConnection.baseDomain.labelHelp": "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record.",
+    "addConnection.baseDomain.baseDNSPeriod": "The base DNS domain must not begin with a period.",
+    "addConnection.valid.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
     "addConnection.pullSecret.label": "Red Hat OpenShift pull secret",
     "addConnection.pullSecret.placeholder": "Enter Red Hat OpenShift pull secret",
     "addConnection.pullSecret.labelHelp": "The pull secret that you obtained from the pull secret page on the Red Hat OpenShift Cluster Manager site. Use this pull secret to authenticate with the services that are provided by the included authorities, including Quay.io, which serves the container images for OpenShift Container Platform components.",
