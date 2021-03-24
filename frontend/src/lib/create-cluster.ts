@@ -28,6 +28,7 @@ export async function createCluster(resources: any[]) {
     let response
     let namespace = ''
     const clusterResources: any = []
+    console.log('createCluster resources', resources)
     resources = resources.filter((resource: any) => {
         const { kind, metadata = {}, spec = {} } = resource
         switch (kind) {
