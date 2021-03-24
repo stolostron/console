@@ -121,7 +121,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         header: t('table.name'),
                         sort: 'name',
                         search: 'name',
-                        cell: (managedClusterSet) => {
+                        cell: (managedClusterSet: ManagedClusterSet) => {
                             const clusters =
                                 props.clusters?.filter(
                                     (cluster) =>
@@ -147,7 +147,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     },
                     {
                         header: t('table.clusters'),
-                        cell: (managedClusterSet) => {
+                        cell: (managedClusterSet: ManagedClusterSet) => {
                             const clusters =
                                 props.clusters?.filter(
                                     (cluster) =>
@@ -157,7 +157,8 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             let warning = 0
                             let progress = 0
                             let danger = 0
-                            let unknown = 0
+                            let pending = 0
+                            let sleep = 0
 
                             clusters.forEach((cluster) => {
                                 switch (cluster.status) {
@@ -184,9 +185,11 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                         break
                                     // temporary
                                     case ClusterStatus.hibernating:
+                                        sleep++
+                                        break
                                     case ClusterStatus.pending:
                                     case ClusterStatus.pendingimport:
-                                        unknown++
+                                        pending++
                                         break
                                     // detached clusters don't have a ManagedCluster
                                     case ClusterStatus.detached:
@@ -202,14 +205,15 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                     warning={warning}
                                     progress={progress}
                                     danger={danger}
-                                    unknown={unknown}
+                                    pending={pending}
+                                    sleep={sleep}
                                 />
                             )
                         },
                     },
                     {
                         header: t('table.nodes'),
-                        cell: (managedClusterSet) => {
+                        cell: (managedClusterSet: ManagedClusterSet) => {
                             const clusters =
                                 props.clusters?.filter(
                                     (cluster) =>
