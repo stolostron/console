@@ -36,7 +36,7 @@ spec:
   {{#case 'BMC'}}
     baremetal:
       libvirtSSHPrivateKeySecretRef:
-        name: {{{../../name}}}-ssh-private-key
+        name: '{{{../../name}}}-ssh-private-key'
       hosts:
         {{#each ../../hosts}}
         - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
@@ -151,10 +151,10 @@ metadata:
     region: '{{{../../region}}}'
   {{/case}}
   {{#case 'BMC'}}
-    cloud: 'Bare-Metal'
+    cloud: Bare-Metal
   {{/case}}
   {{#case 'vSphere'}}
-    cloud: 'vSphere'
+    cloud: vSphere
   {{/case}}
 {{/switch}}
     name: '{{{name}}}'
@@ -247,7 +247,7 @@ spec:
         iops: 2000
         size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
       {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -259,7 +259,7 @@ spec:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -267,7 +267,7 @@ spec:
     azure:
       osDisk:
         diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
 {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}

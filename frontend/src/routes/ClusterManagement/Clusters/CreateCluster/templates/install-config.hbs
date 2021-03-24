@@ -40,13 +40,13 @@ controlPlane:
         iops: 4000
         size: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
         type: io1
-      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type: '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type: '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -54,7 +54,7 @@ controlPlane:
     azure:
       osDisk:
         diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
-      type:  {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+      type:  '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'vSphere'}}
@@ -99,7 +99,7 @@ compute:
         iops: 2000
         size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
 {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -112,13 +112,13 @@ compute:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
-      type:  {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+      type:  '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
       osDisk:
         diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
 {{#if ../../workerZones}}
@@ -159,14 +159,14 @@ networking:
   - cidr: {{{clusterNetwork}}} ##clusterNetwork
     hostPrefix: {{{hostPrefix}}} ##hostPrefix
 {{/each}}
-  machineNetwork: 
+  machineNetwork:
 {{#each ../networks}}
   - cidr: {{{machineCIDR}}} ##machineCIDR
-{{/each}}  
+{{/each}}
   serviceNetwork:
 {{#each ../networks}}
   - {{{serviceNetwork}}} ##serviceNetwork
-{{/each}}  
+{{/each}}
 {{/if_ne}}
 
 
