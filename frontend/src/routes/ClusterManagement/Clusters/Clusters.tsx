@@ -264,7 +264,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
-                tableActions={props.tableActions || undefined}
+                tableActions={props.tableActions}
                 bulkActions={[
                     {
                         id: 'destroyCluster',
