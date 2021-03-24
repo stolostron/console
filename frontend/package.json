@@ -6,7 +6,7 @@
     "proxy": "https://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.14.0",
-        "@open-cluster-management/ui-components": "^0.1.251",
+        "@open-cluster-management/ui-components": "^0.3.0",
         "@patternfly/react-core": "^4.101.3",
         "@patternfly/react-table": "^4.23.14",
         "@types/lodash": "^4.14.168",
@@ -109,7 +109,8 @@
             "jest/no-identical-title": "off",
             "@typescript-eslint/ban-types": "off",
             "no-empty": "off",
-            "no-constant-condition": "off"
+            "no-constant-condition": "off",
+            "jest/no-export": "off"
         }
     },
     "browserslist": {

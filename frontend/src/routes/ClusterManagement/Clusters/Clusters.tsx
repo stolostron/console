@@ -9,6 +9,7 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
+    IAcmTableAction,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -40,6 +41,7 @@ import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 
 export default function ClustersPage() {
+    const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -62,10 +64,39 @@ export default function ClustersPage() {
         [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
     usePageContext(clusters.length > 0, PageActions)
+
+    const history = useHistory()
+    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
+        canCreateManagedCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateManagedCluster.abort()
+    }, [])
+
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <ClustersTable clusters={clusters} />
+                <ClustersTable
+                    clusters={clusters}
+                    tableActions={[
+                        {
+                            id: 'createCluster',
+                            title: t('managed.createCluster'),
+                            click: () => history.push(NavigationPath.createCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                        {
+                            id: 'importCluster',
+                            title: t('managed.importCluster'),
+                            click: () => history.push(NavigationPath.importCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                    ]}
+                />
             </PageSection>
         </AcmPageContent>
     )
@@ -88,7 +119,7 @@ const PageActions = () => {
     )
 }
 
-export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (managedCluster: Cluster) => void }) {
+export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcmTableAction[] }) {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
@@ -96,16 +127,6 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
-
-    const history = useHistory()
-    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
-        canCreateManagedCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateManagedCluster.abort()
-    }, [])
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -243,22 +264,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
-                tableActions={[
-                    {
-                        id: 'createCluster',
-                        title: t('managed.createCluster'),
-                        click: () => history.push(NavigationPath.createCluster),
-                        isDisabled: !canCreateCluster,
-                        tooltip: t('common:rbac.unauthorized'),
-                    },
-                    {
-                        id: 'importCluster',
-                        title: t('managed.importCluster'),
-                        click: () => history.push(NavigationPath.importCluster),
-                        isDisabled: !canCreateCluster,
-                        tooltip: t('common:rbac.unauthorized'),
-                    },
-                ]}
+                tableActions={props.tableActions}
                 bulkActions={[
                     {
                         id: 'destroyCluster',

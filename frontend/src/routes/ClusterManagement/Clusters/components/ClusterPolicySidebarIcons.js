@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
-
 export const CriticalRiskIcon = () => {
     return (
         <svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" role="presentation">

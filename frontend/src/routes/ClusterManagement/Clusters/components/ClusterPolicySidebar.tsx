@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useState } from 'react'
 import _ from 'lodash'
 import {
     Tabs,
@@ -19,7 +20,6 @@ import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
