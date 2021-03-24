@@ -212,7 +212,7 @@ function DetailsView(props: {
     }
 
     function categories() {
-        let categories = _.get(selectedPolicy, 'results[0].category', '')
+        const categories = _.get(selectedPolicy, 'results[0].category', '')
         if (categories && categories !== '') {
             const categoriesToHide = categories.slice(1)
             return <AcmLabels labels={categories.split(',')} collapse={categoriesToHide} />
@@ -220,7 +220,7 @@ function DetailsView(props: {
     }
 
     function matchedDate() {
-        let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
+        const d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
         return d
     }
 

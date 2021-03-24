@@ -76,7 +76,7 @@ export function ProviderConnectionsTable(props: {
         open: false,
     })
 
-    var discoveryEnabled = false
+    let discoveryEnabled = false
     if (props.discoveryConfigs) {
         props.discoveryConfigs.forEach((discoveryConfig) => {
             if (discoveryConfig.spec.providerConnections && discoveryConfig.spec.providerConnections.length > 0) {

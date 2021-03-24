@@ -26,7 +26,7 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
     let results
     const assets: BareMetalAsset[] = []
     const errors: Error[] = []
-    let response = await listBareMetalAssets().promise
+    const response = await listBareMetalAssets().promise
     const assetsMap = keyBy(response, (item) => {
         const name = get(item, 'metadata.name')
         const namespace = get(item, 'metadata.namespace')
@@ -106,7 +106,7 @@ export async function attachBMAs(
     errors: Error[]
 ) {
     // mark asset as being used by this cluster
-    let results = assets.map((asset, inx) => {
+    const results = assets.map((asset, inx) => {
         const patch = {
             spec: {
                 role: hosts[inx].role,

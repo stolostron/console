@@ -20,7 +20,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     })
 
     useEffect(() => {
-        let current = dataRef.current
+        const current = dataRef.current
         current.ismounted = true
         return () => {
             current.ismounted = false
@@ -35,7 +35,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                 clearTimeout(dataRef.current.timeout)
                 dataRef.current.timeout = undefined
             }
-            let requestResult = restFunc()
+            const requestResult = restFunc()
             dataRef.current.requestResult = requestResult
             let aborted = false
             dataRef.current.requestResult.promise
