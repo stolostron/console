@@ -502,6 +502,7 @@ describe('Clusters Page RBAC', () => {
 
         const rbacNocks: Scope[] = [
             nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
+            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
             nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
             nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
             nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster0.metadata.name!)),
