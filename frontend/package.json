@@ -109,7 +109,8 @@
             "jest/no-identical-title": "off",
             "@typescript-eslint/ban-types": "off",
             "no-empty": "off",
-            "no-constant-condition": "off"
+            "no-constant-condition": "off",
+            "jest/no-export": "off"
         }
     },
     "browserslist": {
