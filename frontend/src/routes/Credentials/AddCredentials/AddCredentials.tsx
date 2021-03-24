@@ -369,6 +369,17 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     !getProviderConnectionProviderID(providerConnection) ||
                     getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
                 }
+                validation={(value) => {
+                    const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
+                    if (value) {
+                        if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
+                            return t('addConnection.baseDomain.baseDNSPeriod')
+                        }
+                        if (!VALID_DNS_NAME_TESTER.test(value)) {
+                            return t('addConnection.valid.name')
+                        }
+                    }
+                }}
             />
             <AcmTextInput
                 id="awsAccessKeyID"
