@@ -201,6 +201,7 @@
     "creation.ocp.dns.vip": "DNS VIP",
     "creation.ocp.ingress.vip": "Ingress VIP",
     "creation.ocp.name": "Cluster name",
+    "creation.ocp.clusterSet": "Cluster set",
     "creation.ocp.namespace": "Cluster namespace",
     "creation.ocp.baseDomain": "Base DNS domain",
     "creation.ocp.imageMirror": "Image Registry Mirror",
@@ -235,6 +236,7 @@
     "tooltip.modal.create-acmbaremetalasset.bmc-address": "The address to communicate with the host's BMC controller. IPMI, iDRAC, iRMC, and Redfish protocols are supported. e.g. ipmi://, idrac://, irmc://, redfish://",
     "tooltip.modal.create-acmbaremetalasset.boot-mac": "The MAC address of the host's network-connected NIC that will be used to provision the host.",
     "tooltip.creation.ocp.name": "The unique name of your cluster. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
+    "tooltip.creation.ocp.clusterSet": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.",
     "tooltip.creation.ocp.addition.labels": "Additional key/value pairs that are intended to help you organize your objects. Labels can be used to specify identifying attributes of objects that are meaningful and relevant to you.",
     "tooltip.creation.ocp.baseDomain": "The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority record (SOA). Cannot be changed after creation.",
     "tooltip.creation.ocp.choose.distribution": "The type of Kubernetes distribution you are using. Cannot be changed after creation.",
@@ -305,6 +307,8 @@
     "tooltip.cloud.provider.vmw.datacenter": "The name of the vSphere datacenter to use.",
     "tooltip.cloud.provider.vmw.datastore": "The name of the default vSphere datastore to use.",
     "tooltip.creation.ocp.imageMirror": "Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.",
+
+    "placeholder.creation.ocp.clusterSet": "Select a cluster set",
 
     "modal.import-acmbaremetalasset.button.text": "Import assets",
     "modal.import-acmbaremetalasset.button.tooltip": "Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.",
