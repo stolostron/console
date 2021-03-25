@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ClusterSetsPage from './ClusterSets'
-import { waitForText, clickByLabel, clickByText, clickByTestId, typeByText, waitForNock } from '../../../lib/test-util'
+import { waitForText, clickByLabel, clickByText, typeByText, waitForNock } from '../../../lib/test-util'
 import { nockIgnoreRBAC, nockDelete } from '../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../lib/test-metadata'
 import {
