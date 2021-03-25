@@ -21,6 +21,8 @@
     "removing": "Removing",
     "add": "Add",
     "adding": "Adding",
+    "delete": "Delete",
+    "deleting": "Deleting",
     "clusters.discovered": "Discovered clusters",
     "managed": "Managed",
     "managed.emptyStateHeader": "No clusters found",
@@ -45,6 +47,7 @@
     "managed.destroySelected": "Destroy cluster",
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
+    "set.delete": "Delete",
     "discovered": "Discovered",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
@@ -217,6 +220,7 @@
     "tab.overview": "Overview",
     "tab.nodes": "Nodes",
     "tab.settings": "Settings",
+    "tab.clusters": "Clusters",
 
     "labels.capital": "Labels",
     "labels.lower": "labels",
@@ -262,6 +266,7 @@
     "policy.report.flyout.matched": "Matched on",
     "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred",
 
+    "bulk.delete": "Delete",
     "bulk.title.import": "Import cluster(s)",
     "bulk.message.import": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",
     "bulk.title.detach": "Detach cluster(s)",
@@ -278,6 +283,8 @@
     "bulk.message.addSet": "Adding a cluster to a cluster set may, if enabled, add it to the multi-cluster network within the set. Access control permissions to the cluster may also be granted to users who have permission to the set. The cluster can be removed from the cluster set at any time.",
     "bulk.title.upgrade": "Upgrade cluster(s)",
     "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed.",
+    "bulk.title.deleteSet": "Delete cluster set(s)",
+    "bulk.message.deleteSet": "Deleting a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",

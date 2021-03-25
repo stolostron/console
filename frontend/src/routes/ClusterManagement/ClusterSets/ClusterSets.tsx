@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState, useMemo } from 'react'
 import {
     AcmAlertContext,
     AcmEmptyState,
@@ -11,7 +11,7 @@ import {
     AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -24,8 +24,10 @@ import {
     clusterManagementAddonsState,
     managedClusterAddonsState,
 } from '../../../atoms'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { mapAddons } from '../../../lib/get-addons'
-import { Cluster, mapClusters, ClusterStatus } from '../../../lib/get-cluster'
+import { Cluster, mapClusters } from '../../../lib/get-cluster'
+import { canUser } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -34,7 +36,9 @@ import {
     managedClusterSetLabel,
 } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
-import { canUser } from '../../../lib/rbac-util'
+import { ClusterStatuses } from './components/ClusterStatuses'
+import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
+import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 
 export default function ClusterSetsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -97,6 +101,9 @@ const PageActions = () => {
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation(['cluster'])
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
+        open: false,
+    })
     const history = useHistory()
     const [canCreateClusterSet, setCanCreateClusterSet] = useState<boolean>(false)
     useEffect(() => {
@@ -107,12 +114,33 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
         return () => canCreateManagedClusterSet.abort()
     }, [])
 
+    const modalColumns = useMemo(
+        () => [
+            {
+                header: t('table.name'),
+                cell: (managedClusterSet: ManagedClusterSet) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>{managedClusterSet.metadata.name}</span>
+                ),
+                sort: 'name',
+            },
+            {
+                header: t('table.clusters'),
+                sort: 'status',
+                cell: (managedClusterSet: ManagedClusterSet) => (
+                    <ClusterStatuses managedClusterSet={managedClusterSet} />
+                ),
+            },
+        ],
+        [t]
+    )
+
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
         return managedClusterSet.metadata.name!
     }
 
     return (
         <Fragment>
+            <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <AcmTable<ManagedClusterSet>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterSets"
@@ -149,67 +177,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     {
                         header: t('table.clusters'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
-                            const clusters =
-                                props.clusters?.filter(
-                                    (cluster) =>
-                                        cluster.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                                ) ?? []
-                            let healthy = 0
-                            let warning = 0
-                            let progress = 0
-                            let danger = 0
-                            let pending = 0
-                            let sleep = 0
-
-                            clusters.forEach((cluster) => {
-                                switch (cluster.status) {
-                                    case ClusterStatus.ready:
-                                        healthy++
-                                        break
-                                    case ClusterStatus.needsapproval:
-                                        warning++
-                                        break
-                                    case ClusterStatus.creating:
-                                    case ClusterStatus.destroying:
-                                    case ClusterStatus.detaching:
-                                    case ClusterStatus.stopping:
-                                    case ClusterStatus.resuming:
-                                        progress++
-                                        break
-                                    case ClusterStatus.failed:
-                                    case ClusterStatus.provisionfailed:
-                                    case ClusterStatus.deprovisionfailed:
-                                    case ClusterStatus.notaccepted:
-                                    case ClusterStatus.offline:
-                                    case ClusterStatus.degraded:
-                                        danger++
-                                        break
-                                    // temporary
-                                    case ClusterStatus.hibernating:
-                                        sleep++
-                                        break
-                                    case ClusterStatus.pending:
-                                    case ClusterStatus.pendingimport:
-                                        pending++
-                                        break
-                                    // detached clusters don't have a ManagedCluster
-                                    case ClusterStatus.detached:
-                                        break
-                                }
-                            })
-
-                            return clusters.length === 0 ? (
-                                '0'
-                            ) : (
-                                <AcmInlineStatusGroup
-                                    healthy={healthy}
-                                    warning={warning}
-                                    progress={progress}
-                                    danger={danger}
-                                    pending={pending}
-                                    sleep={sleep}
-                                />
-                            )
+                            return <ClusterStatuses managedClusterSet={managedClusterSet} />
                         },
                     },
                     {
@@ -238,16 +206,39 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             )
                         },
                     },
-                    // {
-                    //     header: '',
-                    //     cell: (managedClusterSet) => {
-                    //         return <ClusterActionDropdown cluster={cluster} isKebab={true} />
-                    //     },
-                    //     cellTransforms: [fitContent],
-                    // },
+                    {
+                        header: '',
+                        cell: (managedClusterSet) => {
+                            return <ClusterSetActionDropdown managedClusterSet={managedClusterSet} isKebab={true} />
+                        },
+                        cellTransforms: [fitContent],
+                    },
                 ]}
                 keyFn={mckeyFn}
                 key="clusterSetsTable"
+                bulkActions={[
+                    {
+                        id: 'deleteClusterSets',
+                        title: t('bulk.delete'),
+                        click: (managedClusterSets) => {
+                            setModalProps({
+                                open: true,
+                                title: t('bulk.title.deleteSet'),
+                                action: t('delete'),
+                                processing: t('deleting'),
+                                resources: managedClusterSets,
+                                description: t('bulk.message.deleteSet'),
+                                columns: modalColumns,
+                                keyFn: (managedClusterSet) => managedClusterSet.metadata.name as string,
+                                actionFn: deleteResource,
+                                close: () => setModalProps({ open: false }),
+                                isDanger: true,
+                                confirmText: t('confirm').toLowerCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                            })
+                        },
+                    },
+                ]}
                 tableActions={[
                     {
                         id: 'createClusterSet',

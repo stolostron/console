@@ -4,8 +4,8 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ClusterSetsPage from './ClusterSets'
-import { waitForText } from '../../../lib/test-util'
-import { nockIgnoreRBAC } from '../../../lib/nock-util'
+import { waitForText, clickByLabel, clickByText, typeByText, waitForNock } from '../../../lib/test-util'
+import { nockIgnoreRBAC, nockDelete } from '../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../lib/test-metadata'
 import {
     certificateSigningRequestsState,
@@ -39,5 +39,13 @@ describe('ClusterSets page', () => {
     })
     test('renders', () => {
         waitForText(mockManagedClusterSet.metadata.name!)
+    })
+    test('can delete managed cluster sets with bulk actions', async () => {
+        const nock = nockDelete(mockManagedClusterSet)
+        await clickByLabel('Select row 0')
+        await clickByText('bulk.delete')
+        await typeByText('type.to.confirm', 'confirm')
+        await clickByText('delete')
+        await waitForNock(nock)
     })
 })
