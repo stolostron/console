@@ -36,12 +36,12 @@ spec:
   {{#case 'BMC'}}
     baremetal:
       libvirtSSHPrivateKeySecretRef:
-        name: '{{{../../name}}}-ssh-private-key'
+        name: {{{../../name}}}-ssh-private-key
       hosts:
         {{#each ../../hosts}}
-        - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
-          namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
-          role: '{{{role}}}'  ##hosts.{{@index}}.role
+        - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
+          namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
+          role: {{{role}}}  ##hosts.{{@index}}.role
           bmc:
             address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
 {{#if ../../../disableCertificateVerification}}
@@ -57,23 +57,23 @@ spec:
   {{#case 'AWS'}}
     aws:
       credentialsSecretRef:
-        name: '{{{../../name}}}-aws-creds'
-      region: '{{{../../region}}}'
+        name: {{{../../name}}}-aws-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'GCP'}}
     gcp:
       credentialsSecretRef:
-        name: '{{{../../name}}}-gcp-creds'
-      region: '{{{../../region}}}'
+        name: {{{../../name}}}-gcp-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'Azure'}}
     azure:
-      baseDomainResourceGroupName: '{{{../../baseDomainResourceGroupName}}}' ##resourceGroupName
+      baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}} ##resourceGroupName
       credentialsSecretRef:
-        name: '{{{../../name}}}-azure-creds'
-      region: '{{{../../region}}}'
+        name: {{{../../name}}}-azure-creds
+      region: {{{../../region}}}
   {{/case}}
 
   {{#case 'vSphere'}}
@@ -95,28 +95,28 @@ spec:
 
   provisioning:
     installConfigSecretRef:
-      name: '{{{name}}}-install-config'
+      name: {{{name}}}-install-config
     sshPrivateKeySecretRef:
-      name: '{{{name}}}-ssh-private-key'
+      name: {{{name}}}-ssh-private-key
 
 {{#if releaseImage}}
     imageSet:
-      name: '{{{releaseImage}}}'
+      name: {{{releaseImage}}}
 {{/if}}
 {{#if releaseImageReference}}
     imageSetRef:
        #{{{clusterImageSetComment}}}
-      name: '{{{releaseImageReference}}}'
+      name: {{{releaseImageReference}}}
 {{/if}}
 {{#if clusterReleaseImage}}
     imageSetRef:
-      name: '{{{clusterImageSetName}}}'
+      name: {{{clusterImageSetName}}}
 {{/if}}
 
 {{#if_eq infrastructure 'BMC'}}
 {{#if ../configMap}}
     manifestsConfigMapRef:
-      name: '{{{../../name}}}-install-manifests'
+      name: {{{../../name}}}-install-manifests
 {{/if}}
     sshKnownHosts:
 {{#each ../sshKnownHosts}}
@@ -124,7 +124,7 @@ spec:
 {{/each}}
 {{/if_eq}}
   pullSecretRef:
-    name: '{{{name}}}-pull-secret'
+    name: {{{name}}}-pull-secret
 
 {{! ========================================================== }}
 {{! ========================================================== }}
@@ -195,7 +195,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: '{{{../../name}}}-install-manifests'
+  name: {{{../../name}}}-install-manifests
   namespace: hive
 data:
   99_metal3-config.yaml: |
