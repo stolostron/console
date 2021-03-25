@@ -2,7 +2,7 @@
 apiVersion: v1
 metadata:
   name: '{{{name}}}'
-baseDomain: '{{{baseDomain}}}'
+baseDomain: {{{baseDomain}}}
 
 
 {{! ========================================================== }}
@@ -40,13 +40,13 @@ controlPlane:
         iops: 4000
         size: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
         type: io1
-      type: '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
+      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
+      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'Azure'}}
@@ -54,7 +54,7 @@ controlPlane:
     azure:
       osDisk:
         diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
-      type:  '{{{../../masterType}}}' ##masterPool.{{@index}}.masterType
+      type:  {{{../../masterType}}} ##masterPool.{{@index}}.masterType
   {{/case}}
 
   {{#case 'vSphere'}}
@@ -99,7 +99,7 @@ compute:
         iops: 2000
         size: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
         type: io1
-      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
 {{#if ../../workerZones}}
       zones: ##workerPools.{{@index}}.workerZones
       {{#each ../../workerZones}}
@@ -112,13 +112,13 @@ compute:
   {{#case 'GCP'}}
   platform:
     gcp:
-      type: '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
   {{#case 'Azure'}}
   platform:
     azure:
-      type:  '{{{../../workerType}}}' ##workerPools.{{@index}}.workerType
+      type:  {{{../../workerType}}} ##workerPools.{{@index}}.workerType
       osDisk:
         diskSizeGB: {{{../../workerStorage}}} ##workerPools.{{@index}}.workerStorage
 {{#if ../../workerZones}}
@@ -205,47 +205,47 @@ platform:
 {{#each ../../hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
         namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
-        role: '{{{role}}}'  ##hosts.{{@index}}.role
+        role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
 {{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
-          username: '{{{username}}}'  ##hosts.{{@index}}.username
-          password: '{{{password}}}'  ##hosts.{{@index}}.password
-        bootMACAddress: '{{{macAddress}}}'  ##hosts.{{@index}}.macAddress
+          username: {{{username}}}  ##hosts.{{@index}}.username
+          password: {{{password}}}  ##hosts.{{@index}}.password
+        bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
         hardwareProfile: default
 {{/each}}
 {{/case}}
 
 {{#case 'AWS'}}
   aws:
-    region: '{{{../../region}}}'
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'GCP'}}
   gcp:
-    projectID: '{{{../../gcProjectID}}}' ##gcProjectID
-    region: '{{{../../region}}}'
+    projectID: {{{../../gcProjectID}}} ##gcProjectID
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'Azure'}}
   azure:
-    baseDomainResourceGroupName: '{{{../../baseDomainResourceGroupName}}}'
-    region: '{{{../../region}}}'
+    baseDomainResourceGroupName: {{{../../baseDomainResourceGroupName}}}
+    region: {{{../../region}}}
 {{/case}}
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: '{{{../../vcenter}}}'
-    username: '{{{../../username}}}'
-    password: '{{{../../password}}}'
-    datacenter: '{{{../../datacenter}}}'
-    defaultDatastore: '{{{../../datastore}}}'
-    cluster: '{{{../../vmClusterName}}}'
-    apiVIP: '{{{../../apiVIP}}}'    ##apiVIP
-    ingressVIP: '{{{../../ingressVIP}}}'  ##ingressVIP
-    network: '{{{../../networkType}}}'
+    vCenter: {{{../../vcenter}}}
+    username: {{{../../username}}}
+    password: {{{../../password}}}
+    datacenter: {{{../../datacenter}}}
+    defaultDatastore: {{{../../datastore}}}
+    cluster: {{{../../vmClusterName}}}
+    apiVIP: {{{../../apiVIP}}}    ##apiVIP
+    ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
+    network: {{{../../networkType}}}
 {{/case}}
 
 {{/switch}}
