@@ -3,6 +3,8 @@
     "page.header.cluster-management.tooltip": "View all clusters.",
     "page.header.import-cluster": "Import an existing cluster",
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
+    "page.header.create-clusterset": "Create cluster set",
+    "page.header.create-clusterset.tooltip": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.",
     "cluster": "Cluster",
     "clusters": "Clusters",
     "clusterSets": "Cluster sets",
@@ -21,10 +23,10 @@
     "adding": "Adding",
     "clusters.discovered": "Discovered clusters",
     "managed": "Managed",
-    "managed.emptyStateHeader": "No managed clusters found",
+    "managed.emptyStateHeader": "No clusters found",
     "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
     "managed.clusterSets.emptyStateHeader": "No cluster sets found",
-    "managed.clusterSets.emptyStateMsg": "You don't have any cluster sets, yet.",
+    "managed.clusterSets.emptyStateMsg": "You don't have any cluster sets, yet. Select \"Create cluster set \" to add a cluster set.",
     "managed.import": "Import cluster",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
@@ -275,5 +277,13 @@
     "bulk.title.addSet": "Add cluster to set",
     "bulk.message.addSet": "Adding a cluster to a cluster set may, if enabled, add it to the multi-cluster network within the set. Access control permissions to the cluster may also be granted to users who have permission to the set. The cluster can be removed from the cluster set at any time.",
     "bulk.title.upgrade": "Upgrade cluster(s)",
-    "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed."
+    "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed.",
+
+    "createClusterSet.form.section.config": "Select a name for the cluster set",
+    "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",
+    "createClusterSet.form.section.clusters.emptyMessage": "There aren't any clusters available to add to this cluster set, you can add clusters to this set later once more become available.",
+    "createClusterSet.form.name.label": "Cluster set name",
+    "createClusterSet.form.name.placeholder": "Enter cluster set name",
+    "createClusterSet.form.create": "Create",
+    "createClusterSet.form.creating": "Creating"
 }

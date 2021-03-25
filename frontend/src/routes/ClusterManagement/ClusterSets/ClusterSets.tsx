@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Fragment, useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
     AcmEmptyState,
@@ -7,12 +8,12 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { Fragment, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
     managedClusterSetsState,
@@ -25,15 +26,15 @@ import {
 } from '../../../atoms'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, mapClusters, ClusterStatus } from '../../../lib/get-cluster'
-// import { canUser } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ManagedClusterSet,
-    // ManagedClusterSetDefinition,
+    ManagedClusterSetDefinition,
     managedClusterSetLabel,
 } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
+import { canUser } from '../../../lib/rbac-util'
 
 export default function ClusterSetsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -96,15 +97,15 @@ const PageActions = () => {
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation(['cluster'])
-    // const history = useHistory()
-    // const [canCreateClusterSet, setCanCreateClusterSet] = useState<boolean>(false)
-    // useEffect(() => {
-    //     const canCreateManagedClusterSet = canUser('create', ManagedClusterSetDefinition)
-    //     canCreateManagedClusterSet.promise
-    //         .then((result) => setCanCreateClusterSet(result.status?.allowed!))
-    //         .catch((err) => console.error(err))
-    //     return () => canCreateManagedClusterSet.abort()
-    // }, [])
+    const history = useHistory()
+    const [canCreateClusterSet, setCanCreateClusterSet] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateManagedClusterSet = canUser('create', ManagedClusterSetDefinition)
+        canCreateManagedClusterSet.promise
+            .then((result) => setCanCreateClusterSet(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateManagedClusterSet.abort()
+    }, [])
 
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
         return managedClusterSet.metadata.name!
@@ -198,7 +199,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             })
 
                             return clusters.length === 0 ? (
-                                0
+                                '0'
                             ) : (
                                 <AcmInlineStatusGroup
                                     healthy={healthy}
@@ -247,22 +248,31 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 ]}
                 keyFn={mckeyFn}
                 key="clusterSetsTable"
-                // tableActions={[
-                //     {
-                //         id: 'createClusterSet',
-                //         title: t('managed.createClusterSet'),
-                //         click: () => history.push(NavigationPath.createClusterSet),
-                //         isDisabled: !canCreateClusterSet,
-                //         tooltip: t('common:rbac.unauthorized'),
-                //     },
-                // ]}
+                tableActions={[
+                    {
+                        id: 'createClusterSet',
+                        title: t('managed.createClusterSet'),
+                        click: () => history.push(NavigationPath.createClusterSet),
+                        isDisabled: !canCreateClusterSet,
+                        tooltip: t('common:rbac.unauthorized'),
+                    },
+                ]}
                 rowActions={[]}
                 emptyState={
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.clusterSets.emptyStateHeader')}
                         message={t('managed.clusterSetsemptyStateMsg')}
-                        // action={<AddCluster type="button" buttonSpacing />}
+                        action={
+                            <AcmButton
+                                role="link"
+                                onClick={() => history.push(NavigationPath.createClusterSet)}
+                                disabled={!canCreateClusterSet}
+                                tooltip={t('common:rbac.unauthorized')}
+                            >
+                                {t('managed.createClusterSet')}
+                            </AcmButton>
+                        }
                     />
                 }
             />
