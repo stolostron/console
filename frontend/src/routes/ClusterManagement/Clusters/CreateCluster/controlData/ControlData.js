@@ -56,6 +56,17 @@ export const controlData = [
         reverse: 'ClusterDeployment[0].metadata.name',
     },
     {
+        name: 'creation.ocp.clusterSet',
+        tooltip: 'tooltip.creation.ocp.clusterSet',
+        id: 'clusterSet',
+        type: 'singleselect',
+        placeholder: 'placeholder.creation.ocp.clusterSet',
+        validation: {
+            required: false,
+        },
+        available: [],
+    },
+    {
         id: 'showSecrets',
         type: 'hidden',
         active: false,

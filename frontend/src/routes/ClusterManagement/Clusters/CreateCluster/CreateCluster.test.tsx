@@ -4,8 +4,17 @@ import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { nockCreate, nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
-import { clickByRole, clickByTestId, typeByTestId, waitForNocks, waitForText } from '../../../../lib/test-util'
+import {
+    clickByRole,
+    clickByTestId,
+    typeByTestId,
+    waitForNocks,
+    waitForText,
+    clickByText,
+    clickByPlaceholderText,
+} from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
 import {
@@ -31,6 +40,7 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
+import { managedClusterSetsState } from '../../../../atoms'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -416,11 +426,17 @@ jest.mock('react-i18next', () => ({
 describe('CreateCluster', () => {
     const Component = () => {
         return (
-            <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-                <Route path={NavigationPath.createCluster}>
-                    <CreateClusterPage />
-                </Route>
-            </MemoryRouter>
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(managedClusterSetsState, [])
+                }}
+            >
+                <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
+                    <Route path={NavigationPath.createCluster}>
+                        <CreateClusterPage />
+                    </Route>
+                </MemoryRouter>
+            </RecoilRoot>
         )
     }
 
@@ -449,6 +465,9 @@ describe('CreateCluster', () => {
         await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
         await clickByRole('option', 0)
+
+        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByText(mockProviderConnection[0].metadata.name!)
 
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
@@ -499,9 +518,11 @@ describe('CreateCluster', () => {
         // click create button
         await clickByTestId('create-button-portal-id-btn')
 
-        // make sure creating
         await waitForText('success.create.creating')
 
+        // make sure creating
         await waitForNocks(createNocks)
+
+        await waitForText('success.create.created')
     })
 })

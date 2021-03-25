@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import { useRecoilState } from 'recoil'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -12,6 +13,7 @@ import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { DOC_LINKS } from '../../../../lib/doc-util'
+import { managedClusterSetsState } from '../../../../atoms'
 import './style.css'
 
 // template/data
@@ -132,6 +134,13 @@ export default function CreateClusterPage() {
           }
         : null
 
+    const [managedClusterSets] = useRecoilState(managedClusterSetsState)
+    for (let i = 0; i < controlData.length; i++) {
+        if (controlData[i].id === 'clusterSet' && controlData[i].available) {
+            controlData[i].available = managedClusterSets.map((mcs) => mcs.metadata.name)
+            break
+        }
+    }
     return (
         <AcmPage>
             <AcmPageHeader
