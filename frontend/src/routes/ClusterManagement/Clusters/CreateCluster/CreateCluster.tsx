@@ -75,6 +75,12 @@ export default function CreateClusterPage() {
     const [creationStatus, setCreationStatus] = useState({})
     const createResource = async (resourceJSON: any[]) => {
         if (resourceJSON) {
+            // remove any deleteLinks this version of TemplateEditor may have added
+            resourceJSON = resourceJSON.filter((resource) => {
+                const keys = Object.keys(resource)
+                return keys.length !== 1 || keys[0] !== 'deleteLinks'
+            })
+
             setCreationStatus({ status: 'IN_PROGRESS' })
             const { status, messages } = await createCluster(resourceJSON)
             setCreationStatus({ status, messages })
