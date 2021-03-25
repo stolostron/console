@@ -116,7 +116,7 @@ spec:
 {{#if_eq infrastructure 'BMC'}}
 {{#if ../configMap}}
     manifestsConfigMapRef:
-      name: {{{../../name}}}-install-manifests
+      name: '{{{../../name}}}-install-manifests'
 {{/if}}
     sshKnownHosts:
 {{#each ../sshKnownHosts}}
@@ -124,7 +124,7 @@ spec:
 {{/each}}
 {{/if_eq}}
   pullSecretRef:
-    name: {{{name}}}-pull-secret
+    name: '{{{name}}}-pull-secret'
 
 {{! ========================================================== }}
 {{! ========================================================== }}
@@ -195,7 +195,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{{../../name}}}-install-manifests
+  name: '{{{../../name}}}-install-manifests'
   namespace: hive
 data:
   99_metal3-config.yaml: |
