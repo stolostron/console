@@ -15,6 +15,9 @@ const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Cluster
 const ClusterSetDetailsPage = lazy(
     () => import('./routes/ClusterManagement/ClusterSets/ClusterSetDetails/ClusterSetDetails')
 )
+const CreateClusterSetPage = lazy(
+    () => import('./routes/ClusterManagement/ClusterSets/CreateClusterSet/CreateClusterSet')
+)
 const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
 const AddCredentialPage = lazy(() => import('./routes/Credentials/AddCredentials/AddCredentials'))
@@ -33,6 +36,7 @@ export default function App() {
                             <Switch>
                                 <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                 <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+                                <Route exact path={NavigationPath.createClusterSet} component={CreateClusterSetPage} />
                                 <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
                                 <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
                                 <Route exact path={NavigationPath.credentials} component={CredentialsPage} />

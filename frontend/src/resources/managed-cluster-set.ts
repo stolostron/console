@@ -3,8 +3,8 @@
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
 
-export const ManagedClusterSetApiVersion = 'cluster.open-cluster-management.io/v1'
-export type ManagedClusterSetApiVersionType = 'cluster.open-cluster-management.io/v1'
+export const ManagedClusterSetApiVersion = 'cluster.open-cluster-management.io/v1alpha1'
+export type ManagedClusterSetApiVersionType = 'cluster.open-cluster-management.io/v1alpha1'
 
 export const ManagedClusterSetKind = 'ManagedClusterSet'
 export type ManagedClusterSetKindType = 'ManagedClusterSet'

@@ -6,6 +6,7 @@ import {
     createSubjectAccessReviews,
 } from '../resources/self-subject-access-review'
 import { Namespace } from '../resources/namespace'
+import { Cluster } from '../lib/get-cluster'
 import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
 
 export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
@@ -41,6 +42,48 @@ export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]
                 authorizedNamespaces = Array.from(new Set(authorizedNamespaces))
             })
             return resolve(authorizedNamespaces)
+        } catch (err) {
+            return reject(err)
+        }
+    })
+}
+
+export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], clusters: Cluster[]) {
+    return new Promise<Cluster[]>(async (resolve, reject) => {
+        try {
+            const clusterList: string[] = clusters.map((cluster) => cluster.name!)
+
+            if (clusterList.length === 0) {
+                return resolve([])
+            }
+
+            if (await checkAdminAccess()) {
+                return resolve(clusters)
+            }
+
+            const resourceList: ResourceAttributes[] = []
+
+            clusterList.forEach((cluster) => {
+                resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, name: cluster })))
+            })
+
+            let authorizedClusterList: string[] = []
+            const promiseResult = createSubjectAccessReviews(resourceList)
+            await promiseResult.promise.then((results) => {
+                results.forEach((result) => {
+                    if (result.status === 'fulfilled') {
+                        if (result.value.status?.allowed) {
+                            authorizedClusterList.push(result.value.spec.resourceAttributes.name!)
+                        }
+                    }
+                })
+                // remove duplicates from filtered list
+                authorizedClusterList = Array.from(new Set(authorizedClusterList))
+            })
+            const authorizedClusters = authorizedClusterList.map((cluster) => {
+                return clusters.find((c) => c.name === cluster)!
+            })
+            return resolve(authorizedClusters)
         } catch (err) {
             return reject(err)
         }
