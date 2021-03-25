@@ -13,22 +13,16 @@ import { createContext, Fragment, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import {
-    acmRouteState,
-    certificateSigningRequestsState,
-    clusterDeploymentsState,
-    managedClusterAddonsState,
-    managedClusterInfosState,
-    managedClustersState,
-    managedClusterSetsState,
-} from '../../../../atoms'
+import { acmRouteState, managedClusterSetsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { Cluster, mapClusters } from '../../../../lib/get-cluster'
+import { Cluster } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { usePrevious } from '../../../../components/usePrevious'
-import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { ManagedClusterSet } from '../../../../resources/managed-cluster-set'
+import { useClusters } from '../components/useClusters'
+import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -45,45 +39,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
-    const [
-        managedClusterSets,
-        managedClusters,
-        clusterDeployments,
-        managedClusterInfos,
-        certificateSigningRequests,
-        managedClusterAddons,
-    ] = useRecoilValue(
-        waitForAll([
-            managedClusterSetsState,
-            managedClustersState,
-            clusterDeploymentsState,
-            managedClusterInfosState,
-            certificateSigningRequestsState,
-            managedClusterAddonsState,
-        ])
-    )
+    const [managedClusterSets] = useRecoilValue(waitForAll([managedClusterSetsState]))
 
     const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
-    const clusterSetManagedClusters = managedClusters.filter(
-        (mc) => mc.metadata.labels?.[managedClusterSetLabel] === match.params.id
-    )
-    const clusterNames = clusterSetManagedClusters.map((mc) => mc.metadata.name)
-    const clusterSetClusterDeployments = clusterDeployments.filter((cd) => clusterNames.includes(cd.metadata.namespace))
-    const clusterSetManagedClusterInfos = managedClusterInfos.filter((mci) =>
-        clusterNames.includes(mci.metadata.namespace)
-    )
-    const clusterSetManagedClusterAddons = managedClusterAddons.filter((mca) =>
-        clusterNames.includes(mca.metadata.namespace)
-    )
-
-    const clusters = mapClusters(
-        clusterSetClusterDeployments,
-        clusterSetManagedClusterInfos,
-        certificateSigningRequests,
-        clusterSetManagedClusters,
-        clusterSetManagedClusterAddons
-    )
     const prevClusterSet = usePrevious(clusterSet)
+
+    const clusters = useClusters(clusterSet)
 
     if (prevClusterSet?.metadata?.deletionTimestamp) {
         return (
@@ -144,6 +105,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         { text: match.params.id, to: '' },
                     ]}
                     title={match.params.id}
+                    actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem
@@ -153,7 +115,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                 }
                             >
                                 <Link to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}>
-                                    {t('tab.overview')}
+                                    {t('tab.clusters')}
                                 </Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
