@@ -330,8 +330,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'test4',
-                            password: 'test4',
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
