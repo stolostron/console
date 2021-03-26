@@ -56,6 +56,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
             },
+            {
+                header: t('table.set'),
+                sort: `labels.${managedClusterSetLabel}`,
+                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
+            },
         ],
         [t]
     )
