@@ -51,6 +51,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                                     return await createSubjectAccessReview(rbac).promise
                                 })
                             )
+                            console.log('results', JSON.stringify(results))
                             const isDisabled = !results.every((result) => result?.status?.allowed)
                             return {
                                 ...action,
