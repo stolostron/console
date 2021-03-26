@@ -365,11 +365,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     return (
         <>
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
-            <ManagedClusterSetModal
-                clusters={[cluster]}
-                open={showManagedClusterSetModal}
-                close={() => setShowManagedClusterSetModal(false)}
-            />
+            {showManagedClusterSetModal && (
+                <ManagedClusterSetModal
+                    clusters={[cluster]}
+                    open={showManagedClusterSetModal}
+                    close={() => setShowManagedClusterSetModal(false)}
+                />
+            )}
             <BulkActionModel<Cluster> {...modalProps} />
             <RbacDropdown<Cluster>
                 id={`${cluster.name}-actions`}
