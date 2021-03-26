@@ -39,6 +39,7 @@ console.error = (message?: any, ...optionalParams: any[]) => {
 }
 
 function logNoMatch(req: any) {
+    console.log('REQUEST', req)
     if (noMatches.length === 0) {
         noMatches.push('No match for requests')
     }

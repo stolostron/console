@@ -219,7 +219,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 bulkActions={[
                     {
                         id: 'deleteClusterSets',
-                        title: t('bulk.delete'),
+                        title: t('bulk.delete.sets'),
                         click: (managedClusterSets) => {
                             setModalProps({
                                 open: true,

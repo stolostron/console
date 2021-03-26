@@ -47,7 +47,7 @@
     "managed.destroySelected": "Destroy cluster",
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
-    "set.delete": "Delete",
+    "set.delete": "Delete cluster set",
     "discovered": "Discovered",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
@@ -267,7 +267,7 @@
     "policy.report.flyout.matched": "Matched on",
     "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred",
 
-    "bulk.delete": "Delete",
+    "bulk.delete.sets": "Delete cluster sets",
     "bulk.title.import": "Import cluster(s)",
     "bulk.message.import": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",
     "bulk.title.detach": "Detach cluster(s)",

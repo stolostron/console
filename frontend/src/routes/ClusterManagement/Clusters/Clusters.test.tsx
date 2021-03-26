@@ -332,14 +332,6 @@ function getClusterActionsResourceAttributes(name: string) {
     } as ResourceAttributes
 }
 
-// function clusterCreationResourceAttributes() {
-//     return {
-//         resource: 'managedclusters',
-//         verb: 'create',
-//         group: 'cluster.open-cluster-management.io',
-//     } as ResourceAttributes
-// }
-
 describe('Clusters Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
@@ -499,15 +491,5 @@ describe('Clusters Page RBAC', () => {
         await waitForText(mockManagedCluster0.metadata.name!)
         await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
-
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster0.metadata.name!)),
-        ]
-        await clickByLabel('Actions', 0)
-        await waitForNocks(rbacNocks)
     })
 })
