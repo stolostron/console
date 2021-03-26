@@ -28,12 +28,14 @@ export enum ClusterStatus {
     'stopping' = 'stopping',
     'resuming' = 'resuming',
     'degraded' = 'degraded',
+    'unknown' = 'unknown',
 }
 
 export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
+    statusMessage: string | undefined
     provider: Provider | undefined
     distribution: DistributionInfo | undefined
     labels: Record<string, string> | undefined
@@ -100,16 +102,18 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[]
 ): Cluster {
+    const { status, statusMessage } = getClusterStatus(
+        clusterDeployment,
+        managedClusterInfo,
+        certificateSigningRequests,
+        managedCluster,
+        managedClusterAddOns
+    )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
-        status: getClusterStatus(
-            clusterDeployment,
-            managedClusterInfo,
-            certificateSigningRequests,
-            managedCluster,
-            managedClusterAddOns
-        ),
+        status,
+        statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
@@ -122,8 +126,8 @@ export function getCluster(
     }
 }
 
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
-    conditions.find((c) => c.type === condition)?.status === 'True'
+const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
+    conditions.find((c) => c.type === condition)?.status === (status ?? 'True')
 
 export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
     const isInstalled = clusterDeployment?.spec?.installed
@@ -296,6 +300,8 @@ export function getClusterStatus(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[]
 ) {
+    let statusMessage: string | undefined
+
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
@@ -356,11 +362,11 @@ export function getClusterStatus(
 
     // if mc doesn't exist, default to cd status
     if (!managedClusterInfo && !managedCluster) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
 
         // return the cd status when a hibernation state is detected
     } else if ([ClusterStatus.hibernating, ClusterStatus.resuming, ClusterStatus.stopping].includes(cdStatus)) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     }
 
     const mc = managedCluster ?? managedClusterInfo!
@@ -405,15 +411,20 @@ export function getClusterStatus(
             )
             mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
         } else {
-            mcStatus = ClusterStatus.offline
+            const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
+            const managedClusterAvailableConditionMessage = mcConditions.find(
+                (c) => c.type === 'ManagedClusterConditionAvailable'
+            )
+            mcStatus = clusterUnavailable ? ClusterStatus.offline : ClusterStatus.unknown
+            statusMessage = managedClusterAvailableConditionMessage?.message
         }
     }
 
     // if the ManagedCluster is in failed state because the registration controller is unavailable
     if (mcStatus === ClusterStatus.failed) {
         return clusterDeployment && cdStatus !== ClusterStatus.detached
-            ? cdStatus // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
-            : mcStatus
+            ? { status: cdStatus, statusMessage } // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
+            : { status: mcStatus, statusMessage }
 
         // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
         // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
@@ -423,8 +434,8 @@ export function getClusterStatus(
         clusterDeployment &&
         cdStatus !== ClusterStatus.detached
     ) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     } else {
-        return mcStatus
+        return { status: mcStatus, statusMessage }
     }
 }

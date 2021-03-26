@@ -13,6 +13,7 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
     let danger = 0
     let pending = 0
     let sleep = 0
+    let unknown = 0
 
     clusters.forEach((cluster) => {
         switch (cluster.status) {
@@ -45,6 +46,9 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
             case ClusterStatus.pendingimport:
                 pending++
                 break
+            case ClusterStatus.unknown:
+                unknown++
+                break
             // detached clusters don't have a ManagedCluster
             case ClusterStatus.detached:
                 break
@@ -61,6 +65,7 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
             danger={danger}
             pending={pending}
             sleep={sleep}
+            unknown={unknown}
         />
     )
 }
