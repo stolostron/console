@@ -107,54 +107,54 @@ const Component = (props: { cluster: Cluster }) => (
     </RecoilRoot>
 )
 
-// describe('Cluster Action Dropdown', () => {
-//     beforeEach(() => {
-//         nockIgnoreRBAC()
-//     })
-//     test('hibernate action should patch cluster deployment', async () => {
-//         const nockPatch = nockPatchClusterDeployment('Hibernating')
-//         const cluster = JSON.parse(JSON.stringify(mockCluster))
-//         render(<Component cluster={cluster} />)
-//         await clickByLabel('Actions')
-//         await clickByText('managed.hibernate')
-//         await clickByText('hibernate')
-//         await waitForNock(nockPatch)
-//     })
+describe('ClusterActionDropdown', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
+    test('hibernate action should patch cluster deployment', async () => {
+        const nockPatch = nockPatchClusterDeployment('Hibernating')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.hibernate')
+        await clickByText('hibernate')
+        await waitForNock(nockPatch)
+    })
 
-//     test('resume action should patch cluster deployment', async () => {
-//         const nockPatch = nockPatchClusterDeployment('Running')
-//         const cluster = JSON.parse(JSON.stringify(mockCluster))
-//         cluster.status = ClusterStatus.hibernating
-//         render(<Component cluster={cluster} />)
-//         await clickByLabel('Actions')
-//         await clickByText('managed.resume')
-//         await clickByText('resume')
-//         await waitForNock(nockPatch)
-//     })
+    test('resume action should patch cluster deployment', async () => {
+        const nockPatch = nockPatchClusterDeployment('Running')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        cluster.status = ClusterStatus.hibernating
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.resume')
+        await clickByText('resume')
+        await waitForNock(nockPatch)
+    })
 
-//     test('can add a cluster to a managed cluster set', async () => {
-//         const nockPatch = nockPatchManagedCluster('add', mockManagedClusterSet.metadata.name)
-//         const cluster = JSON.parse(JSON.stringify(mockCluster))
-//         render(<Component cluster={cluster} />)
-//         await clickByLabel('Actions')
-//         await clickByText('managed.addSet')
-//         await clickByText('common:select')
-//         await clickByText(mockManagedClusterSet.metadata.name!)
-//         await clickByText('add')
-//         await waitForNock(nockPatch)
-//     })
+    test('can add a cluster to a managed cluster set', async () => {
+        const nockPatch = nockPatchManagedCluster('add', mockManagedClusterSet.metadata.name)
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.addSet')
+        await clickByText('common:select')
+        await clickByText(mockManagedClusterSet.metadata.name!)
+        await clickByText('add')
+        await waitForNock(nockPatch)
+    })
 
-//     test('can remove a cluster from a managed cluster set', async () => {
-//         const nockPatch = nockPatchManagedCluster('remove')
-//         const cluster = JSON.parse(JSON.stringify(mockCluster))
-//         cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
-//         render(<Component cluster={cluster} />)
-//         await clickByLabel('Actions')
-//         await clickByText('managed.removeSet')
-//         await clickByText('remove')
-//         await waitForNock(nockPatch)
-//     })
-// })
+    test('can remove a cluster from a managed cluster set', async () => {
+        const nockPatch = nockPatchManagedCluster('remove')
+        const cluster = JSON.parse(JSON.stringify(mockCluster))
+        cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
+        render(<Component cluster={cluster} />)
+        await clickByLabel('Actions')
+        await clickByText('managed.removeSet')
+        await clickByText('remove')
+        await waitForNock(nockPatch)
+    })
+})
 
 describe('ClusterActionDropdown', () => {
     test("disables menu items based on the user's permissions", async () => {

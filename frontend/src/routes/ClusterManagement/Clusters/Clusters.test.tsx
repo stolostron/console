@@ -297,32 +297,6 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
-function getPatchClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'patch',
-        group: 'cluster.open-cluster-management.io',
-        name,
-    } as ResourceAttributes
-}
-function getDeleteClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'delete',
-        group: 'cluster.open-cluster-management.io',
-        name: name,
-    } as ResourceAttributes
-}
-function getDeleteDeploymentResourceAttributes(name: string) {
-    return {
-        resource: 'clusterdeployments',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        name,
-        namespace: name,
-    } as ResourceAttributes
-}
-
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
