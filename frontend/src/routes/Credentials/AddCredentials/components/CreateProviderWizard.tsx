@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { makeStyles } from '@material-ui/styles'
