@@ -5,14 +5,14 @@ import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
+import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { clickByLabel, clickByText, waitForNock, waitForNocks } from '../../../../lib/test-util'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
 import { managedClusterSetsState } from '../../../../atoms'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
-import { managedClusterSetLabel, ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -50,10 +50,6 @@ const mockCluster: Cluster = {
 function rbacPatchManagedCluster() {
     return rbacPatch(ManagedClusterDefinition, undefined, mockCluster.name)
 }
-
-// function rbacJoinManagedClusterSet() {
-//     return rbacCreate(ManagedClusterSetDefinition, undefined, mockManagedClusterSet.metadata.name!, 'join')
-// }
 
 function rbacPatchClusterDeployment() {
     return rbacPatch(ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
