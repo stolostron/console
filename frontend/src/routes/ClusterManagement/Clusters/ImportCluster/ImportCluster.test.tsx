@@ -18,6 +18,7 @@ import {
     typeByTestId,
     waitForTestId,
 } from '../../../../lib/test-util'
+import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
@@ -243,6 +244,7 @@ describe('ImportCluster', () => {
 
     beforeEach(() => {
         window.sessionStorage.clear()
+        nockIgnoreRBAC()
     })
 
     test('can create resources and generate the import command', async () => {
@@ -260,6 +262,8 @@ describe('ImportCluster', () => {
         const importSecretNock = nockGet(mockSecretResponse)
 
         const { getByTestId, getByText, queryByTestId } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         await typeByTestId('clusterName', 'foobar')
 
@@ -291,6 +295,8 @@ describe('ImportCluster', () => {
 
         render(<Component />)
 
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
@@ -308,6 +314,7 @@ describe('ImportCluster', () => {
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByText } = render(<Component />)
+        await new Promise((resolve) => setTimeout(resolve, 500))
         await typeByTestId('clusterName', 'foobar')
         await clickByText('import.mode.default')
         await clickByText('import.manual.choice')
@@ -324,6 +331,8 @@ describe('ImportCluster', () => {
         const deleteProjectNock = nockDelete(mockProjectResponse)
 
         render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
@@ -358,6 +367,9 @@ Object.defineProperty(window, 'sessionStorage', {
 })
 
 describe('Import Discovered Cluster', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
     window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
     const Component = () => {
         return (
@@ -389,6 +401,8 @@ describe('Import Discovered Cluster', () => {
         const importCommandNock = nockGet(mockSecretResponse)
 
         const { getByText, getAllByLabelText } = render(<Component />) // Render component
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         await waitForNocks([discoveredClusterNock])
 

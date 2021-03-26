@@ -107,7 +107,7 @@ const Component = (props: { cluster: Cluster }) => (
     </RecoilRoot>
 )
 
-describe('Cluster Action Dropdown', () => {
+describe('ClusterActionDropdown', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
     })
@@ -162,7 +162,6 @@ describe('ClusterActionDropdown', () => {
         cluster.status = ClusterStatus.hibernating
         render(<Component cluster={cluster} />)
         const rbacNocks: Scope[] = [
-            nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchManagedCluster()),
             nockRBAC(rbacPatchClusterDeployment()),
             nockRBAC(rbacDeleteManagedCluster()),

@@ -47,7 +47,7 @@
     "managed.destroySelected": "Destroy cluster",
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
-    "set.delete": "Delete",
+    "set.delete": "Delete cluster set",
     "discovered": "Discovered",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
@@ -93,6 +93,7 @@
     "table.memory": "RAM",
     "table.credentials": "Username/password",
     "table.clusters": "Clusters",
+    "table.set": "Cluster set",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -270,7 +271,7 @@
     "policy.report.flyout.matched": "Matched on",
     "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred",
 
-    "bulk.delete": "Delete",
+    "bulk.delete.sets": "Delete cluster sets",
     "bulk.title.import": "Import cluster(s)",
     "bulk.message.import": "Importing the cluster(s) will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target cluster(s).",
     "bulk.title.detach": "Detach cluster(s)",
@@ -285,6 +286,7 @@
     "bulk.message.removeSet": "Removing a cluster from a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.  The cluster can be added back to the cluster set at any time.",
     "bulk.title.addSet": "Add cluster to set",
     "bulk.message.addSet": "Adding a cluster to a cluster set may, if enabled, add it to the multi-cluster network within the set. Access control permissions to the cluster may also be granted to users who have permission to the set. The cluster can be removed from the cluster set at any time.",
+    "bulk.message.addSet.empty": "You don't have any cluster sets that you are authorized to add a cluster to. See your cluster administrator for role-based access control information.",
     "bulk.title.upgrade": "Upgrade cluster(s)",
     "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed.",
     "bulk.title.deleteSet": "Delete cluster set(s)",

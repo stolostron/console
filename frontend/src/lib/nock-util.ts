@@ -169,13 +169,15 @@ export function nockIgnoreRBAC() {
         .optionally()
         .reply(
             201,
-            {
-                apiVersion: SelfSubjectAccessReviewApiVersion,
-                kind: SelfSubjectAccessReviewKind,
-                metadata: {},
-                spec: {},
-                status: { allowed: true },
-            } as SelfSubjectAccessReview,
+            (uri, requestBody: SelfSubjectAccessReview) => {
+                return {
+                    apiVersion: SelfSubjectAccessReviewApiVersion,
+                    kind: SelfSubjectAccessReviewKind,
+                    metadata: {},
+                    spec: requestBody.spec,
+                    status: { allowed: true },
+                } as SelfSubjectAccessReview
+            },
             {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
