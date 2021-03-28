@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
@@ -253,7 +253,12 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.clusterSets.emptyStateHeader')}
-                        message={t('managed.clusterSetsemptyStateMsg')}
+                        message={
+                            <Trans
+                                i18nKey={'cluster:managed.clusterSets.emptyStateMsg'}
+                                components={{ bold: <strong />, p: <p /> }}
+                            />
+                        }
                         action={
                             <AcmButton
                                 role="link"
