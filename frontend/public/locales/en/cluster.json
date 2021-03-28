@@ -26,7 +26,7 @@
     "clusters.discovered": "Discovered clusters",
     "managed": "Managed",
     "managed.emptyStateHeader": "No clusters found",
-    "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
+    "managed.emptyStateMsg": "<p>You don't have any managed clusters.</p> Click the <bold>Create a cluster</bold> or <bold>Import an existing cluster</bold> button to add a managed cluster.",
     "managed.clusterSets.emptyStateHeader": "No cluster sets found",
     "managed.clusterSets.emptyStateMsg": "You don't have any cluster sets, yet. Select \"Create cluster set \" to add a cluster set.",
     "managed.import": "Import cluster",

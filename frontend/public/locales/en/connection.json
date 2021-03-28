@@ -3,7 +3,7 @@
     "connection": "Credential",
     "connections": "Credentials",
     "empty.title": "No credentials found.",
-    "empty.subtitle": "You don't have any credentials, yet. Select \"Add credentials\" to create the resource.",
+    "empty.subtitle": "<p>You don't have any credentials.</p> Click the <bold>Add credentials</bold> button to create your resource.",
     "add": "Add credentials",
     "edit": "Edit credentials",
     "delete": "Delete credentials",
