@@ -160,7 +160,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 <span style={{ whiteSpace: 'nowrap' }}>
                                     {clusters.length > 0 ? (
                                         <Link
-                                            to={NavigationPath.clusterSetDetails.replace(
+                                            to={NavigationPath.clusterSetOverview.replace(
                                                 ':id',
                                                 managedClusterSet.metadata.name as string
                                             )}

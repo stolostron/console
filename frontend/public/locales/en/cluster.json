@@ -5,6 +5,7 @@
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.create-clusterset": "Create cluster set",
     "page.header.create-clusterset.tooltip": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.",
+    "page.header.cluster-set.manage-clusters": "Manage clusters",
     "cluster": "Cluster",
     "clusters": "Clusters",
     "clusterSets": "Cluster sets",
@@ -47,6 +48,7 @@
     "managed.destroySelected": "Destroy cluster",
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
+    "set.manage-clusters": "Manage clusters",
     "set.delete": "Delete cluster set",
     "discovered": "Discovered",
     "discovery.disable": "Disable cluster discovery",
@@ -94,6 +96,7 @@
     "table.credentials": "Username/password",
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
+    "table.assignedToSet": "Currently assigned to set",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -298,5 +301,13 @@
     "createClusterSet.form.name.label": "Cluster set name",
     "createClusterSet.form.name.placeholder": "Enter cluster set name",
     "createClusterSet.form.create": "Create",
-    "createClusterSet.form.creating": "Creating"
+    "createClusterSet.form.creating": "Creating",
+
+    "manageClusterSet.form.section.table": "Select clusters to toggle their assignments to the cluster set",
+    "manageClusterSet.form.review.description": "Adding or removing cluster(s) from a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.  The cluster(s) can be added or removed to the cluster set at any time.",
+    "manageClusterSet.form.modal.title": "Confirm changes",
+    "manageClusterSet.form.modal.tab.added": "Added",
+    "manageClusterSet.form.modal.tab.removed": "Removed",
+    "manageClusterSet.form.modal.tab.unchanged": "No changes"
+
 }
