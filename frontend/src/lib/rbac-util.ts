@@ -105,17 +105,27 @@ export async function checkAdminAccess() {
 }
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
+type SubResource = 'join'
 
-export function rbacResource(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+export function rbacResource(
+    verb: Verb,
+    resource: IResource,
+    namespace?: string,
+    name?: string,
+    subresource?: SubResource
+) {
     const attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
         resource: getResourcePlural(resource),
+        subresource,
         verb,
         group: getResourceGroup(resource),
     }
     if (!attributes.name) delete attributes.name
     if (!attributes.namespace) delete attributes.namespace
+    if (!attributes.subresource) delete attributes.subresource
+
     return attributes
 }
 
@@ -127,8 +137,8 @@ export function rbacPatch(resource: IResource, namespace?: string, name?: string
     return rbacResource('patch', resource, namespace, name)
 }
 
-export function rbacCreate(resource: IResource, namespace?: string, name?: string) {
-    return rbacResource('create', resource, namespace, name)
+export function rbacCreate(resource: IResource, namespace?: string, name?: string, subresource?: SubResource) {
+    return rbacResource('create', resource, namespace, name, subresource)
 }
 
 export function rbacDelete(resource: IResource, namespace?: string, name?: string) {
@@ -139,7 +149,7 @@ export function rbacUpdate(resource: IResource, namespace?: string, name?: strin
     return rbacResource('update', resource, namespace, name)
 }
 
-export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string, subresource?: SubResource) {
     const resourceAttributes = rbacResource(verb, resource, namespace, name)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview

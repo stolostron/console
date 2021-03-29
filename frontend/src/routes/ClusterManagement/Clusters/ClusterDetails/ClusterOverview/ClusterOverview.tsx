@@ -7,6 +7,7 @@ import {
     AcmInlineProvider,
     AcmLabels,
     AcmPageContent,
+    AcmAlert,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
@@ -32,12 +33,25 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     return (
         <AcmPageContent id="overview">
             <PageSection>
+                {cluster?.statusMessage && (
+                    <AcmAlert
+                        isInline
+                        title={t(`status.${cluster?.status}.alert.title`)}
+                        message={cluster?.statusMessage}
+                        variant={cluster.status === ClusterStatus.offline ? 'danger' : 'info'}
+                        noClose
+                        style={{ marginBottom: '12px' }}
+                    />
+                )}
                 <HiveNotification />
                 <ImportCommandContainer />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
-                        { key: t('table.status'), value: cluster?.status && <StatusField cluster={cluster} /> },
+                        {
+                            key: t('table.status'),
+                            value: cluster?.status && <StatusField cluster={cluster} />,
+                        },
                         {
                             key: t('table.provider'),
                             value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,

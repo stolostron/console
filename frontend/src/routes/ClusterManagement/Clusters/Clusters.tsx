@@ -39,6 +39,7 @@ import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
+import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster'])
@@ -153,6 +154,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            },
+            {
+                header: t('table.set'),
+                sort: `labels.${managedClusterSetLabel}`,
+                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
             },
         ],
         [t]

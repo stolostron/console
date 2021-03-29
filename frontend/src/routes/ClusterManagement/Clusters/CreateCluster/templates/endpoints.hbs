@@ -2,11 +2,11 @@
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
-  name: {{{name}}}
-  namespace: {{{name}}}
+  name: '{{{name}}}'
+  namespace: '{{{name}}}'
 spec:
-  clusterName: {{{name}}}
-  clusterNamespace: {{{name}}}
+  clusterName: '{{{name}}}'
+  clusterNamespace: '{{{name}}}'
   clusterLabels:
 {{#switch infrastructure}}
   {{#case 'AWS'}}

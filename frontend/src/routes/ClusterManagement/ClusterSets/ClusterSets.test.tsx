@@ -43,7 +43,7 @@ describe('ClusterSets page', () => {
     test('can delete managed cluster sets with bulk actions', async () => {
         const nock = nockDelete(mockManagedClusterSet)
         await clickByLabel('Select row 0')
-        await clickByText('bulk.delete')
+        await clickByText('bulk.delete.sets')
         await typeByText('type.to.confirm', 'confirm')
         await clickByText('delete')
         await waitForNock(nock)
