@@ -297,32 +297,6 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
-function getPatchClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'patch',
-        group: 'cluster.open-cluster-management.io',
-        name,
-    } as ResourceAttributes
-}
-function getDeleteClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'delete',
-        group: 'cluster.open-cluster-management.io',
-        name: name,
-    } as ResourceAttributes
-}
-function getDeleteDeploymentResourceAttributes(name: string) {
-    return {
-        resource: 'clusterdeployments',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        name,
-        namespace: name,
-    } as ResourceAttributes
-}
-
 function getClusterActionsResourceAttributes(name: string) {
     return {
         resource: 'managedclusteractions',
@@ -331,14 +305,6 @@ function getClusterActionsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-
-// function clusterCreationResourceAttributes() {
-//     return {
-//         resource: 'managedclusters',
-//         verb: 'create',
-//         group: 'cluster.open-cluster-management.io',
-//     } as ResourceAttributes
-// }
 
 describe('Clusters Page', () => {
     beforeEach(async () => {
@@ -499,15 +465,5 @@ describe('Clusters Page RBAC', () => {
         await waitForText(mockManagedCluster0.metadata.name!)
         await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
-
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster0.metadata.name!)),
-        ]
-        await clickByLabel('Actions', 0)
-        await waitForNocks(rbacNocks)
     })
 })

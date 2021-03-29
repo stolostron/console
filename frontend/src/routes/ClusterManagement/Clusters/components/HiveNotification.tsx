@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { getLatest } from '../../../../lib/utils'
@@ -35,22 +35,12 @@ export function HiveNotification() {
     const [configMaps] = useRecoilState(configMapsState)
 
     const clusterProvisionList = clusterProvisions.filter((cp) => cp.metadata.namespace === cluster?.namespace)
-
-    const [clusterProvisionStatus, setClusterProvisionStatus] = useState<string | undefined>()
-    useEffect(() => {
-        if (cluster?.status === ClusterStatus.provisionfailed) {
-            const latestProvision = getLatest<ClusterProvision>(clusterProvisionList, 'metadata.creationTimestamp')
-            const provisionFailedCondition = latestProvision?.status?.conditions.find(
-                (c) => c.type === 'ClusterProvisionFailed'
-            )
-            /* istanbul ignore else */
-            if (provisionFailedCondition?.status === 'True') {
-                setClusterProvisionStatus(provisionFailedCondition.message)
-            }
-        } else {
-            setClusterProvisionStatus(undefined)
-        }
-    }, [cluster?.status, clusterProvisionList])
+    const latestClusterProvision = getLatest<ClusterProvision>(clusterProvisionList, 'metadata.creationTimestamp')
+    const provisionFailedCondition = latestClusterProvision?.status?.conditions.find(
+        (c) => c.type === 'ClusterProvisionFailed'
+    )
+    const clusterProvisionStatus =
+        provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : undefined
 
     const provisionStatuses: string[] = [
         ClusterStatus.creating,

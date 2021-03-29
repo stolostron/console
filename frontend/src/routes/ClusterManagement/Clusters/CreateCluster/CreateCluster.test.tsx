@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
+import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     clickByRole,
     clickByTestId,
@@ -440,6 +440,10 @@ describe('CreateCluster', () => {
         )
     }
 
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
+
     test('can create bare metal cluster', async () => {
         window.scrollBy = () => {}
 
@@ -453,6 +457,8 @@ describe('CreateCluster', () => {
 
         // create the form
         const { container } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // start filling in the form
         await typeByTestId('eman', clusterName!)

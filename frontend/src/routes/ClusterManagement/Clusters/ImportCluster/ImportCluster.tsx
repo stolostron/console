@@ -31,7 +31,6 @@ import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
 import { deleteResources } from '../../../../lib/delete-resources'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { createResource, ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -42,8 +41,8 @@ import { createProject } from '../../../../resources/project'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import { IResource } from '../../../../resources/resource'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
-import { managedClusterSetsState } from '../../../../atoms'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
@@ -82,7 +81,7 @@ export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const [managedClusterSets] = useRecoilState(managedClusterSetsState)
+    const managedClusterSets = useCanJoinClusterSets()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
@@ -124,9 +123,11 @@ export function ImportClusterPageContent() {
                             labelHelp={t('import.form.managedClusterSet.labelHelp')}
                             value={managedClusterSet}
                             onChange={(mcs) => setManagedClusterSet(mcs)}
-                            isDisabled={managedClusterSets.length === 0 || submitted}
+                            isDisabled={
+                                managedClusterSets === undefined || managedClusterSets.length === 0 || submitted
+                            }
                         >
-                            {managedClusterSets.map((mcs) => (
+                            {managedClusterSets?.map((mcs) => (
                                 <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
                                     {mcs.metadata.name}
                                 </SelectOption>

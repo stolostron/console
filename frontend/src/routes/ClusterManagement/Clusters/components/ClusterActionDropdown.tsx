@@ -12,6 +12,7 @@ import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedCluster, ManagedClusterDefinition } from '../../../../resources/managed-cluster'
+import { ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
 import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { ManagedClusterSetModal } from './ManagedClusterSetModal'
@@ -54,6 +55,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            },
+            {
+                header: t('table.set'),
+                sort: `labels.${managedClusterSetLabel}`,
+                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
             },
         ],
         [t]
@@ -113,8 +119,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     setShowManagedClusterSetModal(true)
                 }
             },
-            isDisabled: true,
-            rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
+            isDisabled: !!cluster?.labels?.[managedClusterSetLabel],
+            rbac: cluster?.labels?.[managedClusterSetLabel]
+                ? [
+                      rbacCreate(
+                          ManagedClusterSetDefinition,
+                          undefined,
+                          cluster?.labels?.[managedClusterSetLabel],
+                          'join'
+                      ),
+                  ]
+                : undefined,
         },
         {
             id: 'launch-cluster',
@@ -350,11 +365,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     return (
         <>
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
-            <ManagedClusterSetModal
-                clusters={[cluster]}
-                open={showManagedClusterSetModal}
-                close={() => setShowManagedClusterSetModal(false)}
-            />
+            {showManagedClusterSetModal && (
+                <ManagedClusterSetModal
+                    clusters={[cluster]}
+                    open={showManagedClusterSetModal}
+                    close={() => setShowManagedClusterSetModal(false)}
+                />
+            )}
             <BulkActionModel<Cluster> {...modalProps} />
             <RbacDropdown<Cluster>
                 id={`${cluster.name}-actions`}

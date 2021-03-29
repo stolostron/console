@@ -8,8 +8,8 @@
 apiVersion: hive.openshift.io/v1
 kind: ClusterDeployment
 metadata:
-  name: {{{name}}} ##name
-  namespace: {{{name}}}
+  name: '{{{name}}}' ##name
+  namespace: '{{{name}}}'
   labels:
     cloud: '{{infrastructure}}'
 {{#if region}}
@@ -23,7 +23,7 @@ metadata:
 
 spec:
   baseDomain: {{{baseDomain}}}  ##baseDomain
-  clusterName: {{{name}}}
+  clusterName: '{{{name}}}'
   controlPlaneConfig:
     servingCertificates: {}
   installAttemptsLimit: 2
@@ -157,7 +157,7 @@ metadata:
     cloud: vSphere
   {{/case}}
 {{/switch}}
-    name: {{{name}}}
+    name: '{{{name}}}'
     vendor: {{{distribution}}}
 {{#if clusterSet}}
     cluster.open-cluster-management.io/clusterSet: {{{clusterSet}}}
@@ -165,7 +165,7 @@ metadata:
     {{#each additional}}
     {{{key}}}: '{{{value}}}'
     {{/each}}
-  name: {{{name}}}
+  name: '{{{name}}}'
 spec:
   hubAcceptsClient: true
 
@@ -235,10 +235,10 @@ apiVersion: hive.openshift.io/v1
 kind: MachinePool
 metadata:
   name: {{{../name}}}-{{{workerName}}}
-  namespace: {{{../name}}}
+  namespace: '{{{../name}}}'
 spec:
   clusterDeploymentRef:
-    name: {{{../name}}}
+    name: '{{{../name}}}'
   name: {{{workerName}}} ##workerPools.{{@index}}.workerName
 
 {{#switch ../infrastructure}}
@@ -305,7 +305,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{{name}}}-pull-secret
-  namespace: {{{name}}}
+  namespace: '{{{name}}}'
 stringData:
 {{#if showSecrets}}
   .dockerconfigjson: |-
@@ -320,7 +320,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{{name}}}-install-config
-  namespace: {{{name}}}
+  namespace: '{{{name}}}'
 type: Opaque
 data:
   # Base64 encoding of install-config yaml
@@ -331,7 +331,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{{name}}}-ssh-private-key
-  namespace: {{{name}}}
+  namespace: '{{{name}}}'
 stringData:
 {{#if showSecrets}}
   ssh-privatekey: |-
@@ -356,7 +356,7 @@ type: Opaque
 {{#case 'AWS'}}
 metadata:
   name: {{{../../name}}}-aws-creds
-  namespace: {{{../../name}}}
+  namespace: '{{{../../name}}}'
 stringData:
   aws_access_key_id: {{{../../awsAccessKeyID}}}
 {{#if ../../showSecrets}}
@@ -369,7 +369,7 @@ stringData:
 {{#case 'GCP'}}
 metadata:
   name: {{{../../name}}}-gcp-creds
-  namespace: {{{../../name}}}
+  namespace: '{{{../../name}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
@@ -384,7 +384,7 @@ stringData:
 {{#case 'Azure'}}
 metadata:
   name: {{{../../name}}}-azure-creds
-  namespace: {{{../../name}}}
+  namespace: '{{{../../name}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
@@ -397,7 +397,7 @@ stringData:
 {{#case 'vSphere'}}
 metadata:
   name: {{{../../name}}}-vsphere-creds
-  namespace: {{{../../name}}}
+  namespace: '{{{../../name}}}'
 stringData:
   username: {{{../../username}}}
   password: {{{../../password}}}
@@ -409,7 +409,7 @@ kind: Secret
 type: Opaque
 metadata:
   name: {{{../../name}}}-vsphere-certs
-  namespace: {{{../../name}}}
+  namespace: '{{{../../name}}}'
 data:
 
 {{#if ../../showSecrets}}
