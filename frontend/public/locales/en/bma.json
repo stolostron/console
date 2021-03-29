@@ -29,7 +29,7 @@
   "editBareMetalAsset.button.submit":"Apply",
 
   "bareMetalAsset.emptyState.title":"No bare metal assets found",
-  "bareMetalAsset.emptyState.subtitle": "<p>You don't have any bare metal assets.</p>Click the <bold>Create bare metal asset</bold> or <bold>Import bare metal assets</bold> button to create your resource",
+  "bareMetalAsset.emptyState.subtitle": "You don't have any bare metal assets.<br>Click the <bold>Create bare metal asset</bold> or <bold>Import bare metal assets</bold> button to create your resource",
   "bareMetalAsset.tableHeader.name":"Name",
   "bareMetalAsset.tableHeader.namespace":"Namespace",
   "bareMetalAsset.tableHeader.macaddress":"MAC address",

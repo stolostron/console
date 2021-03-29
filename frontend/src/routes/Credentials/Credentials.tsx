@@ -102,7 +102,10 @@ export function ProviderConnectionsTable(props: {
                     <AcmEmptyState
                         title={t('empty.title')}
                         message={
-                            <Trans i18nKey={'connection:empty.subtitle'} components={{ bold: <strong />, p: <p /> }} />
+                            <Trans
+                                i18nKey={'connection:empty.subtitle'}
+                                components={{ bold: <strong />, br: <br /> }}
+                            />
                         }
                         action={<AddConnectionBtn />}
                     />
