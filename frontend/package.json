@@ -6,7 +6,7 @@
     "proxy": "https://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.14.0",
-        "@open-cluster-management/ui-components": "github:open-cluster-management/ui-components",
+        "@open-cluster-management/ui-components": "^0.4.0",
         "@patternfly/react-core": "^4.101.3",
         "@patternfly/react-table": "^4.23.14",
         "@types/lodash": "^4.14.168",
@@ -36,7 +36,7 @@
         "react-router-dom": "^5.2.0",
         "react-scripts": "4.0.3",
         "recoil": "^0.1.3",
-        "temptifly": "^0.3.9",
+        "temptifly": "^0.3.11",
         "typescript": "^4.2.3",
         "yamljs": "^0.3.0"
     },
