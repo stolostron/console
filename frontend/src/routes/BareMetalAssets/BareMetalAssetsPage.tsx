@@ -160,7 +160,7 @@ export function BareMetalAssetsTable(props: {
                         message={
                             <Trans
                                 i18nKey={'bma:bareMetalAsset.emptyState.subtitle'}
-                                components={{ bold: <strong />, br: <br /> }}
+                                components={{ bold: <strong /> }}
                             />
                         }
                         action={

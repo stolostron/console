@@ -328,12 +328,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.emptyStateHeader')}
-                        message={
-                            <Trans
-                                i18nKey={'cluster:managed.emptyStateMsg'}
-                                components={{ bold: <strong />, br: <br /> }}
-                            />
-                        }
+                        message={<Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
                         action={<AddCluster type="button" buttonSpacing />}
                     />
                 }
