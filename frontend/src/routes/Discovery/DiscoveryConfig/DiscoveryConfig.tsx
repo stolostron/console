@@ -57,7 +57,7 @@ export function AddDiscoveryConfigData() {
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [providerConnections, setProviderConnections] = useState<ProviderConnection[]>([])
-
+    const [mchNamespace, setmchNamespace] = useState<string>()
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
@@ -72,18 +72,32 @@ export function AddDiscoveryConfigData() {
             providerConnections: [],
         },
     })
-
+    useEffect(() => {
+        const result = listMultiClusterHubs()
+        result.promise
+            .then((mch) => {
+                // only one mch can exist
+                if (mch.length === 1) {
+                    setmchNamespace(mch[0].metadata.namespace)                    
+                }
+                
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+        }, [])    
     useEffect(() => {
         setIsLoading(true)
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
             .then((results) => {
-                const CRHProviderConnections: ProviderConnection[] = []
+                var CRHProviderConnections: ProviderConnection[] = []
                 results.forEach((result) => {
-                    const labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
+                    let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
                     if (labels === ProviderID.CRH) {
-                        CRHProviderConnections.push(result)
-                    }
+                        if (result.metadata.namespace === mchNamespace){
+                            CRHProviderConnections.push(result)
+                    }}
                 })
                 setProviderConnections(CRHProviderConnections)
                 setIsLoading(false)
@@ -91,7 +105,7 @@ export function AddDiscoveryConfigData() {
             .catch((err) => {
                 setError(err)
             })
-    }, [])
+    }, [mchNamespace])
 
     // Get Discovery Config if it exists
     useEffect(() => {
