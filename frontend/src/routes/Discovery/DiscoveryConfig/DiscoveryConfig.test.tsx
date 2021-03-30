@@ -106,6 +106,8 @@ describe('discovery config page', () => {
         const nocks = [
             nockList(discoveryConfig, mockBadRequestStatus),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(multiClusterHub, [multiClusterHub])
         ]
         render(<TestDiscoveryConfigPage />)
         await waitForNocks(nocks)
@@ -116,7 +118,10 @@ describe('discovery config page', () => {
     it('Create DiscoveryConfig', async () => {
         const nocks = [
             nockList(discoveryConfig, []),
+            nockList(discoveryConfig, []),
+            nockList(multiClusterHub, [multiClusterHub]),            
             nockList(multiClusterHub, [multiClusterHub]),
+            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
         ]
 
@@ -130,7 +135,7 @@ describe('discovery config page', () => {
             expect(container.querySelectorAll(`[aria-labelledby^="lastActiveFilter-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
-        await clickByText('14 days')
+        await clickByText('1 day')
 
         // Select Version
         expect(container.querySelectorAll(`[aria-labelledby^="discoveryVersions-label"]`)).toHaveLength(1)
@@ -150,8 +155,10 @@ describe('discovery config page', () => {
 
     it('Edit DiscoveryConfig', async () => {
         const nocks = [
-            nockList(discoveryConfig, [discoveryConfig]),
+//            nockList(discoveryConfig, [discoveryConfig]),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(multiClusterHub, [multiClusterHub])
         ]
 
         const { container } = render(<TestDiscoveryConfigPage />)

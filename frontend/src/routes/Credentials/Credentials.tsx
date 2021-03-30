@@ -1,4 +1,4 @@
-/* Co pyright Contributors to the Open Cluster Management project */
+/* Copyright Contributors to the Open Cluster Management project */
 
 import {
     AcmButton,

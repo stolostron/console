@@ -83,7 +83,7 @@ export function AddDiscoveryConfigData() {
                 
             })
             .catch((err) => {
-                console.log(err)
+                setError(err)
             })
         }, [])    
     useEffect(() => {
@@ -94,7 +94,8 @@ export function AddDiscoveryConfigData() {
                 var CRHProviderConnections: ProviderConnection[] = []
                 results.forEach((result) => {
                     let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
-                    if (labels === ProviderID.CRH) {
+                    if (labels === ProviderID.CRH) {                     
+                        
                         if (result.metadata.namespace === mchNamespace){
                             CRHProviderConnections.push(result)
                     }}
