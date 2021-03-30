@@ -15,7 +15,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, providerConnectionsState } from '../../atoms'
@@ -76,7 +76,7 @@ export function ProviderConnectionsTable(props: {
         open: false,
     })
 
-    var discoveryEnabled = false
+    let discoveryEnabled = false
     if (props.discoveryConfigs) {
         props.discoveryConfigs.forEach((discoveryConfig) => {
             if (discoveryConfig.spec.providerConnections && discoveryConfig.spec.providerConnections.length > 0) {
@@ -101,7 +101,7 @@ export function ProviderConnectionsTable(props: {
                 emptyState={
                     <AcmEmptyState
                         title={t('empty.title')}
-                        message={t('empty.subtitle')}
+                        message={<Trans i18nKey={'connection:empty.subtitle'} components={{ bold: <strong /> }} />}
                         action={<AddConnectionBtn />}
                     />
                 }
@@ -213,12 +213,11 @@ export function ProviderConnectionsTable(props: {
                                     click: (providerConnection: ProviderConnection) => {
                                         setModalProps({
                                             open: true,
-                                            singular: t('connection'),
-                                            plural: t('connections'),
+                                            title: t('bulk.title.delete'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
                                             resources: [providerConnection],
-                                            description: t('modal.delete.content.batch'),
+                                            description: t('bulk.message.delete'),
                                             columns: [
                                                 {
                                                     header: t('table.header.name'),
@@ -271,12 +270,11 @@ export function ProviderConnectionsTable(props: {
                         click: (providerConnections: ProviderConnection[]) => {
                             setModalProps({
                                 open: true,
-                                singular: t('connection'),
-                                plural: t('connections'),
+                                title: t('bulk.title.delete'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [...providerConnections],
-                                description: t('modal.delete.content.batch'),
+                                description: t('bulk.message.delete'),
                                 columns: [
                                     {
                                         header: t('table.header.name'),

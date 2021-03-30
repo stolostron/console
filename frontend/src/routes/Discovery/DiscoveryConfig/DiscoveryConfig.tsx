@@ -78,9 +78,9 @@ export function AddDiscoveryConfigData() {
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
             .then((results) => {
-                var CRHProviderConnections: ProviderConnection[] = []
+                const CRHProviderConnections: ProviderConnection[] = []
                 results.forEach((result) => {
-                    let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
+                    const labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
                     if (labels === ProviderID.CRH) {
                         CRHProviderConnections.push(result)
                     }

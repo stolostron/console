@@ -10,6 +10,7 @@ import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-prov
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
+import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { Namespace, NamespaceKind } from './resources/namespace'
@@ -19,7 +20,6 @@ import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
-
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
@@ -32,17 +32,18 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
+export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
-export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
-export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'START'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -62,14 +63,15 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const [, setConfigMaps] = useRecoilState(configMapsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
+    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
-    const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setFeatureGates] = useRecoilState(featureGatesState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -78,14 +80,15 @@ export function LoadData(props: { children?: ReactNode }) {
         [ClusterImageSetKind]: setClusterImageSets,
         [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
+        [ConfigMapKind]: setConfigMaps,
+        [DiscoveryConfigKind]: setDiscoveryConfigs,
+        [FeatureGateKind]: setFeatureGates,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
+        [ManagedClusterSetKind]: setManagedClusterSets,
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
-        [DiscoveryConfigKind]: setDiscoveryConfigs,
-        [ConfigMapKind]: setConfigMaps,
-        [FeatureGateKind]: setFeatureGates,
     }
 
     // Temporary fix for checking for login
@@ -115,7 +118,7 @@ export function LoadData(props: { children?: ReactNode }) {
             for (const kind in setters) {
                 const setter = setters[kind]
                 setter((resources) => {
-                    let newResources = [...resources]
+                    const newResources = [...resources]
                     for (const data of dataToProcess) {
                         if (data.object?.kind === kind) {
                             const index = newResources.findIndex(
@@ -145,15 +148,13 @@ export function LoadData(props: { children?: ReactNode }) {
             if (!data.object) return
             const setter = setters[data.object.kind]
             if (!setter) return
-            console.log(data.object.kind)
             setter((resources) => {
-                let newResources = [...resources]
+                const newResources = [...resources]
                 const index = resources.findIndex(
                     (resource) =>
                         resource.metadata?.name === data.object.metadata.name &&
                         resource.metadata?.namespace === data.object.metadata.namespace
                 )
-                if (index !== -1) newResources.splice(index, 1)
                 switch (data.type) {
                     case 'ADDED':
                     case 'MODIFIED':
@@ -182,7 +183,7 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'START':
                             if (eventDataQueue === undefined) eventDataQueue = []
                             break
-                        case 'BOOKMARK':
+                        case 'LOADED':
                             processEvents()
                             setLoading(false)
                             break
@@ -198,14 +199,7 @@ export function LoadData(props: { children?: ReactNode }) {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function (err) {
-                try {
-                    if (evtSource) evtSource.close()
-                } catch {
-                    // Do nothing
-                }
-                evtSource = undefined
                 console.error('EventSource failed:', err)
-                setTimeout(() => startWatch(), 10 * 1000)
             }
         }
         startWatch()

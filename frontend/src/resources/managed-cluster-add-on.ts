@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
@@ -20,13 +20,7 @@ export interface ManagedClusterAddOn extends IResource {
     metadata: V1ObjectMeta
     spec: {}
     status?: {
-        conditions: {
-            lastTransitionTime: string
-            message: string
-            reason: string
-            status: string
-            type: string
-        }[]
+        conditions: V1CustomResourceDefinitionCondition[]
         addOnMeta: {
             displayName: string
             description: string

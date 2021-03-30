@@ -50,11 +50,16 @@ import {
 } from '../../../resources/managed-cluster-info'
 import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
+import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
+import { mockManagedClusterSet } from '../../../lib/test-metadata'
 
 const mockManagedCluster0: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-    metadata: { name: 'managed-cluster-0' },
+    metadata: {
+        name: 'managed-cluster-0-clusterset',
+        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+    },
     spec: { hubAcceptsClient: true },
     status: {
         allocatable: { cpu: '', memory: '' },
@@ -110,7 +115,7 @@ const mockManagedCluster5: ManagedCluster = {
     spec: { hubAcceptsClient: true },
     status: readyManagedClusterStatus,
 }
-const mockManagedClusters: ManagedCluster[] = [
+export const mockManagedClusters: ManagedCluster[] = [
     mockManagedCluster0,
     mockManagedCluster1,
     mockManagedCluster2,
@@ -123,7 +128,7 @@ const upgradeableMockManagedClusters: ManagedCluster[] = [mockManagedCluster3, m
 const mockManagedClusterInfo0: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
     kind: ManagedClusterInfoKind,
-    metadata: { name: 'managed-cluster-0', namespace: 'managed-cluster-0' },
+    metadata: { name: 'managed-cluster-0-clusterset', namespace: 'managed-cluster-0-clusterset' },
 }
 const mockManagedClusterInfo1: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -245,7 +250,7 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
         ],
     },
 }
-const mockManagedClusterInfos = [
+export const mockManagedClusterInfos = [
     mockManagedClusterInfo0,
     mockManagedClusterInfo1,
     mockManagedClusterInfo2,
@@ -258,8 +263,8 @@ const mockClusterDeployment0: ClusterDeployment = {
     apiVersion: ClusterDeploymentApiVersion,
     kind: ClusterDeploymentKind,
     metadata: {
-        name: 'managed-cluster-0',
-        namespace: 'managed-cluster-0',
+        name: 'managed-cluster-0-clusterset',
+        namespace: 'managed-cluster-0-clusterset',
         labels: { 'hive.openshift.io/cluster-platform': 'aws' },
     },
 }
@@ -283,40 +288,14 @@ const mockClusterDeployment6: ClusterDeployment = {
         pullSecretRef: { name: '' },
     },
 }
-const mockClusterDeployments = [mockClusterDeployment0, mockClusterDeployment6]
+export const mockClusterDeployments = [mockClusterDeployment0, mockClusterDeployment6]
 
 const mockCertificateSigningRequest0: CertificateSigningRequest = {
     apiVersion: CertificateSigningRequestApiVersion,
     kind: CertificateSigningRequestKind,
-    metadata: { name: 'managed-cluster-0', namespace: 'managed-cluster-0' },
+    metadata: { name: 'managed-cluster-0-clusterset', namespace: 'managed-cluster-0-clusterset' },
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
-
-function getPatchClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'patch',
-        group: 'cluster.open-cluster-management.io',
-        name,
-    } as ResourceAttributes
-}
-function getDeleteClusterResourceAttributes(name: string) {
-    return {
-        resource: 'managedclusters',
-        verb: 'delete',
-        group: 'cluster.open-cluster-management.io',
-        name: name,
-    } as ResourceAttributes
-}
-function getDeleteDeploymentResourceAttributes(name: string) {
-    return {
-        resource: 'clusterdeployments',
-        verb: 'delete',
-        group: 'hive.openshift.io',
-        name,
-        namespace: name,
-    } as ResourceAttributes
-}
 
 function getClusterActionsResourceAttributes(name: string) {
     return {
@@ -326,14 +305,6 @@ function getClusterActionsResourceAttributes(name: string) {
         namespace: name,
     } as ResourceAttributes
 }
-
-// function clusterCreationResourceAttributes() {
-//     return {
-//         resource: 'managedclusters',
-//         verb: 'create',
-//         group: 'cluster.open-cluster-management.io',
-//     } as ResourceAttributes
-// }
 
 describe('Clusters Page', () => {
     beforeEach(async () => {
@@ -460,14 +431,14 @@ describe('Clusters Page', () => {
     test('batch upgrade support when upgrading single cluster', async () => {
         await clickByLabel('Select row 3')
         await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`bulk.title.upgrade`)
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
         await clickByLabel('Select row 3')
         await clickByLabel('Select row 5')
         await clickByText('managed.upgradeSelected')
-        await waitForText(`upgrade.multiple.note`)
+        await waitForText(`bulk.title.upgrade`)
     })
 })
 
@@ -494,14 +465,5 @@ describe('Clusters Page RBAC', () => {
         await waitForText(mockManagedCluster0.metadata.name!)
         await waitForNock(rbacCreateManagedClusterNock)
         await waitForNocks(upgradeRBACNocks)
-
-        const rbacNocks: Scope[] = [
-            nockRBAC(getPatchClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteClusterResourceAttributes(mockManagedCluster0.metadata.name!)),
-            nockRBAC(getDeleteDeploymentResourceAttributes(mockManagedCluster0.metadata.name!)),
-        ]
-        await clickByLabel('Actions', 0)
-        await waitForNocks(rbacNocks)
     })
 })

@@ -4,7 +4,7 @@ import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluste
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
@@ -22,9 +22,6 @@ import {
     ImportedBareMetalAsset,
 } from '../../resources/bare-metal-asset'
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
-
-const baremetalasset = 'bare metal asset'
-const baremetalassets = 'bare metal assets'
 
 export default function BareMetalAssetsPage() {
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
@@ -70,8 +67,7 @@ export function BareMetalAssetsTable(props: {
     function setImportModalProps() {
         setImportedProps({
             open: true,
-            singular: t(baremetalasset),
-            plural: t(baremetalassets),
+            title: t('bulk.title.import'),
             action: t('common:import'),
             processing: '',
             description: '',
@@ -92,8 +88,7 @@ export function BareMetalAssetsTable(props: {
                                 const result = await importBMAs()
                                 setImportedProps({
                                     open: true,
-                                    singular: t(baremetalasset),
-                                    plural: t(baremetalassets),
+                                    title: t('bulk.title.import'),
                                     action: t('common:import'),
                                     processing: t('common:importing'),
                                     description: t('modal.import.content.batch'),
@@ -162,6 +157,12 @@ export function BareMetalAssetsTable(props: {
                 emptyState={
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}
+                        message={
+                            <Trans
+                                i18nKey={'bma:bareMetalAsset.emptyState.subtitle'}
+                                components={{ bold: <strong /> }}
+                            />
+                        }
                         action={
                             <div style={{ display: 'flex', justifyContent: 'space-evenly', margin: 'auto' }}>
                                 <AcmButton
@@ -226,7 +227,7 @@ export function BareMetalAssetsTable(props: {
                             if (bareMetalAsset.status) {
                                 let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
                                 let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
-                                for (let conditions of bareMetalAsset.status!.conditions) {
+                                for (const conditions of bareMetalAsset.status!.conditions) {
                                     if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
                                         mostCurrentStatusTime = conditions.lastTransitionTime
                                         mostCurrentStatus = conditions.type
@@ -282,12 +283,11 @@ export function BareMetalAssetsTable(props: {
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
-                                            singular: t(baremetalasset),
-                                            plural: t(baremetalassets),
+                                            title: t('bulk.title.delete'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
                                             resources: [bareMetalAsset],
-                                            description: t('modal.delete.content.batch'),
+                                            description: t('bulk.message.delete'),
                                             columns: [
                                                 {
                                                     header: t('bareMetalAsset.tableHeader.name'),
@@ -350,12 +350,11 @@ export function BareMetalAssetsTable(props: {
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setModalProps({
                                 open: true,
-                                singular: t(baremetalasset),
-                                plural: t(baremetalassets),
+                                title: t('bulk.title.delete'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [...bareMetalAssets],
-                                description: t('modal.delete.content.batch'),
+                                description: t('bulk.message.delete'),
                                 columns: [
                                     {
                                         header: t('bareMetalAsset.tableHeader.name'),

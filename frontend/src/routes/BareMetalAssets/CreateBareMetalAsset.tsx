@@ -201,7 +201,7 @@ export function CreateBareMetalAssetPageContent(props: {
 
     const isEdit = !!props.editBareMetalAsset
 
-    let [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
+    const [bareMetalAsset, setBareMetalAsset] = useState<Partial<BareMetalAsset>>({
         kind: BareMetalAssetKind,
         apiVersion: BareMetalAssetApiVersion,
         metadata: {
@@ -217,7 +217,7 @@ export function CreateBareMetalAssetPageContent(props: {
         },
     })
 
-    let [bmaSecret, setBMASecret] = useState<Partial<Secret>>({
+    const [bmaSecret, setBMASecret] = useState<Partial<Secret>>({
         kind: SecretKind,
         apiVersion: SecretApiVersion,
         metadata: {

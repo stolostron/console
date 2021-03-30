@@ -26,7 +26,7 @@ export async function createCluster(resources: any[]) {
     // get namespace and filter out any namespace resource
     // get ClusterDeployment and filter it out to create at the very end
     let response
-    let namespace: string = ''
+    let namespace = ''
     const clusterResources: any = []
     resources = resources.filter((resource: any) => {
         const { kind, metadata = {}, spec = {} } = resource

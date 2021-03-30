@@ -1,7 +1,7 @@
 
 apiVersion: v1
 metadata:
-  name: {{{name}}}
+  name: '{{{name}}}'
 baseDomain: {{{baseDomain}}}
 
 
@@ -88,7 +88,7 @@ compute:
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
-  name: {{{workerName}}}
+  name: '{{{workerName}}}'
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
 {{#switch ../infrastructure}}
 
@@ -159,14 +159,14 @@ networking:
   - cidr: {{{clusterNetwork}}} ##clusterNetwork
     hostPrefix: {{{hostPrefix}}} ##hostPrefix
 {{/each}}
-  machineNetwork: 
+  machineNetwork:
 {{#each ../networks}}
   - cidr: {{{machineCIDR}}} ##machineCIDR
-{{/each}}  
+{{/each}}
   serviceNetwork:
 {{#each ../networks}}
   - {{{serviceNetwork}}} ##serviceNetwork
-{{/each}}  
+{{/each}}
 {{/if_ne}}
 
 
@@ -203,8 +203,8 @@ platform:
 {{/if}}
     hosts:
 {{#each ../../hosts}}
-      - name: {{{hostName}}}  ##hosts.{{@index}}.hostName
-        namespace: {{{hostNamespace}}}  ##hosts.{{@index}}.hostNamespace
+      - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
+        namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress

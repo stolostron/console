@@ -2,6 +2,7 @@
 
 import { ConfigMap, ConfigMapApiVersion, ConfigMapKind } from '../resources/configmap'
 import { FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../resources/feature-gate'
+import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind } from '../resources/managed-cluster-set'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -23,4 +24,13 @@ export const mockDiscoveryFeatureGate: FeatureGate = {
     kind: FeatureGateKind,
     metadata: { name: 'open-cluster-management-discovery' },
     spec: { featureSet: 'DiscoveryEnabled' },
+}
+
+export const mockManagedClusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'test-cluster-set',
+    },
+    spec: {},
 }

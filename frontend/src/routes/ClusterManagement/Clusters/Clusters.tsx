@@ -9,19 +9,21 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
+    IAcmTableAction,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
-    clusterManagementAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterManagementAddonsState,
+    managedClusterAddonsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
@@ -37,8 +39,10 @@ import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
+import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 
 export default function ClustersPage() {
+    const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -47,16 +51,53 @@ export default function ClustersPage() {
     const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 
     const clusters = useMemo(
-        () => mapClusters(clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters),
-        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters]
+        () =>
+            mapClusters(
+                clusterDeployments,
+                managedClusterInfos,
+                certificateSigningRequests,
+                managedClusters,
+                managedClusterAddons
+            ),
+        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
     usePageContext(clusters.length > 0, PageActions)
+
+    const history = useHistory()
+    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
+        canCreateManagedCluster.promise
+            .then((result) => setCanCreateCluster(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateManagedCluster.abort()
+    }, [])
+
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <ClustersTable clusters={clusters} />
+                <ClustersTable
+                    clusters={clusters}
+                    tableActions={[
+                        {
+                            id: 'createCluster',
+                            title: t('managed.createCluster'),
+                            click: () => history.push(NavigationPath.createCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                        {
+                            id: 'importCluster',
+                            title: t('managed.importCluster'),
+                            click: () => history.push(NavigationPath.importCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                    ]}
+                />
             </PageSection>
         </AcmPageContent>
     )
@@ -79,7 +120,7 @@ const PageActions = () => {
     )
 }
 
-export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (managedCluster: Cluster) => void }) {
+export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcmTableAction[] }) {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
@@ -87,16 +128,6 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
-
-    const history = useHistory()
-    const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
-        canCreateManagedCluster.promise
-            .then((result) => setCanCreateCluster(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateManagedCluster.abort()
-    }, [])
 
     function mckeyFn(cluster: Cluster) {
         return cluster.name!
@@ -123,6 +154,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+            },
+            {
+                header: t('table.set'),
+                sort: `labels.${managedClusterSetLabel}`,
+                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
             },
         ],
         [t]
@@ -196,7 +232,6 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                                         'name',
                                         'vendor',
                                     ].filter((label) => labelKeys.includes(label)) ?? []
-
                                 return (
                                     <AcmLabels
                                         labels={cluster.labels}
@@ -235,22 +270,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
-                tableActions={[
-                    {
-                        id: 'createCluster',
-                        title: t('managed.createCluster'),
-                        click: () => history.push(NavigationPath.createCluster),
-                        isDisabled: !canCreateCluster,
-                        tooltip: t('common:rbac.unauthorized'),
-                    },
-                    {
-                        id: 'importCluster',
-                        title: t('managed.importCluster'),
-                        click: () => history.push(NavigationPath.importCluster),
-                        isDisabled: !canCreateCluster,
-                        tooltip: t('common:rbac.unauthorized'),
-                    },
-                ]}
+                tableActions={props.tableActions}
                 bulkActions={[
                     {
                         id: 'destroyCluster',
@@ -258,12 +278,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.destroy'),
                                 action: t('destroy'),
                                 processing: t('destroying'),
                                 resources: clusters,
-                                description: t('cluster.destroy.description'),
+                                description: t('bulk.message.destroy'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => deleteCluster(cluster.name!, true),
@@ -280,12 +299,11 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                singular: t('cluster'),
-                                plural: t('clusters'),
+                                title: t('bulk.title.detach'),
                                 action: t('detach'),
                                 processing: t('detaching'),
                                 resources: clusters,
-                                description: t('cluster.detach.description'),
+                                description: t('bulk.message.detach'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => detachCluster(cluster.name!),
@@ -310,7 +328,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; deleteCluster?: (ma
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.emptyStateHeader')}
-                        message={t('managed.emptyStateMsg')}
+                        message={<Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
                         action={<AddCluster type="button" buttonSpacing />}
                     />
                 }

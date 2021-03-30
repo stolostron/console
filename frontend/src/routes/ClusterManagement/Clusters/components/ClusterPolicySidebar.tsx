@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useState } from 'react'
 import _ from 'lodash'
 import {
     Tabs,
@@ -19,7 +20,6 @@ import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport } from '../../../../resources/policy-report'
@@ -212,7 +212,7 @@ function DetailsView(props: {
     }
 
     function categories() {
-        let categories = _.get(selectedPolicy, 'results[0].category', '')
+        const categories = _.get(selectedPolicy, 'results[0].category', '')
         if (categories && categories !== '') {
             const categoriesToHide = categories.slice(1)
             return <AcmLabels labels={categories.split(',')} collapse={categoriesToHide} />
@@ -220,7 +220,7 @@ function DetailsView(props: {
     }
 
     function matchedDate() {
-        let d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
+        const d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
         return d
     }
 

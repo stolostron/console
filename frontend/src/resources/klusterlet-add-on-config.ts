@@ -2,7 +2,6 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
-import { ClusterLabels } from './managed-cluster'
 import { createResource } from '../lib/resource-request'
 
 export const KlusterletAddonConfigApiVersion = 'agent.open-cluster-management.io/v1'
@@ -23,7 +22,7 @@ export interface KlusterletAddonConfig extends IResource {
     spec: {
         clusterName: string
         clusterNamespace: string
-        clusterLabels: ClusterLabels
+        clusterLabels: Record<string, string>
         applicationManager: { enabled: boolean; argocdCluster: boolean }
         policyController: { enabled: boolean }
         searchCollector: { enabled: boolean }
@@ -35,7 +34,7 @@ export interface KlusterletAddonConfig extends IResource {
 
 export const createKlusterletAddonConfig = (data: {
     clusterName: string | undefined
-    clusterLabels: ClusterLabels
+    clusterLabels: Record<string, string>
 }) => {
     if (!data.clusterName) throw new Error('Cluster name not set')
     return createResource<KlusterletAddonConfig>({
