@@ -5,7 +5,7 @@
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.create-clusterset": "Create cluster set",
     "page.header.create-clusterset.tooltip": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.",
-    "page.header.cluster-set.manage-clusters": "Manage clusters",
+    "page.header.cluster-set.manage-clusters": "Manage cluster set membership",
     "cluster": "Cluster",
     "clusters": "Clusters",
     "clusterSets": "Cluster sets",
@@ -30,6 +30,9 @@
     "managed.emptyStateMsg": "You don't have any managed clusters, yet. Select \"Create a cluster\" or \"Import an existing cluster\" to add a managed cluster.",
     "managed.clusterSets.emptyStateHeader": "No cluster sets found",
     "managed.clusterSets.emptyStateMsg": "You don't have any cluster sets, yet. Select \"Create cluster set \" to add a cluster set.",
+    "managed.clusterSets.clusters.emptyStateHeader": "You don't have any clusters assigned to this cluster set",
+    "managed.clusterSets.clusters.emptyStateMsg": "Select the <bold>Add to cluster set</bold> button to add a cluster.",
+    "managed.clusterSets.clusters.emptyStateButton": "Add to cluster set",
     "managed.import": "Import cluster",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
@@ -48,7 +51,7 @@
     "managed.destroySelected": "Destroy cluster",
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
-    "set.manage-clusters": "Manage clusters",
+    "set.manage-clusters": "Manage cluster set membership",
     "set.delete": "Delete cluster set",
     "discovered": "Discovered",
     "discovery.disable": "Disable cluster discovery",
@@ -97,6 +100,7 @@
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
     "table.assignedToSet": "Currently assigned to set",
+    "table.change": "Change",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -308,6 +312,11 @@
     "manageClusterSet.form.modal.title": "Confirm changes",
     "manageClusterSet.form.modal.tab.added": "Added",
     "manageClusterSet.form.modal.tab.removed": "Removed",
-    "manageClusterSet.form.modal.tab.unchanged": "No changes"
-
+    "manageClusterSet.form.modal.tab.unchanged": "No changes",
+    "managedClusterSet.form.added": "Added",
+    "managedClusterSet.form.removed": "Removed",
+    "managedClusterSet.form.unchanged": "No change",
+    "managedClusterSet.form.assigned": "Yes",
+    "managedClusterSet.form.unassigned": "No",
+    "managedClusterSet.form.emptyStateButton": "Back to cluster sets"
 }

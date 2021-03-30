@@ -260,7 +260,12 @@ export function CreateClusterSetContent() {
                                         })
                                     }
                                 } else {
-                                    history.push(NavigationPath.clusterSets)
+                                    history.push(
+                                        NavigationPath.clusterSetDetails.replace(
+                                            ':id',
+                                            managedClusterSet.metadata.name!
+                                        )
+                                    )
                                 }
                             })
                             .catch((err) => {

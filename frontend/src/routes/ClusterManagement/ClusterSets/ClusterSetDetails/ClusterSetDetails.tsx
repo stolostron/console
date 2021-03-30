@@ -101,6 +101,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         >
             <Suspense fallback={<Fragment />}>
                 <Switch>
+                    <Route exact path={NavigationPath.clusterSetDetails.replace(':id', match.params.id)}>
+                        <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
+                    </Route>
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
                         <ClusterSetManageClustersPage />
                     </Route>
@@ -121,7 +124,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         }
                                     >
                                         <Link to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}>
-                                            {t('tab.clusters')}
+                                            {t('tab.overview')}
                                         </Link>
                                     </AcmSecondaryNavItem>
                                 </AcmSecondaryNav>
@@ -132,9 +135,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                             <ClusterSetOverviewPageContent />
                         </Route>
                     </AcmPage>
-                    <Route exact path={NavigationPath.clusterSetDetails}>
-                        <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
-                    </Route>
                 </Switch>
             </Suspense>
         </ClusterSetContext.Provider>

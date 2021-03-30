@@ -3,7 +3,7 @@
 import { useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { PageSection, ActionGroup, Tabs, Tab, TabTitleText, Title } from '@patternfly/react-core'
+import { PageSection, ActionGroup, Title } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import {
     AcmPage,
@@ -14,7 +14,7 @@ import {
     AcmInlineProvider,
     AcmButton,
     AcmAlertGroup,
-    // AcmAlertContext,
+    AcmEmptyState,
 } from '@open-cluster-management/ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -146,8 +146,8 @@ export function ClusterSetManageClustersContent() {
                             header: t('table.assignedToSet'),
                             cell: (cluster) =>
                                 clusterSetClusters?.find((clusterSetCluster) => clusterSetCluster.name === cluster.name)
-                                    ? 'Yes'
-                                    : 'No',
+                                    ? t('managedClusterSet.form.assigned')
+                                    : t('managedClusterSet.form.unassigned'),
                         },
                         {
                             header: t('table.status'),
@@ -173,31 +173,38 @@ export function ClusterSetManageClustersContent() {
                             cell: (cluster) => <DistributionField cluster={cluster} />,
                         },
                     ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.emptyStateHeader')}
+                            message={t('createClusterSet.form.section.clusters.emptyMessage')}
+                            action={
+                                <AcmButton onClick={() => history.push(NavigationPath.clusterSets)} role="link">
+                                    {t('managedClusterSet.form.emptyStateButton')}
+                                </AcmButton>
+                            }
+                        />
+                    }
                 />
 
                 <AcmAlertGroup isInline canClose padTop />
-                <ActionGroup>
-                    {/* <AcmSubmit
-                    id="save"
-                    variant="primary"
-                    label={t('common:save')}
-                    processingLabel={t('common:saving')}
-                    onClick={() => {
-                        alertContext.clearAlerts()
-                    }}
-                /> */}
-                    <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>
-                        {t('common:save')}
-                    </AcmButton>
-                    <AcmButton
-                        variant="link"
-                        onClick={() =>
-                            history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))
-                        }
-                    >
-                        {t('common:cancel')}
-                    </AcmButton>
-                </ActionGroup>
+                {availableClusters.length > 0 && (
+                    <ActionGroup>
+                        <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>
+                            {t('common:save')}
+                        </AcmButton>
+                        <AcmButton
+                            variant="link"
+                            onClick={() =>
+                                history.push(
+                                    NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!)
+                                )
+                            }
+                        >
+                            {t('common:cancel')}
+                        </AcmButton>
+                    </ActionGroup>
+                )}
             </AcmForm>
         </>
     )
@@ -209,64 +216,65 @@ function ManageClustersSummary(props: {
     unchangedClusters: Cluster[]
 }) {
     const { t } = useTranslation(['cluster'])
-    const [activeTab, setActiveTab] = useState<number | string>(0)
     return (
         <>
             <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
-            <Tabs activeKey={activeTab} onSelect={(e, tabIndex) => setActiveTab(tabIndex)} isFilled>
-                <Tab eventKey={0} title={<TabTitleText>{t('manageClusterSet.form.modal.tab.added')}</TabTitleText>}>
-                    <ClusterSummaryTable clusters={props.addedClusters} />
-                </Tab>
-                <Tab eventKey={1} title={<TabTitleText>{t('manageClusterSet.form.modal.tab.removed')}</TabTitleText>}>
-                    <ClusterSummaryTable clusters={props.removedClusters} />
-                </Tab>
-                <Tab eventKey={2} title={<TabTitleText>{t('manageClusterSet.form.modal.tab.unchanged')}</TabTitleText>}>
-                    <ClusterSummaryTable clusters={props.unchangedClusters} />
-                </Tab>
-            </Tabs>
+            <AcmTable<Cluster>
+                gridBreakPoint={TableGridBreakpoint.none}
+                plural="clusters"
+                items={[...props.addedClusters, ...props.removedClusters, ...props.unchangedClusters]}
+                keyFn={(cluster: Cluster) => cluster.name!}
+                key="clusterSetManageClustersTable"
+                columns={[
+                    {
+                        header: t('table.name'),
+                        sort: 'name',
+                        search: 'name',
+                        cell: (cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
+                    },
+                    {
+                        header: t('table.change'),
+                        cell: (cluster) => {
+                            const isAdded = props.addedClusters.find(
+                                (addedCluster) => addedCluster.name === cluster.name
+                            )
+                            const isRemoved = props.removedClusters.find(
+                                (removedCluster) => removedCluster.name === cluster.name
+                            )
+                            if (isAdded) {
+                                return t('managedClusterSet.form.added')
+                            } else if (isRemoved) {
+                                return t('managedClusterSet.form.removed')
+                            } else {
+                                return t('managedClusterSet.form.unchanged')
+                            }
+                        },
+                    },
+                    {
+                        header: t('table.status'),
+                        sort: 'status',
+                        search: 'status',
+                        cell: (cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <StatusField cluster={cluster} />
+                            </span>
+                        ),
+                    },
+                    {
+                        header: t('table.provider'),
+                        sort: 'provider',
+                        search: 'provider',
+                        cell: (cluster) =>
+                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                    },
+                    {
+                        header: t('table.distribution'),
+                        sort: 'distribution.displayVersion',
+                        search: 'distribution.displayVersion',
+                        cell: (cluster) => <DistributionField cluster={cluster} />,
+                    },
+                ]}
+            />
         </>
-    )
-}
-
-function ClusterSummaryTable(props: { clusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster', 'common'])
-    return (
-        <AcmTable<Cluster>
-            gridBreakPoint={TableGridBreakpoint.none}
-            plural="clusters"
-            items={props.clusters}
-            keyFn={(cluster: Cluster) => cluster.name!}
-            key="clusterSetManageClustersTable"
-            columns={[
-                {
-                    header: t('table.name'),
-                    sort: 'name',
-                    search: 'name',
-                    cell: (cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                },
-                {
-                    header: t('table.status'),
-                    sort: 'status',
-                    search: 'status',
-                    cell: (cluster) => (
-                        <span style={{ whiteSpace: 'nowrap' }}>
-                            <StatusField cluster={cluster} />
-                        </span>
-                    ),
-                },
-                {
-                    header: t('table.provider'),
-                    sort: 'provider',
-                    search: 'provider',
-                    cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
-                },
-                {
-                    header: t('table.distribution'),
-                    sort: 'distribution.displayVersion',
-                    search: 'distribution.displayVersion',
-                    cell: (cluster) => <DistributionField cluster={cluster} />,
-                },
-            ]}
-        />
     )
 }

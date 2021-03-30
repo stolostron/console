@@ -75,6 +75,14 @@ export default function ClustersPage() {
                             tooltip: t('common:rbac.unauthorized'),
                         },
                     ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.emptyStateHeader')}
+                            message={t('managed.emptyStateMsg')}
+                            action={<AddCluster type="button" buttonSpacing />}
+                        />
+                    }
                 />
             </PageSection>
         </AcmPageContent>
@@ -98,7 +106,11 @@ const PageActions = () => {
     )
 }
 
-export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcmTableAction[] }) {
+export function ClustersTable(props: {
+    clusters?: Cluster[]
+    tableActions?: IAcmTableAction[]
+    emptyState?: React.ReactNode
+}) {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
@@ -302,14 +314,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                     },
                 ]}
                 rowActions={[]}
-                emptyState={
-                    <AcmEmptyState
-                        key="mcEmptyState"
-                        title={t('managed.emptyStateHeader')}
-                        message={t('managed.emptyStateMsg')}
-                        action={<AddCluster type="button" buttonSpacing />}
-                    />
-                }
+                emptyState={props.emptyState}
             />
         </Fragment>
     )
