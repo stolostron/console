@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockIgnoreRBAC, nockCreate, nockList } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import {
     packProviderConnection,
@@ -17,6 +17,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState } from '../../../atoms'
 import { waitForText } from '../../../lib/test-util'
+import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -70,10 +71,22 @@ describe('add connection page', () => {
                 sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
             },
         }
+        const multiClusterHub: MultiClusterHub = {
+            apiVersion: MultiClusterHubApiVersion,
+            kind: MultiClusterHubKind,
+            metadata: {
+                name: 'multiclusterhub',
+                namespace: 'test-namespace',
+            },
+            spec: {},
+        }
+        
 
         const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
+        const listNock = nockList(multiClusterHub, [multiClusterHub])
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
@@ -94,6 +107,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPrivateKey'), awsProviderConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), awsProviderConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
         await waitForText(mockBadRequestStatus.message, true)
         await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
