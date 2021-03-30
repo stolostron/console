@@ -332,9 +332,11 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
             metadata: {},
             spec: {
                 resourceAttributes: {
-                    group: resource.apiVersion.includes('/') ? resource.apiVersion.split('/')[0] : undefined,
+                    group: resource.apiVersion.includes('/') ? resource.apiVersion.split('/')[0] : '',
                     name: resource.metadata?.name,
-                    namespace: resource.metadata?.namespace,
+                    namespace:
+                        resource.metadata?.namespace ??
+                        (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
                     resource: resource.kind.toLowerCase() + 's',
                     verb,
                 },
