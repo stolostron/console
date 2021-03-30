@@ -254,29 +254,6 @@ function ManageClustersSummary(props: {
                             }
                         },
                     },
-                    {
-                        header: t('table.status'),
-                        sort: 'status',
-                        search: 'status',
-                        cell: (cluster) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                <StatusField cluster={cluster} />
-                            </span>
-                        ),
-                    },
-                    {
-                        header: t('table.provider'),
-                        sort: 'provider',
-                        search: 'provider',
-                        cell: (cluster) =>
-                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-                    },
-                    {
-                        header: t('table.distribution'),
-                        sort: 'distribution.displayVersion',
-                        search: 'distribution.displayVersion',
-                        cell: (cluster) => <DistributionField cluster={cluster} />,
-                    },
                 ]}
             />
         </>
