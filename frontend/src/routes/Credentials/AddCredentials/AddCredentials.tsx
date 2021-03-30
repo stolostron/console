@@ -51,6 +51,7 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
+import { listMultiClusterHubs } from '../../../resources/multi-cluster-hub'
 
 export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -237,7 +238,8 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     const history = useHistory()
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-
+    const [mchNamespace, setmchNamespace] = useState<string>()
+    const [isVisible, setisVisible] = useState<boolean>()
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
 
@@ -247,6 +249,22 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     // useEffect(() => {
     //     setProviderConnection(JSON.parse(JSON.stringify(props.providerConnection)))
     // }, [props.providerConnection])
+    useEffect(() => {
+        const result = listMultiClusterHubs()
+        result.promise
+            .then((mch) => {
+                // only one mch can exist
+                if (mch.length === 1) {
+                    setmchNamespace(mch[0].metadata.namespace)
+                    
+                      
+                    
+                }
+            })
+            .catch((err) => {
+                
+            })
+        }, [])
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -271,6 +289,12 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     updateProviderConnection((providerConnection) => {
                         setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                     })
+
+                if(getProviderConnectionProviderID(providerConnection) === ProviderID.CRH){
+
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.metadata.namespace = mchNamespace
+                    })}
                 }}
                 isDisabled={isEditing()}
                 isRequired
@@ -278,6 +302,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 {providers
                     .filter((provider) => {
                         if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
+                            return false // skip
+                        }
+                        if (!props.projects.includes(mchNamespace) && provider.key === ProviderID.CRH) {
                             return false // skip
                         }
                         return true
@@ -299,7 +326,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                                 break
                             case ProviderID.BMC:
                                 mappedProvider = Provider.baremetal
-                                break
+                                  break
                             case ProviderID.CRH:
                                 mappedProvider = Provider.redhatcloud
                                 break
@@ -325,6 +352,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     updateProviderConnection((providerConnection) => {
                         providerConnection.metadata.name = name
                     })
+                    
                 }}
                 validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 isRequired
@@ -342,7 +370,19 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     })
                 }}
                 isRequired
-                isDisabled={isEditing()}
+                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH }
+                // id="namespaceName"
+                // label={t('addConnection.namespaceName.label')}
+                // placeholder={mchNamespace}
+                // labelHelp={t('addConnection.namespaceName.labelHelp')}
+                // value={providerConnection.metadata.namespace}
+                // onChange={(namespace) => {
+                //     updateProviderConnection((providerConnection) => {
+                //         providerConnection.metadata.namespace = namespace
+                //     })
+                // }}
+                
+                // isDisabled={true}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (
@@ -369,17 +409,6 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     !getProviderConnectionProviderID(providerConnection) ||
                     getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
                 }
-                validation={(value) => {
-                    const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
-                    if (value) {
-                        if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
-                            return t('addConnection.baseDomain.baseDNSPeriod')
-                        }
-                        if (!VALID_DNS_NAME_TESTER.test(value)) {
-                            return t('addConnection.valid.name')
-                        }
-                    }
-                }}
             />
             <AcmTextInput
                 id="awsAccessKeyID"
