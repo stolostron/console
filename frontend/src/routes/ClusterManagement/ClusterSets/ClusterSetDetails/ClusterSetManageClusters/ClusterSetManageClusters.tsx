@@ -127,6 +127,10 @@ export function ClusterSetManageClustersContent() {
                 <Title headingLevel="h4" size="xl">
                     {t('manageClusterSet.form.section.table')}
                 </Title>
+                <div>
+                    Clusters already assigned to the cluster set and any currently unassigned clusters will be
+                    displayed.
+                </div>
                 <AcmTable<Cluster>
                     gridBreakPoint={TableGridBreakpoint.none}
                     plural="clusters"
