@@ -15,7 +15,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, providerConnectionsState } from '../../atoms'
@@ -101,7 +101,7 @@ export function ProviderConnectionsTable(props: {
                 emptyState={
                     <AcmEmptyState
                         title={t('empty.title')}
-                        message={t('empty.subtitle')}
+                        message={<Trans i18nKey={'connection:empty.subtitle'} components={{ bold: <strong /> }} />}
                         action={<AddConnectionBtn />}
                     />
                 }

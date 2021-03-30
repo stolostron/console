@@ -14,7 +14,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -328,7 +328,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.emptyStateHeader')}
-                        message={t('managed.emptyStateMsg')}
+                        message={<Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
                         action={<AddCluster type="button" buttonSpacing />}
                     />
                 }
