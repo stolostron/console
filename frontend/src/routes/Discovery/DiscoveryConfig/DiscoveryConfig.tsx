@@ -78,27 +78,26 @@ export function AddDiscoveryConfigData() {
             .then((mch) => {
                 // only one mch can exist
                 if (mch.length === 1) {
-                    setmchNamespace(mch[0].metadata.namespace)                    
+                    setmchNamespace(mch[0].metadata.namespace)
                 }
-                
             })
             .catch((err) => {
                 setError(err)
             })
-        }, [])    
+    }, [])
     useEffect(() => {
         setIsLoading(true)
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
             .then((results) => {
-                var CRHProviderConnections: ProviderConnection[] = []
+                const CRHProviderConnections: ProviderConnection[] = []
                 results.forEach((result) => {
-                    let labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
-                    if (labels === ProviderID.CRH) {                     
-                        
-                        if (result.metadata.namespace === mchNamespace){
+                    const labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
+                    if (labels === ProviderID.CRH) {
+                        if (result.metadata.namespace === mchNamespace) {
                             CRHProviderConnections.push(result)
-                    }}
+                        }
+                    }
                 })
                 setProviderConnections(CRHProviderConnections)
                 setIsLoading(false)
