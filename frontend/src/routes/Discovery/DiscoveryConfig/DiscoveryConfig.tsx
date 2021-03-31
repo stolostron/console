@@ -18,6 +18,8 @@ import { ActionGroup, ButtonVariant, Page, SelectOption, Text, TextVariants } fr
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { multiClusterHubState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID } from '../../../lib/providers'
 import { ResourceErrorCode } from '../../../lib/resource-request'
@@ -57,7 +59,7 @@ export function AddDiscoveryConfigData() {
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [providerConnections, setProviderConnections] = useState<ProviderConnection[]>([])
-    const [mchNamespace, setmchNamespace] = useState<string>()
+    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
@@ -73,19 +75,6 @@ export function AddDiscoveryConfigData() {
         },
     })
     useEffect(() => {
-        const result = listMultiClusterHubs()
-        result.promise
-            .then((mch) => {
-                // only one mch can exist
-                if (mch.length === 1) {
-                    setmchNamespace(mch[0].metadata.namespace)
-                }
-            })
-            .catch((err) => {
-                setError(err)
-            })
-    }, [])
-    useEffect(() => {
         setIsLoading(true)
         const providerConnectionsResult = listProviderConnections().promise
         providerConnectionsResult
@@ -94,7 +83,7 @@ export function AddDiscoveryConfigData() {
                 results.forEach((result) => {
                     const labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
                     if (labels === ProviderID.CRH) {
-                        if (result.metadata.namespace === mchNamespace) {
+                        if (result.metadata.namespace === multiClusterHubs[0].metadata.namespace) {
                             CRHProviderConnections.push(result)
                         }
                     }
@@ -105,7 +94,7 @@ export function AddDiscoveryConfigData() {
             .catch((err) => {
                 setError(err)
             })
-    }, [mchNamespace])
+    }, [multiClusterHubs])
 
     // Get Discovery Config if it exists
     useEffect(() => {
