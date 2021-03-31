@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockCreate, nockList } from '../../../lib/nock-util'
+import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -15,13 +15,22 @@ import {
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+const multiClusterHub: MultiClusterHub = {
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+    metadata: {
+        name: 'multiclusterhub',
+        namespace: 'test-namespace',
+    },
+    spec: {},
 }
 
 function EmptyPage() {
@@ -34,6 +43,7 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -86,16 +96,7 @@ describe('add connection page', () => {
                 sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
             },
         }
-        const multiClusterHub: MultiClusterHub = {
-            apiVersion: MultiClusterHubApiVersion,
-            kind: MultiClusterHubKind,
-            metadata: {
-                name: 'multiclusterhub',
-                namespace: 'test-namespace',
-            },
-            spec: {},
-        }
-        const listNock = nockList(multiClusterHub, [multiClusterHub])
+
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
@@ -129,7 +130,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         getByText('addConnection.addButton.label').click()
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })

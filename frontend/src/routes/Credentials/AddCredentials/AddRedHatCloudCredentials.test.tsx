@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockCreate, nockList } from '../../../lib/nock-util'
+import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import {
     packProviderConnection,
@@ -15,13 +15,22 @@ import {
 import AddCredentialPage from './AddCredentials'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, featureGatesState } from '../../../atoms'
+import { namespacesState, featureGatesState, multiClusterHubState } from '../../../atoms'
 import { mockDiscoveryFeatureGate } from '../../../lib/test-metadata'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+const multiClusterHub: MultiClusterHub = {
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+    metadata: {
+        name: 'multiclusterhub',
+        namespace: 'test-namespace',
+    },
+    spec: {},
 }
 
 let location: Location
@@ -31,6 +40,7 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
             }}
         >
@@ -70,16 +80,8 @@ describe('add connection page', () => {
                 ocmAPIToken: 'test-ocm-api-token',
             },
         }
-        const multiClusterHub: MultiClusterHub = {
-            apiVersion: MultiClusterHubApiVersion,
-            kind: MultiClusterHubKind,
-            metadata: {
-                name: 'multiclusterhub',
-                namespace: 'test-namespace',
-            },
-            spec: {},
-        }
-        const listNock = nockList(multiClusterHub, [multiClusterHub])
+
+        // const listNock = nockList(multiClusterHub, [multiClusterHub])
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
@@ -102,7 +104,7 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
         getByText('addConnection.addButton.label').click()
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+        // await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })

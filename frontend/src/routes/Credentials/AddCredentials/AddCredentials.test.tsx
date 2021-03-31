@@ -3,18 +3,27 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockList } from '../../../lib/nock-util'
+import { nockCreate } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import AddCredentialPage from './AddCredentials'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+const multiClusterHub: MultiClusterHub = {
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+    metadata: {
+        name: 'multiclusterhub',
+        namespace: 'test-namespace',
+    },
+    spec: {},
 }
 
 const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {
@@ -117,6 +126,7 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -137,6 +147,7 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -154,20 +165,12 @@ describe('add connection page', () => {
     })
     it('should load page and namespace when admin', async () => {
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
-        const multiClusterHub: MultiClusterHub = {
-            apiVersion: MultiClusterHubApiVersion,
-            kind: MultiClusterHubKind,
-            metadata: {
-                name: 'multiclusterhub',
-                namespace: 'test-namespace',
-            },
-            spec: {},
-        }
-        const listNock = nockList(multiClusterHub, [multiClusterHub])
+
         const { getByText, container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -178,7 +181,7 @@ describe('add connection page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('addConnection.providerName.label')).toBeInTheDocument())
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
@@ -187,20 +190,12 @@ describe('add connection page', () => {
     it('should load page and namespace for non-admin', async () => {
         nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseTrue)
-        const multiClusterHub: MultiClusterHub = {
-            apiVersion: MultiClusterHubApiVersion,
-            kind: MultiClusterHubKind,
-            metadata: {
-                name: 'multiclusterhub',
-                namespace: 'test-namespace',
-            },
-            spec: {},
-        }
-        const listNock = nockList(multiClusterHub, [multiClusterHub])
+
         const { getByText, container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -211,7 +206,7 @@ describe('add connection page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(getByText('addConnection.providerName.label')).toBeInTheDocument())
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()

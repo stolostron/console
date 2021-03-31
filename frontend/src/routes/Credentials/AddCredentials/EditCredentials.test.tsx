@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockGet, nockReplace, nockList } from '../../../lib/nock-util'
+import { nockGet, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -15,13 +15,22 @@ import {
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+const multiClusterHub: MultiClusterHub = {
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+    metadata: {
+        name: 'multiclusterhub',
+        namespace: 'test-namespace',
+    },
+    spec: {},
 }
 
 const awsProviderConnection: ProviderConnection = {
@@ -50,6 +59,7 @@ function TestEditConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
             <MemoryRouter
@@ -74,18 +84,9 @@ describe('edit connection page', () => {
     it('should edit provider connection', async () => {
         const getProviderConnectionNock = nockGet(awsProviderConnection)
         const { getByText, getByTestId } = render(<TestEditConnectionPage />)
-        const multiClusterHub: MultiClusterHub = {
-            apiVersion: MultiClusterHubApiVersion,
-            kind: MultiClusterHubKind,
-            metadata: {
-                name: 'multiclusterhub',
-                namespace: 'test-namespace',
-            },
-            spec: {},
-        }
-        const listNock = nockList(multiClusterHub, [multiClusterHub])
+
         await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(listNock.isDone()).toBeTruthy())
+
         await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 
         await waitFor(() => expect(getByTestId('awsAccessKeyID')).toBeInTheDocument())
