@@ -34,7 +34,7 @@ export function ClusterSetOverviewPageContent(props: { canGetSecret?: boolean })
                                 action={
                                     <RbacButton
                                         component={Link}
-                                        to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name)}
+                                        to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
                                         variant="primary"
                                         rbac={[
                                             rbacCreate(

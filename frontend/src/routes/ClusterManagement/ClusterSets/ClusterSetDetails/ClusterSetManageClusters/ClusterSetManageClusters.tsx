@@ -229,6 +229,7 @@ function ManageClustersSummary(props: {
                 items={[...props.addedClusters, ...props.removedClusters, ...props.unchangedClusters]}
                 keyFn={(cluster: Cluster) => cluster.name!}
                 key="clusterSetManageClustersTable"
+                autoHidePagination
                 columns={[
                     {
                         header: t('table.name'),

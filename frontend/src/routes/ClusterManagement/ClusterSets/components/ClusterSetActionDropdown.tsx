@@ -66,7 +66,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                     close: () => {
                         setModalProps({ open: false })
                     },
-                    confirmText: t('confirm').toLowerCase(),
+                    confirmText: managedClusterSet.metadata.name!,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
