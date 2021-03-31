@@ -3,7 +3,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate,nockList } from '../../../lib/nock-util'
+import { nockCreate, nockList } from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
