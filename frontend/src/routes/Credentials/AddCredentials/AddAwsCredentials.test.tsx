@@ -80,7 +80,6 @@ describe('add connection page', () => {
             },
             spec: {},
         }
-        
 
         const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
         const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
