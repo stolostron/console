@@ -107,7 +107,7 @@ describe('discovery config page', () => {
             nockList(discoveryConfig, mockBadRequestStatus),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockList(multiClusterHub, [multiClusterHub])
+            nockList(multiClusterHub, [multiClusterHub]),
         ]
         render(<TestDiscoveryConfigPage />)
         await waitForNocks(nocks)
@@ -119,7 +119,7 @@ describe('discovery config page', () => {
         const nocks = [
             nockList(discoveryConfig, []),
             nockList(discoveryConfig, []),
-            nockList(multiClusterHub, [multiClusterHub]),            
+            nockList(multiClusterHub, [multiClusterHub]),
             nockList(multiClusterHub, [multiClusterHub]),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
@@ -155,10 +155,10 @@ describe('discovery config page', () => {
 
     it('Edit DiscoveryConfig', async () => {
         const nocks = [
-//            nockList(discoveryConfig, [discoveryConfig]),
+            //            nockList(discoveryConfig, [discoveryConfig]),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
             nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockList(multiClusterHub, [multiClusterHub])
+            nockList(multiClusterHub, [multiClusterHub]),
         ]
 
         const { container } = render(<TestDiscoveryConfigPage />)
