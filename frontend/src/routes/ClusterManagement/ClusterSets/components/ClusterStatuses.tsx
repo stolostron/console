@@ -56,7 +56,7 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
     })
 
     return clusters.length === 0 ? (
-        <>0</>
+        <>-</>
     ) : (
         <AcmInlineStatusGroup
             healthy={healthy}

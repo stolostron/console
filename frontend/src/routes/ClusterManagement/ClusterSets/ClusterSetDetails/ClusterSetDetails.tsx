@@ -10,7 +10,7 @@ import {
     AcmPageProcess,
 } from '@open-cluster-management/ui-components'
 import { createContext, Fragment, Suspense, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { acmRouteState, managedClusterSetsState } from '../../../../atoms'
@@ -54,23 +54,31 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 loadingTitle={t('deleting.managedClusterSet.inprogress', {
                     managedClusterSetName: prevClusterSet!.metadata.name,
                 })}
-                loadingMessage={t('deleting.managedClusterSet.inprogress.message', {
-                    managedClusterSetName: prevClusterSet!.metadata.name,
-                })}
+                loadingMessage={
+                    <Trans
+                        i18nKey="cluster:deleting.managedClusterSet.inprogress.message"
+                        components={{ bold: <strong /> }}
+                        values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
+                    />
+                }
                 successTitle={t('deleting.managedClusterSet.success', {
                     managedClusterSetName: prevClusterSet!.metadata.name,
                 })}
-                successMessage={t('deleting.managedClusterSet.success.message', {
-                    managedClusterSetName: prevClusterSet!.metadata.name,
-                })}
+                successMessage={
+                    <Trans
+                        i18nKey="cluster:deleting.managedClusterSet.success.message"
+                        components={{ bold: <strong /> }}
+                        values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
+                    />
+                }
                 loadingPrimaryAction={
                     <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                        {t('button.backToClusters')}
+                        {t('button.backToClusterSets')}
                     </AcmButton>
                 }
                 primaryAction={
                     <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                        {t('button.backToClusters')}
+                        {t('button.backToClusterSets')}
                     </AcmButton>
                 }
             />
@@ -84,7 +92,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     error={new ResourceError('Not found', 404)}
                     actions={
                         <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                            {t('button.backToClusters')}
+                            {t('button.backToClusterSets')}
                         </AcmButton>
                     }
                 />
