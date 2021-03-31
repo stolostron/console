@@ -238,11 +238,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     const history = useHistory()
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-    const [mchNamespace, setmchNamespace] = useState<string>()
-    const [isVisible, setisVisible] = useState<boolean>()
+    const [mchNamespace, setmchNamespace] = useState<string>()    
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
-
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
@@ -256,15 +254,10 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 // only one mch can exist
                 if (mch.length === 1) {
                     setmchNamespace(mch[0].metadata.namespace)
-                    
-                      
-                    
                 }
             })
-            .catch((err) => {
-                
-            })
-        }, [])
+            .catch((err) => {})
+    }, [])
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -290,11 +283,11 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                         setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                     })
 
-                if(getProviderConnectionProviderID(providerConnection) === ProviderID.CRH){
-
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.metadata.namespace = mchNamespace
-                    })}
+                    if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.metadata.namespace = mchNamespace
+                        })
+                    }
                 }}
                 isDisabled={isEditing()}
                 isRequired
@@ -326,7 +319,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                                 break
                             case ProviderID.BMC:
                                 mappedProvider = Provider.baremetal
-                                  break
+                                break
                             case ProviderID.CRH:
                                 mappedProvider = Provider.redhatcloud
                                 break
@@ -352,7 +345,6 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     updateProviderConnection((providerConnection) => {
                         providerConnection.metadata.name = name
                     })
-                    
                 }}
                 validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 isRequired
@@ -370,7 +362,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     })
                 }}
                 isRequired
-                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH }
+                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                 // id="namespaceName"
                 // label={t('addConnection.namespaceName.label')}
                 // placeholder={mchNamespace}
@@ -381,7 +373,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 //         providerConnection.metadata.namespace = namespace
                 //     })
                 // }}
-                
+
                 // isDisabled={true}
                 variant="typeahead"
             >
