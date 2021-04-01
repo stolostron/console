@@ -9,21 +9,12 @@ import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resource
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import AddCredentialPage from './AddCredentials'
 import { namespacesState, multiClusterHubState } from '../../../atoms'
-import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
-}
-const multiClusterHub: MultiClusterHub = {
-    apiVersion: MultiClusterHubApiVersion,
-    kind: MultiClusterHubKind,
-    metadata: {
-        name: 'multiclusterhub',
-        namespace: 'test-namespace',
-    },
-    spec: {},
 }
 
 const mockSelfSubjectAccessRequest: SelfSubjectAccessReview = {

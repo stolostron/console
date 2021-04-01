@@ -3,6 +3,7 @@
 import { ConfigMap, ConfigMapApiVersion, ConfigMapKind } from '../resources/configmap'
 import { FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../resources/feature-gate'
 import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind } from '../resources/managed-cluster-set'
+import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../resources/multi-cluster-hub'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -31,6 +32,16 @@ export const mockManagedClusterSet: ManagedClusterSet = {
     kind: ManagedClusterSetKind,
     metadata: {
         name: 'test-cluster-set',
+    },
+    spec: {},
+}
+
+export const multiClusterHub: MultiClusterHub = {
+    apiVersion: MultiClusterHubApiVersion,
+    kind: MultiClusterHubKind,
+    metadata: {
+        name: 'multiclusterhub',
+        namespace: 'test-namespace',
     },
     spec: {},
 }

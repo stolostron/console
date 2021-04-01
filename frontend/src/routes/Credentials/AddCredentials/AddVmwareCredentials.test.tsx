@@ -16,21 +16,12 @@ import {
 import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState, multiClusterHubState } from '../../../atoms'
-import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
-}
-const multiClusterHub: MultiClusterHub = {
-    apiVersion: MultiClusterHubApiVersion,
-    kind: MultiClusterHubKind,
-    metadata: {
-        name: 'multiclusterhub',
-        namespace: 'test-namespace',
-    },
-    spec: {},
 }
 
 function EmptyPage() {
