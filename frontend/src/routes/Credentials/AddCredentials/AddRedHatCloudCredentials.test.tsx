@@ -81,7 +81,6 @@ describe('add connection page', () => {
             },
         }
 
-        // const listNock = nockList(multiClusterHub, [multiClusterHub])
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
@@ -94,9 +93,6 @@ describe('add connection page', () => {
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
         )
-        // container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        // await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
-        // getByText(providerConnection.metadata.namespace!).click()
 
         userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
@@ -104,7 +100,6 @@ describe('add connection page', () => {
         userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
         userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
         getByText('addConnection.addButton.label').click()
-        // await waitFor(() => expect(listNock.isDone()).toBeTruthy())
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })
