@@ -31,7 +31,8 @@ export interface IBulkActionModelProps<T = undefined> {
     processing: string
     resources: Array<T>
     close: () => void
-    description: string
+    onCancel?: () => void
+    description: string | React.ReactNode
     columns?: IAcmTableColumn<T>[]
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
@@ -210,7 +211,11 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       label={props.action}
                                       processingLabel={props.processing}
                                   />,
-                                  <Button variant="link" onClick={props.close} key="cancel-bulk-action">
+                                  <Button
+                                      variant="link"
+                                      onClick={props.onCancel ? props.onCancel : props.close}
+                                      key="cancel-bulk-action"
+                                  >
                                       {t('common:cancel')}
                                   </Button>,
                               ]}

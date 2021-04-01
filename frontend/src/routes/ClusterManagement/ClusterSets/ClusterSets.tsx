@@ -150,29 +150,18 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         header: t('table.name'),
                         sort: 'name',
                         search: 'name',
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const clusters =
-                                props.clusters?.filter(
-                                    (cluster) =>
-                                        cluster.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                                ) ?? []
-                            return (
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    {clusters.length > 0 ? (
-                                        <Link
-                                            to={NavigationPath.clusterSetDetails.replace(
-                                                ':id',
-                                                managedClusterSet.metadata.name as string
-                                            )}
-                                        >
-                                            {managedClusterSet.metadata.name}
-                                        </Link>
-                                    ) : (
-                                        managedClusterSet.metadata.name
+                        cell: (managedClusterSet: ManagedClusterSet) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.clusterSetOverview.replace(
+                                        ':id',
+                                        managedClusterSet.metadata.name as string
                                     )}
-                                </span>
-                            )
-                        },
+                                >
+                                    {managedClusterSet.metadata.name}
+                                </Link>
+                            </span>
+                        ),
                     },
                     {
                         header: t('table.clusters'),
