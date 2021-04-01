@@ -11,6 +11,7 @@ export enum NavigationPath {
     clusterSets = '/multicloud/cluster-sets',
     clusterSetDetails = '/multicloud/cluster-sets/:id',
     clusterSetOverview = '/multicloud/cluster-sets/:id/overview',
+    clusterSetManage = '/multicloud/cluster-sets/:id/manage-clusters',
     createClusterSet = '/multicloud/create-cluster-set',
     discoveredClusters = '/multicloud/discovered-clusters',
     createCluster = '/multicloud/create-cluster',
