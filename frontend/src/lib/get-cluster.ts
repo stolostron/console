@@ -1,23 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { getClusterDeployment, listClusterDeployments, ClusterDeployment } from '../resources/cluster-deployment'
-import {
-    getManagedClusterInfo,
-    listMCIs,
-    ManagedClusterInfo,
-    NodeInfo,
-    OpenShiftDistributionInfo,
-} from '../resources/managed-cluster-info'
-import { ManagedCluster, listManagedClusters, getManagedCluster } from '../resources/managed-cluster'
-import {
-    listCertificateSigningRequests,
-    CertificateSigningRequest,
-    CSR_CLUSTER_LABEL,
-} from '../resources/certificate-signing-requests'
-import { IRequestResult, ResourceError, ResourceErrorCode } from './resource-request'
+import { ClusterDeployment } from '../resources/cluster-deployment'
+import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
+import { ManagedCluster } from '../resources/managed-cluster'
+import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
+import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { getLatest } from './utils'
 import { Provider } from '@open-cluster-management/ui-components'
+import { AddonStatus } from './get-addons'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -36,12 +27,15 @@ export enum ClusterStatus {
     'hibernating' = 'hibernating',
     'stopping' = 'stopping',
     'resuming' = 'resuming',
+    'degraded' = 'degraded',
+    'unknown' = 'unknown',
 }
 
 export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
+    statusMessage: string | undefined
     provider: Provider | undefined
     distribution: DistributionInfo | undefined
     labels: Record<string, string> | undefined
@@ -77,63 +71,12 @@ export type Nodes = {
     nodeList: NodeInfo[]
 }
 
-export function getSingleCluster(
-    namespace: string,
-    name: string
-): IRequestResult<
-    PromiseSettledResult<ClusterDeployment | ManagedClusterInfo | CertificateSigningRequest[] | ManagedCluster>[]
-> {
-    const results = [
-        getClusterDeployment(namespace, name),
-        getManagedClusterInfo(namespace, name),
-        listCertificateSigningRequests(name),
-        getManagedCluster(name),
-    ]
-
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
-}
-
-export function getAllClusters(): IRequestResult<Cluster[]> {
-    const results = [listClusterDeployments(), listMCIs(), listCertificateSigningRequests(), listManagedClusters()]
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)).then((results) => {
-            const items = results.map((d, i) => {
-                if (d.status === 'fulfilled') {
-                    return d.value
-                } else {
-                    if (d.reason instanceof Error) {
-                        if (
-                            i === 2 &&
-                            d.reason instanceof ResourceError &&
-                            d.reason.code === ResourceErrorCode.Forbidden
-                        ) {
-                            // ignore forbidden csr error
-                        } else {
-                            throw d.reason
-                        }
-                    }
-                    return []
-                }
-            })
-            return mapClusters(
-                items[0] as ClusterDeployment[],
-                items[1] as ManagedClusterInfo[],
-                items[2] as CertificateSigningRequest[],
-                items[3] as ManagedCluster[]
-            )
-        }),
-        abort: () => results.forEach((result) => result.abort()),
-    }
-}
-
 export function mapClusters(
     clusterDeployments: ClusterDeployment[] = [],
     managedClusterInfos: ManagedClusterInfo[] = [],
     certificateSigningRequests: CertificateSigningRequest[] = [],
-    managedClusters: ManagedCluster[] = []
+    managedClusters: ManagedCluster[] = [],
+    managedClusterAddOns: ManagedClusterAddOn[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -147,7 +90,8 @@ export function mapClusters(
         const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
         const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
         const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
-        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster)
+        const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
+        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, addons)
     })
 }
 
@@ -155,12 +99,21 @@ export function getCluster(
     managedClusterInfo: ManagedClusterInfo | undefined,
     clusterDeployment: ClusterDeployment | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
-    managedCluster: ManagedCluster | undefined
+    managedCluster: ManagedCluster | undefined,
+    managedClusterAddOns: ManagedClusterAddOn[]
 ): Cluster {
+    const { status, statusMessage } = getClusterStatus(
+        clusterDeployment,
+        managedClusterInfo,
+        certificateSigningRequests,
+        managedCluster,
+        managedClusterAddOns
+    )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
-        status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
+        status,
+        statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
@@ -173,8 +126,8 @@ export function getCluster(
     }
 }
 
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
-    conditions.find((c) => c.type === condition)?.status === 'True'
+const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
+    conditions.find((c) => c.type === condition)?.status === (status ?? 'True')
 
 export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
     const isInstalled = clusterDeployment?.spec?.installed
@@ -264,11 +217,11 @@ export function getDistributionInfo(
     let displayVersion: string | undefined
 
     if (managedCluster) {
-        let k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
+        const k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
             (cc) => cc.name === 'kubeversion.open-cluster-management.io'
         )
         if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
-        let versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
+        const versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
         if (versionClaim) displayVersion = `OpenShift ${versionClaim.value}`
     }
 
@@ -310,7 +263,7 @@ export function getConsoleUrl(
     managedClusterInfo: ManagedClusterInfo | undefined,
     managedCluster: ManagedCluster | undefined
 ) {
-    let consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
+    const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
     )
     if (consoleUrlClaim) return consoleUrlClaim.value
@@ -344,8 +297,11 @@ export function getClusterStatus(
     clusterDeployment: ClusterDeployment | undefined,
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
-    managedCluster: ManagedCluster | undefined
+    managedCluster: ManagedCluster | undefined,
+    managedClusterAddOns: ManagedClusterAddOn[]
 ) {
+    let statusMessage: string | undefined
+
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
@@ -406,14 +362,14 @@ export function getClusterStatus(
 
     // if mc doesn't exist, default to cd status
     if (!managedClusterInfo && !managedCluster) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
 
         // return the cd status when a hibernation state is detected
     } else if ([ClusterStatus.hibernating, ClusterStatus.resuming, ClusterStatus.stopping].includes(cdStatus)) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     }
 
-    let mc = managedCluster ?? managedClusterInfo!
+    const mc = managedCluster ?? managedClusterInfo!
 
     // ManagedCluster status
     let mcStatus = ClusterStatus.pending
@@ -449,14 +405,26 @@ export function getClusterStatus(
                 activeCsr && !activeCsr?.status?.certificate ? ClusterStatus.needsapproval : ClusterStatus.pendingimport
         }
     } else {
-        mcStatus = clusterAvailable ? ClusterStatus.ready : ClusterStatus.offline
+        if (clusterAvailable) {
+            const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
+                checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
+            )
+            mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
+        } else {
+            const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
+            const managedClusterAvailableConditionMessage = mcConditions.find(
+                (c) => c.type === 'ManagedClusterConditionAvailable'
+            )
+            mcStatus = clusterUnavailable ? ClusterStatus.offline : ClusterStatus.unknown
+            statusMessage = managedClusterAvailableConditionMessage?.message
+        }
     }
 
     // if the ManagedCluster is in failed state because the registration controller is unavailable
     if (mcStatus === ClusterStatus.failed) {
         return clusterDeployment && cdStatus !== ClusterStatus.detached
-            ? cdStatus // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
-            : mcStatus
+            ? { status: cdStatus, statusMessage } // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
+            : { status: mcStatus, statusMessage }
 
         // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
         // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
@@ -466,8 +434,8 @@ export function getClusterStatus(
         clusterDeployment &&
         cdStatus !== ClusterStatus.detached
     ) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     } else {
-        return mcStatus
+        return { status: mcStatus, statusMessage }
     }
 }

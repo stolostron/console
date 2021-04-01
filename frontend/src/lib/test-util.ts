@@ -62,6 +62,20 @@ export async function typeByText(text: string, type: string, index?: number) {
     }
 }
 
+// By Placeholder text
+
+export async function typeByPlaceholderText(text: string, type: string, index?: number) {
+    if (index !== undefined) {
+        userEvent.type(screen.getAllByPlaceholderText(text)[index], type)
+    } else {
+        userEvent.type(screen.getByPlaceholderText(text), type)
+    }
+}
+
+export async function clickByPlaceholderText(text: string) {
+    userEvent.click(screen.getByPlaceholderText(text))
+}
+
 // By Role
 
 export async function waitForRole(text: string, multipleAllowed?: boolean) {
@@ -163,12 +177,12 @@ export async function clickByTestId(text: string, index?: number) {
     }
 }
 
-export async function typeByTestId(text: string, type: string, index?: number) {
-    await waitForInputByTestId(text, index)
+export async function typeByTestId(id: string, type: string, index?: number) {
+    await waitForInputByTestId(id, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByTestId(text)[index], type)
+        userEvent.type(screen.getAllByTestId(id)[index], type)
     } else {
-        userEvent.type(screen.getByTestId(text), type)
+        userEvent.type(screen.getByTestId(id), type)
     }
 }
 

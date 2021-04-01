@@ -2,8 +2,8 @@
 
 import {
     AcmAlert,
-    AcmFormProvider,
     AcmForm,
+    AcmFormProvider,
     AcmModal,
     AcmSubmit,
     AcmTable,
@@ -19,20 +19,20 @@ import {
     Progress,
     ProgressMeasureLocation,
 } from '@patternfly/react-core'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
 import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true
-    plural: string
-    singular: string
     action: string
+    title: string
     processing: string
     resources: Array<T>
     close: () => void
-    description: string
+    onCancel?: () => void
+    description: string | React.ReactNode
     columns?: IAcmTableColumn<T>[]
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
@@ -79,14 +79,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
 
     return (
         <AcmFormProvider>
-            <AcmModal
-                variant={ModalVariant.medium}
-                title={`${props.action} ${
-                    props.resources.length === 1 ? props.singular.toLowerCase() : props.plural.toLowerCase()
-                }`}
-                isOpen={true}
-                onClose={props.close}
-            >
+            <AcmModal variant={ModalVariant.medium} title={props.title} isOpen={true} onClose={props.close}>
                 <AcmForm style={{ gap: 0 }}>
                     {!errors ? (
                         <Fragment>
@@ -132,20 +125,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         </Fragment>
                     ) : (
                         <Fragment>
-                            <AcmAlert
-                                isInline
-                                noClose
-                                variant="danger"
-                                title={
-                                    errors.length === 1
-                                        ? `${t('common:there.was.an.error')
-                                              .replace('{0}', props.processing.toLowerCase())
-                                              .replace('{1}', props.singular.toLowerCase())}`
-                                        : `${t('common:there.were.errors')
-                                              .replace('{0}', props.processing.toLowerCase())
-                                              .replace('{1}', props.plural.toLowerCase())}`
-                                }
-                            />
+                            <AcmAlert isInline noClose variant="danger" title={t('common:there.were.errors')} />
                             {props.columns && props.keyFn && (
                                 <AcmTablePaginationContextProvider localStorageKey="model">
                                     <AcmTable<T>
@@ -231,7 +211,11 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                       label={props.action}
                                       processingLabel={props.processing}
                                   />,
-                                  <Button variant="link" onClick={props.close} key="cancel-bulk-action">
+                                  <Button
+                                      variant="link"
+                                      onClick={props.onCancel ? props.onCancel : props.close}
+                                      key="cancel-bulk-action"
+                                  >
                                       {t('common:cancel')}
                                   </Button>,
                               ]}

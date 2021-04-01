@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta } from '@kubernetes/client-node'
-import { createResource, listClusterResources } from '../lib/resource-request'
+import { createResource } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
@@ -44,12 +44,5 @@ export const createProject = (name: string | undefined) => {
         apiVersion: ProjectRequestApiVersion,
         kind: ProjectRequestKind,
         metadata: { name },
-    })
-}
-
-export function listProjects() {
-    return listClusterResources<Project>({
-        apiVersion: ProjectApiVersion,
-        kind: ProjectKind,
     })
 }

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_CLOUD_CONNECTIONS,
@@ -290,6 +289,10 @@ const controlDataBMC = [
         type: 'checkbox',
         name: 'creation.ocp.host.disable.certificate.verification',
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
+        hidden: (control, controlData) => {
+            const hosts = controlData.find(({ id }) => id === 'hosts')
+            return hosts.available.length === 0
+        },
         active: 'true',
         available: ['false', 'true'],
     },

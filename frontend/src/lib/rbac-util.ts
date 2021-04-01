@@ -5,26 +5,26 @@ import {
     createSubjectAccessReview,
     createSubjectAccessReviews,
 } from '../resources/self-subject-access-review'
-import { listProjects } from '../resources/project'
+import { Namespace } from '../resources/namespace'
+import { Cluster } from '../lib/get-cluster'
 import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
 
-export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]) {
+export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
     return new Promise<string[]>(async (resolve, reject) => {
         try {
-            const projects = await listProjects().promise
-            const namespaces: string[] = projects.map((project) => project.metadata.name!)
+            const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
-            if (namespaces.length === 0) {
+            if (namespaceList.length === 0) {
                 return resolve([])
             }
 
             if (await checkAdminAccess()) {
-                return resolve(namespaces)
+                return resolve(namespaceList)
             }
 
             const resourceList: Array<ResourceAttributes> = []
 
-            namespaces.forEach((namespace) => {
+            namespaceList.forEach((namespace) => {
                 resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
             })
 
@@ -48,6 +48,48 @@ export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]
     })
 }
 
+export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], clusters: Cluster[]) {
+    return new Promise<Cluster[]>(async (resolve, reject) => {
+        try {
+            const clusterList: string[] = clusters.map((cluster) => cluster.name!)
+
+            if (clusterList.length === 0) {
+                return resolve([])
+            }
+
+            if (await checkAdminAccess()) {
+                return resolve(clusters)
+            }
+
+            const resourceList: ResourceAttributes[] = []
+
+            clusterList.forEach((cluster) => {
+                resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, name: cluster })))
+            })
+
+            let authorizedClusterList: string[] = []
+            const promiseResult = createSubjectAccessReviews(resourceList)
+            await promiseResult.promise.then((results) => {
+                results.forEach((result) => {
+                    if (result.status === 'fulfilled') {
+                        if (result.value.status?.allowed) {
+                            authorizedClusterList.push(result.value.spec.resourceAttributes.name!)
+                        }
+                    }
+                })
+                // remove duplicates from filtered list
+                authorizedClusterList = Array.from(new Set(authorizedClusterList))
+            })
+            const authorizedClusters = authorizedClusterList.map((cluster) => {
+                return clusters.find((c) => c.name === cluster)!
+            })
+            return resolve(authorizedClusters)
+        } catch (err) {
+            return reject(err)
+        }
+    })
+}
+
 export async function checkAdminAccess() {
     try {
         const result = await createSubjectAccessReview({
@@ -63,17 +105,27 @@ export async function checkAdminAccess() {
 }
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
+type SubResource = 'join'
 
-export function rbacResource(verb: Verb, resource: IResource, namespace?: string, name?: string) {
-    let attributes = {
+export function rbacResource(
+    verb: Verb,
+    resource: IResource,
+    namespace?: string,
+    name?: string,
+    subresource?: SubResource
+) {
+    const attributes = {
         name: name ?? resource?.metadata?.name,
         namespace: namespace ?? resource?.metadata?.namespace,
         resource: getResourcePlural(resource),
+        subresource,
         verb,
         group: getResourceGroup(resource),
     }
     if (!attributes.name) delete attributes.name
     if (!attributes.namespace) delete attributes.namespace
+    if (!attributes.subresource) delete attributes.subresource
+
     return attributes
 }
 
@@ -85,8 +137,8 @@ export function rbacPatch(resource: IResource, namespace?: string, name?: string
     return rbacResource('patch', resource, namespace, name)
 }
 
-export function rbacCreate(resource: IResource, namespace?: string, name?: string) {
-    return rbacResource('create', resource, namespace, name)
+export function rbacCreate(resource: IResource, namespace?: string, name?: string, subresource?: SubResource) {
+    return rbacResource('create', resource, namespace, name, subresource)
 }
 
 export function rbacDelete(resource: IResource, namespace?: string, name?: string) {
@@ -97,7 +149,7 @@ export function rbacUpdate(resource: IResource, namespace?: string, name?: strin
     return rbacResource('update', resource, namespace, name)
 }
 
-export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string) {
+export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string, subresource?: SubResource) {
     const resourceAttributes = rbacResource(verb, resource, namespace, name)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview

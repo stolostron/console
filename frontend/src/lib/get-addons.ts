@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
-import { ManagedClusterAddOn, listManagedClusterAddOns } from '../resources/managed-cluster-add-on'
-import { IRequestResult } from './resource-request'
+import { ClusterManagementAddOn } from '../resources/cluster-management-add-on'
+import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
 
 export type Addon = {
     name: string
@@ -24,16 +23,6 @@ export type LaunchLink = {
     href: string
 }
 
-export function getAllAddons(
-    cluster: string
-): IRequestResult<PromiseSettledResult<ClusterManagementAddOn[] | ManagedClusterAddOn[]>[]> {
-    const results = [listClusterManagementAddOns(), listManagedClusterAddOns(cluster)]
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
-}
-
 export function mapAddons(
     clusterManagementAddons: ClusterManagementAddOn[],
     managedClusterAddons: ManagedClusterAddOn[] = []
@@ -47,7 +36,7 @@ export function mapAddons(
     return addons
 }
 
-function getDisplayStatus(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[]): string {
+function getDisplayStatus(cma: ClusterManagementAddOn | undefined, mcas: ManagedClusterAddOn[]): string {
     const mcaStatus = mcas?.find((mca) => mca.metadata.name === cma.metadata.name)
     if (mcaStatus?.status?.conditions === undefined) {
         return AddonStatus.Disabled
@@ -69,6 +58,9 @@ function getDisplayStatus(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn
     )
     if (managedClusterAddOnConditionAvailable?.status === 'True') {
         return AddonStatus.Available
+    }
+    if (managedClusterAddOnConditionAvailable?.status === 'Unknown') {
+        return AddonStatus.Unknown
     }
     if (
         managedClusterAddOnConditionAvailable?.status === 'False' ||
@@ -102,6 +94,9 @@ function getDisplayMessage(cma: ClusterManagementAddOn, mcas: ManagedClusterAddO
         (condition) => condition.type === AddonStatus.Available
     )
     if (managedClusterAddOnConditionAvailable?.status === 'True') {
+        return managedClusterAddOnConditionAvailable.message
+    }
+    if (managedClusterAddOnConditionAvailable?.status === 'Unknown') {
         return managedClusterAddOnConditionAvailable.message
     }
     if (

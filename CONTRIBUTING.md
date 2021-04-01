@@ -54,6 +54,7 @@ npm run check
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 This will run the code locally:
 #### Start local version of console
+*WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context.*
 ```bash
 npm run setup
 npm start

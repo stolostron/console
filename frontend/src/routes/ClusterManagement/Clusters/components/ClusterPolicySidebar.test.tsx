@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, act } from '@testing-library/react'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { PolicyReport } from '../../../../resources/policy-report'
@@ -68,6 +67,9 @@ describe('ClusterPolicySidebar', () => {
             // wait for policy reports to be displayed and click the first report in table
             await waitForText('policyreport testing risk 1')
             await clickByText('policyreport testing risk 1')
+
+            // wait for drilldown risk subdetail component
+            await waitForText('policy.report.low')
 
             // Wait for the policyreport remediation text to be displayed
             await waitForText('policy.report.flyout.details.tab.remediation')

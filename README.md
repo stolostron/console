@@ -2,11 +2,26 @@
 
 # @open-cluster-management/console
 
-[![Build Status](https://travis-ci.com/open-cluster-management/console.svg?token=APpLzibLo9i2xU1nq9kC&branch=master)](https://travis-ci.com/open-cluster-management/console)
+[![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Prow Build](https://prow.ci.openshift.org/badge.svg?jobs=branch-ci-open-cluster-management-console-main-images)](https://prow.ci.openshift.org/?job=branch-ci-open-cluster-management-console-main-images)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=coverage&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=sqale_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=security_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=vulnerabilities&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
+
+
+## What is console?
+
+The console provides a user interface for cluster related items such as:
+- Credentials management (For example, Cloud Providers)
+- Cluster management
+  - Creating
+  - Importing
+  - Upgrading
+  - Detaching
+  - Destroying
+
+Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
@@ -89,3 +104,6 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 2. Backend redirects to the cluster `/authorize` endpoint.
 3. Cluster OAuth redirects back to the backend `/login/callback` endpoint.
 4. Backend redirects to the frontend and sets the `acm-access-token-cookie`.
+
+## References
+`console` is part of the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)

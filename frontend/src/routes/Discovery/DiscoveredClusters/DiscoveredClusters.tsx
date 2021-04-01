@@ -2,13 +2,13 @@
 
 import {
     AcmAlertContext,
-    AcmAlertGroup,
     AcmButton,
     AcmEmptyState,
+    AcmPageContent,
     AcmTable,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Page, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
@@ -156,11 +156,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
 
 export default function DiscoveredClustersPage() {
     return (
-        <Page>
-            <PageSection variant="light">
+        <AcmPageContent id="discovered-clusters">
+            <PageSection variant="light" isFilled={true}>
                 <DiscoveredClustersPageContent />
             </PageSection>
-        </Page>
+        </AcmPageContent>
     )
 }
 
@@ -254,7 +254,6 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
 
     return (
         <Fragment>
-            <AcmAlertGroup />
             <ConfirmModal {...modalProps} />
             <AcmTable<DiscoveredCluster>
                 plural="discovered clusters"

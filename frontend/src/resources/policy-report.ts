@@ -3,9 +3,15 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist'
 import { listNamespacedResources } from '../lib/resource-request'
 
+export const PolicyReportApiVersion = 'wgpolicyk8s.io/v1alpha1'
+export type PolicyReportApiVersionType = 'wgpolicyk8s.io/v1alpha1'
+
+export const PolicyReportKind = 'PolicyReport'
+export type PolicyReportKindType = 'PolicyReport'
+
 export interface PolicyReport {
-    apiVersion: string
-    kind: string
+    apiVersion: PolicyReportApiVersionType
+    kind: PolicyReportKindType
     metadata: V1ObjectMeta
     results: [
         {
@@ -26,8 +32,8 @@ export interface PolicyReport {
 
 export function listNamespacedPolicyReports(namespace: string) {
     return listNamespacedResources<PolicyReport>({
-        apiVersion: 'wgpolicyk8s.io/v1alpha1',
-        kind: 'PolicyReport',
+        apiVersion: PolicyReportApiVersion,
+        kind: PolicyReportKind,
         metadata: { namespace },
     })
 }

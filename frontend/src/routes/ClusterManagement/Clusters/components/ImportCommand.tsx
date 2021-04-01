@@ -14,9 +14,9 @@ import {
     TabTitleText,
     Tooltip,
 } from '@patternfly/react-core'
-import i18next from 'i18next'
 import { CopyIcon } from '@patternfly/react-icons'
-import React, { useContext, useEffect, useState } from 'react'
+import i18next from 'i18next'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
@@ -104,7 +104,7 @@ export function ImportCommand(props: ImportCommandProps) {
     }
 
     return (
-        <React.Fragment>
+        <Fragment>
             <Card style={{ marginBottom: '24px' }}>
                 <Tabs activeKey={'first'}>
                     <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
@@ -151,7 +151,7 @@ export function ImportCommand(props: ImportCommandProps) {
                 </Tabs>
             </Card>
             {props.children}
-        </React.Fragment>
+        </Fragment>
     )
 }
 
@@ -165,7 +165,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
                 const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
                 const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
                 resolve(
-                    `echo ${klusterletCRD} | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo ${importYaml} | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
+                    `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
                 )
             })
             .catch((err) => {

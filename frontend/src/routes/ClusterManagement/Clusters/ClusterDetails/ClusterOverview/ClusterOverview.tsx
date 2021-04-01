@@ -6,10 +6,12 @@ import {
     AcmInlineCopy,
     AcmInlineProvider,
     AcmLabels,
+    AcmPageContent,
+    AcmAlert,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext } from 'react'
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
@@ -29,14 +31,27 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
     return (
-        <Fragment>
+        <AcmPageContent id="overview">
             <PageSection>
+                {cluster?.statusMessage && (
+                    <AcmAlert
+                        isInline
+                        title={t(`status.${cluster?.status}.alert.title`)}
+                        message={cluster?.statusMessage}
+                        variant={cluster.status === ClusterStatus.offline ? 'danger' : 'info'}
+                        noClose
+                        style={{ marginBottom: '12px' }}
+                    />
+                )}
                 <HiveNotification />
                 <ImportCommandContainer />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
-                        { key: t('table.status'), value: cluster?.status && <StatusField cluster={cluster} /> },
+                        {
+                            key: t('table.status'),
+                            value: cluster?.status && <StatusField cluster={cluster} />,
+                        },
                         {
                             key: t('table.provider'),
                             value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
@@ -113,6 +128,6 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 />
                 {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
             </PageSection>
-        </Fragment>
+        </AcmPageContent>
     )
 }

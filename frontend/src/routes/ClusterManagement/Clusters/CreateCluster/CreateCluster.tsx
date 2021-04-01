@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
@@ -12,6 +12,7 @@ import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { DOC_LINKS } from '../../../../lib/doc-util'
+import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
 import './style.css'
 
 // template/data
@@ -79,16 +80,17 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: any[]) => {
+    const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
+            const { createResources } = resourceJSON
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            const { status, messages } = await createCluster(resourceJSON)
+            const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })
 
             // redirect to created cluster
             if (status === 'DONE') {
                 setTimeout(() => {
-                    const map = keyBy(resourceJSON, 'kind')
+                    const map = keyBy(createResources, 'kind')
                     const clusterName = get(map, 'ClusterDeployment.metadata.name')
                     history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
                 }, 2000)
@@ -130,6 +132,19 @@ export default function CreateClusterPage() {
               fetchData: { requestedUIDs },
           }
         : null
+
+    const managedClusterSets = useCanJoinClusterSets()
+    for (let i = 0; i < controlData.length; i++) {
+        if (controlData[i].id === 'clusterSet' && controlData[i].available) {
+            controlData[i].available = managedClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+            break
+        }
+    }
+
+    // cluster set dropdown won't update without this
+    if (managedClusterSets === undefined) {
+        return null
+    }
 
     return (
         <AcmPage>

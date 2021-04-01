@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
-import { getResource, listNamespacedResources, listResources } from '../lib/resource-request'
+import { listResources } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
@@ -75,14 +75,6 @@ export interface ManagedClusterInfo extends IResource {
     }
 }
 
-export function listManagedClusterInfos(namespace: string) {
-    return listNamespacedResources<ManagedClusterInfo>({
-        apiVersion: ManagedClusterInfoApiVersion,
-        kind: ManagedClusterInfoKind,
-        metadata: { namespace },
-    })
-}
-
 export function listMCIs() {
     return listResources<ManagedClusterInfo>(
         {
@@ -92,12 +84,4 @@ export function listMCIs() {
         undefined,
         { managedNamespacesOnly: '' }
     )
-}
-
-export function getManagedClusterInfo(namespace: string, name: string) {
-    return getResource<ManagedClusterInfo>({
-        apiVersion: ManagedClusterInfoApiVersion,
-        kind: ManagedClusterInfoKind,
-        metadata: { namespace, name },
-    })
 }

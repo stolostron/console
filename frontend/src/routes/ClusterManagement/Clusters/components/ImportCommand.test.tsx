@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState } from 'react'
-import { render, waitFor, screen } from '@testing-library/react'
-import { ImportCommandContainer } from './ImportCommand'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
+import { render, screen, waitFor } from '@testing-library/react'
+import { useState } from 'react'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { mockBadRequestStatus, nockGet } from '../../../../lib/nock-util'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ImportCommandContainer } from './ImportCommand'
 
 const mockSecretResponse: Secret = {
     apiVersion: SecretApiVersion,

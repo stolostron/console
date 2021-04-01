@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { createResource, listResources, getResource } from '../lib/resource-request'
+import { createResource } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterApiVersion = 'cluster.open-cluster-management.io/v1'
@@ -13,13 +13,6 @@ export type ManagedClusterKindType = 'ManagedCluster'
 export const ManagedClusterDefinition: IResourceDefinition = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
-}
-
-export interface ClusterLabels {
-    cloud: string
-    vendor: string
-    name: string
-    [key: string]: string
 }
 
 export interface ManagedCluster extends IResource {
@@ -47,26 +40,14 @@ export interface ManagedCluster extends IResource {
     }
 }
 
-export const createManagedCluster = (data: { clusterName: string | undefined; clusterLabels: ClusterLabels }) => {
+export const createManagedCluster = (data: {
+    clusterName: string | undefined
+    clusterLabels: Record<string, string>
+}) => {
     return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
         metadata: { name: data.clusterName, labels: data.clusterLabels },
         spec: { hubAcceptsClient: true },
-    })
-}
-
-export function listManagedClusters() {
-    return listResources<ManagedCluster>({
-        apiVersion: ManagedClusterApiVersion,
-        kind: ManagedClusterKind,
-    })
-}
-
-export function getManagedCluster(name: string) {
-    return getResource<ManagedCluster>({
-        apiVersion: ManagedClusterApiVersion,
-        kind: ManagedClusterKind,
-        metadata: { name },
     })
 }

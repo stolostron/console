@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertContext,
     AcmAlertGroup,
     AcmForm,
     AcmLabelsInput,
     AcmSubmit,
-    AcmAlertContext,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button } from '@patternfly/react-core'
-import React, { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../components/ErrorPage'
 import { Cluster } from '../../../../lib/get-cluster'
@@ -40,9 +40,7 @@ export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
                         onChange={(labels) => setLabels(labels!)}
                         placeholder={t('labels.edit.placeholder')}
                     />
-                    <div style={{ marginTop: '24px' }}>
-                        <AcmAlertGroup isInline canClose />
-                    </div>
+                    <AcmAlertGroup isInline canClose padTop />
                     <ActionGroup>
                         <AcmSubmit
                             id="add-labels"
