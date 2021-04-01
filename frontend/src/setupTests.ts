@@ -32,6 +32,7 @@ declare global {
         interface Matchers<R> {
             hasMissingMocks(): CustomMatcherResult
             hasUnusedMocks(): CustomMatcherResult
+            hasNoConsoleErrors(): CustomMatcherResult
         }
     }
 }
@@ -71,6 +72,15 @@ expect.extend({
             msgs.push("\n(If there was no timeout, some mocks may no longer be used)")
             msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         }
+        const message: () => string = () => msgs.join('\n')
+        return {
+            message,
+            pass,
+        }
+    },
+    hasNoConsoleErrors(errors) {
+        const msgs: string[] = errors
+        const pass: boolean = errors.length === 0
         const message: () => string = () => msgs.join('\n')
         return {
             message,
