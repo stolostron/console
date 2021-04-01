@@ -15,8 +15,8 @@ import {
 import AddCredentialPage from './AddCredentials'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, featureGatesState } from '../../../atoms'
-import { mockDiscoveryFeatureGate } from '../../../lib/test-metadata'
+import { namespacesState, featureGatesState, multiClusterHubState } from '../../../atoms'
+import { mockDiscoveryFeatureGate, multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -31,6 +31,7 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
             }}
         >
@@ -83,9 +84,6 @@ describe('add connection page', () => {
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
         )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(providerConnection.metadata.namespace!).click()
 
         userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
         userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)

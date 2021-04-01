@@ -59,6 +59,7 @@ export function startWatching(): void {
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
+    watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
         labelSelector: {
             'open-cluster-management.io/cluster-name': '',

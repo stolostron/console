@@ -22,7 +22,7 @@ import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, namespacesState } from '../../../atoms'
+import { featureGatesState, namespacesState, multiClusterHubState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -237,16 +237,12 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     const history = useHistory()
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
-
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
-    // useEffect(() => {
-    //     setProviderConnection(JSON.parse(JSON.stringify(props.providerConnection)))
-    // }, [props.providerConnection])
+    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
@@ -271,6 +267,12 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     updateProviderConnection((providerConnection) => {
                         setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                     })
+
+                    if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
+                        updateProviderConnection((providerConnection) => {
+                            providerConnection.metadata.namespace = multiClusterHubs[0].metadata.namespace
+                        })
+                    }
                 }}
                 isDisabled={isEditing()}
                 isRequired
@@ -278,6 +280,12 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 {providers
                     .filter((provider) => {
                         if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
+                            return false // skip
+                        }
+                        if (
+                            !props.projects.includes(multiClusterHubs[0].metadata.namespace) &&
+                            provider.key === ProviderID.CRH
+                        ) {
                             return false // skip
                         }
                         return true
@@ -342,7 +350,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     })
                 }}
                 isRequired
-                isDisabled={isEditing()}
+                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (
