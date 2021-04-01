@@ -51,7 +51,6 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
-// import { listMultiClusterHubs } from '../../../resources/multi-cluster-hub'
 
 export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
