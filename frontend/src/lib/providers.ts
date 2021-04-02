@@ -8,7 +8,7 @@ export enum ProviderID {
     BMC = 'bmc',
     CRH = 'crh',
     UKN = 'unknown',
-    ANS = 'ans'
+    ANS = 'ans',
 }
 
 interface Provider {
