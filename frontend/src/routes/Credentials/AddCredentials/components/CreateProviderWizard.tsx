@@ -36,7 +36,7 @@ import { ProviderID, providers } from '../../../../lib/providers'
 import { FeatureGate } from '../../../../resources/feature-gate'
 import { validateKubernetesDnsName } from '../../../../lib/validation'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, namespacesState, multiClusterHubState } from '../../../../atoms'
+import { featureGatesState, namespacesState, multiClusterHubState } from '../../../atoms'
 import { Namespace } from '../../../../resources/namespace'
 import { IRequestResult } from '../../../../lib/resource-request'
 import {
@@ -167,7 +167,7 @@ export function CreateProviderWizard(props: {
         console.log('step: ', step)
         setCurrentStep(step)
         // alter next step if provider connection is selected
-        if (steps.length == step) {
+        if (steps.length === step) {
             setNextButtonName('Save')
         }
 
@@ -383,4 +383,3 @@ function createAnsibleCredential(ansibleSecret: AnsibleTowerSecret) {
     const result = createAnsibleTowerSecret(ansibleSecret)
     return result.promise
 }
-
