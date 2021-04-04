@@ -22,7 +22,7 @@ import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, namespacesState } from '../../../atoms'
+import { featureGatesState, namespacesState, multiClusterHubState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -238,10 +238,8 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     const history = useHistory()
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-
     const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
-
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
@@ -253,12 +251,19 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
     //     update(copy)
     //     setProviderConnection(copy)
     // }
+    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
+    function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
+        const copy = { ...providerConnection }
+        update(copy)
+        setProviderConnection(copy)
+    }
 
     // const classes = useStyles()
 
     return (
         <CreateProviderWizard
             providerConnection={props.providerConnection}
+            setProviderConnection={setProviderConnection}
             projects={props.projects}
             discoveryFeatureGate={discoveryFeatureGate}
         />

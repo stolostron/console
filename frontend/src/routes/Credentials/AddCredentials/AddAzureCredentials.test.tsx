@@ -15,14 +15,14 @@ import {
 import AddCredentialPage from './AddCredentials'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
 }
-
 let location: Location
 
 function TestAddConnectionPage() {
@@ -30,6 +30,7 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
             <MemoryRouter>

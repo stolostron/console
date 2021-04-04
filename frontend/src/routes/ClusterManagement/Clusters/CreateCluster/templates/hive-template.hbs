@@ -16,6 +16,9 @@ metadata:
     region: '{{{region}}}'  ##region
 {{/if}}
     vendor: '{{distribution}}'
+{{#if clusterSet}}
+    cluster.open-cluster-management.io/clusterSet: {{{clusterSet}}}
+{{/if}}
 {{#if_eq infrastructure 'BMC'}}
   annotations:
     hive.openshift.io/try-install-once: "true"
