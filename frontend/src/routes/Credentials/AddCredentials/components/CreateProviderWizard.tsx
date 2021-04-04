@@ -1,81 +1,140 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { makeStyles } from '@material-ui/styles'
-import { Form, PageSection, SelectOption, Title, Wizard, WizardStep } from '@patternfly/react-core'
+import {
+    Button,
+    Form,
+    Grid,
+    GridItem,
+    PageSection,
+    SelectOption,
+    Title,
+    Wizard,
+    WizardStep,
+} from '@patternfly/react-core'
 import {
     AcmForm,
     AcmInlineProvider,
     AcmLabelsInput,
     AcmSelect,
     AcmTextInput,
+    AcmTile,
+    AcmIcon,
+    AcmIconVariant,
     Provider,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
-    getProviderConnectionProviderID,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-    setProviderConnectionProviderID,
 } from '../../../../resources/provider-connection'
 import { ProviderID, providers } from '../../../../lib/providers'
 import { FeatureGate } from '../../../../resources/feature-gate'
 import { validateKubernetesDnsName } from '../../../../lib/validation'
+import { useRecoilState } from 'recoil'
+import { featureGatesState, namespacesState, multiClusterHubState } from '../../../../atoms'
+import { Namespace } from '../../../../resources/namespace'
+import { IRequestResult } from '../../../../lib/resource-request'
+import {
+    AnsibleTowerSecret,
+    AnsibleTowerSecretApiVersion,
+    AnsibleTowerSecretKind,
+    createAnsibleTowerSecret,
+} from '../../../../resources/ansible-tower-secret'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
 
 export function CreateProviderWizard(props: {
     providerConnection: ProviderConnection
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
+    setProviderConnection: Function
 }) {
-    const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
-    const [steps, setSteps] = useState<WizardStep[]>([
-        {
-            name: 'Basic Information',
-            component: (
-                <CreateProviderInformationStep
-                    providerConnection={props.providerConnection}
-                    projects={props.projects}
-                    discoveryFeatureGate={props.discoveryFeatureGate}
-                />
-            ),
-        },
-        // { name: 'Cloud provider', component: <CreateClusterWizardProviderStep /> },
-        // {
-        //     name: 'Node pools',
-        //     steps: [
-        //         { name: 'Master pool', component: <CreateClusterWizardNodePoolStep /> },
-        //         { name: 'Worker pool 1', component: <CreateClusterWizardNodePoolStep /> },
-        //     ],
-        // },
-        // { name: 'Networking', component: <CreateClusterWizardNetworkingStep /> },
-        // { name: 'Review', component: <CreateClusterWizardReviewStep />, nextButtonText: 'Create' },
-    ])
-    return (
-        <PageSection variant="light" type="wizard" isFilled>
-            <Wizard steps={steps} height={'1000'} />
-        </PageSection>
-    )
-}
+    //const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
+    const [currentStep, setCurrentStep] = useState(1)
+    const [nextButtonName, setNextButtonName] = useState('Next')
+    const [selectedCred, setSelectedCred] = useState('ans')
+    const [secretName, setSecretName] = useState('')
+    const [secretNamespace, setSecretNamespace] = useState('')
 
-export function CreateProviderInformationStep(props: {
-    providerConnection: ProviderConnection
-    projects: string[]
-    discoveryFeatureGate: FeatureGate | undefined
-}) {
-    const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
-        JSON.parse(JSON.stringify(props.providerConnection))
-    )
-    const useStyles = makeStyles({
-        providerSelect: {
-            '& .pf-c-select__toggle-text': {
-                padding: '4px 0',
-            },
+    const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
+        apiVersion: AnsibleTowerSecretApiVersion,
+        kind: AnsibleTowerSecretKind,
+        metadata: {
+            name: '',
+            namespace: '',
+        },
+        spec: {
+            host: '',
+            token: '',
         },
     })
-    const classes = useStyles()
+
+    useEffect(() => {
+        console.log('secret update: ', ansibleSecret)
+    }, [ansibleSecret])
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
+        apiVersion: ProviderConnectionApiVersion,
+        kind: ProviderConnectionKind,
+        metadata: {
+            name: '',
+            namespace: '',
+        },
+        spec: {
+            awsAccessKeyID: '',
+            awsSecretAccessKeyID: '',
+
+            baseDomainResourceGroupName: '',
+            clientId: '',
+            clientSecret: '',
+            subscriptionId: '',
+            tenantId: '',
+
+            gcProjectID: '',
+            gcServiceAccountKey: '',
+
+            username: '',
+            password: '',
+            vcenter: '',
+            cacertificate: '',
+            vmClusterName: '',
+            datacenter: '',
+            datastore: '',
+
+            libvirtURI: '',
+            sshKnownHosts: [''],
+            imageMirror: '',
+            bootstrapOSImage: '',
+            clusterOSImage: '',
+            additionalTrustBundle: '',
+
+            baseDomain: '',
+            pullSecret: '',
+            sshPrivatekey: '',
+            sshPublickey: '',
+
+            ocmAPIToken: '',
+        },
+    })
+
+    const [informationStep, setInformationStep] = useState<JSX.Element>(
+        <AnsibleTowerInformationStep
+            providerConnection={props.providerConnection}
+            projects={props.projects}
+            ansibleSecret={ansibleSecret}
+            setAnsibleSecret={setAnsibleSecret}
+        />
+    )
+
+    function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
+        const copy = { ...ansibleSecret }
+        update(copy)
+        setAnsibleSecret(copy)
+    }
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
@@ -83,100 +142,165 @@ export function CreateProviderInformationStep(props: {
         setProviderConnection(copy)
     }
 
-    const isEditing = () => props.providerConnection.metadata.name !== ''
+    const [steps, setSteps] = useState<WizardStep[]>([
+        {
+            name: 'Basic Information',
+            component: (
+                <CredentialTypeStep
+                    projects={props.projects}
+                    providerConnection={props.providerConnection}
+                    ansibleSecret={ansibleSecret}
+                    setAnsibleSecret={setAnsibleSecret}
+                />
+            ),
+        },
+        {
+            name: 'Details',
+            component: informationStep,
+        },
+    ])
+
+    const history = useHistory()
+
+    function onNext() {
+        const step = currentStep + 1
+        console.log('step: ', step)
+        setCurrentStep(step)
+        // alter next step if provider connection is selected
+        if (steps.length == step) {
+            setNextButtonName('Save')
+        }
+
+        // console.log('printing selected cred', selectedCred)
+    }
+
+    function onBack() {
+        const step = currentStep - 1
+        setCurrentStep(step)
+        console.log('checking back ansibleSecret: ', ansibleSecret)
+        // alter next step if provider connection is selected
+        if (step === 2) {
+            setNextButtonName('Save')
+        } else {
+            setNextButtonName('Next')
+        }
+    }
+
+    function onSave() {
+        console.log('trying to create secret')
+        //logic for secret creation and page redirect
+        createAnsibleCredential(ansibleSecret)
+            .then(() => {
+                //history.push(NavigationPath.credentials)
+            })
+            .catch((err) => {
+                /* istanbul ignore else */
+                if (err instanceof Error) {
+                    console.log(err)
+                    // alertContext.addAlert({
+                    //     type: 'danger',
+                    //     title: t('common:request.failed'),
+                    //     message: err.message,
+                    // })
+                }
+            })
+    }
+
+    return (
+        <PageSection variant="light" type="wizard" isFilled>
+            <Wizard
+                nextButtonText={nextButtonName}
+                steps={steps}
+                height={'1000'}
+                onNext={onNext}
+                onBack={onBack}
+                onSave={onSave}
+            />
+        </PageSection>
+    )
+}
+
+function CredentialTypeStep(props: {
+    projects: string[]
+    providerConnection: ProviderConnection
+    ansibleSecret: AnsibleTowerSecret
+    setAnsibleSecret: Function
+}) {
+    const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
+
+    const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
+
+    function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
+        const copy = { ...ansibleSecret }
+        update(copy)
+        setAnsibleSecret(copy)
+        props.setAnsibleSecret(copy)
+    }
 
     return (
         <AcmForm>
             <Title headingLevel="h4" size="xl">
-                Select a provider and enter basic information
+                Select the credential type and enter basic information
             </Title>
-            <Title headingLevel="h2" size="xl">
-                Select a provider and enter basic information
+            <Title headingLevel="h6" size="md">
+                Credential types*
             </Title>
-            <AcmSelect
-                className={classes.providerSelect}
-                id="providerName"
-                label={t('addConnection.providerName.label')}
-                placeholder={t('addConnection.providerName.placeholder')}
-                labelHelp={t('addConnection.providerName.labelHelp')}
-                value={getProviderConnectionProviderID(providerConnection)}
-                onChange={(providerID) => {
-                    updateProviderConnection((providerConnection) => {
-                        setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
-                    })
-                }}
-                isDisabled={isEditing()}
-                isRequired
-            >
-                {providers
-                    .filter((provider) => {
-                        if (!props.discoveryFeatureGate && provider.key === ProviderID.CRH) {
-                            return false // skip
-                        }
-                        return true
-                    })
-                    .map((provider) => {
-                        let mappedProvider
-                        switch (provider.key) {
-                            case ProviderID.GCP:
-                                mappedProvider = Provider.gcp
-                                break
-                            case ProviderID.AWS:
-                                mappedProvider = Provider.aws
-                                break
-                            case ProviderID.AZR:
-                                mappedProvider = Provider.azure
-                                break
-                            case ProviderID.VMW:
-                                mappedProvider = Provider.vmware
-                                break
-                            case ProviderID.BMC:
-                                mappedProvider = Provider.baremetal
-                                break
-                            case ProviderID.CRH:
-                                mappedProvider = Provider.redhatcloud
-                                break
-                            case ProviderID.UKN:
-                            default:
-                                mappedProvider = Provider.other
-                        }
-                        return (
-                            <SelectOption key={provider.key} value={provider.key}>
-                                {/* {provider.name} */}
-                                <AcmInlineProvider provider={mappedProvider} />
-                            </SelectOption>
-                        )
-                    })}
-            </AcmSelect>
+            <Grid span={1} md={2} hasGutter={true}>
+                <GridItem md={2}>
+                    <AcmTile
+                        title="Ansible Tower"
+                        isStacked={true}
+                        // onClick={() => {
+                        //     setSelectedCred('ans')
+                        //     console.log('testing  conditional: ', selectedCred === 'ans')
+                        // }}
+                        // isSelected={selectedCred === 'ans'}
+                    >
+                        {/* <div>
+                            <AcmIcon icon={AcmIconVariant.cloud}></AcmIcon>
+                        </div> */}
+                    </AcmTile>
+                </GridItem>
+                <GridItem>
+                    <AcmTile
+                        title="Infrastructure Provider"
+                        isStacked={true}
+                        // onClick={() => {
+                        //     setSelectedCred('prov')
+                        //     console.log('testing  conditional: ', selectedCred === 'prov')
+                        // }}
+                        // isSelected={selectedCred === 'prov'}
+                    >
+                        {/* <div>
+                            <AcmIcon icon={AcmIconVariant.cloud}></AcmIcon>
+                        </div> */}
+                    </AcmTile>
+                </GridItem>
+            </Grid>
             <AcmTextInput
                 id="connectionName"
                 label={t('addConnection.connectionName.label')}
                 placeholder={t('addConnection.connectionName.placeholder')}
                 labelHelp={t('addConnection.connectionName.labelHelp')}
-                value={providerConnection.metadata.name}
+                value={ansibleSecret.metadata.name}
                 onChange={(name) => {
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.metadata.name = name
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.name = name
                     })
+                    console.log('checking name: ', name)
                 }}
-                validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
-                isRequired
-                isDisabled={isEditing()}
             />
             <AcmSelect
                 id="namespaceName"
                 label={t('addConnection.namespaceName.label')}
                 placeholder={t('addConnection.namespaceName.placeholder')}
                 labelHelp={t('addConnection.namespaceName.labelHelp')}
-                value={providerConnection.metadata.namespace}
+                value={ansibleSecret.metadata.namespace}
                 onChange={(namespace) => {
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.metadata.namespace = namespace
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.namespace = namespace
                     })
                 }}
-                isRequired
-                isDisabled={isEditing()}
-                variant="typeahead"
             >
                 {props.projects.map((project) => (
                     <SelectOption key={project} value={project}>
@@ -187,3 +311,76 @@ export function CreateProviderInformationStep(props: {
         </AcmForm>
     )
 }
+
+function AnsibleTowerInformationStep(props: {
+    providerConnection: ProviderConnection
+    projects: string[]
+    ansibleSecret: AnsibleTowerSecret
+    setAnsibleSecret: Function
+}) {
+    const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
+    function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
+        const copy = { ...ansibleSecret }
+        update(copy)
+        setAnsibleSecret(copy)
+        props.setAnsibleSecret(copy)
+    }
+
+    const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
+    return (
+        <AcmForm>
+            <Title headingLevel="h4" size="xl">
+                Enter Credential Information
+            </Title>
+            <AcmTextInput
+                id="ansibleSecretName"
+                label={t('addConnection.ansible.secretname.label')}
+                placeholder={t('addConnection.ansible.secretname.placeholder')}
+                labelHelp={t('')}
+                value={props.ansibleSecret.metadata.name}
+                onChange={(name) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.name = name
+                    })
+                }}
+                // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
+                // isRequired
+                // isDisabled={isEditing()}
+            />
+            <AcmTextInput
+                id="ansibleHostName"
+                label={t('addConnection.ansible.host.label')}
+                placeholder={t('addConnection.ansible.host.placeholder')}
+                labelHelp={t('')}
+                value={props.ansibleSecret.spec!.host}
+                onChange={(host) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.spec!.host = host
+                    })
+                }}
+                // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
+                // isRequired
+            />
+            <AcmTextInput
+                id="ansibleToken"
+                label={t('addConnection.ansible.token.label')}
+                placeholder={t('addConnection.ansible.token.placeholder')}
+                labelHelp={t('')}
+                value={props.ansibleSecret.spec!.token}
+                onChange={(token) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.spec!.token = token
+                    })
+                }}
+                validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
+                isRequired
+            />
+        </AcmForm>
+    )
+}
+
+function createAnsibleCredential(ansibleSecret: AnsibleTowerSecret) {
+    const result = createAnsibleTowerSecret(ansibleSecret)
+    return result.promise
+}
+
