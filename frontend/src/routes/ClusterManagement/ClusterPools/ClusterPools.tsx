@@ -47,7 +47,7 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
     return <AcmInlineProvider provider={provider} />
 }
 
-export function ClusterPoolsTable(props: { setActiveTable?: (table: string) => void }) {
+export function ClusterPoolsTable() {
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
     const { t } = useTranslation(['cluster'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
@@ -218,18 +218,6 @@ export function ClusterPoolsTable(props: { setActiveTable?: (table: string) => v
                         //     </AcmButton>
                         // }
                     />
-                }
-                extraToolbarControls={
-                    !!props.setActiveTable && (
-                        <ToggleGroup>
-                            <ToggleGroupItem
-                                isSelected={false}
-                                text="Clusters"
-                                onChange={() => props?.setActiveTable?.('clusters')}
-                            />
-                            <ToggleGroupItem isSelected={true} text="Cluster pools" />
-                        </ToggleGroup>
-                    )
                 }
             />
         </Fragment>
