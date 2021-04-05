@@ -11,31 +11,22 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
-import { deleteResource, ResourceError } from '../../../lib/resource-request'
-import { useQuery } from '../../../lib/useQuery'
+import { getErrorInfo } from '../../../components/ErrorPage'
+import { deleteResource } from '../../../lib/resource-request'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { ProviderConnection } from '../../../resources/provider-connection'
 import { useRecoilState } from 'recoil'
-import {
-    DiscoveryConfig,
-    DiscoveryConfigApiVersion,
-    DiscoveryConfigKind,
-    listDiscoveryConfigs,
-} from '../../../resources/discovery-config'
-import {
-    providerConnectionsState,
-    discoveredClusterState
-} from '../../../atoms'
-import { Cp } from '@kubernetes/client-node'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
+import { providerConnectionsState, discoveredClusterState, discoveryConfigState } from '../../../atoms'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -164,12 +155,6 @@ export default function DiscoveredClustersPage() {
     )
 }
 
-async function disableDiscovery(): Promise<void> {
-    const result = listDiscoveryConfigs()
-    const discConfig = await result.promise
-    discConfig.forEach(deleteDiscoveryConfig)
-}
-
 function deleteDiscoveryConfig(config: DiscoveryConfig) {
     deleteResource({
         apiVersion: DiscoveryConfigApiVersion,
@@ -178,14 +163,19 @@ function deleteDiscoveryConfig(config: DiscoveryConfig) {
     })
 }
 
-function EmptyStateNoProviderConnections() {
+function EmptyStateNoCRHCredentials() {
     const { t } = useTranslation(['discovery'])
     return (
         <AcmEmptyState
             title={t('emptystate.defaultState.title')}
-            message={t('emptystate.defaultState.msg')}
+            message={<Trans i18nKey={'discovery:emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
             key="dcEmptyState"
-            showIcon={false}
+            showIcon={true}
+            action={
+                <AcmButton component={Link} to={NavigationPath.addCredentials}>
+                    {t('emptystate.addCredential')}
+                </AcmButton>
+            }
         />
     )
 }
@@ -200,11 +190,34 @@ function EmptyStateProviderConnections(props: { providerConnections?: ProviderCo
                 </AcmButton>
             }
             title={t('emptystate.providerConnections.title')}
-            message={t('emptystate.providerConnections.msg', {
-                discoveryConfigTotal: props.providerConnections?.length,
-            })}
+            message={
+                <Trans
+                    i18nKey={'discovery:emptystate.providerConnections.msg'}
+                    components={{ bold: <strong /> }}
+                    values={{ discoveryConfigTotal: props.providerConnections?.length }}
+                />
+            }
             key="dcEmptyState"
             showIcon={true}
+        />
+    )
+}
+
+function EmptyStateAwaitingDiscoveredClusters() {
+    const { t } = useTranslation(['discovery'])
+    return (
+        <AcmEmptyState
+            title={t('emptystate.discoveryEnabled.title')}
+            message={t('emptystate.discoveryEnabled.msg')}
+            key="dcEmptyState"
+            showIcon={true}
+            action={
+                <AcmButton variant="link">
+                    <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
+                        {t('emptystate.viewDocumentation')} <ExternalLink />
+                    </span>
+                </AcmButton>
+            }
         />
     )
 }
@@ -216,41 +229,59 @@ export function DiscoveredClustersPageContent() {
 
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
     const [providerConnections] = useRecoilState(providerConnectionsState)
+    const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
-    let cloudRedHatCredentials: ProviderConnection[] = []
-    providerConnections.forEach(credential => {
-        let labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+    const cloudRedHatCredentials: ProviderConnection[] = []
+    providerConnections.forEach((credential) => {
+        const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
         if (labels === ProviderID.CRH) {
             cloudRedHatCredentials.push(credential)
         }
-    });
+    })
 
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
-    return <DiscoveredClustersTable discoveredClusters={discoveredClusters} providerConnections={cloudRedHatCredentials} />
+    return (
+        <DiscoveredClustersTable
+            discoveredClusters={discoveredClusters}
+            providerConnections={cloudRedHatCredentials}
+            discoveryConfigs={discoveryConfigs}
+        />
+    )
 }
 
-export function DiscoveredClustersTable(props: { discoveredClusters?: DiscoveredCluster[]; providerConnections?: ProviderConnection[] }) {
-    const { t } = useTranslation(['cluster'])
+export function DiscoveredClustersTable(props: {
+    discoveredClusters?: DiscoveredCluster[]
+    providerConnections?: ProviderConnection[]
+    discoveryConfigs?: DiscoveryConfig[]
+}) {
+    const { t } = useTranslation(['discovery'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
         confirm: () => {},
         cancel: () => {},
-        title: "",
-        message: "",
+        title: '',
+        message: '',
     })
 
-    function getDiscoveredClustersEmptyState() {
-        if (props.providerConnections?.length === 0) {
-            return <EmptyStateNoProviderConnections />
-        } else if(props.discoveredClusters?.length === 0 && props.providerConnections && props.providerConnections.length > 0) {
-            return <EmptyStateProviderConnections providerConnections={props.providerConnections} />
-        }
-    }
+    const [emptyState, setEmptyState] = useState<React.ReactNode>()
 
+    useEffect(() => {
+        if (!props.providerConnections || !props.discoveredClusters || !props.discoveryConfigs) {
+            setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
+        } else if (props.providerConnections.length === 0 && props.discoveryConfigs.length === 0) {
+            setEmptyState(<EmptyStateNoCRHCredentials />) // No provider connections exist, guide user to set up provider connection
+        } else if (props.providerConnections.length > 0 && props.discoveryConfigs.length === 0) {
+            setEmptyState(<EmptyStateProviderConnections providerConnections={props.providerConnections} />) // Provider connection is set up, guide user to set up discovery config
+        } else if (props.providerConnections.length > 0 && props.discoveryConfigs.length > 0) {
+            setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
+        } else {
+            setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
+        }
+    }, [props.discoveredClusters, props.providerConnections, props.discoveryConfigs])
 
     return (
         <Fragment>
@@ -278,14 +309,18 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                 title: t('disable.title'),
                                 confirm: async () => {
                                     try {
-                                        await disableDiscovery()
-                                        setModalProps({
-                                            open: false,
-                                            confirm: () => {},
-                                            cancel: () => {},
-                                            title: "",
-                                            message: "",
-                                        })
+                                        if (props.discoveryConfigs) {
+                                            await props.discoveryConfigs.forEach(deleteDiscoveryConfig)
+                                            setModalProps({
+                                                open: false,
+                                                confirm: () => {},
+                                                cancel: () => {},
+                                                title: '',
+                                                message: '',
+                                            })
+                                        } else {
+                                            throw Error('Error retrieving discoveryconfigs')
+                                        }
                                     } catch (err) {
                                         alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                                     }
@@ -298,8 +333,8 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                                         open: false,
                                         confirm: () => {},
                                         cancel: () => {},
-                                        title: "",
-                                        message: "",
+                                        title: '',
+                                        message: '',
                                     })
                                 },
                             })
@@ -318,7 +353,7 @@ export function DiscoveredClustersTable(props: { discoveredClusters?: Discovered
                         },
                     },
                 ]}
-                emptyState={getDiscoveredClustersEmptyState()}
+                emptyState={emptyState}
             />
         </Fragment>
     )
