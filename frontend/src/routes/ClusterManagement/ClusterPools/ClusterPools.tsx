@@ -6,22 +6,20 @@ import {
     AcmEmptyState,
     AcmPageContent,
     AcmTable,
-    AcmButton,
     AcmInlineProvider,
     Provider,
 } from '@open-cluster-management/ui-components'
 import { PageSection, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useHistory } from 'react-router-dom'
+// import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterPoolsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
-import { canUser, rbacDelete } from '../../../lib/rbac-util'
+import { /*canUser, */ rbacDelete } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
-import { NavigationPath } from '../../../NavigationPath'
-import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
+import { ClusterPool /*, ClusterPoolDefinition */ } from '../../../resources/cluster-pool'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 
 export default function ClusterPoolsPage() {
@@ -55,15 +53,15 @@ export function ClusterPoolsTable(props: { setActiveTable?: (table: string) => v
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
     })
-    const history = useHistory()
-    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
-        canCreateClusterPool.promise
-            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateClusterPool.abort()
-    }, [])
+    // const history = useHistory()
+    // const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
+    // useEffect(() => {
+    //     const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
+    //     canCreateClusterPool.promise
+    //         .then((result) => setCanCreateClusterPool(result.status?.allowed!))
+    //         .catch((err) => console.error(err))
+    //     return () => canCreateClusterPool.abort()
+    // }, [])
 
     const modalColumns = useMemo(
         () => [
@@ -209,16 +207,16 @@ export function ClusterPoolsTable(props: { setActiveTable?: (table: string) => v
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
-                        action={
-                            <AcmButton
-                                role="link"
-                                onClick={() => history.push(NavigationPath.clusterPools)}
-                                disabled={!canCreateClusterPool}
-                                tooltip={t('common:rbac.unauthorized')}
-                            >
-                                {t('managed.createClusterPool')}
-                            </AcmButton>
-                        }
+                        // action={
+                        //     <AcmButton
+                        //         role="link"
+                        //         onClick={() => history.push(NavigationPath.clusterPools)}
+                        //         disabled={!canCreateClusterPool}
+                        //         tooltip={t('common:rbac.unauthorized')}
+                        //     >
+                        //         {t('managed.createClusterPool')}
+                        //     </AcmButton>
+                        // }
                     />
                 }
                 extraToolbarControls={

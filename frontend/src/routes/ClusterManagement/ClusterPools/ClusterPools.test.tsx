@@ -7,16 +7,7 @@ import { RecoilRoot } from 'recoil'
 import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../resources/cluster-pool'
 import { clusterPoolsState } from '../../../atoms'
 import { nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
-import {
-    clickByLabel,
-    clickByRole,
-    clickByText,
-    typeByText,
-    waitForNock,
-    waitForNocks,
-    waitForNotText,
-    waitForText,
-} from '../../../lib/test-util'
+import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 
 const mockClusterPool: ClusterPool = {
