@@ -105,8 +105,7 @@
     "table.credentials": "Username/password",
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
-    "table.poolSize": "Pool size",
-    "table.available": "Available",
+    "table.available": "Clusters available",
     "table.namespace": "Namespace",
     "table.assignedToSet": "Currently assigned to set",
     "table.change": "Change",
@@ -309,7 +308,7 @@
     "bulk.title.deleteSet": "Delete cluster set(s)",
     "bulk.message.deleteSet": "Deleting a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.",
     "bulk.title.deleteClusterPool": "Delete cluster pool(s)",
-    "bulk.message.deleteClusterPool": "TODO",
+    "bulk.message.deleteClusterPool": "Deleting a cluster pool will not destroy any clusters created by the cluster pool.",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",

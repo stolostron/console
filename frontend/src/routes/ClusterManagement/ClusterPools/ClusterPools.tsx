@@ -10,7 +10,7 @@ import {
     AcmInlineProvider,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -29,12 +29,10 @@ export default function ClusterPoolsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
-    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
-
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <ClusterPoolsTable clusterPools={clusterPools} />
+                <ClusterPoolsTable />
             </PageSection>
         </AcmPageContent>
     )
@@ -51,7 +49,8 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
     return <AcmInlineProvider provider={provider} />
 }
 
-export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
+export function ClusterPoolsTable(props: { setActiveTable?: (table: string) => void }) {
+    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
     const { t } = useTranslation(['cluster'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
@@ -94,7 +93,7 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
     )
 
     function mckeyFn(clusterPool: ClusterPool) {
-        return clusterPool.metadata.name!
+        return clusterPool.metadata.uid!
     }
 
     return (
@@ -103,7 +102,7 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
             <AcmTable<ClusterPool>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterPools"
-                items={props.clusterPools}
+                items={clusterPools}
                 columns={[
                     {
                         header: t('table.name'),
@@ -128,19 +127,9 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
                         },
                     },
                     {
-                        header: t('table.poolSize'),
-                        sort: 'spec.size',
-                        search: 'spec.size',
-                        cell: (clusterPool: ClusterPool) => {
-                            return clusterPool.spec!.size
-                        },
-                    },
-                    {
                         header: t('table.available'),
-                        sort: 'status.ready',
-                        search: 'status.ready',
                         cell: (clusterPool: ClusterPool) => {
-                            return <>{clusterPool?.status?.ready?.toString() ?? '-'}</>
+                            return `${clusterPool?.status?.ready}/${clusterPool.spec!.size}`
                         },
                     },
                     {
@@ -154,14 +143,15 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
                                     click: (clusterPool: ClusterPool) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.deleteClusterPool"'),
+                                            title: t('bulk.title.deleteClusterPool'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
                                             resources: [clusterPool],
                                             description: t('bulk.message.deleteClusterPool'),
                                             columns: modalColumns,
-                                            keyFn: (clusterPool: ClusterPool) => clusterPool.metadata.name as string,
+                                            keyFn: mckeyFn,
                                             actionFn: deleteResource,
+                                            confirmText: clusterPool.metadata.name!,
                                             close: () => setModalProps({ open: false }),
                                             isDanger: true,
                                         })
@@ -197,7 +187,7 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
                                 resources: clusterPools,
                                 description: t('bulk.message.deleteClusterPool'),
                                 columns: modalColumns,
-                                keyFn: (clusterPool) => clusterPool.metadata.name as string,
+                                keyFn: mckeyFn,
                                 actionFn: deleteResource,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
@@ -230,6 +220,18 @@ export function ClusterPoolsTable(props: { clusterPools: ClusterPool[] }) {
                             </AcmButton>
                         }
                     />
+                }
+                extraToolbarControls={
+                    !!props.setActiveTable && (
+                        <ToggleGroup>
+                            <ToggleGroupItem
+                                isSelected={false}
+                                text="Clusters"
+                                onChange={() => props?.setActiveTable?.('clusters')}
+                            />
+                            <ToggleGroupItem isSelected={true} text="Cluster pools" />
+                        </ToggleGroup>
+                    )
                 }
             />
         </Fragment>
