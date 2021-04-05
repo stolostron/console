@@ -119,6 +119,13 @@
     "addConnection.ocmapitoken.label": "OpenShift Cluster Manager API token",
     "addConnection.ocmapitoken.placeholder": "Enter the OpenShift Cluster Manager API Token",
     "addConnection.ocmapitoken.labelHelp": "The OpenShift Cluster Manager API Token can be retrieved from - https://cloud.redhat.com/openshift/token",
+    "addConnection.openstackCloudsYaml.label": "OpenStack clouds.yaml",
+    "addConnection.openstackCloudsYaml.placeholder": "Enter the contents of the OpenStack clouds.yaml",
+    "addConnection.openstackCloudsYaml.labelHelp": "The OpenStack clouds.yaml file, including the password, to connect to the OpenStack server.",
+    "addConnection.openstackCloud.label": "Cloud name",
+    "addConnection.openstackCloud.placeholder": "Enter the OpenStack cloud name to reference in the clouds.yaml",
+    "addConnection.openstackCloud.labelHelp": "The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.",
+
 
     "validate.kubernetesDnsName.length": "can contain at most 63 characters",
     "validate.kubernetesDnsName.char": "can only contain lowercase alphanumeric characters or '-'",
