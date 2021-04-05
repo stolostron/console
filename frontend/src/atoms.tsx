@@ -43,7 +43,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
     object: {
         kind: string
         apiVersion: string
@@ -90,24 +90,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
     }
-
-    // Temporary fix for checking for login
-    useEffect(() => {
-        function checkLoggedIn() {
-            fetch(`${process.env.REACT_APP_BACKEND_PATH}/api/`, {
-                credentials: 'include',
-                headers: { accept: 'application/json' },
-            }).then((res) => {
-                switch (res.status) {
-                    case 401:
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                        break
-                }
-                setTimeout(checkLoggedIn, 30 * 1000)
-            })
-        }
-        checkLoggedIn()
-    }, [])
 
     useEffect(() => {
         let eventDataQueue: IEventData[] | undefined = []
@@ -186,6 +168,9 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'LOADED':
                             processEvents()
                             setLoading(false)
+                            break
+                        case 'UNAUTHORIZED':
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                             break
                     }
                 } catch (err) {

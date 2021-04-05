@@ -10,11 +10,12 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
-import { login, loginCallback } from './routes/oauth'
+import { login, loginCallback, logout } from './routes/oauth'
 import { proxy } from './routes/proxy'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
+import { username } from './routes/username'
 import { startWatching, stopWatching, watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
@@ -26,8 +27,12 @@ router.all(`/apis`, proxy)
 router.all(`/apis/*`, proxy)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
+router.all(`/common/username/`, username)
+router.all(`/username`, username)
 router.get(`/login`, login)
 router.get(`/login/callback?*`, loginCallback)
+router.get(`/logout`, logout)
+router.get(`/logout/`, logout)
 router.get(`/watch`, watch)
 router.post(`/proxy/search`, search)
 router.post(`/upgrade`, upgrade)
@@ -38,8 +43,6 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
         cors(req, res)
         await delay(req, res)
     }
-
-    // TODO security headers - serve route index.html only?
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if (req.url === '/multicloud') (req as any).url = '/'

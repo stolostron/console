@@ -10,6 +10,7 @@ import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
+import { tokenReview } from './username'
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
@@ -22,7 +23,7 @@ interface WatchEvent {
     object: IResource
 }
 
-type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
+type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' | 'UNAUTHORIZED' }
 
 const resourceCache: {
     [kind: string]: {
@@ -276,10 +277,12 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'START':
         case 'LOADED':
             return Promise.resolve(true)
+        case 'UNAUTHORIZED':
+            return tokenReview(token).then((tokenStatus) => tokenStatus.status.authenticated !== true)
         case 'DELETED':
             // TODO - Security issue: Only send delete events to clients who can access that item
             // - Problem is if the namespace goes away, access check will fail
-            // - Need to track what is set to client and only send if they previously accessed this event
+            // - Need to track what is sent to client and only send if they previously accessed this event
             return Promise.resolve(true)
         case 'ADDED':
         case 'MODIFIED': {
@@ -369,3 +372,10 @@ export function stopWatching(): void {
         clientRequest.destroy()
     }
 }
+
+let lastTokenCheckEventID = 0
+setInterval(() => {
+    const data: ServerSideEventData = { type: 'UNAUTHORIZED' }
+    if (lastTokenCheckEventID) ServerSideEvents.removeEvent(lastTokenCheckEventID)
+    lastTokenCheckEventID = ServerSideEvents.pushEvent({ data })
+}, 20 * 1000).unref()
