@@ -127,7 +127,7 @@ export function getCluster(
 }
 
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
-    conditions.find((c) => c.type === condition)?.status === (status ?? 'True')
+    conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
 export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
     const isInstalled = clusterDeployment?.spec?.installed
