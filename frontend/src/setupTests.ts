@@ -26,17 +26,6 @@ let missingNocks: string[]
 let consoleWarnings: any[]
 let consoleErrors: any[]
 
-// define some custom expects
-declare global {
-    namespace jest {
-        interface Matchers<R> {
-            hasMissingMocks(): CustomMatcherResult
-            hasUnusedMocks(): CustomMatcherResult
-            hasNoConsoleLogs(): CustomMatcherResult
-        }
-    }
-}
-
 expect.extend({
     hasMissingMocks(missing) {
         const msgs: string[] = []
