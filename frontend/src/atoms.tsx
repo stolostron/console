@@ -6,6 +6,7 @@ import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
+import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
 import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
@@ -28,6 +29,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
 })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
+export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
 export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
@@ -62,6 +64,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
@@ -81,6 +84,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterPoolKind]: setClusterPools,
         [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ConfigMapKind]: setConfigMaps,

@@ -17,6 +17,7 @@ import { NavigationPath } from '../../NavigationPath'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
 const ClusterSetsPage = lazy(() => import('./ClusterSets/ClusterSets'))
+const ClusterPoolsPage = lazy(() => import('./ClusterPools/ClusterPools'))
 const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
@@ -78,6 +79,9 @@ export default function ClusterManagementPage() {
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
                                 <Link to={NavigationPath.clusterSets}>{t('cluster:clusterSets')}</Link>
                             </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
+                                <Link to={NavigationPath.clusterPools}>{t('cluster:clusterPools')}</Link>
+                            </AcmSecondaryNavItem>
                             {discoveryFeatureGate && (
                                 <AcmSecondaryNavItem
                                     isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
@@ -101,6 +105,7 @@ export default function ClusterManagementPage() {
                     <Switch>
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
                         <Route exact path={NavigationPath.clusterSets} component={ClusterSetsPage} />
+                        <Route exact path={NavigationPath.clusterPools} component={ClusterPoolsPage} />
                         {discoveryFeatureGate && (
                             <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         )}
