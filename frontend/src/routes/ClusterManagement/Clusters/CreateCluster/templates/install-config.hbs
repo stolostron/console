@@ -67,6 +67,12 @@ controlPlane:
         diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
 
+  {{#case 'OpenStack'}}
+  platform:
+    openstack:
+      type: {{{../../masterType}}} ##masterPool.{{@index}}.masterType
+  {{/case}}
+
 {{/switch}}
 
 {{/each}}
@@ -137,6 +143,12 @@ compute:
       memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+  {{/case}}
+
+  {{#case 'OpenStack'}}
+  platform:
+    openstack:
+      type: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
   {{/case}}
 
 {{/switch}}
@@ -246,6 +258,13 @@ platform:
     apiVIP: {{{../../apiVIP}}}    ##apiVIP
     ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
     network: {{{../../networkType}}}
+{{/case}}
+
+{{#case 'OpenStack'}}
+  openstack:
+    cloud: {{{../../openstackCloud}}}
+    externalNetwork: {{{../../externalNetworkName}}}
+    lbFloatingIP: {{{../../apiFloatingIP}}}
 {{/case}}
 
 {{/switch}}
