@@ -7,6 +7,7 @@ import { useRecoilState } from 'recoil'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
+import { patchClusterSetLabel } from '../../../../lib/patch-cluster'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -83,9 +84,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
             id: 'manage-set',
-            text: cluster?.labels?.[managedClusterSetLabel] ? t('managed.removeSet') : t('managed.addSet'),
+            text: cluster?.clusterSet ? t('managed.removeSet') : t('managed.addSet'),
             click: (cluster: Cluster) => {
-                if (cluster?.labels?.[managedClusterSetLabel]) {
+                if (cluster?.clusterSet) {
                     setModalProps({
                         open: true,
                         isDanger: true,
@@ -96,31 +97,16 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         description: t('bulk.message.removeSet'),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
-                        actionFn: (cluster) => {
-                            return patchResource(
-                                {
-                                    apiVersion: ManagedClusterDefinition.apiVersion,
-                                    kind: ManagedClusterDefinition.kind,
-                                    metadata: {
-                                        name: cluster.name!,
-                                    },
-                                } as ManagedCluster,
-                                [
-                                    {
-                                        op: 'remove',
-                                        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                                    },
-                                ]
-                            )
-                        },
+                        actionFn: (cluster) => patchClusterSetLabel(cluster.name!, 'remove'),
                         close: () => setModalProps({ open: false }),
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 } else {
                     setShowManagedClusterSetModal(true)
                 }
             },
-            isDisabled: !!cluster?.labels?.[managedClusterSetLabel],
-            rbac: cluster?.labels?.[managedClusterSetLabel]
+            isDisabled: !!cluster?.clusterSet,
+            rbac: cluster?.clusterSet
                 ? [
                       rbacCreate(
                           ManagedClusterSetDefinition,
@@ -317,7 +303,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
     }
 
-    if ((!cluster?.labels?.[managedClusterSetLabel] && managedClusterSets.length === 0) || !cluster.isManaged) {
+    if (!cluster?.labels?.[managedClusterSetLabel] && managedClusterSets.length === 0) {
         actions = actions.filter((a) => a.id !== 'manage-set')
     }
 

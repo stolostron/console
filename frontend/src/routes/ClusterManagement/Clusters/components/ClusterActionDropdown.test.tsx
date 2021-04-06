@@ -148,6 +148,7 @@ describe('ClusterActionDropdown', () => {
         const nockPatch = nockPatchManagedCluster('remove')
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
+        cluster.clusterSet = mockManagedClusterSet.metadata.name
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
         await clickByText('managed.removeSet')
