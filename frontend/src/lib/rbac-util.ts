@@ -18,7 +18,10 @@ export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[]
                 return resolve([])
             }
 
-            if (await checkAdminAccess()) {
+            const adminAccessRequest = await checkAdminAccess()
+            const isAdmin = adminAccessRequest?.status?.allowed ?? false
+
+            if (isAdmin) {
                 return resolve(namespaceList)
             }
 
@@ -57,7 +60,10 @@ export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], 
                 return resolve([])
             }
 
-            if (await checkAdminAccess()) {
+            const adminAccessRequest = await checkAdminAccess()
+            const isAdmin = adminAccessRequest?.status?.allowed ?? false
+
+            if (isAdmin) {
                 return resolve(clusters)
             }
 
@@ -90,18 +96,14 @@ export function getAuthorizedClusters(resourceAttributes: ResourceAttributes[], 
     })
 }
 
-export async function checkAdminAccess() {
-    try {
-        const result = await createSubjectAccessReview({
-            name: '*',
-            namespace: '*',
-            resource: '*',
-            verb: '*',
-        }).promise
-        return result.status!.allowed
-    } catch (err) {
-        return false
-    }
+export function checkAdminAccess() {
+    const result = createSubjectAccessReview({
+        name: '*',
+        namespace: '*',
+        resource: '*',
+        verb: '*',
+    }).promise
+    return result
 }
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'

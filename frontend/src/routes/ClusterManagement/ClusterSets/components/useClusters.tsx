@@ -32,8 +32,15 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined) {
     const clusterSetManagedClusters = managedClusters.filter(
         (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
     )
-    const clusterNames = clusterSetManagedClusters.map((mc) => mc.metadata.name)
-    const clusterSetClusterDeployments = clusterDeployments.filter((cd) => clusterNames.includes(cd.metadata.namespace))
+    const clusterSetClusterDeployments = clusterDeployments.filter(
+        (cd) => cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+    )
+    const clusterNames = Array.from(
+        new Set([
+            ...clusterSetManagedClusters.map((mc) => mc.metadata.name),
+            ...clusterSetClusterDeployments.map((cd) => cd.metadata.name),
+        ])
+    )
     const clusterSetManagedClusterInfos = managedClusterInfos.filter((mci) =>
         clusterNames.includes(mci.metadata.namespace)
     )

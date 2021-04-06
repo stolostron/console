@@ -2,10 +2,10 @@
 
 import { ClusterDeploymentDefinition, ClusterDeployment } from '../resources/cluster-deployment'
 import { ManagedClusterDefinition, ManagedCluster } from '../resources/managed-cluster'
-import { IRequestResult, ResourceError, ResourceErrorCode, patchResource } from './resource-request'
+import { ResourceError, ResourceErrorCode, patchResource } from './resource-request'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 
-export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add', value?: string) {
+export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' | 'replace', value?: string) {
     const requests = [
         patchResource(
             {

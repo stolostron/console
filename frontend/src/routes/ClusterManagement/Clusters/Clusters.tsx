@@ -150,7 +150,7 @@ export function ClustersTable(props: {
             {
                 header: t('table.set'),
                 sort: `labels.${managedClusterSetLabel}`,
-                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (cluster: Cluster) => cluster?.clusterSet ?? '-',
             },
         ],
         [t]

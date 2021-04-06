@@ -12,7 +12,7 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
-import { ManagedCluster, ManagedClusterDefinition } from '../../../../resources/managed-cluster'
+import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
 import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -60,7 +60,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 header: t('table.set'),
                 sort: `labels.${managedClusterSetLabel}`,
-                cell: (cluster: Cluster) => cluster.labels?.[managedClusterSetLabel] ?? '-',
+                cell: (cluster: Cluster) => cluster?.clusterSet ?? '-',
             },
         ],
         [t]
@@ -107,14 +107,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: !!cluster?.clusterSet,
             rbac: cluster?.clusterSet
-                ? [
-                      rbacCreate(
-                          ManagedClusterSetDefinition,
-                          undefined,
-                          cluster?.labels?.[managedClusterSetLabel],
-                          'join'
-                      ),
-                  ]
+                ? [rbacCreate(ManagedClusterSetDefinition, undefined, cluster?.clusterSet, 'join')]
                 : undefined,
         },
         {
@@ -303,7 +296,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
     }
 
-    if (!cluster?.labels?.[managedClusterSetLabel] && managedClusterSets.length === 0) {
+    if (!cluster?.clusterSet && managedClusterSets.length === 0) {
         actions = actions.filter((a) => a.id !== 'manage-set')
     }
 

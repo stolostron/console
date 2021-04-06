@@ -17,7 +17,7 @@ import {
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterSetManageClustersPage } from './ClusterSetManageClusters'
 import { ClusterSetContext } from '../ClusterSetDetails'
-import { nockPatch } from '../../../../../lib/nock-util'
+import { nockPatch, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import {
     waitForText,
     waitForTestId,
@@ -113,6 +113,9 @@ const Component = () => (
 )
 
 describe('ClusterSetManageClusters', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
     test('can update cluster assignments', async () => {
         const { container } = render(<Component />)
         await waitForText(mockManagedClusterAdd.metadata.name!)

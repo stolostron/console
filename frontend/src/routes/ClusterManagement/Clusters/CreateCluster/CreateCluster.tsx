@@ -133,16 +133,16 @@ export default function CreateClusterPage() {
           }
         : null
 
-    const managedClusterSets = useCanJoinClusterSets()
+    const { canJoinClusterSets } = useCanJoinClusterSets()
     for (let i = 0; i < controlData.length; i++) {
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
-            controlData[i].available = managedClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+            controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
             break
         }
     }
 
     // cluster set dropdown won't update without this
-    if (managedClusterSets === undefined) {
+    if (canJoinClusterSets === undefined) {
         return null
     }
 

@@ -13,7 +13,7 @@ import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinCl
 export function ManagedClusterSetModal(props: { close: () => void; open: boolean; clusters: Cluster[] }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
-    const managedClusterSets = useCanJoinClusterSets()
+    const { canJoinClusterSets } = useCanJoinClusterSets()
 
     const modalColumns = useMemo(
         () => [
@@ -52,7 +52,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                                 setManagedClusterSet(mcs)
                             }}
                         >
-                            {managedClusterSets?.map((mcs) => (
+                            {canJoinClusterSets?.map((mcs) => (
                                 <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
                                     {mcs.metadata.name}
                                 </SelectOption>
@@ -62,14 +62,14 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                 },
             },
         ],
-        [t, managedClusterSet, managedClusterSets]
+        [t, managedClusterSet, canJoinClusterSets]
     )
 
-    if (managedClusterSets === undefined) {
+    if (canJoinClusterSets === undefined) {
         return null
     }
 
-    if (managedClusterSets.length === 0) {
+    if (canJoinClusterSets.length === 0) {
         return (
             <AcmModal
                 variant={ModalVariant.small}
