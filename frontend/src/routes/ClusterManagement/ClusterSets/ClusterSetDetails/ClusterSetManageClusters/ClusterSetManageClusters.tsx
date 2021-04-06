@@ -93,10 +93,6 @@ export function ClusterSetManageClustersContent() {
             selectedCluster?.clusterSet !== undefined && selectedCluster?.clusterSet !== clusterSet?.metadata.name
     )
 
-    console.log('addedClsuters', addedClusters)
-    console.log('removedClusters', removedClusters)
-    console.log('transferredClusters', transferredClusters)
-
     return (
         <>
             {/* TODO: Convert modal to page in Wizard */}
@@ -122,8 +118,8 @@ export function ClusterSetManageClustersContent() {
                     )
                     const isAdded = addedClusters.find((addedCluster) => addedCluster.name === cluster.name)
                     let op: 'remove' | 'replace' | 'add' = 'remove'
-                    if (isTransferred) op = 'replace'
                     if (isAdded) op = 'add'
+                    if (isTransferred) op = 'replace'
                     return patchClusterSetLabel(cluster.name!, op, clusterSet!.metadata.name!)
                 }}
             />

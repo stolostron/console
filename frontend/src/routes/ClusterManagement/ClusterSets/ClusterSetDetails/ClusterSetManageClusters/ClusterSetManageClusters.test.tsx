@@ -8,6 +8,11 @@ import { mapClusters } from '../../../../../lib/get-cluster'
 import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import {
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetKind,
+} from '../../../../../resources/managed-cluster-set'
+import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
@@ -99,6 +104,25 @@ const mockManagedClusterUnchanged: ManagedCluster = {
     },
 }
 
+const mockManagedClusterSetTransfer: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'test-cluster-set-transfer',
+    },
+    spec: {},
+}
+
+const mockManagedClusterTransfer: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'managed-cluster-transfer',
+        labels: { [managedClusterSetLabel!]: mockManagedClusterSetTransfer.metadata.name },
+    },
+    spec: { hubAcceptsClient: true },
+}
+
 function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
     const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
         op,
@@ -147,8 +171,9 @@ const Component = () => (
                 mockManagedClusterAdd,
                 mockManagedClusterRemove,
                 mockManagedClusterUnchanged,
+                mockManagedClusterTransfer,
             ])
-            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+            snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
             snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
             snapshot.set(managedClusterInfosState, [])
             snapshot.set(certificateSigningRequestsState, [])
@@ -185,6 +210,7 @@ describe('ClusterSetManageClusters', () => {
         await waitForText(mockManagedClusterAdd.metadata.name!)
         await waitForText(mockManagedClusterRemove.metadata.name!)
         await waitForText(mockManagedClusterUnchanged.metadata.name!)
+        await waitForText(mockManagedClusterTransfer.metadata.name!)
         await waitForText('2 selected')
 
         // verify cluster to add is not assigned
@@ -200,7 +226,7 @@ describe('ClusterSetManageClusters', () => {
                 `[data-ouia-component-id=${mockManagedClusterRemove.metadata
                     .name!}] td[data-label="table.assignedToSet"]`
             )!.innerHTML
-        ).toEqual('test-cluster-set')
+        ).toEqual(mockManagedClusterSet.metadata.name!)
 
         // verify cluster that won't be changed is assigned
         expect(
@@ -208,12 +234,22 @@ describe('ClusterSetManageClusters', () => {
                 `[data-ouia-component-id=${mockManagedClusterUnchanged.metadata
                     .name!}] td[data-label="table.assignedToSet"]`
             )!.innerHTML
-        ).toEqual('test-cluster-set')
+        ).toEqual(mockManagedClusterSet.metadata.name!)
+
+        // verify transferred cluster is marked under a different cluster set
+        expect(
+            container.querySelector(
+                `[data-ouia-component-id=${mockManagedClusterTransfer.metadata
+                    .name!}] td[data-label="table.assignedToSet"]`
+            )!.innerHTML
+        ).toEqual(mockManagedClusterSetTransfer.metadata.name!)
 
         // select the cluster to add
         await clickByLabel('Select row 0')
         // unselect the cluster to remove
         await clickByLabel('Select row 1')
+        // select the cluster to transfer
+        await clickByLabel('Select row 2')
 
         await clickByTestId('save')
 
@@ -223,16 +259,32 @@ describe('ClusterSetManageClusters', () => {
         await waitForText('managedClusterSet.form.added')
         await waitForText('managedClusterSet.form.removed')
         await waitForText('managedClusterSet.form.unchanged')
+        await waitForText('managedClusterSet.form.transferred')
 
         await clickByText('common:save', 1)
 
         await waitForNocks([
+            // remove cluster
             nockPatchManagedCluster(mockManagedClusterRemove.metadata.name!, 'remove'),
             nockPatchClusterDeployment(mockClusterDeploymentRemove.metadata.name!, 'remove'),
+
+            // add cluster
             nockPatchManagedCluster(mockManagedClusterAdd.metadata.name!, 'add', mockManagedClusterSet.metadata.name!),
             nockPatchClusterDeployment(
                 mockClusterDeploymentAdd.metadata.name!,
                 'add',
+                mockManagedClusterSet.metadata.name!
+            ),
+
+            // transfer cluster
+            nockPatchManagedCluster(
+                mockManagedClusterTransfer.metadata.name!,
+                'replace',
+                mockManagedClusterSet.metadata.name!
+            ),
+            nockPatchClusterDeployment(
+                mockManagedClusterTransfer.metadata.name!,
+                'replace',
                 mockManagedClusterSet.metadata.name!
             ),
         ])
