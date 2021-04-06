@@ -17,18 +17,11 @@ import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import {
-    certificateSigningRequestsState,
-    clusterDeploymentsState,
-    managedClusterInfosState,
-    managedClustersState,
-    clusterManagementAddonsState,
-    managedClusterAddonsState,
-} from '../../../atoms'
+import { clusterManagementAddonsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
-import { Cluster, mapClusters } from '../../../lib/get-cluster'
+import { Cluster } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
 import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
@@ -40,30 +33,15 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
+import { useAllClusters } from './components/useAllClusters'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
+    const clusters = useAllClusters()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
-    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
-    const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
-    const [certificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
-
-    const clusters = useMemo(
-        () =>
-            mapClusters(
-                clusterDeployments,
-                managedClusterInfos,
-                certificateSigningRequests,
-                managedClusters,
-                managedClusterAddons
-            ),
-        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
-    )
     usePageContext(clusters.length > 0, PageActions)
 
     const history = useHistory()
@@ -97,6 +75,16 @@ export default function ClustersPage() {
                             tooltip: t('common:rbac.unauthorized'),
                         },
                     ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.emptyStateHeader')}
+                            message={
+                                <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
+                            }
+                            action={<AddCluster type="button" buttonSpacing />}
+                        />
+                    }
                 />
             </PageSection>
         </AcmPageContent>
@@ -120,7 +108,11 @@ const PageActions = () => {
     )
 }
 
-export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcmTableAction[] }) {
+export function ClustersTable(props: {
+    clusters?: Cluster[]
+    tableActions?: IAcmTableAction[]
+    emptyState?: React.ReactNode
+}) {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
@@ -324,14 +316,7 @@ export function ClustersTable(props: { clusters?: Cluster[]; tableActions?: IAcm
                     },
                 ]}
                 rowActions={[]}
-                emptyState={
-                    <AcmEmptyState
-                        key="mcEmptyState"
-                        title={t('managed.emptyStateHeader')}
-                        message={<Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />}
-                        action={<AddCluster type="button" buttonSpacing />}
-                    />
-                }
+                emptyState={props.emptyState}
             />
         </Fragment>
     )

@@ -8,7 +8,8 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import AddCredentialPage from './AddCredentials'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -116,6 +117,7 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -136,6 +138,7 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -153,10 +156,12 @@ describe('add connection page', () => {
     })
     it('should load page and namespace when admin', async () => {
         const rbacNock = nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseAdmin)
+
         const { getByText, container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -176,10 +181,12 @@ describe('add connection page', () => {
     it('should load page and namespace for non-admin', async () => {
         nockCreate(mockSelfSubjectAccessRequestAdmin, mockSelfSubjectAccessResponseNonAdmin)
         const rbacNock = nockCreate(mockSelfSubjectAccessRequest, mockSelfSubjectAccessResponseTrue)
+
         const { getByText, container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
