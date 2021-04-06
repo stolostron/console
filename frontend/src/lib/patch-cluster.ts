@@ -6,6 +6,13 @@ import { ResourceError, ResourceErrorCode, patchResource } from './resource-requ
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 
 export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' | 'replace', value?: string) {
+    const patch: { op: 'remove' | 'add' | 'replace'; path: string; value?: string } = {
+        op,
+        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    }
+    if (value && op !== 'remove') {
+        patch.value = value
+    }
     const requests = [
         patchResource(
             {
@@ -15,13 +22,7 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
                     name: clusterName,
                 },
             } as ManagedCluster,
-            [
-                {
-                    op,
-                    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                    value,
-                },
-            ]
+            [patch]
         ),
         patchResource(
             {
@@ -32,13 +33,7 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
                     namespace: clusterName,
                 },
             } as ClusterDeployment,
-            [
-                {
-                    op,
-                    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                    value,
-                },
-            ]
+            [patch]
         ),
     ]
 
@@ -50,7 +45,6 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
     return {
         promise: new Promise((resolve, reject) => {
             patchClustersResult.promise.then((result) => {
-                console.log('RESULT', result)
                 if (result[0].status === 'rejected') {
                     const error = result[0].reason
                     if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {

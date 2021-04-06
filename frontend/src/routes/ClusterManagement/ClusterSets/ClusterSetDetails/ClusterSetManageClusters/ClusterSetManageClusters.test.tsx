@@ -8,6 +8,11 @@ import { mapClusters } from '../../../../../lib/get-cluster'
 import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import {
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+} from '../../../../../resources/cluster-deployment'
+import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     managedClusterInfosState,
@@ -43,6 +48,15 @@ const mockManagedClusterAdd: ManagedCluster = {
         version: { kubernetes: '' },
     },
 }
+const mockClusterDeploymentAdd: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        name: mockManagedClusterAdd.metadata.name!,
+        namespace: mockManagedClusterAdd.metadata.name!,
+        labels: {},
+    },
+}
 const mockManagedClusterRemove: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -57,6 +71,15 @@ const mockManagedClusterRemove: ManagedCluster = {
         clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'AWS' }],
         conditions: [],
         version: { kubernetes: '' },
+    },
+}
+const mockClusterDeploymentRemove: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        name: mockManagedClusterRemove.metadata.name!,
+        namespace: mockManagedClusterRemove.metadata.name!,
+        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
     },
 }
 const mockManagedClusterUnchanged: ManagedCluster = {
@@ -76,6 +99,47 @@ const mockManagedClusterUnchanged: ManagedCluster = {
     },
 }
 
+function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
+    const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
+        op,
+        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    }
+    if (value) {
+        patch.value = value
+    }
+    return nockPatch(
+        {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                name: clusterName,
+            },
+        },
+        [patch]
+    )
+}
+
+function nockPatchClusterDeployment(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
+    const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
+        op,
+        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    }
+    if (value) {
+        patch.value = value
+    }
+    return nockPatch(
+        {
+            apiVersion: ClusterDeploymentApiVersion,
+            kind: ClusterDeploymentKind,
+            metadata: {
+                name: clusterName,
+                namespace: clusterName,
+            },
+        },
+        [patch]
+    )
+}
+
 const Component = () => (
     <RecoilRoot
         initializeState={(snapshot) => {
@@ -85,7 +149,7 @@ const Component = () => (
                 mockManagedClusterUnchanged,
             ])
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-            snapshot.set(clusterDeploymentsState, [])
+            snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
             snapshot.set(managedClusterInfosState, [])
             snapshot.set(certificateSigningRequestsState, [])
         }}
@@ -163,16 +227,14 @@ describe('ClusterSetManageClusters', () => {
         await clickByText('common:save', 1)
 
         await waitForNocks([
-            nockPatch(mockManagedClusterAdd, [
-                {
-                    op: 'add',
-                    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                    value: mockManagedClusterSet.metadata.name!,
-                },
-            ]),
-            nockPatch(mockManagedClusterRemove, [
-                { op: 'remove', path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}` },
-            ]),
+            nockPatchManagedCluster(mockManagedClusterRemove.metadata.name!, 'remove'),
+            nockPatchClusterDeployment(mockClusterDeploymentRemove.metadata.name!, 'remove'),
+            nockPatchManagedCluster(mockManagedClusterAdd.metadata.name!, 'add', mockManagedClusterSet.metadata.name!),
+            nockPatchClusterDeployment(
+                mockClusterDeploymentAdd.metadata.name!,
+                'add',
+                mockManagedClusterSet.metadata.name!
+            ),
         ])
 
         await waitForTestId('redirected')
