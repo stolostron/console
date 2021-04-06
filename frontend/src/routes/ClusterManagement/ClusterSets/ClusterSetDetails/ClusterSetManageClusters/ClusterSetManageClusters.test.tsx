@@ -128,7 +128,7 @@ describe('ClusterSetManageClusters', () => {
             container.querySelector(
                 `[data-ouia-component-id=${mockManagedClusterAdd.metadata.name!}] td[data-label="table.assignedToSet"]`
             )!.innerHTML
-        ).toEqual('managedClusterSet.form.unassigned')
+        ).toEqual('-')
 
         // verify cluster to remove is assigned
         expect(
@@ -136,7 +136,7 @@ describe('ClusterSetManageClusters', () => {
                 `[data-ouia-component-id=${mockManagedClusterRemove.metadata
                     .name!}] td[data-label="table.assignedToSet"]`
             )!.innerHTML
-        ).toEqual('managedClusterSet.form.assigned')
+        ).toEqual('test-cluster-set')
 
         // verify cluster that won't be changed is assigned
         expect(
@@ -144,7 +144,7 @@ describe('ClusterSetManageClusters', () => {
                 `[data-ouia-component-id=${mockManagedClusterUnchanged.metadata
                     .name!}] td[data-label="table.assignedToSet"]`
             )!.innerHTML
-        ).toEqual('managedClusterSet.form.assigned')
+        ).toEqual('test-cluster-set')
 
         // select the cluster to add
         await clickByLabel('Select row 0')

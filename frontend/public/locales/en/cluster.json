@@ -319,7 +319,5 @@
     "managedClusterSet.form.removed": "Removed",
     "managedClusterSet.form.unchanged": "No change",
     "managedClusterSet.form.transferred": "Transferred",
-    "managedClusterSet.form.assigned": "Yes",
-    "managedClusterSet.form.unassigned": "No",
     "managedClusterSet.form.emptyStateButton": "Back to cluster sets"
 }

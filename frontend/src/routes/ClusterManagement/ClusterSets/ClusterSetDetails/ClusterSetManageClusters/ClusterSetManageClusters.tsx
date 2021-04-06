@@ -93,6 +93,10 @@ export function ClusterSetManageClustersContent() {
             selectedCluster?.clusterSet !== undefined && selectedCluster?.clusterSet !== clusterSet?.metadata.name
     )
 
+    console.log('addedClsuters', addedClusters)
+    console.log('removedClusters', removedClusters)
+    console.log('transferredClusters', transferredClusters)
+
     return (
         <>
             {/* TODO: Convert modal to page in Wizard */}
