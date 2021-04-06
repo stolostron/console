@@ -32,7 +32,7 @@ declare global {
         interface Matchers<R> {
             hasMissingMocks(): CustomMatcherResult
             hasUnusedMocks(): CustomMatcherResult
-            hasNoConsoleErrors(): CustomMatcherResult
+            hasNoConsoleLogs(): CustomMatcherResult
         }
     }
 }
@@ -42,7 +42,8 @@ expect.extend({
         const msgs: string[] = []
         const pass: boolean = missing.length === 0
         if (!pass) {
-            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!\n')
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push("(Make sure the mocks in test match these mocks)\n")
             missing.forEach((req: { method: any; path: any; requestBodyBuffers: any[] }) => {
                 const missingNock = []
                 missingNock.push(req.method)
@@ -52,7 +53,6 @@ expect.extend({
                 })
                 msgs.push(missingNock.join(' '))
             })
-            msgs.push("\n(Code may be returning new values--ensure mocks in test match the missing mocks)")
             msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         }
         const message: () => string = () => msgs.join('\n')
@@ -65,11 +65,11 @@ expect.extend({
         const msgs: string[] = []
         const pass: boolean = unused.length === 0
         if (!pass) {
-            msgs.push('\n\n\n!!!!!!!!!!!!!!!! EXTRA MOCKS !!!!!!!!!!!!!!!!!!!!!!!!\n')
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! EXTRA MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push("(If there are no other errors above, these mocks are no longer required)\n")
             unused.forEach((pending: string) => {
                 msgs.push(pending)
             })
-            msgs.push("\n(If there was no timeout, some mocks may no longer be used)")
             msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         }
         const message: () => string = () => msgs.join('\n')
@@ -78,9 +78,9 @@ expect.extend({
             pass,
         }
     },
-    hasNoConsoleErrors(errors) {
-        const msgs: string[] = errors
-        const pass: boolean = errors.length === 0
+    hasNoConsoleLogs(logs) {
+        const msgs: string[] = logs
+        const pass: boolean = logs.length === 0
         const message: () => string = () => msgs.join('\n')
         return {
             message,
