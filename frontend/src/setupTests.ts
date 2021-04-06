@@ -43,7 +43,7 @@ expect.extend({
         const pass: boolean = missing.length === 0
         if (!pass) {
             msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
-            msgs.push("(Make sure the mocks in test match these mocks)\n")
+            msgs.push('(Make sure the mocks in test match these mocks)\n')
             missing.forEach((req: { method: any; path: any; requestBodyBuffers: any[] }) => {
                 const missingNock = []
                 missingNock.push(req.method)
@@ -66,7 +66,7 @@ expect.extend({
         const pass: boolean = unused.length === 0
         if (!pass) {
             msgs.push('\n\n\n!!!!!!!!!!!!!!!! EXTRA MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
-            msgs.push("(If there are no other errors above, these mocks are no longer required)\n")
+            msgs.push('(If there are no other errors above, these mocks are no longer required)\n')
             unused.forEach((pending: string) => {
                 msgs.push(pending)
             })
