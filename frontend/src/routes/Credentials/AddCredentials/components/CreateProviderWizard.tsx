@@ -79,6 +79,7 @@ TODO:
 - Validation
 - Alerts 
 - Icon resolution?
+- replaced fixed strings with translation strings
 */
 export function CreateProviderWizard(props: {
     providerConnection: ProviderConnection
