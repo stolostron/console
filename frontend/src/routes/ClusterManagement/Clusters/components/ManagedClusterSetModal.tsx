@@ -5,17 +5,15 @@ import { SelectOption, ModalVariant } from '@patternfly/react-core'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
-import { ManagedCluster, ManagedClusterDefinition } from '../../../../resources/managed-cluster'
-import { patchResource } from '../../../../lib/resource-request'
+import { patchClusterSetLabel } from '../../../../lib/patch-cluster'
 import { Cluster } from '../../../../lib/get-cluster'
-import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { StatusField } from './StatusField'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
 
 export function ManagedClusterSetModal(props: { close: () => void; open: boolean; clusters: Cluster[] }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
-    const managedClusterSets = useCanJoinClusterSets()
+    const { canJoinClusterSets } = useCanJoinClusterSets()
 
     const modalColumns = useMemo(
         () => [
@@ -54,7 +52,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                                 setManagedClusterSet(mcs)
                             }}
                         >
-                            {managedClusterSets?.map((mcs) => (
+                            {canJoinClusterSets?.map((mcs) => (
                                 <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
                                     {mcs.metadata.name}
                                 </SelectOption>
@@ -64,14 +62,14 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
                 },
             },
         ],
-        [t, managedClusterSet, managedClusterSets]
+        [t, managedClusterSet, canJoinClusterSets]
     )
 
-    if (managedClusterSets === undefined) {
+    if (canJoinClusterSets === undefined) {
         return null
     }
 
-    if (managedClusterSets.length === 0) {
+    if (canJoinClusterSets.length === 0) {
         return (
             <AcmModal
                 variant={ModalVariant.small}
@@ -103,24 +101,7 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
             description={t('bulk.message.addSet')}
             columns={modalColumns}
             keyFn={(cluster) => cluster.name as string}
-            actionFn={(cluster) => {
-                return patchResource(
-                    {
-                        apiVersion: ManagedClusterDefinition.apiVersion,
-                        kind: ManagedClusterDefinition.kind,
-                        metadata: {
-                            name: cluster.name!,
-                        },
-                    } as ManagedCluster,
-                    [
-                        {
-                            op: 'add',
-                            path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                            value: managedClusterSet,
-                        },
-                    ]
-                )
-            }}
+            actionFn={(cluster) => patchClusterSetLabel(cluster.name!, 'add', managedClusterSet)}
         />
     )
 }

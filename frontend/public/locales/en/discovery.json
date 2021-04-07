@@ -1,4 +1,12 @@
 {
+    "discovery.disable": "Disable cluster discovery",
+    "discovery.edit": "Edit cluster discovery",
+    "discovery.import": "Import cluster",
+
+    "disable.title": "Disable cluster discovery",
+    "disable.button": "Disable",
+    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted.",
+
     "discoveredClusters": "Discovered clusters",
     "discoveryConfig.title": "Enable cluster discovery",
     "discoveryConfig.filterform.header": "Set filter(s) for your discovered clusters",
@@ -14,5 +22,17 @@
     "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discovered clusters",
     "discoveryConfig.testFilter": "Test filter",
     "discoveryConfig.enable": "Enable",
-    "discoveryConfig.cancel": "Cancel"
+    "discoveryConfig.cancel": "Cancel",
+
+    "emptystate.defaultState.title": "No discovered clusters found",
+    "emptystate.defaultState.msg": "You don't have any discovered clusters, yet. Credential(s) of type <bold>Red Hat OpenShift Cluster Manager</bold> must be added to create a DiscoveryConfig.",
+    "emptystate.addCredential": "Add Credential",
+
+    "emptystate.providerConnections.title": "No discovered clusters found",
+    "emptystate.providerConnections.msg": "You don't have any discovered clusters, yet. You have {{discoveryConfigTotal}} connection(s) to discover clusters from. Click the <bold>Enable cluster discovery</bold> button to set up a filter for discovered clusters from your connections.",
+    "emptystate.enableClusterDiscovery": "Enable cluster discovery",
+
+    "emptystate.discoveryEnabled.title": "No discovered clusters found",
+    "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters, yet. Cluster discovery has been enabled, so return to this page later or edit to add more connections to the discovery.",
+    "emptystate.viewDocumentation": "View documentation"
 }

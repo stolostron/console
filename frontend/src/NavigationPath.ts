@@ -13,6 +13,7 @@ export enum NavigationPath {
     clusterSetOverview = '/multicloud/cluster-sets/:id/overview',
     clusterSetManage = '/multicloud/cluster-sets/:id/manage-clusters',
     createClusterSet = '/multicloud/create-cluster-set',
+    clusterPools = '/multicloud/cluster-pools',
     discoveredClusters = '/multicloud/discovered-clusters',
     createCluster = '/multicloud/create-cluster',
     importCluster = '/multicloud/import-cluster',

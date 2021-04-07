@@ -6,9 +6,11 @@ import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
+import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
 import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
+import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
@@ -28,6 +30,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
 })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
+export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
 export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
@@ -35,6 +38,7 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
 })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
 export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
@@ -62,11 +66,13 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
@@ -81,6 +87,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterPoolKind]: setClusterPools,
         [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ConfigMapKind]: setConfigMaps,
@@ -93,6 +100,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [ManagedClusterSetKind]: setManagedClusterSets,
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
+        [DiscoveredClusterKind]: setDiscoveredClusters,
     }
 
     // Temporary fix for checking for login

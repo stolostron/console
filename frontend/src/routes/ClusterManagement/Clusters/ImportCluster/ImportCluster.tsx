@@ -81,7 +81,7 @@ export function ImportClusterPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const managedClusterSets = useCanJoinClusterSets()
+    const { canJoinClusterSets } = useCanJoinClusterSets()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
@@ -124,10 +124,10 @@ export function ImportClusterPageContent() {
                             value={managedClusterSet}
                             onChange={(mcs) => setManagedClusterSet(mcs)}
                             isDisabled={
-                                managedClusterSets === undefined || managedClusterSets.length === 0 || submitted
+                                canJoinClusterSets === undefined || canJoinClusterSets.length === 0 || submitted
                             }
                         >
-                            {managedClusterSets?.map((mcs) => (
+                            {canJoinClusterSets?.map((mcs) => (
                                 <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
                                     {mcs.metadata.name}
                                 </SelectOption>
