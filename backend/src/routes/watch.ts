@@ -223,7 +223,6 @@ function handleWatchEvent(watchEvent: WatchEvent): string {
         kind: resource.kind,
         name: resource.metadata?.name,
         namespace: resource.metadata?.namespace,
-        resourceVersion: resource.metadata?.resourceVersion,
     })
 
     if (!resource.kind) return undefined
