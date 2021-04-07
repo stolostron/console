@@ -21,9 +21,5 @@ export function setCookie(res: Http2ServerResponse, cookie: string, value: strin
 }
 
 export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
-    const expires = new Date(new Date().getTime()).toUTCString()
-    res.setHeader(
-        'Set-Cookie',
-        `${cookie}=deleted; Secure; HttpOnly; Path=${path ? path : '/'}` + `; expires=${expires}`
-    )
+    res.setHeader('Set-Cookie', `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`)
 }
