@@ -27,7 +27,6 @@ export function useAllClusters() {
             managedClusterAddonsState,
         ])
     )
-
     const clusters = useMemo(
         () =>
             mapClusters(
@@ -39,6 +38,5 @@ export function useAllClusters() {
             ),
         [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
     )
-
     return clusters as Cluster[]
 }

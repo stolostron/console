@@ -105,9 +105,9 @@
     "table.credentials": "Username/password",
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
+    "table.assignedToSet": "Current cluster set",
     "table.available": "Clusters available",
     "table.namespace": "Namespace",
-    "table.assignedToSet": "Currently assigned to set",
     "table.change": "Change",
 
     "credentials.show": "Reveal credentials",
@@ -299,14 +299,14 @@
     "bulk.title.resume": "Resume cluster(s)",
     "bulk.message.resume": "Moving out of Hibernating state will resume all operations for the cluster(s). After powering back on, the cluster will resume consumption of any virtual machine and network resources.",
     "bulk.title.removeSet": "Remove cluster from set",
-    "bulk.message.removeSet": "Removing a cluster from a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.  The cluster can be added back to the cluster set at any time.",
+    "bulk.message.removeSet": "Removing a cluster from a cluster set will remove access control permissions to resources in this set for all assigned cluster set users. The cluster can be added back to the cluster set at any time.",
     "bulk.title.addSet": "Add cluster to set",
-    "bulk.message.addSet": "Adding a cluster to a cluster set may, if enabled, add it to the multi-cluster network within the set. Access control permissions to the cluster may also be granted to users who have permission to the set. The cluster can be removed from the cluster set at any time.",
+    "bulk.message.addSet": "Adding a cluster to a cluster set will grant access control permissions to resources in this set for all assigned cluster set users. The cluster can be removed from the cluster set at any time.",
     "bulk.message.addSet.empty": "You don't have any cluster sets that you are authorized to add a cluster to. See your cluster administrator for role-based access control information.",
     "bulk.title.upgrade": "Upgrade cluster(s)",
     "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed.",
     "bulk.title.deleteSet": "Delete cluster set(s)",
-    "bulk.message.deleteSet": "Deleting a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.",
+    "bulk.message.deleteSet": "Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.",
     "bulk.title.deleteClusterPool": "Delete cluster pool(s)",
     "bulk.message.deleteClusterPool": "Deleting a cluster pool will not destroy any clusters created by the cluster pool.",
 
@@ -319,7 +319,8 @@
     "createClusterSet.form.creating": "Creating",
 
     "manageClusterSet.form.section.table": "Select clusters to toggle their assignments to the cluster set",
-    "manageClusterSet.form.review.description": "Adding or removing cluster(s) from a cluster set may affect, if enabled, the multi-cluster network within the set. Access control permissions for users may also be affected.  The cluster(s) can be added or removed to the cluster set at any time.",
+    "manageClusterSet.form.section.table.description": "Clusters already assigned to the cluster set, any currently unassigned clusters, and any clusters from cluster sets you have permission to transfer will be displayed in the table.",
+    "manageClusterSet.form.review.description": "Adding or removing cluster(s) from a cluster will affect access control permissions to resources in this set for all assigned cluster set users. The cluster(s) can be added or removed to the cluster set at any time.",
     "manageClusterSet.form.modal.title": "Confirm changes",
     "manageClusterSet.form.modal.tab.added": "Added",
     "manageClusterSet.form.modal.tab.removed": "Removed",
@@ -327,7 +328,6 @@
     "managedClusterSet.form.added": "Added",
     "managedClusterSet.form.removed": "Removed",
     "managedClusterSet.form.unchanged": "No change",
-    "managedClusterSet.form.assigned": "Yes",
-    "managedClusterSet.form.unassigned": "No",
+    "managedClusterSet.form.transferred": "Transferred",
     "managedClusterSet.form.emptyStateButton": "Back to cluster sets"
 }

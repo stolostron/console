@@ -106,7 +106,7 @@ export function CreateClusterSetContent() {
         managedClusters,
         managedClusterAddons
     )
-    clusters = clusters.filter((cluster) => cluster.labels?.[managedClusterSetLabel] === undefined)
+    clusters = clusters.filter((cluster) => cluster?.clusterSet === undefined)
 
     useEffect(() => {
         if (isLoading) {

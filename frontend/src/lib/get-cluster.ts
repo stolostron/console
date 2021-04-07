@@ -9,6 +9,7 @@ import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certi
 import { getLatest } from './utils'
 import { Provider } from '@open-cluster-management/ui-components'
 import { AddonStatus } from './get-addons'
+import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -49,6 +50,7 @@ export type Cluster = {
     }
     isHive: boolean
     isManaged: boolean
+    clusterSet: string | undefined
 }
 
 export type DistributionInfo = {
@@ -123,6 +125,10 @@ export function getCluster(
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         hive: getHiveConfig(clusterDeployment),
+        clusterSet:
+            managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
+            managedClusterInfo?.metadata?.labels?.[managedClusterSetLabel] ||
+            clusterDeployment?.metadata?.labels?.[managedClusterSetLabel],
     }
 }
 
