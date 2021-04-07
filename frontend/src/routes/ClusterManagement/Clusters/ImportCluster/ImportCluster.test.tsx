@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList } from '../../../../lib/nock-util'
+import { mockBadRequestStatus, nockCreate, nockDelete, nockGet } from '../../../../lib/nock-util'
 import {
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
@@ -34,12 +34,17 @@ import {
     ProjectRequestKind,
 } from '../../../../resources/project'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
+import DiscoveredClustersPage from '../../../Discovery/DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 import { NavigationPath } from '../../../../NavigationPath'
-import { managedClusterSetsState } from '../../../../atoms'
-import { mockManagedClusterSet } from '../../../../lib/test-metadata'
+import {
+    managedClusterSetsState,
+    discoveredClusterState,
+    discoveryConfigState,
+    providerConnectionsState,
+} from '../../../../atoms'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { mockDiscoveryConfig, mockCRHCredential, mockManagedClusterSet } from '../../../../lib/test-metadata'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -376,6 +381,9 @@ describe('Import Discovered Cluster', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+                    snapshot.set(providerConnectionsState, [mockCRHCredential])
+                    snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+                    snapshot.set(discoveredClusterState, mockDiscoveredClusters)
                 }}
             >
                 <MemoryRouter>
@@ -390,30 +398,24 @@ describe('Import Discovered Cluster', () => {
         )
     }
     test('create discovered cluster', async () => {
-        const projectNock = nockCreate(mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
-        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
-        const discoveredClusterNock = nockList(
-            { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-            mockDiscoveredClusters,
-            ['isManagedCluster!=true']
-        )
-        const importCommandNock = nockGet(mockSecretResponse)
-
         const { getByText, getAllByLabelText } = render(<Component />) // Render component
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        await waitForNocks([discoveredClusterNock])
 
         await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+
         await waitForText('discovery.import')
         await clickByText('discovery.import')
         await waitForText('import.mode.default')
         await clickByText('import.mode.default')
         await clickByText('import.manual.choice')
         await waitForText('import.form.submit')
+
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+        const importCommandNock = nockGet(mockSecretResponse)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Add labels
         await clickByTestId('label-input-button')

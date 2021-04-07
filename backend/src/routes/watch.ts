@@ -66,6 +66,7 @@ export function startWatching(): void {
         },
     })
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
+    watchResource(token, 'hive.openshift.io/v1', 'clusterPools')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
     watchResource(token, 'hive.openshift.io/v1', 'clusterProvisions')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
@@ -76,6 +77,7 @@ export function startWatching(): void {
         },
     })
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
+    watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveredClusters')
     watchResource(token, 'config.openshift.io/v1', 'featureGates', {
         labelSelector: {
             'console.open-cluster-management.io': '',
@@ -222,7 +224,6 @@ function handleWatchEvent(watchEvent: WatchEvent): string {
         kind: resource.kind,
         name: resource.metadata?.name,
         namespace: resource.metadata?.namespace,
-        resourceVersion: resource.metadata?.resourceVersion,
     })
 
     if (!resource.kind) return undefined
