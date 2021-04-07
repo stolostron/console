@@ -101,7 +101,7 @@ export default function AddCredentialPage({ match }: RouteComponentProps<{ names
                 />
             )}
             <AcmPageContent id="add-credentials">
-                <PageSection variant="light" isFilled>
+                <PageSection variant="light" isFilled type="">
                     <AddCredentialPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </PageSection>
             </AcmPageContent>

@@ -1,17 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React, { useContext, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { makeStyles } from '@material-ui/styles'
 import { AnsibleTowerIcon } from '@patternfly/react-icons'
+import { CloudIcon } from '@patternfly/react-icons'
 import {
     ActionGroup,
     Button,
     Card,
+    CardBody,
+    CardHeader,
+    CardHeaderMain,
     Form,
+    Gallery,
+    GalleryItem,
     Grid,
     GridItem,
     PageSection,
     SelectOption,
+    Stack,
+    StackItem,
     Title,
     Wizard,
     WizardStep,
@@ -88,7 +96,7 @@ export function CreateProviderWizard(props: {
     const [secretName, setSecretName] = useState('')
     const [secretNamespace, setSecretNamespace] = useState('')
     const [isEdit, setIsEdit] = useState(false)
-    const [currentCredentialType, setCurrentCredentialType] = useState([CredentialType.ansible])
+    const [currentCredentialType, setCurrentCredentialType] = useState(CredentialType.ansible)
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
         apiVersion: AnsibleTowerSecretApiVersion,
@@ -168,31 +176,34 @@ export function CreateProviderWizard(props: {
         setProviderConnection(copy)
     }
 
-    const [steps, setSteps] = useState<WizardStep[]>([
-        {
-            name: 'Basic Information',
-            component: (
-                <CredentialTypeStep
-                    projects={props.projects}
-                    providerConnection={props.providerConnection}
-                    ansibleSecret={ansibleSecret}
-                    setAnsibleSecret={setAnsibleSecret}
-                    setProviderConnection={setProviderConnection}
-                    setCredentialInputstep={setCredentialInputstep}
-                    setCredentialToCreate={setCredentialToCreate}
-                    credentialToCreate={credentialToCreate}
-                    onClickCredentialCard={onClickCredentialCard}
-                    currentCredentialType={currentCredentialType}
-                    setCurrentCredentialType={setCurrentCredentialType}
-                />
-            ),
-        },
-        {
-            name: 'Details',
-            component: credentialInputstep,
-            id: CredentialType.cloudProvider,
-        },
-    ])
+    const steps = useMemo<WizardStep[]>(
+        () => [
+            {
+                name: 'Basic Information',
+                component: (
+                    <CredentialTypeStep
+                        projects={props.projects}
+                        providerConnection={props.providerConnection}
+                        ansibleSecret={ansibleSecret}
+                        setAnsibleSecret={setAnsibleSecret}
+                        setProviderConnection={setProviderConnection}
+                        setCredentialInputstep={setCredentialInputstep}
+                        setCredentialToCreate={setCredentialToCreate}
+                        credentialToCreate={credentialToCreate}
+                        onClickCredentialCard={onClickCredentialCard}
+                        currentCredentialType={currentCredentialType}
+                        setCurrentCredentialType={setCurrentCredentialType}
+                    />
+                ),
+            },
+            {
+                name: 'Details',
+                component: credentialInputstep,
+                id: CredentialType.cloudProvider,
+            },
+        ],
+        [currentCredentialType]
+    )
 
     function onClickCredentialCard(credentialType: CredentialType) {
         console.log('selected ', credentialType)
@@ -297,16 +308,7 @@ export function CreateProviderWizard(props: {
         }
     }
 
-    return (
-        <Wizard
-            nextButtonText={nextButtonName}
-            steps={steps}
-            height={'500'}
-            onNext={onNext}
-            onBack={onBack}
-            onSave={onSave}
-        />
-    )
+    return <Wizard nextButtonText={nextButtonName} steps={steps} onNext={onNext} onBack={onBack} onSave={onSave} />
 }
 
 function CredentialTypeStep(props: {
@@ -319,13 +321,13 @@ function CredentialTypeStep(props: {
     setCredentialToCreate: Function
     credentialToCreate: CredentialType
     onClickCredentialCard: Function
-    setCurrentCredentialType: Function
-    currentCredentialType: CredentialType[]
+    currentCredentialType: CredentialType
+    setCurrentCredentialType: Dispatch<SetStateAction<CredentialType>>
 }) {
     const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
-    const [currentCredentialType, setCurrentCredentialType] = useState(props.currentCredentialType)
+    const { currentCredentialType, setCurrentCredentialType } = props
 
     console.log('credential card: ', props.credentialToCreate)
     function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
@@ -336,16 +338,16 @@ function CredentialTypeStep(props: {
     }
 
     function updateCurrentCredentialType(credentialType: CredentialType) {
-        props.currentCredentialType[0] = credentialType // will update parent component state value while preserving memory reference
-        setCurrentCredentialType([credentialType]) // will trigger re-render
+        console.log(credentialType)
+        setCurrentCredentialType(credentialType) // will trigger re-render
     }
 
     console.log('name: ', props.ansibleSecret.metadata.name)
 
     const useStyles = makeStyles({
         card: {
-            width: '150px',
-            height: '125px',
+            // width: '150px',
+            // height: '125px',
         },
         icon: {
             display: 'flex',
@@ -363,6 +365,7 @@ function CredentialTypeStep(props: {
         },
     })
 
+    console.log('HHHH', currentCredentialType)
     const classes = useStyles()
     return (
         <AcmForm>
@@ -372,40 +375,40 @@ function CredentialTypeStep(props: {
             <Title headingLevel="h6" size="md">
                 Credential types*
             </Title>
-            <Grid className={classes.grid} span={1} hasGutter={true}>
-                <GridItem>
+            <Gallery hasGutter>
+                <GalleryItem>
                     <Card
                         isSelectable
-                        isSelected={currentCredentialType[0] === CredentialType.ansible}
+                        isSelected={currentCredentialType === CredentialType.ansible}
                         className={classes.card}
                         onClick={() => {
                             updateCurrentCredentialType(CredentialType.ansible)
                             props.onClickCredentialCard(CredentialType.ansible)
                         }}
                     >
-                        <div className={classes.icon}>
+                        <CardHeader>
                             <AnsibleTowerIcon size="lg" />
-                        </div>
-                        <div className={classes.cardText}>Ansible Tower</div>
+                        </CardHeader>
+                        <CardBody>Ansible Tower</CardBody>
                     </Card>
-                </GridItem>
-                <GridItem>
+                </GalleryItem>
+                <GalleryItem>
                     <Card
                         isSelectable
-                        isSelected={currentCredentialType[0] === CredentialType.cloudProvider}
+                        isSelected={currentCredentialType === CredentialType.cloudProvider}
                         className={classes.card}
                         onClick={() => {
                             updateCurrentCredentialType(CredentialType.cloudProvider)
                             props.onClickCredentialCard(CredentialType.cloudProvider)
                         }}
                     >
-                        <div className={classes.icon}>
-                            <AcmIcon icon={AcmIconVariant.cloud}></AcmIcon>
-                        </div>
-                        <div className={classes.cardText}>Infrastructure Provider</div>
+                        <CardHeader>
+                            <CloudIcon size="lg" />
+                        </CardHeader>
+                        <CardBody>Infrastructure Provider</CardBody>
                     </Card>
-                </GridItem>
-            </Grid>
+                </GalleryItem>
+            </Gallery>
             <AcmTextInput
                 id="connectionName"
                 label={t('addConnection.connectionName.label')}
