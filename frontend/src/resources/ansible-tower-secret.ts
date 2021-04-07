@@ -4,6 +4,7 @@ import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { IResourceDefinition } from './resource'
 import { createResource, getResource, replaceResource } from '../lib/resource-request'
+import { ProviderID } from '../lib/providers'
 
 export const AnsibleTowerSecretApiVersion = 'v1'
 export type AnsibleTowerSecretApiVersionType = 'v1'
@@ -42,6 +43,14 @@ export function getAnsibleTowerSecret(metadata: { name: string; namespace: strin
 }
 
 export function createAnsibleTowerSecret(AnsibleTowerSecret: AnsibleTowerSecret) {
+    if (!AnsibleTowerSecret.metadata) {
+        AnsibleTowerSecret.metadata = {}
+    }
+    if (!AnsibleTowerSecret.metadata.labels) {
+        AnsibleTowerSecret.metadata.labels = {}
+    }
+    AnsibleTowerSecret.metadata.labels['cluster.open-cluster-management.io/provider'] = 'ans'
+    AnsibleTowerSecret.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = '' // is this appropriate for ans?
     return createResource<AnsibleTowerSecret>(packAnsibleTowerSecret({ ...AnsibleTowerSecret }))
 }
 
