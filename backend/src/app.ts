@@ -15,7 +15,6 @@ import { proxy } from './routes/proxy'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
-import { username } from './routes/username'
 import { startWatching, stopWatching, watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
@@ -27,8 +26,6 @@ router.all(`/apis`, proxy)
 router.all(`/apis/*`, proxy)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
-router.all(`/common/username/`, username)
-router.all(`/username`, username)
 router.get(`/login`, login)
 router.get(`/login/callback?*`, loginCallback)
 router.get(`/logout`, logout)

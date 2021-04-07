@@ -191,8 +191,12 @@ export function LoadData(props: { children?: ReactNode }) {
         function startWatch() {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
-            evtSource.onerror = function (err) {
-                console.error('EventSource failed:', err)
+            evtSource.onerror = function () {
+                switch (evtSource?.readyState) {
+                    case EventSource.CLOSED:
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        break
+                }
             }
         }
         startWatch()
