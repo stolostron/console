@@ -82,14 +82,19 @@ enum CredentialType {
     ansible = 'ans',
 }
 
+/* 
+TODO: 
+- Validation
+- Alerts 
+- Icon resolution?
+- replaced fixed strings with translation strings
+*/
 export function CreateProviderWizard(props: {
     providerConnection: ProviderConnection
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
     setProviderConnection: Function
 }) {
-    // making an enum for credential types, as the list of potential credentials types may expand in the near future.
-
     const [credentialToCreate, setCredentialToCreate] = useState(CredentialType.ansible)
     const [currentStep, setCurrentStep] = useState(1)
     const [nextButtonName, setNextButtonName] = useState('Next')
@@ -206,28 +211,19 @@ export function CreateProviderWizard(props: {
     )
 
     function onClickCredentialCard(credentialType: CredentialType) {
-        console.log('selected ', credentialType)
+        currentCredentialType[0] = credentialType
         switch (credentialType) {
             case CredentialType.ansible:
-                // code block
-                setCredentialToCreate(credentialType)
-
-                steps.pop()
-                steps.push({
-                    name: 'Details',
-                    component: (
-                        <AnsibleTowerInformationStep
-                            providerConnection={props.providerConnection}
-                            projects={props.projects}
-                            ansibleSecret={ansibleSecret}
-                            setAnsibleSecret={setAnsibleSecret}
-                        />
-                    ),
-                })
+                steps[1].component = (
+                    <AnsibleTowerInformationStep
+                        providerConnection={props.providerConnection}
+                        projects={props.projects}
+                        ansibleSecret={ansibleSecret}
+                        setAnsibleSecret={setAnsibleSecret}
+                    />
+                )
                 break
             case CredentialType.cloudProvider:
-                // code block
-                setCredentialToCreate(credentialType)
                 steps[1].component = (
                     <ProviderInformationStep
                         providerConnection={props.providerConnection}
@@ -235,17 +231,6 @@ export function CreateProviderWizard(props: {
                         setProviderConnection={props.setProviderConnection}
                     />
                 )
-                // steps.push({
-                //     name: 'Details',
-                //     component: (
-                //         <ProviderInformationStep
-                //             providerConnection={props.providerConnection}
-                //             projects={props.projects}
-                //             setProviderConnection={props.setProviderConnection}
-                //         />
-                //     ),
-                // })
-
                 break
             default:
         }
@@ -253,15 +238,12 @@ export function CreateProviderWizard(props: {
     const history = useHistory()
 
     function onNext() {
-        console.log('checking cred create value: ', credentialInputstep)
         const step = currentStep + 1
-        console.log('step: ', step)
         setCurrentStep(step)
         // alter next step if provider connection is selected
         if (steps.length === step) {
             setNextButtonName('Save')
         }
-        // console.log('printing selected cred', selectedCred)
     }
 
     function onBack() {
@@ -273,7 +255,6 @@ export function CreateProviderWizard(props: {
     }
 
     function onSave() {
-        console.log('trying to create secret')
         //logic for secret creation and page redirect
         switch (credentialToCreate) {
             case CredentialType.ansible:
@@ -329,7 +310,6 @@ function CredentialTypeStep(props: {
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
     const { currentCredentialType, setCurrentCredentialType } = props
 
-    console.log('credential card: ', props.credentialToCreate)
     function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
         const copy = { ...ansibleSecret }
         update(copy)
@@ -338,11 +318,8 @@ function CredentialTypeStep(props: {
     }
 
     function updateCurrentCredentialType(credentialType: CredentialType) {
-        console.log(credentialType)
         setCurrentCredentialType(credentialType) // will trigger re-render
     }
-
-    console.log('name: ', props.ansibleSecret.metadata.name)
 
     const useStyles = makeStyles({
         card: {
@@ -552,7 +529,6 @@ function ProviderInformationStep(props: {
             if (multiClusterHubs[0].metadata.namespace) {
                 setMulticlusterhubNamespace(multiClusterHubs[0].metadata.namespace)
             }
-            console.log('multiclusterhub data update: ', multiClusterHubs[0].metadata.namespace)
         }
     }, [multiClusterHubs[0]])
 
@@ -1107,7 +1083,6 @@ function ProviderInformationStep(props: {
 
 function submitProviderConnection(providerConnection: ProviderConnection, isEditing: () => boolean) {
     const data = JSON.parse(JSON.stringify(providerConnection))
-    console.log('testing provider: ', providerConnection)
     const providerID = getProviderConnectionProviderID(data)
     if (providerID !== ProviderID.AWS) {
         delete data.spec!.awsAccessKeyID
