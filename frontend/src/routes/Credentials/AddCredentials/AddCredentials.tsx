@@ -837,7 +837,8 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     id="submit"
                     variant="primary"
                     onClick={() => {
-                        const data = JSON.parse(JSON.stringify(providerConnection))
+                        const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
+
                         const providerID = getProviderConnectionProviderID(data)
                         if (providerID !== ProviderID.AWS) {
                             delete data.spec!.awsAccessKeyID
@@ -875,7 +876,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                             delete data.spec!.ocmAPIToken
                         }
                         if (providerID !== ProviderID.OST) {
-                            delete data.spec!.openstackCloudYaml
+                            delete data.spec!.openstackCloudsYaml
                             delete data.spec!.openstackCloud
                         }
 
