@@ -16,9 +16,9 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 
 const ClustersPage = lazy(() => import('./Clusters/Clusters'))
+const DiscoveredClustersPage = lazy(() => import('./../Discovery/DiscoveredClusters/DiscoveredClusters'))
 const ClusterSetsPage = lazy(() => import('./ClusterSets/ClusterSets'))
 const ClusterPoolsPage = lazy(() => import('./ClusterPools/ClusterPools'))
-const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
 
 export const PageContext = createContext<{

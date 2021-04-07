@@ -59,12 +59,7 @@
     "set.delete": "Delete cluster set",
     "clusterPool.delete": "Delete cluster pool",
     "discovered": "Discovered",
-    "discovery.disable": "Disable cluster discovery",
-    "discovery.edit": "Edit cluster discovery",
-    "discovery.import": "Import cluster",
-    "discovery.enablediscoverybtn": "Enable cluster discovery",
-    "discovery.emptyStateHeader": "No clusters are discovered, yet",
-    "discovery.emptyStateMsg": "Click on the Enable cluster discovery button to setup a filter for discovered clusters from your connections",
+
     "button.backToClusters": "Back to clusters",
     "button.backToClusterSets": "Back to cluster sets",
 
@@ -261,10 +256,6 @@
     "summary.violations.launch": "Go to Policies",
     "summary.cluster.issues.description": "By total risk:",
     "summary.status.loading": "Loading application and violation status",
-
-    "disable.title": "Disable cluster discovery",
-    "disable.button": "Disable",
-    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted.",
 
     "policy.report.flyout.title": "{{count}} identified issues",
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",

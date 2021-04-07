@@ -1,16 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { nockList, nockDelete } from '../../../lib/nock-util'
+import { nockDelete } from '../../../lib/nock-util'
 import { waitForNock, waitForText, clickByText } from '../../../lib/test-util'
-import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../resources/discovered-cluster'
+import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import {
+    featureGatesState,
+    discoveredClusterState,
+    discoveryConfigState,
+    providerConnectionsState,
+} from '../../../atoms'
+import { mockDiscoveryFeatureGate, mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -73,28 +76,22 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     },
 ]
 
-const mockDiscoveryConfig: DiscoveryConfig = {
-    apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind,
-    metadata: { name: 'discoveryconfig', namespace: 'open-cluster-management' },
-    spec: {},
-}
-
-const mockDiscoveryConfigs: DiscoveryConfig[] = [mockDiscoveryConfig]
-
-test('DiscoveredClustersPage', async () => {
-    const listNock = nockList(
-        { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-        mockDiscoveredClusters,
-        ['isManagedCluster!=true']
-    )
-    const configlistNock = nockList(
-        { apiVersion: DiscoveryConfigApiVersion, kind: DiscoveryConfigKind },
-        mockDiscoveryConfigs
-    )
+test('DiscoveredClusters Table', async () => {
     const deleteNock = nockDelete(mockDiscoveryConfig)
-    render(<DiscoveredClustersPage />)
-    await waitForNock(listNock)
+    render(
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+                snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+                snapshot.set(providerConnectionsState, [mockCRHCredential])
+            }}
+        >
+            <MemoryRouter>
+                <DiscoveredClustersPage />
+            </MemoryRouter>
+        </RecoilRoot>
+    )
 
     await waitForText('discovery.edit')
     await waitForText('discovery.disable')
@@ -115,21 +112,65 @@ test('DiscoveredClustersPage', async () => {
     await clickByText('discovery.disable')
     await waitForText('disable.button')
     await clickByText('disable.button')
-    await waitForNock(configlistNock)
     await waitForNock(deleteNock)
 })
 
-test('No Discovered Clusters', async () => {
-    const listNock = nockList(
-        { apiVersion: DiscoveredClusterApiVersion, kind: DiscoveredClusterKind },
-        [],
-        ['isManagedCluster!=true']
-    )
+test('Discovery featuregate enabled, but no provider connections or discoveryconfig (Empty State 1)', async () => {
     render(
-        <MemoryRouter>
-            <DiscoveredClustersPage />
-        </MemoryRouter>
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                snapshot.set(discoveredClusterState, [])
+                snapshot.set(discoveryConfigState, [])
+                snapshot.set(providerConnectionsState, [])
+            }}
+        >
+            <MemoryRouter>
+                <DiscoveredClustersPage />
+            </MemoryRouter>
+        </RecoilRoot>
     )
-    await waitForNock(listNock)
-    await waitForText('discovery.emptyStateHeader')
+    await waitForText('emptystate.defaultState.title')
+    await waitForText('discovery:emptystate.defaultState.msg')
+    await waitForText('emptystate.addCredential')
+})
+
+test('Discovery featuregate enabled, CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
+    render(
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                snapshot.set(discoveredClusterState, [])
+                snapshot.set(discoveryConfigState, [])
+                snapshot.set(providerConnectionsState, [mockCRHCredential])
+            }}
+        >
+            <MemoryRouter>
+                <DiscoveredClustersPage />
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+    await waitForText('emptystate.providerConnections.title')
+    await waitForText('discovery:emptystate.providerConnections.msg')
+    await waitForText('emptystate.enableClusterDiscovery')
+})
+
+test('Discovery featuregate enabled, CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {
+    render(
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                snapshot.set(discoveredClusterState, [])
+                snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+                snapshot.set(providerConnectionsState, [mockCRHCredential])
+            }}
+        >
+            <MemoryRouter>
+                <DiscoveredClustersPage />
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+    await waitForText('emptystate.discoveryEnabled.title')
+    await waitForText('emptystate.discoveryEnabled.msg')
+    await waitForText('emptystate.viewDocumentation')
 })
