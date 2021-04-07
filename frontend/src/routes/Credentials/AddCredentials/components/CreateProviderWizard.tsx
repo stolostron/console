@@ -88,6 +88,7 @@ export function CreateProviderWizard(props: {
     const [secretName, setSecretName] = useState('')
     const [secretNamespace, setSecretNamespace] = useState('')
     const [isEdit, setIsEdit] = useState(false)
+    const [currentCredential, setCurrentCredential] = useState([CredentialType.ansible])
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
         apiVersion: AnsibleTowerSecretApiVersion,
@@ -181,12 +182,15 @@ export function CreateProviderWizard(props: {
                     setCredentialToCreate={setCredentialToCreate}
                     credentialToCreate={credentialToCreate}
                     onClickCredentialCard={onClickCredentialCard}
+                    currentCredential={currentCredential}
+                    setCurrentCredential={setCurrentCredential}
                 />
             ),
         },
         {
             name: 'Details',
             component: credentialInputstep,
+            id: CredentialType.cloudProvider,
         },
     ])
 
@@ -196,25 +200,41 @@ export function CreateProviderWizard(props: {
             case CredentialType.ansible:
                 // code block
                 setCredentialToCreate(credentialType)
-                setCredentialInputstep(
-                    <AnsibleTowerInformationStep
-                        providerConnection={props.providerConnection}
-                        projects={props.projects}
-                        ansibleSecret={ansibleSecret}
-                        setAnsibleSecret={setAnsibleSecret}
-                    />
-                )
+
+                steps.pop()
+                steps.push({
+                    name: 'Details',
+                    component: (
+                        <AnsibleTowerInformationStep
+                            providerConnection={props.providerConnection}
+                            projects={props.projects}
+                            ansibleSecret={ansibleSecret}
+                            setAnsibleSecret={setAnsibleSecret}
+                        />
+                    ),
+                })
                 break
             case CredentialType.cloudProvider:
                 // code block
                 setCredentialToCreate(credentialType)
-                setCredentialInputstep(
+                steps[1].component = (
                     <ProviderInformationStep
                         providerConnection={props.providerConnection}
                         projects={props.projects}
                         setProviderConnection={props.setProviderConnection}
                     />
                 )
+                // steps.push({
+                //     name: 'Details',
+                //     component: (
+                //         <ProviderInformationStep
+                //             providerConnection={props.providerConnection}
+                //             projects={props.projects}
+                //             setProviderConnection={props.setProviderConnection}
+                //         />
+                //     ),
+                // })
+
                 break
             default:
         }
@@ -222,6 +242,7 @@ export function CreateProviderWizard(props: {
     const history = useHistory()
 
     function onNext() {
+        console.log('checking cred create value: ', credentialInputstep)
         const step = currentStep + 1
         console.log('step: ', step)
         setCurrentStep(step)
@@ -233,7 +254,6 @@ export function CreateProviderWizard(props: {
     }
 
     function onBack() {
-        console.log('checking cred create value: ', credentialToCreate)
         const step = currentStep - 1
         setCurrentStep(step)
         if (nextButtonName != 'Next') {
@@ -286,6 +306,8 @@ export function CreateProviderWizard(props: {
         setCredentialToCreate: Function
         credentialToCreate: CredentialType
         onClickCredentialCard: Function
+        currentCredential: {}
+        setCurrentCredential: Function
     }) {
         const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
 
@@ -343,14 +365,11 @@ export function CreateProviderWizard(props: {
                     <GridItem>
                         <Card
                             isSelectable
-                            isSelected={credentialToCreate === CredentialType.ansible}
+                            isSelected={currentCredential[0] === CredentialType.ansible}
                             className={classes.card}
                             onClick={() => {
-                                updateSelectedCard((cred) => {
-                                    cred = CredentialType.ansible
-                                })
-
                                 setCredentialToCreate(CredentialType.ansible)
+                                currentCredential[0] = CredentialType.ansible
                                 props.setCredentialToCreate(CredentialType.ansible)
                                 props.onClickCredentialCard(CredentialType.ansible)
                             }}
@@ -364,13 +383,11 @@ export function CreateProviderWizard(props: {
                     <GridItem>
                         <Card
                             isSelectable
-                            isSelected={credentialToCreate === CredentialType.cloudProvider}
+                            isSelected={currentCredential[0] === CredentialType.cloudProvider}
                             className={classes.card}
                             onClick={() => {
-                                updateSelectedCard((cred) => {
-                                    cred = CredentialType.cloudProvider
-                                })
                                 setCredentialToCreate(CredentialType.cloudProvider)
+                                currentCredential[0] = CredentialType.cloudProvider
                                 props.setCredentialToCreate(CredentialType.cloudProvider)
                                 props.onClickCredentialCard(CredentialType.cloudProvider)
                             }}
@@ -416,16 +433,14 @@ export function CreateProviderWizard(props: {
         )
     }
     return (
-        <PageSection variant="light" type="wizard" isFilled>
-            <Wizard
-                nextButtonText={nextButtonName}
-                steps={steps}
-                height={'1000'}
-                onNext={onNext}
-                onBack={onBack}
-                onSave={onSave}
-            />
-        </PageSection>
+        <Wizard
+            nextButtonText={nextButtonName}
+            steps={steps}
+            height={'500'}
+            onNext={onNext}
+            onBack={onBack}
+            onSave={onSave}
+        />
     )
 }
 
