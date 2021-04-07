@@ -88,7 +88,7 @@ export function CreateProviderWizard(props: {
     const [secretName, setSecretName] = useState('')
     const [secretNamespace, setSecretNamespace] = useState('')
     const [isEdit, setIsEdit] = useState(false)
-    const [currentCredential, setCurrentCredential] = useState([CredentialType.ansible])
+    const [currentCredentialType, setCurrentCredentialType] = useState([CredentialType.ansible])
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
         apiVersion: AnsibleTowerSecretApiVersion,
@@ -182,8 +182,8 @@ export function CreateProviderWizard(props: {
                     setCredentialToCreate={setCredentialToCreate}
                     credentialToCreate={credentialToCreate}
                     onClickCredentialCard={onClickCredentialCard}
-                    currentCredential={currentCredential}
-                    setCurrentCredential={setCurrentCredential}
+                    currentCredentialType={currentCredentialType}
+                    setCurrentCredentialType={setCurrentCredentialType}
                 />
             ),
         },
@@ -296,142 +296,7 @@ export function CreateProviderWizard(props: {
             default:
         }
     }
-    function CredentialTypeStep(props: {
-        projects: string[]
-        providerConnection: ProviderConnection
-        ansibleSecret: AnsibleTowerSecret
-        setAnsibleSecret: Function
-        setProviderConnection: Function
-        setCredentialInputstep: Function
-        setCredentialToCreate: Function
-        credentialToCreate: CredentialType
-        onClickCredentialCard: Function
-        currentCredential: {}
-        setCurrentCredential: Function
-    }) {
-        const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
 
-        const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
-        const [credentialToCreate, setCredentialToCreate] = useState<CredentialType>(props.credentialToCreate)
-
-        console.log('credential card: ', props.credentialToCreate)
-        function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
-            const copy = { ...ansibleSecret }
-            update(copy)
-            setAnsibleSecret(copy)
-            props.setAnsibleSecret(copy)
-        }
-
-        function updateSelectedCard(update: (cred: CredentialType) => void) {
-            const copy = CredentialType.cloudProvider
-            update(copy)
-            setCredentialToCreate(copy)
-            props.setCredentialToCreate(copy)
-        }
-
-        console.log('name: ', props.ansibleSecret.metadata.name)
-
-        const useStyles = makeStyles({
-            card: {
-                width: '150px',
-                height: '125px',
-            },
-            icon: {
-                display: 'flex',
-                height: '30%',
-                width: '50%',
-                margin: '10% 10% 2.5% 10%',
-
-                overflow: 'hidden',
-            },
-            cardText: {
-                margin: '0% 10% 10% 10%',
-            },
-            grid: {
-                display: 'flex',
-            },
-        })
-
-        const classes = useStyles()
-        return (
-            <AcmForm>
-                <Title headingLevel="h4" size="xl">
-                    Select the credential type and enter basic information
-                </Title>
-                <Title headingLevel="h6" size="md">
-                    Credential types*
-                </Title>
-                <Grid className={classes.grid} span={1} hasGutter={true}>
-                    <GridItem>
-                        <Card
-                            isSelectable
-                            isSelected={currentCredential[0] === CredentialType.ansible}
-                            className={classes.card}
-                            onClick={() => {
-                                setCredentialToCreate(CredentialType.ansible)
-                                currentCredential[0] = CredentialType.ansible
-                                props.setCredentialToCreate(CredentialType.ansible)
-                                props.onClickCredentialCard(CredentialType.ansible)
-                            }}
-                        >
-                            <div className={classes.icon}>
-                                <AnsibleTowerIcon size="lg" />
-                            </div>
-                            <div className={classes.cardText}>Ansible Tower</div>
-                        </Card>
-                    </GridItem>
-                    <GridItem>
-                        <Card
-                            isSelectable
-                            isSelected={currentCredential[0] === CredentialType.cloudProvider}
-                            className={classes.card}
-                            onClick={() => {
-                                setCredentialToCreate(CredentialType.cloudProvider)
-                                currentCredential[0] = CredentialType.cloudProvider
-                                props.setCredentialToCreate(CredentialType.cloudProvider)
-                                props.onClickCredentialCard(CredentialType.cloudProvider)
-                            }}
-                        >
-                            <div className={classes.icon}>
-                                <AcmIcon icon={AcmIconVariant.cloud}></AcmIcon>
-                            </div>
-                            <div className={classes.cardText}>Infrastructure Provider</div>
-                        </Card>
-                    </GridItem>
-                </Grid>
-                <AcmTextInput
-                    id="connectionName"
-                    label={t('addConnection.connectionName.label')}
-                    placeholder={t('addConnection.connectionName.placeholder')}
-                    labelHelp={t('addConnection.connectionName.labelHelp')}
-                    value={ansibleSecret.metadata.name}
-                    onChange={(name) => {
-                        updateAnsibleSecret((ansibleSecret) => {
-                            ansibleSecret.metadata.name = name
-                        })
-                    }}
-                />
-                <AcmSelect
-                    id="namespaceName"
-                    label={t('addConnection.namespaceName.label')}
-                    placeholder={t('addConnection.namespaceName.placeholder')}
-                    labelHelp={t('addConnection.namespaceName.labelHelp')}
-                    value={ansibleSecret.metadata.namespace}
-                    onChange={(namespace) => {
-                        updateAnsibleSecret((ansibleSecret) => {
-                            ansibleSecret.metadata.namespace = namespace
-                        })
-                    }}
-                >
-                    {props.projects.map((project) => (
-                        <SelectOption key={project} value={project}>
-                            {project}
-                        </SelectOption>
-                    ))}
-                </AcmSelect>
-            </AcmForm>
-        )
-    }
     return (
         <Wizard
             nextButtonText={nextButtonName}
@@ -441,6 +306,137 @@ export function CreateProviderWizard(props: {
             onBack={onBack}
             onSave={onSave}
         />
+    )
+}
+
+function CredentialTypeStep(props: {
+    projects: string[]
+    providerConnection: ProviderConnection
+    ansibleSecret: AnsibleTowerSecret
+    setAnsibleSecret: Function
+    setProviderConnection: Function
+    setCredentialInputstep: Function
+    setCredentialToCreate: Function
+    credentialToCreate: CredentialType
+    onClickCredentialCard: Function
+    setCurrentCredentialType: Function
+    currentCredentialType: CredentialType[]
+}) {
+    const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
+
+    const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
+    const [currentCredentialType, setCurrentCredentialType] = useState(props.currentCredentialType)
+
+    console.log('credential card: ', props.credentialToCreate)
+    function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
+        const copy = { ...ansibleSecret }
+        update(copy)
+        setAnsibleSecret(copy)
+        props.setAnsibleSecret(copy)
+    }
+
+    function updateCurrentCredentialType(credentialType: CredentialType) {
+        props.currentCredentialType[0] = credentialType // will update parent component state value while preserving memory reference
+        setCurrentCredentialType([credentialType]) // will trigger re-render
+    }
+
+    console.log('name: ', props.ansibleSecret.metadata.name)
+
+    const useStyles = makeStyles({
+        card: {
+            width: '150px',
+            height: '125px',
+        },
+        icon: {
+            display: 'flex',
+            height: '30%',
+            width: '50%',
+            margin: '10% 10% 2.5% 10%',
+
+            overflow: 'hidden',
+        },
+        cardText: {
+            margin: '0% 10% 10% 10%',
+        },
+        grid: {
+            display: 'flex',
+        },
+    })
+
+    const classes = useStyles()
+    return (
+        <AcmForm>
+            <Title headingLevel="h4" size="xl">
+                Select the credential type and enter basic information
+            </Title>
+            <Title headingLevel="h6" size="md">
+                Credential types*
+            </Title>
+            <Grid className={classes.grid} span={1} hasGutter={true}>
+                <GridItem>
+                    <Card
+                        isSelectable
+                        isSelected={currentCredentialType[0] === CredentialType.ansible}
+                        className={classes.card}
+                        onClick={() => {
+                            updateCurrentCredentialType(CredentialType.ansible)
+                            props.onClickCredentialCard(CredentialType.ansible)
+                        }}
+                    >
+                        <div className={classes.icon}>
+                            <AnsibleTowerIcon size="lg" />
+                        </div>
+                        <div className={classes.cardText}>Ansible Tower</div>
+                    </Card>
+                </GridItem>
+                <GridItem>
+                    <Card
+                        isSelectable
+                        isSelected={currentCredentialType[0] === CredentialType.cloudProvider}
+                        className={classes.card}
+                        onClick={() => {
+                            updateCurrentCredentialType(CredentialType.cloudProvider)
+                            props.onClickCredentialCard(CredentialType.cloudProvider)
+                        }}
+                    >
+                        <div className={classes.icon}>
+                            <AcmIcon icon={AcmIconVariant.cloud}></AcmIcon>
+                        </div>
+                        <div className={classes.cardText}>Infrastructure Provider</div>
+                    </Card>
+                </GridItem>
+            </Grid>
+            <AcmTextInput
+                id="connectionName"
+                label={t('addConnection.connectionName.label')}
+                placeholder={t('addConnection.connectionName.placeholder')}
+                labelHelp={t('addConnection.connectionName.labelHelp')}
+                value={ansibleSecret.metadata.name}
+                onChange={(name) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.name = name
+                    })
+                }}
+            />
+            <AcmSelect
+                id="namespaceName"
+                label={t('addConnection.namespaceName.label')}
+                placeholder={t('addConnection.namespaceName.placeholder')}
+                labelHelp={t('addConnection.namespaceName.labelHelp')}
+                value={ansibleSecret.metadata.namespace}
+                onChange={(namespace) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.namespace = namespace
+                    })
+                }}
+            >
+                {props.projects.map((project) => (
+                    <SelectOption key={project} value={project}>
+                        {project}
+                    </SelectOption>
+                ))}
+            </AcmSelect>
+        </AcmForm>
     )
 }
 
