@@ -187,6 +187,7 @@ export default function CreateClusterPage() {
                             creationStatus: creationStatus?.status,
                             creationMsg: creationStatus?.messages,
                         }}
+                        logging={process.env.NODE_ENV !== 'production'}
                         i18n={i18n}
                     />
                 </PageSection>
