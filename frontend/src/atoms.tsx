@@ -6,10 +6,12 @@ import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
+import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
 import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
+import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
@@ -27,6 +29,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
 })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
+export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
 export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
@@ -37,6 +40,7 @@ export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryCon
 export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
+export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
@@ -60,6 +64,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
@@ -68,6 +73,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
+    const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setNamespaces] = useRecoilState(namespacesState)
@@ -78,6 +84,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterPoolKind]: setClusterPools,
         [ClusterProvisionKind]: setClusterProvisions,
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ConfigMapKind]: setConfigMaps,
@@ -85,6 +92,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [FeatureGateKind]: setFeatureGates,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterKind]: setManagedClusters,
+        [MultiClusterHubKind]: setMultiClusterHubs,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
         [ManagedClusterSetKind]: setManagedClusterSets,
         [NamespaceKind]: setNamespaces,

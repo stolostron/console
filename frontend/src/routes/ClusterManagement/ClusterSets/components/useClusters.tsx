@@ -11,6 +11,7 @@ import {
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { Cluster, mapClusters } from '../../../../lib/get-cluster'
 
+// returns the clusters assigned to a ManagedClusterSet
 export function useClusters(managedClusterSet: ManagedClusterSet | undefined) {
     const [
         managedClusters,

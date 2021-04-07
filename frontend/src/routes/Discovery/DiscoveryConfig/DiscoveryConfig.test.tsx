@@ -2,6 +2,7 @@
 
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockCreate, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { clickByText, waitForNock, waitForNocks, waitForText } from '../../../lib/test-util'
@@ -14,6 +15,7 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import DiscoveryConfigPage from './DiscoveryConfig'
+import { multiClusterHubState } from '../../../atoms'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -86,13 +88,19 @@ const discoveryConfigUpdated: DiscoveryConfig = {
 
 function TestDiscoveryConfigPage() {
     return (
-        <MemoryRouter>
-            <Route
-                render={(props: any) => {
-                    return <DiscoveryConfigPage {...props} />
-                }}
-            />
-        </MemoryRouter>
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(multiClusterHubState, [multiClusterHub])
+            }}
+        >
+            <MemoryRouter>
+                <Route
+                    render={(props: any) => {
+                        return <DiscoveryConfigPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </RecoilRoot>
     )
 }
 

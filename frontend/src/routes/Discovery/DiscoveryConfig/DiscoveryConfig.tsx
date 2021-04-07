@@ -18,6 +18,8 @@ import { ActionGroup, ButtonVariant, Page, SelectOption, Text, TextVariants } fr
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { multiClusterHubState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID } from '../../../lib/providers'
 import { ResourceErrorCode } from '../../../lib/resource-request'
@@ -57,7 +59,7 @@ export function AddDiscoveryConfigData() {
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [providerConnections, setProviderConnections] = useState<ProviderConnection[]>([])
-
+    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
@@ -72,7 +74,6 @@ export function AddDiscoveryConfigData() {
             providerConnections: [],
         },
     })
-
     useEffect(() => {
         setIsLoading(true)
         const providerConnectionsResult = listProviderConnections().promise
@@ -82,7 +83,9 @@ export function AddDiscoveryConfigData() {
                 results.forEach((result) => {
                     const labels = result.metadata.labels!['cluster.open-cluster-management.io/provider']
                     if (labels === ProviderID.CRH) {
-                        CRHProviderConnections.push(result)
+                        if (result.metadata.namespace === multiClusterHubs[0].metadata.namespace) {
+                            CRHProviderConnections.push(result)
+                        }
                     }
                 })
                 setProviderConnections(CRHProviderConnections)
@@ -91,7 +94,7 @@ export function AddDiscoveryConfigData() {
             .catch((err) => {
                 setError(err)
             })
-    }, [])
+    }, [multiClusterHubs])
 
     // Get Discovery Config if it exists
     useEffect(() => {

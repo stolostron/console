@@ -24,7 +24,7 @@ describe('ClusterSetActionDropdown', () => {
         const nock = nockDelete(mockManagedClusterSet)
         await clickByText('actions')
         await clickByText('set.delete')
-        await typeByText('type.to.confirm', 'confirm')
+        await typeByText('type.to.confirm', mockManagedClusterSet.metadata.name!)
         await clickByText('delete')
         await waitForNock(nock)
     })

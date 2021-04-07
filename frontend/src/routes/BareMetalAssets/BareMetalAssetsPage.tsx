@@ -4,7 +4,7 @@ import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluste
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
@@ -157,6 +157,12 @@ export function BareMetalAssetsTable(props: {
                 emptyState={
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}
+                        message={
+                            <Trans
+                                i18nKey={'bma:bareMetalAsset.emptyState.subtitle'}
+                                components={{ bold: <strong /> }}
+                            />
+                        }
                         action={
                             <div style={{ display: 'flex', justifyContent: 'space-evenly', margin: 'auto' }}>
                                 <AcmButton

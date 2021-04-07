@@ -15,7 +15,8 @@ import {
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -33,6 +34,7 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>

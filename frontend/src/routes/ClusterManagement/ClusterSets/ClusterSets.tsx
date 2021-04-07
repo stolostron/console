@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
@@ -150,29 +150,18 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         header: t('table.name'),
                         sort: 'name',
                         search: 'name',
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const clusters =
-                                props.clusters?.filter(
-                                    (cluster) =>
-                                        cluster.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                                ) ?? []
-                            return (
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    {clusters.length > 0 ? (
-                                        <Link
-                                            to={NavigationPath.clusterSetDetails.replace(
-                                                ':id',
-                                                managedClusterSet.metadata.name as string
-                                            )}
-                                        >
-                                            {managedClusterSet.metadata.name}
-                                        </Link>
-                                    ) : (
-                                        managedClusterSet.metadata.name
+                        cell: (managedClusterSet: ManagedClusterSet) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.clusterSetOverview.replace(
+                                        ':id',
+                                        managedClusterSet.metadata.name as string
                                     )}
-                                </span>
-                            )
-                        },
+                                >
+                                    {managedClusterSet.metadata.name}
+                                </Link>
+                            </span>
+                        ),
                     },
                     {
                         header: t('table.clusters'),
@@ -219,7 +208,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 bulkActions={[
                     {
                         id: 'deleteClusterSets',
-                        title: t('bulk.delete'),
+                        title: t('bulk.delete.sets'),
                         click: (managedClusterSets) => {
                             setModalProps({
                                 open: true,
@@ -253,7 +242,12 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     <AcmEmptyState
                         key="mcEmptyState"
                         title={t('managed.clusterSets.emptyStateHeader')}
-                        message={t('managed.clusterSetsemptyStateMsg')}
+                        message={
+                            <Trans
+                                i18nKey={'cluster:managed.clusterSets.emptyStateMsg'}
+                                components={{ bold: <strong />, p: <p /> }}
+                            />
+                        }
                         action={
                             <AcmButton
                                 role="link"

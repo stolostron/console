@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
+import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
     clickByRole,
     clickByTestId,
@@ -440,6 +440,27 @@ describe('CreateCluster', () => {
         )
     }
 
+    let consoleInfos: string[]
+    const originalConsoleInfo = console.info
+    const originalConsoleGroup = console.group
+    const originalConsoleGroupCollapsed = console.groupCollapsed
+
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        consoleInfos = []
+        console.info = console.groupCollapsed = console.group = (message?: any, ...optionalParams: any[]) => {
+            if (message) {
+                consoleInfos = [...consoleInfos, message, ...optionalParams]
+            }
+        }
+    })
+
+    afterEach(() => {
+        console.info = originalConsoleInfo
+        console.group = originalConsoleGroup
+        console.groupCollapsed = originalConsoleGroupCollapsed
+    })
+
     test('can create bare metal cluster', async () => {
         window.scrollBy = () => {}
 
@@ -453,6 +474,8 @@ describe('CreateCluster', () => {
 
         // create the form
         const { container } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // start filling in the form
         await typeByTestId('eman', clusterName!)
@@ -518,6 +541,7 @@ describe('CreateCluster', () => {
         // click create button
         await clickByTestId('create-button-portal-id-btn')
 
+        expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('success.create.creating')
 
         // make sure creating

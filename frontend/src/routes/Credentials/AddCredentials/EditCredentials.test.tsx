@@ -15,7 +15,8 @@ import {
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState } from '../../../atoms'
+import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -49,6 +50,7 @@ function TestEditConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
+                snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
             <MemoryRouter
@@ -73,7 +75,9 @@ describe('edit connection page', () => {
     it('should edit provider connection', async () => {
         const getProviderConnectionNock = nockGet(awsProviderConnection)
         const { getByText, getByTestId } = render(<TestEditConnectionPage />)
+
         await waitFor(() => expect(getProviderConnectionNock.isDone()).toBeTruthy())
+
         await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 
         await waitFor(() => expect(getByTestId('awsAccessKeyID')).toBeInTheDocument())
