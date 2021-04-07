@@ -440,8 +440,25 @@ describe('CreateCluster', () => {
         )
     }
 
+    let consoleInfos: string[]
+    const originalConsoleInfo = console.info
+    const originalConsoleGroup = console.group
+    const originalConsoleGroupCollapsed = console.groupCollapsed
+
     beforeEach(() => {
         nockIgnoreRBAC()
+        consoleInfos = []
+        console.info = console.groupCollapsed = console.group = (message?: any, ...optionalParams: any[]) => {
+            if (message) {
+                consoleInfos = [...consoleInfos, message, ...optionalParams]
+            }
+        }
+    })
+
+    afterEach(() => {
+        console.info = originalConsoleInfo
+        console.group = originalConsoleGroup
+        console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
     test('can create bare metal cluster', async () => {
@@ -524,6 +541,7 @@ describe('CreateCluster', () => {
         // click create button
         await clickByTestId('create-button-portal-id-btn')
 
+        expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('success.create.creating')
 
         // make sure creating

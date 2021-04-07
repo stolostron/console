@@ -22,9 +22,61 @@ async function setupBeforeAll(): Promise<void> {
     nock.enableNetConnect('localhost')
 }
 
-let noMatches: string[]
+let missingNocks: string[]
 let consoleWarnings: any[]
 let consoleErrors: any[]
+
+expect.extend({
+    hasMissingMocks(missing) {
+        const msgs: string[] = []
+        const pass: boolean = missing.length === 0
+        if (!pass) {
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push('(Make sure the mocks in test match these mocks)\n')
+            missing.forEach((req: { method: any; path: any; requestBodyBuffers: any[] }) => {
+                const missingNock = []
+                missingNock.push(req.method)
+                missingNock.push(req.path)
+                req.requestBodyBuffers.forEach((buffer) => {
+                    missingNock.push(`\n${buffer.toString('utf8')}`)
+                })
+                msgs.push(missingNock.join(' '))
+            })
+            msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        }
+        const message: () => string = () => msgs.join('\n')
+        return {
+            message,
+            pass,
+        }
+    },
+    hasUnusedMocks(unused) {
+        const msgs: string[] = []
+        const pass: boolean = unused.length === 0
+        if (!pass) {
+            msgs.push('\n\n\n!!!!!!!!!!!!!!!! EXTRA MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
+            msgs.push('(If there are no other errors above, these mocks are no longer required)\n')
+            unused.forEach((pending: string) => {
+                msgs.push(pending)
+            })
+            msgs.push('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        }
+        const message: () => string = () => msgs.join('\n')
+        return {
+            message,
+            pass,
+        }
+    },
+    hasNoConsoleLogs(logs) {
+        const msgs: string[] = logs
+        const pass: boolean = logs.length === 0
+        const message: () => string = () => msgs.join('\n')
+        return {
+            message,
+            pass,
+        }
+    },
+})
 
 console.warn = (message?: any, ..._optionalParams: any[]) => {
     if (typeof message === 'string') {
@@ -39,14 +91,11 @@ console.error = (message?: any, ...optionalParams: any[]) => {
 }
 
 function logNoMatch(req: any) {
-    if (noMatches.length === 0) {
-        noMatches.push('No match for requests')
-    }
-    noMatches.push(`${req.method} ${req.path}`)
+    missingNocks.push(req)
 }
 
 function setupBeforeEach(): void {
-    noMatches = []
+    missingNocks = []
     consoleErrors = []
     consoleWarnings = []
     nock.emitter.on('no match', logNoMatch)
@@ -54,11 +103,12 @@ function setupBeforeEach(): void {
 
 async function setupAfterEach(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 100))
-    expect(noMatches).toEqual([])
+
+    expect(missingNocks).hasMissingMocks()
     // expect(consoleErrors).toEqual([])
     // expect(consoleWarnings).toEqual([])
-    const error = nock.isDone() ? undefined : `Pending Nocks: ${nock.pendingMocks().join(',')}`
-    expect(error).toBeUndefined()
+    expect(nock.pendingMocks()).hasUnusedMocks()
+
     nock.emitter.off('no match', logNoMatch)
     nock.cleanAll()
 }
