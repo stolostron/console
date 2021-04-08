@@ -63,7 +63,11 @@ function rbacDeleteClusterDeployment() {
     return rbacDelete(ClusterDeploymentDefinition, mockCluster.namespace, mockCluster.name)
 }
 
-function nockPatchClusterDeployment(powerState: 'Running' | 'Hibernating') {
+function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: string, value?: string) {
+    const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = { op, path }
+    if (value) {
+        patch.value = value
+    }
     return nockPatch(
         {
             apiVersion: ClusterDeploymentDefinition.apiVersion,
@@ -73,7 +77,7 @@ function nockPatchClusterDeployment(powerState: 'Running' | 'Hibernating') {
                 namespace: mockCluster.namespace,
             },
         },
-        [{ op: 'replace', path: '/spec/powerState', value: powerState }]
+        [patch]
     )
 }
 
@@ -112,7 +116,7 @@ describe('ClusterActionDropdown', () => {
         nockIgnoreRBAC()
     })
     test('hibernate action should patch cluster deployment', async () => {
-        const nockPatch = nockPatchClusterDeployment('Hibernating')
+        const nockPatch = nockPatchClusterDeployment('replace', '/spec/powerState', 'Hibernating')
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
@@ -122,7 +126,7 @@ describe('ClusterActionDropdown', () => {
     })
 
     test('resume action should patch cluster deployment', async () => {
-        const nockPatch = nockPatchClusterDeployment('Running')
+        const nockPatch = nockPatchClusterDeployment('replace', '/spec/powerState', 'Running')
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         cluster.status = ClusterStatus.hibernating
         render(<Component cluster={cluster} />)
@@ -134,6 +138,11 @@ describe('ClusterActionDropdown', () => {
 
     test('can add a cluster to a managed cluster set', async () => {
         const nockPatch = nockPatchManagedCluster('add', mockManagedClusterSet.metadata.name)
+        const nockPatchCD = nockPatchClusterDeployment(
+            'add',
+            `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+            mockManagedClusterSet.metadata.name
+        )
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
@@ -141,18 +150,23 @@ describe('ClusterActionDropdown', () => {
         await clickByText('common:select')
         await clickByText(mockManagedClusterSet.metadata.name!)
         await clickByText('add')
-        await waitForNock(nockPatch)
+        await waitForNocks([nockPatch, nockPatchCD])
     })
 
     test('can remove a cluster from a managed cluster set', async () => {
         const nockPatch = nockPatchManagedCluster('remove')
+        const nockPatchCD = nockPatchClusterDeployment(
+            'remove',
+            `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`
+        )
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
+        cluster.clusterSet = mockManagedClusterSet.metadata.name
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
         await clickByText('managed.removeSet')
         await clickByText('remove')
-        await waitForNock(nockPatch)
+        await waitForNocks([nockPatch, nockPatchCD])
     })
 })
 

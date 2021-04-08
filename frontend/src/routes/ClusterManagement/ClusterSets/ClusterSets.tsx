@@ -30,11 +30,7 @@ import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    ManagedClusterSet,
-    ManagedClusterSetDefinition,
-    managedClusterSetLabel,
-} from '../../../resources/managed-cluster-set'
+import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
@@ -70,7 +66,7 @@ export default function ClusterSetsPage() {
         managedClusters,
         managedClusterAddons
     )
-    clusters = clusters.filter((cluster) => cluster.labels?.[managedClusterSetLabel])
+    clusters = clusters.filter((cluster) => cluster?.clusterSet)
 
     usePageContext(clusters.length > 0, PageActions)
     return (
@@ -174,8 +170,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         cell: (managedClusterSet: ManagedClusterSet) => {
                             const clusters =
                                 props.clusters?.filter(
-                                    (cluster) =>
-                                        cluster.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
+                                    (cluster) => cluster?.clusterSet === managedClusterSet.metadata.name
                                 ) ?? []
 
                             let healthy = 0

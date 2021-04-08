@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { PageSection, ActionGroup, Title } from '@patternfly/react-core'
@@ -19,13 +19,12 @@ import {
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Cluster } from '../../../../../lib/get-cluster'
-import { ManagedCluster, ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { patchResource } from '../../../../../lib/resource-request'
 import { StatusField } from '../../../Clusters/components/StatusField'
 import { DistributionField } from '../../../Clusters/components/DistributionField'
 import { useAllClusters } from '../../../Clusters/components/useAllClusters'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
+import { patchClusterSetLabel } from '../../../../../lib/patch-cluster'
 
 export function ClusterSetManageClustersPage() {
     const { t } = useTranslation(['cluster'])
@@ -57,17 +56,21 @@ export function ClusterSetManageClustersContent() {
     const history = useHistory()
     // const alertContext = useContext(AcmAlertContext)
     const allClusters = useAllClusters()
+    const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
+    const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
     const { clusterSet, clusters } = useContext(ClusterSetContext)
     const [clusterSetClusters] = useState<Cluster[]>(clusters ?? [])
     const [selectedClusters, setSelectedClusters] = useState<Cluster[]>(clusterSetClusters!)
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
+    useEffect(() => {
+        if (canJoinClusterSets !== undefined) {
+            setSelectedClusters(clusters ?? [])
+        }
+    }, [canJoinClusterSets, clusters])
+
     const availableClusters = allClusters.filter((cluster) => {
-        return (
-            cluster.isManaged &&
-            (cluster.labels?.[managedClusterSetLabel] === undefined ||
-                cluster.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!)
-        )
+        return cluster?.clusterSet === undefined || canJoinClusterSetList?.includes(cluster?.clusterSet)
     })
 
     const unchangedClusters = selectedClusters.filter((selectedCluster) =>
@@ -85,6 +88,11 @@ export function ClusterSetManageClustersContent() {
                 undefined
         ) ?? []
 
+    const transferredClusters = selectedClusters?.filter(
+        (selectedCluster) =>
+            selectedCluster?.clusterSet !== undefined && selectedCluster?.clusterSet !== clusterSet?.metadata.name
+    )
+
     return (
         <>
             {/* TODO: Convert modal to page in Wizard */}
@@ -99,42 +107,31 @@ export function ClusterSetManageClustersContent() {
                         addedClusters={addedClusters}
                         removedClusters={removedClusters}
                         unchangedClusters={unchangedClusters}
+                        transferredClusters={transferredClusters}
                     />
                 }
                 onCancel={() => setShowConfirmModal(false)}
                 close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
                 actionFn={(cluster: Cluster) => {
-                    const isAdded = addedClusters.find((addedCluster) => addedCluster.name === cluster.name)
-                    return patchResource(
-                        {
-                            apiVersion: ManagedClusterDefinition.apiVersion,
-                            kind: ManagedClusterDefinition.kind,
-                            metadata: {
-                                name: cluster.name!,
-                            },
-                        } as ManagedCluster,
-                        [
-                            {
-                                op: isAdded ? 'add' : 'remove',
-                                path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-                                value: isAdded ? clusterSet!.metadata.name! : undefined,
-                            },
-                        ]
+                    const isTransferred = transferredClusters.find(
+                        (transferredCluster) => transferredCluster.name === cluster.name
                     )
+                    const isAdded = addedClusters.find((addedCluster) => addedCluster.name === cluster.name)
+                    let op: 'remove' | 'replace' | 'add' = 'remove'
+                    if (isAdded) op = 'add'
+                    if (isTransferred) op = 'replace'
+                    return patchClusterSetLabel(cluster.name!, op, clusterSet!.metadata.name!)
                 }}
             />
             <AcmForm>
                 <Title headingLevel="h4" size="xl">
                     {t('manageClusterSet.form.section.table')}
                 </Title>
-                <div>
-                    Clusters already assigned to the cluster set and any currently unassigned clusters will be
-                    displayed.
-                </div>
+                <div>{t('manageClusterSet.form.section.table.description')}</div>
                 <AcmTable<Cluster>
                     gridBreakPoint={TableGridBreakpoint.none}
                     plural="clusters"
-                    items={availableClusters}
+                    items={isLoading ? undefined : availableClusters}
                     initialSelectedItems={clusterSetClusters}
                     onSelect={(clusters: Cluster[]) => setSelectedClusters(clusters)}
                     keyFn={(cluster: Cluster) => cluster.name!}
@@ -148,10 +145,7 @@ export function ClusterSetManageClustersContent() {
                         },
                         {
                             header: t('table.assignedToSet'),
-                            cell: (cluster) =>
-                                clusterSetClusters?.find((clusterSetCluster) => clusterSetCluster.name === cluster.name)
-                                    ? t('managedClusterSet.form.assigned')
-                                    : t('managedClusterSet.form.unassigned'),
+                            cell: (cluster) => cluster?.clusterSet ?? '-',
                         },
                         {
                             header: t('table.status'),
@@ -218,6 +212,7 @@ function ManageClustersSummary(props: {
     addedClusters: Cluster[]
     removedClusters: Cluster[]
     unchangedClusters: Cluster[]
+    transferredClusters: Cluster[]
 }) {
     const { t } = useTranslation(['cluster'])
     return (
@@ -246,14 +241,23 @@ function ManageClustersSummary(props: {
                             const isRemoved = props.removedClusters.find(
                                 (removedCluster) => removedCluster.name === cluster.name
                             )
-                            if (isAdded) {
-                                return t('managedClusterSet.form.added')
+                            const isTransferred = props.transferredClusters.find(
+                                (transferredCluster) => transferredCluster.name === cluster.name
+                            )
+                            if (isTransferred) {
+                                return t('managedClusterSet.form.transferred')
                             } else if (isRemoved) {
                                 return t('managedClusterSet.form.removed')
+                            } else if (isAdded) {
+                                return t('managedClusterSet.form.added')
                             } else {
                                 return t('managedClusterSet.form.unchanged')
                             }
                         },
+                    },
+                    {
+                        header: t('table.assignedToSet'),
+                        cell: (cluster) => cluster?.clusterSet ?? '-',
                     },
                 ]}
             />

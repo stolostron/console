@@ -17,22 +17,22 @@
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
     "dependencies": {
-        "find-my-way": "^4.0.0",
+        "find-my-way": "^4.1.0",
         "pino": "^6.11.2",
         "raw-body": "^2.4.1"
     },
     "devDependencies": {
-        "@types/eslint": "^7.2.7",
+        "@types/eslint": "^7.2.8",
         "@types/eslint-config-prettier": "^6.11.0",
         "@types/eslint-plugin-prettier": "^3.1.0",
-        "@types/jest": "^26.0.20",
+        "@types/jest": "^26.0.22",
         "@types/node": "^14.x.x",
         "@types/pino": "^6.3.6",
         "@types/prettier": "^2.2.3",
         "@types/raw-body": "^2.3.0",
-        "@typescript-eslint/eslint-plugin": "^4.18.0",
-        "@typescript-eslint/parser": "^4.18.0",
-        "eslint": "^7.22.0",
+        "@typescript-eslint/eslint-plugin": "^4.21.0",
+        "@typescript-eslint/parser": "^4.21.0",
+        "eslint": "^7.23.0",
         "eslint-config-prettier": "^8.1.0",
         "eslint-plugin-prettier": "^3.3.1",
         "jest": "^26.x.x",
