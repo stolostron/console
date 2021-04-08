@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
+import { Provider } from '@open-cluster-management/ui-components'
+import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { ClusterDeployment } from '../resources/cluster-deployment'
-import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { ManagedCluster } from '../resources/managed-cluster'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
-import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
-import { getLatest } from './utils'
-import { Provider } from '@open-cluster-management/ui-components'
-import { AddonStatus } from './get-addons'
+import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
+import { AddonStatus } from './get-addons'
+import { getLatest } from './utils'
 
 export enum ClusterStatus {
     'pending' = 'pending',

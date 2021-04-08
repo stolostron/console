@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
-import { V1ObjectMeta } from '@kubernetes/client-node'
-import { createResource, listResources, getResource, replaceResource } from '../lib/resource-request'
 
 export const DiscoveryConfigApiVersion = 'discovery.open-cluster-management.io/v1'
 export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.io/v1'

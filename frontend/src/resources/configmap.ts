@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1ConfigMap } from '@kubernetes/client-node'
+import { V1ConfigMap } from '@kubernetes/client-node/dist/gen/model/v1ConfigMap'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ConfigMapApiVersion = 'v1'

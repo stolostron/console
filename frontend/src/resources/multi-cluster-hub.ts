@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource, IResourceDefinition } from './resource'
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { listResources } from '../lib/resource-request'
+import { IResource, IResourceDefinition } from './resource'
 
 export const MultiClusterHubApiVersion = 'operator.open-cluster-management.io/v1'
 export type MultiClusterHubApiVersionType = 'operator.open-cluster-management.io/v1'
