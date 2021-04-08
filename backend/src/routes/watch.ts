@@ -4,12 +4,22 @@ import { readFileSync } from 'fs'
 import { ClientRequest } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
+import { get } from 'https'
 import { parseCookies } from '../lib/cookies'
-import { jsonPost } from '../lib/json-request'
+import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
+import { Status } from '../resources/status'
+import { constants } from 'http2'
+
+const {
+    HTTP2_HEADER_CONTENT_TYPE,
+    HTTP2_HEADER_AUTHORIZATION,
+    HTTP2_HEADER_ACCEPT,
+    HTTP2_HEADER_ACCEPT_ENCODING,
+} = constants
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
@@ -22,7 +32,7 @@ interface WatchEvent {
     object: IResource
 }
 
-type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
+type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' | 'UNAUTHORIZED' }
 
 const resourceCache: {
     [kind: string]: {
@@ -145,8 +155,9 @@ export function watchResource(
         },
         (res) => {
             if (res.statusCode === 200) {
-                logger.debug({ msg: 'watching start', kind, resourceVersion })
-
+                if (process.env.LOG_WATCHES) {
+                    logger.debug({ msg: 'watching start', kind, resourceVersion })
+                }
                 /* Test code to simulate losing connection to kubernetes */
                 // if (process.env.NODE_ENV === 'development') {
                 //     if (kind === 'managedClusterInfos') {
@@ -189,7 +200,9 @@ export function watchResource(
                         logger.error({ msg: 'watching error', kind, error: err.message })
                     })
                     .on('close', () => {
-                        logger.debug({ msg: 'watching stop', kind })
+                        if (process.env.LOG_WATCHES) {
+                            logger.debug({ msg: 'watching stop', kind })
+                        }
                         if (stopping) return
                         watchResource(token, apiVersion, kind, options, resourceVersion)
                     })
@@ -218,13 +231,15 @@ function handleWatchEvent(watchEvent: WatchEvent): string {
         return resource.metadata?.resourceVersion
     }
 
-    logger.debug({
-        msg: 'watch',
-        type: watchEvent.type,
-        kind: resource.kind,
-        name: resource.metadata?.name,
-        namespace: resource.metadata?.namespace,
-    })
+    if (process.env.LOG_WATCHES === 'true') {
+        logger.debug({
+            msg: 'watch',
+            type: watchEvent.type,
+            kind: resource.kind,
+            name: resource.metadata?.name,
+            namespace: resource.metadata?.namespace,
+        })
+    }
 
     if (!resource.kind) return undefined
     if (!resource.metadata?.name) return undefined
@@ -278,10 +293,32 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'START':
         case 'LOADED':
             return Promise.resolve(true)
+        case 'UNAUTHORIZED':
+            return new Promise((resolve) =>
+                get(
+                    process.env.CLUSTER_API_URL + '/apis',
+                    {
+                        headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
+                        agent: new Agent({ rejectUnauthorized: false }),
+                    },
+                    (res) => {
+                        switch (res?.statusCode) {
+                            case 401:
+                            case 403:
+                                resolve(true)
+                                break
+                            default:
+                                resolve(false)
+                                break
+                        }
+                    }
+                )
+            )
+
         case 'DELETED':
             // TODO - Security issue: Only send delete events to clients who can access that item
             // - Problem is if the namespace goes away, access check will fail
-            // - Need to track what is set to client and only send if they previously accessed this event
+            // - Need to track what is sent to client and only send if they previously accessed this event
             return Promise.resolve(true)
         case 'ADDED':
         case 'MODIFIED': {
@@ -326,7 +363,7 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
         return existing.promise
     }
 
-    const promise = jsonPost(
+    const promise = jsonPost<{ status: { allowed: boolean } }>(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
         {
             apiVersion: 'authorization.k8s.io/v1',
@@ -345,18 +382,18 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
             },
         },
         token
-    ).then((data: { status: { allowed: boolean } }) => {
-        if (data.status.allowed) {
-            logger.trace({
+    ).then((result) => {
+        if (process.env.LOG_ACCESS === 'true') {
+            logger.debug({
                 msg: 'access',
-                type: 'ALLOWED',
+                allowed: result.body.status.allowed,
                 verb,
                 resource: resource.kind.toLowerCase() + 's',
                 name: resource.metadata?.name,
                 namespace: resource.metadata?.namespace,
             })
-            return true
-        } else return false
+        }
+        return result.body.status.allowed
     })
     accessCache[token][key] = {
         time: Date.now(),
@@ -373,3 +410,12 @@ export function stopWatching(): void {
         clientRequest.destroy()
     }
 }
+
+let lastTokenCheckEventID = 0
+export function checkAuthorization(): void {
+    const data: ServerSideEventData = { type: 'UNAUTHORIZED' }
+    if (lastTokenCheckEventID) ServerSideEvents.removeEvent(lastTokenCheckEventID)
+    lastTokenCheckEventID = ServerSideEvents.pushEvent({ data })
+}
+
+setInterval(() => checkAuthorization(), 20 * 1000).unref()

@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { createHash } from 'crypto'
+import { IncomingMessage } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Agent, request } from 'https'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
+import { deleteCookie, parseCookies } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
-import { redirect, respondInternalServerError } from '../lib/respond'
+import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
+import { checkAuthorization } from './watch'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 const oauthInfoPromise = jsonRequest<OAuthInfo>(
@@ -55,4 +60,37 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
     } else {
         return respondInternalServerError(req, res)
     }
+}
+
+export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void {
+    const token = parseCookies(req)['acm-access-token-cookie']
+    if (!token) return unauthorized(req, res)
+
+    let tokenName = token
+    const sha256Prefix = 'sha256~'
+    if (tokenName.startsWith(sha256Prefix)) {
+        tokenName = `sha256~${createHash('sha256')
+            .update(token.substring(sha256Prefix.length))
+            .digest('base64')
+            .replace(/=/g, '')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')}`
+    }
+
+    const clientRequest = request(
+        process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
+        {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+            agent: new Agent({ rejectUnauthorized: false }),
+        },
+        (response: IncomingMessage) => {
+            deleteCookie(res, 'acm-access-token-cookie')
+            res.writeHead(response.statusCode).end()
+        }
+    )
+    clientRequest.on('error', (err) => {
+        respondInternalServerError(req, res)
+    })
+    clientRequest.end()
 }
