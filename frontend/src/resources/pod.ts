@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1Pod } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { V1Pod } from '@kubernetes/client-node/dist/gen/model/v1Pod'
 import { ClusterStatus } from '../lib/get-cluster'
 import { listNamespacedResources } from '../lib/resource-request'
 import { getLatest } from '../lib/utils'
