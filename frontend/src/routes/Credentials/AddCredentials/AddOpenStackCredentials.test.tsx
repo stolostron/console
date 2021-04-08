@@ -4,9 +4,8 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { mockBadRequestStatus, nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { NavigationPath } from '../../../NavigationPath'
 import {
     packProviderConnection,
     ProviderConnection,
@@ -14,8 +13,10 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
+import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { waitForText } from '../../../lib/test-util'
 import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
@@ -24,11 +25,8 @@ const mockNamespace: Namespace = {
     metadata: { name: 'test-namespace' },
 }
 
-function EmptyPage() {
-    return <div></div>
-}
-
 let location: Location
+
 function TestAddConnectionPage() {
     return (
         <RecoilRoot
@@ -37,19 +35,11 @@ function TestAddConnectionPage() {
                 snapshot.set(multiClusterHubState, [multiClusterHub])
             }}
         >
-            <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
+            <MemoryRouter>
                 <Route
-                    path={NavigationPath.addCredentials}
                     render={(props: any) => {
                         location = props.location
                         return <AddCredentialPage {...props} />
-                    }}
-                />
-                <Route
-                    path={NavigationPath.credentials}
-                    render={(props: any) => {
-                        location = props.location
-                        return <EmptyPage />
                     }}
                 />
             </MemoryRouter>
@@ -57,12 +47,15 @@ function TestAddConnectionPage() {
     )
 }
 
+    //openstackCloudsYaml: 'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: http://localhost:5000\n\t\t\tusername: "admin"\n\t\t\tpassword: fake\n\t\t\tproject_id: 123456789',
+    //openstackCloudsYaml: 'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: \"admin\"\n      password: fake\n      project_id: 123456789\n      project_name: \"admin\"\n      user_domain_name: \"Default\"\n    region_name: \"regionOne\"\n    interface: \"public\"\n    identity_api_version: 3"',
+
 describe('add connection page', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
     })
     it('should create openstack provider connection', async () => {
-        const providerConnection: ProviderConnection = {
+        const openstackProviderConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
             metadata: {
@@ -74,43 +67,41 @@ describe('add connection page', () => {
                 },
             },
             spec: {
-                openstackCloudsYaml: 'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: http://localhost:5000\n\t\t\tusername: "admin"\n\t\t\tpassword: fake\n\t\t\tproject_id: 123456789',
+                openstackCloudsYaml: 'clouds: openstack:   auth:',
                 openstackCloud: 'openstack',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
-
+                sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
             },
         }
 
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const badRequestNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }), mockBadRequestStatus)
+        const createNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.VMW).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.VMW).name).click()
-        userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
+        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.OST).name)).toBeInTheDocument())
+        getByText(getProviderByKey(ProviderID.OST).name).click()
+        userEvent.type(getByTestId('connectionName'), openstackProviderConnection.metadata.name!)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(providerConnection.metadata.namespace!).click()
-        userEvent.type(
-            getByTestId('baseDomainResourceGroupName'),
-            providerConnection.spec!.baseDomainResourceGroupName!
-        )
-
-        userEvent.type(getByTestId('openstackCloudsYaml'), providerConnection.spec!.openstackCloudsYaml!)
-        userEvent.type(getByTestId('openstackCloud'), providerConnection.spec!.openstackCloud!)
-
-        userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
+        await waitFor(() => expect(getByText(openstackProviderConnection.metadata.namespace!)).toBeInTheDocument())
+        getByText(openstackProviderConnection.metadata.namespace!).click()
+        userEvent.type(getByTestId('openstackCloudsYaml'), openstackProviderConnection.spec!.openstackCloudsYaml!)
+        userEvent.type(getByTestId('openstackCloud'), openstackProviderConnection.spec!.openstackCloud!)
+        userEvent.type(getByTestId('baseDomain'), openstackProviderConnection.spec!.baseDomain!)
+        userEvent.type(getByTestId('pullSecret'), openstackProviderConnection.spec!.pullSecret!)
+        userEvent.type(getByTestId('sshPrivateKey'), openstackProviderConnection.spec!.sshPrivatekey!)
+        userEvent.type(getByTestId('sshPublicKey'), openstackProviderConnection.spec!.sshPublickey!)
+        getByText('addConnection.addButton.label').click()
+        await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
+        await waitForText(mockBadRequestStatus.message, true)
+        await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
         getByText('addConnection.addButton.label').click()
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
