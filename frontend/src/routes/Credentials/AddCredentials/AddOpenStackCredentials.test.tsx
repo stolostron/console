@@ -47,9 +47,6 @@ function TestAddConnectionPage() {
     )
 }
 
-    //openstackCloudsYaml: 'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: http://localhost:5000\n\t\t\tusername: "admin"\n\t\t\tpassword: fake\n\t\t\tproject_id: 123456789',
-    //openstackCloudsYaml: 'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: \"admin\"\n      password: fake\n      project_id: 123456789\n      project_name: \"admin\"\n      user_domain_name: \"Default\"\n    region_name: \"regionOne\"\n    interface: \"public\"\n    identity_api_version: 3"',
-
 describe('add connection page', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
@@ -67,7 +64,8 @@ describe('add connection page', () => {
                 },
             },
             spec: {
-                openstackCloudsYaml: 'clouds: openstack:   auth:',
+                openstackCloudsYaml:
+                    'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: admin\n      password: fake\n      project_id: 123456789\n      project_name: admin\n      user_domain_name: Default\n    region_name: regionOne\n    interface: public\n    identity_api_version: 3',
                 openstackCloud: 'openstack',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
@@ -76,7 +74,10 @@ describe('add connection page', () => {
             },
         }
 
-        const badRequestNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }), mockBadRequestStatus)
+        const badRequestNock = nockCreate(
+            packProviderConnection({ ...openstackProviderConnection }),
+            mockBadRequestStatus
+        )
         const createNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }))
         const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
