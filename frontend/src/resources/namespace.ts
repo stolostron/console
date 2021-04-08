@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResource } from './resource'
 
 export const NamespaceApiVersion = 'v1'

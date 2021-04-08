@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import * as YAML from 'yamljs'
 import { ProviderID } from '../lib/providers'
-import { IResourceDefinition } from './resource'
 import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
+import { IResourceDefinition } from './resource'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
