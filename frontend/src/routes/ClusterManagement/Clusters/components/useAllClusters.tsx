@@ -9,6 +9,7 @@ import {
     managedClusterInfosState,
     managedClustersState,
     managedClusterAddonsState,
+    clusterClaimsState,
 } from '../../../../atoms'
 
 export function useAllClusters() {
@@ -18,6 +19,7 @@ export function useAllClusters() {
         managedClusterInfos,
         certificateSigningRequests,
         managedClusterAddons,
+        clusterClaims,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -25,6 +27,7 @@ export function useAllClusters() {
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
+            clusterClaimsState,
         ])
     )
     const clusters = useMemo(
@@ -34,9 +37,17 @@ export function useAllClusters() {
                 managedClusterInfos,
                 certificateSigningRequests,
                 managedClusters,
-                managedClusterAddons
+                managedClusterAddons,
+                clusterClaims
             ),
-        [clusterDeployments, managedClusterInfos, certificateSigningRequests, managedClusters, managedClusterAddons]
+        [
+            clusterDeployments,
+            managedClusterInfos,
+            certificateSigningRequests,
+            managedClusters,
+            managedClusterAddons,
+            clusterClaims,
+        ]
     )
     return clusters as Cluster[]
 }

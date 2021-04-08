@@ -21,6 +21,9 @@
     "type.to.confirm": "Confirm by typing \"{0}\" below:",
     "close": "Close",
 
+    "yes": "Yes",
+    "no": "No",
+
     "show.less": "Show less",
     "show.more": "{{number}} more",
 
