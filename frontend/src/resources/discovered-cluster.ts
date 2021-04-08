@@ -21,14 +21,11 @@ export interface DiscoveredCluster extends IResource {
     metadata: V1ObjectMeta
     spec: {
         activity_timestamp: string
-        apiUrl?: string
         cloudProvider: string
         console: string
         creation_timestamp?: string
-        healthState: string
         name: string
         openshiftVersion: string
-        product: string
         providerConnections?: {
             apiVersion: string
             kind: string
@@ -37,14 +34,7 @@ export interface DiscoveredCluster extends IResource {
             resourceVersion: string
             uid: string
         }[]
-        region: string
-        state: string
-        subscription: {
-            creator_id: string
-            managed: boolean
-            status: string
-            support_level?: string
-        }
+        status: string
     }
 }
 

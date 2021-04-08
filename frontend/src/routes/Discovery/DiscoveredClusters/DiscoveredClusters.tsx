@@ -44,21 +44,21 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     },
     {
         header: 'Status',
-        sort: 'spec.subscription.status',
-        search: 'spec.subscription.status',
+        sort: 'spec.status',
+        search: 'spec.status',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                {discoveredCluster.spec.subscription.status === 'Active' ? (
+                {discoveredCluster.spec.status === 'Active' ? (
                     <CheckIcon color="green" key="ready-icon" />
                 ) : (
                     <Fragment key="ready-icon"></Fragment>
                 )}
-                {discoveredCluster.spec.subscription.status !== 'Active' ? (
+                {discoveredCluster.spec.status !== 'Active' ? (
                     <ExclamationIcon color="red" key="offline-icon" />
                 ) : (
                     <Fragment key="offline-icon"></Fragment>
                 )}
-                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.spec.subscription.status)}</span>
+                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.spec.status)}</span>
             </span>
         ),
     },

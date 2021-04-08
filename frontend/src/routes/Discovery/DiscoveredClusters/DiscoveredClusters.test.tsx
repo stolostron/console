@@ -22,14 +22,11 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-01' },
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
-            apiUrl: 'https://api.test-cluster-01.dev01.red-chesterfield.com:6443',
             cloudProvider: 'aws',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
-            healthState: 'healthy',
             name: 'test-cluster-01',
             openshiftVersion: '4.5.5',
-            product: 'ocp',
             providerConnections: [
                 {
                     apiVersion: 'v1',
@@ -40,14 +37,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
                     uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
                 },
             ],
-            region: 'us-east-1',
-            state: 'ready',
-            subscription: {
-                creator_id: 'abc123',
-                managed: false,
-                status: 'Active',
-                support_level: 'None',
-            },
+            status: 'Active',
         },
     },
     {
@@ -56,22 +46,12 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-02', namespace: 'discovered-cluster-namespace' },
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
-            apiUrl: 'https://api.test-cluster-02.dev01.red-chesterfield.com:6443',
             cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
-            healthState: 'healthy',
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
-            product: 'ocp',
-            region: 'us-east-1',
-            state: 'ready',
-            subscription: {
-                status: 'Stale',
-                managed: true,
-                support_level: 'eval',
-                creator_id: 'abc123',
-            },
+            status: 'Stale',
         },
     },
 ]
