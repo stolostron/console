@@ -7,7 +7,7 @@ import { clickByText, waitForText } from '../../../../lib/test-util'
 
 const testData: PolicyReport[] = [
     {
-        apiVersion: 'wgpolicyk8s.io/v1alpha1',
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
         kind: 'PolicyReport',
         metadata: {
             name: 'policyreport testing risk 1 policy',
@@ -17,7 +17,7 @@ const testData: PolicyReport[] = [
         results: [
             {
                 category: 'category,category1,category2',
-                data: {
+                properties: {
                     created_at: '2021-03-02T21:26:04Z',
                     details: 'policyreport testing risk 1 details',
                     reason: 'policyreport testing risk 1 reason',
@@ -26,12 +26,12 @@ const testData: PolicyReport[] = [
                 },
                 message: 'policyreport testing risk 1',
                 policy: 'policyreport testing risk 1 policy',
-                status: 'policyreport testing risk 1 status',
+                result: 'policyreport testing risk 1 result',
             },
         ],
     },
     {
-        apiVersion: 'wgpolicyk8s.io/v1alpha1',
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
         kind: 'PolicyReport',
         metadata: {
             name: 'policyreport testing risk 2 policy',
@@ -41,7 +41,7 @@ const testData: PolicyReport[] = [
         results: [
             {
                 category: 'category,category1,category2',
-                data: {
+                properties: {
                     created_at: '2021-03-02T21:26:04Z',
                     details: 'policyreport testing risk 2 details',
                     reason: 'policyreport testing risk 2 reason',
@@ -50,7 +50,7 @@ const testData: PolicyReport[] = [
                 },
                 message: 'policyreport testing risk 2',
                 policy: 'policyreport testing risk 2 policy',
-                status: 'policyreport testing risk 2 status',
+                result: 'policyreport testing risk 2 result',
             },
         ],
     },

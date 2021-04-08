@@ -83,7 +83,7 @@ function formatText(text: string) {
 }
 
 function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
-    const clusterRiskScores = data.map((issue) => issue.results[0].data.total_risk)
+    const clusterRiskScores = data.map((issue) => issue.results[0].properties.total_risk)
     const formattedData = [
         {
             key: t('policy.report.critical'),
@@ -154,7 +154,7 @@ function DetailsView(props: {
     const classes = useStyles()
 
     function riskLevel() {
-        const riskScore = _.get(selectedPolicy, 'results[0].data.total_risk')
+        const riskScore = _.get(selectedPolicy, 'results[0].properties.total_risk')
         let totalRisk, riskIcon
 
         const riskComponent = (totalRisk: string, riskIcon: any) => {
@@ -220,7 +220,7 @@ function DetailsView(props: {
     }
 
     function matchedDate() {
-        const d = new Date(_.get(selectedPolicy, 'results[0].data.created_at', '')).toDateString()
+        const d = new Date(_.get(selectedPolicy, 'results[0].properties.created_at', '')).toDateString()
         return d
     }
 
@@ -238,7 +238,7 @@ function DetailsView(props: {
             </Flex>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>{_.get(selectedPolicy, 'results[0].message', '')}</Text>
-                <Text component={TextVariants.h4}>{_.get(selectedPolicy, 'results[0].data.details', '')}</Text>
+                <Text component={TextVariants.h4}>{_.get(selectedPolicy, 'results[0].properties.details', '')}</Text>
             </TextContent>
             <Grid className={classes.subDetailComponents} hasGutter>
                 <GridItem span={5}>
@@ -287,12 +287,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Text>{formatText(_.get(selectedPolicy, 'results[0].data.resolution', ''))}</Text>
+                        <Text>{formatText(_.get(selectedPolicy, 'results[0].properties.resolution', ''))}</Text>
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Text>{formatText(_.get(selectedPolicy, 'results[0].data.reason', ''))}</Text>
+                        <Text>{formatText(_.get(selectedPolicy, 'results[0].properties.reason', ''))}</Text>
                     </TextContent>
                 </Tab>
             </Tabs>
@@ -360,10 +360,10 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                     },
                     {
                         header: t('policy.report.table.totalRisk'),
-                        search: (policyReport) => policyReport.results[0].data.total_risk,
+                        search: (policyReport) => policyReport.results[0].properties.total_risk,
                         sort: (a: PolicyReport, b: PolicyReport) =>
-                            compareStrings(a.results[0].data.total_risk, b.results[0].data.total_risk),
-                        cell: (item: PolicyReport) => item.results[0].data.total_risk,
+                            compareStrings(a.results[0].properties.total_risk, b.results[0].properties.total_risk),
+                        cell: (item: PolicyReport) => item.results[0].properties.total_risk,
                     },
                 ]}
                 keyFn={(item: any) => item.metadata.uid}
