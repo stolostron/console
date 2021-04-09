@@ -18,6 +18,7 @@
     "clipboardCopy": "Copy to clipboard",
     "copied": "Successfully copied to clipboard",
     "retry": "Retry",
+    "labels": "Labels",
     "label.add": "Add label",
     "error": "Error",
     "errors": "Errors",
