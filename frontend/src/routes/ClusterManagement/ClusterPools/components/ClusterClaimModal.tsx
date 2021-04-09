@@ -144,6 +144,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     <AcmSubmit
                                         id="claim"
                                         variant="primary"
+                                        label={t('clusterClaim.create.button')}
+                                        processingLabel={t('clusterClaim.modal.button.claiming')}
                                         onClick={async () => {
                                             alertContext.clearAlerts()
                                             return new Promise(async (resolve, reject) => {
@@ -175,8 +177,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                     })
                                             })
                                         }}
-                                        label={t('clusterClaim.create.button')}
-                                        processingLabel={t('clusterClaim.modal.button.claiming')}
                                     />
                                     <AcmButton key="cancel" variant="link" onClick={props.onClose}>
                                         {t('common:cancel')}
@@ -194,10 +194,27 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 variant={ModalVariant.medium}
                 title={t('clusterClaim.create.title.success')}
                 isOpen={claimed}
-                onClose={reset}
+                onClose={() => {
+                    reset()
+                }}
+                actions={[
+                    <AcmButton
+                        key="view-cluster"
+                        variant="primary"
+                        role="link"
+                        onClick={() =>
+                            history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
+                        }
+                    >
+                        {t('clusterClaim.modal.viewCluster')}
+                    </AcmButton>,
+                    <AcmButton key="cancel" variant="link" onClick={reset}>
+                        {t('common:close')}
+                    </AcmButton>,
+                ]}
             >
-                {t('clusterClaim.create.message.success')}
-                &nbsp;
+                <p style={{ marginBottom: '16px' }}>{t('clusterClaim.create.message.success')}</p>
+
                 <DescriptionList isHorizontal isAutoColumnWidths>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
@@ -212,22 +229,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         <DescriptionListDescription>{clusterClaim?.metadata.namespace}</DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>
-                &nbsp;
-                <ActionGroup>
-                    <AcmButton
-                        key="view-cluster"
-                        variant="primary"
-                        role="link"
-                        onClick={() =>
-                            history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
-                        }
-                    >
-                        {t('clusterClaim.modal.viewCluster')}
-                    </AcmButton>
-                    <AcmButton key="cancel" variant="link" onClick={reset}>
-                        {t('common:close')}
-                    </AcmButton>
-                </ActionGroup>
             </AcmModal>
         )
     }

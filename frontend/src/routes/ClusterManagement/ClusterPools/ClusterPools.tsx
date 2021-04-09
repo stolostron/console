@@ -8,20 +8,22 @@ import {
     AcmTable,
     AcmInlineProvider,
     Provider,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
-// import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterPoolsState, clusterClaimsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
-import { /*canUser, */ rbacDelete, rbacCreate } from '../../../lib/rbac-util'
+import { canUser, rbacDelete, rbacCreate } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
-import { ClusterPool /*, ClusterPoolDefinition */ } from '../../../resources/cluster-pool'
+import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
 import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
 import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
+import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { useAllClusters } from '../Clusters/components/useAllClusters'
 import { StatusField } from '../Clusters/components/StatusField'
@@ -63,15 +65,15 @@ export function ClusterPoolsTable() {
 
     const clusters = useAllClusters()
 
-    // const history = useHistory()
-    // const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-    // useEffect(() => {
-    //     const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
-    //     canCreateClusterPool.promise
-    //         .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-    //         .catch((err) => console.error(err))
-    //     return () => canCreateClusterPool.abort()
-    // }, [])
+    const history = useHistory()
+    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
+        canCreateClusterPool.promise
+            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateClusterPool.abort()
+    }, [])
 
     const modalColumns = useMemo(
         () => [
@@ -137,8 +139,17 @@ export function ClusterPoolsTable() {
                                                         header: t('table.clusterName'),
                                                         sort: 'name',
                                                         search: 'name',
-                                                        cell: (cluster: Cluster) => (
-                                                            <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>
+                                                        cell: (cluster) => (
+                                                            <span style={{ whiteSpace: 'nowrap' }}>
+                                                                <Link
+                                                                    to={NavigationPath.clusterDetails.replace(
+                                                                        ':id',
+                                                                        cluster.name as string
+                                                                    )}
+                                                                >
+                                                                    {cluster.name}
+                                                                </Link>
+                                                            </span>
                                                         ),
                                                     },
                                                     {
@@ -336,16 +347,16 @@ export function ClusterPoolsTable() {
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
-                        // action={
-                        //     <AcmButton
-                        //         role="link"
-                        //         onClick={() => history.push(NavigationPath.clusterPools)}
-                        //         disabled={!canCreateClusterPool}
-                        //         tooltip={t('common:rbac.unauthorized')}
-                        //     >
-                        //         {t('managed.createClusterPool')}
-                        //     </AcmButton>
-                        // }
+                        action={
+                            <AcmButton
+                                role="link"
+                                onClick={() => history.push(NavigationPath.createCluster)}
+                                disabled={!canCreateClusterPool}
+                                tooltip={t('common:rbac.unauthorized')}
+                            >
+                                {t('managed.createClusterPool')}
+                            </AcmButton>
+                        }
                     />
                 }
             />
