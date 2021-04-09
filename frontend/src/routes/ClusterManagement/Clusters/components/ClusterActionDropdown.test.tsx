@@ -4,15 +4,21 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockCreate, nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { clickByLabel, clickByText, waitForNock, waitForNocks } from '../../../../lib/test-util'
+import { clickByLabel, clickByText, waitForText, waitForNock, waitForNocks } from '../../../../lib/test-util'
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
 import { managedClusterSetsState } from '../../../../atoms'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
+import {
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+} from '../../../../resources/klusterlet-add-on-config'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -115,6 +121,57 @@ describe('ClusterActionDropdown', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
     })
+
+    test('can import detached clusters', async () => {
+        const mockDetachedCluster: Cluster = JSON.parse(JSON.stringify(mockCluster))
+        mockDetachedCluster.status = ClusterStatus.detached
+        const mockCreateManagedCluster: ManagedCluster = {
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: {
+                name: mockDetachedCluster.name!,
+                labels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockDetachedCluster.name!,
+                },
+            },
+            spec: { hubAcceptsClient: true },
+        }
+        const mockCreateKlusterletAddonConfig: KlusterletAddonConfig = {
+            apiVersion: KlusterletAddonConfigApiVersion,
+            kind: KlusterletAddonConfigKind,
+            metadata: {
+                name: mockDetachedCluster.name!,
+                namespace: mockDetachedCluster.name!,
+            },
+            spec: {
+                clusterName: mockDetachedCluster.name!,
+                clusterNamespace: mockDetachedCluster.name!,
+                clusterLabels: {
+                    cloud: 'auto-detect',
+                    vendor: 'auto-detect',
+                    name: mockDetachedCluster.name!,
+                },
+                applicationManager: { enabled: true, argocdCluster: false },
+                policyController: { enabled: true },
+                searchCollector: { enabled: true },
+                certPolicyController: { enabled: true },
+                iamPolicyController: { enabled: true },
+                version: '2.2.0',
+            },
+        }
+        const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
+        const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
+        render(<Component cluster={mockDetachedCluster} />)
+
+        await clickByLabel('Actions')
+        await clickByText('managed.import')
+        await waitForText('bulk.title.import')
+        await clickByText('common:import')
+        await waitForNocks([createMcNock, createKacNock])
+    })
+
     test('hibernate action should patch cluster deployment', async () => {
         const nockPatch = nockPatchClusterDeployment('replace', '/spec/powerState', 'Hibernating')
         const cluster = JSON.parse(JSON.stringify(mockCluster))
