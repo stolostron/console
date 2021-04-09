@@ -9,6 +9,7 @@ import {
     AcmPageContent,
     AcmTable,
     AcmButton,
+    AcmLabels,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -164,6 +165,27 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         cell: (managedClusterSet: ManagedClusterSet) => {
                             return <ClusterStatuses managedClusterSet={managedClusterSet} />
                         },
+                    },
+                    {
+                        header: t('table.labels'),
+                        search: (managedClusterSet) =>
+                            managedClusterSet.metadata.labels
+                                ? Object.keys(managedClusterSet.metadata.labels).map(
+                                      (key) => `${key}=${managedClusterSet.metadata.labels![key]}`
+                                  )
+                                : '',
+                        cell: (managedClusterSet) =>
+                            managedClusterSet.metadata.labels ? (
+                                <AcmLabels
+                                    labels={managedClusterSet.metadata.labels}
+                                    style={{ maxWidth: '600px' }}
+                                    // expandedText={t('common:show.less')}
+                                    // collapsedText={t('common:show.more', { number: collapse.length })}
+                                    // collapse={collapse}
+                                />
+                            ) : (
+                                '-'
+                            ),
                     },
                     {
                         header: t('table.nodes'),

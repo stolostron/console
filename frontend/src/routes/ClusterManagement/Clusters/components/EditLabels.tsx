@@ -13,18 +13,17 @@ import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../components/ErrorPage'
 import { Cluster } from '../../../../lib/get-cluster'
 import { patchResource } from '../../../../lib/resource-request'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 import { IResource } from '../../../../resources/resource'
 
-export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
+export function EditLabels(props: { cluster?: Cluster; resource?: IResource; close: () => void }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [labels, setLabels] = useState<Record<string, string>>({})
 
     useLayoutEffect(() => {
         /* istanbul ignore next */
-        const labels = props.cluster?.labels ?? {}
+        const labels = props.resource?.metadata?.labels ?? {}
         setLabels({ ...labels })
-    }, [props.cluster?.labels])
+    }, [props.resource?.metadata?.labels])
 
     return (
         <AcmAlertContext.Consumer>
@@ -34,7 +33,7 @@ export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
                     &nbsp;
                     <AcmLabelsInput
                         id="labels-input"
-                        label={`${props.cluster?.name} ${t('labels.lower')}`}
+                        label={`${props.resource?.metadata?.name} ${t('labels.lower')}`}
                         buttonLabel={t('labels.button.add')}
                         value={labels}
                         onChange={(labels) => setLabels(labels!)}
@@ -48,19 +47,19 @@ export function EditLabels(props: { cluster?: Cluster; close: () => void }) {
                             onClick={() => {
                                 alertContext.clearAlerts()
                                 const resource: IResource = {
-                                    apiVersion: ManagedClusterApiVersion,
-                                    kind: ManagedClusterKind,
+                                    apiVersion: props.resource!.apiVersion,
+                                    kind: props.resource!.kind,
                                     metadata: {
-                                        name: props.cluster?.name,
-                                        labels: props.cluster?.labels,
+                                        name: props.resource!.metadata!.name,
+                                        labels: props.resource!.metadata!.labels,
                                     },
                                 }
                                 let patch: { op: string; path: string; value?: unknown }[] = []
                                 /* istanbul ignore else */
-                                if (resource!.metadata.labels) {
+                                if (resource!.metadata!.labels) {
                                     patch = [
                                         ...patch,
-                                        ...Object.keys(resource!.metadata.labels).map((key) => {
+                                        ...Object.keys(resource!.metadata!.labels).map((key) => {
                                             key = key.replace(/\//g, '~1')
                                             return {
                                                 op: 'remove',

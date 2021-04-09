@@ -73,7 +73,10 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                                                 onCloseClick: () => setDrawerContext(undefined),
                                                 panelContent: (
                                                     <EditLabels
-                                                        cluster={cluster}
+                                                        resource={{
+                                                            ...ManagedClusterDefinition,
+                                                            metadata: { name: cluster.name, labels: cluster.labels },
+                                                        }}
                                                         close={() => setDrawerContext(undefined)}
                                                     />
                                                 ),
