@@ -11,6 +11,7 @@ import controlDataGCP from './ControlDataGCP'
 import controlDataAZR from './ControlDataAZR'
 import controlDataVMW from './ControlDataVMW'
 import controlDataBMC from './ControlDataBMC'
+import controlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 
 const installConfig =
@@ -154,6 +155,17 @@ export const controlData = [
                 title: 'cluster.create.vmware.subtitle',
                 change: {
                     insertControlData: controlDataVMW,
+                    replacements: {
+                        'install-config': { template: installConfig, encode: true, newTab: true },
+                    },
+                },
+            },
+            {
+                id: 'OpenStack',
+                logo: <RedHatLogo />,
+                title: 'cluster.create.redhat.subtitle',
+                change: {
+                    insertControlData: controlDataOST,
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },

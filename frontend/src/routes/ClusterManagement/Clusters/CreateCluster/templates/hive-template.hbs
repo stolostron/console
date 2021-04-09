@@ -92,6 +92,13 @@ spec:
       network: {{{../../networkType}}}
   {{/case}}
 
+  {{#case 'OpenStack'}}
+    openstack:
+      credentialsSecretRef:
+        name: {{{../../name}}}-openstack-creds
+      cloud: {{{../../openstackCloud}}}
+  {{/case}}
+
 {{/switch}}
 
 {{! ==================provisioning======================= }}
@@ -158,6 +165,9 @@ metadata:
   {{/case}}
   {{#case 'vSphere'}}
     cloud: vSphere
+  {{/case}}
+  {{#case 'OpenStack'}}
+    cloud: OpenStack
   {{/case}}
 {{/switch}}
     name: '{{{name}}}'
@@ -292,6 +302,12 @@ spec:
         diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
+  {{#case 'OpenStack'}}
+  platform:
+    openstack:
+      flavor: {{{../../workerType}}} ##workerPools.{{@index}}.workerType
+  {{/case}}
+
 {{/switch}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
 {{/each}}
@@ -421,6 +437,20 @@ data:
   .cacert: # injected on create
 {{/if}}
 
+{{/case}}
+
+{{#case 'OpenStack'}}
+metadata:
+  name: {{{../../name}}}-openstack-creds
+  namespace: '{{{../../name}}}'
+stringData:
+  cloud: '{{{../../openstackCloud}}}'
+{{#if ../../showSecrets}}
+  clouds.yaml: |- 
+    '{{{../../openstackCloudsYaml}}}'
+{{else}}
+  clouds.yaml: # injected on create
+{{/if}}
 {{/case}}
 
 {{/switch}}

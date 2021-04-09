@@ -157,6 +157,9 @@ export function AddCredentialPageData(props: { namespace: string; name: string }
             sshPublickey: '',
 
             ocmAPIToken: '',
+
+            openstackCloudsYaml: '',
+            openstackCloud: '',
         },
     })
 
@@ -310,6 +313,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                                 break
                             case ProviderID.CRH:
                                 mappedProvider = Provider.redhatcloud
+                                break
+                            case ProviderID.OST:
+                                mappedProvider = Provider.openstack
                                 break
                             case ProviderID.UKN:
                             default:
@@ -619,6 +625,35 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                 isRequired
             />
+            <AcmTextArea
+                id="openstackCloudsYaml"
+                label={t('addConnection.openstackCloudsYaml.label')}
+                placeholder={t('addConnection.openstackCloudsYaml.placeholder')}
+                labelHelp={t('addConnection.openstackCloudsYaml.labelHelp')}
+                value={providerConnection.spec?.openstackCloudsYaml}
+                onChange={(openstackCloudsYaml) => {
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.spec!.openstackCloudsYaml = openstackCloudsYaml
+                    })
+                }}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
+                isRequired
+            />
+            <AcmTextInput
+                id="openstackCloud"
+                label={t('addConnection.openstackCloud.label')}
+                placeholder={t('addConnection.openstackCloud.placeholder')}
+                labelHelp={t('addConnection.openstackCloud.labelHelp')}
+                value={providerConnection.spec?.openstackCloud}
+                onChange={(openstackCloud) => {
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.spec!.openstackCloud = openstackCloud
+                    })
+                }}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
+                isRequired
+            />
+
             <AcmTextInput
                 id="libvirtURI"
                 label={t('addConnection.libvirtURI.label')}
@@ -802,7 +837,8 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     id="submit"
                     variant="primary"
                     onClick={() => {
-                        const data = JSON.parse(JSON.stringify(providerConnection))
+                        const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
+
                         const providerID = getProviderConnectionProviderID(data)
                         if (providerID !== ProviderID.AWS) {
                             delete data.spec!.awsAccessKeyID
@@ -839,6 +875,11 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                         if (providerID !== ProviderID.CRH) {
                             delete data.spec!.ocmAPIToken
                         }
+                        if (providerID !== ProviderID.OST) {
+                            delete data.spec!.openstackCloudsYaml
+                            delete data.spec!.openstackCloud
+                        }
+
                         delete data.data
 
                         alertContext.clearAlerts()

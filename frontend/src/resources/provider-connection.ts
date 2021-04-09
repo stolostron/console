@@ -55,6 +55,9 @@ export interface ProviderConnection extends V1Secret {
 
         ocmAPIToken?: string
 
+        openstackCloudsYaml?: string
+        openstackCloud?: string
+
         baseDomain: string
         pullSecret: string
         sshPrivatekey: string
