@@ -144,8 +144,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     <AcmSubmit
                                         id="claim"
                                         variant="primary"
-                                        label={t('clusterClaim.create.button')}
-                                        processingLabel={t('clusterClaim.modal.button.claiming')}
+                                        label={t('common:claim')}
+                                        processingLabel={t('common:claiming')}
                                         onClick={async () => {
                                             alertContext.clearAlerts()
                                             return new Promise(async (resolve, reject) => {

@@ -7,7 +7,7 @@ import { RecoilRoot } from 'recoil'
 import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../resources/cluster-pool'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../resources/cluster-claim'
 import { clusterPoolsState } from '../../../atoms'
-import { nockCreate, nockGet, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockPatch, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 
@@ -106,6 +106,17 @@ describe('ClusterPools page', () => {
         await waitForNocks(deleteNocks)
     })
 
+    test('should be able to scale a cluster pool', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('clusterPool.scale')
+        await waitForText('clusterPool.modal.scale.title')
+        await clickByLabel('Plus')
+        const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
+        await clickByText('common:scale')
+        await waitForNocks(patchNocks)
+    })
+
     test('should be able to claim a cluster', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
@@ -114,7 +125,7 @@ describe('ClusterPools page', () => {
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
         const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
-        await clickByText('clusterClaim.create.button')
+        await clickByText('common:claim')
         await waitForNocks(createNocks)
     })
 })

@@ -18,8 +18,7 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterPoolsState, clusterClaimsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
-import { canUser, rbacDelete, rbacCreate } from '../../../lib/rbac-util'
-// import { ResourceErrorCode } from '../../../lib/resource-request'
+import { canUser, rbacDelete, rbacCreate, rbacPatch } from '../../../lib/rbac-util'
 import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
 import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
 import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
@@ -28,6 +27,7 @@ import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request
 import { useAllClusters } from '../Clusters/components/useAllClusters'
 import { StatusField } from '../Clusters/components/StatusField'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
+import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 
 export default function ClusterPoolsPage() {
@@ -62,6 +62,9 @@ export function ClusterPoolsTable() {
         open: false,
     })
     const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
+    const [scaleClusterPoolModalProps, setScaleClusterPoolModalProps] = useState<
+        ScaleClusterPoolModalProps | undefined
+    >()
 
     const clusters = useAllClusters()
 
@@ -110,6 +113,7 @@ export function ClusterPoolsTable() {
         <Fragment>
             <BulkActionModel<ClusterPool> {...modalProps} />
             <ClusterClaimModal {...clusterClaimModalProps} />
+            <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
             <AcmTable<ClusterPool>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterPools"
@@ -139,7 +143,7 @@ export function ClusterPoolsTable() {
                                                         header: t('table.clusterName'),
                                                         sort: 'name',
                                                         search: 'name',
-                                                        cell: (cluster) => (
+                                                        cell: (cluster: Cluster) => (
                                                             <span style={{ whiteSpace: 'nowrap' }}>
                                                                 <Link
                                                                     to={NavigationPath.clusterDetails.replace(
@@ -268,6 +272,18 @@ export function ClusterPoolsTable() {
                                         })
                                     },
                                     rbac: [rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)],
+                                },
+                                {
+                                    id: 'scaleClusterPool',
+                                    text: t('clusterPool.scale'),
+                                    isDisabled: true,
+                                    click: (clusterPool: ClusterPool) => {
+                                        setScaleClusterPoolModalProps({
+                                            clusterPool,
+                                            onClose: () => setScaleClusterPoolModalProps(undefined),
+                                        })
+                                    },
+                                    rbac: [rbacPatch(clusterPool)],
                                 },
                                 {
                                     id: 'destroy',
