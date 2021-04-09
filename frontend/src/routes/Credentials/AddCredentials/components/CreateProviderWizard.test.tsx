@@ -15,21 +15,8 @@ import {
     MultiClusterHubApiVersion,
     MultiClusterHubKind,
 } from '../../../../resources/multi-cluster-hub'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../../resources/provider-connection'
-import { CreateProviderWizard } from './CreateProviderWizard'
 
-const providerConnection: ProviderConnection = {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
-    metadata: {
-        name: '',
-        namespace: '',
-    },
-}
+import { CreateProviderWizard } from './CreateProviderWizard'
 
 const projects: string[] = ['default']
 
