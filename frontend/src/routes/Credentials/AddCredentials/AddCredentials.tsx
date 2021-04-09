@@ -3,53 +3,29 @@
 import { makeStyles } from '@material-ui/styles'
 import {
     AcmAlertContext,
-    AcmAlertGroup,
     AcmButton,
     AcmEmptyState,
-    AcmForm,
-    AcmInlineProvider,
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
-    AcmSelect,
-    AcmSubmit,
-    AcmTextInput,
-    Provider,
 } from '@open-cluster-management/ui-components'
-import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, Button, PageSection, SelectOption, Title } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, namespacesState, multiClusterHubState } from '../../../atoms'
+import { featureGatesState, multiClusterHubState, namespacesState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
-import { ProviderID, providers } from '../../../lib/providers'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
-import { IRequestResult } from '../../../lib/resource-request'
-import {
-    validateCertificate,
-    validateGCProjectID,
-    validateImageMirror,
-    validateJSON,
-    validateKubernetesDnsName,
-    validateLibvirtURI,
-    validatePrivateSshKey,
-    validatePublicSshKey,
-} from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
 import {
-    createProviderConnection,
     getProviderConnection,
-    getProviderConnectionProviderID,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionDefinition,
     ProviderConnectionKind,
-    replaceProviderConnection,
-    setProviderConnectionProviderID,
 } from '../../../resources/provider-connection'
 import { CreateProviderWizard } from './components/CreateProviderWizard'
 
@@ -101,7 +77,7 @@ export default function AddCredentialPage({ match }: RouteComponentProps<{ names
                 />
             )}
             <AcmPageContent id="add-credentials">
-                <PageSection variant="light" isFilled type="">
+                <PageSection variant="light" isFilled type="wizard">
                     <AddCredentialPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </PageSection>
             </AcmPageContent>
@@ -262,10 +238,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
 
     return (
         <CreateProviderWizard
-            providerConnection={props.providerConnection}
-            setProviderConnection={setProviderConnection}
             projects={props.projects}
             discoveryFeatureGate={discoveryFeatureGate}
+            multiClusterHubs={multiClusterHubs}
         />
     )
 }

@@ -1,58 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+
+import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
+import { AnsibleTowerIcon, CloudIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
-import { AnsibleTowerIcon } from '@patternfly/react-icons'
-import { CloudIcon } from '@patternfly/react-icons'
 import {
-    ActionGroup,
-    Button,
     Card,
     CardBody,
     CardHeader,
-    CardHeaderMain,
-    Form,
     Gallery,
     GalleryItem,
-    Grid,
-    GridItem,
-    PageSection,
     SelectOption,
-    Stack,
-    StackItem,
     Title,
     Wizard,
     WizardStep,
 } from '@patternfly/react-core'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import {
+    AcmAlertContext,
+    AcmAlertGroup,
     AcmForm,
     AcmInlineProvider,
-    AcmLabelsInput,
     AcmSelect,
-    AcmTextInput,
-    AcmTile,
-    AcmIcon,
-    AcmIconVariant,
-    Provider,
-    AcmButton,
     AcmTextArea,
-    AcmAlertGroup,
-    AcmSubmit,
-    AcmAlertContext,
-    IAlertContext,
-    AcmPageCard,
+    AcmTextInput,
+    Provider,
 } from '@open-cluster-management/ui-components'
-import { Link } from 'react-router-dom'
-import { NavigationPath } from '../../../../NavigationPath'
-import {
-    createProviderConnection,
-    getProviderConnectionProviderID,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    replaceProviderConnection,
-    setProviderConnectionProviderID,
-} from '../../../../resources/provider-connection'
+import { featureGatesState, multiClusterHubState } from '../../../../atoms'
 import { ProviderID, providers } from '../../../../lib/providers'
 import {
     validateCertificate,
@@ -64,36 +38,40 @@ import {
     validatePrivateSshKey,
     validatePublicSshKey,
 } from '../../../../lib/validation'
-import { useRecoilState } from 'recoil'
-import { featureGatesState, namespacesState, multiClusterHubState } from '../../../../atoms'
-import { Namespace } from '../../../../resources/namespace'
-import { IRequestResult } from '../../../../lib/resource-request'
 import {
     AnsibleTowerSecret,
     AnsibleTowerSecretApiVersion,
     AnsibleTowerSecretKind,
     createAnsibleTowerSecret,
 } from '../../../../resources/ansible-tower-secret'
-import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { FeatureGate, FeatureGateKind } from '../../../../resources/feature-gate'
+import { FeatureGate } from '../../../../resources/feature-gate'
+import {
+    createProviderConnection,
+    getProviderConnectionProviderID,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    setProviderConnectionProviderID,
+} from '../../../../resources/provider-connection'
+import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
+
+/* 
+TODO:
+- Validation/Alerts
+- replaced fixed strings with translation strings
+- redirect on creation
+- edit credential
+*/
 
 enum CredentialType {
     cloudProvider = 'prov',
     ansible = 'ans',
 }
 
-/* 
-TODO: 
-- Validation
-- Alerts 
-- Icon resolution?
-- replaced fixed strings with translation strings
-*/
 export function CreateProviderWizard(props: {
-    providerConnection: ProviderConnection
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
-    setProviderConnection: Function
+    multiClusterHubs: MultiClusterHub[]
 }) {
     const [credentialToCreate, setCredentialToCreate] = useState(CredentialType.ansible)
     const [currentStep, setCurrentStep] = useState(1)
@@ -102,6 +80,7 @@ export function CreateProviderWizard(props: {
     const [secretNamespace, setSecretNamespace] = useState('')
     const [isEdit, setIsEdit] = useState(false)
     const [currentCredentialType, setCurrentCredentialType] = useState(CredentialType.ansible)
+    const [initialSecretMeta, setInitialSecretMeta] = useState({ name: '', namespace: '' })
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
         apiVersion: AnsibleTowerSecretApiVersion,
@@ -162,7 +141,7 @@ export function CreateProviderWizard(props: {
 
     const [credentialInputstep, setCredentialInputstep] = useState<JSX.Element>(
         <AnsibleTowerInformationStep
-            providerConnection={props.providerConnection}
+            providerConnection={providerConnection}
             projects={props.projects}
             ansibleSecret={ansibleSecret}
             setAnsibleSecret={setAnsibleSecret}
@@ -188,59 +167,33 @@ export function CreateProviderWizard(props: {
                 component: (
                     <CredentialTypeStep
                         projects={props.projects}
-                        providerConnection={props.providerConnection}
+                        providerConnection={providerConnection}
                         ansibleSecret={ansibleSecret}
                         setAnsibleSecret={setAnsibleSecret}
                         setProviderConnection={setProviderConnection}
                         setCredentialInputstep={setCredentialInputstep}
-                        setCredentialToCreate={setCredentialToCreate}
-                        credentialToCreate={credentialToCreate}
-                        onClickCredentialCard={onClickCredentialCard}
                         currentCredentialType={currentCredentialType}
                         setCurrentCredentialType={setCurrentCredentialType}
+                        initialSecretMeta={initialSecretMeta}
+                        setInitialSecretMeta={setInitialSecretMeta}
+                        multiClusterHubs={props.multiClusterHubs}
+                        discoveryFeatureGate={props.discoveryFeatureGate}
                     />
                 ),
             },
             {
                 name: 'Details',
                 component: credentialInputstep,
-                id: CredentialType.cloudProvider,
             },
         ],
         [currentCredentialType]
     )
 
-    function onClickCredentialCard(credentialType: CredentialType) {
-        currentCredentialType[0] = credentialType
-        switch (credentialType) {
-            case CredentialType.ansible:
-                steps[1].component = (
-                    <AnsibleTowerInformationStep
-                        providerConnection={props.providerConnection}
-                        projects={props.projects}
-                        ansibleSecret={ansibleSecret}
-                        setAnsibleSecret={setAnsibleSecret}
-                    />
-                )
-                break
-            case CredentialType.cloudProvider:
-                steps[1].component = (
-                    <ProviderInformationStep
-                        providerConnection={props.providerConnection}
-                        projects={props.projects}
-                        setProviderConnection={props.setProviderConnection}
-                    />
-                )
-                break
-            default:
-        }
-    }
     const history = useHistory()
 
     function onNext() {
         const step = currentStep + 1
         setCurrentStep(step)
-        // alter next step if provider connection is selected
         if (steps.length === step) {
             setNextButtonName('Save')
         }
@@ -273,7 +226,7 @@ export function CreateProviderWizard(props: {
                 break
             case CredentialType.cloudProvider:
                 // code block
-                submitProviderConnection(providerConnection, () => isEdit)
+                submitProviderConnection(providerConnection, () => false)
                     .then(() => {
                         // history.push(NavigationPath.credentials)
                     })
@@ -299,15 +252,18 @@ function CredentialTypeStep(props: {
     setAnsibleSecret: Function
     setProviderConnection: Function
     setCredentialInputstep: Function
-    setCredentialToCreate: Function
-    credentialToCreate: CredentialType
-    onClickCredentialCard: Function
     currentCredentialType: CredentialType
     setCurrentCredentialType: Dispatch<SetStateAction<CredentialType>>
+    initialSecretMeta: {}
+    setInitialSecretMeta: Function
+    multiClusterHubs: MultiClusterHub[]
+    discoveryFeatureGate: FeatureGate | undefined
 }) {
     const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
+
     const { currentCredentialType, setCurrentCredentialType } = props
 
     function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
@@ -317,50 +273,58 @@ function CredentialTypeStep(props: {
         props.setAnsibleSecret(copy)
     }
 
-    function updateCurrentCredentialType(credentialType: CredentialType) {
-        setCurrentCredentialType(credentialType) // will trigger re-render
+    function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
+        const copy = { ...providerConnection }
+        update(copy)
+        setProviderConnection(copy)
+        props.setProviderConnection(copy)
     }
 
-    const useStyles = makeStyles({
-        card: {
-            // width: '150px',
-            // height: '125px',
-        },
-        icon: {
-            display: 'flex',
-            height: '30%',
-            width: '50%',
-            margin: '10% 10% 2.5% 10%',
+    function onClickCredentialCard(credentialType: CredentialType, setCredentialInputstep: Function) {
+        setCurrentCredentialType(credentialType)
 
-            overflow: 'hidden',
-        },
-        cardText: {
-            margin: '0% 10% 10% 10%',
-        },
-        grid: {
-            display: 'flex',
-        },
-    })
+        switch (credentialType) {
+            case CredentialType.ansible:
+                setCredentialInputstep(
+                    <AnsibleTowerInformationStep
+                        providerConnection={props.providerConnection}
+                        projects={props.projects}
+                        ansibleSecret={ansibleSecret}
+                        setAnsibleSecret={setAnsibleSecret}
+                    />
+                )
+                break
+            case CredentialType.cloudProvider:
+                setCredentialInputstep(
+                    <ProviderInformationStep
+                        providerConnection={props.providerConnection}
+                        projects={props.projects}
+                        setProviderConnection={props.setProviderConnection}
+                        discoveryFeatureGate={props.discoveryFeatureGate}
+                        multiClusterHubs={props.multiClusterHubs}
+                    />
+                )
+                break
+            default:
+        }
+    }
 
-    console.log('HHHH', currentCredentialType)
-    const classes = useStyles()
     return (
         <AcmForm>
             <Title headingLevel="h4" size="xl">
-                Select the credential type and enter basic information
+                {t('addConnection.wizard.title')}
             </Title>
             <Title headingLevel="h6" size="md">
-                Credential types*
+                {t('addConnection.wizard.credentialtype')}
             </Title>
             <Gallery hasGutter>
                 <GalleryItem>
                     <Card
+                        id="ansible.card"
                         isSelectable
                         isSelected={currentCredentialType === CredentialType.ansible}
-                        className={classes.card}
                         onClick={() => {
-                            updateCurrentCredentialType(CredentialType.ansible)
-                            props.onClickCredentialCard(CredentialType.ansible)
+                            onClickCredentialCard(CredentialType.ansible, props.setCredentialInputstep)
                         }}
                     >
                         <CardHeader>
@@ -371,12 +335,11 @@ function CredentialTypeStep(props: {
                 </GalleryItem>
                 <GalleryItem>
                     <Card
+                        id="provider.card"
                         isSelectable
                         isSelected={currentCredentialType === CredentialType.cloudProvider}
-                        className={classes.card}
                         onClick={() => {
-                            updateCurrentCredentialType(CredentialType.cloudProvider)
-                            props.onClickCredentialCard(CredentialType.cloudProvider)
+                            onClickCredentialCard(CredentialType.cloudProvider, props.setCredentialInputstep)
                         }}
                     >
                         <CardHeader>
@@ -396,6 +359,10 @@ function CredentialTypeStep(props: {
                     updateAnsibleSecret((ansibleSecret) => {
                         ansibleSecret.metadata.name = name
                     })
+
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.metadata.name = name
+                    })
                 }}
             />
             <AcmSelect
@@ -407,6 +374,9 @@ function CredentialTypeStep(props: {
                 onChange={(namespace) => {
                     updateAnsibleSecret((ansibleSecret) => {
                         ansibleSecret.metadata.namespace = namespace
+                    })
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.metadata.namespace = namespace
                     })
                 }}
             >
@@ -496,17 +466,18 @@ function ProviderInformationStep(props: {
     providerConnection: ProviderConnection
     projects: string[]
     setProviderConnection: Function
+    discoveryFeatureGate: FeatureGate | undefined
+    multiClusterHubs: MultiClusterHub[]
 }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
-    const [featureGates] = useRecoilState(featureGatesState)
-    const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-    const isEditing = () => props.providerConnection.metadata.name !== ''
+    const discoveryFeatureGate = props.discoveryFeatureGate
+    //const isEditing = () => props.providerConnection.metadata.name !== ''
     const alertContext = useContext(AcmAlertContext)
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
-    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
+    const multiClusterHubs = props.multiClusterHubs
     const [multiclusterhubNamespace, setMulticlusterhubNamespace] = useState('')
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
@@ -557,7 +528,7 @@ function ProviderInformationStep(props: {
                         })
                     }
                 }}
-                isDisabled={isEditing()}
+                // isDisabled={isEditing()}
                 isRequired
             >
                 {providers
@@ -616,7 +587,7 @@ function ProviderInformationStep(props: {
                 }}
                 validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 isRequired
-                isDisabled={isEditing()}
+                // isDisabled={isEditing()}
             />
             <AcmSelect
                 id="namespaceName"
@@ -630,7 +601,7 @@ function ProviderInformationStep(props: {
                     })
                 }}
                 isRequired
-                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                // isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (
@@ -1121,11 +1092,5 @@ function submitProviderConnection(providerConnection: ProviderConnection, isEdit
     }
     delete data.data
 
-    let result: IRequestResult<ProviderConnection>
-    if (isEditing()) {
-        result = replaceProviderConnection(data)
-    } else {
-        result = createProviderConnection(data)
-    }
-    return result.promise
+    return createProviderConnection(data).promise
 }
