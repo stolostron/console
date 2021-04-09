@@ -4,6 +4,13 @@ import { ConfigMap, ConfigMapApiVersion, ConfigMapKind } from '../resources/conf
 import { FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../resources/feature-gate'
 import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind } from '../resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../resources/multi-cluster-hub'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
+
+import {
+    ProviderConnection,
+    ProviderConnectionKind,
+    ProviderConnectionApiVersion,
+} from '../resources/provider-connection'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -43,5 +50,24 @@ export const multiClusterHub: MultiClusterHub = {
         name: 'multiclusterhub',
         namespace: 'test-namespace',
     },
+    spec: {},
+}
+
+export const mockCRHCredential: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'ocm-api-token',
+        namespace: 'ocm',
+        labels: {
+            'cluster.open-cluster-management.io/provider': 'crh',
+        },
+    },
+}
+
+export const mockDiscoveryConfig: DiscoveryConfig = {
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+    metadata: { name: 'discoveryconfig', namespace: 'open-cluster-management' },
     spec: {},
 }

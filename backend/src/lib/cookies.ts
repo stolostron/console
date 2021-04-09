@@ -19,3 +19,7 @@ export function parseCookies(req: Http2ServerRequest): Record<string, string> {
 export function setCookie(res: Http2ServerResponse, cookie: string, value: string, path?: string): void {
     res.setHeader('Set-Cookie', `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`)
 }
+
+export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
+    res.setHeader('Set-Cookie', `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`)
+}
