@@ -4,6 +4,7 @@ import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
+import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
 import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
@@ -28,6 +29,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
     key: 'certificateSigningRequests',
     default: [],
 })
+export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', default: [] })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
 export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
@@ -49,7 +51,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
     object: {
         kind: string
         apiVersion: string
@@ -65,6 +67,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
+    const [, setClusterClaims] = useRecoilState(clusterClaimsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
@@ -85,6 +88,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
+        [ClusterClaimKind]: setClusterClaims,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
         [ClusterPoolKind]: setClusterPools,
@@ -102,24 +106,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveredClusterKind]: setDiscoveredClusters,
     }
-
-    // Temporary fix for checking for login
-    useEffect(() => {
-        function checkLoggedIn() {
-            fetch(`${process.env.REACT_APP_BACKEND_PATH}/api/`, {
-                credentials: 'include',
-                headers: { accept: 'application/json' },
-            }).then((res) => {
-                switch (res.status) {
-                    case 401:
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                        break
-                }
-                setTimeout(checkLoggedIn, 30 * 1000)
-            })
-        }
-        checkLoggedIn()
-    }, [])
 
     useEffect(() => {
         let eventDataQueue: IEventData[] | undefined = []
@@ -199,6 +185,9 @@ export function LoadData(props: { children?: ReactNode }) {
                             processEvents()
                             setLoading(false)
                             break
+                        case 'UNAUTHORIZED':
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                            break
                     }
                 } catch (err) {
                     console.error(err)
@@ -210,8 +199,12 @@ export function LoadData(props: { children?: ReactNode }) {
         function startWatch() {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
-            evtSource.onerror = function (err) {
-                console.error('EventSource failed:', err)
+            evtSource.onerror = function () {
+                switch (evtSource?.readyState) {
+                    case EventSource.CLOSED:
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        break
+                }
             }
         }
         startWatch()

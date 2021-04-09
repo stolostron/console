@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { createResource, listResources, getResource } from '../lib/resource-request'
-import { SecretApiVersionType, SecretKindType } from './secret'
-import { IResourceDefinition } from './resource'
-import { IRequestResult } from '../lib/resource-request'
-import { createProject } from '../resources/project'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import { keyBy } from 'lodash'
+import { createResource, getResource, IRequestResult, listResources } from '../lib/resource-request'
+import { createProject } from '../resources/project'
+import { IResourceDefinition } from './resource'
+import { SecretApiVersionType, SecretKindType } from './secret'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'

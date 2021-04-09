@@ -8,19 +8,27 @@ import {
     AcmTable,
     AcmInlineProvider,
     Provider,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
-// import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState } from '../../../atoms'
+import { clusterPoolsState, clusterClaimsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
-import { /*canUser, */ rbacDelete } from '../../../lib/rbac-util'
-// import { ResourceErrorCode } from '../../../lib/resource-request'
-import { ClusterPool /*, ClusterPoolDefinition */ } from '../../../resources/cluster-pool'
+import { canUser, rbacDelete, rbacCreate, rbacPatch } from '../../../lib/rbac-util'
+import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
+import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
+import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
+import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
+import { useAllClusters } from '../Clusters/components/useAllClusters'
+import { StatusField } from '../Clusters/components/StatusField'
+import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
+import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
+import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -48,20 +56,27 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 }
 
 export function ClusterPoolsTable() {
-    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
+    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterClaimsState]))
     const { t } = useTranslation(['cluster'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
     })
-    // const history = useHistory()
-    // const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-    // useEffect(() => {
-    //     const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
-    //     canCreateClusterPool.promise
-    //         .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-    //         .catch((err) => console.error(err))
-    //     return () => canCreateClusterPool.abort()
-    // }, [])
+    const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
+    const [scaleClusterPoolModalProps, setScaleClusterPoolModalProps] = useState<
+        ScaleClusterPoolModalProps | undefined
+    >()
+
+    const clusters = useAllClusters()
+
+    const history = useHistory()
+    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
+        canCreateClusterPool.promise
+            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateClusterPool.abort()
+    }, [])
 
     const modalColumns = useMemo(
         () => [
@@ -97,10 +112,116 @@ export function ClusterPoolsTable() {
     return (
         <Fragment>
             <BulkActionModel<ClusterPool> {...modalProps} />
+            <ClusterClaimModal {...clusterClaimModalProps} />
+            <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
             <AcmTable<ClusterPool>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterPools"
                 items={clusterPools}
+                addSubRows={(clusterPool: ClusterPool) => {
+                    const clusterPoolClusters = clusters.filter(
+                        (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                    )
+                    if (clusterPoolClusters.length === 0) {
+                        return undefined
+                    } else {
+                        return [
+                            {
+                                cells: [
+                                    {
+                                        title: (
+                                            <AcmTable<Cluster>
+                                                gridBreakPoint={TableGridBreakpoint.none}
+                                                keyFn={(cluster: Cluster) => cluster.name!}
+                                                key="clusterPoolClustersTable"
+                                                autoHidePagination
+                                                showToolbar={false}
+                                                plural="clusters"
+                                                items={clusterPoolClusters}
+                                                columns={[
+                                                    {
+                                                        header: t('table.clusterName'),
+                                                        sort: 'name',
+                                                        search: 'name',
+                                                        cell: (cluster: Cluster) => (
+                                                            <span style={{ whiteSpace: 'nowrap' }}>
+                                                                <Link
+                                                                    to={NavigationPath.clusterDetails.replace(
+                                                                        ':id',
+                                                                        cluster.name as string
+                                                                    )}
+                                                                >
+                                                                    {cluster.name}
+                                                                </Link>
+                                                            </span>
+                                                        ),
+                                                    },
+                                                    {
+                                                        header: t('table.status'),
+                                                        sort: 'status',
+                                                        search: 'status',
+                                                        cell: (cluster: Cluster) => (
+                                                            <span style={{ whiteSpace: 'nowrap' }}>
+                                                                <StatusField cluster={cluster} />
+                                                            </span>
+                                                        ),
+                                                    },
+                                                    {
+                                                        header: t('table.availableToClaim'),
+                                                        sort: 'hive',
+                                                        search: 'status',
+                                                        cell: (cluster: Cluster) => {
+                                                            const availableStatuses = [
+                                                                ClusterStatus.ready,
+                                                                ClusterStatus.detached,
+                                                                ClusterStatus.hibernating,
+                                                                ClusterStatus.resuming,
+                                                                ClusterStatus.stopping,
+                                                            ]
+                                                            const isAvailable =
+                                                                !cluster.hive.clusterClaimName &&
+                                                                availableStatuses.includes(cluster.status)
+                                                            return (
+                                                                <span style={{ whiteSpace: 'nowrap' }}>
+                                                                    {t(`${isAvailable ? 'common:yes' : 'common:no'}`)}
+                                                                </span>
+                                                            )
+                                                        },
+                                                    },
+                                                    {
+                                                        header: t('table.claimName'),
+                                                        sort: 'hive',
+                                                        search: 'status',
+                                                        cell: (cluster: Cluster) => (
+                                                            <span style={{ whiteSpace: 'nowrap' }}>
+                                                                {cluster.hive.clusterClaimName ?? '-'}
+                                                            </span>
+                                                        ),
+                                                    },
+                                                    {
+                                                        header: t('table.lifetime'),
+                                                        sort: 'hive.lifetime',
+                                                        search: 'hive.lifetime',
+                                                        cell: (cluster: Cluster) => {
+                                                            if (!cluster.hive.clusterClaimName) {
+                                                                return '-'
+                                                            }
+                                                            return (
+                                                                <span style={{ whiteSpace: 'nowrap' }}>
+                                                                    <div>{cluster.hive.lifetime ?? '-'}</div>
+                                                                </span>
+                                                            )
+                                                        },
+                                                    },
+                                                ]}
+                                            />
+                                        ),
+                                    },
+                                ],
+                            },
+                        ]
+                    }
+                }}
                 columns={[
                     {
                         header: t('table.name'),
@@ -119,6 +240,12 @@ export function ClusterPoolsTable() {
                         },
                     },
                     {
+                        header: t('table.clusters'),
+                        cell: (clusterPool: ClusterPool) => {
+                            return <ClusterStatuses clusterPool={clusterPool} />
+                        },
+                    },
+                    {
                         header: t('table.provider'),
                         cell: (clusterPool: ClusterPool) => {
                             return <ClusterPoolProvider clusterPool={clusterPool} />
@@ -132,20 +259,44 @@ export function ClusterPoolsTable() {
                     },
                     {
                         header: '',
-                        cell: (clusterPool) => {
-                            const actions = [
+                        cell: (clusterPool: ClusterPool) => {
+                            let actions = [
                                 {
-                                    id: 'deleteClusterPool',
-                                    text: t('clusterPool.delete'),
+                                    id: 'claimCluster',
+                                    text: t('clusterPool.claim'),
+                                    isDisabled: true,
+                                    click: (clusterPool: ClusterPool) => {
+                                        setClusterClaimModalProps({
+                                            clusterPool,
+                                            onClose: () => setClusterClaimModalProps(undefined),
+                                        })
+                                    },
+                                    rbac: [rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)],
+                                },
+                                {
+                                    id: 'scaleClusterPool',
+                                    text: t('clusterPool.scale'),
+                                    isDisabled: true,
+                                    click: (clusterPool: ClusterPool) => {
+                                        setScaleClusterPoolModalProps({
+                                            clusterPool,
+                                            onClose: () => setScaleClusterPoolModalProps(undefined),
+                                        })
+                                    },
+                                    rbac: [rbacPatch(clusterPool)],
+                                },
+                                {
+                                    id: 'destroy',
+                                    text: t('clusterPool.destroy'),
                                     isDisabled: true,
                                     click: (clusterPool: ClusterPool) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.deleteClusterPool'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            title: t('bulk.title.destroyClusterPool'),
+                                            action: t('common:destroy'),
+                                            processing: t('common:destroying'),
                                             resources: [clusterPool],
-                                            description: t('bulk.message.deleteClusterPool'),
+                                            description: t('bulk.message.destroyClusterPool'),
                                             columns: modalColumns,
                                             keyFn: mckeyFn,
                                             actionFn: deleteResource,
@@ -157,6 +308,11 @@ export function ClusterPoolsTable() {
                                     rbac: [rbacDelete(clusterPool)],
                                 },
                             ]
+
+                            if (clusterPool.status?.ready === 0) {
+                                actions = actions.filter((action) => action.id !== 'claimCluster')
+                            }
+
                             return (
                                 <RbacDropdown<ClusterPool>
                                     id={`${clusterPool.metadata.name}-actions`}
@@ -174,16 +330,16 @@ export function ClusterPoolsTable() {
                 key="clusterPoolsTable"
                 bulkActions={[
                     {
-                        id: 'deleteClusterPools',
-                        title: t('bulk.delete.clusterPools'),
-                        click: (clusterPools) => {
+                        id: 'destroyClusterPools',
+                        title: t('bulk.destroy.clusterPools'),
+                        click: (clusterPools: ClusterPool[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.delete.clusterPools'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('bulk.destroy.clusterPools'),
+                                action: t('common:destroy'),
+                                processing: t('common:destroying'),
                                 resources: clusterPools,
-                                description: t('bulk.message.deleteClusterPool'),
+                                description: t('bulk.message.destroyClusterPool'),
                                 columns: modalColumns,
                                 keyFn: mckeyFn,
                                 actionFn: deleteResource,
@@ -207,16 +363,16 @@ export function ClusterPoolsTable() {
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
-                        // action={
-                        //     <AcmButton
-                        //         role="link"
-                        //         onClick={() => history.push(NavigationPath.clusterPools)}
-                        //         disabled={!canCreateClusterPool}
-                        //         tooltip={t('common:rbac.unauthorized')}
-                        //     >
-                        //         {t('managed.createClusterPool')}
-                        //     </AcmButton>
-                        // }
+                        action={
+                            <AcmButton
+                                role="link"
+                                onClick={() => history.push(NavigationPath.createCluster)}
+                                disabled={!canCreateClusterPool}
+                                tooltip={t('common:rbac.unauthorized')}
+                            >
+                                {t('managed.createClusterPool')}
+                            </AcmButton>
+                        }
                     />
                 }
             />

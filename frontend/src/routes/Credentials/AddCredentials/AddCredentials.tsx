@@ -134,6 +134,9 @@ export function AddCredentialPageData(props: { namespace: string; name: string }
             sshPublickey: '',
 
             ocmAPIToken: '',
+
+            openstackCloudsYaml: '',
+            openstackCloud: '',
         },
     })
 

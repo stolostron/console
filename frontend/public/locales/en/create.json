@@ -132,7 +132,7 @@
     "creation.ocp.cluster.policy.enforce": "Enforce if supported",
     "creation.ocp.cluster.details": "Configuration",
     "creation.ocp.cluster.hosts": "Hosts",
-    "creation.ocp.addition.labels": "Additional labels",    
+    "creation.ocp.addition.labels": "Additional labels",
     "creation.ocp.argocd.cluster": "ArgoCD Cluster",
     "tooltip.creation.ocp.argocd.cluster": "Create cluster with support for ArgoCD",
     "creation.ocp.toggle": "Toggle",
@@ -224,6 +224,10 @@
     "creation.ocp.vcenter": "vCenter",
     "creation.ocp.datacenter": "Datacenter",
     "creation.ocp.datastore": "Default datastore",
+    "creation.ocp.otp.instance.flavor": "Instance flavor",
+    "creation.ocp.cluster.ost.external.network.name": "External network name",
+    "creation.ocp.cluster.ost.api.floating.ip": "API floating IP",
+
 
     "tooltip.text.overview": "View operations details across all of your providers.",
     "tooltip.text.search": "Find resources across clusters with keywords and filters.",
@@ -307,6 +311,9 @@
     "tooltip.cloud.provider.vmw.datacenter": "The name of the vSphere datacenter to use.",
     "tooltip.cloud.provider.vmw.datastore": "The name of the default vSphere datastore to use.",
     "tooltip.creation.ocp.imageMirror": "Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.",
+    "tooltip.creation.ocp.otp.instance.type": "The OpenStack compute flavor.",
+    "tooltip.creation.ocp.cluster.ost.external.network.name": "The name for the external OpenStack network.",
+    "tooltip.creation.ocp.cluster.ost.api.floating.ip": "The floating IP address for the API VM",
 
     "placeholder.creation.ocp.clusterSet": "Select a cluster set",
 

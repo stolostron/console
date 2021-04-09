@@ -161,7 +161,7 @@ const mockPolicyReportList = {
     metadata: {},
     items: [
         {
-            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            apiVersion: 'wgpolicyk8s.io/v1alpha2',
             kind: 'PolicyReport',
             metadata: {
                 creationTimestamp: '2021-03-06T18:38:14Z',
@@ -172,7 +172,7 @@ const mockPolicyReportList = {
             results: [
                 {
                     category: 'category,category1,category2',
-                    data: {
+                    properties: {
                         created_at: '2021-03-02T21:26:04Z',
                         details: 'policyreport testing risk 1 details',
                         reason: 'policyreport testing risk 1 reason',
@@ -181,12 +181,12 @@ const mockPolicyReportList = {
                     },
                     message: 'policyreport testing risk 1',
                     policy: 'policyreport testing risk 1 policy',
-                    status: 'policyreport testing risk 1 status',
+                    result: 'policyreport testing risk 1 result',
                 },
             ],
         },
         {
-            apiVersion: 'wgpolicyk8s.io/v1alpha1',
+            apiVersion: 'wgpolicyk8s.io/v1alpha2',
             kind: 'PolicyReport',
             metadata: {
                 creationTimestamp: '2021-03-06T18:38:14Z',
@@ -197,7 +197,7 @@ const mockPolicyReportList = {
             results: [
                 {
                     category: 'category,category1,category2',
-                    data: {
+                    properties: {
                         created_at: '2021-03-02T21:26:04Z',
                         details: 'policyreport testing risk 2 details',
                         reason: 'policyreport testing risk 2 reason',
@@ -206,7 +206,7 @@ const mockPolicyReportList = {
                     },
                     message: 'policyreport testing risk 2',
                     policy: 'policyreport testing risk 2 policy',
-                    status: 'policyreport testing risk 2 status',
+                    result: 'policyreport testing risk 2 result',
                 },
             ],
         },
@@ -225,7 +225,7 @@ describe('StatusSummaryCount', () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         const policyReportNock = nockNamespacedList(
             {
-                apiVersion: 'wgpolicyk8s.io/v1alpha1',
+                apiVersion: 'wgpolicyk8s.io/v1alpha2',
                 kind: 'PolicyReport',
                 metadata: { namespace: 'test-cluster' },
             },

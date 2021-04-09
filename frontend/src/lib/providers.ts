@@ -7,6 +7,7 @@ export enum ProviderID {
     VMW = 'vmw',
     BMC = 'bmc',
     CRH = 'crh',
+    OST = 'ost',
     UKN = 'unknown',
     ANS = 'ans',
 }
@@ -23,6 +24,7 @@ export const providers: Provider[] = [
     { key: ProviderID.VMW, name: 'VMware vSphere' },
     { key: ProviderID.BMC, name: 'Bare Metal' },
     { key: ProviderID.CRH, name: 'Red Hat OpenShift Cluster Manager' },
+    { key: ProviderID.OST, name: 'Red Hat OpenStack' },
 ]
 
 export function getProvider(name: string): Provider {

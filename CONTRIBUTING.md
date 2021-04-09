@@ -50,6 +50,12 @@ After your PR is ready to commit, please run following commands to check your co
 npm run check
 ```
 
+If the check results in prettier or lint errors, you can have them automatically fixed by running:  
+```bash
+npm run check:fix
+```
+
+
 ### Testing your change
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 This will run the code locally:
