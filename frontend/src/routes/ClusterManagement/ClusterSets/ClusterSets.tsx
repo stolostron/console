@@ -176,13 +176,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 : '',
                         cell: (managedClusterSet) =>
                             managedClusterSet.metadata.labels ? (
-                                <AcmLabels
-                                    labels={managedClusterSet.metadata.labels}
-                                    style={{ maxWidth: '600px' }}
-                                    // expandedText={t('common:show.less')}
-                                    // collapsedText={t('common:show.more', { number: collapse.length })}
-                                    // collapse={collapse}
-                                />
+                                <AcmLabels labels={managedClusterSet.metadata.labels} style={{ maxWidth: '600px' }} />
                             ) : (
                                 '-'
                             ),

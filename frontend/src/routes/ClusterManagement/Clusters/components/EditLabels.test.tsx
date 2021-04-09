@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockPatch } from '../../../../lib/nock-util'
 import { IResource } from '../../../../resources/resource'
 import { EditLabels } from './EditLabels'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 
 const resource: IResource = {
