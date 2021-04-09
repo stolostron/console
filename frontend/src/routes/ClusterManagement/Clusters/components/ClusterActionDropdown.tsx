@@ -301,7 +301,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'manage-set')
     }
 
-    if (cluster.status !== ClusterStatus.hibernating || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
+    if (cluster.status !== ClusterStatus.hibernating) {
         actions = actions.filter((a) => a.id !== 'resume-cluster')
     }
 
