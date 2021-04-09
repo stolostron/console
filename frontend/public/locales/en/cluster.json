@@ -102,7 +102,7 @@
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
     "table.assignedToSet": "Current cluster set",
-    "table.available": "Clusters available",
+    "table.available": "Clusters available to claim",
     "table.namespace": "Namespace",
     "table.change": "Change",
     "table.clusterName": "Cluster name",
@@ -343,5 +343,6 @@
     "clusterClaim.lifetime.tooltip": "The claimed cluster will be destroyed after the specified duration from the time of creation of the ClusterClaim resource.",
     "clusterClaim.create.button": "Claim",
     "clusterClaim.modal.button.claiming": "Claiming",
-    "clusterClaim.modal.viewCluster": "View cluster"
+    "clusterClaim.modal.viewCluster": "View cluster",
+    "clusterClaim.create.timeOut": "Timed out waiting for a cluster to be assigned to the claim. Try checking the cluster claim later."
 }

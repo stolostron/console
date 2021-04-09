@@ -9,10 +9,13 @@ import {
     managedClustersState,
 } from '../../../../atoms'
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { ManagedCluster } from '../../../../resources/managed-cluster'
+import { ClusterDeployment } from '../../../../resources/cluster-deployment'
+import { ClusterPool } from '../../../../resources/cluster-pool'
 import { Cluster, mapClusters } from '../../../../lib/get-cluster'
 
 // returns the clusters assigned to a ManagedClusterSet
-export function useClusters(managedClusterSet: ManagedClusterSet | undefined) {
+export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool: ClusterPool | undefined) {
     const [
         managedClusters,
         clusterDeployments,
@@ -29,31 +32,46 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined) {
         ])
     )
 
-    const clusterSetManagedClusters = managedClusters.filter(
-        (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
-    )
-    const clusterSetClusterDeployments = clusterDeployments.filter(
-        (cd) => cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
-    )
+    let groupManagedClusters: ManagedCluster[] = []
+    let groupClusterDeployments: ClusterDeployment[] = []
+
+    if (managedClusterSet) {
+        groupManagedClusters = managedClusters.filter(
+            (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+        )
+        groupClusterDeployments = clusterDeployments.filter(
+            (cd) => cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+        )
+    }
+
+    if (clusterPool) {
+        groupClusterDeployments = clusterDeployments.filter(
+            (cd) =>
+                cd.spec?.clusterPoolRef?.poolName === clusterPool.metadata.name &&
+                cd.spec?.clusterPoolRef?.namespace === clusterPool.metadata.namespace
+        )
+        groupManagedClusters = managedClusters.filter((mc) =>
+            groupClusterDeployments.find((cd) => mc.metadata.name === cd.metadata.name)
+        )
+    }
+
     const clusterNames = Array.from(
         new Set([
-            ...clusterSetManagedClusters.map((mc) => mc.metadata.name),
-            ...clusterSetClusterDeployments.map((cd) => cd.metadata.name),
+            ...groupManagedClusters.map((mc) => mc.metadata.name),
+            ...groupClusterDeployments.map((cd) => cd.metadata.name),
         ])
     )
-    const clusterSetManagedClusterInfos = managedClusterInfos.filter((mci) =>
-        clusterNames.includes(mci.metadata.namespace)
-    )
-    const clusterSetManagedClusterAddons = managedClusterAddons.filter((mca) =>
+    const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
+    const groupManagedClusterAddons = managedClusterAddons.filter((mca) =>
         clusterNames.includes(mca.metadata.namespace)
     )
 
     const clusters: Cluster[] = mapClusters(
-        clusterSetClusterDeployments,
-        clusterSetManagedClusterInfos,
+        groupClusterDeployments,
+        groupManagedClusterInfos,
         certificateSigningRequests,
-        clusterSetManagedClusters,
-        clusterSetManagedClusterAddons
+        groupManagedClusters,
+        groupManagedClusterAddons
     )
 
     return clusters

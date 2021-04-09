@@ -20,12 +20,13 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { /*canUser, */ rbacDelete, rbacCreate } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { ClusterPool /*, ClusterPoolDefinition */ } from '../../../resources/cluster-pool'
-import { ClusterClaim, ClusterClaimDefinition } from '../../../resources/cluster-claim'
+import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
 import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { useAllClusters } from '../Clusters/components/useAllClusters'
 import { StatusField } from '../Clusters/components/StatusField'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
+import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -221,6 +222,12 @@ export function ClusterPoolsTable() {
                         search: 'metadata.namespace',
                         cell: (clusterPool: ClusterPool) => {
                             return clusterPool.metadata.namespace
+                        },
+                    },
+                    {
+                        header: t('table.clusters'),
+                        cell: (clusterPool: ClusterPool) => {
+                            return <ClusterStatuses clusterPool={clusterPool} />
                         },
                     },
                     {

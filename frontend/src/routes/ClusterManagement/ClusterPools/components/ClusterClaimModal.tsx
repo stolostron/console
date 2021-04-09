@@ -20,12 +20,10 @@ import {
     DescriptionListGroup,
     DescriptionListDescription,
 } from '@patternfly/react-core'
-import { useRecoilState } from 'recoil'
 import { ClusterPool } from '../../../../resources/cluster-pool'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../../resources/cluster-claim'
-import { createResource } from '../../../../lib/resource-request'
+import { createResource, getResource } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import { clusterClaimsState } from '../../../../atoms'
 
 export type ClusterClaimModalProps = {
     clusterPool?: ClusterPool
@@ -35,7 +33,6 @@ export type ClusterClaimModalProps = {
 export function ClusterClaimModal(props: ClusterClaimModalProps) {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
-    const [clusterClaims] = useRecoilState(clusterClaimsState)
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
     const [claimed, setClaimed] = useState<boolean>(false)
 
@@ -49,7 +46,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     namespace: props.clusterPool?.metadata.namespace,
                 },
                 spec: {
-                    clusterPoolName: props.clusterPool?.metadata.name,
+                    clusterPoolName: props.clusterPool?.metadata.name!,
                     lifetime: undefined,
                 },
             })
@@ -69,22 +66,21 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
         setClusterClaim(undefined)
     }
 
-    function pollRecoilState(createdClaim: ClusterClaim) {
-        return new Promise((resolve) => {
-            const poll = () => {
-                const recoilClaim = clusterClaims.find(
-                    (claim) =>
-                        claim.metadata.name === createdClaim.metadata.name &&
-                        claim.metadata.namespace === createdClaim.metadata.namespace
-                )
-                if (recoilClaim?.spec?.namespace) {
-                    return resolve(recoilClaim)
-                } else {
-                    return setTimeout(poll, 500)
-                }
+    function pollClaim(createdClaim: ClusterClaim) {
+        let retries = 10
+        const poll = async (resolve: any) => {
+            if (retries === 0) {
+                return resolve(undefined)
             }
-            return poll()
-        })
+            const request = await getResource(createdClaim).promise
+            if (request?.spec?.namespace) {
+                return resolve(request)
+            } else {
+                retries--
+                setTimeout(() => poll(resolve), 500)
+            }
+        }
+        return new Promise(poll)
     }
 
     if (!claimed) {
@@ -154,12 +150,18 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                 const request = createResource(clusterClaim!)
                                                 request.promise
                                                     .then(async (result) => {
-                                                        const updatedClaim = (await pollRecoilState(
-                                                            result
-                                                        )) as ClusterClaim
-                                                        setClusterClaim(updatedClaim)
-                                                        setClaimed(true)
-                                                        resolve()
+                                                        const updatedClaim = (await pollClaim(result)) as ClusterClaim
+                                                        if (updatedClaim) {
+                                                            setClusterClaim(updatedClaim)
+                                                            setClaimed(true)
+                                                        } else {
+                                                            alertContext.addAlert({
+                                                                type: 'danger',
+                                                                title: t('common:error'),
+                                                                message: t('clusterClaim.create.timeOut'),
+                                                            })
+                                                        }
+                                                        return resolve()
                                                     })
                                                     .catch((e) => {
                                                         if (e instanceof Error) {
@@ -187,7 +189,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
             </AcmModal>
         )
     } else {
-        console.log('clusterClaim', clusterClaim)
         return (
             <AcmModal
                 variant={ModalVariant.medium}
@@ -196,6 +197,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 onClose={reset}
             >
                 {t('clusterClaim.create.message.success')}
+                &nbsp;
                 <DescriptionList isHorizontal isAutoColumnWidths>
                     <DescriptionListGroup>
                         <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
@@ -210,19 +212,22 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         <DescriptionListDescription>{clusterClaim?.metadata.namespace}</DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>
-                <AcmButton
-                    key="view-cluster"
-                    variant="primary"
-                    role="link"
-                    onClick={() =>
-                        history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
-                    }
-                >
-                    {t('clusterClaim.modal.viewCluster')}
-                </AcmButton>
-                <AcmButton key="cancel" variant="link" onClick={reset}>
-                    {t('common:close')}
-                </AcmButton>
+                &nbsp;
+                <ActionGroup>
+                    <AcmButton
+                        key="view-cluster"
+                        variant="primary"
+                        role="link"
+                        onClick={() =>
+                            history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
+                        }
+                    >
+                        {t('clusterClaim.modal.viewCluster')}
+                    </AcmButton>
+                    <AcmButton key="cancel" variant="link" onClick={reset}>
+                        {t('common:close')}
+                    </AcmButton>
+                </ActionGroup>
             </AcmModal>
         )
     }
