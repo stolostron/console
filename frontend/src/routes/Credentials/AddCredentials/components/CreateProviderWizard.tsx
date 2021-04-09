@@ -211,7 +211,7 @@ export function CreateProviderWizard(props: {
 
     function onSave() {
         //logic for secret creation and page redirect
-        switch (credentialToCreate) {
+        switch (currentCredentialType) {
             case CredentialType.ansible:
                 // code block
                 createAnsibleCredential(ansibleSecret)
