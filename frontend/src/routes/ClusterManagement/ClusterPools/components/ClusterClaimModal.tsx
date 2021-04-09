@@ -83,14 +83,14 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
         return new Promise(poll)
     }
 
-    if (!claimed) {
-        return (
-            <AcmModal
-                variant={ModalVariant.medium}
-                title={t('clusterClaim.create.title')}
-                isOpen={!!props.clusterPool}
-                onClose={props.onClose}
-            >
+    return (
+        <AcmModal
+            variant={ModalVariant.medium}
+            title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
+            isOpen={!!props.clusterPool}
+            onClose={reset}
+        >
+            {!claimed ? (
                 <AcmForm style={{ gap: 0 }}>
                     <AcmAlertContext.Consumer>
                         {(alertContext) => (
@@ -186,18 +186,29 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         )}
                     </AcmAlertContext.Consumer>
                 </AcmForm>
-            </AcmModal>
-        )
-    } else {
-        return (
-            <AcmModal
-                variant={ModalVariant.medium}
-                title={t('clusterClaim.create.title.success')}
-                isOpen={claimed}
-                onClose={() => {
-                    reset()
-                }}
-                actions={[
+            ) : (
+                <>
+                    <p>{t('clusterClaim.create.message.success')}</p>
+                    <DescriptionList
+                        isHorizontal
+                        isAutoColumnWidths
+                        style={{ marginBottom: '24px', marginTop: '16px' }}
+                    >
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
+                            <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.clusterPool.name')}</DescriptionListTerm>
+                            <DescriptionListDescription>
+                                {clusterClaim?.spec?.clusterPoolName!}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.clusterPool.namespace')}</DescriptionListTerm>
+                            <DescriptionListDescription>{clusterClaim?.metadata.namespace}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                    </DescriptionList>
                     <AcmButton
                         key="view-cluster"
                         variant="primary"
@@ -207,29 +218,12 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         }
                     >
                         {t('clusterClaim.modal.viewCluster')}
-                    </AcmButton>,
+                    </AcmButton>
                     <AcmButton key="cancel" variant="link" onClick={reset}>
                         {t('common:close')}
-                    </AcmButton>,
-                ]}
-            >
-                <p style={{ marginBottom: '16px' }}>{t('clusterClaim.create.message.success')}</p>
-
-                <DescriptionList isHorizontal isAutoColumnWidths>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
-                        <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>{t('clusterClaim.clusterPool.name')}</DescriptionListTerm>
-                        <DescriptionListDescription>{clusterClaim?.spec?.clusterPoolName!}</DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>{t('clusterClaim.clusterPool.namespace')}</DescriptionListTerm>
-                        <DescriptionListDescription>{clusterClaim?.metadata.namespace}</DescriptionListDescription>
-                    </DescriptionListGroup>
-                </DescriptionList>
-            </AcmModal>
-        )
-    }
+                    </AcmButton>
+                </>
+            )}
+        </AcmModal>
+    )
 }
