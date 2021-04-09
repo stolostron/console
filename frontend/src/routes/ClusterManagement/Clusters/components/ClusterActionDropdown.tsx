@@ -21,6 +21,7 @@ import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { managedClusterSetsState } from '../../../../atoms'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { createImportResources } from '../../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
@@ -128,39 +129,39 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             click: (cluster: Cluster) =>
                 window.location.assign(`/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
         },
-        // {
-        //     id: 'import-cluster',
-        //     text: t('managed.import'),
-        //     click: (cluster: Cluster) => {
-        //         setModalProps({
-        //             open: true,
-        //             title: t('bulk.title.import'),
-        //             action: t('import'),
-        //             processing: t('import.generating'),
-        //             resources: [cluster],
-        //             close: () => {
-        //                 setModalProps({ open: false })
-        //             },
-        //             description: t('bulk.message.import'),
-        //             columns: [
-        //                 {
-        //                     header: t('upgrade.table.name'),
-        //                     sort: 'name',
-        //                     cell: 'name',
-        //                 },
-        //                 {
-        //                     header: t('table.provider'),
-        //                     sort: 'provider',
-        //                     cell: (cluster: Cluster) =>
-        //                         cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-        //                 },
-        //             ],
-        //             keyFn: (cluster) => cluster.name as string,
-        //             actionFn: createImportResources,
-        //         })
-        //     },
-        //     rbac: [rbacCreate(ManagedClusterDefinition)],
-        // },
+        {
+            id: 'import-cluster',
+            text: t('managed.import'),
+            click: (cluster: Cluster) => {
+                setModalProps({
+                    open: true,
+                    title: t('bulk.title.import'),
+                    action: t('common:import'),
+                    processing: t('common:importing'),
+                    resources: [cluster],
+                    close: () => {
+                        setModalProps({ open: false })
+                    },
+                    description: t('bulk.message.import'),
+                    columns: [
+                        {
+                            header: t('upgrade.table.name'),
+                            sort: 'name',
+                            cell: 'name',
+                        },
+                        {
+                            header: t('table.provider'),
+                            sort: 'provider',
+                            cell: (cluster: Cluster) =>
+                                cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                        },
+                    ],
+                    keyFn: (cluster) => cluster.name as string,
+                    actionFn: createImportResources,
+                })
+            },
+            rbac: [rbacCreate(ManagedClusterDefinition)],
+        },
         {
             id: 'hibernate-cluster',
             text: t('managed.hibernate'),
@@ -296,7 +297,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
     }
 
-    if (!cluster?.clusterSet && managedClusterSets.length === 0) {
+    if ((!cluster?.clusterSet && managedClusterSets.length === 0) || cluster.status === ClusterStatus.detaching) {
         actions = actions.filter((a) => a.id !== 'manage-set')
     }
 
@@ -324,7 +325,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
     }
 
-    if (!cluster.isManaged) {
+    if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
         actions = actions.filter((a) => a.id !== 'edit-labels')
         actions = actions.filter((a) => a.id !== 'search-cluster')
     }
@@ -333,11 +334,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'import-cluster')
     }
 
-    if (cluster.status === ClusterStatus.detached) {
+    if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
         actions = actions.filter((a) => a.id !== 'detach-cluster')
     }
 
-    if (!cluster.isHive) {
+    if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
         actions = actions.filter((a) => a.id !== 'destroy-cluster')
     }
 

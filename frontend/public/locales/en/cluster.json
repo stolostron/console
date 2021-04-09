@@ -99,7 +99,7 @@
     "table.instanceType": "Instance type",
     "table.cpu": "CPU",
     "table.memory": "RAM",
-    "table.credentials": "Username/password",
+    "table.credentials": "Username & password",
     "table.clusters": "Clusters",
     "table.set": "Cluster set",
     "table.assignedToSet": "Current cluster set",

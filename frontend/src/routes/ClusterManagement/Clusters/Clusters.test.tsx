@@ -10,7 +10,7 @@ import {
     managedClusterInfosState,
     managedClustersState,
 } from '../../../atoms'
-import { nockCreate, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
+import { nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
 import { rbacCreate } from '../../../lib/rbac-util'
 import {
     clickByLabel,
@@ -32,11 +32,6 @@ import {
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
 } from '../../../resources/cluster-deployment'
-import {
-    KlusterletAddonConfig,
-    KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind,
-} from '../../../resources/klusterlet-add-on-config'
 import {
     ManagedCluster,
     ManagedClusterApiVersion,
@@ -360,56 +355,6 @@ describe('Clusters Page', () => {
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         await clickByText('detach')
         await waitForNocks(deleteNocks)
-    })
-
-    // TODO re-enable when re-attach is supported
-    test.skip('can re-attach detached clusters', async () => {
-        const mockCreateManagedCluster: ManagedCluster = {
-            apiVersion: ManagedClusterApiVersion,
-            kind: ManagedClusterKind,
-            metadata: {
-                name: mockClusterDeployment6.metadata.name!,
-                labels: {
-                    cloud: 'auto-detect',
-                    vendor: 'auto-detect',
-                    name: mockClusterDeployment6.metadata.name!,
-                },
-            },
-            spec: { hubAcceptsClient: true },
-        }
-        const mockCreateKlusterletAddonConfig: KlusterletAddonConfig = {
-            apiVersion: KlusterletAddonConfigApiVersion,
-            kind: KlusterletAddonConfigKind,
-            metadata: {
-                name: mockClusterDeployment6.metadata.name!,
-                namespace: mockClusterDeployment6.metadata.name!,
-            },
-            spec: {
-                clusterName: mockClusterDeployment6.metadata.name!,
-                clusterNamespace: mockClusterDeployment6.metadata.name!,
-                clusterLabels: {
-                    cloud: 'auto-detect',
-                    vendor: 'auto-detect',
-                    name: mockClusterDeployment6.metadata.name!,
-                },
-                applicationManager: { enabled: true, argocdCluster: false },
-                policyController: { enabled: true },
-                searchCollector: { enabled: true },
-                certPolicyController: { enabled: true },
-                iamPolicyController: { enabled: true },
-                version: '2.2.0',
-            },
-        }
-        const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)
-        const createKacNock = nockCreate(mockCreateKlusterletAddonConfig, mockCreateKlusterletAddonConfig)
-        await waitForText(mockClusterDeployment6.metadata.name!)
-        await clickByLabel('Actions', 6)
-        await waitForText('managed.import')
-        await clickByText('managed.import')
-        await waitForText('cluster.import.description')
-        await clickByText('import')
-        await waitForNocks([createMcNock, createKacNock])
-        await waitForNotText('cluster.import.description')
     })
 
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
