@@ -75,6 +75,7 @@ export function startWatching(): void {
             'open-cluster-management.io/cluster-name': '',
         },
     })
+    watchResource(token, 'hive.openshift.io/v1', 'clusterClaims')
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
     watchResource(token, 'hive.openshift.io/v1', 'clusterPools')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')

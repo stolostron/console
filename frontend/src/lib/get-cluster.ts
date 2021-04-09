@@ -6,6 +6,7 @@ import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certi
 import { ClusterDeployment } from '../resources/cluster-deployment'
 import { ManagedCluster } from '../resources/managed-cluster'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
+import { ClusterClaim } from '../resources/cluster-claim'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 import { AddonStatus } from './get-addons'
@@ -45,8 +46,11 @@ export type Cluster = {
     consoleURL: string | undefined
     hive: {
         clusterPool: string | undefined
+        clusterPoolNamespace: string | undefined
         isHibernatable: boolean
         secrets: HiveSecrets | undefined
+        clusterClaimName: string | undefined
+        lifetime: string | undefined
     }
     isHive: boolean
     isManaged: boolean
@@ -78,7 +82,8 @@ export function mapClusters(
     managedClusterInfos: ManagedClusterInfo[] = [],
     certificateSigningRequests: CertificateSigningRequest[] = [],
     managedClusters: ManagedCluster[] = [],
-    managedClusterAddOns: ManagedClusterAddOn[] = []
+    managedClusterAddOns: ManagedClusterAddOn[] = [],
+    clusterClaims: ClusterClaim[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -93,7 +98,15 @@ export function mapClusters(
         const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
         const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
         const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
-        return getCluster(managedClusterInfo, clusterDeployment, certificateSigningRequests, managedCluster, addons)
+        const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
+        return getCluster(
+            managedClusterInfo,
+            clusterDeployment,
+            certificateSigningRequests,
+            managedCluster,
+            addons,
+            clusterClaim
+        )
     })
 }
 
@@ -102,7 +115,8 @@ export function getCluster(
     clusterDeployment: ClusterDeployment | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
-    managedClusterAddOns: ManagedClusterAddOn[]
+    managedClusterAddOns: ManagedClusterAddOn[],
+    clusterClaim: ClusterClaim | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -124,7 +138,7 @@ export function getCluster(
         consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
-        hive: getHiveConfig(clusterDeployment),
+        hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
             managedClusterInfo?.metadata?.labels?.[managedClusterSetLabel] ||
@@ -135,7 +149,7 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
-export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
+export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const isInstalled = clusterDeployment?.spec?.installed
     const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
     const supportsHibernation =
@@ -145,11 +159,14 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment) {
     return {
         isHibernatable,
         clusterPool: clusterDeployment?.spec?.clusterPoolRef?.poolName,
+        clusterPoolNamespace: clusterDeployment?.spec?.clusterPoolRef?.namespace,
         secrets: {
             kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
             kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef.name,
             installConfig: clusterDeployment?.spec?.provisioning.installConfigSecretRef.name,
         },
+        clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
+        lifetime: clusterClaim?.spec?.lifetime,
     }
 }
 
@@ -332,7 +349,7 @@ export function getClusterStatus(
         } else if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
 
-            const hibernatingCondition = clusterDeployment?.status?.conditions.find((c) => c.type === 'Hibernating')
+            const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
             // covers reason = Running or Unsupported
             if (hibernatingCondition?.status === 'False') {
                 cdStatus = ClusterStatus.detached

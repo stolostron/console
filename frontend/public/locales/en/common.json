@@ -8,9 +8,13 @@
     "destroying": "Destroying",
     "import": "Import",
     "importing": "Importing",
+    "scale": "Scale",
+    "Scaling": "Scaling",
     "save": "Save",
     "saving": "Saving",
     "success": "Success",
+    "claim": "Claim",
+    "claiming": "Claiming",
     "clipboardCopy": "Copy to clipboard",
     "copied": "Successfully copied to clipboard",
     "retry": "Retry",
@@ -20,6 +24,9 @@
     "there.were.errors": "There were errors processing the request(s)",
     "type.to.confirm": "Confirm by typing \"{0}\" below:",
     "close": "Close",
+
+    "yes": "Yes",
+    "no": "No",
 
     "show.less": "Show less",
     "show.more": "{{number}} more",
