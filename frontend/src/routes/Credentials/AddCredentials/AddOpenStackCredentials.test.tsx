@@ -1,11 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { multiClusterHubState, namespacesState } from '../../../atoms'
+import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { multiClusterHub } from '../../../lib/test-metadata'
+import { clickByText, typeByTestId, waitForNock } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
     packProviderConnection,
     ProviderConnection,
@@ -13,11 +17,6 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import AddCredentialPage from './AddCredentials'
-import { NavigationPath } from '../../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, multiClusterHubState } from '../../../atoms'
-import { waitForText } from '../../../lib/test-util'
-import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -64,47 +63,37 @@ describe('add connection page', () => {
                 },
             },
             spec: {
-                openstackCloudsYaml:
-                    'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: admin\n      password: fake\n      project_id: 123456789\n      project_name: admin\n      user_domain_name: Default\n    region_name: regionOne\n    interface: public\n    identity_api_version: 3',
-                openstackCloud: 'openstack',
                 baseDomain: 'base.domain',
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
+                openstackCloudsYaml:
+                    'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: admin\n      password: fake\n      project_id: 123456789\n      project_name: admin\n      user_domain_name: Default\n    region_name: regionOne\n    interface: public\n    identity_api_version: 3',
+                openstackCloud: 'openstack',
             },
         }
 
-        const badRequestNock = nockCreate(
-            packProviderConnection({ ...openstackProviderConnection }),
-            mockBadRequestStatus
-        )
         const createNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }))
-        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
+        const { container } = render(<TestAddConnectionPage />)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.OST).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.OST).name).click()
-        userEvent.type(getByTestId('connectionName'), openstackProviderConnection.metadata.name!)
+        await clickByText(getProviderByKey(ProviderID.OST).name)
+        await typeByTestId('connectionName', openstackProviderConnection.metadata.name!)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(openstackProviderConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(openstackProviderConnection.metadata.namespace!).click()
-        userEvent.type(getByTestId('openstackCloudsYaml'), openstackProviderConnection.spec!.openstackCloudsYaml!)
-        userEvent.type(getByTestId('openstackCloud'), openstackProviderConnection.spec!.openstackCloud!)
-        userEvent.type(getByTestId('baseDomain'), openstackProviderConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), openstackProviderConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), openstackProviderConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), openstackProviderConnection.spec!.sshPublickey!)
-        getByText('addConnection.addButton.label').click()
-        await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
-        await waitForText(mockBadRequestStatus.message, true)
-        await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
-        getByText('addConnection.addButton.label').click()
-        await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+        await clickByText(openstackProviderConnection.metadata.namespace!)
+        await typeByTestId('openstackCloudsYaml', openstackProviderConnection.spec!.openstackCloudsYaml!)
+        await typeByTestId('openstackCloud', openstackProviderConnection.spec!.openstackCloud!)
+        await typeByTestId('baseDomain', openstackProviderConnection.spec!.baseDomain!)
+        await typeByTestId('pullSecret', openstackProviderConnection.spec!.pullSecret!)
+        await typeByTestId('sshPrivateKey', openstackProviderConnection.spec!.sshPrivatekey!)
+        await typeByTestId('sshPublicKey', openstackProviderConnection.spec!.sshPublickey!)
+        await clickByText('addConnection.addButton.label')
+        await waitForNock(createNock)
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })
 })
