@@ -147,6 +147,7 @@ export function CreateProviderWizard(props: {
             projects={props.projects}
             ansibleSecret={ansibleSecret}
             setAnsibleSecret={setAnsibleSecret}
+            isEditing={true}
         />
     )
 
@@ -204,7 +205,7 @@ export function CreateProviderWizard(props: {
     function onBack() {
         const step = currentStep - 1
         setCurrentStep(step)
-        if (nextButtonName != 'Next') {
+        if (nextButtonName !== 'Next') {
             setNextButtonName('Next')
         }
     }
@@ -293,6 +294,7 @@ function CredentialTypeStep(props: {
                         projects={props.projects}
                         ansibleSecret={ansibleSecret}
                         setAnsibleSecret={setAnsibleSecret}
+                        isEditing={false}
                     />
                 )
                 break
@@ -304,6 +306,7 @@ function CredentialTypeStep(props: {
                         setProviderConnection={props.setProviderConnection}
                         discoveryFeatureGate={props.discoveryFeatureGate}
                         multiClusterHubs={props.multiClusterHubs}
+                        isEditing={true}
                     />
                 )
                 break
@@ -397,8 +400,10 @@ function AnsibleTowerInformationStep(props: {
     projects: string[]
     ansibleSecret: AnsibleTowerSecret
     setAnsibleSecret: Function
+    isEditing: boolean
 }) {
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>(props.ansibleSecret)
+
     function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
         const copy = { ...ansibleSecret }
         update(copy)
@@ -425,8 +430,28 @@ function AnsibleTowerInformationStep(props: {
                 }}
                 // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 // isRequired
-                // isDisabled={isEditing()}
+                isDisabled={props.isEditing}
             />
+            <AcmSelect
+                id="namespaceName"
+                label={t('addConnection.namespaceName.label')}
+                placeholder={t('addConnection.namespaceName.placeholder')}
+                labelHelp={t('addConnection.namespaceName.labelHelp')}
+                value={ansibleSecret.metadata.namespace}
+                onChange={(namespace) => {
+                    updateAnsibleSecret((ansibleSecret) => {
+                        ansibleSecret.metadata.namespace = namespace
+                    })
+                }}
+                hidden={!props.isEditing}
+                isDisabled={props.isEditing}
+            >
+                {props.projects.map((project) => (
+                    <SelectOption key={project} value={project}>
+                        {project}
+                    </SelectOption>
+                ))}
+            </AcmSelect>
             <AcmTextInput
                 id="ansibleHostName"
                 label={t('addConnection.ansible.host.label')}
@@ -470,6 +495,7 @@ function ProviderInformationStep(props: {
     setProviderConnection: Function
     discoveryFeatureGate: FeatureGate | undefined
     multiClusterHubs: MultiClusterHub[]
+    isEditing: boolean
 }) {
     const { t } = useTranslation(['connection'])
     const history = useHistory()
