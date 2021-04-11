@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node'
-import { IResource, IResourceDefinition } from './resource'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { createResource } from '../lib/resource-request'
+import { IResource, IResourceDefinition } from './resource'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
 export type SelfSubjectAccessReviewApiVersionType = 'authorization.k8s.io/v1'

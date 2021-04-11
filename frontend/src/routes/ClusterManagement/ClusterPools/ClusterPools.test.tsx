@@ -5,9 +5,10 @@ import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../resources/cluster-pool'
+import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../resources/cluster-claim'
 import { clusterPoolsState } from '../../../atoms'
-import { nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../lib/test-util'
+import { nockCreate, nockGet, nockPatch, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { clickByLabel, clickByText, typeByText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 
 const mockClusterPool: ClusterPool = {
@@ -59,6 +60,19 @@ const mockClusterPool: ClusterPool = {
     },
 }
 
+const mockClusterClaim: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        name: 'test-claim',
+        namespace: mockClusterPool.metadata.namespace!,
+    },
+    spec: {
+        clusterPoolName: mockClusterPool.metadata.name!,
+        lifetime: '1h',
+    },
+}
+
 describe('ClusterPools page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
@@ -74,21 +88,44 @@ describe('ClusterPools page', () => {
             </RecoilRoot>
         )
     })
-    test('should be able to delete a cluster pool using a row action', async () => {
+    test('should be able to destroy a cluster pool using a row action', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.delete')
+        await clickByText('clusterPool.destroy')
         await typeByText('type.to.confirm', mockClusterPool.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('common:delete')
+        await clickByText('common:destroy')
         await waitForNocks(deleteNocks)
     })
-    test('should be able to delete cluster pools using bulk actions', async () => {
+    test('should be able to destroy cluster pools using bulk actions', async () => {
         await clickByLabel('Select row 0')
-        await clickByText('bulk.delete.clusterPools')
+        await clickByText('bulk.destroy.clusterPools')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('common:delete')
+        await clickByText('common:destroy')
         await waitForNocks(deleteNocks)
+    })
+
+    test('should be able to scale a cluster pool', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('clusterPool.scale')
+        await waitForText('clusterPool.modal.scale.title')
+        await clickByLabel('Plus')
+        const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
+        await clickByText('common:scale')
+        await waitForNocks(patchNocks)
+    })
+
+    test('should be able to claim a cluster', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('clusterPool.claim')
+        await waitForText('clusterClaim.create.title')
+        await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
+        await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
+        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
+        await clickByText('common:claim')
+        await waitForNocks(createNocks)
     })
 })

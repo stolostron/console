@@ -140,7 +140,9 @@ export class ServerSideEvents {
                         const { kind, metadata } = watchEvent.object
                         const name = metadata?.name
                         const namespace = metadata?.namespace
-                        logger.trace({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+                        if (process.env.LOG_EVENTS === 'true') {
+                            logger.debug({ msg: 'event', type: watchEvent.type, kind, name, namespace })
+                        }
                     }
                 }
             } catch (err) {

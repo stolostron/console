@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -18,13 +18,13 @@ import {
     AcmTable,
     AcmInlineProvider,
     AcmEmptyState,
+    AcmLabelsInput,
 } from '@open-cluster-management/ui-components'
 import { PageSection, Title, ActionGroup } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import {
     ManagedClusterSet,
-    ManagedClusterSetDefinition,
     ManagedClusterSetApiVersion,
     ManagedClusterSetKind,
     managedClusterSetLabel,
@@ -39,7 +39,6 @@ import {
     managedClusterAddonsState,
 } from '../../../../atoms'
 import { Cluster, mapClusters } from '../../../../lib/get-cluster'
-import { getAuthorizedClusters, rbacPatch } from '../../../../lib/rbac-util'
 import { DistributionField } from '../../Clusters/components/DistributionField'
 import { StatusField } from '../../Clusters/components/StatusField'
 
@@ -80,8 +79,6 @@ export function CreateClusterSetContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
     const alertContext = useContext(AcmAlertContext)
-    const [isLoading, setIsLoading] = useState<boolean>(true)
-    const [authorizedClusters, setAuthorizedClusters] = useState<Cluster[] | undefined>()
 
     const [
         managedClusters,
@@ -107,21 +104,6 @@ export function CreateClusterSetContent() {
         managedClusterAddons
     )
     clusters = clusters.filter((cluster) => cluster?.clusterSet === undefined)
-
-    useEffect(() => {
-        if (isLoading) {
-            getAuthorizedClusters([rbacPatch(ManagedClusterSetDefinition)], clusters)
-                .then((clusters: Cluster[]) => setAuthorizedClusters(clusters))
-                .catch((err) => {
-                    alertContext.addAlert({
-                        type: 'danger',
-                        title: err.name,
-                        message: err.message,
-                    })
-                })
-                .finally(() => setIsLoading(false))
-        }
-    }, [clusters, isLoading, alertContext])
 
     const [managedClusterSet, setManagedClusterSet] = useState<ManagedClusterSet>({
         apiVersion: ManagedClusterSetApiVersion,
@@ -150,6 +132,18 @@ export function CreateClusterSetContent() {
                     setManagedClusterSet(copy)
                 }}
             />
+            <AcmLabelsInput
+                id="labels"
+                label={t('common:labels')}
+                buttonLabel={t('common:label.add')}
+                value={managedClusterSet.metadata.labels}
+                onChange={(label) => {
+                    const copy = { ...managedClusterSet }
+                    copy.metadata.labels = label
+                    setManagedClusterSet(copy)
+                }}
+                placeholder={t('labels.edit.placeholder')}
+            />
             <Title headingLevel="h4" size="xl">
                 {t('createClusterSet.form.section.clusters')}
             </Title>
@@ -157,7 +151,7 @@ export function CreateClusterSetContent() {
             <AcmTable<Cluster>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusters"
-                items={authorizedClusters}
+                items={clusters}
                 keyFn={(cluster: Cluster) => cluster.name!}
                 key="clustersTable"
                 onSelect={(clusters: Cluster[]) => {

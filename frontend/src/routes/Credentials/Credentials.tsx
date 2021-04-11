@@ -172,6 +172,9 @@ export function ProviderConnectionsTable(props: {
                                 case ProviderID.CRH:
                                     provider = Provider.redhatcloud
                                     break
+                                case ProviderID.OST:
+                                    provider = Provider.openstack
+                                    break
                                 case ProviderID.UKN:
                                 default:
                                     provider = Provider.other

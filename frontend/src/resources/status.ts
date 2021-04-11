@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1Status } from '@kubernetes/client-node'
+import { V1Status } from '@kubernetes/client-node/dist/gen/model/v1Status'
 
 export const StatusApiVersion = 'v1'
 export type StatusApiVersionType = 'v1'

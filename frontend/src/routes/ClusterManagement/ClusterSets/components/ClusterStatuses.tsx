@@ -3,14 +3,16 @@
 import { AcmInlineStatusGroup } from '@open-cluster-management/ui-components'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ManagedClusterSet } from '../../../../resources/managed-cluster-set'
+import { ClusterPool } from '../../../../resources/cluster-pool'
 import { useClusters } from './useClusters'
 
-export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet }) {
-    const clusters = useClusters(props.managedClusterSet)
+export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; clusterPool?: ClusterPool }) {
+    const clusters = useClusters(props.managedClusterSet, props.clusterPool)
     let healthy = 0
     let warning = 0
     let progress = 0
     let danger = 0
+    let detached = 0
     let pending = 0
     let sleep = 0
     let unknown = 0
@@ -51,6 +53,7 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
                 break
             // detached clusters don't have a ManagedCluster
             case ClusterStatus.detached:
+                detached++
                 break
         }
     })
@@ -66,6 +69,7 @@ export function ClusterStatuses(props: { managedClusterSet: ManagedClusterSet })
             pending={pending}
             sleep={sleep}
             unknown={unknown}
+            detached={detached}
         />
     )
 }
