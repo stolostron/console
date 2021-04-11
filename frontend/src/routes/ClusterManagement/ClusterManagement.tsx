@@ -20,6 +20,7 @@ const DiscoveredClustersPage = lazy(() => import('./../Discovery/DiscoveredClust
 const ClusterSetsPage = lazy(() => import('./ClusterSets/ClusterSets'))
 const ClusterPoolsPage = lazy(() => import('./ClusterPools/ClusterPools'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
+const IntegrationsPage = lazy(() => import('./Integrations/Integrations'))
 
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
@@ -96,6 +97,9 @@ export default function ClusterManagementPage() {
                             >
                                 <Link to={NavigationPath.bareMetalAssets}>{t('bma:bmas')}</Link>
                             </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.integrations)}>
+                                <Link to={NavigationPath.integrations}>{t('cluster:integration.title')}</Link>
+                            </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
                     actions={actions}
@@ -110,6 +114,7 @@ export default function ClusterManagementPage() {
                             <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         )}
                         <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
+                        <Route exact path={NavigationPath.integrations} component={IntegrationsPage} />
                         <Route exact path={NavigationPath.console}>
                             <Redirect to={NavigationPath.clusters} />
                         </Route>
