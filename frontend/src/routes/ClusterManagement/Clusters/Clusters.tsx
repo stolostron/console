@@ -82,7 +82,7 @@ export default function ClustersPage() {
                             message={
                                 <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
                             }
-                            action={<AddCluster type="button" buttonSpacing />}
+                            action={<AddCluster type="button" />}
                         />
                     }
                 />
