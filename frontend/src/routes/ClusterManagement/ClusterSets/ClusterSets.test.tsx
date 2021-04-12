@@ -3,26 +3,25 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import ClusterSetsPage from './ClusterSets'
-import {
-    waitForText,
-    clickByLabel,
-    clickByText,
-    typeByText,
-    waitForNock,
-    selectTableRow,
-    clickBulkAction,
-} from '../../../lib/test-util'
-import { nockIgnoreRBAC, nockDelete } from '../../../lib/nock-util'
-import { mockManagedClusterSet } from '../../../lib/test-metadata'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     managedClusterInfosState,
-    managedClustersState,
     managedClusterSetsState,
+    managedClustersState,
 } from '../../../atoms'
+import { nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { mockManagedClusterSet } from '../../../lib/test-metadata'
+import {
+    clickBulkAction,
+    clickByText,
+    selectTableRow,
+    typeByText,
+    waitForNock,
+    waitForText,
+} from '../../../lib/test-util'
 import { mockClusterDeployments, mockManagedClusterInfos, mockManagedClusters } from '../Clusters/Clusters.test'
+import ClusterSetsPage from './ClusterSets'
 
 const Component = () => (
     <RecoilRoot

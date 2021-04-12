@@ -12,10 +12,10 @@ import {
 } from '../../../atoms'
 import { nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
 import { rbacCreate } from '../../../lib/rbac-util'
+import { mockManagedClusterSet } from '../../../lib/test-metadata'
 import {
     clickBulkAction,
     clickByLabel,
-    clickByRole,
     clickByText,
     clickRowAction,
     selectTableRow,
@@ -46,10 +46,9 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../resources/managed-cluster-info'
+import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import ClustersPage from './Clusters'
-import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
-import { mockManagedClusterSet } from '../../../lib/test-metadata'
 
 const mockManagedCluster0: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
