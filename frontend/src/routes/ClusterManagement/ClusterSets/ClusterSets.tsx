@@ -263,7 +263,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             <AcmButton
                                 role="link"
                                 onClick={() => history.push(NavigationPath.createClusterSet)}
-                                disabled={!canCreateClusterSet}
+                                isDisabled={!canCreateClusterSet}
                                 tooltip={t('common:rbac.unauthorized')}
                             >
                                 {t('managed.createClusterSet')}
