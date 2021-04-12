@@ -40,7 +40,7 @@ export function HiveNotification() {
         (c) => c.type === 'ClusterProvisionFailed'
     )
     const clusterProvisionStatus =
-        provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : undefined
+        provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster!.statusMessage
 
     const provisionStatuses: string[] = [
         ClusterStatus.creating,
@@ -50,6 +50,10 @@ export function HiveNotification() {
     ]
 
     if (!provisionStatuses.includes(/* istanbul ignore next */ cluster?.status ?? '')) {
+        return null
+    }
+
+    if (cluster!.statusMessage) {
         return null
     }
 

@@ -33,6 +33,15 @@ export enum ClusterStatus {
     'unknown' = 'unknown',
 }
 
+export const clusterDangerStatuses = [
+    ClusterStatus.provisionfailed,
+    ClusterStatus.deprovisionfailed,
+    ClusterStatus.failed,
+    ClusterStatus.offline,
+    ClusterStatus.degraded,
+    ClusterStatus.notaccepted,
+]
+
 export type Cluster = {
     name: string | undefined
     namespace: string | undefined
