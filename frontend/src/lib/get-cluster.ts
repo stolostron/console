@@ -329,6 +329,7 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
+        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -369,7 +370,11 @@ export function getClusterStatus(
 
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
-            if (provisionFailed) {
+            if (hasInvalidImageSet) {
+                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                cdStatus = ClusterStatus.provisionfailed
+                statusMessage = invalidImageSetCondition?.message
+            } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
