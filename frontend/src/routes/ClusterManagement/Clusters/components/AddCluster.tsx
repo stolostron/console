@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
-import { useEffect, useState } from 'react'
+import { Gallery } from '@patternfly/react-core'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../lib/rbac-util'
@@ -10,7 +11,6 @@ import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 export function AddCluster(props: {
     type: 'button' | 'dropdown'
     buttonType?: 'primary' | 'link'
-    buttonSpacing?: boolean
 }) {
     const { t } = useTranslation('cluster')
     const history = useHistory()
@@ -26,7 +26,7 @@ export function AddCluster(props: {
 
     if (props.type === 'button') {
         return (
-            <>
+            <Gallery hasGutter={true}>
                 <AcmButton
                     component={Link}
                     isDisabled={!canCreateCluster}
@@ -42,11 +42,10 @@ export function AddCluster(props: {
                     tooltip={t('common:rbac.unauthorized')}
                     variant={props.buttonType ?? 'primary'}
                     to={NavigationPath.importCluster}
-                    style={{ marginLeft: props.buttonSpacing ? '16px' : undefined }}
                 >
                     {t('managed.importCluster')}
                 </AcmButton>
-            </>
+            </Gallery>
         )
     } else {
         const onSelect = (id: string) => {
