@@ -7,9 +7,11 @@ import { RecoilRoot } from 'recoil'
 import { providerConnectionsState, discoveryConfigState } from '../../atoms'
 import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
+    clickBulkAction,
     clickByLabel,
     clickByRole,
     clickByText,
+    selectTableRow,
     waitForNock,
     waitForNocks,
     waitForNotText,
@@ -170,8 +172,8 @@ describe('provider connections page', () => {
         const deleteNock = nockDelete(mockProviderConnection1)
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 1) // Select first item
-        await clickByText('delete.batch')
+        await selectTableRow(1)
+        await clickBulkAction('delete.batch')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
     })
@@ -179,8 +181,8 @@ describe('provider connections page', () => {
     test('should be able to cancel bulk delete provider connections', async () => {
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 1) // Select all
-        await clickByText('delete.batch')
+        await selectTableRow(1)
+        await clickBulkAction('delete.batch')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
     })

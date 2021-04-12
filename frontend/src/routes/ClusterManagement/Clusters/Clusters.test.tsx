@@ -13,9 +13,12 @@ import {
 import { nockDelete, nockIgnoreRBAC, nockRBAC } from '../../../lib/nock-util'
 import { rbacCreate } from '../../../lib/rbac-util'
 import {
+    clickBulkAction,
     clickByLabel,
     clickByRole,
     clickByText,
+    clickRowAction,
+    selectTableRow,
     typeByText,
     waitForNock,
     waitForNocks,
@@ -322,8 +325,7 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to delete cluster using row action', async () => {
-        await clickByLabel('Actions', 0)
-        await clickByText('managed.destroySelected')
+        await clickRowAction(1, 'managed.destroySelected')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
@@ -331,8 +333,8 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to delete cluster using bulk action', async () => {
-        await clickByRole('checkbox', 1)
-        await clickByText('managed.destroy')
+        await selectTableRow(1)
+        await clickBulkAction('managed.destroy')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
@@ -340,8 +342,7 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to detach cluster using row action', async () => {
-        await clickByLabel('Actions', 0)
-        await clickByText('managed.detached')
+        await clickRowAction(1, 'managed.detached')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
         await clickByText('detach')
@@ -349,8 +350,8 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to detach cluster using bulk action', async () => {
-        await clickByRole('checkbox', 2)
-        await clickByText('managed.detachSelected')
+        await selectTableRow(2)
+        await clickBulkAction('managed.detachSelected')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         await clickByText('detach')
@@ -374,15 +375,15 @@ describe('Clusters Page', () => {
     })
 
     test('batch upgrade support when upgrading single cluster', async () => {
-        await clickByLabel('Select row 3')
-        await clickByText('managed.upgradeSelected')
+        await selectTableRow(3)
+        await clickBulkAction('managed.upgradeSelected')
         await waitForText(`bulk.title.upgrade`)
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
-        await clickByLabel('Select row 3')
-        await clickByLabel('Select row 5')
-        await clickByText('managed.upgradeSelected')
+        await selectTableRow(3)
+        await selectTableRow(5)
+        await clickBulkAction('managed.upgradeSelected')
         await waitForText(`bulk.title.upgrade`)
     })
 })
