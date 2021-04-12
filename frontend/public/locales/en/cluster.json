@@ -110,6 +110,9 @@
     "table.availableToClaim": "Available to claim",
     "table.claimName": "Cluster claim name",
     "table.lifetime": "Lifetime",
+    "table.linkedCred": "Linked credential",
+    "table.clustersInUse": "Clusters in use",
+    "table.defaultTemplate": "Default job templates",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -306,6 +309,7 @@
     "bulk.message.deleteSet": "Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.",
     "bulk.title.destroyClusterPool": "Destroy cluster pool(s)",
     "bulk.message.destroyClusterPool": "Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.",
+    "bulk.delete.integrations": "Delete integrations",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",
@@ -351,5 +355,9 @@
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
 
-    "integration.title": "Integrations"
+    "integration.title": "Integrations",
+    "integration.emptyStateHeader": "You don't have any integrations",
+    "integration.emptyStateMsg": "Select <bold>Create integration</bold> to create a Ansible integration.",
+    "integration.configure":"Configure job template",
+    "integration.unlink":"Unlink this from integration"
 }
