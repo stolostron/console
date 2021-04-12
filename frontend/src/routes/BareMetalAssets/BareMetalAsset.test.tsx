@@ -9,7 +9,6 @@ import { nockCreate, nockDelete, nockRBAC } from '../../lib/nock-util'
 import {
     clickBulkAction,
     clickByLabel,
-    clickByRole,
     clickByText,
     selectTableRow,
     waitForNock,

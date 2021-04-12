@@ -4,12 +4,11 @@ import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { providerConnectionsState, discoveryConfigState } from '../../atoms'
-import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../lib/nock-util'
+import { discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
 import {
     clickBulkAction,
     clickByLabel,
-    clickByRole,
     clickByText,
     selectTableRow,
     waitForNock,
@@ -18,12 +17,12 @@ import {
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../resources/provider-connection'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import CredentialsPage from './Credentials'
 
