@@ -11,18 +11,14 @@ import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
 
 const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
-const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))
-const ClusterSetDetailsPage = lazy(
-    () => import('./routes/ClusterManagement/ClusterSets/ClusterSetDetails/ClusterSetDetails')
-)
-const CreateClusterSetPage = lazy(
-    () => import('./routes/ClusterManagement/ClusterSets/CreateClusterSet/CreateClusterSet')
-)
-const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
-const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
+const ClusterDetailsPage = lazy(() => import('./routes/Clusters/ClusterDetails/ClusterDetails'))
+const ClusterSetDetailsPage = lazy(() => import('./routes/ClusterSets/ClusterSetDetails/ClusterSetDetails'))
+const CreateClusterSetPage = lazy(() => import('./routes/ClusterSets/CreateClusterSet/CreateClusterSet'))
+const CreateClusterPage = lazy(() => import('./routes/Clusters/CreateCluster/CreateCluster'))
+const ImportClusterPage = lazy(() => import('./routes/Clusters/ImportCluster/ImportCluster'))
 const AddCredentialPage = lazy(() => import('./routes/Credentials/AddCredentials/AddCredentials'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
-const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
+const DiscoveryConfig = lazy(() => import('./routes/DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 
 export default function App() {
