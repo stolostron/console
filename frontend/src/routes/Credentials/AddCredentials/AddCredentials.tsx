@@ -361,8 +361,8 @@ function AnsibleTowerInformationStep(props: {
                         ansibleSecret.metadata.name = name
                     })
                 }}
-                // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
-                // isRequired
+                validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
+                isRequired
                 isDisabled={props.isEditing}
             />
             <AcmSelect
@@ -422,7 +422,6 @@ function AnsibleTowerInformationStep(props: {
                     hidden={!props.isEditing}
                     onClick={() => {
                         // const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
-
                         // const providerID = getProviderConnectionProviderID(data)
                         // if (providerID !== ProviderID.AWS) {
                         //     delete data.spec!.awsAccessKeyID
@@ -463,9 +462,7 @@ function AnsibleTowerInformationStep(props: {
                         //     delete data.spec!.openstackCloudsYaml
                         //     delete data.spec!.openstackCloud
                         // }
-
                         // delete data.data
-
                         // alertContext.clearAlerts()
                         // let result: IRequestResult<ProviderConnection>
                         // if (props.isEditing) {
