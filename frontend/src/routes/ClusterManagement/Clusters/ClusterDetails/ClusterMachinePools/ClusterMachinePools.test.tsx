@@ -3,7 +3,7 @@
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
-import { nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockPatch, nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
@@ -55,6 +55,21 @@ describe('ClusterMachinePools', () => {
                 </ClusterContext.Provider>
             </RecoilRoot>
         )
+    })
+
+    it('should be able to manually scale a machine pool', async () => {
+        await waitForText(mockMachinePoolManual.metadata.name!)
+        await clickByLabel('Actions', 1)
+        await clickByText('machinePool.scale')
+        await waitForText('machinePool.modal.scale.title')
+        await clickByLabel('Plus')
+        const patchNocks: Scope[] = [
+            nockPatch(mockMachinePoolManual, [
+                { op: 'replace', path: '/spec/replicas', value: mockMachinePoolManual.spec!.replicas! + 1 },
+            ]),
+        ]
+        await clickByText('common:scale')
+        await waitForNocks(patchNocks)
     })
     it('should be able to delete machine pools', async () => {
         await waitForText(mockMachinePoolAuto.metadata.name!)

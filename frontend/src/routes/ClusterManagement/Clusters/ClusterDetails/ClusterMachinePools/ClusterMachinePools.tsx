@@ -15,10 +15,11 @@ import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { MachinePool } from '../../../../../resources/machine-pool'
 import { ClusterContext } from '../ClusterDetails'
 import { machinePoolsState } from '../../../../../atoms'
-import { rbacDelete } from '../../../../../lib/rbac-util'
+import { rbacPatch, rbacDelete } from '../../../../../lib/rbac-util'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { deleteResource } from '../../../../../lib/resource-request'
+import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
 
 export function MachinePoolsPageContent() {
     return (
@@ -36,6 +37,7 @@ export function MachinePoolsTable() {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
         open: false,
     })
+    const [scaleMachinePool, setScaleMachinePool] = useState<ScaleMachinePoolModalProps | undefined>()
     const [machinePoolState] = useRecoilState(machinePoolsState)
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
 
@@ -84,11 +86,44 @@ export function MachinePoolsTable() {
             header: '',
             cellTransforms: [fitContent],
             cell: (machinePool: MachinePool) => {
-                const actions = [
+                let actions = [
+                    {
+                        id: 'scaleMachinePool',
+                        text: t('machinePool.scale'),
+                        isDisabled: true,
+                        rbac: [rbacPatch(machinePool)],
+                        click: (machinePool: MachinePool) =>
+                            setScaleMachinePool({ machinePool, mode: 'edit-manualscale' }),
+                    },
+                    {
+                        id: 'editAutoscale',
+                        text: t('machinePool.editAutoscale'),
+                        isDisabled: true,
+                        rbac: [rbacPatch(machinePool)],
+                        click: (machinePool: MachinePool) =>
+                            setScaleMachinePool({ machinePool, mode: 'edit-autoscale' }),
+                    },
+                    {
+                        id: 'enableAutoscale',
+                        text: t('machinePool.enableAutoscale'),
+                        isDisabled: true,
+                        rbac: [rbacPatch(machinePool)],
+                        click: (machinePool: MachinePool) =>
+                            setScaleMachinePool({ machinePool, mode: 'enable-autoscale' }),
+                    },
+                    {
+                        id: 'disableAutoscale',
+                        text: t('machinePool.disableAutoscale'),
+                        isDisabled: true,
+                        rbac: [rbacPatch(machinePool)],
+                        click: (machinePool: MachinePool) =>
+                            setScaleMachinePool({ machinePool, mode: 'disable-autoscale' }),
+                    },
                     {
                         id: 'deleteMachinePool',
                         text: t('machinePool.delete'),
                         isDisabled: true,
+                        rbac: [rbacDelete(machinePool)],
                         click: (machinePool: MachinePool) => {
                             setModalProps({
                                 open: true,
@@ -97,6 +132,11 @@ export function MachinePoolsTable() {
                                 processing: t('common:deleting'),
                                 resources: [machinePool],
                                 description: t('bulk.message.deleteMachinePool'),
+                                keyFn,
+                                actionFn: deleteResource,
+                                confirmText: machinePool.metadata.name!,
+                                close: () => setModalProps({ open: false }),
+                                isDanger: true,
                                 columns: [
                                     {
                                         header: t('table.name'),
@@ -113,16 +153,20 @@ export function MachinePoolsTable() {
                                         },
                                     },
                                 ],
-                                keyFn,
-                                actionFn: deleteResource,
-                                confirmText: machinePool.metadata.name!,
-                                close: () => setModalProps({ open: false }),
-                                isDanger: true,
                             })
                         },
-                        rbac: [rbacDelete(machinePool)],
                     },
                 ]
+
+                if (machinePool.spec!.autoscaling) {
+                    actions = actions.filter((action) => action.id !== 'scaleMachinePool')
+                    actions = actions.filter((action) => action.id !== 'enableAutoscale')
+                }
+
+                if (machinePool.spec!.replicas) {
+                    actions = actions.filter((action) => action.id !== 'disableAutoscale')
+                    actions = actions.filter((action) => action.id !== 'editAutoscale')
+                }
 
                 return (
                     <RbacDropdown<MachinePool>
@@ -140,6 +184,7 @@ export function MachinePoolsTable() {
     return (
         <>
             <BulkActionModel<MachinePool> {...modalProps} />
+            <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
             <AcmTable<MachinePool>
                 plural="machinepools"
                 gridBreakPoint={TableGridBreakpoint.none}
