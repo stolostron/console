@@ -7,12 +7,7 @@ import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-    featureGatesState,
-    discoveredClusterState,
-    discoveryConfigState,
-    secretsState,
-} from '../../../atoms'
+import { featureGatesState, discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { mockDiscoveryFeatureGate, mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
