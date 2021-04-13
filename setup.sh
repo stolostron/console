@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Clean up any old certs
+if [ -d "./backend/certs" ]; then
+  rm -rf ./backend/certs
+fi
+
 echo > ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
