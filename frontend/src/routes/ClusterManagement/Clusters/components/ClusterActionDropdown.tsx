@@ -76,7 +76,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     isExpanded: true,
                     title: t('labels.edit.title'),
                     onCloseClick: () => setDrawerContext(undefined),
-                    panelContent: <EditLabels cluster={cluster} close={() => setDrawerContext(undefined)} />,
+                    panelContent: (
+                        <EditLabels
+                            resource={{
+                                ...ManagedClusterDefinition,
+                                metadata: { name: cluster.name, labels: cluster.labels },
+                            }}
+                            close={() => setDrawerContext(undefined)}
+                        />
+                    ),
                     panelContentProps: { minSize: '600px' },
                 })
             },

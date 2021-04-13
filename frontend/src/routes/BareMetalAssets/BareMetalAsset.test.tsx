@@ -6,7 +6,15 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { bareMetalAssetsState } from '../../atoms'
 import { nockCreate, nockDelete, nockRBAC } from '../../lib/nock-util'
-import { clickByLabel, clickByRole, clickByText, waitForNock, waitForNocks, waitForText } from '../../lib/test-util'
+import {
+    clickBulkAction,
+    clickByLabel,
+    clickByText,
+    selectTableRow,
+    waitForNock,
+    waitForNocks,
+    waitForText,
+} from '../../lib/test-util'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../resources/bare-metal-asset'
 import {
     Project,
@@ -145,8 +153,8 @@ describe('bare metal asset page', () => {
         )
         await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
-        await clickByRole('checkbox', 1) // Select first item
-        await clickByText('bareMetalAsset.bulkAction.deleteAsset')
+        await selectTableRow(1)
+        await clickBulkAction('bareMetalAsset.bulkAction.deleteAsset')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
     })

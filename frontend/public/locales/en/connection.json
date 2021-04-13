@@ -31,7 +31,7 @@
     "addConnection.connectionName.labelHelp": "The name for the credentials.",
     "addConnection.namespaceName.label": "Namespace",
     "addConnection.namespaceName.placeholder": "Select a namespace where to store the credentials",
-    "addConnection.namespaceName.labelHelp": "The namespace where your connection secret is stored. You can use an existing namespace or create a namespace specifically to host your cloud connections, both for convenience and added security.",
+    "addConnection.namespaceName.labelHelp": "The existing namespace where your connection secret will be stored.",
     "addConnection.providerName.label": "Provider",
     "addConnection.providerName.placeholder": "Select a provider for the connection",
     "addConnection.providerName.labelHelp": "The infrastructure provider for the selected Kubernetes distribution.",

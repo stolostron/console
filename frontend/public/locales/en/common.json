@@ -18,6 +18,7 @@
     "clipboardCopy": "Copy to clipboard",
     "copied": "Successfully copied to clipboard",
     "retry": "Retry",
+    "labels": "Labels",
     "label.add": "Add label",
     "error": "Error",
     "errors": "Errors",
@@ -27,6 +28,8 @@
 
     "yes": "Yes",
     "no": "No",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
 
     "show.less": "Show less",
     "show.more": "{{number}} more",
