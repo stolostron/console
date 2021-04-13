@@ -211,6 +211,7 @@
     "status.degraded.message": "One or more of the cluster's add-ons are in a degraded state.",
     "status.offline.alert.title": "The cluster is not available",
     "status.unknown.alert.title": "The cluster is not reachable",
+    "status.provisionfailed.alert.title": "Cluster creation failed:",
     "node.status.ready": "Ready",
     "node.status.unhealthy": "Unhealthy",
     "node.status.unknown": "Unknown",
