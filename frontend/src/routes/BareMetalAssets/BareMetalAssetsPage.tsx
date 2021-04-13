@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { Gallery, PageSection, Split } from '@patternfly/react-core'
+import { PageSection, Split } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
