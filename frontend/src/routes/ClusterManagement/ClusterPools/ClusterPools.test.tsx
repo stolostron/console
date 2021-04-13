@@ -8,7 +8,17 @@ import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../re
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../resources/cluster-claim'
 import { clusterPoolsState } from '../../../atoms'
 import { nockCreate, nockGet, nockPatch, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByLabel, clickByText, typeByText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
+import {
+    clickByLabel,
+    clickByText,
+    typeByText,
+    typeByTestId,
+    waitForNocks,
+    waitForText,
+    clickRowAction,
+    clickBulkAction,
+    selectTableRow,
+} from '../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 
 const mockClusterPool: ClusterPool = {
@@ -90,16 +100,15 @@ describe('ClusterPools page', () => {
     })
     test('should be able to destroy a cluster pool using a row action', async () => {
         await waitForText(mockClusterPool.metadata.name!)
-        await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.destroy')
+        await clickRowAction(1, 'clusterPool.destroy')
         await typeByText('type.to.confirm', mockClusterPool.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
         await clickByText('common:destroy')
         await waitForNocks(deleteNocks)
     })
     test('should be able to destroy cluster pools using bulk actions', async () => {
-        await clickByLabel('Select row 0')
-        await clickByText('bulk.destroy.clusterPools')
+        await selectTableRow(1)
+        await clickBulkAction('bulk.destroy.clusterPools')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
         await clickByText('common:destroy')
