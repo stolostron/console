@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
-import { Gallery } from '@patternfly/react-core'
+import { Gallery, Split } from '@patternfly/react-core'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -23,7 +23,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
 
     if (props.type === 'button') {
         return (
-            <Gallery hasGutter={true} style={{ display: 'inline-flex' }}>
+            <Split>
                 <AcmButton
                     component={Link}
                     isDisabled={!canCreateCluster}
@@ -42,7 +42,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                 >
                     {t('managed.importCluster')}
                 </AcmButton>
-            </Gallery>
+            </Split>
         )
     } else {
         const onSelect = (id: string) => {

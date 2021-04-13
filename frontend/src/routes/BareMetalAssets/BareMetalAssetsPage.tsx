@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { Gallery, PageSection } from '@patternfly/react-core'
+import { Gallery, PageSection, Split } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -164,7 +164,7 @@ export function BareMetalAssetsTable(props: {
                             />
                         }
                         action={
-                            <Gallery hasGutter={true} style={{ display: 'inline-flex' }}>
+                            <Split hasGutter={true} style={{ display: 'inline-flex' }}>
                                 <AcmButton
                                     variant="primary"
                                     onClick={() => {
@@ -181,7 +181,7 @@ export function BareMetalAssetsTable(props: {
                                 >
                                     {t('importBareMetalAssets.title')}
                                 </AcmButton>
-                            </Gallery>
+                            </Split>
                         }
                     />
                 }
