@@ -14,7 +14,7 @@ import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
-import { ClusterStatus } from '../../../../../lib/get-cluster'
+import { ClusterStatus, clusterDangerStatuses } from '../../../../../lib/get-cluster'
 import { rbacPatch } from '../../../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
@@ -33,12 +33,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                {cluster?.statusMessage && (
+                {cluster!.statusMessage && (
                     <AcmAlert
                         isInline
                         title={t(`status.${cluster?.status}.alert.title`)}
                         message={cluster?.statusMessage}
-                        variant={cluster.status === ClusterStatus.offline ? 'danger' : 'info'}
+                        variant={clusterDangerStatuses.includes(cluster!.status) ? 'danger' : 'info'}
                         noClose
                         style={{ marginBottom: '12px' }}
                     />
