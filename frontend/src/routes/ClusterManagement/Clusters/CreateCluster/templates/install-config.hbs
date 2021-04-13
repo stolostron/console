@@ -260,11 +260,13 @@ platform:
     network: {{{../../networkType}}}
 {{/case}}
 
+{{! == NOTE: lbFloatingIP is deprecated in 4.7 for apiFloatingIP, but since we still support 4.5 and 4.6, we need the old key }}
 {{#case 'OpenStack'}}
   openstack:
     cloud: {{{../../openstackCloud}}}
     externalNetwork: {{{../../externalNetworkName}}}
     lbFloatingIP: {{{../../apiFloatingIP}}}
+    ingressFloatingIP: {{{../../ingressFloatingIP}}}
 {{/case}}
 
 {{/switch}}
