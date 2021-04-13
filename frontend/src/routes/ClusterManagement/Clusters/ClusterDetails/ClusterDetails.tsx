@@ -22,6 +22,7 @@ import {
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterClaimsState,
 } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
@@ -34,6 +35,7 @@ import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
+import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import { usePrevious } from '../../../../components/usePrevious'
@@ -66,6 +68,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         certificateSigningRequests,
         managedClusterAddons,
         clusterManagementAddons,
+        clusterClaims,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -74,6 +77,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             certificateSigningRequestsState,
             managedClusterAddonsState,
             clusterManagementAddonsState,
+            clusterClaimsState,
         ])
     )
 
@@ -87,6 +91,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata.namespace === match.params.id)
     const addons = mapAddons(clusterManagementAddons, clusterAddons)
 
+    const clusterClaim = clusterClaims.find((cc) => cc.spec?.namespace === clusterDeployment?.metadata?.name)
+
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
     const cluster = getCluster(
@@ -94,7 +100,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterDeployment,
         certificateSigningRequests,
         managedCluster,
-        clusterAddons
+        clusterAddons,
+        clusterClaim
     )
     const prevCluster = usePrevious(cluster)
 
@@ -167,6 +174,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     {t('tab.nodes')}
                                 </Link>
                             </AcmSecondaryNavItem>
+                            {cluster.isHive && (
+                                <AcmSecondaryNavItem
+                                    isActive={
+                                        location.pathname ===
+                                        NavigationPath.clusterMachinePools.replace(':id', match.params.id)
+                                    }
+                                >
+                                    <Link to={NavigationPath.clusterMachinePools.replace(':id', match.params.id)}>
+                                        {t('tab.machinepools')}
+                                    </Link>
+                                </AcmSecondaryNavItem>
+                            )}
                             <AcmSecondaryNavItem
                                 isActive={
                                     location.pathname === NavigationPath.clusterSettings.replace(':id', match.params.id)
@@ -203,6 +222,11 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         <Route exact path={NavigationPath.clusterNodes}>
                             <NodePoolsPageContent />
                         </Route>
+                        {cluster.isHive && (
+                            <Route exact path={NavigationPath.clusterMachinePools}>
+                                <MachinePoolsPageContent />
+                            </Route>
+                        )}
                         <Route exact path={NavigationPath.clusterSettings}>
                             <ClustersSettingsPageContent />
                         </Route>

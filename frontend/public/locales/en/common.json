@@ -28,6 +28,8 @@
 
     "yes": "Yes",
     "no": "No",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
 
     "show.less": "Show less",
     "show.more": "{{number}} more",

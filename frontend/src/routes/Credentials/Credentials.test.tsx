@@ -4,24 +4,25 @@ import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { providerConnectionsState, discoveryConfigState } from '../../atoms'
-import { mockBadRequestStatus, nockRBAC, nockDelete, nockIgnoreRBAC } from '../../lib/nock-util'
+import { discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
 import {
+    clickBulkAction,
     clickByLabel,
-    clickByRole,
     clickByText,
+    selectTableRow,
     waitForNock,
     waitForNocks,
     waitForNotText,
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../resources/provider-connection'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import CredentialsPage from './Credentials'
 
@@ -170,8 +171,8 @@ describe('provider connections page', () => {
         const deleteNock = nockDelete(mockProviderConnection1)
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 1) // Select first item
-        await clickByText('delete.batch')
+        await selectTableRow(1)
+        await clickBulkAction('delete.batch')
         await clickByText('common:delete')
         await waitForNock(deleteNock)
     })
@@ -179,8 +180,8 @@ describe('provider connections page', () => {
     test('should be able to cancel bulk delete provider connections', async () => {
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
-        await clickByRole('checkbox', 1) // Select all
-        await clickByText('delete.batch')
+        await selectTableRow(1)
+        await clickBulkAction('delete.batch')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
     })

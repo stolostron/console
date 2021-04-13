@@ -270,3 +270,21 @@ export async function waitForNocks(nocks: Scope[]) {
 export async function waitForNock(nock: Scope) {
     await waitFor(() => expect(nock.isDone()).toBeTruthy(), options)
 }
+
+export async function selectAllRows() {
+    await clickByRole('checkbox', 0)
+}
+
+export async function selectTableRow(row: number) {
+    await clickByLabel(`Select row ${row - 1}`)
+}
+
+export async function clickBulkAction(text: string) {
+    await clickByText('Actions')
+    await clickByText(text)
+}
+
+export async function clickRowAction(row: number, text: string) {
+    await clickByLabel('Actions', row - 1)
+    await clickByText(text)
+}

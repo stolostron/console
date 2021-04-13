@@ -7,26 +7,29 @@ import {
     compareNumbers,
     IAcmTableColumn,
     StatusType,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent() {
-    const { cluster } = useContext(ClusterContext)
     return (
         <AcmPageContent id="nodes">
             <PageSection variant="light" isFilled>
-                <NodesPoolsTable nodes={cluster?.nodes?.nodeList!} />
+                <NodesPoolsTable />
             </PageSection>
         </AcmPageContent>
     )
 }
 
-export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
+export function NodesPoolsTable() {
     const { t } = useTranslation(['cluster'])
+    const { cluster } = useContext(ClusterContext)
+    const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
     function getLabelCellFn(label: string) {
         const labelCellFn = (node: NodeInfo) => {
@@ -90,7 +93,25 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
             header: t('table.name'),
             sort: 'name',
             search: 'name',
-            cell: 'name',
+            cell: (node: NodeInfo) => {
+                const hasOcpConsole = cluster?.distribution?.ocp?.version && cluster.consoleURL
+                const launchUrl = hasOcpConsole
+                    ? `${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`
+                    : `/resources?cluster=${cluster!.name!}&kind=node&apiVersion=v1&name=${node.name}`
+                return (
+                    <AcmButton
+                        variant="link"
+                        role="link"
+                        icon={hasOcpConsole && <ExternalLinkAltIcon />}
+                        iconPosition="right"
+                        onClick={() => {
+                            return window.open(launchUrl, hasOcpConsole ? '_blank' : '_self')
+                        }}
+                    >
+                        {node.name}
+                    </AcmButton>
+                )
+            },
         },
         {
             header: t('table.status'),
@@ -158,7 +179,7 @@ export function NodesPoolsTable(props: { nodes: NodeInfo[] }) {
     return (
         <AcmTable<NodeInfo>
             plural="nodes"
-            items={props.nodes}
+            items={nodes}
             columns={columns}
             keyFn={keyFn}
             tableActions={[]}
