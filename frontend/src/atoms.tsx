@@ -22,6 +22,7 @@ import { ProviderConnection, ProviderConnectionKind } from './resources/provider
 import { ConfigMap, ConfigMapKind } from './resources/configmap'
 import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
 import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AnsibleTowerSecret, AnsibleTowerSecretKind } from './resources/ansible-tower-secret'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -49,6 +50,7 @@ export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'manag
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
+export const ansibleTowerSecretsState = atom<AnsibleTowerSecret[]>({ key:'ansibleTowerSecret', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
@@ -84,6 +86,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
+    const [, setAnsibleTowerSecret] = useRecoilState(ansibleTowerSecretsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -105,6 +108,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
         [DiscoveredClusterKind]: setDiscoveredClusters,
+        [AnsibleTowerSecretKind]: setAnsibleTowerSecret
     }
 
     useEffect(() => {
