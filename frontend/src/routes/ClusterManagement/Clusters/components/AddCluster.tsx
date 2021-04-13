@@ -8,10 +8,7 @@ import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 
-export function AddCluster(props: {
-    type: 'button' | 'dropdown'
-    buttonType?: 'primary' | 'link'
-}) {
+export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
     const { t } = useTranslation('cluster')
     const history = useHistory()
 
@@ -26,7 +23,7 @@ export function AddCluster(props: {
 
     if (props.type === 'button') {
         return (
-            <Gallery hasGutter={true}>
+            <Gallery hasGutter={true} style={{ display: 'inline-flex' }}>
                 <AcmButton
                     component={Link}
                     isDisabled={!canCreateCluster}

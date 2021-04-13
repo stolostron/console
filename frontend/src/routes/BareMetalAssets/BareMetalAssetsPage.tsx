@@ -164,7 +164,7 @@ export function BareMetalAssetsTable(props: {
                             />
                         }
                         action={
-                            <Gallery hasGutter={true}>
+                            <Gallery hasGutter={true} style={{ display: 'inline-flex' }}>
                                 <AcmButton
                                     variant="primary"
                                     onClick={() => {
