@@ -364,6 +364,7 @@
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
 
+    "machinePool.replica.count": "{{range}} replicas",
     "machinePool.modal.scale.edit-manualscale.title": "Scale machine pool",
     "machinePool.modal.scale.edit-manualscale.message": "Specify the desired machine set replica count for the <bold>{{name}}</bold>. Adjusting the size of the machine pool will result in the creation or destruction of nodes on the cluster.",
     "machinePool.modal.scale.replicas.label": "Machine set replica count",

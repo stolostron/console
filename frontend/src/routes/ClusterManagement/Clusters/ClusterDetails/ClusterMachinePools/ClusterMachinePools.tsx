@@ -67,7 +67,11 @@ export function MachinePoolsTable() {
             sort: 'status.replicas',
             search: 'status.replicas',
             cell: (machinePool: MachinePool) => {
-                return `${machinePool.status!.replicas}/${machinePool.spec!.replicas}`
+                if (machinePool.spec!.replicas) {
+                    return `${machinePool.status!.replicas}/${machinePool.spec!.replicas}`
+                } else {
+                    return machinePool.status!.replicas
+                }
             },
         },
         {
@@ -80,7 +84,15 @@ export function MachinePoolsTable() {
             header: t('table.autoscale'),
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getAutoscaling(a), getAutoscaling(b)),
             search: (machinePool: MachinePool) => getAutoscaling(machinePool),
-            cell: (machinePool: MachinePool) => getAutoscaling(machinePool),
+            cell: (machinePool: MachinePool) => {
+                if (machinePool.spec!.replicas) {
+                    return getAutoscaling(machinePool)
+                } else {
+                    return `${getAutoscaling(machinePool)}, ${t('machinePool.replica.count', {
+                        range: `${machinePool.spec?.autoscaling?.minReplicas}-${machinePool.spec?.autoscaling?.maxReplicas}`,
+                    })}`
+                }
+            },
         },
         {
             header: '',
