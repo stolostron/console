@@ -131,7 +131,7 @@ export function getCluster(
         status,
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
-        distribution: getDistributionInfo(managedClusterInfo, managedCluster),
+        distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
@@ -233,7 +233,8 @@ export function getProvider(
 
 export function getDistributionInfo(
     managedClusterInfo: ManagedClusterInfo | undefined,
-    managedCluster: ManagedCluster | undefined
+    managedCluster: ManagedCluster | undefined,
+    clusterDeployment: ClusterDeployment | undefined
 ) {
     let k8sVersion: string | undefined
     let ocp: OpenShiftDistributionInfo | undefined
@@ -256,6 +257,13 @@ export function getDistributionInfo(
         }
     }
 
+    if (clusterDeployment) {
+        if (displayVersion === undefined) {
+            const cdVersion = clusterDeployment.metadata.labels?.['hive.openshift.io/version-major-minor-patch']
+            displayVersion = cdVersion ? `OpenShift ${cdVersion}` : undefined
+        }
+    }
+
     const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'product.open-cluster-management.io'
     )?.value
@@ -267,7 +275,7 @@ export function getDistributionInfo(
             break
     }
 
-    if (k8sVersion && ocp && displayVersion) {
+    if (displayVersion) {
         return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
     }
 

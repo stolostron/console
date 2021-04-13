@@ -36,6 +36,8 @@
     "managed.clusterSets.clusters.emptyStateHeader": "You don't have any clusters assigned to this cluster set",
     "managed.clusterSets.clusters.emptyStateMsg": "Select the <bold>Manage cluster set</bold> button to add a cluster.",
     "managed.clusterSets.clusters.emptyStateButton": "Manage cluster set",
+    "managed.cluster.machinePools.emptyStateHeader": "No machine pools found.",
+    "managed.cluster.machinePools.emptyStateButton": "This cluster doesn't have any machine pools.",
     "managed.import": "Import cluster",
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
@@ -61,6 +63,7 @@
     "clusterPool.scale": "Scale cluster pool",
     "clusterPool.destroy": "Destroy cluster pool",
     "discovered": "Discovered",
+    "machinePool.delete": "Delete machine pool",
 
     "button.backToClusters": "Back to clusters",
     "button.backToClusterSets": "Back to cluster sets",
@@ -110,6 +113,8 @@
     "table.availableToClaim": "Available to claim",
     "table.claimName": "Cluster claim name",
     "table.lifetime": "Lifetime",
+    "table.machineSetReplicas": "Machine set replicas",
+    "table.autoscale": "Autoscale",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -240,6 +245,7 @@
     "modal.detach.content": "Detaching {{name}} is irreversible. Are you sure that you want to continue?",
     "tab.overview": "Overview",
     "tab.nodes": "Nodes",
+    "tab.machinepools": "Machine pools",
     "tab.settings": "Settings",
     "tab.clusters": "Clusters",
 
@@ -306,6 +312,8 @@
     "bulk.message.deleteSet": "Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.",
     "bulk.title.destroyClusterPool": "Destroy cluster pool(s)",
     "bulk.message.destroyClusterPool": "Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.",
+    "bulk.title.deleteMachinePool": "Delete machine pool(s)",
+    "bulk.message.deleteMachinePool": "Deleting machine pool(s) is irreversible. Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",

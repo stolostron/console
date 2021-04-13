@@ -2,6 +2,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
+import { AcmRoute } from '@open-cluster-management/ui-components'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
@@ -10,18 +11,19 @@ import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-
 import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
 import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
 import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
+import { ConfigMap, ConfigMapKind } from './resources/configmap'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
+import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
+import { MachinePool, MachinePoolKind } from './resources/machine-pool'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
-import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
+import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
+import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
+
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
-import { ConfigMap, ConfigMapKind } from './resources/configmap'
-import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
-import { AcmRoute } from '@open-cluster-management/ui-components'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -42,11 +44,12 @@ export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
 export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
-export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
+export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
-export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
+export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
+export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
 
@@ -77,11 +80,12 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setFeatureGates] = useRecoilState(featureGatesState)
-    const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
+    const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
-    const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
+    const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
+    const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setProviderConnections] = useRecoilState(providerConnectionsState)
 
@@ -96,15 +100,16 @@ export function LoadData(props: { children?: ReactNode }) {
         [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ConfigMapKind]: setConfigMaps,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
+        [DiscoveredClusterKind]: setDiscoveredClusters,
         [FeatureGateKind]: setFeatureGates,
-        [ManagedClusterAddOnKind]: setManagedClusterAddons,
+        [MachinePoolKind]: setMachinePools,
         [ManagedClusterKind]: setManagedClusters,
-        [MultiClusterHubKind]: setMultiClusterHubs,
+        [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
         [ManagedClusterSetKind]: setManagedClusterSets,
+        [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [ProviderConnectionKind]: setProviderConnections,
-        [DiscoveredClusterKind]: setDiscoveredClusters,
     }
 
     useEffect(() => {
