@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
+import { Bullseye, Split, SplitItem } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -7,11 +8,7 @@ import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 
-export function AddCluster(props: {
-    type: 'button' | 'dropdown'
-    buttonType?: 'primary' | 'link'
-    buttonSpacing?: boolean
-}) {
+export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
     const { t } = useTranslation('cluster')
     const history = useHistory()
 
@@ -26,27 +23,32 @@ export function AddCluster(props: {
 
     if (props.type === 'button') {
         return (
-            <>
-                <AcmButton
-                    component={Link}
-                    isDisabled={!canCreateCluster}
-                    tooltip={t('common:rbac.unauthorized')}
-                    variant={props.buttonType ?? 'primary'}
-                    to={NavigationPath.createCluster}
-                >
-                    {t('managed.createCluster')}
-                </AcmButton>
-                <AcmButton
-                    component={Link}
-                    isDisabled={!canCreateCluster}
-                    tooltip={t('common:rbac.unauthorized')}
-                    variant={props.buttonType ?? 'primary'}
-                    to={NavigationPath.importCluster}
-                    style={{ marginLeft: props.buttonSpacing ? '16px' : undefined }}
-                >
-                    {t('managed.importCluster')}
-                </AcmButton>
-            </>
+            <Bullseye>
+                <Split hasGutter>
+                    <SplitItem>
+                        <AcmButton
+                            component={Link}
+                            isDisabled={!canCreateCluster}
+                            tooltip={t('common:rbac.unauthorized')}
+                            variant={props.buttonType ?? 'primary'}
+                            to={NavigationPath.createCluster}
+                        >
+                            {t('managed.createCluster')}
+                        </AcmButton>
+                    </SplitItem>
+                    <SplitItem>
+                        <AcmButton
+                            component={Link}
+                            isDisabled={!canCreateCluster}
+                            tooltip={t('common:rbac.unauthorized')}
+                            variant={props.buttonType ?? 'primary'}
+                            to={NavigationPath.importCluster}
+                        >
+                            {t('managed.importCluster')}
+                        </AcmButton>
+                    </SplitItem>
+                </Split>
+            </Bullseye>
         )
     } else {
         const onSelect = (id: string) => {
