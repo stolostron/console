@@ -63,6 +63,10 @@
     "clusterPool.scale": "Scale cluster pool",
     "clusterPool.destroy": "Destroy cluster pool",
     "discovered": "Discovered",
+    "machinePool.scale": "Scale machine pool",
+    "machinePool.editAutoscale": "Edit autoscale",
+    "machinePool.enableAutoscale": "Enable autoscale",
+    "machinePool.disableAutoscale": "Disable autoscale",
     "machinePool.delete": "Delete machine pool",
 
     "button.backToClusters": "Back to clusters",
@@ -313,8 +317,8 @@
     "bulk.message.deleteSet": "Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.",
     "bulk.title.destroyClusterPool": "Destroy cluster pool(s)",
     "bulk.message.destroyClusterPool": "Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.",
-    "bulk.title.deleteMachinePool": "Delete machine pool(s)",
-    "bulk.message.deleteMachinePool": "Deleting machine pool(s) is irreversible. Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.",
+    "bulk.title.deleteMachinePool": "Delete machine pool",
+    "bulk.message.deleteMachinePool": "Deleting a machine pool is irreversible. Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",
@@ -358,5 +362,20 @@
     "clusterPool.modal.scale.message": "Specify the desired size of the cluster pool. Adjusting the size of the cluster pool will result in the creation or destruction of clusters; only unclaimed clusters will be destroyed if downsizing.",
     "clusterPool.modal.scale.poolName": "Cluster pool name",
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
-    "clusterPool.modal.scale.input": "Set desired cluster pool size"
+    "clusterPool.modal.scale.input": "Set desired cluster pool size",
+
+    "machinePool.replica.count": "{{range}} replicas",
+    "machinePool.modal.scale.edit-manualscale.title": "Scale machine pool",
+    "machinePool.modal.scale.edit-manualscale.message": "Specify the desired machine set replica count for the <bold>{{name}}</bold>. Adjusting the size of the machine pool will result in the creation or destruction of nodes on the cluster.",
+    "machinePool.modal.scale.replicas.label": "Machine set replica count",
+    "machinePool.modal.scale.validation.positive": "Replica count must be a positive number.",
+    "machinePool.modal.scale.enable-autoscale.title": "Enable autoscale",
+    "machinePool.modal.scale.enable-autoscale.message": "This will automatically scale the machine sets in <bold>{{name}}</bold>. You can disable this later if you need to update the machine set replica count manually.",
+    "machinePool.modal.scale.disable-autoscale.title": "Disable autoscale",
+    "machinePool.modal.scale.disable-autoscale.message": "This will require manually scaling the machine sets in <bold>{{name}}</bold>. There are currently {{number}} active machine set replicas in this machine pool.",
+    "machinePool.modal.scale.edit-autoscale.title": "Edit autoscale",
+    "machinePool.modal.scale.edit-autoscale.message": "Specify the minimum and maximum replicas for <bold>{{name}}</bold>",
+    "machinePool.modal.scale.minReplicas.label": "Minimum replicas",
+    "machinePool.modal.scale.maxReplicas.label": "Maximum replicas",
+    "machinePool.modal.scale.maxReplicas.validation.greater": "Maximum replicas must be greater than minimum replicas"
 }
