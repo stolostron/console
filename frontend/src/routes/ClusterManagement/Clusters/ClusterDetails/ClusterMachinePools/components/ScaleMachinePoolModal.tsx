@@ -94,6 +94,8 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                         onMinus={() => setMinReplicas(minReplicas - 1)}
                                         onPlus={() => setMinReplicas(minReplicas + 1)}
                                         validation={(count: number) => {
+                                            if (count > maxReplicas)
+                                                return t('machinePool.modal.scale.maxReplicas.validation.greater')
                                             if (count < 0) return t('machinePool.modal.scale.validation.positive')
                                             return undefined
                                         }}

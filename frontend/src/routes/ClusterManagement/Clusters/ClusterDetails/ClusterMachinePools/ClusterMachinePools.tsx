@@ -75,12 +75,6 @@ export function MachinePoolsTable() {
             },
         },
         {
-            header: t('table.instanceType'),
-            sort: (a: MachinePool, b: MachinePool) => compareStrings(getInstanceType(a), getInstanceType(b)),
-            search: (machinePool: MachinePool) => getInstanceType(machinePool),
-            cell: (machinePool: MachinePool) => getInstanceType(machinePool),
-        },
-        {
             header: t('table.autoscale'),
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getAutoscaling(a), getAutoscaling(b)),
             search: (machinePool: MachinePool) => getAutoscaling(machinePool),
@@ -93,6 +87,12 @@ export function MachinePoolsTable() {
                     })}`
                 }
             },
+        },
+        {
+            header: t('table.instanceType'),
+            sort: (a: MachinePool, b: MachinePool) => compareStrings(getInstanceType(a), getInstanceType(b)),
+            search: (machinePool: MachinePool) => getInstanceType(machinePool),
+            cell: (machinePool: MachinePool) => getInstanceType(machinePool),
         },
         {
             header: '',
