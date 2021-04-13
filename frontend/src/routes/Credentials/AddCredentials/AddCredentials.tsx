@@ -273,7 +273,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
 
                     if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata.namespace = multiClusterHubs[0].metadata.namespace
+                            providerConnection.metadata.namespace = multiClusterHubs[0]?.metadata.namespace?.toString()
                         })
                     }
                 }}
@@ -286,7 +286,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                             return false // skip
                         }
                         if (
-                            !props.projects.includes(multiClusterHubs[0].metadata.namespace) &&
+                            multiClusterHubs &&
+                            multiClusterHubs.length > 0 &&
+                            !props.projects.includes(multiClusterHubs[0]?.metadata.namespace!.toString()) &&
                             provider.key === ProviderID.CRH
                         ) {
                             return false // skip
