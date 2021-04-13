@@ -18,7 +18,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { getProviderByKey, ProviderID } from '../../lib/providers'
@@ -26,11 +26,12 @@ import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection } from '../../resources/provider-connection'
+import { ProviderConnection, filterForProviderSecrets } from '../../resources/provider-connection'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
-    const [providerConnections] = useRecoilState(providerConnectionsState)
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = filterForProviderSecrets(secrets)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
