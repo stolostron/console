@@ -29,13 +29,25 @@ import CredentialsPage from './Credentials'
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
-    metadata: { name: 'provider-connection-1', namespace: 'provider-connection-namespace' },
+    metadata: {
+        name: 'provider-connection-1',
+        namespace: 'provider-connection-namespace',
+        labels: {
+            'cluster.open-cluster-management.io/provider': '',
+        },
+    },
 }
 
 const mockProviderConnection2: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
-    metadata: { name: 'provider-connection-2', namespace: 'provider-connection-namespace' },
+    metadata: {
+        name: 'provider-connection-2',
+        namespace: 'provider-connection-namespace',
+        labels: {
+            'cluster.open-cluster-management.io/provider': '',
+        },
+    },
 }
 
 const cloudRedHatProviderConnection: ProviderConnection = {
