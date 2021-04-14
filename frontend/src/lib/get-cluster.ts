@@ -33,6 +33,15 @@ export enum ClusterStatus {
     'unknown' = 'unknown',
 }
 
+export const clusterDangerStatuses = [
+    ClusterStatus.provisionfailed,
+    ClusterStatus.deprovisionfailed,
+    ClusterStatus.failed,
+    ClusterStatus.offline,
+    ClusterStatus.degraded,
+    ClusterStatus.notaccepted,
+]
+
 export type Cluster = {
     name: string | undefined
     namespace: string | undefined
@@ -131,7 +140,7 @@ export function getCluster(
         status,
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
-        distribution: getDistributionInfo(managedClusterInfo, managedCluster),
+        distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
@@ -233,7 +242,8 @@ export function getProvider(
 
 export function getDistributionInfo(
     managedClusterInfo: ManagedClusterInfo | undefined,
-    managedCluster: ManagedCluster | undefined
+    managedCluster: ManagedCluster | undefined,
+    clusterDeployment: ClusterDeployment | undefined
 ) {
     let k8sVersion: string | undefined
     let ocp: OpenShiftDistributionInfo | undefined
@@ -256,6 +266,13 @@ export function getDistributionInfo(
         }
     }
 
+    if (clusterDeployment) {
+        if (displayVersion === undefined) {
+            const cdVersion = clusterDeployment.metadata.labels?.['hive.openshift.io/version-major-minor-patch']
+            displayVersion = cdVersion ? `OpenShift ${cdVersion}` : undefined
+        }
+    }
+
     const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'product.open-cluster-management.io'
     )?.value
@@ -267,7 +284,7 @@ export function getDistributionInfo(
             break
     }
 
-    if (k8sVersion && ocp && displayVersion) {
+    if (displayVersion) {
         return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
     }
 
@@ -329,6 +346,7 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
+        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -369,7 +387,11 @@ export function getClusterStatus(
 
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
-            if (provisionFailed) {
+            if (hasInvalidImageSet) {
+                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                cdStatus = ClusterStatus.provisionfailed
+                statusMessage = invalidImageSetCondition?.message
+            } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {

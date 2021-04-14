@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_CLOUD_CONNECTIONS,
@@ -44,13 +44,6 @@ const controlDataOST = [
 
     ///////////////////////  openstack  /////////////////////////////////////
     {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-    },
-    {
         id: 'externalNetworkName',
         name: 'creation.ocp.cluster.ost.external.network.name',
         tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
@@ -62,6 +55,14 @@ const controlDataOST = [
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
+        id: 'ingressFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.ingress.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
         active: '',
         validation: VALIDATE_IP,
     },

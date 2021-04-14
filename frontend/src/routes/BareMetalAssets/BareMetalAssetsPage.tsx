@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Bullseye, PageSection, Split, SplitItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -164,24 +164,30 @@ export function BareMetalAssetsTable(props: {
                             />
                         }
                         action={
-                            <div style={{ display: 'flex', justifyContent: 'space-evenly', margin: 'auto' }}>
-                                <AcmButton
-                                    variant="primary"
-                                    onClick={() => {
-                                        history.push(NavigationPath.createBareMetalAsset)
-                                    }}
-                                >
-                                    {t('createBareMetalAsset.title')}
-                                </AcmButton>
-                                <AcmButton
-                                    variant="primary"
-                                    onClick={() => {
-                                        setImportModalProps()
-                                    }}
-                                >
-                                    {t('importBareMetalAssets.title')}
-                                </AcmButton>
-                            </div>
+                            <Bullseye>
+                                <Split hasGutter>
+                                    <SplitItem>
+                                        <AcmButton
+                                            variant="primary"
+                                            onClick={() => {
+                                                history.push(NavigationPath.createBareMetalAsset)
+                                            }}
+                                        >
+                                            {t('createBareMetalAsset.title')}
+                                        </AcmButton>
+                                    </SplitItem>
+                                    <SplitItem>
+                                        <AcmButton
+                                            variant="primary"
+                                            onClick={() => {
+                                                setImportModalProps()
+                                            }}
+                                        >
+                                            {t('importBareMetalAssets.title')}
+                                        </AcmButton>
+                                    </SplitItem>
+                                </Split>
+                            </Bullseye>
                         }
                     />
                 }

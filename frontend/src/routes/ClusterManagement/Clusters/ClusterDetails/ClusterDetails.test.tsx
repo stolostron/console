@@ -39,6 +39,7 @@ import {
     ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
 } from '../../../../resources/managed-cluster-info'
+import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../resources/machine-pool'
 import { PodApiVersion, PodKind, PodList } from '../../../../resources/pod'
 import { SelfSubjectAccessReview } from '../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
@@ -53,10 +54,11 @@ import {
     managedClusterSetsState,
     acmRouteState,
     clusterProvisionsState,
+    machinePoolsState,
 } from '../../../../atoms'
 import { mockOpenShiftConsoleConfigMap, mockManagedClusterSet } from '../../../../lib/test-metadata'
 
-const clusterName = 'test-cluster'
+export const clusterName = 'test-cluster'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -549,6 +551,143 @@ const mockClusterProvisions: ClusterProvision = {
     },
 }
 
+export const mockMachinePoolManual: MachinePool = {
+    apiVersion: MachinePoolApiVersion,
+    kind: MachinePoolKind,
+    metadata: {
+        name: `${clusterName}-manual`,
+        namespace: clusterName,
+    },
+    spec: {
+        clusterDeploymentRef: {
+            name: clusterName,
+        },
+        name: 'worker',
+        platform: {
+            aws: {
+                rootVolume: {
+                    iops: 100,
+                    size: 22,
+                    type: 'gp2',
+                },
+                type: 'm4.xlarge',
+            },
+        },
+        replicas: 3,
+    },
+    status: {
+        replicas: 3,
+        machineSets: [
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
+                replicas: 0,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
+                replicas: 0,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
+                replicas: 0,
+            },
+        ],
+    },
+}
+
+export const mockMachinePoolAuto: MachinePool = {
+    apiVersion: MachinePoolApiVersion,
+    kind: MachinePoolKind,
+    metadata: {
+        name: `${clusterName}-auto`,
+        namespace: clusterName,
+    },
+    spec: {
+        clusterDeploymentRef: {
+            name: clusterName,
+        },
+        name: 'worker',
+        platform: {
+            aws: {
+                rootVolume: {
+                    iops: 100,
+                    size: 22,
+                    type: 'gp2',
+                },
+                type: 'm4.xlarge',
+            },
+        },
+        autoscaling: {
+            minReplicas: 1,
+            maxReplicas: 3,
+        },
+    },
+    status: {
+        replicas: 3,
+        machineSets: [
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 1,
+                minReplicas: 1,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
+                replicas: 1,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
+                replicas: 0,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
+                replicas: 0,
+            },
+            {
+                maxReplicas: 0,
+                minReplicas: 0,
+                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
+                replicas: 0,
+            },
+        ],
+    },
+}
+
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
         { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
@@ -569,6 +708,7 @@ const Component = () => (
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
             snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
             snapshot.set(clusterProvisionsState, [mockClusterProvisions])
+            snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -618,6 +758,12 @@ describe('ClusterDetails', () => {
 
         await clickByText('table.region')
         await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
+    })
+
+    test('machine pools page renders', async () => {
+        await clickByText('tab.machinepools')
+        await waitForText(mockMachinePoolManual.metadata.name!)
+        await waitForText(mockMachinePoolAuto.metadata.name!)
     })
 
     test('settings page renders', async () => {
