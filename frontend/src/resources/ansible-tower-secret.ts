@@ -4,7 +4,6 @@ import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { IResourceDefinition } from './resource'
 import { createResource, getResource, replaceResource } from '../lib/resource-request'
-import { ProviderID } from '../lib/providers'
 
 export const AnsibleTowerSecretApiVersion = 'v1'
 export type AnsibleTowerSecretApiVersionType = 'v1'

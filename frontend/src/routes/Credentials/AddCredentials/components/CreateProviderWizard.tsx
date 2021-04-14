@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
-import { AnsibleTowerIcon, CloudIcon } from '@patternfly/react-icons'
+import { CloudIcon, RedhatIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
 import {
     Card,
@@ -26,7 +26,7 @@ import {
     AcmTextInput,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { featureGatesState, multiClusterHubState } from '../../../../atoms'
+// import { featureGatesState, multiClusterHubState } from '../../../../atoms'
 import { ProviderID, providers } from '../../../../lib/providers'
 import {
     validateCertificate,
@@ -333,7 +333,7 @@ function CredentialTypeStep(props: {
                         }}
                     >
                         <CardHeader>
-                            <AnsibleTowerIcon size="lg" />
+                            <RedhatIcon size="xl" />
                         </CardHeader>
                         <CardBody>Ansible Tower</CardBody>
                     </Card>
@@ -348,7 +348,7 @@ function CredentialTypeStep(props: {
                         }}
                     >
                         <CardHeader>
-                            <CloudIcon size="lg" />
+                            <CloudIcon size="xl" />
                         </CardHeader>
                         <CardBody>Infrastructure Provider</CardBody>
                     </Card>
@@ -429,7 +429,7 @@ function AnsibleTowerInformationStep(props: {
                     })
                 }}
                 // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
-                // isRequired
+                isRequired
                 isDisabled={props.isEditing}
             />
             <AcmSelect
@@ -443,6 +443,7 @@ function AnsibleTowerInformationStep(props: {
                         ansibleSecret.metadata.namespace = namespace
                     })
                 }}
+                isRequired
                 hidden={!props.isEditing}
                 isDisabled={props.isEditing}
             >
@@ -463,8 +464,8 @@ function AnsibleTowerInformationStep(props: {
                         ansibleSecret.spec!.host = host
                     })
                 }}
-                // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
-                // isRequired
+                validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
+                isRequired
             />
             <AcmTextInput
                 id="ansibleToken"
