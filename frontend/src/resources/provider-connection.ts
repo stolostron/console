@@ -123,21 +123,14 @@ export function filterForProviderSecrets(secrets: Secret[]) {
             metadata: {
                 name: secret.metadata.name,
                 namespace: secret.metadata.namespace,
-                labels: {
-                    'cluster.open-cluster-management.io/provider': '',
-                    'cluster.open-cluster-management.io/cloudconnection': '',
-                },
+                labels: {},
             },
         }
         if (secret.metadata) {
             if (secret.metadata.labels) {
-                if (secret.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] === '') {
+                if ('cluster.open-cluster-management.io/provider' in secret.metadata.labels) {
+                    Object.assign(providerConnection.metadata.labels, secret.metadata.labels)
                     if (secret.data) {
-                        providerConnection.metadata.labels!['cluster.open-cluster-management.io/provider'] =
-                            secret.metadata.labels['cluster.open-cluster-management.io/provider']
-                        providerConnection.metadata.labels!['cluster.open-cluster-management.io/cloudconnection'] =
-                            secret.metadata.labels['cluster.open-cluster-management.io/cloudconnection']
-
                         try {
                             const yaml = Buffer.from(secret?.data?.metadata, 'base64').toString('ascii')
                             providerConnection.spec = YAML.parse(yaml)
@@ -147,7 +140,6 @@ export function filterForProviderSecrets(secrets: Secret[]) {
                             providerConnection.spec = YAML.parse(secret.stringData.metadata)
                         } catch {}
                     }
-
                     providerConnections.push(providerConnection)
                 }
             }
