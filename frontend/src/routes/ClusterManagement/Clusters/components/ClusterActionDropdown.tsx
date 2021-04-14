@@ -290,7 +290,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
         const disabledHibernationActions = [
-            'launch-cluster',
             'upgrade-cluster',
             'search-cluster',
             'hibernate-cluster',
@@ -310,10 +309,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     if (!cluster.hive.isHibernatable) {
         actions = actions.filter((a) => a.id !== 'hibernate-cluster')
-    }
-
-    if (!cluster.consoleURL) {
-        actions = actions.filter((a) => a.id !== 'launch-cluster')
     }
 
     if (
