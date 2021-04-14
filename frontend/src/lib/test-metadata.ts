@@ -6,11 +6,7 @@ import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind }
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../resources/multi-cluster-hub'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
 
-import {
-    ProviderConnection,
-    ProviderConnectionKind,
-    ProviderConnectionApiVersion,
-} from '../resources/provider-connection'
+import { Secret, SecretApiVersion, SecretKind } from '../resources/secret'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -53,9 +49,9 @@ export const multiClusterHub: MultiClusterHub = {
     spec: {},
 }
 
-export const mockCRHCredential: ProviderConnection = {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
+export const mockCRHCredential: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
     metadata: {
         name: 'ocm-api-token',
         namespace: 'ocm',

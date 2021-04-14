@@ -22,7 +22,7 @@ import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 import { Namespace, NamespaceKind } from './resources/namespace'
-import { AnsibleTowerSecret, AnsibleTowerSecretKind } from './resources/ansible-tower-secret'
+import { Secret, SecretKind } from './resources/secret'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -50,7 +50,7 @@ export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'manag
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
-export const ansibleTowerSecretsState = atom<AnsibleTowerSecret[]>({ key:'ansibleTowerSecret', default: [] })
+export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
@@ -86,7 +86,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
-    const [, setAnsibleTowerSecret] = useRecoilState(ansibleTowerSecretsState)
+    const [, setSecrets] = useRecoilState(secretsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -108,7 +108,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [ManagedClusterSetKind]: setManagedClusterSets,
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
-        [AnsibleTowerSecretKind]: setAnsibleTowerSecret
+        [SecretKind]: setSecrets,
     }
 
     useEffect(() => {

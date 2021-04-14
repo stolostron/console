@@ -90,7 +90,7 @@ export function startWatching(): void {
     })
     watchResource(token, 'v1', 'secrets', {
         labelSelector: {
-            'cluster.open-cluster-management.io/provider': 'ans'
+            'cluster.open-cluster-management.io/provider': 'ans',
         },
     })
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
