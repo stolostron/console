@@ -26,7 +26,8 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { filterForProviderSecrets, ProviderConnection } from '../../../resources/provider-connection'
 import { useRecoilState } from 'recoil'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
+import { DiscoveryConfig, DiscoveryConfigApiVersion, 
+    DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
