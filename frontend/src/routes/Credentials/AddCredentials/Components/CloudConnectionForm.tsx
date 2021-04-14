@@ -629,7 +629,6 @@ export default function CloudConnectionForm(props: {
                     variant="primary"
                     onClick={() => {
                         const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
-
                         const providerID = getProviderConnectionProviderID(data)
                         if (providerID !== ProviderID.AWS) {
                             delete data.spec!.awsAccessKeyID

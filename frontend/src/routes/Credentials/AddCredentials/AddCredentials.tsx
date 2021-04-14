@@ -18,7 +18,12 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { filterForProviderSecrets } from '../../../resources/provider-connection'
+import {
+    filterForProviderSecrets,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+} from '../../../resources/provider-connection'
 import { getSecret, Secret, SecretApiVersion, SecretDefinition, SecretKind } from '../../../resources/secret'
 import CloudConnectionForm from './Components/CloudConnectionForm'
 
@@ -177,5 +182,61 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
             />
         )
     }
-    return null //is there a default return in this scenario?
+    const providerConnection: ProviderConnection = {
+        apiVersion: ProviderConnectionApiVersion,
+        kind: ProviderConnectionKind,
+        metadata: {
+            name: '',
+            namespace: '',
+        },
+        spec: {
+            awsAccessKeyID: '',
+            awsSecretAccessKeyID: '',
+
+            baseDomainResourceGroupName: '',
+            clientId: '',
+            clientSecret: '',
+            subscriptionId: '',
+            tenantId: '',
+
+            gcProjectID: '',
+            gcServiceAccountKey: '',
+
+            username: '',
+            password: '',
+            vcenter: '',
+            cacertificate: '',
+            vmClusterName: '',
+            datacenter: '',
+            datastore: '',
+
+            libvirtURI: '',
+            sshKnownHosts: [''],
+            imageMirror: '',
+            bootstrapOSImage: '',
+            clusterOSImage: '',
+            additionalTrustBundle: '',
+
+            baseDomain: '',
+            pullSecret: '',
+            sshPrivatekey: '',
+            sshPublickey: '',
+
+            ocmAPIToken: '',
+
+            openstackCloudsYaml: '',
+            openstackCloud: '',
+        },
+    }
+
+    // else, creating new credential, Wizard will go here
+    return (
+        <CloudConnectionForm
+            providerConnection={providerConnection}
+            projects={props.projects}
+            discoveryFeatureGate={discoveryFeatureGate}
+            multiClusterHubs={multiClusterHubs}
+            isEditing={isEditing()}
+        />
+    )
 }
