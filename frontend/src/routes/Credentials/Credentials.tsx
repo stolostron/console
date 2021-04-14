@@ -126,27 +126,6 @@ export function ProviderConnectionsTable(props: {
                         ),
                     },
                     {
-                        header: t('table.header.additionalActions'),
-                        search: (item: ProviderConnection) => {
-                            return getAdditionalActions(item)
-                        },
-                        cell: (item: ProviderConnection) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.CRH && !discoveryEnabled) {
-                                return (
-                                    <Link to={NavigationPath.discoveryConfig}>
-                                        {t('connections.actions.enableClusterDiscovery')}
-                                    </Link>
-                                )
-                            } else {
-                                return <span>-</span>
-                            }
-                        },
-                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
-                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
-                        },
-                    },
-                    {
                         header: t('table.header.provider'),
                         sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
                             return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
@@ -191,6 +170,27 @@ export function ProviderConnectionsTable(props: {
                         sort: 'metadata.namespace',
                         search: 'metadata.namespace',
                         cell: 'metadata.namespace',
+                    },
+                    {
+                        header: t('table.header.additionalActions'),
+                        search: (item: ProviderConnection) => {
+                            return getAdditionalActions(item)
+                        },
+                        cell: (item: ProviderConnection) => {
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (label === ProviderID.CRH && !discoveryEnabled) {
+                                return (
+                                    <Link to={NavigationPath.discoveryConfig}>
+                                        {t('connections.actions.enableClusterDiscovery')}
+                                    </Link>
+                                )
+                            } else {
+                                return <span>-</span>
+                            }
+                        },
+                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
+                        },
                     },
                     {
                         header: '',
