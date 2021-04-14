@@ -111,7 +111,10 @@ export default function CloudConnectionForm(props: {
                         if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
                             return false // skip
                         }
-                        if (!props.projects.includes(multiclusterhubNamespace) && provider.key === ProviderID.CRH) {
+                        if (
+                            // !props.projects.includes(multiClusterHubs[0].metadata.namespace) &&
+                            provider.key === ProviderID.CRH
+                        ) {
                             return false // skip
                         }
                         return true
@@ -136,6 +139,9 @@ export default function CloudConnectionForm(props: {
                                 break
                             case ProviderID.CRH:
                                 mappedProvider = Provider.redhatcloud
+                                break
+                            case ProviderID.OST:
+                                mappedProvider = Provider.openstack
                                 break
                             case ProviderID.UKN:
                             default:
@@ -445,6 +451,35 @@ export default function CloudConnectionForm(props: {
                 hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                 isRequired
             />
+            <AcmTextArea
+                id="openstackCloudsYaml"
+                label={t('addConnection.openstackCloudsYaml.label')}
+                placeholder={t('addConnection.openstackCloudsYaml.placeholder')}
+                labelHelp={t('addConnection.openstackCloudsYaml.labelHelp')}
+                value={providerConnection.spec?.openstackCloudsYaml}
+                onChange={(openstackCloudsYaml) => {
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.spec!.openstackCloudsYaml = openstackCloudsYaml
+                    })
+                }}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
+                isRequired
+            />
+            <AcmTextInput
+                id="openstackCloud"
+                label={t('addConnection.openstackCloud.label')}
+                placeholder={t('addConnection.openstackCloud.placeholder')}
+                labelHelp={t('addConnection.openstackCloud.labelHelp')}
+                value={providerConnection.spec?.openstackCloud}
+                onChange={(openstackCloud) => {
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.spec!.openstackCloud = openstackCloud
+                    })
+                }}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
+                isRequired
+            />
+
             <AcmTextInput
                 id="libvirtURI"
                 label={t('addConnection.libvirtURI.label')}
@@ -629,6 +664,7 @@ export default function CloudConnectionForm(props: {
                     variant="primary"
                     onClick={() => {
                         const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
+
                         const providerID = getProviderConnectionProviderID(data)
                         if (providerID !== ProviderID.AWS) {
                             delete data.spec!.awsAccessKeyID
