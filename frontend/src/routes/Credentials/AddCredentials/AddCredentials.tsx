@@ -18,7 +18,7 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, PageSection, SelectOption, Title } from '@patternfly/react-core'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
