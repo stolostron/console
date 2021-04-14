@@ -40,6 +40,8 @@ import {
     validatePublicSshKey,
 } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import { FeatureGate } from '../../../resources/feature-gate'
+import { MultiClusterHub } from '../../../resources/multi-cluster-hub'
 import {
     createProviderConnection,
     getProviderConnection,
@@ -236,21 +238,68 @@ const useStyles = makeStyles({
 })
 
 export function AddCredentialPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
-    const { t } = useTranslation(['connection'])
-    const history = useHistory()
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
     const isEditing = () => props.providerConnection.metadata.name !== ''
-    const alertContext = useContext(AcmAlertContext)
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
     const [multiClusterHubs] = useRecoilState(multiClusterHubState)
+
+    if (providerConnection?.metadata?.labels?.['cluster.open-cluster-management.io/cloudconnection'] !== undefined) {
+        return (
+            <CloudConnectionForm
+                providerConnection={providerConnection}
+                projects={props.projects}
+                setProviderConnection={setProviderConnection}
+                discoveryFeatureGate={discoveryFeatureGate}
+                multiClusterHubs={multiClusterHubs}
+                isEditing={isEditing()}
+            />
+        )
+    }
+    return null //is there a default return here?
+}
+function CloudConnectionForm(props: {
+    providerConnection: ProviderConnection
+    projects: string[]
+    setProviderConnection: Function
+    discoveryFeatureGate: FeatureGate | undefined
+    multiClusterHubs: MultiClusterHub[]
+    isEditing: boolean
+}) {
+    const { t } = useTranslation(['connection'])
+    const history = useHistory()
+    const discoveryFeatureGate = props.discoveryFeatureGate
+    const alertContext = useContext(AcmAlertContext)
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
+        JSON.parse(JSON.stringify(props.providerConnection))
+    )
+    const multiClusterHubs = props.multiClusterHubs
+    const [multiclusterhubNamespace, setMulticlusterhubNamespace] = useState('')
+
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
         setProviderConnection(copy)
+        props.setProviderConnection(copy)
     }
+
+    const useStyles = makeStyles({
+        providerSelect: {
+            '& .pf-c-select__toggle-text': {
+                padding: '4px 0',
+            },
+        },
+    })
+
+    useEffect(() => {
+        if (multiClusterHubs[0]) {
+            if (multiClusterHubs[0].metadata.namespace) {
+                setMulticlusterhubNamespace(multiClusterHubs[0].metadata.namespace)
+            }
+        }
+    }, [multiClusterHubs[0]])
 
     const classes = useStyles()
 
@@ -277,7 +326,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                         })
                     }
                 }}
-                isDisabled={isEditing()}
+                isDisabled={props.isEditing}
                 isRequired
             >
                 {providers
@@ -285,10 +334,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                         if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
                             return false // skip
                         }
-                        if (
-                            !props.projects.includes(multiClusterHubs[0].metadata.namespace) &&
-                            provider.key === ProviderID.CRH
-                        ) {
+                        if (!props.projects.includes(multiclusterhubNamespace) && provider.key === ProviderID.CRH) {
                             return false // skip
                         }
                         return true
@@ -313,9 +359,6 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                                 break
                             case ProviderID.CRH:
                                 mappedProvider = Provider.redhatcloud
-                                break
-                            case ProviderID.OST:
-                                mappedProvider = Provider.openstack
                                 break
                             case ProviderID.UKN:
                             default:
@@ -342,7 +385,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 }}
                 validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 isRequired
-                isDisabled={isEditing()}
+                isDisabled={props.isEditing}
             />
             <AcmSelect
                 id="namespaceName"
@@ -356,7 +399,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                     })
                 }}
                 isRequired
-                isDisabled={isEditing() || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                isDisabled={props.isEditing || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (
@@ -625,35 +668,6 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                 hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.VMW}
                 isRequired
             />
-            <AcmTextArea
-                id="openstackCloudsYaml"
-                label={t('addConnection.openstackCloudsYaml.label')}
-                placeholder={t('addConnection.openstackCloudsYaml.placeholder')}
-                labelHelp={t('addConnection.openstackCloudsYaml.labelHelp')}
-                value={providerConnection.spec?.openstackCloudsYaml}
-                onChange={(openstackCloudsYaml) => {
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.spec!.openstackCloudsYaml = openstackCloudsYaml
-                    })
-                }}
-                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
-                isRequired
-            />
-            <AcmTextInput
-                id="openstackCloud"
-                label={t('addConnection.openstackCloud.label')}
-                placeholder={t('addConnection.openstackCloud.placeholder')}
-                labelHelp={t('addConnection.openstackCloud.labelHelp')}
-                value={providerConnection.spec?.openstackCloud}
-                onChange={(openstackCloud) => {
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.spec!.openstackCloud = openstackCloud
-                    })
-                }}
-                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.OST}
-                isRequired
-            />
-
             <AcmTextInput
                 id="libvirtURI"
                 label={t('addConnection.libvirtURI.label')}
@@ -884,7 +898,7 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
 
                         alertContext.clearAlerts()
                         let result: IRequestResult<ProviderConnection>
-                        if (isEditing()) {
+                        if (props.isEditing) {
                             result = replaceProviderConnection(data)
                         } else {
                             result = createProviderConnection(data)
@@ -904,9 +918,9 @@ export function AddCredentialPageContent(props: { providerConnection: ProviderCo
                                 }
                             })
                     }}
-                    label={isEditing() ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')}
+                    label={props.isEditing ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')}
                     processingLabel={
-                        isEditing() ? t('addConnection.savingButton.label') : t('addConnection.addingButton.label')
+                        props.isEditing ? t('addConnection.savingButton.label') : t('addConnection.addingButton.label')
                     }
                 />
                 <Button
