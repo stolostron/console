@@ -24,10 +24,10 @@ import { deleteResource } from '../../../lib/resource-request'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
-import { ProviderConnection } from '../../../resources/provider-connection'
+import { filterForProviderSecrets, ProviderConnection } from '../../../resources/provider-connection'
 import { useRecoilState } from 'recoil'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { providerConnectionsState, discoveredClusterState, discoveryConfigState } from '../../../atoms'
+import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
@@ -232,7 +232,8 @@ export function DiscoveredClustersPageContent() {
     useEffect(() => alertContext.clearAlerts, [])
 
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
-    const [providerConnections] = useRecoilState(providerConnectionsState)
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = filterForProviderSecrets(secrets)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
     const cloudRedHatCredentials: ProviderConnection[] = []
@@ -242,7 +243,6 @@ export function DiscoveredClustersPageContent() {
             cloudRedHatCredentials.push(credential)
         }
     })
-
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 

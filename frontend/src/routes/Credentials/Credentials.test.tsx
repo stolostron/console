@@ -4,7 +4,7 @@ import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { discoveryConfigState, providerConnectionsState } from '../../atoms'
+import { discoveryConfigState, secretsState } from '../../atoms'
 import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
 import {
     clickBulkAction,
@@ -29,13 +29,25 @@ import CredentialsPage from './Credentials'
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
-    metadata: { name: 'provider-connection-1', namespace: 'provider-connection-namespace' },
+    metadata: {
+        name: 'provider-connection-1',
+        namespace: 'provider-connection-namespace',
+        labels: {
+            'cluster.open-cluster-management.io/provider': '',
+        },
+    },
 }
 
 const mockProviderConnection2: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
-    metadata: { name: 'provider-connection-2', namespace: 'provider-connection-namespace' },
+    metadata: {
+        name: 'provider-connection-2',
+        namespace: 'provider-connection-namespace',
+        labels: {
+            'cluster.open-cluster-management.io/provider': '',
+        },
+    },
 }
 
 const cloudRedHatProviderConnection: ProviderConnection = {
@@ -96,7 +108,7 @@ function TestProviderConnectionsPage(props: {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(providerConnectionsState, props.providerConnections)
+                snapshot.set(secretsState, props.providerConnections)
                 snapshot.set(discoveryConfigState, props.discoveryConfigs || [])
             }}
         >
