@@ -79,7 +79,7 @@ export function CredentialsTable(props: {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Secret> | { open: false }>({
         open: false,
     })
-    // TODO: Refactor this for secret type?
+
     let discoveryEnabled = false
     if (props.discoveryConfigs) {
         props.discoveryConfigs.forEach((discoveryConfig) => {
@@ -88,7 +88,7 @@ export function CredentialsTable(props: {
             }
         })
     }
-    // TODO: Refactor this for secret type?
+
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
         if (label === ProviderID.CRH && !discoveryEnabled) {
@@ -130,7 +130,7 @@ export function CredentialsTable(props: {
                     },
                     {
                         header: t('table.header.additionalActions'),
-                        // TODO: refactor this for secret?
+
                         search: (item: Secret) => {
                             return getAdditionalActions(item)
                         },
