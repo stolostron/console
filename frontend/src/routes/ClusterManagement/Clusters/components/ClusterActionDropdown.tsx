@@ -120,11 +120,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 : undefined,
         },
         {
-            id: 'launch-cluster',
-            text: t('managed.launch'),
-            click: (cluster: Cluster) => window.open(cluster?.consoleURL, '_blank'),
-        },
-        {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
             click: (cluster: Cluster) => setShowUpgradeModal(true),
