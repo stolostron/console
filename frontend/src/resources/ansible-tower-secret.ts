@@ -4,6 +4,8 @@ import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 import * as YAML from 'yamljs'
 import { IResourceDefinition } from './resource'
 import { createResource, getResource, replaceResource } from '../lib/resource-request'
+import { Secret } from './secret'
+import { ProviderID } from '../lib/providers'
 
 export const AnsibleTowerSecretApiVersion = 'v1'
 export type AnsibleTowerSecretApiVersionType = 'v1'
@@ -80,4 +82,38 @@ export function packAnsibleTowerSecret(AnsibleTowerSecret: AnsibleTowerSecret) {
     delete AnsibleTowerSecret.spec
     delete AnsibleTowerSecret.data
     return AnsibleTowerSecret
+}
+
+export function filterForAnsibleSecrets(secrets: Secret[]) {
+    const ansibleTowerSecrets: AnsibleTowerSecret[] = []
+
+    secrets.forEach((secret) => {
+        const ansibleTowerSecret: AnsibleTowerSecret = {
+            apiVersion: AnsibleTowerSecretApiVersion,
+            kind: AnsibleTowerSecretKind,
+            metadata: {
+                name: secret.metadata.name,
+                namespace: secret.metadata.namespace,
+                labels: {},
+            },
+        }
+        if (
+            secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] !== undefined &&
+            secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === ProviderID.ANS
+        ) {
+            Object.assign(ansibleTowerSecret.metadata.labels, secret.metadata.labels)
+            if (secret.data) {
+                try {
+                    const yaml = Buffer.from(secret?.data?.metadata, 'base64').toString('ascii')
+                    ansibleTowerSecret.spec = YAML.parse(yaml)
+                } catch {}
+            } else if (secret.stringData) {
+                try {
+                    ansibleTowerSecret.spec = YAML.parse(secret.stringData.metadata)
+                } catch {}
+            }
+            ansibleTowerSecrets.push(ansibleTowerSecret)
+        }
+    })
+    return ansibleTowerSecrets
 }
