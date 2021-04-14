@@ -13,7 +13,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, SelectOption, Title } from '@patternfly/react-core'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ProviderID, providers } from '../../../../lib/providers'
@@ -54,7 +54,6 @@ export default function CloudConnectionForm(props: {
         JSON.parse(JSON.stringify(props.providerConnection))
     )
     const multiClusterHubs = props.multiClusterHubs
-    const [multiclusterhubNamespace, setMulticlusterhubNamespace] = useState('')
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
@@ -69,14 +68,6 @@ export default function CloudConnectionForm(props: {
             },
         },
     })
-
-    useEffect(() => {
-        if (multiClusterHubs[0]) {
-            if (multiClusterHubs[0].metadata.namespace) {
-                setMulticlusterhubNamespace(multiClusterHubs[0].metadata.namespace)
-            }
-        }
-    }, [multiClusterHubs[0]])
 
     const classes = useStyles()
 
@@ -99,7 +90,7 @@ export default function CloudConnectionForm(props: {
 
                     if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
                         updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata.namespace = multiClusterHubs[0].metadata.namespace
+                            providerConnection.metadata.namespace = multiClusterHubs[0]?.metadata.namespace
                         })
                     }
                 }}
@@ -112,7 +103,8 @@ export default function CloudConnectionForm(props: {
                             return false // skip
                         }
                         if (
-                            // !props.projects.includes(multiClusterHubs[0].metadata.namespace) &&
+                            multiClusterHubs?.[0]?.metadata.namespace &&
+                            !props.projects.includes(multiClusterHubs[0]?.metadata.namespace) &&
                             provider.key === ProviderID.CRH
                         ) {
                             return false // skip
