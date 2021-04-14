@@ -42,7 +42,6 @@
     "managed.detached": "Detach cluster",
     "managed.search": "Search cluster",
     "managed.upgrade": "Upgrade cluster",
-    "managed.launch": "Launch cluster",
     "managed.editLabels": "Edit labels",
     "managed.hibernate": "Hibernate cluster",
     "managed.resume": "Resume cluster",

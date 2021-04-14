@@ -68,7 +68,7 @@ export function MachinePoolsTable() {
             search: 'status.replicas',
             cell: (machinePool: MachinePool) => {
                 if (machinePool.spec!.replicas) {
-                    return `${machinePool.status!.replicas}/${machinePool.spec!.replicas}`
+                    return `${machinePool.status?.replicas ?? 0}/${machinePool.spec!.replicas}`
                 } else {
                     return machinePool.status!.replicas
                 }

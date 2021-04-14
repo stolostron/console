@@ -120,11 +120,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 : undefined,
         },
         {
-            id: 'launch-cluster',
-            text: t('managed.launch'),
-            click: (cluster: Cluster) => window.open(cluster?.consoleURL, '_blank'),
-        },
-        {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
             click: (cluster: Cluster) => setShowUpgradeModal(true),
@@ -295,7 +290,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
         const disabledHibernationActions = [
-            'launch-cluster',
             'upgrade-cluster',
             'search-cluster',
             'hibernate-cluster',
@@ -315,10 +309,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     if (!cluster.hive.isHibernatable) {
         actions = actions.filter((a) => a.id !== 'hibernate-cluster')
-    }
-
-    if (!cluster.consoleURL) {
-        actions = actions.filter((a) => a.id !== 'launch-cluster')
     }
 
     if (
