@@ -7,12 +7,7 @@ import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-    featureGatesState,
-    discoveredClusterState,
-    discoveryConfigState,
-    providerConnectionsState,
-} from '../../../atoms'
+import { featureGatesState, discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { mockDiscoveryFeatureGate, mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
@@ -64,7 +59,7 @@ test('DiscoveredClusters Table', async () => {
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                 snapshot.set(discoveredClusterState, mockDiscoveredClusters)
                 snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-                snapshot.set(providerConnectionsState, [mockCRHCredential])
+                snapshot.set(secretsState, [mockCRHCredential])
             }}
         >
             <MemoryRouter>
@@ -102,7 +97,7 @@ test('Discovery featuregate enabled, but no provider connections or discoverycon
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                 snapshot.set(discoveredClusterState, [])
                 snapshot.set(discoveryConfigState, [])
-                snapshot.set(providerConnectionsState, [])
+                snapshot.set(secretsState, [])
             }}
         >
             <MemoryRouter>
@@ -122,7 +117,7 @@ test('Discovery featuregate enabled, CRH credentials exist, but no discoveryconf
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                 snapshot.set(discoveredClusterState, [])
                 snapshot.set(discoveryConfigState, [])
-                snapshot.set(providerConnectionsState, [mockCRHCredential])
+                snapshot.set(secretsState, [mockCRHCredential])
             }}
         >
             <MemoryRouter>
@@ -142,7 +137,7 @@ test('Discovery featuregate enabled, CRH and discoveryconfig exist, but no disco
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                 snapshot.set(discoveredClusterState, [])
                 snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-                snapshot.set(providerConnectionsState, [mockCRHCredential])
+                snapshot.set(secretsState, [mockCRHCredential])
             }}
         >
             <MemoryRouter>

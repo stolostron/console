@@ -6,6 +6,7 @@ import * as YAML from 'yamljs'
 import { ProviderID } from '../lib/providers'
 import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
+import { Secret } from './secret'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -110,6 +111,38 @@ export function getProviderConnection(metadata: { name: string; namespace: strin
         promise: result.promise.then(unpackProviderConnection),
         abort: result.abort,
     }
+}
+
+export function filterForProviderSecrets(secrets: Secret[]) {
+    const providerConnections: ProviderConnection[] = []
+
+    secrets.forEach((secret) => {
+        const providerConnection: ProviderConnection = {
+            apiVersion: ProviderConnectionApiVersion,
+            kind: ProviderConnectionKind,
+            metadata: {
+                name: secret.metadata.name,
+                namespace: secret.metadata.namespace,
+                labels: {},
+            },
+        }
+
+        if (secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] !== undefined) {
+            Object.assign(providerConnection.metadata.labels, secret.metadata.labels)
+            if (secret.data) {
+                try {
+                    const yaml = Buffer.from(secret?.data?.metadata, 'base64').toString('ascii')
+                    providerConnection.spec = YAML.parse(yaml)
+                } catch {}
+            } else if (secret.stringData) {
+                try {
+                    providerConnection.spec = YAML.parse(secret.stringData.metadata)
+                } catch {}
+            }
+            providerConnections.push(providerConnection)
+        }
+    })
+    return providerConnections
 }
 
 export function createProviderConnection(providerConnection: ProviderConnection) {

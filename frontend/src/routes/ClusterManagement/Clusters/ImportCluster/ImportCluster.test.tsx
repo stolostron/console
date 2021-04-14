@@ -37,12 +37,7 @@ import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secr
 import DiscoveredClustersPage from '../../../Discovery/DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 import { NavigationPath } from '../../../../NavigationPath'
-import {
-    managedClusterSetsState,
-    discoveredClusterState,
-    discoveryConfigState,
-    providerConnectionsState,
-} from '../../../../atoms'
+import { managedClusterSetsState, discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { mockDiscoveryConfig, mockCRHCredential, mockManagedClusterSet } from '../../../../lib/test-metadata'
 
@@ -361,7 +356,7 @@ describe('Import Discovered Cluster', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-                    snapshot.set(providerConnectionsState, [mockCRHCredential])
+                    snapshot.set(secretsState, [mockCRHCredential])
                     snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
                     snapshot.set(discoveredClusterState, mockDiscoveredClusters)
                 }}

@@ -23,7 +23,7 @@ import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cl
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 
 import { Namespace, NamespaceKind } from './resources/namespace'
-import { ProviderConnection, ProviderConnectionKind } from './resources/provider-connection'
+import { Secret, SecretKind } from './resources/secret'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -51,7 +51,7 @@ export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'manag
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
-export const providerConnectionsState = atom<ProviderConnection[]>({ key: 'providerConnections', default: [] })
+export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
@@ -87,7 +87,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
-    const [, setProviderConnections] = useRecoilState(providerConnectionsState)
+    const [, setSecrets] = useRecoilState(secretsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -109,7 +109,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [ManagedClusterSetKind]: setManagedClusterSets,
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
-        [ProviderConnectionKind]: setProviderConnections,
+        [SecretKind]: setSecrets,
     }
 
     useEffect(() => {
