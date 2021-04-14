@@ -6,11 +6,6 @@ import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind }
 import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../resources/multi-cluster-hub'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
 
-import {
-    ProviderConnection,
-    ProviderConnectionKind,
-    ProviderConnectionApiVersion,
-} from '../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../resources/secret'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
