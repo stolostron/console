@@ -52,13 +52,6 @@ export default function CredentialsPage() {
     )
 }
 
-/*
-TODO:
-    - Hook up secrets to table ~
-    - Develop handoff to edit page
-    - Develop templates for edit pages of different types
-*/
-
 // Ingoring coverage since this will move one the console header navigation is done
 /* istanbul ignore next */
 const AddConnectionBtn = () => {
