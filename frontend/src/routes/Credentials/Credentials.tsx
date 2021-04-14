@@ -27,6 +27,7 @@ import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
 import { ProviderConnection, filterForProviderSecrets } from '../../resources/provider-connection'
+import { Secret } from '../../resources/secret'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
@@ -40,15 +41,23 @@ export default function CredentialsPage() {
             <AcmPageHeader title={t('manageCredentials')} />
             <AcmPageContent id="credentials">
                 <PageSection variant="light" isFilled={true}>
-                    <ProviderConnectionsTable
+                    <CredentialsTable
                         providerConnections={providerConnections}
                         discoveryConfigs={discoveryConfigs}
+                        secrets={secrets}
                     />
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
     )
 }
+
+/*
+TODO:
+    - Hook up secrets to table ~
+    - Develop handoff to edit page
+    - Develop templates for edit pages of different types
+*/
 
 // Ingoring coverage since this will move one the console header navigation is done
 /* istanbul ignore next */
@@ -67,16 +76,17 @@ function getProvider(labels: Record<string, string> | undefined) {
     return provider.name
 }
 
-export function ProviderConnectionsTable(props: {
+export function CredentialsTable(props: {
     providerConnections?: ProviderConnection[]
     discoveryConfigs?: DiscoveryConfig[]
+    secrets?: Secret[]
 }) {
     const { t } = useTranslation(['connection', 'common'])
     const history = useHistory()
-    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ProviderConnection> | { open: false }>({
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<Secret> | { open: false }>({
         open: false,
     })
-
+    // TODO: Refactor this for secret type?
     let discoveryEnabled = false
     if (props.discoveryConfigs) {
         props.discoveryConfigs.forEach((discoveryConfig) => {
@@ -85,8 +95,8 @@ export function ProviderConnectionsTable(props: {
             }
         })
     }
-
-    function getAdditionalActions(item: ProviderConnection) {
+    // TODO: Refactor this for secret type?
+    function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
         if (label === ProviderID.CRH && !discoveryEnabled) {
             return t('connections.actions.enableClusterDiscovery')
@@ -96,8 +106,8 @@ export function ProviderConnectionsTable(props: {
 
     return (
         <Fragment>
-            <BulkActionModel<ProviderConnection> {...modalProps} />
-            <AcmTable<ProviderConnection>
+            <BulkActionModel<Secret> {...modalProps} />
+            <AcmTable<Secret>
                 gridBreakPoint={TableGridBreakpoint.none}
                 emptyState={
                     <AcmEmptyState
@@ -107,30 +117,31 @@ export function ProviderConnectionsTable(props: {
                     />
                 }
                 plural={t('connections')}
-                items={props.providerConnections}
+                items={props.secrets}
                 columns={[
                     {
                         header: t('table.header.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
-                        cell: (providerConnection) => (
+                        cell: (secret) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link
                                     to={NavigationPath.editCredentials
-                                        .replace(':namespace', providerConnection.metadata.namespace as string)
-                                        .replace(':name', providerConnection.metadata.name as string)}
+                                        .replace(':namespace', secret.metadata.namespace as string)
+                                        .replace(':name', secret.metadata.name as string)}
                                 >
-                                    {providerConnection.metadata.name}
+                                    {secret.metadata.name}
                                 </Link>
                             </span>
                         ),
                     },
                     {
                         header: t('table.header.additionalActions'),
-                        search: (item: ProviderConnection) => {
+                        // TODO: refactor this for secret?
+                        search: (item: Secret) => {
                             return getAdditionalActions(item)
                         },
-                        cell: (item: ProviderConnection) => {
+                        cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             if (label === ProviderID.CRH && !discoveryEnabled) {
                                 return (
@@ -142,16 +153,16 @@ export function ProviderConnectionsTable(props: {
                                 return <span>-</span>
                             }
                         },
-                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
                             return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
                         },
                     },
                     {
                         header: t('table.header.provider'),
-                        sort: /* istanbul ignore next */ (a: ProviderConnection, b: ProviderConnection) => {
+                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
                             return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
                         },
-                        cell: (item: ProviderConnection) => {
+                        cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             let provider
                             switch (label) {
@@ -182,7 +193,7 @@ export function ProviderConnectionsTable(props: {
                             }
                             return <AcmInlineProvider provider={provider} />
                         },
-                        search: (item: ProviderConnection) => {
+                        search: (item: Secret) => {
                             return getProvider(item.metadata?.labels)
                         },
                     },
@@ -195,32 +206,32 @@ export function ProviderConnectionsTable(props: {
                     {
                         header: '',
                         cellTransforms: [fitContent],
-                        cell: (providerConnection: ProviderConnection) => {
+                        cell: (secret: Secret) => {
                             const actions = [
                                 {
                                     id: 'editConnection',
                                     text: t('edit'),
                                     isDisabled: true,
-                                    click: (providerConnection: ProviderConnection) => {
+                                    click: (secret: Secret) => {
                                         history.push(
                                             NavigationPath.editCredentials
-                                                .replace(':namespace', providerConnection.metadata.namespace!)
-                                                .replace(':name', providerConnection.metadata.name!)
+                                                .replace(':namespace', secret.metadata.namespace!)
+                                                .replace(':name', secret.metadata.name!)
                                         )
                                     },
-                                    rbac: [rbacPatch(providerConnection)],
+                                    rbac: [rbacPatch(secret)], // validate that this is working
                                 },
                                 {
                                     id: 'deleteConnection',
                                     text: t('delete'),
                                     isDisabled: true,
-                                    click: (providerConnection: ProviderConnection) => {
+                                    click: (secret: Secret) => {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.delete'),
                                             action: t('common:delete'),
                                             processing: t('common:deleting'),
-                                            resources: [providerConnection],
+                                            resources: [secret],
                                             description: t('bulk.message.delete'),
                                             columns: [
                                                 {
@@ -234,30 +245,29 @@ export function ProviderConnectionsTable(props: {
                                                     sort: 'metadata.namespace',
                                                 },
                                             ],
-                                            keyFn: (providerConnection: ProviderConnection) =>
-                                                providerConnection.metadata.uid as string,
+                                            keyFn: (secret: Secret) => secret.metadata.uid as string,
                                             actionFn: deleteResource,
                                             close: () => setModalProps({ open: false }),
                                             isDanger: true,
                                         })
                                     },
-                                    rbac: [rbacDelete(providerConnection)],
+                                    rbac: [rbacDelete(secret)],
                                 },
                             ]
 
                             return (
-                                <RbacDropdown<ProviderConnection>
-                                    id={`${providerConnection.metadata.name}-actions`}
-                                    item={providerConnection}
+                                <RbacDropdown<Secret>
+                                    id={`${secret.metadata.name}-actions`}
+                                    item={secret}
                                     isKebab={true}
-                                    text={`${providerConnection.metadata.name}-actions`}
+                                    text={`${secret.metadata.name}-actions`}
                                     actions={actions}
                                 />
                             )
                         },
                     },
                 ]}
-                keyFn={(providerConnection) => providerConnection.metadata?.uid as string}
+                keyFn={(secret) => secret.metadata?.uid as string}
                 tableActions={[
                     {
                         id: 'add',
@@ -271,13 +281,13 @@ export function ProviderConnectionsTable(props: {
                     {
                         id: 'deleteConnection',
                         title: t('delete.batch'),
-                        click: (providerConnections: ProviderConnection[]) => {
+                        click: (secrets: Secret[]) => {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.delete'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
-                                resources: [...providerConnections],
+                                resources: [...secrets],
                                 description: t('bulk.message.delete'),
                                 columns: [
                                     {
@@ -291,8 +301,7 @@ export function ProviderConnectionsTable(props: {
                                         sort: 'metadata.namespace',
                                     },
                                 ],
-                                keyFn: (providerConnection: ProviderConnection) =>
-                                    providerConnection.metadata.uid as string,
+                                keyFn: (secret: Secret) => secret.metadata.uid as string,
                                 actionFn: deleteResource,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
