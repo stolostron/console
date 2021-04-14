@@ -243,7 +243,6 @@ export function DiscoveredClustersPageContent() {
             cloudRedHatCredentials.push(credential)
         }
     })
-
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
