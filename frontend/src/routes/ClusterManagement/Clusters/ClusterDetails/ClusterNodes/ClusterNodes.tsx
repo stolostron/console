@@ -7,7 +7,6 @@ import {
     compareNumbers,
     IAcmTableColumn,
     StatusType,
-    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -99,17 +98,14 @@ export function NodesPoolsTable() {
                     ? `${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`
                     : `/resources?cluster=${cluster!.name!}&kind=node&apiVersion=v1&name=${node.name}`
                 return (
-                    <AcmButton
-                        variant="link"
-                        role="link"
-                        icon={hasOcpConsole && <ExternalLinkAltIcon />}
-                        iconPosition="right"
-                        onClick={() => {
-                            return window.open(launchUrl, hasOcpConsole ? '_blank' : '_self')
-                        }}
-                    >
-                        {node.name}
-                    </AcmButton>
+                    <a href={launchUrl} target={hasOcpConsole ? '_self' : '_blank'} rel="noreferrer">
+                        {node.name}{' '}
+                        {hasOcpConsole && (
+                            <span>
+                                <ExternalLinkAltIcon />
+                            </span>
+                        )}
+                    </a>
                 )
             },
         },
