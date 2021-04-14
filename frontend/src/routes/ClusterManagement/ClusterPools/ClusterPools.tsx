@@ -29,6 +29,7 @@ import { StatusField } from '../Clusters/components/StatusField'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
+import { RbacButton } from '../../../components/Rbac'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -254,7 +255,28 @@ export function ClusterPoolsTable() {
                     {
                         header: t('table.available'),
                         cell: (clusterPool: ClusterPool) => {
-                            return `${clusterPool?.status?.ready}/${clusterPool.spec!.size}`
+                            return (
+                                <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+                                    <div>
+                                        {clusterPool?.status?.ready}/{clusterPool.spec!.size}
+                                    </div>
+                                    {clusterPool?.status?.ready !== 0 && (
+                                        <RbacButton
+                                            onClick={() => {
+                                                setClusterClaimModalProps({
+                                                    clusterPool,
+                                                    onClose: () => setClusterClaimModalProps(undefined),
+                                                })
+                                            }}
+                                            variant="link"
+                                            style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                                            rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
+                                        >
+                                            {t('clusterPool.claim')}
+                                        </RbacButton>
+                                    )}
+                                </span>
+                            )
                         },
                     },
                     {

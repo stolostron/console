@@ -8,6 +8,7 @@ import {
     AcmLabels,
     AcmPageContent,
     AcmAlert,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
@@ -103,9 +104,17 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {
                             key: t('table.consoleUrl'),
                             value: cluster?.consoleURL && (
-                                <a href={cluster?.consoleURL} target="_blank" rel="noreferrer">
+                                <AcmButton
+                                    variant="link"
+                                    isInline
+                                    onClick={() => window.open(cluster.consoleURL!, '_blank')}
+                                    isDisabled={cluster.status === ClusterStatus.hibernating}
+                                    tooltip={t('hibernating.tooltip')}
+                                    icon={<ExternalLinkAltIcon />}
+                                    iconPosition="right"
+                                >
                                     {cluster?.consoleURL}
-                                </a>
+                                </AcmButton>
                             ),
                         },
                         {

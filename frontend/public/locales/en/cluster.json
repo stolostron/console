@@ -68,6 +68,8 @@
     "machinePool.disableAutoscale": "Disable autoscale",
     "machinePool.delete": "Delete machine pool",
 
+    "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
+
     "button.backToClusters": "Back to clusters",
     "button.backToClusterSets": "Back to cluster sets",
 

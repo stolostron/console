@@ -21,8 +21,10 @@ import {
     DescriptionListDescription,
 } from '@patternfly/react-core'
 import { ClusterPool } from '../../../../resources/cluster-pool'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../../resources/cluster-claim'
 import { createResource, getResource } from '../../../../lib/resource-request'
+import { createImportResources } from '../../../../lib/import-cluster'
 import { NavigationPath } from '../../../../NavigationPath'
 
 export type ClusterClaimModalProps = {
@@ -154,6 +156,12 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                     .then(async (result) => {
                                                         const updatedClaim = (await pollClaim(result)) as ClusterClaim
                                                         if (updatedClaim) {
+                                                            await createImportResources(
+                                                                updatedClaim.spec!.namespace!,
+                                                                props.clusterPool?.metadata.labels?.[
+                                                                    managedClusterSetLabel
+                                                                ]
+                                                            ).promise
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
                                                         } else {
