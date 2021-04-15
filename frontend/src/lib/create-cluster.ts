@@ -9,7 +9,7 @@ import { get, keyBy } from 'lodash'
 export async function createCluster(resources: any[]) {
     // if creating a bare metal cluster
     // make sure all the bare metal assets exist
-    const isCreateCluster = resources.find((resource) => resource.metadata.kind === 'ClusterDeployment')
+    const isCreateCluster = resources.find((resource) => resource.kind === 'ClusterDeployment')
 
     let assets
     let errors: any[] = []
