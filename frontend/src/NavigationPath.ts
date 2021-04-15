@@ -17,6 +17,7 @@ export enum NavigationPath {
     clusterPools = '/multicloud/cluster-pools',
     discoveredClusters = '/multicloud/discovered-clusters',
     createCluster = '/multicloud/create-cluster',
+    createClusterPool = '/multicloud/create-cluster-pool',
     importCluster = '/multicloud/import-cluster',
     importCommand = '/multicloud/import-cluster/:clusterName',
     credentials = '/multicloud/credentials',
