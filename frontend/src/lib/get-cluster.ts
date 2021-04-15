@@ -37,6 +37,7 @@ export type Cluster = {
     name: string | undefined
     namespace: string | undefined
     status: ClusterStatus
+    statusMessage: string | undefined
     provider: Provider | undefined
     distribution: DistributionInfo | undefined
     labels: Record<string, string> | undefined
@@ -148,10 +149,17 @@ export function getCluster(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined
 ): Cluster {
+    const { status, statusMessage } = getClusterStatus(
+        clusterDeployment,
+        managedClusterInfo,
+        certificateSigningRequests,
+        managedCluster
+    )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
-        status: getClusterStatus(clusterDeployment, managedClusterInfo, certificateSigningRequests, managedCluster),
+        status,
+        statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
         distribution: getDistributionInfo(managedClusterInfo, managedCluster),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
@@ -325,6 +333,8 @@ export function getClusterStatus(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined
 ) {
+    let statusMessage: string | undefined
+
     const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) =>
         conditions.find((c) => c.type === condition)?.status === 'True'
 
@@ -332,6 +342,7 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
+        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -354,7 +365,11 @@ export function getClusterStatus(
 
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
-            if (provisionFailed) {
+            if (hasInvalidImageSet) {
+                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                cdStatus = ClusterStatus.provisionfailed
+                statusMessage = invalidImageSetCondition?.message
+            } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
@@ -370,7 +385,7 @@ export function getClusterStatus(
 
     // if mc doesn't exist, default to cd status
     if (!managedClusterInfo && !managedCluster) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     }
 
     let mc = managedCluster ?? managedClusterInfo!
@@ -415,8 +430,8 @@ export function getClusterStatus(
     // if the ManagedCluster is in failed state because the registration controller is unavailable
     if (mcStatus === ClusterStatus.failed) {
         return clusterDeployment && cdStatus !== ClusterStatus.detached
-            ? cdStatus // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
-            : mcStatus
+            ? { status: cdStatus, statusMessage } // show the ClusterDeployment status, as long as it exists and is not 'detached' (which is the ready state when there is no attached ManagedCluster)
+            : { status: mcStatus, statusMessage }
 
         // if ManagedCluster has not joined or is detaching, show ClusterDeployment status
         // as long as it is not 'detached' (which is the ready state when there is no attached ManagedCluster,
@@ -426,8 +441,8 @@ export function getClusterStatus(
         clusterDeployment &&
         cdStatus !== ClusterStatus.detached
     ) {
-        return cdStatus
+        return { status: cdStatus, statusMessage }
     } else {
-        return mcStatus
+        return { status: mcStatus, statusMessage }
     }
 }

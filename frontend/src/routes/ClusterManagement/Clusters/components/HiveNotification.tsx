@@ -44,15 +44,18 @@ export function HiveNotification() {
                     (c) => c.type === 'ClusterProvisionFailed'
                 )
                 /* istanbul ignore else */
-                if (provisionFailedCondition?.status === 'True') {
-                    setClusterProvisionStatus(provisionFailedCondition.message)
+                if (cluster.statusMessage) {
+                    // invalid image set is only statusMessage in 2.2
+                    return setClusterProvisionStatus(cluster.statusMessage)
+                } else if (provisionFailedCondition?.status === 'True') {
+                    return setClusterProvisionStatus(provisionFailedCondition.message)
                 }
             }
         } else {
             stopPolling()
             setClusterProvisionStatus(undefined)
         }
-    }, [cluster?.status, data, startPolling, stopPolling, clusterProvisionStatus])
+    }, [cluster?.status, cluster?.statusMessage, data, startPolling, stopPolling, clusterProvisionStatus])
 
     const provisionStatuses: string[] = [
         ClusterStatus.creating,
@@ -78,16 +81,18 @@ export function HiveNotification() {
                 title={
                     <Fragment>
                         {t(`provision.notification.${cluster?.status}`)}
-                        <AcmButton
-                            onClick={() => launchLogs(cluster)}
-                            variant={ButtonVariant.link}
-                            role="link"
-                            id="view-logs"
-                            className={classes.logsButton}
-                        >
-                            {t('view.logs')}
-                            <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                        </AcmButton>
+                        {!cluster?.statusMessage && (
+                            <AcmButton
+                                onClick={() => launchLogs(cluster)}
+                                variant={ButtonVariant.link}
+                                role="link"
+                                id="view-logs"
+                                className={classes.logsButton}
+                            >
+                                {t('view.logs')}
+                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                            </AcmButton>
+                        )}
                     </Fragment>
                 }
                 message={clusterProvisionStatus}

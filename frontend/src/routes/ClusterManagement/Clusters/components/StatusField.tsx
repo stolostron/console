@@ -43,7 +43,8 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.creating:
         case ClusterStatus.destroying:
         case ClusterStatus.provisionfailed:
-            hasAction = true
+            /* invalid image set is only statusMessage in 2.2, no logs available */
+            hasAction = !props.cluster?.statusMessage
             Action = () => (
                 <AcmButton
                     style={{ padding: 0, fontSize: 'inherit' }}
