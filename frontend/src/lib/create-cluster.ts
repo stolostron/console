@@ -9,6 +9,8 @@ import { get, keyBy } from 'lodash'
 export async function createCluster(resources: any[]) {
     // if creating a bare metal cluster
     // make sure all the bare metal assets exist
+    const isCreateCluster = resources.find((resource) => resource.kind === 'ClusterDeployment')
+
     let assets
     let errors: any[] = []
     const resourcesMap = keyBy(resources, 'kind')
@@ -35,6 +37,12 @@ export async function createCluster(resources: any[]) {
                 namespace = metadata.name
                 return false
 
+            case 'ClusterPool':
+                namespace = metadata.namespace
+                clusterResources.push(resource)
+                ;({ namespace } = metadata)
+                return false
+
             case 'ClusterDeployment':
                 clusterResources.push(resource)
                 ;({ namespace } = metadata)
@@ -53,24 +61,26 @@ export async function createCluster(resources: any[]) {
         return true
     })
 
-    // make sure this cluster doesn't already exist
-    response = await listMCIs().promise
-    const clusterMap = keyBy(response, 'metadata.name')
-    if (clusterMap[namespace]) {
-        return {
-            status: 'ERROR',
-            messages: [{ message: `The ${namespace} cluster already exists` }],
-        }
-    }
-
-    // create project
-    try {
-        await createProject(namespace).promise
-    } catch (err) {
-        if (err.code !== 409) {
+    if (isCreateCluster) {
+        // make sure this cluster doesn't already exist
+        response = await listMCIs().promise
+        const clusterMap = keyBy(response, 'metadata.name')
+        if (clusterMap[namespace]) {
             return {
                 status: 'ERROR',
-                messages: [{ message: err.message }],
+                messages: [{ message: `The ${namespace} cluster already exists` }],
+            }
+        }
+
+        // create project only for create cluster
+        try {
+            await createProject(namespace).promise
+        } catch (err) {
+            if (err.code !== 409) {
+                return {
+                    status: 'ERROR',
+                    messages: [{ message: err.message }],
+                }
             }
         }
     }
