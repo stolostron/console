@@ -80,8 +80,6 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
         [t, clusterImageSets, imageSets]
     )
 
-    console.log('imageSets', imageSets)
-
     return (
         <BulkActionModel<ClusterPool>
             open={props.clusterPools?.length !== undefined}
