@@ -125,7 +125,8 @@
     "addConnection.openstackCloud.label": "Cloud name",
     "addConnection.openstackCloud.placeholder": "Enter the OpenStack cloud name to reference in the clouds.yaml",
     "addConnection.openstackCloud.labelHelp": "The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.",
-
+    "addConnection.ansibleConnection.label": "Ansible Automation Platform credential",
+    "addConnection.ansibleConnection.placeholder": "Select an existing Ansible credential",
 
     "addConnection.wizard.title": "Select the credential type and enter basic information",
     "addConnection.wizard.credentialtype": "Credential types*",
