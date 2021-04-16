@@ -140,18 +140,6 @@ describe('ClusterPools page', () => {
         await waitForNocks(patchNocks)
     })
 
-    test('should be able to claim a cluster', async () => {
-        await waitForText(mockClusterPool.metadata.name!)
-        await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.claim')
-        await waitForText('clusterClaim.create.title')
-        await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
-        await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
-        await clickByText('common:claim')
-        await waitForNocks(createNocks)
-    })
-
     test('should be able to change the release image for a cluster pool', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
@@ -170,5 +158,17 @@ describe('ClusterPools page', () => {
         ]
         await clickByText('common:update')
         await waitForNocks(patchNocks)
+    })
+
+    test('should be able to claim a cluster', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('clusterPool.claim')
+        await waitForText('clusterClaim.create.title')
+        await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
+        await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
+        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
+        await clickByText('common:claim')
+        await waitForNocks(createNocks)
     })
 })
