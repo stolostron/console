@@ -4,6 +4,7 @@ export enum ProviderID {
     GCP = 'gcp',
     AWS = 'aws',
     AZR = 'azr',
+    ANS = 'ans',
     VMW = 'vmw',
     BMC = 'bmc',
     CRH = 'crh',
