@@ -95,7 +95,7 @@ export function CredentialsTable(props: {
             props.discoveryConfigs.forEach((discoveryConfig) => {
                 if (
                     discoveryConfig.metadata &&
-                    discoveryConfig.spec.providerConnections &&
+                    discoveryConfig.spec.credential !== '' &&
                     credential.metadata &&
                     discoveryConfig.metadata.namespace === credential.metadata.namespace
                 ) {

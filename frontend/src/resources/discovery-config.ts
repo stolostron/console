@@ -24,7 +24,7 @@ export interface DiscoveryConfig extends IResource {
             lastActive?: number
             openShiftVersions?: string[]
         }
-        providerConnections?: string[]
+        credential: string
     }
 }
 
@@ -48,6 +48,8 @@ export function getDiscoveryConfig(metadata: { name: string; namespace: string }
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
         metadata,
-        spec: {},
+        spec: {
+            credential: '',
+        },
     })
 }

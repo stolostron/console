@@ -92,7 +92,7 @@ export function AddDiscoveryConfigData(props: { namespace: string; name: string 
             filters: {
                 lastActive: 7,
             },
-            providerConnections: [],
+            credential: '',
         },
     })
 
@@ -322,9 +322,8 @@ export function DiscoveryConfigPageContent(props: {
                     updateDiscoveryConfig((discoveryConfig) => {
                         if (credential) {
                             const metadata = credential.split('/', 2)
-                            discoveryConfig.spec.providerConnections = []
-                            discoveryConfig.spec.providerConnections.push(metadata[1])
                             discoveryConfig.metadata.namespace = metadata[0]
+                            discoveryConfig.spec.credential = metadata[1]
                         }
                     })
                 }}
@@ -371,9 +370,9 @@ export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryC
 }
 
 export function getDiscoveryConfigCredential(discoveryConfig: Partial<DiscoveryConfig>) {
-    const credential = discoveryConfig.spec?.providerConnections
-    if (credential !== undefined && credential[0] !== undefined && discoveryConfig.metadata) {
-        return discoveryConfig.metadata.namespace + '/' + credential[0]
+    const credential = discoveryConfig.spec?.credential
+    if (credential !== '' && discoveryConfig.metadata) {
+        return discoveryConfig.metadata.namespace + '/' + credential
     }
     return ''
 }

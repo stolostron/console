@@ -3,13 +3,12 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
+import { nockCreate, nockDelete, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
-import { clickByText, waitForNock, waitForNocks, waitForText } from '../../../lib/test-util'
+import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { FeatureGate } from '../../../resources/feature-gate'
 import { NavigationPath } from '../../../NavigationPath'
-import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
@@ -18,8 +17,6 @@ import {
 } from '../../../resources/provider-connection'
 import DiscoveryConfigPage from './DiscoveryConfig'
 import { discoveryConfigState } from '../../../atoms'
-import { IResource } from '../../../resources/resource'
-import { Provider } from '@patternfly/react-table/dist/js/components/Table/base'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -62,7 +59,7 @@ const discoveryConfig: DiscoveryConfig = {
             lastActive: 14,
             openShiftVersions: ['4.7'],
         },
-        providerConnections: [credential.metadata.name!],
+        credential: credential.metadata.name!,
     },
 }
 
@@ -78,7 +75,7 @@ const discoveryConfigUpdated: DiscoveryConfig = {
             lastActive: 30,
             openShiftVersions: ['4.7', '4.8'],
         },
-        providerConnections: [credential.metadata.name!],
+        credential: credential.metadata.name!,
     },
 }
 
