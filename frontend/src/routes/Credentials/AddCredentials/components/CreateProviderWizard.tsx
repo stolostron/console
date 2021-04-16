@@ -122,7 +122,7 @@ export function CreateProviderWizard(props: {
             providerConnection={providerConnection}
             projects={props.projects}
             ansibleSecret={ansibleSecret}
-            isEditing={true}
+            isEditing={false}
         />
     )
 
