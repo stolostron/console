@@ -125,13 +125,6 @@ export function CreateProviderWizard(props: {
         <AnsibleTowerSecretForm projects={props.projects} ansibleSecret={ansibleSecret} isEditing={false} />
     )
 
-    function addStepToWizard(step: WizardStep) {
-        steps.push(step)
-    }
-    function removeStepFromWizard(index: number) {
-        steps.splice(index, 1)
-    }
-
     const steps = useMemo<WizardStep[]>(
         () => [
             {
@@ -163,17 +156,26 @@ export function CreateProviderWizard(props: {
 
     function onNext() {
         const step = currentStep + 1
-        console.log('step: ', step)
+        if (currentCredentialType === CredentialType.cloudProvider && step === 2) {
+            steps.push({
+                name: 'Integration (Optional)',
+                component: (
+                    <CloudConnectionIntegrationForm
+                        ansibleSecrets={props.ansibleSecrets}
+                        providerConnection={providerConnection}
+                    />
+                ),
+            })
+        }
         setCurrentStep(step)
         if (steps.length === step) {
-            setNextButtonName('Save')
-        } else if (currentCredentialType === CredentialType.ansible && step === 2) {
             setNextButtonName('Save')
         }
     }
 
     function onBack() {
         const step = currentStep - 1
+        if (currentCredentialType === CredentialType.cloudProvider && currentStep === 2) steps.pop()
 
         setCurrentStep(step)
         if (nextButtonName !== 'Next') {
@@ -184,12 +186,9 @@ export function CreateProviderWizard(props: {
 
     function onSave() {
         //logic for secret creation and page redirect
-        console.log('in on Save')
         switch (currentCredentialType) {
             case CredentialType.ansible:
                 // code block
-                console.log('in ansible secret block')
-                console.log('checking ansible secret: ', ansibleSecret)
                 createAnsibleCredential(ansibleSecret)
                     .then(() => {
                         history.push(NavigationPath.credentials)
@@ -206,8 +205,7 @@ export function CreateProviderWizard(props: {
                 // code block
                 submitProviderConnection(providerConnection)
                     .then(() => {
-                        // history.push(NavigationPath.credentials)
-                        console.log('checking provider: ', providerConnection)
+                        history.push(NavigationPath.credentials)
                     })
                     .catch((err) => {
                         /* istanbul ignore else */

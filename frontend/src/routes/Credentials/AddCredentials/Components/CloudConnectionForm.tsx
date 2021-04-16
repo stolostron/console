@@ -65,7 +65,7 @@ export default function CloudConnectionForm(props: {
     const history = useHistory()
     const discoveryFeatureGate = props.discoveryFeatureGate
     const alertContext = useContext(AcmAlertContext)
-    
+
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
     const multiClusterHubs = props.multiClusterHubs
 
@@ -663,6 +663,103 @@ export default function CloudConnectionForm(props: {
                 isRequired
                 type="password"
             />
+
+            <AcmAlertGroup isInline canClose padTop />
+            {props.isEditing && (
+                <ActionGroup>
+                    <AcmSubmit
+                        id="submit"
+                        variant="primary"
+                        hidden={!props.isEditing}
+                        onClick={() => {
+                            const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
+
+                            const providerID = getProviderConnectionProviderID(data)
+                            if (providerID !== ProviderID.AWS) {
+                                delete data.spec!.awsAccessKeyID
+                                delete data.spec!.awsSecretAccessKeyID
+                            }
+                            if (providerID !== ProviderID.AZR) {
+                                delete data.spec!.baseDomainResourceGroupName
+                                delete data.spec!.clientId
+                                delete data.spec!.clientSecret
+                                delete data.spec!.subscriptionId
+                                delete data.spec!.tenantId
+                            }
+                            if (providerID !== ProviderID.BMC) {
+                                delete data.spec!.libvirtURI
+                                delete data.spec!.sshKnownHosts
+                                delete data.spec!.imageMirror
+                                delete data.spec!.bootstrapOSImage
+                                delete data.spec!.clusterOSImage
+                                delete data.spec!.additionalTrustBundle
+                            }
+                            if (providerID !== ProviderID.GCP) {
+                                delete data.spec!.gcProjectID
+                                delete data.spec!.gcServiceAccountKey
+                            }
+                            if (providerID !== ProviderID.VMW) {
+                                delete data.spec!.username
+                                delete data.spec!.password
+                                delete data.spec!.vcenter
+                                delete data.spec!.cacertificate
+                                delete data.spec!.vmClusterName
+                                delete data.spec!.datacenter
+                                delete data.spec!.datastore
+                            }
+                            if (providerID !== ProviderID.CRH) {
+                                delete data.spec!.ocmAPIToken
+                            }
+                            if (providerID !== ProviderID.OST) {
+                                delete data.spec!.openstackCloudsYaml
+                                delete data.spec!.openstackCloud
+                            }
+
+                            delete data.data
+
+                            alertContext.clearAlerts()
+                            let result: IRequestResult<ProviderConnection>
+                            if (props.isEditing) {
+                                result = replaceProviderConnection(data)
+                            } else {
+                                result = createProviderConnection(data)
+                            }
+                            return result.promise
+                                .then(() => {
+                                    history.push(NavigationPath.credentials)
+                                })
+                                .catch((err) => {
+                                    /* istanbul ignore else */
+                                    if (err instanceof Error) {
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: t('common:request.failed'),
+                                            message: err.message,
+                                        })
+                                    }
+                                })
+                        }}
+                        label={
+                            props.isEditing ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')
+                        }
+                        processingLabel={
+                            props.isEditing
+                                ? t('addConnection.savingButton.label')
+                                : t('addConnection.addingButton.label')
+                        }
+                    />
+                    <Button
+                        variant="link"
+                        onClick={
+                            /* istanbul ignore next */ () => {
+                                history.push(NavigationPath.credentials)
+                            }
+                        }
+                    >
+                        {t('addConnection.cancelButton.label')}
+                    </Button>
+                </ActionGroup>
+            )}
         </AcmForm>
     )
 }

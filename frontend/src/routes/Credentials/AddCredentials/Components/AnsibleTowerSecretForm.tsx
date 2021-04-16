@@ -97,6 +97,57 @@ export default function AnsibleTowerSecretForm(props: {
                 // validation={(value) => validateKubernetesDnsName(value, 'Connection name', t)}
                 isRequired
             />
+            <AcmAlertGroup isInline canClose padTop />
+            {props.isEditing && (
+                <ActionGroup>
+                    <AcmSubmit
+                        id="submit"
+                        variant="primary"
+                        onClick={() => {
+                            const data = JSON.parse(JSON.stringify(ansibleSecret)) as AnsibleTowerSecret
+                            let result: IRequestResult<AnsibleTowerSecret>
+
+                            if (props.isEditing) {
+                                result = replaceAnsibleTowerSecret(data)
+                            } else {
+                                result = createAnsibleTowerSecret(data)
+                            }
+                            return result.promise
+                                .then(() => {
+                                    history.push(NavigationPath.credentials)
+                                })
+                                .catch((err) => {
+                                    /* istanbul ignore else */
+                                    // if (err instanceof Error) {
+                                    //     alertContext.addAlert({
+                                    //         type: 'danger',
+                                    //         title: t('common:request.failed'),
+                                    //         message: err.message,
+                                    //     })
+                                    // }
+                                })
+                        }}
+                        label={
+                            props.isEditing ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')
+                        }
+                        processingLabel={
+                            props.isEditing
+                                ? t('addConnection.savingButton.label')
+                                : t('addConnection.addingButton.label')
+                        }
+                    />
+                    <Button
+                        variant="link"
+                        onClick={
+                            /* istanbul ignore next */ () => {
+                                history.push(NavigationPath.credentials)
+                            }
+                        }
+                    >
+                        {t('addConnection.cancelButton.label')}
+                    </Button>
+                </ActionGroup>
+            )}
         </AcmForm>
     )
 }
