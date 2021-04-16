@@ -129,7 +129,7 @@ describe('ClusterPools page', () => {
     test('should be able to claim a cluster', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.claim')
+        await clickByText('clusterPool.claim', 0)
         await waitForText('clusterClaim.create.title')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
