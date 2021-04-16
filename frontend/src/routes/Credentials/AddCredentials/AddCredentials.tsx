@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
 import {
-    AcmAlertContext,
     AcmButton,
     AcmEmptyState,
     AcmPage,
@@ -10,9 +8,9 @@ import {
     AcmPageHeader,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { featureGatesState, multiClusterHubState, namespacesState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -20,22 +18,13 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    AnsibleTowerSecret,
-    AnsibleTowerSecretApiVersion,
-    AnsibleTowerSecretKind,
-} from '../../../resources/ansible-tower-secret'
-import {
-    getProviderConnection,
-    getProviderConnectionProviderID,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionDefinition,
-    ProviderConnectionKind,
-} from '../../../resources/provider-connection'
+import { filterForAnsibleSecrets } from '../../../resources/ansible-tower-secret'
+import { filterForProviderSecrets } from '../../../resources/provider-connection'
 import AnsibleTowerSecretForm from './components/AnsibleTowerSecretForm'
 import CloudConnectionForm from './components/CloudConnectionForm'
 import { CreateProviderWizard } from './components/CreateProviderWizard'
+import { getSecret, Secret, SecretApiVersion, SecretDefinition, SecretKind } from '../../../resources/secret'
+import { ProviderID } from '../../../lib/providers'
 
 /* TODO:
 - Finish edit compatible provider connection component
@@ -109,50 +98,12 @@ export function AddCredentialPageData(props: { namespace: string; name: string }
     const [retry, setRetry] = useState(0)
     const [isLoading, setIsLoading] = useState<boolean>(true)
 
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>({
-        apiVersion: ProviderConnectionApiVersion,
-        kind: ProviderConnectionKind,
+    const [secret, setSecret] = useState<Secret>({
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
         metadata: {
             name: '',
             namespace: '',
-        },
-        spec: {
-            awsAccessKeyID: '',
-            awsSecretAccessKeyID: '',
-
-            baseDomainResourceGroupName: '',
-            clientId: '',
-            clientSecret: '',
-            subscriptionId: '',
-            tenantId: '',
-
-            gcProjectID: '',
-            gcServiceAccountKey: '',
-
-            username: '',
-            password: '',
-            vcenter: '',
-            cacertificate: '',
-            vmClusterName: '',
-            datacenter: '',
-            datastore: '',
-
-            libvirtURI: '',
-            sshKnownHosts: [''],
-            imageMirror: '',
-            bootstrapOSImage: '',
-            clusterOSImage: '',
-            additionalTrustBundle: '',
-
-            baseDomain: '',
-            pullSecret: '',
-            sshPrivatekey: '',
-            sshPublickey: '',
-
-            ocmAPIToken: '',
-
-            openstackCloudsYaml: '',
-            openstackCloud: '',
         },
     })
 
@@ -162,24 +113,24 @@ export function AddCredentialPageData(props: { namespace: string; name: string }
         setIsLoading(true)
     }, [retry])
 
-    // create connection
+    // create credential
     useEffect(() => {
         if (!props.namespace) {
-            getAuthorizedNamespaces([rbacCreate(ProviderConnectionDefinition)], namespaces)
+            getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
                 .then((namespaces: string[]) => setProjects(namespaces))
                 .catch(setError)
                 .finally(() => setIsLoading(false))
         }
     }, [props.namespace, namespaces])
 
-    // edit connection
+    // edit credential
     useEffect(() => {
         if (props.name) {
             setProjects([props.namespace])
-            const result = getProviderConnection(props)
+            const result = getSecret(props)
             result.promise
-                .then((providerConnection) => {
-                    setProviderConnection(providerConnection)
+                .then((secret) => {
+                    setSecret(secret)
                 })
                 .catch(setError)
                 .finally(() => setIsLoading(false))
@@ -217,88 +168,43 @@ export function AddCredentialPageData(props: { namespace: string; name: string }
         )
     }
 
-    return <AddCredentialPageContent providerConnection={providerConnection} projects={projects} />
+    return <AddCredentialPageContent projects={projects} secret={secret} />
 }
 
-const useStyles = makeStyles({
-    providerSelect: {
-        '& .pf-c-select__toggle-text': {
-            padding: '4px 0',
-        },
-    },
-})
-
-export function AddCredentialPageContent(props: { providerConnection: ProviderConnection; projects: string[] }) {
-    const { t } = useTranslation(['connection'])
-    const history = useHistory()
+export function AddCredentialPageContent(props: { projects: string[]; secret: Secret }) {
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
-    const isEditing = () => props.providerConnection.metadata.name !== ''
-    const alertContext = useContext(AcmAlertContext)
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
-        JSON.parse(JSON.stringify(props.providerConnection))
-    )
-    // useEffect(() => {
-    //     setProviderConnection(JSON.parse(JSON.stringify(props.providerConnection)))
-    // }, [props.providerConnection])
-    // function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
-    //     const copy = { ...providerConnection }
-    //     update(copy)
-    //     setProviderConnection(copy)
-    // }
+    const isEditing = () => props.secret.metadata.name !== ''
     const [multiClusterHubs] = useRecoilState(multiClusterHubState)
-    function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
-        const copy = { ...providerConnection }
-        update(copy)
-        setProviderConnection(copy)
-    }
 
-    const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
-        apiVersion: AnsibleTowerSecretApiVersion,
-        kind: AnsibleTowerSecretKind,
-        metadata: {
-            name: providerConnection.metadata.name,
-            namespace: providerConnection.metadata.namespace,
-        },
-        spec: {
-            host: '',
-            token: '',
-        },
-    })
-
-    // const classes = useStyles()
-    if (isEditing()) {
-        console.log('in editing mode!')
-
-        if (getProviderConnectionProviderID(providerConnection) === 'ans') {
-            return (
-                <AnsibleTowerSecretForm
-                    providerConnection={providerConnection}
-                    projects={props.projects}
-                    ansibleSecret={ansibleSecret}
-                    setAnsibleSecret={setAnsibleSecret}
-                    isEditing={true}
-                />
-            )
-        } else {
-            return (
-                <CloudConnectionForm
-                    providerConnection={props.providerConnection}
-                    projects={props.projects}
-                    setProviderConnection={setProviderConnection}
-                    discoveryFeatureGate={discoveryFeatureGate}
-                    multiClusterHubs={multiClusterHubs}
-                    isEditing={true}
-                />
-            )
-        }
-    } else {
+    // access what type of credentail is being edited
+    if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === ProviderID.ANS) {
         return (
-            <CreateProviderWizard
+            <AnsibleTowerSecretForm
                 projects={props.projects}
-                discoveryFeatureGate={discoveryFeatureGate}
-                multiClusterHubs={multiClusterHubs}
+                isEditing={true}
+                ansibleSecret={filterForAnsibleSecrets([props.secret])[0]}
             />
         )
     }
+    if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/cloudconnection'] !== undefined) {
+        return (
+            <CloudConnectionForm
+                providerConnection={filterForProviderSecrets([props.secret])[0]}
+                projects={props.projects}
+                discoveryFeatureGate={discoveryFeatureGate}
+                multiClusterHubs={multiClusterHubs}
+                isEditing={isEditing()}
+            />
+        )
+    }
+
+    // else, creating new credential, Wizard will go here
+    return (
+        <CreateProviderWizard
+            projects={props.projects}
+            discoveryFeatureGate={discoveryFeatureGate}
+            multiClusterHubs={multiClusterHubs}
+        />
+    )
 }

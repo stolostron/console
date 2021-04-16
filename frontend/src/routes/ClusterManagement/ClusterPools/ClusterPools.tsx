@@ -351,7 +351,15 @@ export function ClusterPoolsTable() {
                         },
                     },
                 ]}
-                tableActions={[]}
+                tableActions={[
+                    {
+                        id: 'createClusterPool',
+                        title: t('managed.createClusterPool'),
+                        click: () => history.push(NavigationPath.createClusterPool),
+                        isDisabled: !canCreateClusterPool,
+                        tooltip: t('common:rbac.unauthorized'),
+                    },
+                ]}
                 rowActions={[]}
                 emptyState={
                     <AcmEmptyState
