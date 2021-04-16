@@ -8,9 +8,11 @@ import { multiClusterHubState, namespacesState } from '../../../atoms'
 import { nockGet, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
 import { multiClusterHub } from '../../../lib/test-metadata'
+import { clickByText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
+    filterForProviderSecrets,
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
@@ -103,8 +105,9 @@ describe('edit connection page', () => {
 
         const copy: ProviderConnection = JSON.parse(JSON.stringify(awsProviderConnection))
         copy.spec!.awsAccessKeyID += '-edit'
-        const replaceNock = nockReplace(packProviderConnection(copy))
-        getByText('addConnection.saveButton.label').click()
+        console.log('checking edit result: ', copy)
+        const replaceNock = nockReplace(copy)
+        clickByText('addConnection.saveButton.label')
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
     })
 })
