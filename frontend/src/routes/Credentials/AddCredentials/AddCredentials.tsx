@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, multiClusterHubState, namespacesState } from '../../../atoms'
+import { featureGatesState, multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -27,11 +27,7 @@ import { getSecret, Secret, SecretApiVersion, SecretDefinition, SecretKind } fro
 import { ProviderID } from '../../../lib/providers'
 
 /* TODO:
-- Finish edit compatible provider connection component
-- Add ansible secret detection
-- Add ansible secret type
 - validation
-- add ansible secret to recoil (refactor for two secret types, ask james)
 */
 export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
@@ -176,6 +172,7 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
     const isEditing = () => props.secret.metadata.name !== ''
     const [multiClusterHubs] = useRecoilState(multiClusterHubState)
+    const [secrets] = useRecoilState(secretsState)
 
     // access what type of credentail is being edited
     if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === ProviderID.ANS) {
@@ -205,6 +202,7 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
             projects={props.projects}
             discoveryFeatureGate={discoveryFeatureGate}
             multiClusterHubs={multiClusterHubs}
+            ansibleSecrets={filterForAnsibleSecrets(secrets)}
         />
     )
 }
