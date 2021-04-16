@@ -8,8 +8,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { SelfSubjectAccessReview } from '../../../resources/self-subject-access-review'
 import AddCredentialPage from './AddCredentials'
-import { namespacesState, multiClusterHubState } from '../../../atoms'
-import { multiClusterHub } from '../../../lib/test-metadata'
+import { namespacesState } from '../../../atoms'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -117,7 +116,6 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [])
-                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -138,7 +136,6 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
-                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -161,7 +158,6 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
-                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
@@ -186,7 +182,6 @@ describe('add connection page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
-                    snapshot.set(multiClusterHubState, [multiClusterHub])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>

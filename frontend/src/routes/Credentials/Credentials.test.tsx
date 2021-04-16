@@ -67,7 +67,7 @@ const discoveryConfig: DiscoveryConfig = {
     kind: DiscoveryConfigKind,
     metadata: {
         name: 'discovery',
-        namespace: 'ocmm',
+        namespace: 'ocm',
     },
     spec: {
         filters: {
@@ -212,7 +212,7 @@ describe('provider connections page', () => {
             />
         )
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await waitForNotText('connections.actions.enableClusterDiscovery')
+        await waitForText('connections.actions.editClusterDiscovery')
     })
 })
 

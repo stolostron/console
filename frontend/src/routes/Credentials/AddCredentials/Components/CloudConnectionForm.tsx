@@ -30,7 +30,6 @@ import {
 } from '../../../../lib/validation'
 import { NavigationPath } from '../../../../NavigationPath'
 import { FeatureGate } from '../../../../resources/feature-gate'
-import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
 import {
     createProviderConnection,
     getProviderConnectionProviderID,
@@ -43,7 +42,6 @@ export default function CloudConnectionForm(props: {
     providerConnection: ProviderConnection
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
-    multiClusterHubs: MultiClusterHub[]
     isEditing: boolean
 }) {
     const { t } = useTranslation(['connection'])
@@ -53,7 +51,6 @@ export default function CloudConnectionForm(props: {
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
         JSON.parse(JSON.stringify(props.providerConnection))
     )
-    const multiClusterHubs = props.multiClusterHubs
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
@@ -87,12 +84,6 @@ export default function CloudConnectionForm(props: {
                     updateProviderConnection((providerConnection) => {
                         setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                     })
-
-                    if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata.namespace = multiClusterHubs[0]?.metadata.namespace
-                        })
-                    }
                 }}
                 isDisabled={props.isEditing}
                 isRequired
@@ -100,13 +91,6 @@ export default function CloudConnectionForm(props: {
                 {providers
                     .filter((provider) => {
                         if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
-                            return false // skip
-                        }
-                        if (
-                            multiClusterHubs?.[0]?.metadata.namespace &&
-                            !props.projects.includes(multiClusterHubs[0]?.metadata.namespace) &&
-                            provider.key === ProviderID.CRH
-                        ) {
                             return false // skip
                         }
                         return true
@@ -174,7 +158,7 @@ export default function CloudConnectionForm(props: {
                     })
                 }}
                 isRequired
-                isDisabled={props.isEditing || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                isDisabled={props.isEditing}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (

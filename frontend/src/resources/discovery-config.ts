@@ -43,14 +43,11 @@ export function replaceDiscoveryConfig(discoveryConfig: DiscoveryConfig) {
     return replaceResource<DiscoveryConfig>(discoveryConfig)
 }
 
-export function getDiscoveryConfig(namespace: string) {
+export function getDiscoveryConfig(metadata: { name: string; namespace: string }) {
     return getResource<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
-        metadata: {
-            name: 'discovery',
-            namespace: namespace,
-        },
+        metadata,
         spec: {},
     })
 }

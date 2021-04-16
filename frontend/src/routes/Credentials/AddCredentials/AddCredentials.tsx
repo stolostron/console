@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, multiClusterHubState, namespacesState } from '../../../atoms'
+import { featureGatesState, namespacesState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -168,7 +168,6 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
     const [featureGates] = useRecoilState(featureGatesState)
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
     const isEditing = () => props.secret.metadata.name !== ''
-    const [multiClusterHubs] = useRecoilState(multiClusterHubState)
 
     // access what type of credentail is being edited
     if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/cloudconnection'] !== undefined) {
@@ -177,11 +176,11 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
                 providerConnection={filterForProviderSecrets([props.secret])[0]}
                 projects={props.projects}
                 discoveryFeatureGate={discoveryFeatureGate}
-                multiClusterHubs={multiClusterHubs}
                 isEditing={isEditing()}
             />
         )
     }
+
     const providerConnection: ProviderConnection = {
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
@@ -235,7 +234,6 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
             providerConnection={providerConnection}
             projects={props.projects}
             discoveryFeatureGate={discoveryFeatureGate}
-            multiClusterHubs={multiClusterHubs}
             isEditing={isEditing()}
         />
     )

@@ -125,8 +125,8 @@ test('Discovery featuregate enabled, CRH credentials exist, but no discoveryconf
             </MemoryRouter>
         </RecoilRoot>
     )
-    await waitForText('emptystate.providerConnections.title')
-    await waitForText('discovery:emptystate.providerConnections.msg')
+    await waitForText('emptystate.credentials.title')
+    await waitForText('discovery:emptystate.credentials.msg')
     await waitForText('emptystate.enableClusterDiscovery')
 })
 
