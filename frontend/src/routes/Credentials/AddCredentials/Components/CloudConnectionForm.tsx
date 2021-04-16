@@ -769,10 +769,7 @@ export function CloudConnectionIntegrationForm(props: {
     providerConnection: ProviderConnection
 }) {
     const { t } = useTranslation(['connection'])
-    const [ansiblesecretName, setAnsibleSecretName] = useState<string | undefined>('')
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
-        JSON.parse(JSON.stringify(props.providerConnection))
-    )
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
     console.log('testing prov connection: ', providerConnection)
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
@@ -800,7 +797,6 @@ export function CloudConnectionIntegrationForm(props: {
                 placeholder={t('addConnection.ansibleConnection.placeholder')}
                 value={providerConnection.spec?.anisibleSecretName}
                 onChange={(name) => {
-                    setAnsibleSecretName(name)
                     updateProviderConnection((providerConnection) => {
                         providerConnection.spec!.anisibleSecretName = name as string
                     })

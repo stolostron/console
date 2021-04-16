@@ -118,6 +118,9 @@ export function CreateProviderWizard(props: {
             sshPublickey: '',
 
             ocmAPIToken: '',
+
+            anisibleSecretName: '',
+            anisibleCuratorTemplateName: '',
         },
     })
 
@@ -242,6 +245,16 @@ function CredentialTypeStep(props: {
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
 
     const { currentCredentialType, setCurrentCredentialType } = props
+    const [currentCredentialInputMetadata, setCurrentCredentialInputMetadata] = useState(() => {
+        switch (currentCredentialType) {
+            case CredentialType.ansible:
+                return ansibleSecret.metadata
+                break
+            case CredentialType.cloudProvider:
+                return providerConnection.metadata
+                break
+        }
+    })
 
     function updateAnsibleSecret(update: (ansibleSecret: AnsibleTowerSecret) => void) {
         const copy = { ...ansibleSecret }
@@ -265,6 +278,7 @@ function CredentialTypeStep(props: {
                 setCredentialInputstep(
                     <AnsibleTowerSecretForm projects={props.projects} ansibleSecret={ansibleSecret} isEditing={false} />
                 )
+                setCurrentCredentialInputMetadata(ansibleSecret.metadata)
                 break
             case CredentialType.cloudProvider:
                 setCredentialInputstep(
@@ -276,6 +290,7 @@ function CredentialTypeStep(props: {
                         isEditing={false}
                     />
                 )
+                setCurrentCredentialInputMetadata(providerConnection.metadata)
                 break
             default:
         }
@@ -326,19 +341,20 @@ function CredentialTypeStep(props: {
                 label={t('addConnection.connectionName.label')}
                 placeholder={t('addConnection.connectionName.placeholder')}
                 labelHelp={t('addConnection.connectionName.labelHelp')}
-                value={
-                    currentCredentialType === CredentialType.ansible
-                        ? ansibleSecret.metadata.name
-                        : providerConnection.metadata.name
-                }
+                value={currentCredentialInputMetadata.name}
                 onChange={(name) => {
-                    updateAnsibleSecret((ansibleSecret) => {
-                        ansibleSecret.metadata.name = name
-                    })
-
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.metadata.name = name
-                    })
+                    switch (currentCredentialType) {
+                        case CredentialType.ansible:
+                            updateAnsibleSecret((ansibleSecret) => {
+                                ansibleSecret.metadata.name = name
+                            })
+                            break
+                        case CredentialType.cloudProvider:
+                            updateProviderConnection((providerConnection) => {
+                                providerConnection.metadata.name = name
+                            })
+                            break
+                    }
                 }}
             />
             <AcmSelect
@@ -346,18 +362,20 @@ function CredentialTypeStep(props: {
                 label={t('addConnection.namespaceName.label')}
                 placeholder={t('addConnection.namespaceName.placeholder')}
                 labelHelp={t('addConnection.namespaceName.labelHelp')}
-                value={
-                    currentCredentialType === CredentialType.ansible
-                        ? ansibleSecret.metadata.namespace
-                        : providerConnection.metadata.namespace
-                }
+                value={currentCredentialInputMetadata.namespace}
                 onChange={(namespace) => {
-                    updateAnsibleSecret((ansibleSecret) => {
-                        ansibleSecret.metadata.namespace = namespace
-                    })
-                    updateProviderConnection((providerConnection) => {
-                        providerConnection.metadata.namespace = namespace
-                    })
+                    switch (currentCredentialType) {
+                        case CredentialType.ansible:
+                            updateAnsibleSecret((ansibleSecret) => {
+                                ansibleSecret.metadata.namespace = namespace
+                            })
+                            break
+                        case CredentialType.cloudProvider:
+                            updateProviderConnection((providerConnection) => {
+                                providerConnection.metadata.namespace = namespace
+                            })
+                            break
+                    }
                 }}
             >
                 {props.projects.map((project) => (
