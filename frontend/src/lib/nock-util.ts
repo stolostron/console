@@ -205,7 +205,7 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
     )
 }
 
-export function nockPatch(resource: IResource, data: unknown, response?: IResource, statusCode = 204) {
+export function nockPatch(resource: IResource, data: unknown[], response?: IResource, statusCode = 204) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()

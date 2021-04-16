@@ -15,7 +15,7 @@ import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState, clusterClaimsState } from '../../../atoms'
+import { clusterPoolsState, clusterImageSetsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { canUser, rbacDelete, rbacCreate, rbacPatch } from '../../../lib/rbac-util'
@@ -29,6 +29,7 @@ import { StatusField } from '../Clusters/components/StatusField'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
+import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
 import { RbacButton } from '../../../components/Rbac'
 
 export default function ClusterPoolsPage() {
@@ -57,7 +58,7 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 }
 
 export function ClusterPoolsTable() {
-    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterClaimsState]))
+    const [clusterPools, clusterImageSets] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
     const { t } = useTranslation(['cluster'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
@@ -65,6 +66,9 @@ export function ClusterPoolsTable() {
     const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
     const [scaleClusterPoolModalProps, setScaleClusterPoolModalProps] = useState<
         ScaleClusterPoolModalProps | undefined
+    >()
+    const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] = useState<
+        UpdateReleaseImageModalProps | undefined
     >()
 
     const clusters = useAllClusters()
@@ -115,6 +119,7 @@ export function ClusterPoolsTable() {
             <BulkActionModel<ClusterPool> {...modalProps} />
             <ClusterClaimModal {...clusterClaimModalProps} />
             <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
+            <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
             <AcmTable<ClusterPool>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterPools"
@@ -253,6 +258,22 @@ export function ClusterPoolsTable() {
                         },
                     },
                     {
+                        header: t('table.distribution'),
+                        sort: 'spec.imageSetRef.name',
+                        search: 'spec.imageSetRef.name',
+                        cell: (clusterPool: ClusterPool) => {
+                            const imageSetRef = clusterPool.spec!.imageSetRef.name
+                            const imageSet = clusterImageSets.find((cis) => cis.metadata.name === imageSetRef)
+                            const releaseImage = imageSet?.spec?.releaseImage
+                            const tagStartIndex = releaseImage?.indexOf(':') ?? 0
+                            const version = releaseImage?.slice(
+                                tagStartIndex + 1,
+                                releaseImage.indexOf('-', tagStartIndex)
+                            )
+                            return `OpenShift ${version}`
+                        },
+                    },
+                    {
                         header: t('table.available'),
                         cell: (clusterPool: ClusterPool) => {
                             return (
@@ -287,25 +308,37 @@ export function ClusterPoolsTable() {
                                     id: 'claimCluster',
                                     text: t('clusterPool.claim'),
                                     isDisabled: true,
+                                    rbac: [rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)],
                                     click: (clusterPool: ClusterPool) => {
                                         setClusterClaimModalProps({
                                             clusterPool,
                                             onClose: () => setClusterClaimModalProps(undefined),
                                         })
                                     },
-                                    rbac: [rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)],
                                 },
                                 {
                                     id: 'scaleClusterPool',
                                     text: t('clusterPool.scale'),
                                     isDisabled: true,
+                                    rbac: [rbacPatch(clusterPool)],
                                     click: (clusterPool: ClusterPool) => {
                                         setScaleClusterPoolModalProps({
                                             clusterPool,
                                             onClose: () => setScaleClusterPoolModalProps(undefined),
                                         })
                                     },
+                                },
+                                {
+                                    id: 'updateReleaseImage',
+                                    text: t('clusterPool.updateReleaseImage'),
+                                    isDisabled: true,
                                     rbac: [rbacPatch(clusterPool)],
+                                    click: (clusterPool: ClusterPool) => {
+                                        return setUpdateReleaseImageModalProps({
+                                            clusterPools: [clusterPool],
+                                            close: () => setUpdateReleaseImageModalProps(undefined),
+                                        })
+                                    },
                                 },
                                 {
                                     id: 'destroy',

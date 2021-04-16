@@ -3,6 +3,7 @@
 export const DOC_VERSION = '2.2'
 
 export const DOC_BASE_PATH = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}/html`
+export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_LINKS = {
     CLUSTERS: `${DOC_BASE_PATH}/manage_cluster/managing-your-clusters`,

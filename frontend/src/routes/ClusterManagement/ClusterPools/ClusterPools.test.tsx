@@ -6,7 +6,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../resources/cluster-pool'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../resources/cluster-claim'
-import { clusterPoolsState } from '../../../atoms'
+import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../resources/cluster-image-set'
+import { clusterPoolsState, clusterImageSetsState } from '../../../atoms'
 import { nockCreate, nockGet, nockPatch, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickByLabel,
@@ -21,12 +22,24 @@ import {
 } from '../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 
+const mockClusterImageSet: ClusterImageSet = {
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+    metadata: {
+        name: 'test-cluster-image-set',
+    },
+    spec: {
+        releaseImage: 'release-image',
+    },
+}
+
 const mockClusterPool: ClusterPool = {
     apiVersion: ClusterPoolApiVersion,
     kind: ClusterPoolKind,
     metadata: {
         name: 'test-pool',
         namespace: 'test-pool-namespace',
+        uid: 'abc',
         finalizers: ['hive.openshift.io/clusters'],
     },
     spec: {
@@ -90,6 +103,7 @@ describe('ClusterPools page', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(clusterPoolsState, [mockClusterPool])
+                    snapshot.set(clusterImageSetsState, [mockClusterImageSet])
                 }}
             >
                 <MemoryRouter>
@@ -123,6 +137,26 @@ describe('ClusterPools page', () => {
         await clickByLabel('Plus')
         const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
         await clickByText('common:scale')
+        await waitForNocks(patchNocks)
+    })
+
+    test('should be able to change the release image for a cluster pool', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('clusterPool.updateReleaseImage')
+        await waitForText('bulk.title.updateReleaseImage')
+        await clickByText('common:select')
+        await clickByText(mockClusterImageSet.spec!.releaseImage)
+        const patchNocks: Scope[] = [
+            nockPatch(mockClusterPool, [
+                {
+                    op: 'replace',
+                    path: '/spec/imageSetRef/name',
+                    value: mockClusterImageSet.metadata.name,
+                },
+            ]),
+        ]
+        await clickByText('common:update')
         await waitForNocks(patchNocks)
     })
 
