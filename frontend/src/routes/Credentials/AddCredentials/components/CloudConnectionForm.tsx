@@ -741,3 +741,7 @@ export default function CloudConnectionForm(props: {
         </AcmForm>
     )
 }
+
+export function CloudConnectionIntegrationForm() {
+    return null
+}
