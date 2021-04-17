@@ -15,13 +15,31 @@ import {
 import AddCredentialPage from './AddCredentials'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, multiClusterHubState } from '../../../atoms'
+import { namespacesState, multiClusterHubState, secretsState } from '../../../atoms'
 import { multiClusterHub } from '../../../lib/test-metadata'
+import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
+import { Secret } from '../../../resources/secret'
+import { waitForText, clickByText, typeByPlaceholderText, typeByTestId } from '../../../lib/test-util'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const ansSecret: Secret = {
+    apiVersion: AnsibleTowerSecretApiVersion,
+    kind: AnsibleTowerSecretKind,
+    metadata: {
+        name: 'ansible-tower-secret',
+        namespace: mockNamespace.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/provider': ProviderID.ANS,
+        },
+    },
+    data: {
+        metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
+    },
 }
 
 let location: Location
@@ -32,6 +50,7 @@ function TestAddConnectionPage() {
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
                 snapshot.set(multiClusterHubState, [multiClusterHub])
+                snapshot.set(secretsState, [ansSecret])
             }}
         >
             <MemoryRouter>
@@ -69,31 +88,42 @@ describe('add connection page', () => {
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
+                anisibleSecretName: 'ansible-tower-secret',
+                anisibleCuratorTemplateName: '',
             },
         }
 
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
-        )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.GCP).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.GCP).name).click()
-        userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
-        )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(providerConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(providerConnection.metadata.namespace!).click()
-        userEvent.type(getByTestId('gcProjectID'), providerConnection.spec!.gcProjectID!)
-        userEvent.type(getByTestId('gcServiceAccountKey'), providerConnection.spec!.gcServiceAccountKey!)
-        userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        getByText('addConnection.addButton.label').click()
+        render(<TestAddConnectionPage />)
+
+        // navigate credential selection page
+        await waitForText('Infrastructure Provider')
+        await clickByText('Infrastructure Provider')
+        await typeByPlaceholderText('addConnection.connectionName.placeholder', providerConnection.metadata.name!)
+        await clickByText('addConnection.namespaceName.placeholder')
+        await clickByText(mockNamespace.metadata.name!)
+        await clickByText('Next')
+
+        // navigate provider connection input
+        await waitForText('Select a provider and enter basic information')
+        await clickByText('addConnection.providerName.placeholder')
+        await clickByText(getProviderByKey(ProviderID.GCP).name)
+
+        typeByTestId('gcProjectID', providerConnection.spec!.gcProjectID!)
+        typeByTestId('gcServiceAccountKey', providerConnection.spec!.gcServiceAccountKey!)
+        typeByTestId('baseDomain', providerConnection.spec!.baseDomain!)
+        typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
+        typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)
+        typeByTestId('sshPublicKey', providerConnection.spec!.sshPublickey!)
+        await clickByText('Next')
+
+        // integration step
+        await clickByText('addConnection.ansibleConnection.placeholder')
+
+        await clickByText(ansSecret.metadata.name!)
+
+        await clickByText('Save')
+
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })
