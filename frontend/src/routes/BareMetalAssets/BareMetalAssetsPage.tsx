@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { Bullseye, PageSection, Split, SplitItem } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, PageSection, Split, SplitItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -165,8 +165,8 @@ export function BareMetalAssetsTable(props: {
                         }
                         action={
                             <Bullseye>
-                                <Split hasGutter>
-                                    <SplitItem>
+                                <ActionList>
+                                    <ActionListItem>
                                         <AcmButton
                                             variant="primary"
                                             onClick={() => {
@@ -175,8 +175,8 @@ export function BareMetalAssetsTable(props: {
                                         >
                                             {t('createBareMetalAsset.title')}
                                         </AcmButton>
-                                    </SplitItem>
-                                    <SplitItem>
+                                    </ActionListItem>
+                                    <ActionListItem>
                                         <AcmButton
                                             variant="primary"
                                             onClick={() => {
@@ -185,8 +185,8 @@ export function BareMetalAssetsTable(props: {
                                         >
                                             {t('importBareMetalAssets.title')}
                                         </AcmButton>
-                                    </SplitItem>
-                                </Split>
+                                    </ActionListItem>
+                                </ActionList>
                             </Bullseye>
                         }
                     />
