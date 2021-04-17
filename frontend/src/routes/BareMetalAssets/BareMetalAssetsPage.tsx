@@ -3,7 +3,7 @@
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
 import { Bullseye, PageSection, Split, SplitItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
