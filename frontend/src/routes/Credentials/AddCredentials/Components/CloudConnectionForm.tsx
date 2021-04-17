@@ -15,12 +15,9 @@ import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextA
 import {
     ActionGroup,
     Button,
-    Flex,
-    FlexItem,
     Grid,
     GridItem,
     SelectOption,
-    Stack,
     Text,
     TextContent,
     TextVariants,
@@ -52,7 +49,6 @@ import {
     replaceProviderConnection,
     setProviderConnectionProviderID,
 } from '../../../../resources/provider-connection'
-import { Secret } from '../../../../resources/secret'
 
 export default function CloudConnectionForm(props: {
     providerConnection: ProviderConnection

@@ -222,7 +222,16 @@ export function CreateProviderWizard(props: {
         }
     }
 
-    return <Wizard nextButtonText={nextButtonName} steps={steps} onNext={onNext} onBack={onBack} onSave={onSave} />
+    return (
+        <Wizard
+            nextButtonText={nextButtonName}
+            steps={steps}
+            onNext={onNext}
+            onBack={onBack}
+            onSave={onSave}
+            onClose={() => history.push(NavigationPath.credentials)}
+        />
+    )
 }
 
 function CredentialTypeStep(props: {
