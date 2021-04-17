@@ -122,7 +122,6 @@ describe('add connection page', () => {
         await typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
         await typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)
         await typeByTestId('sshPublicKey', providerConnection.spec!.sshPublickey!)
-        
         await clickByText('Next')
 
         // integration step
