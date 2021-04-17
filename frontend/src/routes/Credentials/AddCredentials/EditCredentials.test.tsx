@@ -105,7 +105,6 @@ describe('edit connection page', () => {
 
         const copy: ProviderConnection = JSON.parse(JSON.stringify(awsProviderConnection))
         copy.spec!.awsAccessKeyID += '-edit'
-        console.log('checking edit result: ', copy)
         const replaceNock = nockReplace(copy)
         clickByText('addConnection.saveButton.label')
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())

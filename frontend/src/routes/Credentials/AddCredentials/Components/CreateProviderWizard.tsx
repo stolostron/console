@@ -403,7 +403,6 @@ function createAnsibleCredential(ansibleSecret: AnsibleTowerSecret) {
 }
 
 function submitProviderConnection(providerConnection: ProviderConnection) {
-    console.log('checking provider at submit: ', providerConnection)
     const data = JSON.parse(JSON.stringify(providerConnection))
     const providerID = getProviderConnectionProviderID(data)
     setProviderConnectionProviderID(providerConnection, providerID as ProviderID)

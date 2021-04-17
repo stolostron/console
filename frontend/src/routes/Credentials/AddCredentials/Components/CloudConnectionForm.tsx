@@ -766,7 +766,6 @@ export function CloudConnectionIntegrationForm(props: {
 }) {
     const { t } = useTranslation(['connection'])
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
-    console.log('testing prov connection: ', providerConnection)
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
         update(copy)
