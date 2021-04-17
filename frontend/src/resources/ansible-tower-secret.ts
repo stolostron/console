@@ -27,7 +27,7 @@ export interface AnsibleTowerSecret extends V1Secret {
     }
     spec?: {
         host?: string
-        token?: string // HVAC?
+        token?: string
     }
 }
 

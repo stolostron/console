@@ -429,7 +429,7 @@ export function ClusterPoolsTable() {
                         action={
                             <AcmButton
                                 role="link"
-                                onClick={() => history.push(NavigationPath.createCluster)}
+                                onClick={() => history.push(NavigationPath.createClusterPool)}
                                 disabled={!canCreateClusterPool}
                                 tooltip={t('common:rbac.unauthorized')}
                             >
