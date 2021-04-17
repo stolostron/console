@@ -74,7 +74,7 @@ describe('add connection page', () => {
         nockIgnoreRBAC()
     })
     it('should create aws provider connection', async () => {
-        const awsProviderConnection: ProviderConnection = {
+        const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
             metadata: {
@@ -96,30 +96,14 @@ describe('add connection page', () => {
                 anisibleCuratorTemplateName: '',
             },
         }
-
-        const ansSecret: Secret = {
-            apiVersion: AnsibleTowerSecretApiVersion,
-            kind: AnsibleTowerSecretKind,
-            metadata: {
-                name: 'ansible-tower-secret',
-                namespace: mockNamespace.metadata.name,
-                labels: {
-                    'cluster.open-cluster-management.io/provider': ProviderID.ANS,
-                },
-            },
-            data: {
-                metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
-            },
-        }
-
-        // const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
-        const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
+        // const badRequestNock = nockCreate(packProviderConnection({ ...providerConnection }), mockBadRequestStatus)
+        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         render(<TestAddConnectionPage />)
 
         // navigate credential selection page
         await waitForText('Infrastructure Provider')
         await clickByText('Infrastructure Provider')
-        await typeByPlaceholderText('addConnection.connectionName.placeholder', awsProviderConnection.metadata.name!)
+        await typeByPlaceholderText('addConnection.connectionName.placeholder', providerConnection.metadata.name!)
         await clickByText('addConnection.namespaceName.placeholder')
         await clickByText(mockNamespace.metadata.name!)
         await clickByText('Next')
@@ -128,21 +112,21 @@ describe('add connection page', () => {
         await waitForText('Select a provider and enter basic information')
         await clickByText('addConnection.providerName.placeholder')
         await clickByText(getProviderByKey(ProviderID.AWS).name)
-        await typeByPlaceholderText('addConnection.baseDomain.placeholder', awsProviderConnection.spec!.baseDomain!)
+        await typeByPlaceholderText('addConnection.baseDomain.placeholder', providerConnection.spec!.baseDomain!)
         await typeByPlaceholderText(
             'addConnection.awsAccessKeyID.placeholder',
-            awsProviderConnection.spec!.awsAccessKeyID!
+            providerConnection.spec!.awsAccessKeyID!
         )
         await typeByPlaceholderText(
             'addConnection.awsSecretAccessKeyID.placeholder',
-            awsProviderConnection.spec!.awsSecretAccessKeyID!
+            providerConnection.spec!.awsSecretAccessKeyID!
         )
-        await typeByPlaceholderText('addConnection.pullSecret.placeholder', awsProviderConnection.spec!.pullSecret!)
+        await typeByPlaceholderText('addConnection.pullSecret.placeholder', providerConnection.spec!.pullSecret!)
         await typeByPlaceholderText(
             'addConnection.sshPrivateKey.placeholder',
-            awsProviderConnection.spec!.sshPrivatekey!
+            providerConnection.spec!.sshPrivatekey!
         )
-        await typeByPlaceholderText('addConnection.sshPublicKey.placeholder', awsProviderConnection.spec!.sshPublickey!)
+        await typeByPlaceholderText('addConnection.sshPublicKey.placeholder', providerConnection.spec!.sshPublickey!)
 
         await clickByText('Next')
 

@@ -95,20 +95,6 @@ describe('add connection page', () => {
                 anisibleCuratorTemplateName: '',
             },
         }
-        const ansSecret: Secret = {
-            apiVersion: AnsibleTowerSecretApiVersion,
-            kind: AnsibleTowerSecretKind,
-            metadata: {
-                name: 'ansible-tower-secret',
-                namespace: mockNamespace.metadata.name,
-                labels: {
-                    'cluster.open-cluster-management.io/provider': ProviderID.ANS,
-                },
-            },
-            data: {
-                metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
-            },
-        }
 
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
         render(<TestAddConnectionPage />)
