@@ -12,7 +12,6 @@ import { clickByText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
-    filterForProviderSecrets,
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
@@ -101,11 +100,12 @@ describe('edit connection page', () => {
         await waitFor(() => expect(getByText('addConnection.saveButton.label')).toBeInTheDocument())
 
         await waitFor(() => expect(getByTestId('awsAccessKeyID')).toBeInTheDocument())
-        userEvent.type(getByTestId('awsAccessKeyID'), '-edit')
+        await userEvent.type(getByTestId('awsAccessKeyID'), '-edit')
 
         const copy: ProviderConnection = JSON.parse(JSON.stringify(awsProviderConnection))
         copy.spec!.awsAccessKeyID += '-edit'
-        const replaceNock = nockReplace(copy)
+        console.log('checking copy: ', copy)
+        const replaceNock = nockReplace(packProviderConnection({ ...copy }))
         clickByText('addConnection.saveButton.label')
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
     })
