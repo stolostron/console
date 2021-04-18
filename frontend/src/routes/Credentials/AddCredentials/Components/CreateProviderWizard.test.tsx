@@ -55,7 +55,7 @@ const ansSecrets: AnsibleTowerSecret[] = [
     },
 ]
 
-describe('create provider wizard ', () => {
+describe('provider wizard page', () => {
     beforeEach(async () => {
         render(
             <CreateProviderWizard
@@ -78,20 +78,14 @@ describe('create provider wizard ', () => {
 
     it('should configure forms for select credentials', async () => {
         await clickByText('Infrastructure Provider')
-
         await typeByPlaceholderText('addConnection.connectionName.placeholder', 'test-connection')
-
         await clickByText('addConnection.namespaceName.placeholder')
         await clickByText('default')
-
         await clickByText('Next')
         await waitForText('addConnection.providerName.label')
-
         await clickByText('Back')
-
         await clickByText('Ansible Tower')
         await clickByText('Next')
-
         await waitForText('addConnection.ansible.secretname.label')
     })
 })
