@@ -1,15 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import React from 'react'
 import { ProviderID } from '../../../../lib/providers'
-import {
-    clickByText,
-    typeByPlaceholderText,
-    waitForLabelText,
-    waitForTestId,
-    waitForText,
-} from '../../../../lib/test-util'
+import { clickByText, typeByPlaceholderText, waitForTestId, waitForText } from '../../../../lib/test-util'
 import {
     AnsibleTowerSecret,
     AnsibleTowerSecretApiVersion,

@@ -7,7 +7,7 @@ import { multiClusterHubState, namespacesState, secretsState } from '../../../at
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { multiClusterHub } from '../../../lib/test-metadata'
-import { clickByText, typeByPlaceholderText, typeByTestId, waitForNock, waitForText } from '../../../lib/test-util'
+import { clickByText, typeByPlaceholderText, typeByTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
@@ -94,13 +94,15 @@ describe('add connection page', () => {
         }
 
         const createNock = nockCreate(packProviderConnection({ ...openstackProviderConnection }))
-        const { container } = render(<TestAddConnectionPage />)
-        
+        render(<TestAddConnectionPage />)
 
         // navigate credential selection page
         await waitForText('Infrastructure Provider')
         await clickByText('Infrastructure Provider')
-        await typeByPlaceholderText('addConnection.connectionName.placeholder', openstackProviderConnection.metadata.name!)
+        await typeByPlaceholderText(
+            'addConnection.connectionName.placeholder',
+            openstackProviderConnection.metadata.name!
+        )
         await clickByText('addConnection.namespaceName.placeholder')
         await clickByText(mockNamespace.metadata.name!)
         await clickByText('Next')
@@ -117,14 +119,12 @@ describe('add connection page', () => {
         await typeByTestId('sshPublicKey', openstackProviderConnection.spec!.sshPublickey!)
         await clickByText('Next')
 
+        // integration step
+        await clickByText('addConnection.ansibleConnection.placeholder')
+        await clickByText(ansSecret.metadata.name!)
+        await clickByText('Save')
 
-         // integration step
-         await clickByText('addConnection.ansibleConnection.placeholder')
-         await clickByText(ansSecret.metadata.name!)
-         await clickByText('Save')
- 
-         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
-         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
-
+        await waitFor(() => expect(createNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })
 })

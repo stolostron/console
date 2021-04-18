@@ -154,7 +154,16 @@ export function CreateProviderWizard(props: {
                 component: credentialInputstep,
             },
         ],
-        [currentCredentialType]
+        [
+            currentCredentialType,
+            ansibleSecret,
+            credentialInputstep,
+            initialSecretMeta,
+            props.discoveryFeatureGate,
+            props.multiClusterHubs,
+            props.projects,
+            providerConnection,
+        ]
     )
 
     function onNext() {

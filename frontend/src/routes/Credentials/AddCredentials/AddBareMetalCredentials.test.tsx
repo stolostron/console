@@ -1,25 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
+import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { multiClusterHub } from '../../../lib/test-metadata'
+import { clickByText, typeByPlaceholderText, typeByTestId, waitForText } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
-import AddCredentialPage from './AddCredentials'
-import { NavigationPath } from '../../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, multiClusterHubState, secretsState } from '../../../atoms'
-import { multiClusterHub } from '../../../lib/test-metadata'
-import { clickByText, typeByPlaceholderText, typeByTestId, waitForText } from '../../../lib/test-util'
 import { Secret } from '../../../resources/secret'
-import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
+import AddCredentialPage from './AddCredentials'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,

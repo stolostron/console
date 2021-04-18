@@ -7,12 +7,7 @@ import { multiClusterHubState, namespacesState, secretsState } from '../../../at
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
 import { multiClusterHub } from '../../../lib/test-metadata'
-import {
-    clickByText,
-    typeByPlaceholderText,
-
-    waitForText
-} from '../../../lib/test-util'
+import { clickByText, typeByPlaceholderText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
@@ -20,7 +15,7 @@ import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
-    ProviderConnectionKind
+    ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 import { Secret } from '../../../resources/secret'
 import AddCredentialPage from './AddCredentials'
@@ -122,10 +117,7 @@ describe('add connection page', () => {
             providerConnection.spec!.awsSecretAccessKeyID!
         )
         await typeByPlaceholderText('addConnection.pullSecret.placeholder', providerConnection.spec!.pullSecret!)
-        await typeByPlaceholderText(
-            'addConnection.sshPrivateKey.placeholder',
-            providerConnection.spec!.sshPrivatekey!
-        )
+        await typeByPlaceholderText('addConnection.sshPrivateKey.placeholder', providerConnection.spec!.sshPrivatekey!)
         await typeByPlaceholderText('addConnection.sshPublicKey.placeholder', providerConnection.spec!.sshPublickey!)
 
         await clickByText('Next')
