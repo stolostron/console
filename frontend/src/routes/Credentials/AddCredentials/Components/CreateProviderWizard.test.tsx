@@ -2,6 +2,7 @@
 
 import { render } from '@testing-library/react'
 import React from 'react'
+import { ProviderID } from '../../../../lib/providers'
 import {
     clickByText,
     typeByPlaceholderText,
@@ -9,13 +10,17 @@ import {
     waitForTestId,
     waitForText,
 } from '../../../../lib/test-util'
+import {
+    AnsibleTowerSecret,
+    AnsibleTowerSecretApiVersion,
+    AnsibleTowerSecretKind,
+} from '../../../../resources/ansible-tower-secret'
 import { FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../../../../resources/feature-gate'
 import {
     MultiClusterHub,
     MultiClusterHubApiVersion,
     MultiClusterHubKind,
 } from '../../../../resources/multi-cluster-hub'
-
 import { CreateProviderWizard } from './CreateProviderWizard'
 
 const projects: string[] = ['default']
@@ -40,6 +45,23 @@ const multiClusterHubs: MultiClusterHub[] = [
     },
 ]
 
+const ansSecrets: AnsibleTowerSecret[] = [
+    {
+        apiVersion: AnsibleTowerSecretApiVersion,
+        kind: AnsibleTowerSecretKind,
+        metadata: {
+            name: 'ansible-tower-secret',
+            namespace: 'test-namespace',
+            labels: {
+                'cluster.open-cluster-management.io/provider': ProviderID.ANS,
+            },
+        },
+        data: {
+            metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
+        },
+    },
+]
+
 describe('create provider wizard ', () => {
     beforeEach(async () => {
         render(
@@ -47,6 +69,7 @@ describe('create provider wizard ', () => {
                 projects={projects}
                 discoveryFeatureGate={featureGate}
                 multiClusterHubs={multiClusterHubs}
+                ansibleSecrets={ansSecrets}
             />
         )
     })
@@ -76,6 +99,6 @@ describe('create provider wizard ', () => {
         await clickByText('Ansible Tower')
         await clickByText('Next')
 
-        await waitForLabelText('addConnection.ansible.secretname.label')
+        await waitForText('addConnection.ansible.secretname.label')
     })
 })
