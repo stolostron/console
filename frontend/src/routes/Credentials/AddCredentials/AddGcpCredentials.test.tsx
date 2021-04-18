@@ -109,12 +109,12 @@ describe('add connection page', () => {
         await clickByText('addConnection.providerName.placeholder')
         await clickByText(getProviderByKey(ProviderID.GCP).name)
 
-        typeByTestId('gcProjectID', providerConnection.spec!.gcProjectID!)
-        typeByTestId('gcServiceAccountKey', providerConnection.spec!.gcServiceAccountKey!)
-        typeByTestId('baseDomain', providerConnection.spec!.baseDomain!)
-        typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
-        typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)
-        typeByTestId('sshPublicKey', providerConnection.spec!.sshPublickey!)
+        await typeByTestId('gcProjectID', providerConnection.spec!.gcProjectID!)
+        await typeByTestId('gcServiceAccountKey', providerConnection.spec!.gcServiceAccountKey!)
+        await typeByTestId('baseDomain', providerConnection.spec!.baseDomain!)
+        await typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
+        await typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)
+        await typeByTestId('sshPublicKey', providerConnection.spec!.sshPublickey!)
         await clickByText('Next')
 
         // integration step
