@@ -170,7 +170,7 @@ describe('add connection page', () => {
         )
 
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('addConnection.providerName.label')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('addConnection.wizard.title')).toBeInTheDocument())
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
         await waitFor(() => expect(getByText(mockNamespace.metadata.name!)).toBeInTheDocument())
     })
@@ -194,7 +194,7 @@ describe('add connection page', () => {
         )
 
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('addConnection.providerName.label')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('addConnection.wizard.title')).toBeInTheDocument())
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
         await waitFor(() => expect(getByText(mockNamespace.metadata.name!)).toBeInTheDocument())
     })
