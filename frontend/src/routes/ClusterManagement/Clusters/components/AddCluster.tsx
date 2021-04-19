@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
-import { Bullseye, Split, SplitItem } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -24,8 +24,8 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
     if (props.type === 'button') {
         return (
             <Bullseye>
-                <Split hasGutter>
-                    <SplitItem>
+                <ActionList>
+                    <ActionListItem>
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
@@ -35,8 +35,8 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         >
                             {t('managed.createCluster')}
                         </AcmButton>
-                    </SplitItem>
-                    <SplitItem>
+                    </ActionListItem>
+                    <ActionListItem>
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
@@ -46,8 +46,8 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         >
                             {t('managed.importCluster')}
                         </AcmButton>
-                    </SplitItem>
-                </Split>
+                    </ActionListItem>
+                </ActionList>
             </Bullseye>
         )
     } else {
