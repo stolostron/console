@@ -239,7 +239,7 @@ export function DiscoveredClustersPageContent() {
     const cloudRedHatCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
         const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-        if (labels === ProviderID.CRH) {
+        if (labels === ProviderID.RHOCM) {
             cloudRedHatCredentials.push(credential)
         }
     })

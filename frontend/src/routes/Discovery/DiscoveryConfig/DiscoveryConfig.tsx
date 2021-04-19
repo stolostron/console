@@ -120,7 +120,7 @@ export function AddDiscoveryConfigData(props: { namespace: string; name: string 
                 const CRHCredentials: ProviderConnection[] = []
                 credentials.forEach((credential) => {
                     const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-                    if (labels === ProviderID.CRH) {
+                    if (labels === ProviderID.RHOCM) {
                         if (
                             !props.namespace &&
                             credential.metadata.namespace &&

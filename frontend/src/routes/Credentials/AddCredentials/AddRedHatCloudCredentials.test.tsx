@@ -58,7 +58,7 @@ describe('add connection page', () => {
                 name: 'connection',
                 namespace: mockNamespace.metadata.name,
                 labels: {
-                    'cluster.open-cluster-management.io/provider': ProviderID.CRH,
+                    'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
                     'cluster.open-cluster-management.io/cloudconnection': '',
                 },
             },
@@ -77,8 +77,8 @@ describe('add connection page', () => {
             expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.CRH).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.CRH).name).click()
+        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.RHOCM).name)).toBeInTheDocument())
+        getByText(getProviderByKey(ProviderID.RHOCM).name).click()
         userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)

@@ -82,7 +82,7 @@ export function CredentialsTable(props: {
 
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-        if (label === ProviderID.CRH && !CredentialIsInUseByDiscovery(item)) {
+        if (label === ProviderID.RHOCM && !CredentialIsInUseByDiscovery(item)) {
             return t('connections.actions.enableClusterDiscovery')
         } else {
             return t('connections.actions.editClusterDiscovery')
@@ -145,7 +145,7 @@ export function CredentialsTable(props: {
                         },
                         cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.CRH) {
+                            if (label === ProviderID.RHOCM) {
                                 if (CredentialIsInUseByDiscovery(item)) {
                                     return (
                                         <Link
@@ -195,7 +195,7 @@ export function CredentialsTable(props: {
                                 case ProviderID.BMC:
                                     provider = Provider.baremetal
                                     break
-                                case ProviderID.CRH:
+                                case ProviderID.RHOCM:
                                     provider = Provider.redhatcloud
                                     break
                                 case ProviderID.OST:

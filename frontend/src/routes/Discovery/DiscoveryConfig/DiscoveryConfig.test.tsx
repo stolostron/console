@@ -32,7 +32,7 @@ const credential: ProviderConnection = {
         name: 'connection',
         namespace: 'discovery',
         labels: {
-            'cluster.open-cluster-management.io/provider': ProviderID.CRH,
+            'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
             'cluster.open-cluster-management.io/cloudconnection': '',
         },
     },

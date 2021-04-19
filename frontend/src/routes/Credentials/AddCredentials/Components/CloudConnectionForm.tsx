@@ -90,7 +90,7 @@ export default function CloudConnectionForm(props: {
             >
                 {providers
                     .filter((provider) => {
-                        if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
+                        if (!discoveryFeatureGate && provider.key === ProviderID.RHOCM) {
                             return false // skip
                         }
                         return true
@@ -113,7 +113,7 @@ export default function CloudConnectionForm(props: {
                             case ProviderID.BMC:
                                 mappedProvider = Provider.baremetal
                                 break
-                            case ProviderID.CRH:
+                            case ProviderID.RHOCM:
                                 mappedProvider = Provider.redhatcloud
                                 break
                             case ProviderID.OST:
@@ -183,7 +183,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => {
                     const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
@@ -514,7 +514,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 isRequired
                 validation={(value) => validateJSON(value, t)}
@@ -533,7 +533,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => validatePrivateSshKey(value, t)}
                 isRequired
@@ -552,7 +552,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => validatePublicSshKey(value, t)}
                 isRequired
@@ -629,7 +629,7 @@ export default function CloudConnectionForm(props: {
                         providerConnection.spec!.ocmAPIToken = ocmAPIToken as string
                     })
                 }}
-                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.RHOCM}
                 isRequired
                 type="password"
             />
@@ -674,7 +674,7 @@ export default function CloudConnectionForm(props: {
                             delete data.spec!.datacenter
                             delete data.spec!.datastore
                         }
-                        if (providerID !== ProviderID.CRH) {
+                        if (providerID !== ProviderID.RHOCM) {
                             delete data.spec!.ocmAPIToken
                         }
                         if (providerID !== ProviderID.OST) {

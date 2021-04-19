@@ -6,6 +6,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../atoms'
 import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
+import { ProviderID } from '../../lib/providers'
 import {
     clickBulkAction,
     clickByLabel,
@@ -57,7 +58,7 @@ const cloudRedHatProviderConnection: ProviderConnection = {
         name: 'ocm-api-token',
         namespace: 'ocm',
         labels: {
-            'cluster.open-cluster-management.io/provider': 'crh',
+            'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
         },
     },
 }
@@ -74,7 +75,7 @@ const discoveryConfig: DiscoveryConfig = {
             lastActive: 7,
             openShiftVersions: ['4.6'],
         },
-        providerConnections: ['ocm-api-token'],
+        credential: 'ocm-api-token',
     },
 }
 
@@ -198,7 +199,7 @@ describe('provider connections page', () => {
         await waitForNotText('common:cancel')
     })
 
-    test('If cloud.redhat.com providerconnection and no discoveryconfig configured, show action available', async () => {
+    test('If cloud.redhat.com credential and no discoveryconfig configured, show action available', async () => {
         render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
         await waitForText('connections.actions.enableClusterDiscovery')
