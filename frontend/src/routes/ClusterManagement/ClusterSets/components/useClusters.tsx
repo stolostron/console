@@ -15,7 +15,7 @@ import { ClusterPool } from '../../../../resources/cluster-pool'
 import { Cluster, mapClusters } from '../../../../lib/get-cluster'
 
 // returns the clusters assigned to a ManagedClusterSet
-export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool: ClusterPool | undefined) {
+export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool?: ClusterPool | undefined) {
     const [
         managedClusters,
         clusterDeployments,
