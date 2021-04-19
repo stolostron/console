@@ -26,7 +26,6 @@ import {
     createAnsibleTowerSecret,
 } from '../../../../resources/ansible-tower-secret'
 import { FeatureGate } from '../../../../resources/feature-gate'
-import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
 import {
     createProviderConnection,
     getProviderConnectionProviderID,
@@ -51,7 +50,6 @@ enum CredentialType {
 export function CreateProviderWizard(props: {
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
-    multiClusterHubs: MultiClusterHub[]
     ansibleSecrets: AnsibleTowerSecret[]
 }) {
     const [currentStep, setCurrentStep] = useState(1)
@@ -139,7 +137,6 @@ export function CreateProviderWizard(props: {
                         setCurrentCredentialType={setCurrentCredentialType}
                         initialSecretMeta={initialSecretMeta}
                         setInitialSecretMeta={setInitialSecretMeta}
-                        multiClusterHubs={props.multiClusterHubs}
                         discoveryFeatureGate={props.discoveryFeatureGate}
                     />
                 ),
@@ -155,7 +152,6 @@ export function CreateProviderWizard(props: {
             credentialInputstep,
             initialSecretMeta,
             props.discoveryFeatureGate,
-            props.multiClusterHubs,
             props.projects,
             providerConnection,
         ]
@@ -249,7 +245,6 @@ function CredentialTypeStep(props: {
     setCurrentCredentialType: Dispatch<SetStateAction<CredentialType>>
     initialSecretMeta: {}
     setInitialSecretMeta: Function
-    multiClusterHubs: MultiClusterHub[]
     discoveryFeatureGate: FeatureGate | undefined
 }) {
     const { t } = useTranslation(['connection', 'cluster', 'common', 'create'])
@@ -299,7 +294,6 @@ function CredentialTypeStep(props: {
                         providerConnection={providerConnection}
                         projects={props.projects}
                         discoveryFeatureGate={props.discoveryFeatureGate}
-                        multiClusterHubs={props.multiClusterHubs}
                         isEditing={false}
                     />
                 )
