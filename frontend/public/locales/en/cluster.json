@@ -123,6 +123,7 @@
     "table.autoscale": "Autoscale",
     "table.currentReleaseImage": "Current release image",
     "table.newReleaseImage": "New release image",
+    "table.type": "Type",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -258,6 +259,7 @@
     "tab.machinepools": "Machine pools",
     "tab.settings": "Settings",
     "tab.clusters": "Clusters",
+    "tab.access": "Access management",
 
     "labels.capital": "Labels",
     "labels.lower": "labels",
@@ -326,6 +328,8 @@
     "bulk.message.destroyClusterPool": "Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.",
     "bulk.title.deleteMachinePool": "Delete machine pool",
     "bulk.message.deleteMachinePool": "Deleting a machine pool is irreversible. Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.",
+    "bulk.title.removeAuthorization": "Remove users or groups",
+    "bulk.message.removeAuthorization": "Removing a user or group will revoke access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.",
 
     "createClusterSet.form.section.config": "Select a name for the cluster set",
     "createClusterSet.form.section.clusters": "Select clusters to add to the cluster set",
@@ -384,5 +388,23 @@
     "machinePool.modal.scale.edit-autoscale.message": "Specify the minimum and maximum replicas for <bold>{{name}}</bold>",
     "machinePool.modal.scale.minReplicas.label": "Minimum replicas",
     "machinePool.modal.scale.maxReplicas.label": "Maximum replicas",
-    "machinePool.modal.scale.maxReplicas.validation.greater": "Maximum replicas must be greater than minimum replicas"
+    "machinePool.modal.scale.maxReplicas.validation.greater": "Maximum replicas must be greater than minimum replicas",
+
+    "access.emptyTitle": "No users or groups found",
+    "access.emptyMessage": "This cluster set doesn't have any users or groups, yet. Click the <bold>Add user or group</bold> button to add a user or group.",
+    "access.emptyStateButton": "Add user or group",
+    "access.userGroups": "Users and Groups",
+    "access.remove": "Remove",
+    "access.add": "Add user or group",
+    "access.add.title": "Add user or group",
+    "access.add.message": "Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.",
+    "access.add.userGroup": "Select user or group",
+    "access.select.user": "Select user",
+    "access.select.group": "Select group",
+    "access.select.role": "Select role",
+    "access.users": "Users",
+    "access.groups": "Groups",
+    "access.add.role": "Select role",
+    "access.usersInGroup": "Users in group",
+    "access.usersInGroup.view": "View users in group"
 }

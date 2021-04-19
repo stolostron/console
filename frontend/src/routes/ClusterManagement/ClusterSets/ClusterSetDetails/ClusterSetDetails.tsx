@@ -20,6 +20,7 @@ import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetManageClustersPage } from './ClusterSetManageClusters/ClusterSetManageClusters'
+import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
 import { usePrevious } from '../../../../components/usePrevious'
 import { ManagedClusterSet } from '../../../../resources/managed-cluster-set'
 import { useClusters } from '../components/useClusters'
@@ -135,12 +136,25 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                             {t('tab.overview')}
                                         </Link>
                                     </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
+                                            NavigationPath.clusterSetAccess.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
+                                            {t('tab.access')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
                                 </AcmSecondaryNav>
                             }
                         />
 
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterSetAccess}>
+                            <ClusterSetAccessManagement />
                         </Route>
                     </AcmPage>
                 </Switch>
