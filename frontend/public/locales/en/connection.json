@@ -129,7 +129,7 @@
     "addConnection.ansibleConnection.placeholder": "Select an existing Ansible credential",
 
     "addConnection.wizard.title": "Select the credential type and enter basic information",
-    "addConnection.wizard.credentialtype": "Credential types*",
+    "addConnection.wizard.credentialtype": "Credential types *",
     "addConnection.ansible.secretname.label":"Ansible Tower secret name",
     "addConnection.ansible.secretname.placeholder":"Create new or select an existing secret from the list",
     "addConnection.ansible.host.label":"Ansible Tower host",

@@ -5,6 +5,7 @@ import {
     Card,
     CardBody,
     CardHeader,
+    FormGroup,
     Gallery,
     GalleryItem,
     SelectOption,
@@ -13,7 +14,7 @@ import {
     WizardStep,
 } from '@patternfly/react-core'
 import { CloudIcon, RedhatIcon } from '@patternfly/react-icons'
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 // import { featureGatesState, multiClusterHubState } from '../../../../atoms'
@@ -38,14 +39,11 @@ import {
 import AnsibleTowerSecretForm from './AnsibleTowerSecretForm'
 import CloudConnectionForm, { CloudConnectionIntegrationForm } from './CloudConnectionForm'
 
-/* 
+/*
 TODO:
 - Validation/Alerts
-- replaced fixed strings with translation strings
-- redirect on creation
 - edit credential
 - review featuregate stuff
-- testing...
 */
 
 enum CredentialType {
@@ -319,41 +317,40 @@ function CredentialTypeStep(props: {
             <Title headingLevel="h4" size="xl">
                 {t('addConnection.wizard.title')}
             </Title>
-            <Title headingLevel="h6" size="md">
-                {t('addConnection.wizard.credentialtype')}
-            </Title>
-            <Gallery hasGutter>
-                <GalleryItem>
-                    <Card
-                        id="ansible.card"
-                        isSelectable
-                        isSelected={currentCredentialType === CredentialType.ansible}
-                        onClick={() => {
-                            onClickCredentialCard(CredentialType.ansible, props.setCredentialInputstep)
-                        }}
-                    >
-                        <CardHeader>
-                            <RedhatIcon size="xl" />
-                        </CardHeader>
-                        <CardBody>Ansible Tower</CardBody>
-                    </Card>
-                </GalleryItem>
-                <GalleryItem>
-                    <Card
-                        id="provider.card"
-                        isSelectable
-                        isSelected={currentCredentialType === CredentialType.cloudProvider}
-                        onClick={() => {
-                            onClickCredentialCard(CredentialType.cloudProvider, props.setCredentialInputstep)
-                        }}
-                    >
-                        <CardHeader>
-                            <CloudIcon size="xl" />
-                        </CardHeader>
-                        <CardBody>Infrastructure Provider</CardBody>
-                    </Card>
-                </GalleryItem>
-            </Gallery>
+            <FormGroup fieldId={'credential-card-form'} label={t('addConnection.wizard.credentialtype')}>
+                <Gallery hasGutter>
+                    <GalleryItem>
+                        <Card
+                            id="ansible.card"
+                            isSelectable
+                            isSelected={currentCredentialType === CredentialType.ansible}
+                            onClick={() => {
+                                onClickCredentialCard(CredentialType.ansible, props.setCredentialInputstep)
+                            }}
+                        >
+                            <CardHeader>
+                                <RedhatIcon size="xl" />
+                            </CardHeader>
+                            <CardBody>Ansible Tower</CardBody>
+                        </Card>
+                    </GalleryItem>
+                    <GalleryItem>
+                        <Card
+                            id="provider.card"
+                            isSelectable
+                            isSelected={currentCredentialType === CredentialType.cloudProvider}
+                            onClick={() => {
+                                onClickCredentialCard(CredentialType.cloudProvider, props.setCredentialInputstep)
+                            }}
+                        >
+                            <CardHeader>
+                                <CloudIcon size="xl" />
+                            </CardHeader>
+                            <CardBody>Infrastructure Provider</CardBody>
+                        </Card>
+                    </GalleryItem>
+                </Gallery>
+            </FormGroup>
             <AcmTextInput
                 id="connectionName"
                 label={t('addConnection.connectionName.label')}
