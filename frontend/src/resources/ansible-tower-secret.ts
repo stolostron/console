@@ -51,7 +51,6 @@ export function createAnsibleTowerSecret(AnsibleTowerSecret: AnsibleTowerSecret)
         AnsibleTowerSecret.metadata.labels = {}
     }
     AnsibleTowerSecret.metadata.labels['cluster.open-cluster-management.io/provider'] = 'ans'
-    AnsibleTowerSecret.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = '' // is this appropriate for ans?
     return createResource<AnsibleTowerSecret>(packAnsibleTowerSecret({ ...AnsibleTowerSecret }))
 }
 

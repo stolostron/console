@@ -3,19 +3,20 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockCreate, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
+import { nockCreate, nockDelete, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
 import { ProviderID } from '../../../lib/providers'
-import { clickByText, waitForNock, waitForNocks, waitForText } from '../../../lib/test-util'
+import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { FeatureGate } from '../../../resources/feature-gate'
-import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../../../resources/multi-cluster-hub'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
+    packProviderConnection,
 } from '../../../resources/provider-connection'
 import DiscoveryConfigPage from './DiscoveryConfig'
-import { multiClusterHubState } from '../../../atoms'
+import { discoveryConfigState } from '../../../atoms'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -24,24 +25,14 @@ const mockFeatureGate: FeatureGate = {
     spec: { featureSet: 'DiscoveryEnabled' },
 }
 
-const multiClusterHub: MultiClusterHub = {
-    apiVersion: MultiClusterHubApiVersion,
-    kind: MultiClusterHubKind,
-    metadata: {
-        name: 'multiclusterhub',
-        namespace: 'ocm',
-    },
-    spec: {},
-}
-
-const providerConnection: ProviderConnection = {
+const credential: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     metadata: {
         name: 'connection',
-        namespace: multiClusterHub.metadata.namespace,
+        namespace: 'discovery',
         labels: {
-            'cluster.open-cluster-management.io/provider': ProviderID.CRH,
+            'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
             'cluster.open-cluster-management.io/cloudconnection': '',
         },
     },
@@ -54,19 +45,21 @@ const providerConnection: ProviderConnection = {
     },
 }
 
+const mockCredential = [packProviderConnection({ ...credential })]
+
 const discoveryConfig: DiscoveryConfig = {
     apiVersion: DiscoveryConfigApiVersion,
     kind: DiscoveryConfigKind,
     metadata: {
         name: 'discovery',
-        namespace: multiClusterHub.metadata.namespace,
+        namespace: credential.metadata.namespace!,
     },
     spec: {
         filters: {
             lastActive: 14,
             openShiftVersions: ['4.7'],
         },
-        providerConnections: [providerConnection.metadata.name!],
+        credential: credential.metadata.name!,
     },
 }
 
@@ -75,26 +68,51 @@ const discoveryConfigUpdated: DiscoveryConfig = {
     kind: DiscoveryConfigKind,
     metadata: {
         name: 'discovery',
-        namespace: multiClusterHub.metadata.namespace,
+        namespace: 'discovery',
     },
     spec: {
         filters: {
             lastActive: 30,
             openShiftVersions: ['4.7', '4.8'],
         },
-        providerConnections: [providerConnection.metadata.name!],
+        credential: credential.metadata.name!,
     },
 }
 
-function TestDiscoveryConfigPage() {
+function TestAddDiscoveryConfigPage() {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(multiClusterHubState, [multiClusterHub])
+                snapshot.set(discoveryConfigState, [])
             }}
         >
             <MemoryRouter>
                 <Route
+                    render={(props: any) => {
+                        return <DiscoveryConfigPage {...props} />
+                    }}
+                />
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+}
+
+function TestEditConnectionPage() {
+    return (
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(discoveryConfigState, [discoveryConfig])
+            }}
+        >
+            <MemoryRouter
+                initialEntries={[
+                    NavigationPath.editDiscoveryConfig
+                        .replace(':namespace', discoveryConfig.metadata.namespace!)
+                        .replace(':name', discoveryConfig.metadata.name!),
+                ]}
+            >
+                <Route
+                    path={NavigationPath.editDiscoveryConfig}
                     render={(props: any) => {
                         return <DiscoveryConfigPage {...props} />
                     }}
@@ -110,27 +128,13 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
-    it('Error retrieving discoveryConfigs', async () => {
-        const nocks = [
-            nockList(discoveryConfig, mockBadRequestStatus),
-            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
-        ]
-        render(<TestDiscoveryConfigPage />)
-        await waitForNocks(nocks)
-        await waitForText('Bad request')
-        await waitForText('common:retry')
-    })
-
     it('Create DiscoveryConfig', async () => {
         const nocks = [
-            nockList(discoveryConfig, []),
-            nockList(multiClusterHub, [multiClusterHub]),
-            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
         ]
 
-        // nockGet(discoveryConfig, mockNotFoundStatus),
-
-        const { container } = render(<TestDiscoveryConfigPage />)
+        const { container } = render(<TestAddDiscoveryConfigPage />)
         await waitForNocks(nocks)
 
         // Select LastActive
@@ -145,30 +149,31 @@ describe('discovery config page', () => {
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
         await clickByText('4.7')
 
-        // Select ProviderConnection
-        expect(container.querySelectorAll(`[aria-labelledby^="providerConnections-label"]`)).toHaveLength(1)
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerConnections-label"]`)!.click()
-        await clickByText(providerConnection.metadata.name!)
+        // Select Credential
+        expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
 
         // Submit form
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
-        await clickByText('discoveryConfig.enable')
-        await waitForNock(createDiscoveryConfigNock)
+        await clickByText('discoveryConfig.add')
+        await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
     })
 
     it('Edit DiscoveryConfig', async () => {
         const nocks = [
-            nockList(discoveryConfig, [discoveryConfig]),
-            nockList(providerConnection, [providerConnection], ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockGet(discoveryConfig, discoveryConfig),
         ]
 
-        const { container } = render(<TestDiscoveryConfigPage />)
+        const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
 
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
         await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
-        await waitForText(providerConnection.metadata.name!)
+        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
 
         // Change form
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
@@ -178,7 +183,29 @@ describe('discovery config page', () => {
         await clickByText('4.8')
 
         const replaceNock = nockReplace(discoveryConfigUpdated)
-        await clickByText('discoveryConfig.enable')
-        await waitForNock(replaceNock)
+        await clickByText('discoveryConfig.edit')
+        await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
+    })
+
+    it('Delete DiscoveryConfig', async () => {
+        const nocks = [
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
+            nockGet(discoveryConfig, discoveryConfig),
+        ]
+
+        render(<TestEditConnectionPage />)
+        await waitForNocks(nocks)
+
+        // Ensure Form is prepopulated
+        await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
+        await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
+        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+
+        const deleteNock = nockDelete(discoveryConfigUpdated)
+        await clickByText('discoveryConfig.delete')
+        await waitForText('disable.title')
+        await clickByText('discoveryConfig.delete.btn')
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
     })
 })

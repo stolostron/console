@@ -1,28 +1,44 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
+import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { multiClusterHub } from '../../../lib/test-metadata'
+import { clickByText, typeByPlaceholderText, waitForText } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
+import { Secret } from '../../../resources/secret'
 import AddCredentialPage from './AddCredentials'
-import { NavigationPath } from '../../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, multiClusterHubState } from '../../../atoms'
-import { waitForText } from '../../../lib/test-util'
-import { multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const ansSecret: Secret = {
+    apiVersion: AnsibleTowerSecretApiVersion,
+    kind: AnsibleTowerSecretKind,
+    metadata: {
+        name: 'ansible-tower-secret',
+        namespace: mockNamespace.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/provider': ProviderID.ANS,
+        },
+    },
+    data: {
+        metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
+    },
 }
 
 let location: Location
@@ -33,6 +49,7 @@ function TestAddConnectionPage() {
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
                 snapshot.set(multiClusterHubState, [multiClusterHub])
+                snapshot.set(secretsState, [ansSecret])
             }}
         >
             <MemoryRouter>
@@ -52,7 +69,7 @@ describe('add connection page', () => {
         nockIgnoreRBAC()
     })
     it('should create aws provider connection', async () => {
-        const awsProviderConnection: ProviderConnection = {
+        const providerConnection: ProviderConnection = {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
             metadata: {
@@ -70,36 +87,48 @@ describe('add connection page', () => {
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
+                anisibleSecretName: 'ansible-tower-secret',
+                anisibleCuratorTemplateName: '',
             },
         }
+        // const badRequestNock = nockCreate(packProviderConnection({ ...providerConnection }), mockBadRequestStatus)
+        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        render(<TestAddConnectionPage />)
 
-        const badRequestNock = nockCreate(packProviderConnection({ ...awsProviderConnection }), mockBadRequestStatus)
-        const createNock = nockCreate(packProviderConnection({ ...awsProviderConnection }))
-        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
+        // navigate credential selection page
+        await waitForText('Infrastructure Provider')
+        await clickByText('Infrastructure Provider')
+        await typeByPlaceholderText('addConnection.connectionName.placeholder', providerConnection.metadata.name!)
+        await clickByText('addConnection.namespaceName.placeholder')
+        await clickByText(mockNamespace.metadata.name!)
+        await clickByText('Next')
+
+        // navigate provider connection input
+        await waitForText('Select a provider and enter basic information')
+        await clickByText('addConnection.providerName.placeholder')
+        await clickByText(getProviderByKey(ProviderID.AWS).name)
+        await typeByPlaceholderText('addConnection.baseDomain.placeholder', providerConnection.spec!.baseDomain!)
+        await typeByPlaceholderText(
+            'addConnection.awsAccessKeyID.placeholder',
+            providerConnection.spec!.awsAccessKeyID!
         )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.AWS).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.AWS).name).click()
-        userEvent.type(getByTestId('connectionName'), awsProviderConnection.metadata.name!)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
+        await typeByPlaceholderText(
+            'addConnection.awsSecretAccessKeyID.placeholder',
+            providerConnection.spec!.awsSecretAccessKeyID!
         )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaceName-label"]`)!.click()
-        await waitFor(() => expect(getByText(awsProviderConnection.metadata.namespace!)).toBeInTheDocument())
-        getByText(awsProviderConnection.metadata.namespace!).click()
-        userEvent.type(getByTestId('awsAccessKeyID'), awsProviderConnection.spec!.awsAccessKeyID!)
-        userEvent.type(getByTestId('awsSecretAccessKeyID'), awsProviderConnection.spec!.awsSecretAccessKeyID!)
-        userEvent.type(getByTestId('baseDomain'), awsProviderConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), awsProviderConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), awsProviderConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), awsProviderConnection.spec!.sshPublickey!)
-        getByText('addConnection.addButton.label').click()
-        await waitFor(() => expect(badRequestNock.isDone()).toBeTruthy())
-        await waitForText(mockBadRequestStatus.message, true)
-        await waitFor(() => expect(getByText('addConnection.addButton.label')).toBeInTheDocument())
-        getByText('addConnection.addButton.label').click()
+        await typeByPlaceholderText('addConnection.pullSecret.placeholder', providerConnection.spec!.pullSecret!)
+        await typeByPlaceholderText('addConnection.sshPrivateKey.placeholder', providerConnection.spec!.sshPrivatekey!)
+        await typeByPlaceholderText('addConnection.sshPublicKey.placeholder', providerConnection.spec!.sshPublickey!)
+
+        await clickByText('Next')
+
+        // integration step
+        await clickByText('addConnection.ansibleConnection.placeholder')
+
+        await clickByText(ansSecret.metadata.name!)
+
+        await clickByText('Save')
+
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })

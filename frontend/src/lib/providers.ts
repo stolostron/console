@@ -4,11 +4,13 @@ export enum ProviderID {
     GCP = 'gcp',
     AWS = 'aws',
     AZR = 'azr',
+    ANS = 'ans',
     VMW = 'vmw',
     BMC = 'bmc',
-    CRH = 'crh',
+    RHOCM = 'rhocm',
     OST = 'ost',
     UKN = 'unknown',
+    ANS = 'ans',
 }
 
 interface Provider {
@@ -22,7 +24,7 @@ export const providers: Provider[] = [
     { key: ProviderID.AZR, name: 'Microsoft Azure' },
     { key: ProviderID.VMW, name: 'VMware vSphere' },
     { key: ProviderID.BMC, name: 'Bare Metal' },
-    { key: ProviderID.CRH, name: 'Red Hat OpenShift Cluster Manager' },
+    { key: ProviderID.RHOCM, name: 'Red Hat OpenShift Cluster Manager' },
     { key: ProviderID.OST, name: 'Red Hat OpenStack' },
 ]
 

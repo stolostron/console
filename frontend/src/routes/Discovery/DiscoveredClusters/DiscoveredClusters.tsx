@@ -182,21 +182,21 @@ function EmptyStateNoCRHCredentials() {
     )
 }
 
-function EmptyStateProviderConnections(props: { providerConnections?: ProviderConnection[] }) {
+function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
     const { t } = useTranslation(['discovery'])
     return (
         <AcmEmptyState
             action={
-                <AcmButton component={Link} to={NavigationPath.discoveryConfig}>
+                <AcmButton component={Link} to={NavigationPath.addDiscoveryConfig}>
                     {t('emptystate.enableClusterDiscovery')}
                 </AcmButton>
             }
-            title={t('emptystate.providerConnections.title')}
+            title={t('emptystate.credentials.title')}
             message={
                 <Trans
-                    i18nKey={'discovery:emptystate.providerConnections.msg'}
+                    i18nKey={'discovery:emptystate.credentials.msg'}
                     components={{ bold: <strong /> }}
-                    values={{ discoveryConfigTotal: props.providerConnections?.length }}
+                    values={{ discoveryConfigTotal: props.credentials?.length }}
                 />
             }
             key="dcEmptyState"
@@ -233,13 +233,13 @@ export function DiscoveredClustersPageContent() {
 
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
     const [secrets] = useRecoilState(secretsState)
-    const providerConnections = filterForProviderSecrets(secrets)
+    const credentials = filterForProviderSecrets(secrets)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
     const cloudRedHatCredentials: ProviderConnection[] = []
-    providerConnections.forEach((credential) => {
+    credentials.forEach((credential) => {
         const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-        if (labels === ProviderID.CRH) {
+        if (labels === ProviderID.RHOCM) {
             cloudRedHatCredentials.push(credential)
         }
     })
@@ -249,7 +249,7 @@ export function DiscoveredClustersPageContent() {
     return (
         <DiscoveredClustersTable
             discoveredClusters={discoveredClusters}
-            providerConnections={cloudRedHatCredentials}
+            credentials={cloudRedHatCredentials}
             discoveryConfigs={discoveryConfigs}
         />
     )
@@ -257,7 +257,7 @@ export function DiscoveredClustersPageContent() {
 
 export function DiscoveredClustersTable(props: {
     discoveredClusters?: DiscoveredCluster[]
-    providerConnections?: ProviderConnection[]
+    credentials?: ProviderConnection[]
     discoveryConfigs?: DiscoveryConfig[]
 }) {
     const { t } = useTranslation(['discovery'])
@@ -274,18 +274,18 @@ export function DiscoveredClustersTable(props: {
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
 
     useEffect(() => {
-        if (!props.providerConnections || !props.discoveredClusters || !props.discoveryConfigs) {
+        if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
-        } else if (props.providerConnections.length === 0 && props.discoveryConfigs.length === 0) {
-            setEmptyState(<EmptyStateNoCRHCredentials />) // No provider connections exist, guide user to set up provider connection
-        } else if (props.providerConnections.length > 0 && props.discoveryConfigs.length === 0) {
-            setEmptyState(<EmptyStateProviderConnections providerConnections={props.providerConnections} />) // Provider connection is set up, guide user to set up discovery config
-        } else if (props.providerConnections.length > 0 && props.discoveryConfigs.length > 0) {
+        } else if (props.credentials.length === 0 && props.discoveryConfigs.length === 0) {
+            setEmptyState(<EmptyStateNoCRHCredentials />) // No credentials exist, guide user to set up credentials
+        } else if (props.credentials.length > 0 && props.discoveryConfigs.length === 0) {
+            setEmptyState(<EmptyStateCRHCredentials credentials={props.credentials} />) // Credential is set up, guide user to set up discovery config
+        } else if (props.credentials.length > 0 && props.discoveryConfigs.length > 0) {
             setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
         } else {
             setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
         }
-    }, [props.discoveredClusters, props.providerConnections, props.discoveryConfigs])
+    }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
 
     return (
         <Fragment>
@@ -301,7 +301,7 @@ export function DiscoveredClustersTable(props: {
                         id: 'editClusterDiscvoveryBtn',
                         title: t('discovery.edit'),
                         click: () => {
-                            history.push(NavigationPath.discoveryConfig)
+                            history.push(NavigationPath.addDiscoveryConfig)
                         },
                     },
                     {

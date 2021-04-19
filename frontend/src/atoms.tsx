@@ -199,6 +199,7 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
+        let closing = false
         let evtSource: EventSource | undefined
         function startWatch() {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
@@ -206,13 +207,14 @@ export function LoadData(props: { children?: ReactNode }) {
             evtSource.onerror = function () {
                 switch (evtSource?.readyState) {
                     case EventSource.CLOSED:
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        if (!closing) window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                         break
                 }
             }
         }
         startWatch()
         return () => {
+            closing = true
             if (evtSource) evtSource.close()
         }
 

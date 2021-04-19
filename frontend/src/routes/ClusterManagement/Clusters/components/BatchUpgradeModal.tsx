@@ -5,6 +5,7 @@ import { SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
+import { ReleaseNotesLink } from './ReleaseNotesLink'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { IRequestResult, postRequest } from '../../../../lib/resource-request'
 import './style.css'
@@ -97,25 +98,28 @@ export function BatchUpgradeModal(props: {
                         return (
                             <div>
                                 {hasAvailableUpgrades && (
-                                    <AcmSelect
-                                        value={selectVersions[cluster.name || ''] || ''}
-                                        id={`${cluster.name}-upgrade-selector`}
-                                        maxHeight={'6em'}
-                                        label=""
-                                        isRequired
-                                        onChange={(version) => {
-                                            if (cluster.name && version) {
-                                                selectVersions[cluster.name] = version
-                                                setSelectVersions({ ...selectVersions })
-                                            }
-                                        }}
-                                    >
-                                        {availableUpdates?.map((version) => (
-                                            <SelectOption key={`${cluster.name}-${version}`} value={version}>
-                                                {version}
-                                            </SelectOption>
-                                        ))}
-                                    </AcmSelect>
+                                    <>
+                                        <AcmSelect
+                                            value={selectVersions[cluster.name || ''] || ''}
+                                            id={`${cluster.name}-upgrade-selector`}
+                                            maxHeight={'6em'}
+                                            label=""
+                                            isRequired
+                                            onChange={(version) => {
+                                                if (cluster.name && version) {
+                                                    selectVersions[cluster.name] = version
+                                                    setSelectVersions({ ...selectVersions })
+                                                }
+                                            }}
+                                        >
+                                            {availableUpdates?.map((version) => (
+                                                <SelectOption key={`${cluster.name}-${version}`} value={version}>
+                                                    {version}
+                                                </SelectOption>
+                                            ))}
+                                        </AcmSelect>
+                                        <ReleaseNotesLink version={selectVersions[cluster.name!]} />
+                                    </>
                                 )}
                             </div>
                         )

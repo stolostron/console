@@ -160,7 +160,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         },
                     ],
                     keyFn: (cluster) => cluster.name as string,
-                    actionFn: createImportResources,
+                    actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
                 })
             },
             rbac: [rbacCreate(ManagedClusterDefinition)],

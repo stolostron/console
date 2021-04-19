@@ -17,6 +17,7 @@ export enum NavigationPath {
     clusterPools = '/multicloud/cluster-pools',
     discoveredClusters = '/multicloud/discovered-clusters',
     createCluster = '/multicloud/create-cluster',
+    createClusterPool = '/multicloud/create-cluster-pool',
     importCluster = '/multicloud/import-cluster',
     importCommand = '/multicloud/import-cluster/:clusterName',
     credentials = '/multicloud/credentials',
@@ -25,6 +26,6 @@ export enum NavigationPath {
     bareMetalAssets = '/multicloud/bare-metal-assets',
     editBareMetalAsset = '/multicloud/bare-metal-assets/:namespace/:name',
     createBareMetalAsset = '/multicloud/create-bare-metal-asset',
-    discoveryConfig = '/multicloud/discovery/config',
-    integrations = '/multicloud/integrations',
+    addDiscoveryConfig = '/multicloud/add-discovery-config',
+    editDiscoveryConfig = '/multicloud/discovery-configs/:namespace/:name',
 }
