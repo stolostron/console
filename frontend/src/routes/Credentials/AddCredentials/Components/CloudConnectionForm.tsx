@@ -666,7 +666,6 @@ export default function CloudConnectionForm(props: {
                     <AcmSubmit
                         id="submit"
                         variant="primary"
-                        hidden={!props.isEditing}
                         onClick={() => {
                             const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
 
@@ -714,14 +713,9 @@ export default function CloudConnectionForm(props: {
                             delete data.data
 
                             alertContext.clearAlerts()
-                            let result: IRequestResult<ProviderConnection>
-                            if (props.isEditing) {
-                                result = replaceProviderConnection(data)
-                            } else {
-                                result = createProviderConnection(data)
-                            }
-                            return result.promise
-                                .then(() => {
+
+                            return replaceProviderConnection(data)
+                                .promise.then(() => {
                                     history.push(NavigationPath.credentials)
                                 })
                                 .catch((err) => {
@@ -735,14 +729,8 @@ export default function CloudConnectionForm(props: {
                                     }
                                 })
                         }}
-                        label={
-                            props.isEditing ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')
-                        }
-                        processingLabel={
-                            props.isEditing
-                                ? t('addConnection.savingButton.label')
-                                : t('addConnection.addingButton.label')
-                        }
+                        label={t('addConnection.saveButton.label')}
+                        processingLabel={t('addConnection.savingButton.label')}
                     />
                     <Button
                         variant="link"

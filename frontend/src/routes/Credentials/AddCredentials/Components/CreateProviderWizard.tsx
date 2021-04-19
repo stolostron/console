@@ -14,10 +14,9 @@ import {
     WizardStep,
 } from '@patternfly/react-core'
 import { CloudIcon, RedhatIcon } from '@patternfly/react-icons'
-import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
-// import { featureGatesState, multiClusterHubState } from '../../../../atoms'
 import { ProviderID } from '../../../../lib/providers'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -41,9 +40,7 @@ import CloudConnectionForm, { CloudConnectionIntegrationForm } from './CloudConn
 
 /*
 TODO:
-- Validation/Alerts
-- edit credential
-- review featuregate stuff
+-  Wizard Validation/Alerts
 */
 
 enum CredentialType {
@@ -313,6 +310,7 @@ function CredentialTypeStep(props: {
     }
 
     return (
+        // TODO: replace RedhatIcon, & CloudIcon with correct icon varient
         <AcmForm>
             <Title headingLevel="h4" size="xl">
                 {t('addConnection.wizard.title')}

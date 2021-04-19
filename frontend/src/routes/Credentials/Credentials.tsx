@@ -158,6 +158,7 @@ export function CredentialsTable(props: {
                         cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
                             let provider
+                            // TODO: Add unique provider for ANS in ProviderTextMap (ui-components)
                             switch (label) {
                                 case ProviderID.GCP:
                                     provider = Provider.gcp
