@@ -442,7 +442,7 @@ function submitProviderConnection(providerConnection: ProviderConnection) {
         delete data.spec!.datacenter
         delete data.spec!.datastore
     }
-    if (providerID !== ProviderID.CRH) {
+    if (providerID !== ProviderID.RHOCM) {
         delete data.spec!.ocmAPIToken
     }
     delete data.data
