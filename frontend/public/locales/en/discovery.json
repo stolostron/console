@@ -3,13 +3,13 @@
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",
 
-    "disable.title": "Delete discovery config",
+    "disable.title": "Delete discovery configuration",
     "discoveryConfig.delete.btn": "Delete",
-    "discoveryConfig.delete.message": "You are deleting discovery config <bold>{{discoveryConfigName}}</bold>. All related discovered clusters will be deleted.",
+    "discoveryConfig.delete.message": "You are deleting the <bold>{{discoveryConfigName}}</bold> discovery configuration. All related discovered clusters will be deleted.",
 
     "discoveredClusters": "Discovered clusters",
-    "addDiscoveryConfig.title": "Add Discovery Config",
-    "editDiscoveryConfig.title": "Edit Discovery Config",
+    "addDiscoveryConfig.title": "Add Discovery Configuration",
+    "editDiscoveryConfig.title": "Edit Discovery Configuration",
 
     "discoveryConfig.filterform.header": "Set filter(s) for your discovered clusters",
     "discoveryConfig.connections.header": "Select a credential to obtain discovered clusters information",
