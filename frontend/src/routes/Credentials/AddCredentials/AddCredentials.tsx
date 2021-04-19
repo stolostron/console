@@ -12,23 +12,26 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, multiClusterHubState, namespacesState } from '../../../atoms'
+import { featureGatesState, multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    filterForProviderSecrets,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../resources/provider-connection'
-import { getSecret, Secret, SecretApiVersion, SecretDefinition, SecretKind } from '../../../resources/secret'
+import { filterForAnsibleSecrets } from '../../../resources/ansible-tower-secret'
+import { filterForProviderSecrets } from '../../../resources/provider-connection'
+import AnsibleTowerSecretForm from './Components/AnsibleTowerSecretForm'
 import CloudConnectionForm from './Components/CloudConnectionForm'
+import { CreateProviderWizard } from './Components/CreateProviderWizard'
+import { getSecret, Secret, SecretApiVersion, SecretDefinition, SecretKind } from '../../../resources/secret'
+import { ProviderID } from '../../../lib/providers'
 
+/* TODO:
+- validation
+*/
 export default function AddCredentialPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['connection', 'common'])
+    const isEditing = match?.params.name !== undefined
     return (
         <AcmPage>
             {match?.params.namespace ? (
@@ -75,7 +78,7 @@ export default function AddCredentialPage({ match }: RouteComponentProps<{ names
                 />
             )}
             <AcmPageContent id="add-credentials">
-                <PageSection variant="light" isFilled>
+                <PageSection variant="light" isFilled type={isEditing ? undefined : 'wizard'}>
                     <AddCredentialPageData namespace={match?.params.namespace} name={match?.params.name} />
                 </PageSection>
             </AcmPageContent>
@@ -169,8 +172,18 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
     const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
     const isEditing = () => props.secret.metadata.name !== ''
     const [multiClusterHubs] = useRecoilState(multiClusterHubState)
+    const [secrets] = useRecoilState(secretsState)
 
     // access what type of credentail is being edited
+    if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === ProviderID.ANS) {
+        return (
+            <AnsibleTowerSecretForm
+                projects={props.projects}
+                isEditing={true}
+                ansibleSecret={filterForAnsibleSecrets([props.secret])[0]}
+            />
+        )
+    }
     if (props.secret?.metadata?.labels?.['cluster.open-cluster-management.io/cloudconnection'] !== undefined) {
         return (
             <CloudConnectionForm
@@ -182,61 +195,14 @@ export function AddCredentialPageContent(props: { projects: string[]; secret: Se
             />
         )
     }
-    const providerConnection: ProviderConnection = {
-        apiVersion: ProviderConnectionApiVersion,
-        kind: ProviderConnectionKind,
-        metadata: {
-            name: '',
-            namespace: '',
-        },
-        spec: {
-            awsAccessKeyID: '',
-            awsSecretAccessKeyID: '',
-
-            baseDomainResourceGroupName: '',
-            clientId: '',
-            clientSecret: '',
-            subscriptionId: '',
-            tenantId: '',
-
-            gcProjectID: '',
-            gcServiceAccountKey: '',
-
-            username: '',
-            password: '',
-            vcenter: '',
-            cacertificate: '',
-            vmClusterName: '',
-            datacenter: '',
-            datastore: '',
-
-            libvirtURI: '',
-            sshKnownHosts: [''],
-            imageMirror: '',
-            bootstrapOSImage: '',
-            clusterOSImage: '',
-            additionalTrustBundle: '',
-
-            baseDomain: '',
-            pullSecret: '',
-            sshPrivatekey: '',
-            sshPublickey: '',
-
-            ocmAPIToken: '',
-
-            openstackCloudsYaml: '',
-            openstackCloud: '',
-        },
-    }
 
     // else, creating new credential, Wizard will go here
     return (
-        <CloudConnectionForm
-            providerConnection={providerConnection}
+        <CreateProviderWizard
             projects={props.projects}
             discoveryFeatureGate={discoveryFeatureGate}
             multiClusterHubs={multiClusterHubs}
-            isEditing={isEditing()}
+            ansibleSecrets={filterForAnsibleSecrets(secrets)}
         />
     )
 }

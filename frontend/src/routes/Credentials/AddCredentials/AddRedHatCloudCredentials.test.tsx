@@ -1,27 +1,44 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockCreate } from '../../../lib/nock-util'
+import { featureGatesState, multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
+import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
+import { mockDiscoveryFeatureGate, multiClusterHub } from '../../../lib/test-metadata'
+import { clickByText, typeByPlaceholderText, typeByTestId, waitForText } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
+import { Secret } from '../../../resources/secret'
 import AddCredentialPage from './AddCredentials'
-import { NavigationPath } from '../../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { namespacesState, featureGatesState, multiClusterHubState } from '../../../atoms'
-import { mockDiscoveryFeatureGate, multiClusterHub } from '../../../lib/test-metadata'
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const ansSecret: Secret = {
+    apiVersion: AnsibleTowerSecretApiVersion,
+    kind: AnsibleTowerSecretKind,
+    metadata: {
+        name: 'ansible-tower-secret',
+        namespace: mockNamespace.metadata.name,
+        labels: {
+            'cluster.open-cluster-management.io/provider': ProviderID.ANS,
+        },
+    },
+    data: {
+        metadata: 'aG9zdDogdGVzdAp0b2tlbjogdGVzdAo=',
+    },
 }
 
 let location: Location
@@ -33,6 +50,7 @@ function TestAddConnectionPage() {
                 snapshot.set(namespacesState, [mockNamespace])
                 snapshot.set(multiClusterHubState, [multiClusterHub])
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
+                snapshot.set(secretsState, [ansSecret])
             }}
         >
             <MemoryRouter>
@@ -69,28 +87,38 @@ describe('add connection page', () => {
                 sshPrivatekey: '',
                 sshPublickey: '',
                 ocmAPIToken: 'test-ocm-api-token',
+                anisibleSecretName: 'ansible-tower-secret',
+                anisibleCuratorTemplateName: '',
             },
         }
 
         const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
-        const { getByText, getByTestId, container } = render(<TestAddConnectionPage />)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="providerName-label"]`)).toHaveLength(1)
-        )
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="providerName-label"]`)!.click()
-        await waitFor(() => expect(getByText(getProviderByKey(ProviderID.CRH).name)).toBeInTheDocument())
-        getByText(getProviderByKey(ProviderID.CRH).name).click()
-        userEvent.type(getByTestId('connectionName'), providerConnection.metadata.name!)
-        await waitFor(() =>
-            expect(container.querySelectorAll(`[aria-labelledby^="namespaceName-label"]`)).toHaveLength(1)
-        )
+        render(<TestAddConnectionPage />)
 
-        userEvent.type(getByTestId('baseDomain'), providerConnection.spec!.baseDomain!)
-        userEvent.type(getByTestId('pullSecret'), providerConnection.spec!.pullSecret!)
-        userEvent.type(getByTestId('sshPrivateKey'), providerConnection.spec!.sshPrivatekey!)
-        userEvent.type(getByTestId('sshPublicKey'), providerConnection.spec!.sshPublickey!)
-        userEvent.type(getByTestId('ocmAPIToken'), providerConnection.spec!.ocmAPIToken!)
-        getByText('addConnection.addButton.label').click()
+        // navigate credential selection page
+        await waitForText('Infrastructure Provider')
+        await clickByText('Infrastructure Provider')
+        await typeByPlaceholderText('addConnection.connectionName.placeholder', providerConnection.metadata.name!)
+        await clickByText('addConnection.namespaceName.placeholder')
+        await clickByText(mockNamespace.metadata.name!)
+        await clickByText('Next')
+
+        // navigate provider connection input
+        await waitForText('Select a provider and enter basic information')
+        await clickByText('addConnection.providerName.placeholder')
+        await clickByText(getProviderByKey(ProviderID.CRH).name)
+        await typeByTestId('baseDomain', providerConnection.spec!.baseDomain!)
+        await typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
+        await typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)
+        await typeByTestId('sshPublicKey', providerConnection.spec!.sshPublickey!)
+        await typeByTestId('ocmAPIToken', providerConnection.spec!.ocmAPIToken!)
+        await clickByText('Next')
+
+        // integration step
+        await clickByText('addConnection.ansibleConnection.placeholder')
+        await clickByText(ansSecret.metadata.name!)
+        await clickByText('Save')
+
         await waitFor(() => expect(createNock.isDone()).toBeTruthy())
         await waitFor(() => expect(location.pathname).toBe(NavigationPath.credentials))
     })

@@ -10,6 +10,7 @@ export enum ProviderID {
     CRH = 'crh',
     OST = 'ost',
     UKN = 'unknown',
+    ANS = 'ans',
 }
 
 interface Provider {

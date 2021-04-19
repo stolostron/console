@@ -12,12 +12,21 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
-import { ActionGroup, Button, SelectOption, Title } from '@patternfly/react-core'
+import {
+    ActionGroup,
+    Button,
+    Grid,
+    GridItem,
+    SelectOption,
+    Text,
+    TextContent,
+    TextVariants,
+    Title,
+} from '@patternfly/react-core'
 import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ProviderID, providers } from '../../../../lib/providers'
-import { IRequestResult } from '../../../../lib/resource-request'
 import {
     validateCertificate,
     validateGCProjectID,
@@ -29,10 +38,10 @@ import {
     validatePublicSshKey,
 } from '../../../../lib/validation'
 import { NavigationPath } from '../../../../NavigationPath'
+import { AnsibleTowerSecret } from '../../../../resources/ansible-tower-secret'
 import { FeatureGate } from '../../../../resources/feature-gate'
 import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
 import {
-    createProviderConnection,
     getProviderConnectionProviderID,
     ProviderConnection,
     replaceProviderConnection,
@@ -50,9 +59,8 @@ export default function CloudConnectionForm(props: {
     const history = useHistory()
     const discoveryFeatureGate = props.discoveryFeatureGate
     const alertContext = useContext(AcmAlertContext)
-    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(
-        JSON.parse(JSON.stringify(props.providerConnection))
-    )
+
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
     const multiClusterHubs = props.multiClusterHubs
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
@@ -649,95 +657,138 @@ export default function CloudConnectionForm(props: {
                 isRequired
                 type="password"
             />
+
             <AcmAlertGroup isInline canClose padTop />
-            <ActionGroup>
-                <AcmSubmit
-                    id="submit"
-                    variant="primary"
-                    onClick={() => {
-                        const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
+            {props.isEditing && (
+                <ActionGroup>
+                    <AcmSubmit
+                        id="submit"
+                        variant="primary"
+                        onClick={() => {
+                            const data = JSON.parse(JSON.stringify(providerConnection)) as ProviderConnection
 
-                        const providerID = getProviderConnectionProviderID(data)
-                        if (providerID !== ProviderID.AWS) {
-                            delete data.spec!.awsAccessKeyID
-                            delete data.spec!.awsSecretAccessKeyID
-                        }
-                        if (providerID !== ProviderID.AZR) {
-                            delete data.spec!.baseDomainResourceGroupName
-                            delete data.spec!.clientId
-                            delete data.spec!.clientSecret
-                            delete data.spec!.subscriptionId
-                            delete data.spec!.tenantId
-                        }
-                        if (providerID !== ProviderID.BMC) {
-                            delete data.spec!.libvirtURI
-                            delete data.spec!.sshKnownHosts
-                            delete data.spec!.imageMirror
-                            delete data.spec!.bootstrapOSImage
-                            delete data.spec!.clusterOSImage
-                            delete data.spec!.additionalTrustBundle
-                        }
-                        if (providerID !== ProviderID.GCP) {
-                            delete data.spec!.gcProjectID
-                            delete data.spec!.gcServiceAccountKey
-                        }
-                        if (providerID !== ProviderID.VMW) {
-                            delete data.spec!.username
-                            delete data.spec!.password
-                            delete data.spec!.vcenter
-                            delete data.spec!.cacertificate
-                            delete data.spec!.vmClusterName
-                            delete data.spec!.datacenter
-                            delete data.spec!.datastore
-                        }
-                        if (providerID !== ProviderID.CRH) {
-                            delete data.spec!.ocmAPIToken
-                        }
-                        if (providerID !== ProviderID.OST) {
-                            delete data.spec!.openstackCloudsYaml
-                            delete data.spec!.openstackCloud
-                        }
+                            const providerID = getProviderConnectionProviderID(data)
+                            if (providerID !== ProviderID.AWS) {
+                                delete data.spec!.awsAccessKeyID
+                                delete data.spec!.awsSecretAccessKeyID
+                            }
+                            if (providerID !== ProviderID.AZR) {
+                                delete data.spec!.baseDomainResourceGroupName
+                                delete data.spec!.clientId
+                                delete data.spec!.clientSecret
+                                delete data.spec!.subscriptionId
+                                delete data.spec!.tenantId
+                            }
+                            if (providerID !== ProviderID.BMC) {
+                                delete data.spec!.libvirtURI
+                                delete data.spec!.sshKnownHosts
+                                delete data.spec!.imageMirror
+                                delete data.spec!.bootstrapOSImage
+                                delete data.spec!.clusterOSImage
+                                delete data.spec!.additionalTrustBundle
+                            }
+                            if (providerID !== ProviderID.GCP) {
+                                delete data.spec!.gcProjectID
+                                delete data.spec!.gcServiceAccountKey
+                            }
+                            if (providerID !== ProviderID.VMW) {
+                                delete data.spec!.username
+                                delete data.spec!.password
+                                delete data.spec!.vcenter
+                                delete data.spec!.cacertificate
+                                delete data.spec!.vmClusterName
+                                delete data.spec!.datacenter
+                                delete data.spec!.datastore
+                            }
+                            if (providerID !== ProviderID.CRH) {
+                                delete data.spec!.ocmAPIToken
+                            }
+                            if (providerID !== ProviderID.OST) {
+                                delete data.spec!.openstackCloudsYaml
+                                delete data.spec!.openstackCloud
+                            }
 
-                        delete data.data
+                            delete data.data
 
-                        alertContext.clearAlerts()
-                        let result: IRequestResult<ProviderConnection>
-                        if (props.isEditing) {
-                            result = replaceProviderConnection(data)
-                        } else {
-                            result = createProviderConnection(data)
-                        }
-                        return result.promise
-                            .then(() => {
+                            alertContext.clearAlerts()
+
+                            return replaceProviderConnection(data)
+                                .promise.then(() => {
+                                    history.push(NavigationPath.credentials)
+                                })
+                                .catch((err) => {
+                                    /* istanbul ignore else */
+                                    if (err instanceof Error) {
+                                        alertContext.addAlert({
+                                            type: 'danger',
+                                            title: t('common:request.failed'),
+                                            message: err.message,
+                                        })
+                                    }
+                                })
+                        }}
+                        label={t('addConnection.saveButton.label')}
+                        processingLabel={t('addConnection.savingButton.label')}
+                    />
+                    <Button
+                        variant="link"
+                        onClick={
+                            /* istanbul ignore next */ () => {
                                 history.push(NavigationPath.credentials)
-                            })
-                            .catch((err) => {
-                                /* istanbul ignore else */
-                                if (err instanceof Error) {
-                                    alertContext.addAlert({
-                                        type: 'danger',
-                                        title: t('common:request.failed'),
-                                        message: err.message,
-                                    })
-                                }
-                            })
-                    }}
-                    label={props.isEditing ? t('addConnection.saveButton.label') : t('addConnection.addButton.label')}
-                    processingLabel={
-                        props.isEditing ? t('addConnection.savingButton.label') : t('addConnection.addingButton.label')
-                    }
-                />
-                <Button
-                    variant="link"
-                    onClick={
-                        /* istanbul ignore next */ () => {
-                            history.push(NavigationPath.credentials)
+                            }
                         }
-                    }
-                >
-                    {t('addConnection.cancelButton.label')}
-                </Button>
-            </ActionGroup>
+                    >
+                        {t('addConnection.cancelButton.label')}
+                    </Button>
+                </ActionGroup>
+            )}
+        </AcmForm>
+    )
+}
+
+export function CloudConnectionIntegrationForm(props: {
+    ansibleSecrets: AnsibleTowerSecret[]
+    providerConnection: ProviderConnection
+}) {
+    const { t } = useTranslation(['connection'])
+    const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
+    function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
+        const copy = { ...providerConnection }
+        update(copy)
+        setProviderConnection(copy)
+    }
+    return (
+        <AcmForm>
+            <TextContent>
+                <Grid>
+                    <Text component={TextVariants.p}>Link to an integration's credential</Text>
+                    <GridItem span={6}>
+                        <Text component={TextVariants.small}>
+                            Integrations allow you to bring in external tools to enable additional features. If you
+                            don’t have a credential type for an integration tool, go back and add that credential before
+                            you link it here.
+                        </Text>
+                    </GridItem>
+                </Grid>
+            </TextContent>
+
+            <AcmSelect
+                id="ansibleSecrets"
+                label={t('addConnection.ansibleConnection.label')}
+                placeholder={t('addConnection.ansibleConnection.placeholder')}
+                value={providerConnection.spec?.anisibleSecretName}
+                onChange={(name) => {
+                    updateProviderConnection((providerConnection) => {
+                        providerConnection.spec!.anisibleSecretName = name as string
+                    })
+                }}
+            >
+                {props.ansibleSecrets.map((secret) => (
+                    <SelectOption key={secret.metadata.name} value={secret.metadata.name}>
+                        {secret.metadata.name}
+                    </SelectOption>
+                ))}
+            </AcmSelect>
         </AcmForm>
     )
 }
