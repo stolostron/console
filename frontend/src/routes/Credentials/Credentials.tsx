@@ -80,21 +80,31 @@ export function CredentialsTable(props: {
         open: false,
     })
 
-    let discoveryEnabled = false
-    if (props.discoveryConfigs) {
-        props.discoveryConfigs.forEach((discoveryConfig) => {
-            if (discoveryConfig.spec.providerConnections && discoveryConfig.spec.providerConnections.length > 0) {
-                discoveryEnabled = true
-            }
-        })
-    }
-
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-        if (label === ProviderID.CRH && !discoveryEnabled) {
+        if (label === ProviderID.RHOCM && !CredentialIsInUseByDiscovery(item)) {
             return t('connections.actions.enableClusterDiscovery')
+        } else {
+            return t('connections.actions.editClusterDiscovery')
         }
-        return '-'
+    }
+
+    function CredentialIsInUseByDiscovery(credential: Secret) {
+        let inUse = false
+        if (props.discoveryConfigs) {
+            props.discoveryConfigs.forEach((discoveryConfig) => {
+                if (
+                    discoveryConfig.metadata &&
+                    discoveryConfig.spec.credential !== '' &&
+                    credential.metadata &&
+                    discoveryConfig.metadata.namespace === credential.metadata.namespace
+                ) {
+                    inUse = true
+                    return
+                }
+            })
+        }
+        return inUse
     }
 
     return (
@@ -130,18 +140,29 @@ export function CredentialsTable(props: {
                     },
                     {
                         header: t('table.header.additionalActions'),
-
                         search: (item: Secret) => {
                             return getAdditionalActions(item)
                         },
                         cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.CRH && !discoveryEnabled) {
-                                return (
-                                    <Link to={NavigationPath.discoveryConfig}>
-                                        {t('connections.actions.enableClusterDiscovery')}
-                                    </Link>
-                                )
+                            if (label === ProviderID.RHOCM) {
+                                if (CredentialIsInUseByDiscovery(item)) {
+                                    return (
+                                        <Link
+                                            to={NavigationPath.editDiscoveryConfig
+                                                .replace(':namespace', item.metadata.namespace as string)
+                                                .replace(':name', 'discovery')}
+                                        >
+                                            {t('connections.actions.editClusterDiscovery')}
+                                        </Link>
+                                    )
+                                } else {
+                                    return (
+                                        <Link to={NavigationPath.addDiscoveryConfig}>
+                                            {t('connections.actions.enableClusterDiscovery')}
+                                        </Link>
+                                    )
+                                }
                             } else {
                                 return <span>-</span>
                             }
@@ -175,7 +196,7 @@ export function CredentialsTable(props: {
                                 case ProviderID.BMC:
                                     provider = Provider.baremetal
                                     break
-                                case ProviderID.CRH:
+                                case ProviderID.RHOCM:
                                     provider = Provider.redhatcloud
                                     break
                                 case ProviderID.OST:

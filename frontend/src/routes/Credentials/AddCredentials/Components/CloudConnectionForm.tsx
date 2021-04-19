@@ -40,7 +40,6 @@ import {
 import { NavigationPath } from '../../../../NavigationPath'
 import { AnsibleTowerSecret } from '../../../../resources/ansible-tower-secret'
 import { FeatureGate } from '../../../../resources/feature-gate'
-import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
 import {
     getProviderConnectionProviderID,
     ProviderConnection,
@@ -52,7 +51,6 @@ export default function CloudConnectionForm(props: {
     providerConnection: ProviderConnection
     projects: string[]
     discoveryFeatureGate: FeatureGate | undefined
-    multiClusterHubs: MultiClusterHub[]
     isEditing: boolean
 }) {
     const { t } = useTranslation(['connection'])
@@ -61,7 +59,6 @@ export default function CloudConnectionForm(props: {
     const alertContext = useContext(AcmAlertContext)
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection>(props.providerConnection)
-    const multiClusterHubs = props.multiClusterHubs
 
     function updateProviderConnection(update: (providerConnection: ProviderConnection) => void) {
         const copy = { ...providerConnection }
@@ -95,26 +92,13 @@ export default function CloudConnectionForm(props: {
                     updateProviderConnection((providerConnection) => {
                         setProviderConnectionProviderID(providerConnection, providerID as ProviderID)
                     })
-
-                    if (getProviderConnectionProviderID(providerConnection) === ProviderID.CRH) {
-                        updateProviderConnection((providerConnection) => {
-                            providerConnection.metadata.namespace = multiClusterHubs[0]?.metadata.namespace
-                        })
-                    }
                 }}
                 isDisabled={props.isEditing}
                 isRequired
             >
                 {providers
                     .filter((provider) => {
-                        if (!discoveryFeatureGate && provider.key === ProviderID.CRH) {
-                            return false // skip
-                        }
-                        if (
-                            multiClusterHubs?.[0]?.metadata.namespace &&
-                            !props.projects.includes(multiClusterHubs[0]?.metadata.namespace) &&
-                            provider.key === ProviderID.CRH
-                        ) {
+                        if (!discoveryFeatureGate && provider.key === ProviderID.RHOCM) {
                             return false // skip
                         }
                         return true
@@ -137,7 +121,7 @@ export default function CloudConnectionForm(props: {
                             case ProviderID.BMC:
                                 mappedProvider = Provider.baremetal
                                 break
-                            case ProviderID.CRH:
+                            case ProviderID.RHOCM:
                                 mappedProvider = Provider.redhatcloud
                                 break
                             case ProviderID.OST:
@@ -182,7 +166,7 @@ export default function CloudConnectionForm(props: {
                     })
                 }}
                 isRequired
-                isDisabled={props.isEditing || getProviderConnectionProviderID(providerConnection) === ProviderID.CRH}
+                isDisabled={props.isEditing}
                 variant="typeahead"
             >
                 {props.projects.map((project) => (
@@ -207,7 +191,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => {
                     const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
@@ -538,7 +522,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 isRequired
                 validation={(value) => validateJSON(value, t)}
@@ -557,7 +541,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => validatePrivateSshKey(value, t)}
                 isRequired
@@ -576,7 +560,7 @@ export default function CloudConnectionForm(props: {
                 }}
                 hidden={
                     !getProviderConnectionProviderID(providerConnection) ||
-                    getProviderConnectionProviderID(providerConnection) === ProviderID.CRH
+                    getProviderConnectionProviderID(providerConnection) === ProviderID.RHOCM
                 }
                 validation={(value) => validatePublicSshKey(value, t)}
                 isRequired
@@ -653,7 +637,7 @@ export default function CloudConnectionForm(props: {
                         providerConnection.spec!.ocmAPIToken = ocmAPIToken as string
                     })
                 }}
-                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.CRH}
+                hidden={getProviderConnectionProviderID(providerConnection) !== ProviderID.RHOCM}
                 isRequired
                 type="password"
             />
@@ -700,7 +684,7 @@ export default function CloudConnectionForm(props: {
                                 delete data.spec!.datacenter
                                 delete data.spec!.datastore
                             }
-                            if (providerID !== ProviderID.CRH) {
+                            if (providerID !== ProviderID.RHOCM) {
                                 delete data.spec!.ocmAPIToken
                             }
                             if (providerID !== ProviderID.OST) {

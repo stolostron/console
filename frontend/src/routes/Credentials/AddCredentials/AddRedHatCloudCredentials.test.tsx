@@ -3,10 +3,10 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { featureGatesState, multiClusterHubState, namespacesState, secretsState } from '../../../atoms'
+import { featureGatesState, namespacesState, secretsState } from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getProviderByKey, ProviderID } from '../../../lib/providers'
-import { mockDiscoveryFeatureGate, multiClusterHub } from '../../../lib/test-metadata'
+import { mockDiscoveryFeatureGate } from '../../../lib/test-metadata'
 import { clickByText, typeByPlaceholderText, typeByTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerSecretApiVersion, AnsibleTowerSecretKind } from '../../../resources/ansible-tower-secret'
@@ -48,7 +48,6 @@ function TestAddConnectionPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, [mockNamespace])
-                snapshot.set(multiClusterHubState, [multiClusterHub])
                 snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                 snapshot.set(secretsState, [ansSecret])
             }}
@@ -77,7 +76,7 @@ describe('add connection page', () => {
                 name: 'connection',
                 namespace: mockNamespace.metadata.name,
                 labels: {
-                    'cluster.open-cluster-management.io/provider': ProviderID.CRH,
+                    'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
                     'cluster.open-cluster-management.io/cloudconnection': '',
                 },
             },
@@ -106,7 +105,7 @@ describe('add connection page', () => {
         // navigate provider connection input
         await waitForText('Select a provider and enter basic information')
         await clickByText('addConnection.providerName.placeholder')
-        await clickByText(getProviderByKey(ProviderID.CRH).name)
+        await clickByText(getProviderByKey(ProviderID.RHOCM).name)
         await typeByTestId('baseDomain', providerConnection.spec!.baseDomain!)
         await typeByTestId('pullSecret', providerConnection.spec!.pullSecret!)
         await typeByTestId('sshPrivateKey', providerConnection.spec!.sshPrivatekey!)

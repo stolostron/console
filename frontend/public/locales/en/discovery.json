@@ -3,36 +3,40 @@
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",
 
-    "disable.title": "Disable cluster discovery",
-    "disable.button": "Disable",
-    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted.",
+    "disable.title": "Delete discovery configuration",
+    "discoveryConfig.delete.btn": "Delete",
+    "discoveryConfig.delete.message": "You are deleting the <bold>{{discoveryConfigName}}</bold> discovery configuration. All related discovered clusters will be deleted.",
 
     "discoveredClusters": "Discovered clusters",
-    "discoveryConfig.title": "Enable cluster discovery",
+    "addDiscoveryConfig.title": "Add Discovery Configuration",
+    "editDiscoveryConfig.title": "Edit Discovery Configuration",
+
     "discoveryConfig.filterform.header": "Set filter(s) for your discovered clusters",
-    "discoveryConfig.connections.header": "Select connections to obtain discovered clusters information",
-    "discoveryConfig.connections.subheader": "Some provider connections enable you to discover clusters. Once you save these changes, the filtered clusters will appear in the Discovered clusters tab of the Cluster management page.",
-    "discoveryConfig.filterform.subheader": "Set filters for the discovered clusters from your connections to make sure you only process and add the clusters relevant to you. Only the 100 most recent clusters will be shown.", 
+    "discoveryConfig.connections.header": "Select a credential to obtain discovered clusters information",
+    "discoveryConfig.connections.subheader": "Some credentials enable you to discover clusters. Once you save these changes, the filtered clusters will appear in the Discovered clusters tab of the Cluster management page.",
+    "discoveryConfig.filterform.subheader": "Set filters for the discovered clusters from your credentials to make sure you only process and add the clusters relevant to you. Only the 100 most recent clusters will be shown.", 
     "discoveryConfig.lastActiveFilter.label": "Last active",
     "discoveryConfig.lastActiveFilter.labelHelp": "Only discoveredclusters active within this time period (in days) will be found",
     "discoveryConfig.lastActiveFilter.placeholder": "7",
     "discoveryConfig.discoveryVersions.label": "OpenShift version",
     "discoveryConfig.discoveryVersions.labelHelp": "Only OpenShift clusters matching the selected versions will be found",
-    "discoveryConfig.connections.label": "Provider connection",
+    "discoveryConfig.connections.label": "Credential",
     "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discovered clusters",
     "discoveryConfig.testFilter": "Test filter",
-    "discoveryConfig.enable": "Enable",
+    "discoveryConfig.add": "Add",
+    "discoveryConfig.edit": "Save",
     "discoveryConfig.cancel": "Cancel",
+    "discoveryConfig.delete": "Delete",
 
     "emptystate.defaultState.title": "No discovered clusters found",
     "emptystate.defaultState.msg": "You don't have any discovered clusters, yet. Credential(s) of type <bold>Red Hat OpenShift Cluster Manager</bold> must be added to create a DiscoveryConfig.",
-    "emptystate.addCredential": "Add Credential",
+    "emptystate.addCredential": "Add credential",
 
-    "emptystate.providerConnections.title": "No discovered clusters found",
-    "emptystate.providerConnections.msg": "You don't have any discovered clusters, yet. You have {{discoveryConfigTotal}} connection(s) to discover clusters from. Click the <bold>Enable cluster discovery</bold> button to set up a filter for discovered clusters from your connections.",
+    "emptystate.credentials.title": "No discovered clusters found",
+    "emptystate.credentials.msg": "You don't have any discovered clusters, yet. You have {{discoveryConfigTotal}} credential(s) to discover clusters from. Click the <bold>Enable cluster discovery</bold> button to set up a filter for discovered clusters from your connections.",
     "emptystate.enableClusterDiscovery": "Enable cluster discovery",
 
     "emptystate.discoveryEnabled.title": "No discovered clusters found",
     "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters, yet. Cluster discovery has been enabled, so return to this page later or edit to add more connections to the discovery.",
     "emptystate.viewDocumentation": "View documentation"
-}
+} 
