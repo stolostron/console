@@ -204,6 +204,8 @@ describe('discovery config page', () => {
 
         const deleteNock = nockDelete(discoveryConfigUpdated)
         await clickByText('discoveryConfig.delete')
+        await waitForText('disable.title')
+        await clickByText('discoveryConfig.delete.btn')
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
     })
 })

@@ -24,13 +24,15 @@ import {
 } from '@patternfly/react-core'
 import { deleteResource } from '../../../lib/resource-request'
 import { useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
+import { getErrorInfo } from '../../../components/ErrorPage'
+import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
@@ -192,6 +194,14 @@ export function DiscoveryConfigPageContent(props: {
     const history = useHistory()
     const [editing, setEditing] = useState<boolean>(false)
 
+    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
+        open: false,
+        confirm: () => {},
+        cancel: () => {},
+        title: '',
+        message: '',
+    })
+
     type LastActive = { day: number; stringDay: string; value: string }
     const lastActive: LastActive[] = [
         { day: 1, stringDay: '1 day', value: '1d' },
@@ -217,22 +227,46 @@ export function DiscoveryConfigPageContent(props: {
     }
 
     const deleteDiscoveryConfig = async () => {
-        alertContext.clearAlerts()
-        return new Promise(async (resolve, reject) => {
-            try {
-                await deleteResource(discoveryConfig)
-                resolve(undefined)
-                history.push(NavigationPath.discoveredClusters)
-            } catch (err) {
-                if (err instanceof Error) {
-                    alertContext.addAlert({
-                        type: 'danger',
-                        title: t('common:request.failed'),
-                        message: err.message,
-                    })
-                    reject()
+        setModalProps({
+            open: true,
+            title: t('disable.title'),
+            confirm: async () => {
+                try {
+                    if (discoveryConfig) {
+                        await deleteResource(discoveryConfig)
+                        setModalProps({
+                            open: false,
+                            confirm: () => {},
+                            cancel: () => {},
+                            title: '',
+                            message: '',
+                        })
+                        history.push(NavigationPath.discoveredClusters)
+                    } else {
+                        throw Error('Error retrieving discoveryconfigs')
+                    }
+                } catch (err) {
+                    alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                 }
-            }
+            },
+            confirmText: t('discoveryConfig.delete.btn'),
+            message: (
+                <Trans
+                    i18nKey={'discovery:discoveryConfig.delete.message'}
+                    components={{ bold: <strong /> }}
+                    values={{ discoveryConfigName: discoveryConfig.metadata.name }}
+                />
+            ),
+            isDanger: true,
+            cancel: () => {
+                setModalProps({
+                    open: false,
+                    confirm: () => {},
+                    cancel: () => {},
+                    title: '',
+                    message: '',
+                })
+            },
         })
     }
 
@@ -263,6 +297,7 @@ export function DiscoveryConfigPageContent(props: {
 
     return (
         <AcmForm>
+            <ConfirmModal {...modalProps} />
             <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
             <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
             <AcmSelect

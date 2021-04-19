@@ -3,9 +3,9 @@
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",
 
-    "disable.title": "Disable cluster discovery",
-    "disable.button": "Disable",
-    "disable.message": "You are disabling all cluster discovery. All connections will be removed from the filter, and the filter and current discovered clusters will be deleted.",
+    "disable.title": "Delete discovery config",
+    "discoveryConfig.delete.btn": "Delete",
+    "discoveryConfig.delete.message": "You are deleting discovery config <bold>{{discoveryConfigName}}</bold>. All related discovered clusters will be deleted.",
 
     "discoveredClusters": "Discovered clusters",
     "addDiscoveryConfig.title": "Add Discovery Config",
