@@ -27,7 +27,6 @@ import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { ProviderID, providers } from '../../../../lib/providers'
-import { IRequestResult } from '../../../../lib/resource-request'
 import {
     validateCertificate,
     validateGCProjectID,
@@ -43,7 +42,6 @@ import { AnsibleTowerSecret } from '../../../../resources/ansible-tower-secret'
 import { FeatureGate } from '../../../../resources/feature-gate'
 import { MultiClusterHub } from '../../../../resources/multi-cluster-hub'
 import {
-    createProviderConnection,
     getProviderConnectionProviderID,
     ProviderConnection,
     replaceProviderConnection,
