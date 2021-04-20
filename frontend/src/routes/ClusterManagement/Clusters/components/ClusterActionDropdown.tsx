@@ -235,7 +235,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
             id: 'detach-cluster',
-            text: t('managed.detached'),
+            text: t('managed.detach'),
             click: (cluster: Cluster) => {
                 setModalProps({
                     open: true,
@@ -260,7 +260,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
             id: 'destroy-cluster',
-            text: t('managed.destroySelected'),
+            text: t('managed.destroy'),
             click: (cluster: Cluster) => {
                 setModalProps({
                     open: true,

@@ -23,9 +23,10 @@ import { deleteCluster, detachCluster } from '../../../lib/delete-cluster'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
-import { ResourceErrorCode } from '../../../lib/resource-request'
+import { patchResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
+import { ClusterDeploymentDefinition, ClusterDeployment } from '../../../resources/cluster-deployment'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
@@ -265,29 +266,82 @@ export function ClustersTable(props: {
                 tableActions={props.tableActions}
                 bulkActions={[
                     {
-                        id: 'destroyCluster',
-                        title: t('managed.destroy'),
+                        id: 'upgradeClusters',
+                        title: t('managed.upgrade.plural'),
+                        click: (managedClusters: Array<Cluster>) => {
+                            if (!managedClusters) return
+                            setUpgradeClusters(managedClusters)
+                        },
+                    },
+                    {
+                        id: 'hibernate-cluster',
+                        title: t('managed.hibernate.plural'),
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.destroy'),
-                                action: t('destroy'),
-                                processing: t('destroying'),
+                                title: t('bulk.title.hibernate'),
+                                action: t('hibernate'),
+                                processing: t('hibernating'),
                                 resources: clusters,
-                                description: t('bulk.message.destroy'),
+                                description: t('bulk.message.hibernate'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
-                                close: () => setModalProps({ open: false }),
-                                isDanger: true,
-                                confirmText: t('confirm').toLowerCase(),
+                                actionFn: (cluster) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                            kind: ClusterDeploymentDefinition.kind,
+                                            metadata: {
+                                                name: cluster.name!,
+                                                namespace: cluster.namespace!,
+                                            },
+                                        } as ClusterDeployment,
+                                        [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                            })
+                        },
+                    },
+                    {
+                        id: 'resume-cluster',
+                        title: t('managed.resume.plural'),
+                        click: (clusters) => {
+                            setModalProps({
+                                open: true,
+                                title: t('bulk.title.resume'),
+                                action: t('resume'),
+                                processing: t('resuming'),
+                                resources: clusters,
+                                description: t('bulk.message.resume'),
+                                columns: modalColumns,
+                                keyFn: (cluster) => cluster.name as string,
+                                actionFn: (cluster) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                            kind: ClusterDeploymentDefinition.kind,
+                                            metadata: {
+                                                name: cluster.name!,
+                                                namespace: cluster.namespace!,
+                                            },
+                                        } as ClusterDeployment,
+                                        [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
                     },
                     {
                         id: 'detachCluster',
-                        title: t('managed.detachSelected'),
+                        title: t('managed.detach.plural'),
                         click: (clusters) => {
                             setModalProps({
                                 open: true,
@@ -307,11 +361,24 @@ export function ClustersTable(props: {
                         },
                     },
                     {
-                        id: 'upgradeClusters',
-                        title: t('managed.upgradeSelected'),
-                        click: (managedClusters: Array<Cluster>) => {
-                            if (!managedClusters) return
-                            setUpgradeClusters(managedClusters)
+                        id: 'destroyCluster',
+                        title: t('managed.destroy.plural'),
+                        click: (clusters) => {
+                            setModalProps({
+                                open: true,
+                                title: t('bulk.title.destroy'),
+                                action: t('destroy'),
+                                processing: t('destroying'),
+                                resources: clusters,
+                                description: t('bulk.message.destroy'),
+                                columns: modalColumns,
+                                keyFn: (cluster) => cluster.name as string,
+                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
+                                close: () => setModalProps({ open: false }),
+                                isDanger: true,
+                                confirmText: t('confirm').toLowerCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                            })
                         },
                     },
                 ]}

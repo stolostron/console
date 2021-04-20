@@ -10,7 +10,7 @@ import {
     AcmAlertContext,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import {
     ModalVariant,
@@ -44,7 +44,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 apiVersion: ClusterClaimApiVersion,
                 kind: ClusterClaimKind,
                 metadata: {
-                    name: '',
+                    generateName: `${props.clusterPool.metadata.name}-`,
                     namespace: props.clusterPool?.metadata.namespace,
                 },
                 spec: {
@@ -117,19 +117,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                 </DescriptionList>
                                 &nbsp;
                                 <AcmTextInput
-                                    id="clusterClaimName"
-                                    label={t('clusterClaim.name.label')}
-                                    placeholder={t('clusterClaim.name.placeholder')}
-                                    value={clusterClaim?.metadata.name}
-                                    onChange={(name) => {
-                                        updateClusterClaim((clusterClaim) => {
-                                            clusterClaim.metadata.name = name
-                                        })
-                                    }}
-                                    isRequired
-                                />
-                                &nbsp;
-                                <AcmTextInput
                                     id="clusterClaimLifetime"
                                     label={t('clusterClaim.lifetime.label')}
                                     placeholder={t('clusterClaim.lifetime.placeholder')}
@@ -196,7 +183,13 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 </AcmForm>
             ) : (
                 <>
-                    <p>{t('clusterClaim.create.message.success')}</p>
+                    <p>
+                        <Trans
+                            i18nKey="cluster:clusterClaim.create.message.success"
+                            values={{ clusterPoolName: clusterClaim?.spec?.clusterPoolName! }}
+                            components={{ bold: <strong /> }}
+                        />
+                    </p>
                     <DescriptionList
                         isHorizontal
                         isAutoColumnWidths
@@ -205,16 +198,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
-                        </DescriptionListGroup>
-                        <DescriptionListGroup>
-                            <DescriptionListTerm>{t('clusterClaim.clusterPool.name')}</DescriptionListTerm>
-                            <DescriptionListDescription>
-                                {clusterClaim?.spec?.clusterPoolName!}
-                            </DescriptionListDescription>
-                        </DescriptionListGroup>
-                        <DescriptionListGroup>
-                            <DescriptionListTerm>{t('clusterClaim.clusterPool.namespace')}</DescriptionListTerm>
-                            <DescriptionListDescription>{clusterClaim?.metadata.namespace}</DescriptionListDescription>
                         </DescriptionListGroup>
                     </DescriptionList>
                     <AcmButton
