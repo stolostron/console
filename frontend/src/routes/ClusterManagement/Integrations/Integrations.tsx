@@ -3,6 +3,7 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
+    AcmButton,
     AcmEmptyState,
     AcmForm,
     AcmPageContent,
@@ -15,9 +16,14 @@ import {
     AnsibleTowerSecret,
     AnsibleTowerSecretApiVersion,
     AnsibleTowerSecretKind,
+    filterForAnsibleSecrets,
 } from '../../../resources/ansible-tower-secret'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { useRecoilState } from 'recoil'
+import { secretsState } from '../../../atoms'
+import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
+import { useHistory } from 'react-router-dom'
 
 export default function IntegrationsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -35,21 +41,20 @@ export default function IntegrationsPage() {
 
 function IntegrationTable() {
     // Load Data
+    const [secrets] = useRecoilState(secretsState)
+    const ansibleSecrets = filterForAnsibleSecrets(secrets)
 
-    const exampleIntegrations: AnsibleTowerSecret[] = [
-        {
-            apiVersion: AnsibleTowerSecretApiVersion,
-            kind: AnsibleTowerSecretKind,
-            metadata: {
-                name: 'Test-connection',
-                namespace: 'default',
-            },
-        },
-    ]
     function mckeyFn(ansibleTowerSecret: AnsibleTowerSecret) {
         return ansibleTowerSecret.metadata.uid!
     }
+
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<AnsibleTowerSecret> | { open: false }>({
+        open: false,
+    })
+
     const { t } = useTranslation(['cluster'])
+
+    const history = useHistory()
 
     // Set table
     return (
@@ -57,7 +62,7 @@ function IntegrationTable() {
             <AcmTable<AnsibleTowerSecret>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="integrations"
-                items={exampleIntegrations}
+                items={ansibleSecrets}
                 columns={[
                     {
                         header: t('table.name'),
@@ -93,48 +98,46 @@ function IntegrationTable() {
                         id: 'deleteIntegrations',
                         title: t('bulk.delete.integrations'),
                         click: (integrations) => {
-                            // setModalProps({
-                            //     open: true,
-                            //     title: t('bulk.delete.clusterPools'),
-                            //     action: t('common:delete'),
-                            //     processing: t('common:deleting'),
-                            //     resources: clusterPools,
-                            //     description: t('bulk.message.deleteClusterPool'),
-                            //     columns: modalColumns,
-                            //     keyFn: mckeyFn,
-                            //     actionFn: deleteResource,
-                            //     close: () => setModalProps({ open: false }),
-                            //     isDanger: true,
-                            //     confirmText: t('confirm').toLowerCase(),
-                            //     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                            // })
+                            setModalProps({
+                                open: true,
+                                title: t('bulk.delete.integrations'),
+                                action: t('common:delete'),
+                                processing: t('common:deleting'),
+                                resources: integrations,
+                                description: t('bulk.message.delete.integrations'),
+                                // columns: modalColumns,
+                                keyFn: mckeyFn,
+                                actionFn: deleteResource,
+                                close: () => setModalProps({ open: false }),
+                                isDanger: true,
+                                confirmText: t('confirm').toLowerCase(),
+                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                            })
                         },
                     },
                 ]}
-                tableActions={[
-                    
-                ]}
+                tableActions={[]}
                 rowActions={[]}
                 emptyState={
                     <AcmEmptyState
                         key="mcEmptyState"
-                        title={t('cluster:integration.emptyStateHeader')}
+                        title={t('integration.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'integration.integrations.emptyStateMsg'}
+                                i18nKey={t('integration.emptyStateMsg')}
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
-                        // action={
-                        //     <AcmButton
-                        //         role="link"
-                        //         onClick={() => history.push(NavigationPath.clusterPools)}
-                        //         disabled={!canCreateClusterPool}
-                        //         tooltip={t('common:rbac.unauthorized')}
-                        //     >
-                        //         {t('managed.createClusterPool')}
-                        //     </AcmButton>
-                        // }
+                        action={
+                            <AcmButton
+                                role="link"
+                                onClick={() => history.push(NavigationPath.addCredentials)}
+                                // disabled={}
+                                // tooltip={t('common:rbac.unauthorized')}
+                            >
+                                {t('integration.create')}
+                            </AcmButton>
+                        }
                     />
                 }
             ></AcmTable>
