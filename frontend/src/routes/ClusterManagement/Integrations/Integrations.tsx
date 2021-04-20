@@ -35,13 +35,20 @@ export default function IntegrationsPage() {
     )
 }
 
+type SubRow = {
+    title: string
+    id?: string
+    clusters?: number
+    templates?: number
+    props?: {}
+}
 function IntegrationTable() {
     // Load Data
     const [secrets] = useRecoilState(secretsState)
     const ansibleSecrets = filterForAnsibleSecrets(secrets)
     const providerSecrets = filterForProviderSecrets(secrets)
 
-    const secretMap: { [key: string]: Array<Object> } = {}
+    const secretMap: { [key: string]: Array<SubRow> } = {}
     ansibleSecrets.forEach((ansibleSecret) => {
         secretMap[ansibleSecret.metadata.name!] = []
     })
@@ -49,11 +56,11 @@ function IntegrationTable() {
         if (provider.spec?.anisibleSecretName) {
             if (provider.spec.anisibleSecretName in secretMap) {
                 secretMap[provider.spec.anisibleSecretName!].push({
-                    rowOne: '',
                     title: provider.metadata.name!,
                     props: {
                         colSpan: 3,
                     },
+
                 })
             }
         }
@@ -88,6 +95,10 @@ function IntegrationTable() {
                     {
                         header: t('table.linkedCred'),
                         cell: (ansibleSecret) => {
+                            if (secretMap[ansibleSecret.metadata.name!].length > 0) {
+                                const title = secretMap[ansibleSecret.metadata.name!][0].title
+                                return title
+                            }
                             return ''
                         },
                     },
@@ -113,6 +124,7 @@ function IntegrationTable() {
                             cells: [{ title: '', id: 'blank-cell' }, row],
                         }
                     })
+                    subRows.shift()
 
                     return subRows
                 }}
