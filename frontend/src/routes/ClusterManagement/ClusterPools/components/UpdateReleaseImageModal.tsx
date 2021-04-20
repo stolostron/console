@@ -8,6 +8,7 @@ import { useRecoilState } from 'recoil'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
 import { patchResource } from '../../../../lib/resource-request'
 import { ClusterPool } from '../../../../resources/cluster-pool'
+import { ClusterImageSet } from '../../../../resources/cluster-image-set'
 import { clusterImageSetsState } from '../../../../atoms'
 
 export type UpdateReleaseImageModalProps = {
@@ -67,11 +68,26 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                         >
                             {clusterImageSets
                                 ?.filter((cis) => cis.spec?.releaseImage !== currentImageSet?.spec!.releaseImage)
-                                ?.map((cis) => (
-                                    <SelectOption key={cis.metadata.name} value={cis.metadata.name}>
-                                        {cis.spec!.releaseImage}
-                                    </SelectOption>
-                                ))}
+                                ?.sort((a: ClusterImageSet, b: ClusterImageSet) => {
+                                    return b.spec!.releaseImage.localeCompare(a.spec!.releaseImage)
+                                })
+                                ?.map((cis) => {
+                                    const releaseImage = cis?.spec?.releaseImage
+                                    const tagStartIndex = releaseImage?.indexOf(':') ?? 0
+                                    const version = releaseImage?.slice(
+                                        tagStartIndex + 1,
+                                        releaseImage.indexOf('-', tagStartIndex)
+                                    )
+                                    return (
+                                        <SelectOption
+                                            key={cis.metadata.name}
+                                            value={cis.metadata.name}
+                                            description={releaseImage}
+                                        >
+                                            {`OpenShift ${version}`}
+                                        </SelectOption>
+                                    )
+                                })}
                         </AcmSelect>
                     )
                 },
