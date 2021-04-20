@@ -324,7 +324,7 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to delete cluster using row action', async () => {
-        await clickRowAction(1, 'managed.destroySelected')
+        await clickRowAction(1, 'managed.destroy')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
@@ -333,7 +333,7 @@ describe('Clusters Page', () => {
 
     test('should be able to delete cluster using bulk action', async () => {
         await selectTableRow(1)
-        await clickBulkAction('managed.destroy')
+        await clickBulkAction('managed.destroy.plural')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('destroy')
@@ -341,7 +341,7 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to detach cluster using row action', async () => {
-        await clickRowAction(1, 'managed.detached')
+        await clickRowAction(1, 'managed.detach')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
         await clickByText('detach')
@@ -350,7 +350,7 @@ describe('Clusters Page', () => {
 
     test('should be able to detach cluster using bulk action', async () => {
         await selectTableRow(2)
-        await clickBulkAction('managed.detachSelected')
+        await clickBulkAction('managed.detach.plural')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         await clickByText('detach')
@@ -375,14 +375,14 @@ describe('Clusters Page', () => {
 
     test('batch upgrade support when upgrading single cluster', async () => {
         await selectTableRow(3)
-        await clickBulkAction('managed.upgradeSelected')
+        await clickBulkAction('managed.upgrade.plural')
         await waitForText(`bulk.title.upgrade`)
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
         await selectTableRow(3)
         await selectTableRow(5)
-        await clickBulkAction('managed.upgradeSelected')
+        await clickBulkAction('managed.upgrade.plural')
         await waitForText(`bulk.title.upgrade`)
     })
 })
