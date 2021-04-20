@@ -760,10 +760,10 @@ export function CloudConnectionIntegrationForm(props: {
                 id="ansibleSecrets"
                 label={t('addConnection.ansibleConnection.label')}
                 placeholder={t('addConnection.ansibleConnection.placeholder')}
-                value={providerConnection.spec?.anisibleSecretName}
+                value={providerConnection.spec?.ansibleSecretName}
                 onChange={(name) => {
                     updateProviderConnection((providerConnection) => {
-                        providerConnection.spec!.anisibleSecretName = name as string
+                        providerConnection.spec!.ansibleSecretName = name as string
                     })
                 }}
             >

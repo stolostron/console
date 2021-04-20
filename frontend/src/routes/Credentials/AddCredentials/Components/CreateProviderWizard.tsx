@@ -112,8 +112,8 @@ export function CreateProviderWizard(props: {
 
             ocmAPIToken: '',
 
-            anisibleSecretName: '',
-            anisibleCuratorTemplateName: '',
+            ansibleSecretName: '',
+            ansibleCuratorTemplateName: '',
         },
     })
 

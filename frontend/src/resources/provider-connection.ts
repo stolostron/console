@@ -64,8 +64,8 @@ export interface ProviderConnection extends V1Secret {
         sshPrivatekey: string
         sshPublickey: string
 
-        anisibleSecretName?: string
-        anisibleCuratorTemplateName?: string
+        ansibleSecretName?: string
+        ansibleCuratorTemplateName?: string
     }
 }
 

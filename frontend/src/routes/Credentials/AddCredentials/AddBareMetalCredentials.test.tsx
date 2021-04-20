@@ -91,7 +91,7 @@ describe('add connection page', () => {
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
-                anisibleSecretName: 'test-ansible-secret',
+                ansibleSecretNameName: 'test-ansible-secret',
                 anisibleCuratorTemplateName: '',
             },
         }

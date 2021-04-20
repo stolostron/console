@@ -86,7 +86,7 @@ describe('add connection page', () => {
                 sshPrivatekey: '',
                 sshPublickey: '',
                 ocmAPIToken: 'test-ocm-api-token',
-                anisibleSecretName: 'ansible-tower-secret',
+                ansibleSecretNameName: 'ansible-tower-secret',
                 anisibleCuratorTemplateName: '',
             },
         }
