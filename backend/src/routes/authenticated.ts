@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
 import { get, Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
