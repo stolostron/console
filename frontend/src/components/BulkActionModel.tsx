@@ -19,6 +19,7 @@ import {
     Progress,
     ProgressMeasureLocation,
 } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
@@ -87,6 +88,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                             {props.columns && props.keyFn && (
                                 <AcmTablePaginationContextProvider localStorageKey="model">
                                     <AcmTable<T>
+                                        gridBreakPoint={TableGridBreakpoint.none}
                                         plural={props.plural}
                                         items={props.resources}
                                         columns={props.columns}

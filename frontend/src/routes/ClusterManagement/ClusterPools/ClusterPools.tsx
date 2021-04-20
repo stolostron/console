@@ -10,18 +10,19 @@ import {
     Provider,
     AcmButton,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
+import { makeStyles } from '@material-ui/styles'
 import { clusterPoolsState, clusterImageSetsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { canUser, rbacDelete, rbacCreate, rbacPatch } from '../../../lib/rbac-util'
 import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
 import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
-import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
+import { Cluster } from '../../../lib/get-cluster'
 import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { useAllClusters } from '../Clusters/components/useAllClusters'
@@ -131,96 +132,36 @@ export function ClusterPoolsTable() {
                     if (clusterPoolClusters.length === 0) {
                         return undefined
                     } else {
+                        const available = clusterPoolClusters.filter((cpc) => cpc.hive.clusterClaimName === undefined)
+                        const claimed = clusterPoolClusters.filter((cpc) => cpc.hive.clusterClaimName)
                         return [
                             {
                                 cells: [
                                     {
                                         title: (
-                                            <AcmTable<Cluster>
-                                                gridBreakPoint={TableGridBreakpoint.none}
-                                                keyFn={(cluster: Cluster) => cluster.name!}
-                                                key="clusterPoolClustersTable"
-                                                autoHidePagination
-                                                showToolbar={false}
-                                                plural="clusters"
-                                                items={clusterPoolClusters}
-                                                columns={[
-                                                    {
-                                                        header: t('table.clusterName'),
-                                                        sort: 'name',
-                                                        search: 'name',
-                                                        cell: (cluster: Cluster) => (
-                                                            <span style={{ whiteSpace: 'nowrap' }}>
-                                                                <Link
-                                                                    to={NavigationPath.clusterDetails.replace(
-                                                                        ':id',
-                                                                        cluster.name as string
-                                                                    )}
-                                                                >
-                                                                    {cluster.name}
-                                                                </Link>
-                                                            </span>
-                                                        ),
-                                                    },
-                                                    {
-                                                        header: t('table.status'),
-                                                        sort: 'status',
-                                                        search: 'status',
-                                                        cell: (cluster: Cluster) => (
-                                                            <span style={{ whiteSpace: 'nowrap' }}>
-                                                                <StatusField cluster={cluster} />
-                                                            </span>
-                                                        ),
-                                                    },
-                                                    {
-                                                        header: t('table.availableToClaim'),
-                                                        sort: 'hive',
-                                                        search: 'status',
-                                                        cell: (cluster: Cluster) => {
-                                                            const availableStatuses = [
-                                                                ClusterStatus.ready,
-                                                                ClusterStatus.detached,
-                                                                ClusterStatus.hibernating,
-                                                                ClusterStatus.resuming,
-                                                                ClusterStatus.stopping,
-                                                            ]
-                                                            const isAvailable =
-                                                                !cluster.hive.clusterClaimName &&
-                                                                availableStatuses.includes(cluster.status)
-                                                            return (
-                                                                <span style={{ whiteSpace: 'nowrap' }}>
-                                                                    {t(`${isAvailable ? 'common:yes' : 'common:no'}`)}
-                                                                </span>
-                                                            )
-                                                        },
-                                                    },
-                                                    {
-                                                        header: t('table.claimName'),
-                                                        sort: 'hive',
-                                                        search: 'status',
-                                                        cell: (cluster: Cluster) => (
-                                                            <span style={{ whiteSpace: 'nowrap' }}>
-                                                                {cluster.hive.clusterClaimName ?? '-'}
-                                                            </span>
-                                                        ),
-                                                    },
-                                                    {
-                                                        header: t('table.lifetime'),
-                                                        sort: 'hive.lifetime',
-                                                        search: 'hive.lifetime',
-                                                        cell: (cluster: Cluster) => {
-                                                            if (!cluster.hive.clusterClaimName) {
-                                                                return '-'
-                                                            }
-                                                            return (
-                                                                <span style={{ whiteSpace: 'nowrap' }}>
-                                                                    <div>{cluster.hive.lifetime ?? '-'}</div>
-                                                                </span>
-                                                            )
-                                                        },
-                                                    },
-                                                ]}
-                                            />
+                                            <>
+                                                {available.length > 0 && (
+                                                    <div style={{ marginTop: '16px', marginBottom: '24px' }}>
+                                                        <TextContent>
+                                                            <Text component={TextVariants.h3}>
+                                                                {t('clusterPool.available')}
+                                                            </Text>
+                                                        </TextContent>
+                                                        <ClusterPoolClustersTable clusters={available} />
+                                                    </div>
+                                                )}
+
+                                                {claimed.length > 0 && (
+                                                    <div style={{ marginBottom: '24px' }}>
+                                                        <TextContent>
+                                                            <Text component={TextVariants.h3}>
+                                                                {t('clusterPool.claimed')}
+                                                            </Text>
+                                                        </TextContent>
+                                                        <ClusterPoolClustersTable clusters={claimed} />
+                                                    </div>
+                                                )}
+                                            </>
                                         ),
                                     },
                                 ],
@@ -278,26 +219,34 @@ export function ClusterPoolsTable() {
                         cell: (clusterPool: ClusterPool) => {
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                                    <div>
-                                        {clusterPool?.status?.ready}/{clusterPool.spec!.size}
-                                    </div>
-                                    {clusterPool?.status?.ready !== 0 && (
-                                        <RbacButton
-                                            onClick={() => {
-                                                setClusterClaimModalProps({
-                                                    clusterPool,
-                                                    onClose: () => setClusterClaimModalProps(undefined),
-                                                })
-                                            }}
-                                            variant="link"
-                                            style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                                            rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
-                                        >
-                                            {t('clusterPool.claim')}
-                                        </RbacButton>
-                                    )}
+                                    {clusterPool?.status?.ready}/{clusterPool.spec!.size}
                                 </span>
                             )
+                        },
+                    },
+                    {
+                        header: '',
+                        cellTransforms: [fitContent],
+                        cell: (clusterPool: ClusterPool) => {
+                            if (clusterPool?.status?.ready !== 0) {
+                                return (
+                                    <RbacButton
+                                        onClick={() => {
+                                            setClusterClaimModalProps({
+                                                clusterPool,
+                                                onClose: () => setClusterClaimModalProps(undefined),
+                                            })
+                                        }}
+                                        variant="link"
+                                        style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                                        rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
+                                    >
+                                        {t('clusterPool.claim')}
+                                    </RbacButton>
+                                )
+                            } else {
+                                return null
+                            }
                         },
                     },
                     {
@@ -440,5 +389,78 @@ export function ClusterPoolsTable() {
                 }
             />
         </Fragment>
+    )
+}
+
+const useStyles = makeStyles({
+    table: {
+        '& .pf-c-table tr > *:first-child': {
+            paddingLeft: '0 !important',
+        },
+    },
+})
+
+function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
+    const { t } = useTranslation(['cluster'])
+    const classes = useStyles()
+    return (
+        <div className={classes.table}>
+            <AcmTable<Cluster>
+                gridBreakPoint={TableGridBreakpoint.none}
+                keyFn={(cluster: Cluster) => cluster.name!}
+                key="clusterPoolClustersTable"
+                autoHidePagination
+                showToolbar={false}
+                plural="clusters"
+                items={props.clusters}
+                columns={[
+                    {
+                        header: t('table.clusterName'),
+                        sort: 'name',
+                        search: 'name',
+                        cell: (cluster: Cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
+                                    {cluster.name}
+                                </Link>
+                            </span>
+                        ),
+                    },
+                    {
+                        header: t('table.status'),
+                        sort: 'status',
+                        search: 'status',
+                        cell: (cluster: Cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <StatusField cluster={cluster} />
+                            </span>
+                        ),
+                    },
+                    {
+                        header: t('table.claimName'),
+                        sort: 'hive',
+                        search: 'status',
+                        cell: (cluster: Cluster) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>{cluster.hive.clusterClaimName ?? '-'}</span>
+                        ),
+                    },
+                    {
+                        header: t('table.lifetime'),
+                        sort: 'hive.lifetime',
+                        search: 'hive.lifetime',
+                        cell: (cluster: Cluster) => {
+                            if (!cluster.hive.clusterClaimName) {
+                                return '-'
+                            }
+                            return (
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    <div>{cluster.hive.lifetime ?? '-'}</div>
+                                </span>
+                            )
+                        },
+                    },
+                ]}
+            />
+        </div>
     )
 }

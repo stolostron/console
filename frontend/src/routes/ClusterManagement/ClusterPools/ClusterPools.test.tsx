@@ -83,11 +83,24 @@ const mockClusterPool: ClusterPool = {
     },
 }
 
+const mockCreateClusterClaim: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        generateName: `${mockClusterPool.metadata.name}-`,
+        namespace: mockClusterPool.metadata.namespace!,
+    },
+    spec: {
+        clusterPoolName: mockClusterPool.metadata.name!,
+        lifetime: '1h',
+    },
+}
+
 const mockClusterClaim: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
     metadata: {
-        name: 'test-claim',
+        name: `${mockClusterPool.metadata.name}-abcd`,
         namespace: mockClusterPool.metadata.namespace!,
     },
     spec: {
@@ -165,9 +178,8 @@ describe('ClusterPools page', () => {
         await clickByLabel('Actions', 0)
         await clickByText('clusterPool.claim', 0)
         await waitForText('clusterClaim.create.title')
-        await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
+        const createNocks: Scope[] = [nockCreate(mockCreateClusterClaim, mockClusterClaim), nockGet(mockClusterClaim)]
         await clickByText('common:claim')
         await waitForNocks(createNocks)
     })
