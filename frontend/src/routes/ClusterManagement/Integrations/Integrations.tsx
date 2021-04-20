@@ -53,9 +53,9 @@ function IntegrationTable() {
         secretMap[ansibleSecret.metadata.name!] = []
     })
     providerSecrets.forEach((provider) => {
-        if (provider.spec?.anisibleSecretName) {
-            if (provider.spec.anisibleSecretName in secretMap) {
-                secretMap[provider.spec.anisibleSecretName!].push({
+        if (provider.spec?.ansibleSecretName) {
+            if (provider.spec.ansibleSecretName in secretMap) {
+                secretMap[provider.spec.ansibleSecretName!].push({
                     title: provider.metadata.name!,
                     props: {
                         colSpan: 3,
