@@ -60,7 +60,6 @@ function IntegrationTable() {
                     props: {
                         colSpan: 3,
                     },
-
                 })
             }
         }
