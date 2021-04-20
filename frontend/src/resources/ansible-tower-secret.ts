@@ -94,6 +94,7 @@ export function filterForAnsibleSecrets(secrets: Secret[]) {
                 name: secret.metadata.name,
                 namespace: secret.metadata.namespace,
                 labels: {},
+                uid: secret.metadata.uid,
             },
         }
         if (

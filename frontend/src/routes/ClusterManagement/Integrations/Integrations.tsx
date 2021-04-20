@@ -1,29 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
 import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
-    AcmForm,
     AcmPageContent,
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { useTranslation, Trans } from 'react-i18next'
-import {
-    AnsibleTowerSecret,
-    AnsibleTowerSecretApiVersion,
-    AnsibleTowerSecretKind,
-    filterForAnsibleSecrets,
-} from '../../../resources/ansible-tower-secret'
 import { TableGridBreakpoint } from '@patternfly/react-table'
+import { Fragment, useContext, useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../atoms'
+import { errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { providers } from '../../../lib/providers'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import { useHistory } from 'react-router-dom'
+import { AnsibleTowerSecret, filterForAnsibleSecrets } from '../../../resources/ansible-tower-secret'
+import { filterForProviderSecrets, ProviderConnection } from '../../../resources/provider-connection'
 
 export default function IntegrationsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -43,10 +39,27 @@ function IntegrationTable() {
     // Load Data
     const [secrets] = useRecoilState(secretsState)
     const ansibleSecrets = filterForAnsibleSecrets(secrets)
+    const providerSecrets = filterForProviderSecrets(secrets)
 
-    function mckeyFn(ansibleTowerSecret: AnsibleTowerSecret) {
-        return ansibleTowerSecret.metadata.uid!
-    }
+    const secretMap: { [key: string]: Array<Object> } = {}
+    ansibleSecrets.forEach((ansibleSecret) => {
+        secretMap[ansibleSecret.metadata.name!] = []
+    })
+    providerSecrets.forEach((provider) => {
+        if (provider.spec?.anisibleSecretName) {
+            if (provider.spec.anisibleSecretName in secretMap) {
+                secretMap[provider.spec.anisibleSecretName!].push({
+                    rowOne: '',
+                    title: provider.metadata.name!,
+                    props: {
+                        colSpan: 3,
+                    },
+                })
+            }
+        }
+    })
+
+    console.log('checking Secret Map: ', secretMap)
 
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<AnsibleTowerSecret> | { open: false }>({
         open: false,
@@ -91,36 +104,32 @@ function IntegrationTable() {
                         },
                     },
                 ]}
-                keyFn={mckeyFn}
-                key="integrationTable"
-                bulkActions={[
+                addSubRows={(ansibleSecret) => {
+                    if (secretMap[ansibleSecret.metadata.name!].length < 1) {
+                        return undefined
+                    }
+                    const subRows: Array<Object> = secretMap[ansibleSecret.metadata.name!].map((row) => {
+                        return {
+                            cells: [{ title: '', id: 'blank-cell' }, row],
+                        }
+                    })
+
+                    return subRows
+                }}
+                keyFn={(ansibleSecret: AnsibleTowerSecret) => {
+                    console.log('uid: ', ansibleSecret.metadata.uid as string)
+                    return ansibleSecret.metadata.uid as string
+                }}
+                tableActions={[]}
+                rowActions={[
                     {
-                        id: 'deleteIntegrations',
-                        title: t('bulk.delete.integrations'),
-                        click: (integrations) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.delete.integrations'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
-                                resources: integrations,
-                                description: t('bulk.message.delete.integrations'),
-                                // columns: modalColumns,
-                                keyFn: mckeyFn,
-                                actionFn: deleteResource,
-                                close: () => setModalProps({ open: false }),
-                                isDanger: true,
-                                confirmText: t('confirm').toLowerCase(),
-                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                            })
-                        },
+                        id: 'delete',
+                        title: 'Delete',
+                        click: () => {},
                     },
                 ]}
-                tableActions={[]}
-                rowActions={[]}
                 emptyState={
                     <AcmEmptyState
-                        key="mcEmptyState"
                         title={t('integration.emptyStateHeader')}
                         message={
                             <Trans
