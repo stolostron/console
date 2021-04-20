@@ -226,7 +226,9 @@ export function LoadData(props: { children?: ReactNode }) {
                 headers: { accept: 'application/json' },
             }).then((res) => {
                 switch (res.status) {
-                    case 401:
+                    case 200:
+                        break
+                    default:
                         window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
                         break
                 }
