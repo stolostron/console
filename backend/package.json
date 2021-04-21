@@ -18,11 +18,11 @@
     },
     "dependencies": {
         "find-my-way": "^4.1.0",
-        "pino": "^6.11.2",
+        "pino": "^6.11.3",
         "raw-body": "^2.4.1"
     },
     "devDependencies": {
-        "@types/eslint": "^7.2.9",
+        "@types/eslint": "^7.2.10",
         "@types/eslint-config-prettier": "^6.11.0",
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.22",
@@ -33,8 +33,8 @@
         "@typescript-eslint/eslint-plugin": "^4.22.0",
         "@typescript-eslint/parser": "^4.22.0",
         "eslint": "^7.24.0",
-        "eslint-config-prettier": "^8.1.0",
-        "eslint-plugin-prettier": "^3.3.1",
+        "eslint-config-prettier": "^8.2.0",
+        "eslint-plugin-prettier": "^3.4.0",
         "jest": "^26.x.x",
         "nock": "^13.0.11",
         "pino-zen": "^1.0.20",
