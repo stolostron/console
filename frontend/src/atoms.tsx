@@ -197,22 +197,16 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        let closing = false
         let evtSource: EventSource | undefined
         function startWatch() {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
-                switch (evtSource?.readyState) {
-                    case EventSource.CLOSED:
-                        if (!closing) window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                        break
-                }
+                console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
             }
         }
         startWatch()
         return () => {
-            closing = true
             if (evtSource) evtSource.close()
         }
 
@@ -229,7 +223,7 @@ export function LoadData(props: { children?: ReactNode }) {
                     case 200:
                         break
                     default:
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
                         break
                 }
                 setTimeout(checkLoggedIn, 30 * 1000)
