@@ -203,6 +203,11 @@ export function LoadData(props: { children?: ReactNode }) {
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
+                switch (evtSource?.readyState) {
+                    case EventSource.CLOSED:
+                        startWatch()
+                        break
+                }
             }
         }
         startWatch()
@@ -218,16 +223,22 @@ export function LoadData(props: { children?: ReactNode }) {
             fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
                 credentials: 'include',
                 headers: { accept: 'application/json' },
-            }).then((res) => {
-                switch (res.status) {
-                    case 200:
-                        break
-                    default:
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
-                        break
-                }
-                setTimeout(checkLoggedIn, 30 * 1000)
             })
+                .then((res) => {
+                    switch (res.status) {
+                        case 200:
+                            break
+                        default:
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            break
+                    }
+                })
+                .catch(() => {
+                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                })
+                .finally(() => {
+                    setTimeout(checkLoggedIn, 30 * 1000)
+                })
         }
         checkLoggedIn()
     }, [])
