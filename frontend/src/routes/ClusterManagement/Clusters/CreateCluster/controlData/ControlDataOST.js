@@ -98,7 +98,7 @@ const controlDataOST = [
                 tooltip: 'tooltip.creation.ocp.otp.instance.type',
                 id: 'masterType',
                 type: 'text',
-                active: 'm1.large',
+                active: 'm1.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9-_.]+',
                     notification: 'creation.ocp.cluster.valid.alphanumeric.period',
@@ -145,7 +145,7 @@ const controlDataOST = [
                 tooltip: 'tooltip.creation.ocp.otp.instance.type',
                 id: 'workerType',
                 type: 'text',
-                active: 'm1.large',
+                active: 'm1.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9-_.]+',
                     notification: 'creation.ocp.cluster.valid.alphanumeric.period',
