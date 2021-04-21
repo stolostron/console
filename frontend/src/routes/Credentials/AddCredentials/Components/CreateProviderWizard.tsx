@@ -56,7 +56,7 @@ export function CreateProviderWizard(props: {
 }) {
     const [currentStep, setCurrentStep] = useState(1)
     const [nextButtonName, setNextButtonName] = useState('Next')
-    const [currentCredentialType, setCurrentCredentialType] = useState(CredentialType.ansible)
+    const [currentCredentialType, setCurrentCredentialType] = useState(CredentialType.cloudProvider)
     const [initialSecretMeta, setInitialSecretMeta] = useState({ name: '', namespace: '' })
 
     const [ansibleSecret, setAnsibleSecret] = useState<AnsibleTowerSecret>({
@@ -120,7 +120,12 @@ export function CreateProviderWizard(props: {
     })
 
     const [credentialInputstep, setCredentialInputstep] = useState<JSX.Element>(
-        <AnsibleTowerSecretForm projects={props.projects} ansibleSecret={ansibleSecret} isEditing={false} />
+        <CloudConnectionForm
+            providerConnection={providerConnection}
+            projects={props.projects}
+            discoveryFeatureGate={props.discoveryFeatureGate}
+            isEditing={false}
+        />
     )
 
     const steps = useMemo<WizardStep[]>(
@@ -299,7 +304,6 @@ function CredentialTypeStep(props: {
                         providerConnection={providerConnection}
                         projects={props.projects}
                         discoveryFeatureGate={props.discoveryFeatureGate}
-                        multiClusterHubs={props.multiClusterHubs}
                         isEditing={false}
                     />
                 )
@@ -319,21 +323,6 @@ function CredentialTypeStep(props: {
                 <Gallery hasGutter>
                     <GalleryItem>
                         <Card
-                            id="ansible.card"
-                            isSelectable
-                            isSelected={currentCredentialType === CredentialType.ansible}
-                            onClick={() => {
-                                onClickCredentialCard(CredentialType.ansible, props.setCredentialInputstep)
-                            }}
-                        >
-                            <CardHeader>
-                                <RedhatIcon size="xl" />
-                            </CardHeader>
-                            <CardBody>Ansible Tower</CardBody>
-                        </Card>
-                    </GalleryItem>
-                    <GalleryItem>
-                        <Card
                             id="provider.card"
                             isSelectable
                             isSelected={currentCredentialType === CredentialType.cloudProvider}
@@ -345,6 +334,21 @@ function CredentialTypeStep(props: {
                                 <CloudIcon size="xl" />
                             </CardHeader>
                             <CardBody>Infrastructure Provider</CardBody>
+                        </Card>
+                    </GalleryItem>
+                    <GalleryItem>
+                        <Card
+                            id="ansible.card"
+                            isSelectable
+                            isSelected={currentCredentialType === CredentialType.ansible}
+                            onClick={() => {
+                                onClickCredentialCard(CredentialType.ansible, props.setCredentialInputstep)
+                            }}
+                        >
+                            <CardHeader>
+                                <RedhatIcon size="xl" />
+                            </CardHeader>
+                            <CardBody>Ansible Tower</CardBody>
                         </Card>
                     </GalleryItem>
                 </Gallery>
