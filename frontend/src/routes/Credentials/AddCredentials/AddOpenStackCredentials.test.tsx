@@ -85,8 +85,8 @@ describe('add connection page', () => {
                 pullSecret: '{"pullSecret":"secret"}',
                 sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
                 sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
-                ansibleSecretNameName: 'ansible-tower-secret',
-                anisibleCuratorTemplateName: '',
+                ansibleSecretName: 'ansible-tower-secret',
+                ansibleCuratorTemplateName: '',
                 openstackCloudsYaml:
                     'clouds:\n  openstack:\n    auth:\n      auth_url: http://1.2.3.4:5000\n      username: admin\n      password: fake\n      project_id: 123456789\n      project_name: admin\n      user_domain_name: Default\n    region_name: regionOne\n    interface: public\n    identity_api_version: 3',
                 openstackCloud: 'openstack',
