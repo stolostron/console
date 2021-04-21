@@ -53,7 +53,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -189,9 +189,6 @@ export function LoadData(props: { children?: ReactNode }) {
                             processEvents()
                             setLoading(false)
                             break
-                        case 'UNAUTHORIZED':
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                            break
                     }
                 } catch (err) {
                     console.error(err)
@@ -199,26 +196,50 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        let closing = false
         let evtSource: EventSource | undefined
         function startWatch() {
             evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
+                console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
                 switch (evtSource?.readyState) {
                     case EventSource.CLOSED:
-                        if (!closing) window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        startWatch()
                         break
                 }
             }
         }
         startWatch()
         return () => {
-            closing = true
             if (evtSource) evtSource.close()
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        function checkLoggedIn() {
+            fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
+                credentials: 'include',
+                headers: { accept: 'application/json' },
+            })
+                .then((res) => {
+                    switch (res.status) {
+                        case 200:
+                            break
+                        default:
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            break
+                    }
+                })
+                .catch(() => {
+                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                })
+                .finally(() => {
+                    setTimeout(checkLoggedIn, 30 * 1000)
+                })
+        }
+        checkLoggedIn()
     }, [])
 
     if (loading) return <LoadingPage />

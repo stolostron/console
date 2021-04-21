@@ -774,7 +774,7 @@ describe('ClusterDetails', () => {
     test('overview page handles detach', async () => {
         await clickByText('actions')
 
-        await clickByText('managed.detached')
+        await clickByText('managed.detach')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
         const deleteNock = nockDelete(mockManagedCluster)
@@ -784,7 +784,7 @@ describe('ClusterDetails', () => {
 
     test('overview page handles destroy', async () => {
         await clickByText('actions')
-        await clickByText('managed.destroySelected')
+        await clickByText('managed.destroy')
         await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
 
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]

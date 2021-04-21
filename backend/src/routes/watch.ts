@@ -2,24 +2,14 @@
 
 import { readFileSync } from 'fs'
 import { ClientRequest } from 'http'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
-import { get } from 'https'
 import { parseCookies } from '../lib/cookies'
-import { jsonPost, jsonRequest } from '../lib/json-request'
+import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
-import { Status } from '../resources/status'
-import { constants } from 'http2'
-
-const {
-    HTTP2_HEADER_CONTENT_TYPE,
-    HTTP2_HEADER_AUTHORIZATION,
-    HTTP2_HEADER_ACCEPT,
-    HTTP2_HEADER_ACCEPT_ENCODING,
-} = constants
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
@@ -32,7 +22,7 @@ interface WatchEvent {
     object: IResource
 }
 
-type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' | 'UNAUTHORIZED' }
+type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
 
 const resourceCache: {
     [kind: string]: {
@@ -50,15 +40,10 @@ export function startWatching(): void {
     try {
         token = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
     } catch (err) {
-        if (process.env.NODE_ENV === 'production') {
-            console.log('/var/run/secrets/kubernetes.io/serviceaccount/token not found')
+        token = process.env.TOKEN
+        if (!token) {
+            logger.error('serviceaccount token not found')
             process.exit(1)
-        } else {
-            token = process.env.TOKEN
-            if (!token) {
-                logger.error('serviceaccount token not found')
-                process.exit(1)
-            }
         }
     }
 
@@ -71,9 +56,7 @@ export function startWatching(): void {
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
     watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
-        labelSelector: {
-            'open-cluster-management.io/cluster-name': '',
-        },
+        labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
     watchResource(token, 'hive.openshift.io/v1', 'clusterClaims')
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
@@ -84,21 +67,15 @@ export function startWatching(): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', {
-        labelSelector: {
-            'cluster.open-cluster-management.io/cloudconnection': '',
-        },
+        labelSelector: { 'cluster.open-cluster-management.io/cloudconnection': '' },
     })
     watchResource(token, 'v1', 'secrets', {
-        labelSelector: {
-            'cluster.open-cluster-management.io/provider': 'ans',
-        },
+        labelSelector: { 'cluster.open-cluster-management.io/provider': 'ans' },
     })
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
     watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveredClusters')
     watchResource(token, 'config.openshift.io/v1', 'featureGates', {
-        labelSelector: {
-            'console.open-cluster-management.io': '',
-        },
+        labelSelector: { 'console.open-cluster-management.io': '' },
     })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: {
@@ -106,7 +83,6 @@ export function startWatching(): void {
             'metadata.name': 'console-public',
         },
     })
-    watchResource(token, 'config.openshift.io/v1', 'featureGates')
 }
 
 const watchRequests: Record<string, ClientRequest> = {}
@@ -300,27 +276,6 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'START':
         case 'LOADED':
             return Promise.resolve(true)
-        case 'UNAUTHORIZED':
-            return new Promise((resolve) =>
-                get(
-                    process.env.CLUSTER_API_URL + '/apis',
-                    {
-                        headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
-                        agent: new Agent({ rejectUnauthorized: false }),
-                    },
-                    (res) => {
-                        switch (res?.statusCode) {
-                            case 401:
-                            case 403:
-                                resolve(true)
-                                break
-                            default:
-                                resolve(false)
-                                break
-                        }
-                    }
-                )
-            )
 
         case 'DELETED':
             // TODO - Security issue: Only send delete events to clients who can access that item
@@ -417,12 +372,3 @@ export function stopWatching(): void {
         clientRequest.destroy()
     }
 }
-
-let lastTokenCheckEventID = 0
-export function checkAuthorization(): void {
-    const data: ServerSideEventData = { type: 'UNAUTHORIZED' }
-    if (lastTokenCheckEventID) ServerSideEvents.removeEvent(lastTokenCheckEventID)
-    lastTokenCheckEventID = ServerSideEvents.pushEvent({ data })
-}
-
-setInterval(() => checkAuthorization(), 20 * 1000).unref()

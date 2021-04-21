@@ -4,9 +4,6 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 const {
     HTTP_STATUS_OK,
     HTTP_STATUS_CREATED,
-    // HTTP_STATUS_METHOD_NOT_ALLOWED,
-    // HTTP_STATUS_NO_CONTENT,
-    // HTTP_STATUS_NOT_MODIFIED,
     HTTP_STATUS_BAD_REQUEST,
     HTTP_STATUS_UNAUTHORIZED,
     HTTP_STATUS_NOT_FOUND,

@@ -12,7 +12,7 @@ import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cl
 import { rbacCreate } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-export function ClusterSetOverviewPageContent(props: { canGetSecret?: boolean }) {
+export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation(['cluster'])
     const { clusterSet, clusters } = useContext(ClusterSetContext)
     return (
