@@ -10,6 +10,7 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
+import { authenticated } from './routes/authenticated'
 import { login, loginCallback, logout } from './routes/oauth'
 import { proxy } from './routes/proxy'
 import { search } from './routes/search'
@@ -33,6 +34,7 @@ router.get(`/logout/`, logout)
 router.get(`/watch`, watch)
 router.post(`/proxy/search`, search)
 router.post(`/upgrade`, upgrade)
+router.get(`/authenticated`, authenticated)
 router.get(`/*`, serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
