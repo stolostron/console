@@ -7,7 +7,6 @@ import { encode as stringifyQuery, parse as parseQueryString } from 'querystring
 import { deleteCookie, parseCookies } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
-import { checkAuthorization } from './watch'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 const oauthInfoPromise = jsonRequest<OAuthInfo>(

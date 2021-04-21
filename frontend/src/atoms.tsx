@@ -54,7 +54,7 @@ export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 
 interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START' | 'UNAUTHORIZED'
+    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
     object: {
         kind: string
         apiVersion: string
@@ -190,9 +190,6 @@ export function LoadData(props: { children?: ReactNode }) {
                             processEvents()
                             setLoading(false)
                             break
-                        case 'UNAUTHORIZED':
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
-                            break
                     }
                 } catch (err) {
                     console.error(err)
@@ -220,6 +217,25 @@ export function LoadData(props: { children?: ReactNode }) {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        function checkLoggedIn() {
+            fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
+                credentials: 'include',
+                headers: { accept: 'application/json' },
+            }).then((res) => {
+                switch (res.status) {
+                    case 200:
+                        break
+                    default:
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}/login`
+                        break
+                }
+                setTimeout(checkLoggedIn, 30 * 1000)
+            })
+        }
+        checkLoggedIn()
     }, [])
 
     if (loading) return <LoadingPage />
