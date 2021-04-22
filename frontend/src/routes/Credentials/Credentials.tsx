@@ -107,6 +107,18 @@ export function CredentialsTable(props: {
         return inUse
     }
 
+    function getDiscoveryConfigName(namespace: string) {
+        if (props.discoveryConfigs) {
+            for (let i = 0; i < props.discoveryConfigs.length; i++) {
+                const discoNamespace = props.discoveryConfigs[i].metadata.namespace
+                if (discoNamespace === namespace) {
+                    return props.discoveryConfigs[i].metadata.name!
+                }
+            }
+        }
+        return ''
+    }
+
     return (
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
@@ -151,7 +163,7 @@ export function CredentialsTable(props: {
                                         <Link
                                             to={NavigationPath.editDiscoveryConfig
                                                 .replace(':namespace', item.metadata.namespace as string)
-                                                .replace(':name', 'discovery')}
+                                                .replace(':name', getDiscoveryConfigName(item.metadata.namespace!))}
                                         >
                                             {t('connections.actions.editClusterDiscovery')}
                                         </Link>

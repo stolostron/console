@@ -1,4 +1,6 @@
 {
+    "quickActions": "Quick Action",
+    "quickActions.AddRHOCMCredential": "Add OpenShift Cluster Manager credential",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",

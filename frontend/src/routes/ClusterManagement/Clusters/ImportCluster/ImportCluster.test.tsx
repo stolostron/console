@@ -373,9 +373,9 @@ describe('Import Discovered Cluster', () => {
         )
     }
     test('create discovered cluster', async () => {
-        const { getByText, getAllByLabelText } = render(<Component />) // Render component
+        const { getAllByText, getAllByLabelText } = render(<Component />) // Render component
 
-        await waitFor(() => expect(getByText(mockDiscoveredClusters[0].metadata.name!)).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
+        await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
 
         await waitForText('discovery.import')

@@ -5,39 +5,51 @@ import {
     AcmButton,
     AcmEmptyState,
     AcmEmptyStateImage,
+    AcmInlineStatus,
+    AcmInlineProvider,
+    StatusType,
     AcmPageContent,
     AcmTable,
     IAcmTableColumn,
+    Provider,
+    compareStrings,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
-import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
-import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import { Title, CardHeader, PageSection, Card, CardBody, Stack, StackItem } from '@patternfly/react-core'
+import AddIcon from '@patternfly/react-icons/dist/js/icons/add-circle-o-icon'
 import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
-import { default as ExclamationIcon } from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import * as moment from 'moment'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
-import { getErrorInfo } from '../../../components/ErrorPage'
-import { deleteResource } from '../../../lib/resource-request'
 import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { filterForProviderSecrets, ProviderConnection } from '../../../resources/provider-connection'
 import { useRecoilState } from 'recoil'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
+import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 
 const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
     {
         header: 'Name',
         sort: 'spec.name',
-        search: 'spec.name',
+        search: (discoveredCluster: DiscoveredCluster) => {
+            if (discoveredCluster.spec.console && discoveredCluster.metadata.name) {
+                const searchVals = discoveredCluster.spec.console.split('.')
+                searchVals.push(discoveredCluster.metadata.name)
+                searchVals.push(discoveredCluster.spec.console)
+                return searchVals
+            } else {
+                return discoveredCluster.metadata.name ? discoveredCluster.metadata.name : ''
+            }
+        },
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-                <a href={discoveredCluster.spec.console} key="dcConsoleURL">
-                    <span key="dcNamelink">{discoveredCluster.spec.name}</span>
+                <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
+                    <ExternalLink />
+                    <span key="dcNamelink" style={{ marginLeft: '16px' }}>
+                        {discoveredCluster.spec.name}
+                    </span>
                 </a>
             </span>
         ),
@@ -46,54 +58,59 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         header: 'Status',
         sort: 'spec.status',
         search: 'spec.status',
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                {discoveredCluster.spec.status === 'Active' ? (
-                    <CheckIcon color="green" key="ready-icon" />
-                ) : (
-                    <Fragment key="ready-icon"></Fragment>
-                )}
-                {discoveredCluster.spec.status !== 'Active' ? (
-                    <ExclamationIcon color="red" key="offline-icon" />
-                ) : (
-                    <Fragment key="offline-icon"></Fragment>
-                )}
-                <span key="dcStatus">&nbsp; {capitalizeFirstLetter(discoveredCluster.spec.status)}</span>
-            </span>
-        ),
+        cell: (discoveredCluster) => {
+            let type: StatusType
+            switch (discoveredCluster.spec.status) {
+                case 'Active':
+                    type = StatusType.healthy
+                    break
+                default:
+                    type = StatusType.unknown
+            }
+            return <AcmInlineStatus type={type} status={capitalizeFirstLetter(discoveredCluster.spec.status)} />
+        },
     },
     {
-        header: 'Connected From',
-        tooltip: 'TODO',
-        cell: (discoveredCluster) => (
-            <span key="connectedFrom">
-                &nbsp;{' '}
-                {discoveredCluster.spec.providerConnections === undefined
-                    ? ['N/A']
-                    : discoveredCluster.spec.providerConnections![0].name ?? 'N/A'}
-            </span>
-        ),
+        header: 'Namespace',
+        sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
+            compareStrings(a?.metadata.namespace, b?.metadata.namespace),
+        search: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
+        cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
     },
     {
-        header: 'Distribution Version',
+        header: 'Distribution version',
         sort: 'spec.openshiftVersion',
-        cell: (discoveredCluster) => (
-            <span key="openShiftVersion">&nbsp; {'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}</span>
-        ),
+        search: (discoveredCluster) => {
+            if (discoveredCluster.spec.openshiftVersion) {
+                return [discoveredCluster.spec.openshiftVersion, 'openshift ' + discoveredCluster.spec.openshiftVersion]
+            } else {
+                return '-'
+            }
+        },
+        cell: (discoveredCluster) => {
+            if (discoveredCluster.spec.openshiftVersion) {
+                return (
+                    <span key="openShiftVersion">{'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}</span>
+                )
+            } else {
+                return '-'
+            }
+        },
     },
     {
-        header: 'Infrastructure Provider',
+        header: 'Infrastructure provider',
         sort: 'spec.cloudProvider',
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcCloudProviderParent">
-                {discoveredCluster.spec.cloudProvider === 'aws'
-                    ? [<AWSIcon key="aws-icon" />, <span key="dcCloudProvider"> Amazon Web Services</span>]
-                    : discoveredCluster.spec.cloudProvider}
-            </span>
-        ),
+        search: (discoveredCluster) =>
+            discoveredCluster?.spec.cloudProvider ? searchCloudProvider(discoveredCluster.spec.cloudProvider) : '',
+        cell: (discoveredCluster) =>
+            discoveredCluster?.spec.cloudProvider ? (
+                <AcmInlineProvider provider={getProvider(discoveredCluster?.spec.cloudProvider)} />
+            ) : (
+                '-'
+            ),
     },
     {
-        header: 'Last Active',
+        header: 'Last active',
         sort: 'spec.activity_timestamp',
         cell: (discoveredCluster) => (
             <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
@@ -149,19 +166,11 @@ const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
 export default function DiscoveredClustersPage() {
     return (
         <AcmPageContent id="discovered-clusters">
-            <PageSection variant="light" isFilled={true}>
+            <PageSection>
                 <DiscoveredClustersPageContent />
             </PageSection>
         </AcmPageContent>
     )
-}
-
-function deleteDiscoveryConfig(config: DiscoveryConfig) {
-    deleteResource({
-        apiVersion: DiscoveryConfigApiVersion,
-        kind: DiscoveryConfigKind,
-        metadata: { name: config.metadata.name, namespace: config.metadata.namespace },
-    })
 }
 
 function EmptyStateNoCRHCredentials() {
@@ -227,6 +236,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
 }
 
 export function DiscoveredClustersPageContent() {
+    const { t } = useTranslation(['discovery'])
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -243,15 +253,45 @@ export function DiscoveredClustersPageContent() {
             cloudRedHatCredentials.push(credential)
         }
     })
+
+    const unmanagedClusters: DiscoveredCluster[] = []
+    discoveredClusters.forEach((discoveredCluster) => {
+        const isManaged = discoveredCluster.spec.isManagedCluster
+        if (!isManaged) {
+            unmanagedClusters.push(discoveredCluster)
+        }
+    })
+
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
     return (
-        <DiscoveredClustersTable
-            discoveredClusters={discoveredClusters}
-            credentials={cloudRedHatCredentials}
-            discoveryConfigs={discoveryConfigs}
-        />
+        <Stack hasGutter>
+            <StackItem>
+                <Card>
+                    <CardHeader>
+                        <Title headingLevel="h4">{t('quickActions')}</Title>
+                        <span>
+                            &nbsp;
+                            <Link to={NavigationPath.addCredentials}>
+                                {t('quickActions.AddRHOCMCredential')} <AddIcon />
+                            </Link>
+                        </span>
+                    </CardHeader>
+                </Card>
+            </StackItem>
+            <StackItem>
+                <Card>
+                    <CardBody>
+                        <DiscoveredClustersTable
+                            discoveredClusters={unmanagedClusters}
+                            credentials={credentials}
+                            discoveryConfigs={discoveryConfigs}
+                        />
+                    </CardBody>
+                </Card>
+            </StackItem>
+        </Stack>
     )
 }
 
@@ -261,26 +301,18 @@ export function DiscoveredClustersTable(props: {
     discoveryConfigs?: DiscoveryConfig[]
 }) {
     const { t } = useTranslation(['discovery'])
-    const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
-        open: false,
-        confirm: () => {},
-        cancel: () => {},
-        title: '',
-        message: '',
-    })
 
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
 
     useEffect(() => {
         if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
-        } else if (props.credentials.length === 0 && props.discoveryConfigs.length === 0) {
+        } else if (props.credentials.length === 0 && props.discoveryConfigs?.length === 0) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // No credentials exist, guide user to set up credentials
-        } else if (props.credentials.length > 0 && props.discoveryConfigs.length === 0) {
+        } else if (props.credentials.length > 0 && props.discoveryConfigs?.length === 0) {
             setEmptyState(<EmptyStateCRHCredentials credentials={props.credentials} />) // Credential is set up, guide user to set up discovery config
-        } else if (props.credentials.length > 0 && props.discoveryConfigs.length > 0) {
+        } else if (props.credentials.length > 0 && props.discoveryConfigs?.length > 0) {
             setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
         } else {
             setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
@@ -288,78 +320,27 @@ export function DiscoveredClustersTable(props: {
     }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
 
     return (
-        <Fragment>
-            <ConfirmModal {...modalProps} />
-            <AcmTable<DiscoveredCluster>
-                plural="discovered clusters"
-                items={props.discoveredClusters}
-                columns={discoveredClusterCols}
-                keyFn={dckeyFn}
-                key="discoveredClustersTable"
-                tableActions={[
-                    {
-                        id: 'editClusterDiscvoveryBtn',
-                        title: t('discovery.edit'),
-                        click: () => {
-                            history.push(NavigationPath.addDiscoveryConfig)
-                        },
+        <AcmTable<DiscoveredCluster>
+            plural="discovered clusters"
+            items={props.discoveredClusters}
+            columns={discoveredClusterCols}
+            keyFn={dckeyFn}
+            key="tbl-discoveredclusters"
+            tableActions={[]}
+            bulkActions={[]}
+            rowActions={[
+                {
+                    id: 'importCluster',
+                    title: t('discovery.import'),
+                    click: (item) => {
+                        sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                        sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                        history.push(NavigationPath.importCluster)
                     },
-                    {
-                        id: 'disableClusterDiscvoveryBtn',
-                        title: t('discovery.disable'),
-                        click: () => {
-                            setModalProps({
-                                open: true,
-                                title: t('disable.title'),
-                                confirm: async () => {
-                                    try {
-                                        if (props.discoveryConfigs) {
-                                            await props.discoveryConfigs.forEach(deleteDiscoveryConfig)
-                                            setModalProps({
-                                                open: false,
-                                                confirm: () => {},
-                                                cancel: () => {},
-                                                title: '',
-                                                message: '',
-                                            })
-                                        } else {
-                                            throw Error('Error retrieving discoveryconfigs')
-                                        }
-                                    } catch (err) {
-                                        alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
-                                    }
-                                },
-                                confirmText: t('disable.button'),
-                                message: t('disable.message'),
-                                isDanger: true,
-                                cancel: () => {
-                                    setModalProps({
-                                        open: false,
-                                        confirm: () => {},
-                                        cancel: () => {},
-                                        title: '',
-                                        message: '',
-                                    })
-                                },
-                            })
-                        },
-                    },
-                ]}
-                bulkActions={[]}
-                rowActions={[
-                    {
-                        id: 'importCluster',
-                        title: t('discovery.import'),
-                        click: (item) => {
-                            sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
-                            sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                            history.push(NavigationPath.importCluster)
-                        },
-                    },
-                ]}
-                emptyState={emptyState}
-            />
-        </Fragment>
+                },
+            ]}
+            emptyState={emptyState}
+        />
     )
 }
 
@@ -369,4 +350,44 @@ function dckeyFn(cluster: DiscoveredCluster) {
 
 function capitalizeFirstLetter(str: string) {
     return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function getProvider(provider: string) {
+    switch (provider) {
+        case ProviderID.GCP:
+            return Provider.gcp
+        case ProviderID.AWS:
+            return Provider.aws
+        case 'azure':
+            return Provider.azure
+        case 'vsphere':
+            return Provider.vmware
+        case 'baremetal':
+            return Provider.baremetal
+        case 'openstack':
+            return Provider.openstack
+        case ProviderID.UKN:
+        default:
+            return Provider.other
+    }
+}
+
+function searchCloudProvider(provider: string) {
+    switch (provider.toLowerCase()) {
+        case ProviderID.GCP:
+            return [Provider.gcp, 'google cloud platform']
+        case ProviderID.AWS:
+            return [Provider.aws, 'amazon web services']
+        case 'azure':
+            return [Provider.azure, 'microsoft azure']
+        case 'vsphere':
+            return [Provider.vmware, 'vsphere', 'vmware vsphere']
+        case 'baremetal':
+            return [Provider.baremetal, 'bare metal']
+        case 'openstack':
+            return [Provider.openstack, 'red hat openstack']
+        case ProviderID.UKN:
+        default:
+            return [Provider.other, provider]
+    }
 }
