@@ -29,4 +29,5 @@ export enum NavigationPath {
     createBareMetalAsset = '/multicloud/create-bare-metal-asset',
     addDiscoveryConfig = '/multicloud/add-discovery-config',
     editDiscoveryConfig = '/multicloud/discovery-configs/:namespace/:name',
+    integrations = '/multicloud/integrations',
 }

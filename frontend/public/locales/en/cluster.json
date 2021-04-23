@@ -74,6 +74,7 @@
     "machinePool.enableAutoscale": "Enable autoscale",
     "machinePool.disableAutoscale": "Disable autoscale",
     "machinePool.delete": "Delete machine pool",
+    "integration.create": "Create integration",
 
     "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
 
@@ -125,6 +126,9 @@
     "table.availableToClaim": "Available to claim",
     "table.claimName": "Cluster claim name",
     "table.lifetime": "Lifetime",
+    "table.linkedCred": "Linked credential",
+    "table.clustersInUse": "Clusters in use",
+    "table.defaultTemplate": "Default job templates",
     "table.machineSetReplicas": "Machine set replicas",
     "table.autoscale": "Autoscale",
     "table.currentReleaseImage": "Current release image",
@@ -332,8 +336,10 @@
     "bulk.message.updateReleaseImage": "Updating the release image for a cluster pool will change the default distribution version of clusters created from the cluster pool. Only newly created clusters from the cluster pool will be updated to the new version.",
     "bulk.title.destroyClusterPool": "Destroy cluster pool(s)",
     "bulk.message.destroyClusterPool": "Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.",
+    "bulk.delete.integrations": "Delete integrations",
     "bulk.title.deleteMachinePool": "Delete machine pool",
     "bulk.message.deleteMachinePool": "Deleting a machine pool is irreversible. Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.",
+    "bulk.message.delete.integrations": "Destroying a integration will <>.",
     "bulk.title.removeAuthorization": "Remove users or groups",
     "bulk.message.removeAuthorization": "Removing a user or group will revoke access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.",
 
@@ -383,6 +389,12 @@
     "clusterPool.modal.scale.poolName": "Cluster pool name",
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
+
+    "integration.title": "Integrations",
+    "integration.emptyStateHeader": "You don't have any integrations",
+    "integration.emptyStateMsg": "Select <bold>Create integration</bold> to create a Ansible integration.",
+    "integration.configure":"Configure job template",
+    "integration.unlink":"Unlink this from integration",
 
     "machinePool.replica.count": "{{range}} replicas",
     "machinePool.modal.scale.edit-manualscale.title": "Scale machine pool",
