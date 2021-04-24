@@ -9,6 +9,7 @@ export interface FormData {
     sections: Section[]
     // toYaml?: () => string
     submit: () => void
+    cancel: () => void
     submitText?: string
 }
 
@@ -16,11 +17,13 @@ export interface Section {
     name: string
     inputs?: Input[]
     groups?: Group[]
+    columns?: 1 | 2
 }
 
 export interface Group {
     name: string
     inputs: Input[]
+    columns?: 1 | 2
 }
 
 export interface InputBase {
@@ -33,7 +36,6 @@ export interface InputBase {
     labelHelp?: string
     labelHelpTitle?: string
     isSecret?: boolean
-    hideInDetails?: boolean
 }
 
 export interface TextInput extends InputBase {

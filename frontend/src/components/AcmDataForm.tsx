@@ -46,6 +46,7 @@ import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from
 // TODO handle Submit button loading
 // TODO handle submit button error
 // TODO select error state
+// TOOD handle cancel
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -55,7 +56,11 @@ export interface AcmDataFormProps {
 }
 
 function generalValidationMessage() {
-    return <Fragment>Please correct input validation errors.</Fragment>
+    return <Fragment>You must fix the issues with fields before you can proceed.</Fragment>
+}
+
+function requiredValidationMessage() {
+    return <Fragment>You must fill out all required fields before you can proceed.</Fragment>
 }
 
 export function AcmDataFormPage(props: AcmDataFormProps) {
@@ -63,7 +68,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
     const [showFormErrors, setShowFormErrors] = useState(false)
     const [mode, setMode] = useState(props.mode ?? 'form')
     const [isHorizontal, setIsHorizontal] = useState(props.isHorizontal ?? true)
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? true)
+    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? false)
 
     return (
         <Page
@@ -87,41 +92,49 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                         </ToggleGroup>
                                     </ActionListItem>
                                 )}
-                                <ActionListItem>
-                                    <ToggleGroup>
-                                        <ToggleGroupItem
-                                            text="Wizard"
-                                            isSelected={mode === 'wizard'}
-                                            onChange={() => setMode('wizard')}
-                                        />
-                                        <ToggleGroupItem
-                                            text="Form"
-                                            isSelected={mode === 'form'}
-                                            onChange={() => setMode('form')}
-                                        />
-                                        <ToggleGroupItem
-                                            text="Details"
-                                            isSelected={mode === 'details'}
-                                            onChange={() => setMode('details')}
-                                        />
-                                    </ToggleGroup>
-                                </ActionListItem>
-                                <ActionListItem>
-                                    <ToggleGroup>
-                                        <ToggleGroupItem
-                                            text="Show secrets"
-                                            isSelected={showSecrets}
-                                            onChange={() => setShowSecrets(!showSecrets)}
-                                        />
-                                    </ToggleGroup>
-                                </ActionListItem>
+                                {mode === 'details' && (
+                                    <ActionListItem>
+                                        <ToggleGroup>
+                                            <ToggleGroupItem
+                                                text="Show secrets"
+                                                isSelected={showSecrets}
+                                                onChange={() => setShowSecrets(!showSecrets)}
+                                            />
+                                        </ToggleGroup>
+                                    </ActionListItem>
+                                )}
+                                {/* {process.env.NODE_ENV !== 'production' && (
+                                    <ActionListItem>
+                                        <ToggleGroup>
+                                            <ToggleGroupItem
+                                                text="Wizard"
+                                                isSelected={mode === 'wizard'}
+                                                onChange={() => setMode('wizard')}
+                                            />
+                                            <ToggleGroupItem
+                                                text="Form"
+                                                isSelected={mode === 'form'}
+                                                onChange={() => setMode('form')}
+                                            />
+                                            <ToggleGroupItem
+                                                text="Details"
+                                                isSelected={mode === 'details'}
+                                                onChange={() => setMode('details')}
+                                            />
+                                        </ToggleGroup>
+                                    </ActionListItem>
+                                )} */}
                             </ActionList>
                         }
                     />
                     {showFormErrors && mode === 'form' && formHasErrors(formData) && (
                         <PageSection variant="light" style={{ paddingTop: 0 }}>
                             <AlertGroup>
-                                <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                {formHasRequiredErrors(formData) ? (
+                                    <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                ) : (
+                                    <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                )}
                             </AlertGroup>
                         </PageSection>
                     )}
@@ -233,7 +246,14 @@ export function AcmDataFormDefault(props: {
                                 </Button>
                             </ActionListItem>
                             <ActionListItem>
-                                <Button variant="secondary">Cancel</Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        formData.cancel()
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
                             </ActionListItem>
                         </ActionListGroup>
                     </ActionList>
@@ -268,7 +288,13 @@ export function AcmDataFormWizard(props: {
                         {(showFormErrors || showSectionErrors[sectionName]) &&
                             sectionHasErrors(formData.sections.find((section) => section.name === sectionName)) && (
                                 <AlertGroup>
-                                    <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                    {sectionHasRequiredErrors(
+                                        formData.sections.find((section) => section.name === sectionName)
+                                    ) ? (
+                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                    ) : (
+                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                    )}
                                 </AlertGroup>
                             )}
                         <Title headingLevel="h2">{section.name}</Title>
@@ -284,7 +310,11 @@ export function AcmDataFormWizard(props: {
                         <Form isHorizontal={isHorizontal}>
                             {(showFormErrors || showSectionErrors[sectionName]) && groupHasErrors(group) && (
                                 <AlertGroup>
-                                    <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                    {groupHasRequiredErrors(group) ? (
+                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                    ) : (
+                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                    )}
                                 </AlertGroup>
                             )}
                             <Title headingLevel="h2">{group.name}</Title>
@@ -305,7 +335,11 @@ export function AcmDataFormWizard(props: {
             <Form>
                 {showFormErrors && formHasErrors(formData) && (
                     <AlertGroup>
-                        <Alert isInline variant="danger" title={generalValidationMessage()} />
+                        {formHasRequiredErrors(formData) ? (
+                            <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                        ) : (
+                            <Alert isInline variant="danger" title={generalValidationMessage()} />
+                        )}
                     </AlertGroup>
                 )}
                 <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
@@ -378,7 +412,7 @@ export function AcmDataFormWizard(props: {
         </WizardFooter>
     )
 
-    return <Wizard steps={steps} footer={Footer} />
+    return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
 export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean }) {
@@ -392,11 +426,10 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                     <FormSection key={section.name}>
                         <Title headingLevel="h2">{section.name}</Title>
                         {anyInputHasValue(section.inputs) && (
-                            <DescriptionList isAutoFit>
+                            <DescriptionList columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}>
                                 {section.inputs &&
                                     section.inputs.map((input) => {
                                         if (inputHidden(input)) return <Fragment />
-                                        if (input.hideInDetails) return <Fragment />
                                         switch (input.type) {
                                             case 'Select':
                                                 return (
@@ -427,7 +460,9 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                             <DescriptionListDescription>
                                                                 {input.isSecret && !showSecrets
                                                                     ? '********'
-                                                                    : inputValue(input)}
+                                                                    : inputValue(input)
+                                                                          .split('\n')
+                                                                          .map((line) => <p>{line}</p>)}
                                                             </DescriptionListDescription>
                                                         </DescriptionListGroup>
                                                     )
@@ -444,7 +479,16 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                         <Fragment key={group.name}>
                                             <Title headingLevel="h3">{group.name}</Title>
                                             {anyInputHasValue(group.inputs) && (
-                                                <DescriptionList columnModifier={{ default: '2Col' }}>
+                                                <DescriptionList
+                                                    columnModifier={{
+                                                        default:
+                                                            group.columns === 1
+                                                                ? '1Col'
+                                                                : group.columns === 2
+                                                                ? '2Col'
+                                                                : undefined,
+                                                    }}
+                                                >
                                                     {group.inputs.map((input) => {
                                                         if (inputHidden(input)) return <Fragment />
                                                         return (
@@ -701,6 +745,39 @@ function groupHasErrors(group: Group) {
     return inputsHaveErrors(group.inputs)
 }
 
+function formHasRequiredErrors(formData: FormData) {
+    for (const section of formData.sections) {
+        if (sectionHasRequiredErrors(section)) return true
+    }
+    return false
+}
+
+function sectionHasRequiredErrors(section?: Section) {
+    if (!section) return false
+    if (inputsHaveRequiredErrors(section.inputs)) return true
+    if (section.groups) {
+        for (const group of section.groups) {
+            if (groupHasRequiredErrors(group)) return true
+        }
+    }
+    return false
+}
+
+function groupHasRequiredErrors(group: Group) {
+    return inputsHaveRequiredErrors(group.inputs)
+}
+
+const requiredMessage = 'This is a required field.'
+
+function inputsHaveRequiredErrors(inputs?: Input[]) {
+    if (!inputs) return false
+    for (const input of inputs) {
+        console.log(inputError(input))
+        if (inputError(input) === requiredMessage) return true
+    }
+    return false
+}
+
 function inputsHaveErrors(inputs?: Input[]) {
     if (!inputs) return false
     for (const input of inputs) {
@@ -714,17 +791,17 @@ function inputError(input: Input) {
     switch (input.type) {
         case 'Text': {
             const value = inputValue(input)
-            if (inputRequired(input) && !value) return 'Required'
+            if (inputRequired(input) && !value) return requiredMessage
             return input.validation ? input.validation(value) : undefined
         }
         case 'TextArea': {
             const value = inputValue(input)
-            if (inputRequired(input) && !value) return 'Required'
+            if (inputRequired(input) && !value) return requiredMessage
             return input.validation ? input.validation(value) : undefined
         }
         case 'Select': {
             const value = inputValue(input)
-            if (inputRequired(input) && !value) return 'Required'
+            if (inputRequired(input) && !value) return requiredMessage
             return input.validation ? input.validation(value) : undefined
         }
     }

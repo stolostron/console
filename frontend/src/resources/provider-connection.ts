@@ -3,10 +3,8 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import * as YAML from 'yamljs'
-import { ProviderID } from '../lib/providers'
-import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
+import { listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
-import { Secret } from './secret'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -70,25 +68,6 @@ export interface ProviderConnection extends V1Secret {
     type: 'Opaque'
 }
 
-export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
-    const label = providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider']
-    return label as ProviderID
-}
-
-export function setProviderConnectionProviderID(
-    providerConnection: Partial<ProviderConnection>,
-    providerID: ProviderID
-) {
-    if (!providerConnection.metadata) {
-        providerConnection.metadata = {}
-    }
-    if (!providerConnection.metadata.labels) {
-        providerConnection.metadata.labels = {}
-    }
-    providerConnection.metadata.labels['cluster.open-cluster-management.io/provider'] = providerID
-    providerConnection.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = ''
-}
-
 export function listProviderConnections() {
     const result = listResources<ProviderConnection>(
         {
@@ -105,61 +84,8 @@ export function listProviderConnections() {
     }
 }
 
-export function getProviderConnection(metadata: { name: string; namespace: string }) {
-    const result = getResource<ProviderConnection>({
-        apiVersion: ProviderConnectionApiVersion,
-        kind: ProviderConnectionKind,
-        metadata,
-        type: 'Opaque',
-    })
-    return {
-        promise: result.promise.then(unpackProviderConnection),
-        abort: result.abort,
-    }
-}
-
-export function filterForProviderSecrets(secrets: Secret[]) {
-    const providerConnections: ProviderConnection[] = []
-
-    secrets.forEach((secret) => {
-        const providerConnection: ProviderConnection = {
-            apiVersion: ProviderConnectionApiVersion,
-            kind: ProviderConnectionKind,
-            metadata: {
-                name: secret.metadata.name,
-                namespace: secret.metadata.namespace,
-                labels: {},
-            },
-            type: 'Opaque',
-        }
-
-        if (secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] !== undefined) {
-            Object.assign(providerConnection.metadata.labels, secret.metadata.labels)
-            if (secret.data) {
-                try {
-                    const yaml = Buffer.from(secret?.data?.metadata, 'base64').toString('ascii')
-                    providerConnection.spec = YAML.parse(yaml)
-                } catch {}
-            } else if (secret.stringData) {
-                try {
-                    providerConnection.spec = YAML.parse(secret.stringData.metadata)
-                } catch {}
-            }
-            providerConnections.push(providerConnection)
-        }
-    })
-    return providerConnections
-}
-
-export function createProviderConnection(providerConnection: ProviderConnection) {
-    return createResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
-}
-
-export function replaceProviderConnection(providerConnection: ProviderConnection) {
-    return replaceResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
-}
-
-export function unpackProviderConnection(providerConnection: ProviderConnection) {
+export function unpackProviderConnection(secret: ProviderConnection | V1Secret) {
+    const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
     if (providerConnection.data) {
         try {
             const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')

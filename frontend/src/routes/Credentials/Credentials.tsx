@@ -11,6 +11,7 @@ import {
     AcmTable,
     compareStrings,
     Provider,
+    ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -21,18 +22,17 @@ import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
-import { getProviderByKey, ProviderID } from '../../lib/providers'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection, filterForProviderSecrets } from '../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { Secret } from '../../resources/secret'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
     const [secrets] = useRecoilState(secretsState)
-    const providerConnections = filterForProviderSecrets(secrets)
+    const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
@@ -63,10 +63,13 @@ const AddConnectionBtn = () => {
     )
 }
 
-function getProvider(labels: Record<string, string> | undefined) {
+function getProviderName(labels: Record<string, string> | undefined) {
     const label = labels?.['cluster.open-cluster-management.io/provider']
-    const provider = getProviderByKey(label as ProviderID)
-    return provider.name
+    if (label) {
+        const providerName = (ProviderLongTextMap as Record<string, string>)[label]
+        if (providerName) return providerName
+    }
+    return 'unknown'
 }
 
 export function CredentialsTable(props: {
@@ -82,7 +85,7 @@ export function CredentialsTable(props: {
 
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-        if (label === ProviderID.RHOCM && !CredentialIsInUseByDiscovery(item)) {
+        if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {
             return t('connections.actions.enableClusterDiscovery')
         } else {
             return t('connections.actions.editClusterDiscovery')
@@ -141,42 +144,18 @@ export function CredentialsTable(props: {
                     {
                         header: t('table.header.provider'),
                         sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
-                            return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
+                            return compareStrings(
+                                getProviderName(a.metadata?.labels),
+                                getProviderName(b.metadata?.labels)
+                            )
                         },
                         cell: (item: Secret) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            let provider
-                            // TODO: Add unique provider for ANS in ProviderTextMap (ui-components)
-                            switch (label) {
-                                case ProviderID.GCP:
-                                    provider = Provider.gcp
-                                    break
-                                case ProviderID.AWS:
-                                    provider = Provider.aws
-                                    break
-                                case ProviderID.AZR:
-                                    provider = Provider.azure
-                                    break
-                                case ProviderID.VMW:
-                                    provider = Provider.vmware
-                                    break
-                                case ProviderID.BMC:
-                                    provider = Provider.baremetal
-                                    break
-                                case ProviderID.RHOCM:
-                                    provider = Provider.redhatcloud
-                                    break
-                                case ProviderID.OST:
-                                    provider = Provider.openstack
-                                    break
-                                case ProviderID.UKN:
-                                default:
-                                    provider = Provider.other
-                            }
-                            return <AcmInlineProvider provider={provider} />
+                            const provider = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (provider) return <AcmInlineProvider provider={provider as Provider} />
+                            else return <Fragment />
                         },
                         search: (item: Secret) => {
-                            return getProvider(item.metadata?.labels)
+                            return getProviderName(item.metadata?.labels)
                         },
                     },
                     {
@@ -192,7 +171,7 @@ export function CredentialsTable(props: {
                         },
                         cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.RHOCM) {
+                            if (label === Provider.redhatcloud) {
                                 if (CredentialIsInUseByDiscovery(item)) {
                                     return (
                                         <Link

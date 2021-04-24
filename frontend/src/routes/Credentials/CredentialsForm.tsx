@@ -12,7 +12,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource } from '../../lib/resource-request'
+import { createResource, replaceResource } from '../../lib/resource-request'
 import {
     validateBaseDomain,
     validateCertificate,
@@ -380,6 +380,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Google cloud credentials',
@@ -410,6 +411,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Azure credentials',
@@ -521,6 +523,7 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'VMWare vSphere',
@@ -587,6 +590,7 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Baremetal',
@@ -661,6 +665,7 @@ export function CredentialsForm(props: {
                         onChange: setAdditionalTrustBundle,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Ansible credentials',
@@ -703,6 +708,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Base domain',
@@ -726,6 +732,7 @@ export function CredentialsForm(props: {
                         validation: (v) => validateBaseDomain(v, t),
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'Pull secret',
@@ -751,6 +758,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
+                columns: 1,
             },
             {
                 name: 'SSH key',
@@ -796,14 +804,24 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
+                columns: 1,
             },
         ],
         submit: () => {
-            return createResource(stateToData() as IResource).promise.then(() => {
-                history.push(NavigationPath.credentials)
-            })
+            if (isEditing) {
+                return replaceResource(stateToData() as IResource).promise.then(() => {
+                    history.push(NavigationPath.credentials)
+                })
+            } else {
+                return createResource(stateToData() as IResource).promise.then(() => {
+                    history.push(NavigationPath.credentials)
+                })
+            }
         },
-        submitText: 'Add',
+        submitText: isEditing ? 'Save' : 'Add',
+        cancel: () => {
+            history.push(NavigationPath.credentials)
+        },
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
 }
