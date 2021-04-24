@@ -129,3 +129,16 @@ export function validateImageMirror(value: string, t: TFunction) {
     }
     return undefined
 }
+
+export function validateBaseDomain(value: string, t: TFunction) {
+    const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
+    if (value) {
+        if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
+            return t('addConnection.baseDomain.baseDNSPeriod')
+        }
+        if (!VALID_DNS_NAME_TESTER.test(value)) {
+            return t('addConnection.valid.name')
+        }
+    }
+    return undefined
+}

@@ -19,54 +19,55 @@ export const ProviderConnectionDefinition: IResourceDefinition = {
     kind: ProviderConnectionKind,
 }
 
+export interface ProviderConnectionSpec {
+    awsAccessKeyID?: string
+    awsSecretAccessKeyID?: string
+
+    baseDomainResourceGroupName?: string
+    clientId?: string
+    clientSecret?: string
+    subscriptionId?: string
+    tenantId?: string
+
+    gcProjectID?: string
+    gcServiceAccountKey?: string
+
+    username?: string
+    password?: string
+    vcenter?: string
+    cacertificate?: string
+    vmClusterName?: string
+    datacenter?: string
+    datastore?: string
+
+    libvirtURI?: string
+    sshKnownHosts?: string[]
+    imageMirror?: string
+    bootstrapOSImage?: string
+    clusterOSImage?: string
+    additionalTrustBundle?: string
+
+    ocmAPIToken?: string
+
+    openstackCloudsYaml?: string
+    openstackCloud?: string
+
+    baseDomain?: string
+    pullSecret?: string
+    sshPrivatekey?: string
+    sshPublickey?: string
+
+    ansibleHost?: string
+    ansibleToken?: string
+}
+
 export interface ProviderConnection extends V1Secret {
     apiVersion: ProviderConnectionApiVersionType
     kind: ProviderConnectionKindType
     metadata: V1ObjectMeta
-    data?: {
-        metadata: string
-    }
-    spec?: {
-        awsAccessKeyID?: string
-        awsSecretAccessKeyID?: string
-
-        baseDomainResourceGroupName?: string
-        clientId?: string
-        clientSecret?: string
-        subscriptionId?: string
-        tenantId?: string
-
-        gcProjectID?: string
-        gcServiceAccountKey?: string
-
-        username?: string
-        password?: string
-        vcenter?: string
-        cacertificate?: string
-        vmClusterName?: string
-        datacenter?: string
-        datastore?: string
-
-        libvirtURI?: string
-        sshKnownHosts?: string[]
-        imageMirror?: string
-        bootstrapOSImage?: string
-        clusterOSImage?: string
-        additionalTrustBundle?: string
-
-        ocmAPIToken?: string
-
-        openstackCloudsYaml?: string
-        openstackCloud?: string
-
-        baseDomain: string
-        pullSecret: string
-        sshPrivatekey: string
-        sshPublickey: string
-
-        anisibleSecretName?: string
-        anisibleCuratorTemplateName?: string
-    }
+    data?: { metadata: string }
+    spec?: ProviderConnectionSpec
+    type: 'Opaque'
 }
 
 export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
@@ -109,6 +110,7 @@ export function getProviderConnection(metadata: { name: string; namespace: strin
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
         metadata,
+        type: 'Opaque',
     })
     return {
         promise: result.promise.then(unpackProviderConnection),
@@ -128,6 +130,7 @@ export function filterForProviderSecrets(secrets: Secret[]) {
                 namespace: secret.metadata.namespace,
                 labels: {},
             },
+            type: 'Opaque',
         }
 
         if (secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] !== undefined) {
@@ -174,9 +177,14 @@ export function unpackProviderConnection(providerConnection: ProviderConnection)
 
 export function packProviderConnection(providerConnection: ProviderConnection) {
     if (providerConnection.spec) {
-        providerConnection.stringData = { metadata: YAML.stringify(providerConnection.spec) }
+        const metadata = YAML.stringify(providerConnection.spec)
+        providerConnection.data = {
+            metadata: Buffer.from(metadata).toString('base64'),
+        }
+
+        delete providerConnection.stringData
+        delete providerConnection.spec
     }
-    delete providerConnection.spec
-    delete providerConnection.data
+
     return providerConnection
 }

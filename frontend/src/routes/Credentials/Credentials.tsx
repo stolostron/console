@@ -129,7 +129,7 @@ export function CredentialsTable(props: {
                         cell: (secret) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link
-                                    to={NavigationPath.editCredentials
+                                    to={NavigationPath.viewCredentials
                                         .replace(':namespace', secret.metadata.namespace as string)
                                         .replace(':name', secret.metadata.name as string)}
                                 >
@@ -137,39 +137,6 @@ export function CredentialsTable(props: {
                                 </Link>
                             </span>
                         ),
-                    },
-                    {
-                        header: t('table.header.additionalActions'),
-                        search: (item: Secret) => {
-                            return getAdditionalActions(item)
-                        },
-                        cell: (item: Secret) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.RHOCM) {
-                                if (CredentialIsInUseByDiscovery(item)) {
-                                    return (
-                                        <Link
-                                            to={NavigationPath.editDiscoveryConfig
-                                                .replace(':namespace', item.metadata.namespace as string)
-                                                .replace(':name', 'discovery')}
-                                        >
-                                            {t('connections.actions.editClusterDiscovery')}
-                                        </Link>
-                                    )
-                                } else {
-                                    return (
-                                        <Link to={NavigationPath.addDiscoveryConfig}>
-                                            {t('connections.actions.enableClusterDiscovery')}
-                                        </Link>
-                                    )
-                                }
-                            } else {
-                                return <span>-</span>
-                            }
-                        },
-                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
-                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
-                        },
                     },
                     {
                         header: t('table.header.provider'),
@@ -217,6 +184,39 @@ export function CredentialsTable(props: {
                         sort: 'metadata.namespace',
                         search: 'metadata.namespace',
                         cell: 'metadata.namespace',
+                    },
+                    {
+                        header: t('table.header.additionalActions'),
+                        search: (item: Secret) => {
+                            return getAdditionalActions(item)
+                        },
+                        cell: (item: Secret) => {
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (label === ProviderID.RHOCM) {
+                                if (CredentialIsInUseByDiscovery(item)) {
+                                    return (
+                                        <Link
+                                            to={NavigationPath.editDiscoveryConfig
+                                                .replace(':namespace', item.metadata.namespace as string)
+                                                .replace(':name', 'discovery')}
+                                        >
+                                            {t('connections.actions.editClusterDiscovery')}
+                                        </Link>
+                                    )
+                                } else {
+                                    return (
+                                        <Link to={NavigationPath.addDiscoveryConfig}>
+                                            {t('connections.actions.enableClusterDiscovery')}
+                                        </Link>
+                                    )
+                                }
+                            } else {
+                                return <span>-</span>
+                            }
+                        },
+                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
+                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
+                        },
                     },
                     {
                         header: '',

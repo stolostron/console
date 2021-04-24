@@ -112,21 +112,21 @@ export async function waitForInputByRole(text: string, index?: number) {
     }
 }
 
-export async function clickByRole(text: string, index?: number) {
-    await waitForInputByRole(text, index)
+export async function clickByRole(role: string, index?: number) {
+    await waitForInputByRole(role, index)
     if (index !== undefined) {
-        userEvent.click(screen.getAllByRole(text)[index])
+        userEvent.click(screen.getAllByRole(role)[index])
     } else {
-        userEvent.click(screen.getByRole(text))
+        userEvent.click(screen.getByRole(role))
     }
 }
 
-export async function typeByRole(text: string, type: string, index?: number) {
-    await waitForInputByRole(text, index)
+export async function typeByRole(role: string, type: string, index?: number) {
+    await waitForInputByRole(role, index)
     if (index !== undefined) {
-        userEvent.type(screen.getAllByRole(text)[index], type)
+        userEvent.type(screen.getAllByRole(role)[index], type)
     } else {
-        userEvent.type(screen.getByRole(text), type)
+        userEvent.type(screen.getByRole(role), type)
     }
 }
 
@@ -286,5 +286,10 @@ export async function clickBulkAction(text: string) {
 
 export async function clickRowAction(row: number, text: string) {
     await clickByLabel('Actions', row - 1)
+    await clickByText(text)
+}
+
+export async function selectByText(placeholdText: string, text: string) {
+    await clickByPlaceholderText(placeholdText)
     await clickByText(text)
 }
