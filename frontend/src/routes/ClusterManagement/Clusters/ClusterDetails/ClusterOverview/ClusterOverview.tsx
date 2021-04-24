@@ -10,10 +10,10 @@ import {
     AcmAlert,
     AcmButton,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus, clusterDangerStatuses } from '../../../../../lib/get-cluster'
 import { rbacPatch } from '../../../../../lib/rbac-util'
@@ -49,6 +49,24 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
+                        {
+                            key: t('table.name'),
+                            value: cluster!.name,
+                            keyAction: (
+                                <Popover
+                                    bodyContent={
+                                        <Trans
+                                            i18nKey="cluster:table.clusterName.helperText"
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
+                                >
+                                    <AcmButton variant="link">
+                                        <OutlinedQuestionCircleIcon />
+                                    </AcmButton>
+                                </Popover>
+                            ),
+                        },
                         {
                             key: t('table.status'),
                             value: cluster?.status && <StatusField cluster={cluster} />,

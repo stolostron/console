@@ -27,6 +27,9 @@ const mockClusterImageSet: ClusterImageSet = {
     kind: ClusterImageSetKind,
     metadata: {
         name: 'test-cluster-image-set',
+        labels: {
+            visible: 'true',
+        },
     },
     spec: {
         releaseImage: 'release-image',

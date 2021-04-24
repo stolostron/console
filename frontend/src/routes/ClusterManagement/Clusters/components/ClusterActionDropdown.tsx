@@ -40,8 +40,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                sort: 'name',
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                sort: 'displayName',
             },
             {
                 header: t('table.status'),
@@ -149,8 +149,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     columns: [
                         {
                             header: t('upgrade.table.name'),
-                            sort: 'name',
-                            cell: 'name',
+                            sort: 'displayName',
+                            cell: 'displayName',
                         },
                         {
                             header: t('table.provider'),
@@ -251,7 +251,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
-                    confirmText: cluster.name,
+                    confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
@@ -271,12 +271,12 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     description: t('bulk.message.destroy'),
                     columns: modalColumns,
                     keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => deleteCluster(cluster.name!),
+                    actionFn: (cluster) => deleteCluster(cluster),
                     close: () => {
                         setModalProps({ open: false })
                     },
                     isDanger: true,
-                    confirmText: cluster.name,
+                    confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
