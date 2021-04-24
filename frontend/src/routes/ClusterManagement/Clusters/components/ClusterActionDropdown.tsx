@@ -78,6 +78,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     onCloseClick: () => setDrawerContext(undefined),
                     panelContent: (
                         <EditLabels
+                            displayName={cluster.displayName!}
                             resource={{
                                 ...ManagedClusterDefinition,
                                 metadata: { name: cluster.name, labels: cluster.labels },

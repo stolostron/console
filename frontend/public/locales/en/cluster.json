@@ -98,7 +98,7 @@
     "actions": "Actions",
 
     "table.name": "Name",
-    "table.clusterName.helperText": "The name of the cluster's <bold>Namespace</bold>, <bold>ManagedCluster</bold>, and <bold>ClusterDeployment</bold> resources. The display name on the console will be different than the resource names if the cluster was claimed from a cluster pool.",
+    "table.clusterName.helperText": "The name of the cluster's <bold>Namespace</bold>, <bold>ManagedCluster</bold>, and <bold>ClusterDeployment</bold> resources. If the cluster was claimed from a cluster pool, the <bold>ClusterClaim</bold> resource name will be used as the display name for the cluster on the console.",
     "table.clusterId": "Cluster ID",
     "table.status": "Status",
     "table.provider": "Infrastructure provider",
@@ -266,7 +266,7 @@
     "tab.access": "Access management",
 
     "labels.capital": "Labels",
-    "labels.lower": "labels",
+    "labels.lower": "{{resourceName}} labels",
     "labels.button.add": "Add label",
     "labels.edit.title": "Edit labels",
     "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.",
