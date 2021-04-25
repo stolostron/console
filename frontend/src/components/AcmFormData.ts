@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
+
 import { ReactNode } from 'react'
 
 export interface FormData {
