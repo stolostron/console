@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { makeStyles } from '@material-ui/styles'
 import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
@@ -37,6 +38,7 @@ import {
     WizardFooter,
     WizardStep,
 } from '@patternfly/react-core'
+import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
@@ -617,6 +619,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error' }) {
                             onClear={inputRequired(input) ? undefined : () => input.onChange('')}
                             isCreatable={false}
                             isDisabled={inputDisabled(input)}
+                            validated={validated}
                         >
                             {selectOptions(input).map((option, index) => {
                                 return (
@@ -839,11 +842,15 @@ function inputHidden(input: Input): boolean {
 }
 
 function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
-    // className='.pf-c-form-control[aria-invalid="true"]'
-
+    const { validated } = props
     const [open, setOpen] = useState(false)
     return (
-        <Select isOpen={open} onToggle={() => setOpen(!open)} {...props}>
+        <Select
+            isOpen={open}
+            onToggle={() => setOpen(!open)}
+            {...props}
+            aria-invalid={validated === ValidatedOptions.error}
+        >
             {props.children}
         </Select>
     )
