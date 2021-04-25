@@ -66,7 +66,7 @@ function requiredValidationMessage() {
 export function AcmDataFormPage(props: AcmDataFormProps) {
     const { formData } = props
     const [showFormErrors, setShowFormErrors] = useState(false)
-    const [mode, setMode] = useState(props.mode ?? 'form')
+    const mode = props.mode ?? 'form'
     const [isHorizontal, setIsHorizontal] = useState(props.isHorizontal ?? true)
     const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
 
@@ -103,27 +103,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                         </ToggleGroup>
                                     </ActionListItem>
                                 )}
-                                {/* {process.env.NODE_ENV !== 'production' && (
-                                    <ActionListItem>
-                                        <ToggleGroup>
-                                            <ToggleGroupItem
-                                                text="Wizard"
-                                                isSelected={mode === 'wizard'}
-                                                onChange={() => setMode('wizard')}
-                                            />
-                                            <ToggleGroupItem
-                                                text="Form"
-                                                isSelected={mode === 'form'}
-                                                onChange={() => setMode('form')}
-                                            />
-                                            <ToggleGroupItem
-                                                text="Details"
-                                                isSelected={mode === 'details'}
-                                                onChange={() => setMode('details')}
-                                            />
-                                        </ToggleGroup>
-                                    </ActionListItem>
-                                )} */}
                             </ActionList>
                         }
                     />
