@@ -28,6 +28,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { Secret } from '../../resources/secret'
+import moment from 'moment'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['connection'])
@@ -200,6 +201,16 @@ export function CredentialsTable(props: {
                         sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
                             return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
                         },
+                    },
+                    {
+                        header: 'Created',
+                        sort: 'metadata.creationTimestamp',
+                        cell: (resource) => (
+                            <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
+                                {resource.metadata.creationTimestamp &&
+                                    moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
+                            </span>
+                        ),
                     },
                     {
                         header: '',
