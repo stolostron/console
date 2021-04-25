@@ -206,7 +206,7 @@ export function CredentialsTable(props: {
                         header: 'Created',
                         sort: 'metadata.creationTimestamp',
                         cell: (resource) => (
-                            <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
+                            <span style={{ whiteSpace: 'nowrap' }}>
                                 {resource.metadata.creationTimestamp &&
                                     moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
                             </span>
