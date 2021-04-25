@@ -16,6 +16,7 @@ export interface FormData {
 
 export interface Section {
     name: string
+    description?: string
     inputs?: Input[]
     groups?: Group[]
     columns?: 1 | 2
@@ -23,6 +24,7 @@ export interface Section {
 
 export interface Group {
     name: string
+    description?: string
     inputs: Input[]
     columns?: 1 | 2
 }

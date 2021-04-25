@@ -27,6 +27,7 @@ import {
     SelectProps,
     SelectVariant,
     Stack,
+    Text,
     TextArea,
     TextInput,
     Tile,
@@ -69,7 +70,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
     const [showFormErrors, setShowFormErrors] = useState(false)
     const [mode, setMode] = useState(props.mode ?? 'form')
     const [isHorizontal, setIsHorizontal] = useState(props.isHorizontal ?? true)
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? false)
+    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
 
     return (
         <Page
@@ -194,6 +195,7 @@ export function AcmDataForm(
                     isHorizontal={isHorizontal}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
+                    showSecrets={showSecrets ?? false}
                 />
             )
     }
@@ -204,8 +206,9 @@ export function AcmDataFormDefault(props: {
     isHorizontal?: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
+    showSecrets: boolean
 }) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
     const isSubmitting = submitText !== formData.submitText
@@ -219,7 +222,8 @@ export function AcmDataFormDefault(props: {
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors}
-                            isDisabled={isSubmitting}
+                            isReadOnly={isSubmitting}
+                            showSecrets={showSecrets}
                         />
                         {section.groups?.map((group) => {
                             if (groupHidden(group)) return <Fragment />
@@ -229,14 +233,15 @@ export function AcmDataFormDefault(props: {
                                     header={
                                         <FormFieldGroupHeader
                                             titleText={{ text: group.name, id: group.name }}
-                                            // titleDescription="Field group 3 description text."
+                                            titleDescription={group.description}
                                         />
                                     }
                                 >
                                     <AcmDataFormInputs
                                         inputs={group.inputs}
                                         showFormErrors={showFormErrors}
-                                        isDisabled={isSubmitting}
+                                        isReadOnly={isSubmitting}
+                                        showSecrets={showSecrets}
                                     />
                                 </FormFieldGroupExpandable>
                             )
@@ -307,7 +312,7 @@ export function AcmDataFormWizard(props: {
         .map((section) => {
             if (sectionHidden(section)) return undefined
             const color = showFormErrors && sectionHasErrors(section) ? '#A30000' : undefined
-            const fontWeight = color && 'bold'
+            const fontWeight = color !== undefined ? 'bold' : undefined
             return {
                 id: section.name,
                 name: <span style={{ color, fontWeight }}>{section.name}</span>,
@@ -326,10 +331,12 @@ export function AcmDataFormWizard(props: {
                                 </AlertGroup>
                             )}
                         <Title headingLevel="h2">{section.name}</Title>
+                        {section.description && <Text component="small">{section.description}</Text>}
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.name]}
-                            isDisabled={isSubmitting}
+                            isReadOnly={isSubmitting}
+                            showSecrets={showSecrets}
                         />
                     </Form>
                 ),
@@ -347,14 +354,18 @@ export function AcmDataFormWizard(props: {
                                 </AlertGroup>
                             )}
                             <Title headingLevel="h2">{group.name}</Title>
+                            {group.description && <Text component="small">{group.description}</Text>}
                             <AcmDataFormInputs
                                 inputs={group.inputs}
                                 showFormErrors={showFormErrors || showSectionErrors[section.name]}
-                                isDisabled={isSubmitting}
+                                isReadOnly={isSubmitting}
+                                showSecrets={showSecrets}
                             />
                         </Form>
                     ),
+                    canJumpTo: !isSubmitting,
                 })),
+                canJumpTo: !isSubmitting,
             }
         })
         .filter((value) => value !== undefined) as WizardStep[]
@@ -492,6 +503,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                 return (
                     <FormSection key={section.name}>
                         <Title headingLevel="h2">{section.name}</Title>
+                        {section.description && <Text component="small">{section.description}</Text>}
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
                                 columnModifier={{ default: section.columns === 1 || isHorizontal ? '1Col' : '2Col' }}
@@ -589,8 +601,13 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
     )
 }
 
-export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: boolean; isDisabled: boolean }) {
-    const { inputs, showFormErrors, isDisabled } = props
+export function AcmDataFormInputs(props: {
+    inputs?: Input[]
+    showFormErrors?: boolean
+    isReadOnly: boolean
+    showSecrets: boolean
+}) {
+    const { inputs, showFormErrors, isReadOnly, showSecrets } = props
     return (
         <Fragment>
             {inputs?.map((input) => {
@@ -615,7 +632,12 @@ export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: bo
                                     />
                                 }
                             >
-                                <AcmDataFormInput input={input} validated={validated} isDisabled={isDisabled} />
+                                <AcmDataFormInput
+                                    input={input}
+                                    validated={validated}
+                                    isReadOnly={isReadOnly}
+                                    showSecrets={showSecrets}
+                                />
                             </FormGroup>
                         )}
                     </Fragment>
@@ -625,9 +647,14 @@ export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: bo
     )
 }
 
-export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isDisabled: boolean }) {
-    const { input, validated, isDisabled } = props
-    const [visible, setVisible] = useState(false)
+export function AcmDataFormInput(props: {
+    input: Input
+    validated?: 'error'
+    isReadOnly: boolean
+    showSecrets: boolean
+}) {
+    const { input, validated, isReadOnly, showSecrets } = props
+    const [visible, setVisible] = useState(showSecrets)
     switch (input.type) {
         case 'Text': {
             const value = inputValue(input)
@@ -640,7 +667,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isD
                         onChange={input.onChange}
                         validated={validated}
                         isRequired={inputRequired(input)}
-                        isDisabled={isDisabled || inputDisabled(input)}
+                        isDisabled={inputDisabled(input)}
+                        isReadOnly={isReadOnly}
                         type={!input.isSecret || visible ? 'text' : 'password'}
                     />
                     {input.isSecret &&
@@ -660,18 +688,43 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isD
             const value = inputValue(input)
             const rows = value.split('\n').length
             return (
-                <TextArea
-                    id={input.id}
-                    placeholder={inputPlaceholder(input)}
-                    value={inputValue(input)}
-                    onChange={input.onChange}
-                    validated={validated}
-                    isRequired={inputRequired(input)}
-                    isDisabled={isDisabled || inputDisabled(input)}
-                    resizeOrientation="vertical"
-                    rows={rows}
-                    style={{ minHeight: '88px' }}
-                />
+                <InputGroup>
+                    {input.isSecret && !visible ? (
+                        <TextInput
+                            id={input.id}
+                            placeholder={inputPlaceholder(input)}
+                            value={value ? '********' : ''}
+                            validated={validated}
+                            isRequired={inputRequired(input)}
+                            isReadOnly={true}
+                            type={'password'}
+                        />
+                    ) : (
+                        <TextArea
+                            id={input.id}
+                            placeholder={inputPlaceholder(input)}
+                            value={inputValue(input)}
+                            onChange={input.onChange}
+                            validated={validated}
+                            isRequired={inputRequired(input)}
+                            isDisabled={inputDisabled(input)}
+                            isReadOnly={isReadOnly}
+                            resizeOrientation="vertical"
+                            rows={rows}
+                            style={{ minHeight: '88px' }}
+                        />
+                    )}
+                    {input.isSecret &&
+                        (visible ? (
+                            <Button variant="control" aria-label="secrets shown" onClick={() => setVisible(!visible)}>
+                                <EyeIcon />
+                            </Button>
+                        ) : (
+                            <Button variant="control" aria-label="secrets hidden" onClick={() => setVisible(!visible)}>
+                                <EyeSlashIcon />
+                            </Button>
+                        ))}
+                </InputGroup>
             )
         }
         case 'Select':
@@ -687,7 +740,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isD
                             onSelect={(_event, value) => input.onChange(value as string)}
                             onClear={inputRequired(input) ? undefined : () => input.onChange('')}
                             isCreatable={false}
-                            isDisabled={isDisabled || inputDisabled(input)}
+                            isDisabled={isReadOnly || inputDisabled(input)}
                             validated={validated}
                         >
                             {selectOptions(input).map((option, index) => {
@@ -911,6 +964,7 @@ function inputHidden(input: Input): boolean {
 }
 
 function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
+    // TODO support isReadOnly
     const { validated } = props
     const [open, setOpen] = useState(false)
     return (

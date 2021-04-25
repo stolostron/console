@@ -370,7 +370,7 @@ export function CredentialsForm(props: {
                     {
                         id: 'awsSecretAccessKeyID',
                         isHidden: credentialsType !== Provider.aws,
-                        type: 'TextArea',
+                        type: 'Text',
                         label: t('addConnection.awsSecretAccessKeyID.label'),
                         placeholder: t('addConnection.awsSecretAccessKeyID.placeholder'),
                         labelHelp: t('addConnection.awsSecretAccessKeyID.labelHelp'),
@@ -811,13 +811,13 @@ export function CredentialsForm(props: {
             if (isEditing) {
                 return replaceResource(stateToData() as IResource).promise.then(async () => {
                     if (process.env.NODE_ENV === 'development')
-                        await new Promise((resolve) => setTimeout(resolve, 1000))
+                        await new Promise((resolve) => setTimeout(resolve, 4000))
                     history.push(NavigationPath.credentials)
                 })
             } else {
                 return createResource(stateToData() as IResource).promise.then(async () => {
                     if (process.env.NODE_ENV === 'development')
-                        await new Promise((resolve) => setTimeout(resolve, 1000))
+                        await new Promise((resolve) => setTimeout(resolve, 4000))
                     history.push(NavigationPath.credentials)
                 })
             }
