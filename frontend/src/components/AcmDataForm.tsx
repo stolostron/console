@@ -534,7 +534,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                             <DescriptionListTerm>{input.label}</DescriptionListTerm>
                                                             <DescriptionListDescription>
                                                                 {input.isSecret && !showSecrets
-                                                                    ? '********'
+                                                                    ? '****************'
                                                                     : optionText(
                                                                           selectOptions(input).find(
                                                                               (option) =>
@@ -555,7 +555,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                             <DescriptionListTerm>{input.label}</DescriptionListTerm>
                                                             <DescriptionListDescription>
                                                                 {input.isSecret && !showSecrets
-                                                                    ? '********'
+                                                                    ? '****************'
                                                                     : inputValue(input)
                                                                           .split('\n')
                                                                           .map((line) => <p>{line}</p>)}
@@ -705,7 +705,7 @@ export function AcmDataFormInput(props: {
                         <TextInput
                             id={input.id}
                             placeholder={inputPlaceholder(input)}
-                            value={'********'}
+                            value={'**************'}
                             validated={validated}
                             isRequired={inputRequired(input)}
                             isReadOnly={true}
