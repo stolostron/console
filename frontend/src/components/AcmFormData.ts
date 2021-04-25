@@ -15,15 +15,16 @@ export interface FormData {
 }
 
 export interface Section {
-    name: string
-    description?: string
+    title: string
+    description?: ReactNode
+    wizardTitle?: string
     inputs?: Input[]
     groups?: Group[]
     columns?: 1 | 2
 }
 
 export interface Group {
-    name: string
+    title: string
     description?: string
     inputs: Input[]
     columns?: 1 | 2

@@ -291,16 +291,17 @@ export function CredentialsForm(props: {
         breadcrumb: [{ text: 'Credentials', to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
-                name: 'Credentials type',
+                title: 'Credentials type',
+                wizardTitle: 'Select the credentials type',
                 inputs: [
                     {
                         id: 'credentialsType',
                         type: 'Select',
-                        label: 'Type',
+                        label: 'Credentials type',
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
-                        placeholder: 'Select the type for the credentials',
+                        placeholder: 'Select the credentials type',
                         options: () =>
                             credentialProviders.map((provider) => {
                                 return {
@@ -321,7 +322,8 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: 'Details',
+                title: 'Basic information',
+                wizardTitle: 'Enter basic information',
                 inputs: [
                     {
                         id: 'credentialsName',
@@ -354,7 +356,17 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: 'AWS credentials',
+                title: 'AWS credentials',
+                wizardTitle: 'Enter credential information',
+                description: (
+                    <a
+                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        How do I get Amazon Web Service credentials?
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'awsAccessKeyID',
@@ -383,7 +395,17 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Google cloud credentials',
+                title: 'Google cloud credentials',
+                wizardTitle: 'Enter credential information',
+                description: (
+                    <a
+                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        How do I get Google Cloud Platform credentials?
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'gcProjectID',
@@ -414,7 +436,17 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Azure credentials',
+                title: 'Azure credentials',
+                wizardTitle: 'Enter credential information',
+                description: (
+                    <a
+                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        How do I get Azure credentials?
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'baseDomainResourceGroupName',
@@ -474,7 +506,8 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: 'VMWare vCenter',
+                title: 'VMWare vCenter',
+                wizardTitle: 'Enter the VMWare vCenter details',
                 inputs: [
                     {
                         id: 'vcenter',
@@ -526,7 +559,8 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'VMWare vSphere',
+                title: 'VMWare vSphere',
+                wizardTitle: 'Enter the VMWare vSphere details',
                 inputs: [
                     {
                         id: 'vmClusterName',
@@ -564,7 +598,8 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: 'Openstack',
+                title: 'Openstack',
+                wizardTitle: 'Enter the Openstack details',
                 inputs: [
                     {
                         id: 'openstackCloudsYaml',
@@ -593,7 +628,8 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Baremetal',
+                title: 'Baremetal',
+                wizardTitle: 'Enter the Bare-metal details',
                 inputs: [
                     {
                         id: 'libvirtURI',
@@ -621,7 +657,8 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: t('addConnection.configureDisconnectedInstall.label'),
+                title: t('addConnection.configureDisconnectedInstall.label'),
+                wizardTitle: 'Enter the disconnected environment information',
                 inputs: [
                     {
                         id: 'imageMirror',
@@ -668,7 +705,17 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Ansible credentials',
+                title: 'Ansible credentials',
+                wizardTitle: 'Enter the Ansible Automation Platform information',
+                description: (
+                    <a
+                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        How do I get Ansible Automation Platform information?
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'ansibleHost',
@@ -693,7 +740,8 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                name: 'Openshift cluster manager credentials',
+                title: 'Openshift cluster manager credentials',
+                wizardTitle: 'Enter the Openshift cluster manager credentials',
                 inputs: [
                     {
                         id: 'ocmAPIToken',
@@ -711,7 +759,7 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Base domain',
+                title: 'Base domain',
                 inputs: [
                     {
                         id: 'baseDomain',
@@ -735,7 +783,7 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'Pull secret',
+                title: 'Pull secret',
                 inputs: [
                     {
                         id: 'pullSecret',
@@ -761,7 +809,7 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                name: 'SSH key',
+                title: 'SSH key',
                 inputs: [
                     {
                         id: 'sshPrivatekey',

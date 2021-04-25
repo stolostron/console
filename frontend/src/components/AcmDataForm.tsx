@@ -213,8 +213,8 @@ export function AcmDataFormDefault(props: {
             {formData.sections.map((section) => {
                 if (sectionHidden(section)) return <Fragment />
                 return (
-                    <FormSection key={section.name}>
-                        <Title headingLevel="h2">{section.name}</Title>
+                    <FormSection key={section.title}>
+                        <Title headingLevel="h2">{section.title}</Title>
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors}
@@ -225,10 +225,10 @@ export function AcmDataFormDefault(props: {
                             if (groupHidden(group)) return <Fragment />
                             return (
                                 <FormFieldGroupExpandable
-                                    key={group.name}
+                                    key={group.title}
                                     header={
                                         <FormFieldGroupHeader
-                                            titleText={{ text: group.name, id: group.name }}
+                                            titleText={{ text: group.title, id: group.title }}
                                             titleDescription={group.description}
                                         />
                                     }
@@ -310,15 +310,15 @@ export function AcmDataFormWizard(props: {
             const color = showFormErrors && sectionHasErrors(section) ? '#A30000' : undefined
             const fontWeight = color !== undefined ? 'bold' : undefined
             return {
-                id: section.name,
-                name: <span style={{ color, fontWeight }}>{section.name}</span>,
+                id: section.title,
+                name: <span style={{ color, fontWeight }}>{section.title}</span>,
                 component: (
                     <Form isHorizontal={isHorizontal}>
                         {(showFormErrors || showSectionErrors[sectionName]) &&
-                            sectionHasErrors(formData.sections.find((section) => section.name === sectionName)) && (
+                            sectionHasErrors(formData.sections.find((section) => section.title === sectionName)) && (
                                 <AlertGroup>
                                     {sectionHasRequiredErrors(
-                                        formData.sections.find((section) => section.name === sectionName)
+                                        formData.sections.find((section) => section.title === sectionName)
                                     ) ? (
                                         <Alert isInline variant="danger" title={requiredValidationMessage()} />
                                     ) : (
@@ -326,18 +326,18 @@ export function AcmDataFormWizard(props: {
                                     )}
                                 </AlertGroup>
                             )}
-                        <Title headingLevel="h2">{section.name}</Title>
+                        <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
                         {section.description && <Text component="small">{section.description}</Text>}
                         <AcmDataFormInputs
                             inputs={section.inputs}
-                            showFormErrors={showFormErrors || showSectionErrors[section.name]}
+                            showFormErrors={showFormErrors || showSectionErrors[section.title]}
                             isReadOnly={isSubmitting}
                             showSecrets={showSecrets}
                         />
                     </Form>
                 ),
                 steps: section.groups?.map((group) => ({
-                    name: group.name,
+                    name: group.title,
                     component: (
                         <Form isHorizontal={isHorizontal}>
                             {(showFormErrors || showSectionErrors[sectionName]) && groupHasErrors(group) && (
@@ -349,11 +349,11 @@ export function AcmDataFormWizard(props: {
                                     )}
                                 </AlertGroup>
                             )}
-                            <Title headingLevel="h2">{group.name}</Title>
+                            <Title headingLevel="h2">{group.title}</Title>
                             {group.description && <Text component="small">{group.description}</Text>}
                             <AcmDataFormInputs
                                 inputs={group.inputs}
-                                showFormErrors={showFormErrors || showSectionErrors[section.name]}
+                                showFormErrors={showFormErrors || showSectionErrors[section.title]}
                                 isReadOnly={isSubmitting}
                                 showSecrets={showSecrets}
                             />
@@ -391,7 +391,7 @@ export function AcmDataFormWizard(props: {
             <WizardContextConsumer>
                 {({ activeStep, goToStepByName, goToStepById, onNext, onBack, onClose }) => {
                     setSectionName(activeStep.id as string)
-                    const section = formData.sections.find((section) => section.name === activeStep.id)
+                    const section = formData.sections.find((section) => section.title === activeStep.id)
                     if (section) {
                         return (
                             <Fragment>
@@ -400,8 +400,8 @@ export function AcmDataFormWizard(props: {
                                     onClick={() => {
                                         if (section) {
                                             setShowSectionErrors((showSectionErrors) => {
-                                                if (!showSectionErrors[section.name]) {
-                                                    return { ...showSectionErrors, ...{ [section.name]: true } }
+                                                if (!showSectionErrors[section.title]) {
+                                                    return { ...showSectionErrors, ...{ [section.title]: true } }
                                                 }
                                                 return showSectionErrors
                                             })
@@ -410,7 +410,7 @@ export function AcmDataFormWizard(props: {
                                         onNext()
                                     }}
                                     isDisabled={
-                                        ((showFormErrors || showSectionErrors[section.name]) &&
+                                        ((showFormErrors || showSectionErrors[section.title]) &&
                                             sectionHasErrors(section)) ||
                                         isSubmitting
                                     }
@@ -420,7 +420,7 @@ export function AcmDataFormWizard(props: {
                                 <Button
                                     variant="secondary"
                                     onClick={onBack}
-                                    isDisabled={activeStep.id === formData.sections[0].name || isSubmitting}
+                                    isDisabled={activeStep.id === formData.sections[0].title || isSubmitting}
                                 >
                                     Back
                                 </Button>
@@ -497,9 +497,8 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                 if (!sectionHasValue(section)) return <Fragment />
                 if (sectionHidden(section)) return <Fragment />
                 return (
-                    <FormSection key={section.name}>
-                        <Title headingLevel="h2">{section.name}</Title>
-                        {section.description && <Text component="small">{section.description}</Text>}
+                    <FormSection key={section.title}>
+                        <Title headingLevel="h2">{section.title}</Title>
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
                                 columnModifier={{ default: section.columns === 1 || isHorizontal ? '1Col' : '2Col' }}
@@ -554,8 +553,8 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                 {section.groups.map((group) => {
                                     if (groupHidden(group)) return <Fragment />
                                     return (
-                                        <Fragment key={group.name}>
-                                            <Title headingLevel="h3">{group.name}</Title>
+                                        <Fragment key={group.title}>
+                                            <Title headingLevel="h3">{group.title}</Title>
                                             {anyInputHasValue(group.inputs) && (
                                                 <DescriptionList
                                                     columnModifier={{

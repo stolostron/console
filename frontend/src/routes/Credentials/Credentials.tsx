@@ -13,7 +13,7 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Alert, AlertGroup, Card, CardBody, PageSection, Stack } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -38,14 +38,18 @@ export default function CredentialsPage() {
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
     return (
         <AcmPage>
-            <AcmPageHeader title={t('manageCredentials')} />
+            <AcmPageHeader title={t('connections')} />
             <AcmPageContent id="credentials">
-                <PageSection variant="light" isFilled={true}>
-                    <CredentialsTable
-                        providerConnections={providerConnections}
-                        discoveryConfigs={discoveryConfigs}
-                        secrets={secrets}
-                    />
+                <PageSection>
+                    <Card>
+                        <CardBody>
+                            <CredentialsTable
+                                providerConnections={providerConnections}
+                                discoveryConfigs={discoveryConfigs}
+                                secrets={secrets}
+                            />
+                        </CardBody>
+                    </Card>
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
