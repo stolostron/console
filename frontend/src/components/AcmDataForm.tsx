@@ -46,10 +46,6 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, useState } from 'react'
 import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
 
-// TODO handle Submit button loading
-// TODO handle submit button error
-// TODO handle isSubmitting
-
 export interface AcmDataFormProps {
     formData: FormData
     mode?: 'form' | 'wizard' | 'details'
@@ -658,6 +654,7 @@ export function AcmDataFormInput(props: {
     switch (input.type) {
         case 'Text': {
             const value = inputValue(input)
+            const showSecretToggle = input.isSecret === true
             return (
                 <InputGroup>
                     <TextInput
@@ -671,24 +668,11 @@ export function AcmDataFormInput(props: {
                         isReadOnly={isReadOnly}
                         type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
-                    {input.isSecret &&
-                        (showSecrets ? (
-                            <Button
-                                variant="control"
-                                aria-label="secrets shown"
-                                onClick={() => setShowSecrets(!showSecrets)}
-                            >
-                                <EyeIcon />
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="control"
-                                aria-label="secrets hidden"
-                                onClick={() => setShowSecrets(!showSecrets)}
-                            >
-                                <EyeSlashIcon />
-                            </Button>
-                        ))}
+                    {showSecretToggle && (
+                        <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
+                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                        </Button>
+                    )}
                 </InputGroup>
             )
         }
@@ -726,7 +710,7 @@ export function AcmDataFormInput(props: {
                     )}
                     {showSecretToggle && (
                         <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
-                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}{' '}
+                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
                         </Button>
                     )}
                 </InputGroup>
