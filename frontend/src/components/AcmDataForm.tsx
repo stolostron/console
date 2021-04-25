@@ -155,7 +155,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                 </PageSection>
             ) : (
                 <PageSection>
-                    <Card>
+                    <Card isLarge>
                         <CardBody>
                             <AcmDataForm
                                 {...props}
