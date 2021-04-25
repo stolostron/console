@@ -8,6 +8,8 @@ import {
     Alert,
     AlertGroup,
     Button,
+    Card,
+    CardBody,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -140,16 +142,33 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
             }
             groupProps={{ sticky: 'top' }}
         >
-            <PageSection variant="light" isFilled type={mode === 'wizard' ? 'wizard' : 'default'}>
-                <AcmDataForm
-                    {...props}
-                    mode={mode}
-                    showSecrets={showSecrets}
-                    showFormErrors={showFormErrors}
-                    setShowFormErrors={setShowFormErrors}
-                    isHorizontal={isHorizontal}
-                />
-            </PageSection>
+            {mode === 'wizard' ? (
+                <PageSection variant="light" isFilled type="wizard">
+                    <AcmDataForm
+                        {...props}
+                        mode={mode}
+                        showSecrets={showSecrets}
+                        showFormErrors={showFormErrors}
+                        setShowFormErrors={setShowFormErrors}
+                        isHorizontal={isHorizontal}
+                    />
+                </PageSection>
+            ) : (
+                <PageSection>
+                    <Card>
+                        <CardBody>
+                            <AcmDataForm
+                                {...props}
+                                mode={mode}
+                                showSecrets={showSecrets}
+                                showFormErrors={showFormErrors}
+                                setShowFormErrors={setShowFormErrors}
+                                isHorizontal={isHorizontal}
+                            />
+                        </CardBody>
+                    </Card>
+                </PageSection>
+            )}
         </Page>
     )
 }
