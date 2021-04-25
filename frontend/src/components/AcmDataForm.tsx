@@ -653,8 +653,8 @@ export function AcmDataFormInput(props: {
     isReadOnly: boolean
     showSecrets: boolean
 }) {
-    const { input, validated, isReadOnly, showSecrets } = props
-    const [visible, setVisible] = useState(showSecrets)
+    const { input, validated, isReadOnly } = props
+    const [showSecrets, setShowSecrets] = useState(props.showSecrets)
     switch (input.type) {
         case 'Text': {
             const value = inputValue(input)
@@ -669,15 +669,23 @@ export function AcmDataFormInput(props: {
                         isRequired={inputRequired(input)}
                         isDisabled={inputDisabled(input)}
                         isReadOnly={isReadOnly}
-                        type={!input.isSecret || visible ? 'text' : 'password'}
+                        type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
                     {input.isSecret &&
-                        (visible ? (
-                            <Button variant="control" aria-label="secrets shown" onClick={() => setVisible(!visible)}>
+                        (showSecrets ? (
+                            <Button
+                                variant="control"
+                                aria-label="secrets shown"
+                                onClick={() => setShowSecrets(!showSecrets)}
+                            >
                                 <EyeIcon />
                             </Button>
                         ) : (
-                            <Button variant="control" aria-label="secrets hidden" onClick={() => setVisible(!visible)}>
+                            <Button
+                                variant="control"
+                                aria-label="secrets hidden"
+                                onClick={() => setShowSecrets(!showSecrets)}
+                            >
                                 <EyeSlashIcon />
                             </Button>
                         ))}
@@ -687,13 +695,15 @@ export function AcmDataFormInput(props: {
         case 'TextArea': {
             const value = inputValue(input)
             const rows = value.split('\n').length
+            const hideSecretInput = value !== '' && input.isSecret === true && !showSecrets
+            const showSecretToggle = value !== '' && input.isSecret === true
             return (
                 <InputGroup>
-                    {input.isSecret && !visible ? (
+                    {hideSecretInput ? (
                         <TextInput
                             id={input.id}
                             placeholder={inputPlaceholder(input)}
-                            value={value ? '********' : ''}
+                            value={'********'}
                             validated={validated}
                             isRequired={inputRequired(input)}
                             isReadOnly={true}
@@ -714,16 +724,11 @@ export function AcmDataFormInput(props: {
                             style={{ minHeight: '88px' }}
                         />
                     )}
-                    {input.isSecret &&
-                        (visible ? (
-                            <Button variant="control" aria-label="secrets shown" onClick={() => setVisible(!visible)}>
-                                <EyeIcon />
-                            </Button>
-                        ) : (
-                            <Button variant="control" aria-label="secrets hidden" onClick={() => setVisible(!visible)}>
-                                <EyeSlashIcon />
-                            </Button>
-                        ))}
+                    {showSecretToggle && (
+                        <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
+                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}{' '}
+                        </Button>
+                    )}
                 </InputGroup>
             )
         }
