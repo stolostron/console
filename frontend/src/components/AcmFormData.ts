@@ -10,7 +10,8 @@ export interface FormData {
     // toYaml?: () => string
     submit: () => void
     cancel: () => void
-    submitText?: string
+    submitText: string
+    submittingText: string
 }
 
 export interface Section {

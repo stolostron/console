@@ -809,19 +809,22 @@ export function CredentialsForm(props: {
         ],
         submit: () => {
             if (isEditing) {
-                return replaceResource(stateToData() as IResource).promise.then(() => {
+                return replaceResource(stateToData() as IResource).promise.then(async () => {
+                    if (process.env.NODE_ENV === 'development')
+                        await new Promise((resolve) => setTimeout(resolve, 1000))
                     history.push(NavigationPath.credentials)
                 })
             } else {
-                return createResource(stateToData() as IResource).promise.then(() => {
+                return createResource(stateToData() as IResource).promise.then(async () => {
+                    if (process.env.NODE_ENV === 'development')
+                        await new Promise((resolve) => setTimeout(resolve, 1000))
                     history.push(NavigationPath.credentials)
                 })
             }
         },
         submitText: isEditing ? 'Save' : 'Add',
-        cancel: () => {
-            history.push(NavigationPath.credentials)
-        },
+        submittingText: isEditing ? 'Saving' : 'Adding',
+        cancel: () => history.push(NavigationPath.credentials),
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
 }

@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@material-ui/styles'
 import { AcmPageHeader } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
@@ -27,6 +26,7 @@ import {
     SelectOption,
     SelectProps,
     SelectVariant,
+    Stack,
     TextArea,
     TextInput,
     Tile,
@@ -47,8 +47,7 @@ import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from
 
 // TODO handle Submit button loading
 // TODO handle submit button error
-// TODO select error state
-// TOOD handle cancel
+// TODO handle isSubmitting
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -83,7 +82,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                         breadcrumb={formData.breadcrumb}
                         actions={
                             <ActionList>
-                                {mode !== 'details' && (
+                                {process.env.NODE_ENV !== 'production' && (
                                     <ActionListItem>
                                         <ToggleGroup>
                                             <ToggleGroupItem
@@ -180,7 +179,11 @@ export function AcmDataForm(
         case 'details':
             return (
                 <Form>
-                    <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
+                    <AcmDataFormDetails
+                        formData={formData}
+                        showSecrets={showSecrets}
+                        isHorizontal={isHorizontal ?? true}
+                    />
                 </Form>
             )
 
@@ -203,35 +206,47 @@ export function AcmDataFormDefault(props: {
     setShowFormErrors: (showFormErrors: boolean) => void
 }) {
     const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const [submitText, setSubmitText] = useState(formData.submitText)
+    const [submitError, setSubmitError] = useState('')
+    const isSubmitting = submitText !== formData.submitText
     return (
-        <Fragment>
-            <Form isHorizontal={isHorizontal}>
-                {formData.sections.map((section) => {
-                    if (sectionHidden(section)) return <Fragment />
-                    return (
-                        <FormSection key={section.name}>
-                            <Title headingLevel="h2">{section.name}</Title>
-                            <AcmDataFormInputs inputs={section.inputs} showFormErrors={showFormErrors} />
-                            {section.groups?.map((group) => {
-                                if (groupHidden(group)) return <Fragment />
-                                return (
-                                    <FormFieldGroupExpandable
-                                        key={group.name}
-                                        header={
-                                            <FormFieldGroupHeader
-                                                titleText={{ text: group.name, id: group.name }}
-                                                // titleDescription="Field group 3 description text."
-                                            />
-                                        }
-                                    >
-                                        <AcmDataFormInputs inputs={group.inputs} showFormErrors={showFormErrors} />
-                                    </FormFieldGroupExpandable>
-                                )
-                            })}
-                        </FormSection>
-                    )
-                })}
+        <Form isHorizontal={isHorizontal}>
+            {formData.sections.map((section) => {
+                if (sectionHidden(section)) return <Fragment />
+                return (
+                    <FormSection key={section.name}>
+                        <Title headingLevel="h2">{section.name}</Title>
+                        <AcmDataFormInputs
+                            inputs={section.inputs}
+                            showFormErrors={showFormErrors}
+                            isDisabled={isSubmitting}
+                        />
+                        {section.groups?.map((group) => {
+                            if (groupHidden(group)) return <Fragment />
+                            return (
+                                <FormFieldGroupExpandable
+                                    key={group.name}
+                                    header={
+                                        <FormFieldGroupHeader
+                                            titleText={{ text: group.name, id: group.name }}
+                                            // titleDescription="Field group 3 description text."
+                                        />
+                                    }
+                                >
+                                    <AcmDataFormInputs
+                                        inputs={group.inputs}
+                                        showFormErrors={showFormErrors}
+                                        isDisabled={isSubmitting}
+                                    />
+                                </FormFieldGroupExpandable>
+                            )
+                        })}
+                    </FormSection>
+                )
+            })}
 
+            <Stack>
+                {submitError && <Alert isInline variant="danger" title={submitError} />}
                 <ActionGroup>
                     <ActionList>
                         <ActionListGroup>
@@ -239,29 +254,38 @@ export function AcmDataFormDefault(props: {
                                 <Button
                                     onClick={() => {
                                         setShowFormErrors(true)
-                                        if (!formHasErrors(formData)) formData.submit()
+                                        if (!formHasErrors(formData)) {
+                                            try {
+                                                const result = formData.submit()
+                                                if ((result as unknown) instanceof Promise) {
+                                                    setSubmitText(formData.submittingText)
+                                                    ;((result as unknown) as Promise<void>).catch((err) => {
+                                                        setSubmitError(err.message)
+                                                        setSubmitText(formData.submitText)
+                                                    })
+                                                }
+                                            } catch (err) {
+                                                setSubmitError(err.message)
+                                            }
+                                        }
                                     }}
                                     variant="primary"
-                                    isDisabled={showFormErrors && formHasErrors(formData)}
+                                    isDisabled={(showFormErrors && formHasErrors(formData)) || isSubmitting}
+                                    isLoading={isSubmitting}
                                 >
-                                    {formData.submitText ?? 'Create'}
+                                    {submitText}
                                 </Button>
                             </ActionListItem>
                             <ActionListItem>
-                                <Button
-                                    variant="secondary"
-                                    onClick={() => {
-                                        formData.cancel()
-                                    }}
-                                >
+                                <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
                                     Cancel
                                 </Button>
                             </ActionListItem>
                         </ActionListGroup>
                     </ActionList>
                 </ActionGroup>
-            </Form>
-        </Fragment>
+            </Stack>
+        </Form>
     )
 }
 
@@ -273,9 +297,11 @@ export function AcmDataFormWizard(props: {
     setShowFormErrors: (showFormErrors: boolean) => void
 }) {
     const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
-
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [sectionName, setSectionName] = useState('')
+    const [submitText, setSubmitText] = useState(formData.submitText)
+    const [submitError, setSubmitError] = useState('')
+    const isSubmitting = submitText !== formData.submitText
 
     const steps: WizardStep[] = formData.sections
         .map((section) => {
@@ -303,6 +329,7 @@ export function AcmDataFormWizard(props: {
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.name]}
+                            isDisabled={isSubmitting}
                         />
                     </Form>
                 ),
@@ -323,6 +350,7 @@ export function AcmDataFormWizard(props: {
                             <AcmDataFormInputs
                                 inputs={group.inputs}
                                 showFormErrors={showFormErrors || showSectionErrors[section.name]}
+                                isDisabled={isSubmitting}
                             />
                         </Form>
                     ),
@@ -344,10 +372,11 @@ export function AcmDataFormWizard(props: {
                         )}
                     </AlertGroup>
                 )}
-                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
+                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} isHorizontal={isHorizontal} />
             </Form>
         ),
         nextButtonText: 'Create',
+        canJumpTo: !isSubmitting,
     })
 
     const Footer = (
@@ -374,7 +403,9 @@ export function AcmDataFormWizard(props: {
                                         onNext()
                                     }}
                                     isDisabled={
-                                        (showFormErrors || showSectionErrors[section.name]) && sectionHasErrors(section)
+                                        ((showFormErrors || showSectionErrors[section.name]) &&
+                                            sectionHasErrors(section)) ||
+                                        isSubmitting
                                     }
                                 >
                                     Next
@@ -382,11 +413,11 @@ export function AcmDataFormWizard(props: {
                                 <Button
                                     variant="secondary"
                                     onClick={onBack}
-                                    isDisabled={activeStep.id === formData.sections[0].name}
+                                    isDisabled={activeStep.id === formData.sections[0].name || isSubmitting}
                                 >
                                     Back
                                 </Button>
-                                <Button variant="link" onClick={onClose}>
+                                <Button variant="link" onClick={onClose} isDisabled={isSubmitting}>
                                     Cancel
                                 </Button>
                             </Fragment>
@@ -394,20 +425,54 @@ export function AcmDataFormWizard(props: {
                     }
 
                     setShowFormErrors(true)
+
                     return (
-                        <Fragment>
-                            <Button
-                                onClick={() => {
-                                    if (!formHasErrors(formData)) formData.submit()
-                                }}
-                            >
-                                {formData.submitText ?? 'Create'}
-                            </Button>
-                            <Button onClick={() => onBack()}>Back</Button>
-                            <Button variant="link" onClick={onClose}>
-                                Cancel
-                            </Button>
-                        </Fragment>
+                        <Stack hasGutter style={{ width: '100%' }}>
+                            {submitError && <Alert isInline variant="danger" title={submitError} />}
+                            <ActionGroup>
+                                <ActionList>
+                                    <ActionListGroup>
+                                        <ActionListItem>
+                                            <Button
+                                                onClick={() => {
+                                                    if (!formHasErrors(formData)) {
+                                                        try {
+                                                            const result = formData.submit()
+                                                            if ((result as unknown) instanceof Promise) {
+                                                                setSubmitText(formData.submittingText)
+                                                                ;((result as unknown) as Promise<void>).catch((err) => {
+                                                                    setSubmitError(err.message)
+                                                                    setSubmitText(formData.submitText)
+                                                                })
+                                                            }
+                                                        } catch (err) {
+                                                            setSubmitError(err.message)
+                                                        }
+                                                    }
+                                                }}
+                                                variant="primary"
+                                                isDisabled={(showFormErrors && formHasErrors(formData)) || isSubmitting}
+                                                isLoading={isSubmitting}
+                                            >
+                                                {submitText}
+                                            </Button>
+                                        </ActionListItem>
+                                        <ActionListItem>
+                                            <Button variant="secondary" onClick={onBack} isDisabled={isSubmitting}>
+                                                Back
+                                            </Button>
+                                        </ActionListItem>
+                                    </ActionListGroup>
+                                    <ActionListGroup>
+                                        <ActionListItem>
+                                            <Button variant="link" onClick={formData.cancel} isDisabled={isSubmitting}>
+                                                Cancel
+                                            </Button>
+                                        </ActionListItem>
+                                    </ActionListGroup>
+                                </ActionList>
+                            </ActionGroup>
+                        </Stack>
                     )
                 }}
             </WizardContextConsumer>
@@ -417,8 +482,8 @@ export function AcmDataFormWizard(props: {
     return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
-export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean }) {
-    const { formData, showSecrets } = props
+export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean; isHorizontal: boolean }) {
+    const { formData, showSecrets, isHorizontal } = props
     return (
         <Fragment>
             {formData.sections.map((section) => {
@@ -428,7 +493,10 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                     <FormSection key={section.name}>
                         <Title headingLevel="h2">{section.name}</Title>
                         {anyInputHasValue(section.inputs) && (
-                            <DescriptionList columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}>
+                            <DescriptionList
+                                columnModifier={{ default: section.columns === 1 || isHorizontal ? '1Col' : '2Col' }}
+                                isHorizontal={props.isHorizontal}
+                            >
                                 {section.inputs &&
                                     section.inputs.map((input) => {
                                         if (inputHidden(input)) return <Fragment />
@@ -484,12 +552,13 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                 <DescriptionList
                                                     columnModifier={{
                                                         default:
-                                                            group.columns === 1
+                                                            group.columns === 1 || isHorizontal
                                                                 ? '1Col'
                                                                 : group.columns === 2
                                                                 ? '2Col'
                                                                 : undefined,
                                                     }}
+                                                    isHorizontal={props.isHorizontal}
                                                 >
                                                     {group.inputs.map((input) => {
                                                         if (inputHidden(input)) return <Fragment />
@@ -520,8 +589,8 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
     )
 }
 
-export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: boolean }) {
-    const { inputs, showFormErrors } = props
+export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: boolean; isDisabled: boolean }) {
+    const { inputs, showFormErrors, isDisabled } = props
     return (
         <Fragment>
             {inputs?.map((input) => {
@@ -546,7 +615,7 @@ export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: bo
                                     />
                                 }
                             >
-                                <AcmDataFormInput input={input} validated={validated} />
+                                <AcmDataFormInput input={input} validated={validated} isDisabled={isDisabled} />
                             </FormGroup>
                         )}
                     </Fragment>
@@ -556,8 +625,8 @@ export function AcmDataFormInputs(props: { inputs?: Input[]; showFormErrors?: bo
     )
 }
 
-export function AcmDataFormInput(props: { input: Input; validated?: 'error' }) {
-    const { input, validated } = props
+export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isDisabled: boolean }) {
+    const { input, validated, isDisabled } = props
     const [visible, setVisible] = useState(false)
     switch (input.type) {
         case 'Text': {
@@ -571,7 +640,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error' }) {
                         onChange={input.onChange}
                         validated={validated}
                         isRequired={inputRequired(input)}
-                        isDisabled={inputDisabled(input)}
+                        isDisabled={isDisabled || inputDisabled(input)}
                         type={!input.isSecret || visible ? 'text' : 'password'}
                     />
                     {input.isSecret &&
@@ -598,7 +667,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error' }) {
                     onChange={input.onChange}
                     validated={validated}
                     isRequired={inputRequired(input)}
-                    isDisabled={inputDisabled(input)}
+                    isDisabled={isDisabled || inputDisabled(input)}
                     resizeOrientation="vertical"
                     rows={rows}
                     style={{ minHeight: '88px' }}
@@ -618,7 +687,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error' }) {
                             onSelect={(_event, value) => input.onChange(value as string)}
                             onClear={inputRequired(input) ? undefined : () => input.onChange('')}
                             isCreatable={false}
-                            isDisabled={inputDisabled(input)}
+                            isDisabled={isDisabled || inputDisabled(input)}
                             validated={validated}
                         >
                             {selectOptions(input).map((option, index) => {
