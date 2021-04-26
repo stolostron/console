@@ -10,7 +10,7 @@ import {
     managedClusterSetsState,
     managedClustersState,
 } from '../../../atoms'
-import { nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../lib/test-metadata'
 import {
     clickBulkAction,
@@ -19,6 +19,7 @@ import {
     typeByText,
     waitForNock,
     waitForText,
+    typeByTestId,
 } from '../../../lib/test-util'
 import { mockClusterDeployments, mockManagedClusterInfos, mockManagedClusters } from '../Clusters/Clusters.test'
 import ClusterSetsPage from './ClusterSets'
@@ -46,6 +47,15 @@ describe('ClusterSets page', () => {
     })
     test('renders', () => {
         waitForText(mockManagedClusterSet.metadata.name!)
+    })
+    test('can create a managed cluster set', async () => {
+        await clickByText('managed.createClusterSet')
+        await waitForText('createClusterSet.title')
+        await typeByTestId('clusterSetName', mockManagedClusterSet.metadata.name!)
+        const createNock = nockCreate(mockManagedClusterSet)
+        await clickByText('common:create')
+        await waitForNock(createNock)
+        await waitForText('createClusterSet.success.title')
     })
     test('can delete managed cluster sets with bulk actions', async () => {
         const nock = nockDelete(mockManagedClusterSet)

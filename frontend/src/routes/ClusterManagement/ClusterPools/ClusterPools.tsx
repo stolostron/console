@@ -9,6 +9,7 @@ import {
     AcmInlineProvider,
     Provider,
     AcmButton,
+    IAcmTableAction,
 } from '@open-cluster-management/ui-components'
 import { PageSection, TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -35,13 +36,59 @@ import { RbacButton } from '../../../components/Rbac'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
+    const history = useHistory()
+    const { t } = useTranslation(['cluster'])
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
+
+    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
+
+    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
+        canCreateClusterPool.promise
+            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateClusterPool.abort()
+    }, [])
 
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <ClusterPoolsTable />
+                <ClusterPoolsTable
+                    clusterPools={clusterPools}
+                    tableActions={[
+                        {
+                            id: 'createClusterPool',
+                            title: t('managed.createClusterPool'),
+                            click: () => history.push(NavigationPath.createClusterPool),
+                            isDisabled: !canCreateClusterPool,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                    ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.clusterPools.emptyStateHeader')}
+                            message={
+                                <Trans
+                                    i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                    components={{ bold: <strong />, p: <p /> }}
+                                />
+                            }
+                            action={
+                                <AcmButton
+                                    role="link"
+                                    onClick={() => history.push(NavigationPath.createClusterPool)}
+                                    disabled={!canCreateClusterPool}
+                                    tooltip={t('common:rbac.unauthorized')}
+                                >
+                                    {t('managed.createClusterPool')}
+                                </AcmButton>
+                            }
+                        />
+                    }
+                />
             </PageSection>
         </AcmPageContent>
     )
@@ -58,8 +105,14 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
     return <AcmInlineProvider provider={provider} />
 }
 
-export function ClusterPoolsTable() {
-    const [clusterPools, clusterImageSets] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
+export function ClusterPoolsTable(props: {
+    clusterPools: ClusterPool[]
+    emptyState: React.ReactNode
+    canCreateClusterPool?: boolean
+    tableActions?: IAcmTableAction[]
+}) {
+    const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+    const { clusterPools } = props
     const { t } = useTranslation(['cluster'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
@@ -73,16 +126,6 @@ export function ClusterPoolsTable() {
     >()
 
     const clusters = useAllClusters()
-
-    const history = useHistory()
-    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
-        canCreateClusterPool.promise
-            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateClusterPool.abort()
-    }, [])
 
     const modalColumns = useMemo(
         () => [
@@ -346,38 +389,9 @@ export function ClusterPoolsTable() {
                         },
                     },
                 ]}
-                tableActions={[
-                    {
-                        id: 'createClusterPool',
-                        title: t('managed.createClusterPool'),
-                        click: () => history.push(NavigationPath.createClusterPool),
-                        isDisabled: !canCreateClusterPool,
-                        tooltip: t('common:rbac.unauthorized'),
-                    },
-                ]}
+                tableActions={props.tableActions}
                 rowActions={[]}
-                emptyState={
-                    <AcmEmptyState
-                        key="mcEmptyState"
-                        title={t('managed.clusterPools.emptyStateHeader')}
-                        message={
-                            <Trans
-                                i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
-                                components={{ bold: <strong />, p: <p /> }}
-                            />
-                        }
-                        action={
-                            <AcmButton
-                                role="link"
-                                onClick={() => history.push(NavigationPath.createClusterPool)}
-                                disabled={!canCreateClusterPool}
-                                tooltip={t('common:rbac.unauthorized')}
-                            >
-                                {t('managed.createClusterPool')}
-                            </AcmButton>
-                        }
-                    />
-                }
+                emptyState={props.emptyState}
             />
         </Fragment>
     )

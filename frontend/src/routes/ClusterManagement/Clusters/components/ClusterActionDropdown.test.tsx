@@ -10,9 +10,6 @@ import { clickByLabel, clickByText, waitForText, waitForNock, waitForNocks } fro
 import { ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
-import { managedClusterSetsState } from '../../../../atoms'
-import { mockManagedClusterSet } from '../../../../lib/test-metadata'
-import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 import {
     KlusterletAddonConfig,
@@ -88,32 +85,8 @@ function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: stri
     )
 }
 
-function nockPatchManagedCluster(op: string, value?: string) {
-    const patch: { op: string; path: string; value?: string } = {
-        op,
-        path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-    }
-    if (value) {
-        patch.value = value
-    }
-    return nockPatch(
-        {
-            apiVersion: ManagedClusterDefinition.apiVersion,
-            kind: ManagedClusterDefinition.kind,
-            metadata: {
-                name: mockCluster.name,
-            },
-        },
-        [patch]
-    )
-}
-
 const Component = (props: { cluster: Cluster }) => (
-    <RecoilRoot
-        initializeState={(snapshot) => {
-            snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-        }}
-    >
+    <RecoilRoot>
         <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
     </RecoilRoot>
 )
@@ -192,39 +165,6 @@ describe('ClusterActionDropdown', () => {
         await clickByText('managed.resume')
         await clickByText('resume')
         await waitForNock(nockPatch)
-    })
-
-    test('can add a cluster to a managed cluster set', async () => {
-        const nockPatch = nockPatchManagedCluster('add', mockManagedClusterSet.metadata.name)
-        const nockPatchCD = nockPatchClusterDeployment(
-            'add',
-            `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
-            mockManagedClusterSet.metadata.name
-        )
-        const cluster = JSON.parse(JSON.stringify(mockCluster))
-        render(<Component cluster={cluster} />)
-        await clickByLabel('Actions')
-        await clickByText('managed.addSet')
-        await clickByText('common:select')
-        await clickByText(mockManagedClusterSet.metadata.name!)
-        await clickByText('add')
-        await waitForNocks([nockPatch, nockPatchCD])
-    })
-
-    test('can remove a cluster from a managed cluster set', async () => {
-        const nockPatch = nockPatchManagedCluster('remove')
-        const nockPatchCD = nockPatchClusterDeployment(
-            'remove',
-            `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`
-        )
-        const cluster = JSON.parse(JSON.stringify(mockCluster))
-        cluster.labels = { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name }
-        cluster.clusterSet = mockManagedClusterSet.metadata.name
-        render(<Component cluster={cluster} />)
-        await clickByLabel('Actions')
-        await clickByText('managed.removeSet')
-        await clickByText('remove')
-        await waitForNocks([nockPatch, nockPatchCD])
     })
 })
 
