@@ -19,7 +19,9 @@ import { rbacPatch, rbacDelete } from '../../../../../lib/rbac-util'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { deleteResource } from '../../../../../lib/resource-request'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
+import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 
 export function MachinePoolsPageContent() {
     return (
@@ -187,6 +189,8 @@ export function MachinePoolsTable() {
                         isKebab={true}
                         text={`${machinePool.metadata.name}-actions`}
                         actions={actions}
+                        tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster!.status}`) })}
+                        isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster!.status)}
                     />
                 )
             },
@@ -195,6 +199,7 @@ export function MachinePoolsTable() {
 
     return (
         <>
+            <ScaleClusterAlert />
             <BulkActionModel<MachinePool> {...modalProps} />
             <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
             <AcmTable<MachinePool>

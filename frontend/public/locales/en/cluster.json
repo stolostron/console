@@ -375,6 +375,11 @@
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
 
+    "machinePool.alert.scaling.title": "Scaling in progress",
+    "machinePool.alert.scaling.increase.message": "Worker nodes are currently being added to this cluster. Click the <bold>View machines</bold> button to see the status of the scaling operations (it may take a few minutes for the changes to be reflected on this console).",
+    "machinePool.alert.scaling.decrease.message": "Worker nodes are currently being removed from this cluster. Click the <bold>View machines</bold> button to see the status of the scaling operations (it may take a few minutes for the changes to be reflected on this console).",
+    "machinePool.view.machines": "View machines",
+    "machinePool.menu.disabled.tooltip": "The current status of the cluster ({{status}}) does not allow any actions to be taken on the machine pool.",
     "machinePool.replica.count": "{{range}} replicas",
     "machinePool.modal.scale.edit-manualscale.title": "Scale machine pool",
     "machinePool.modal.scale.edit-manualscale.message": "Specify the desired machine set replica count for the <bold>{{name}}</bold>. Adjusting the size of the machine pool will result in the creation or destruction of nodes on the cluster.",
