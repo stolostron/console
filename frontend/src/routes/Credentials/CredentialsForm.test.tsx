@@ -78,7 +78,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // AWS credentials
@@ -126,7 +126,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // AZR credentials
@@ -174,7 +174,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // GCP credentials
@@ -224,7 +224,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // vCenter credentials
@@ -277,7 +277,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // ost credentials
@@ -326,7 +326,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // bmc credentials
@@ -374,7 +374,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // ans credentials
@@ -401,7 +401,7 @@ describe('add credentials page', () => {
 
         // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('addConnection.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('Next')
 
         // rhocm credentials

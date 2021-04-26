@@ -46,6 +46,7 @@ const credentialProviders: Provider[] = [
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { name, namespace } = match.params
+    // const { t } = useTranslation(['credentials'])
 
     let isEditing = false
     let isViewing = false
@@ -92,6 +93,7 @@ export default function CredentialsFormPage({ match }: RouteComponentProps<{ nam
         )
     } else {
         if (!projects) return <LoadingPage />
+        // if (projects.length === 0) // TODO <ErrorPage error={t('credentialsForm.error.noNamespacesFound')} />
         return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
     }
 }
@@ -102,7 +104,7 @@ export function CredentialsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['credentials', 'common'])
     const { namespaces, providerConnection, isEditing, isViewing } = props
 
     const history = useHistory()
@@ -270,10 +272,10 @@ export function CredentialsForm(props: {
         }
         return packProviderConnection(data)
     }
-    const title = isViewing ? name : isEditing ? t('editConnection.title') : t('addConnection.title')
+    const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
     const titleTooltip = (
         <Fragment>
-            {t('addConnection.title.tooltip')}
+            {t('credentialsForm.title.tooltip')}
             <a
                 href={DOC_LINKS.CREATE_CONNECTION}
                 target="_blank"
@@ -288,20 +290,21 @@ export function CredentialsForm(props: {
     const formData: FormData = {
         title,
         titleTooltip,
-        breadcrumb: [{ text: 'Credentials', to: NavigationPath.credentials }, { text: title }],
+        breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
-                title: 'Credentials type',
-                wizardTitle: 'Select the credentials type',
+                title: t('credentialsPage.title'),
+                wizardTitle: t('credentialsForm.credentialsType.wizardTitle'),
                 inputs: [
                     {
                         id: 'credentialsType',
                         type: 'Select',
-                        label: 'Credentials type',
+                        label: t('credentialsForm.credentialsName.label'),
+                        placeholder: t('credentialsForm.credentialsName.placeholder'),
+                        // labelHelp: t('credentialsForm.credentialsName.labelHelp'), // TODO
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
-                        placeholder: 'Select the credentials type',
                         options: () =>
                             credentialProviders.map((provider) => {
                                 return {
@@ -322,15 +325,15 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: 'Basic information',
-                wizardTitle: 'Enter basic information',
+                title: t('credentialsForm.basicInformation.title'),
+                wizardTitle: t('credentialsForm.basicInformation.wizardTitle'),
                 inputs: [
                     {
                         id: 'credentialsName',
                         type: 'Text',
-                        label: t('addConnection.connectionName.label'),
-                        placeholder: t('addConnection.connectionName.placeholder'),
-                        labelHelp: t('addConnection.connectionName.labelHelp'),
+                        label: t('credentialsForm.credentialsName.label'),
+                        placeholder: t('credentialsForm.credentialsName.placeholder'),
+                        labelHelp: t('credentialsForm.credentialsName.labelHelp'),
                         value: name,
                         onChange: setName,
                         validation: (value) => validateKubernetesDnsName(value, 'Connection name', t),
@@ -340,9 +343,9 @@ export function CredentialsForm(props: {
                     {
                         id: 'namespaceName',
                         type: 'Select',
-                        label: t('addConnection.namespaceName.label'),
-                        placeholder: t('addConnection.namespaceName.placeholder'),
-                        labelHelp: t('addConnection.namespaceName.labelHelp'),
+                        label: t('credentialsForm.namespaceName.label'),
+                        placeholder: t('credentialsForm.namespaceName.placeholder'),
+                        labelHelp: t('credentialsForm.namespaceName.labelHelp'),
                         value: namespace,
                         onChange: setNamespace,
                         isRequired: true,
@@ -356,15 +359,15 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: 'AWS credentials',
-                wizardTitle: 'Enter credential information',
+                title: t('credentialsForm.awsCredentials.title'),
+                wizardTitle: t('credentialsForm.awsCredentials.wizardTitle'),
                 description: (
                     <a
                         href={DOC_LINKS.CREATE_CONNECTION} // TODO
                         target="_blank"
                         rel="noreferrer"
                     >
-                        How do I get Amazon Web Service credentials?
+                        {t('credentialsForm.awsCredentials.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -372,9 +375,9 @@ export function CredentialsForm(props: {
                         id: 'awsAccessKeyID',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('addConnection.awsAccessKeyID.label'),
-                        placeholder: t('addConnection.awsAccessKeyID.placeholder'),
-                        labelHelp: t('addConnection.awsAccessKeyID.labelHelp'),
+                        label: t('credentialsForm.awsAccessKeyID.label'),
+                        placeholder: t('credentialsForm.awsAccessKeyID.placeholder'),
+                        labelHelp: t('credentialsForm.awsAccessKeyID.labelHelp'),
                         value: awsAccessKeyID,
                         onChange: setAwsAccessKeyID,
                         isRequired: true,
@@ -383,9 +386,9 @@ export function CredentialsForm(props: {
                         id: 'awsSecretAccessKeyID',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('addConnection.awsSecretAccessKeyID.label'),
-                        placeholder: t('addConnection.awsSecretAccessKeyID.placeholder'),
-                        labelHelp: t('addConnection.awsSecretAccessKeyID.labelHelp'),
+                        label: t('credentialsForm.awsSecretAccessKeyID.label'),
+                        placeholder: t('credentialsForm.awsSecretAccessKeyID.placeholder'),
+                        labelHelp: t('credentialsForm.awsSecretAccessKeyID.labelHelp'),
                         value: awsSecretAccessKeyID,
                         onChange: setAwsSecretAccessKeyID,
                         isRequired: true,
@@ -395,15 +398,11 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Google cloud credentials',
-                wizardTitle: 'Enter credential information',
+                title: t('credentialsForm.gcpCredentials.title'),
+                wizardTitle: t('credentialsForm.gcpCredentials.wizardTitle'),
                 description: (
-                    <a
-                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        How do I get Google Cloud Platform credentials?
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.gcpCredentials.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -411,9 +410,9 @@ export function CredentialsForm(props: {
                         id: 'gcProjectID',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'Text',
-                        label: t('addConnection.gcProjectID.label'),
-                        placeholder: t('addConnection.gcProjectID.placeholder'),
-                        labelHelp: t('addConnection.gcProjectID.labelHelp'),
+                        label: t('credentialsForm.gcProjectID.label'),
+                        placeholder: t('credentialsForm.gcProjectID.placeholder'),
+                        labelHelp: t('credentialsForm.gcProjectID.labelHelp'),
                         value: gcProjectID,
                         onChange: setGcProjectID,
                         validation: (value) => validateGCProjectID(value, t),
@@ -423,9 +422,9 @@ export function CredentialsForm(props: {
                         id: 'gcServiceAccountKey',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'TextArea',
-                        label: t('addConnection.gcServiceAccountKey.label'),
-                        placeholder: t('addConnection.gcServiceAccountKey.placeholder'),
-                        labelHelp: t('addConnection.gcServiceAccountKey.labelHelp'),
+                        label: t('credentialsForm.gcServiceAccountKey.label'),
+                        placeholder: t('credentialsForm.gcServiceAccountKey.placeholder'),
+                        labelHelp: t('credentialsForm.gcServiceAccountKey.labelHelp'),
                         value: gcServiceAccountKey,
                         onChange: setGcServiceAccountKey,
                         validation: (value) => validateJSON(value, t),
@@ -436,15 +435,11 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Azure credentials',
-                wizardTitle: 'Enter credential information',
+                title: t('credentialsForm.azureCredentials.title'),
+                wizardTitle: t('credentialsForm.azureCredentials.wizardTitle'),
                 description: (
-                    <a
-                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        How do I get Azure credentials?
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.azureCredentials.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -452,9 +447,9 @@ export function CredentialsForm(props: {
                         id: 'baseDomainResourceGroupName',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('addConnection.baseDomainResourceGroupName.label'),
-                        placeholder: t('addConnection.baseDomainResourceGroupName.placeholder'),
-                        labelHelp: t('addConnection.baseDomainResourceGroupName.labelHelp'),
+                        label: t('credentialsForm.baseDomainResourceGroupName.label'),
+                        placeholder: t('credentialsForm.baseDomainResourceGroupName.placeholder'),
+                        labelHelp: t('credentialsForm.baseDomainResourceGroupName.labelHelp'),
                         value: baseDomainResourceGroupName,
                         onChange: setBaseDomainResourceGroupName,
                         isRequired: true,
@@ -463,9 +458,9 @@ export function CredentialsForm(props: {
                         id: 'clientId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('addConnection.clientId.label'),
-                        placeholder: t('addConnection.clientId.placeholder'),
-                        labelHelp: t('addConnection.clientId.labelHelp'),
+                        label: t('credentialsForm.clientId.label'),
+                        placeholder: t('credentialsForm.clientId.placeholder'),
+                        labelHelp: t('credentialsForm.clientId.labelHelp'),
                         value: clientId,
                         onChange: setClientId,
                         isRequired: true,
@@ -474,9 +469,9 @@ export function CredentialsForm(props: {
                         id: 'clientSecret',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('addConnection.clientSecret.label'),
-                        placeholder: t('addConnection.clientSecret.placeholder'),
-                        labelHelp: t('addConnection.clientSecret.labelHelp'),
+                        label: t('credentialsForm.clientSecret.label'),
+                        placeholder: t('credentialsForm.clientSecret.placeholder'),
+                        labelHelp: t('credentialsForm.clientSecret.labelHelp'),
                         isRequired: true,
                         value: clientSecret,
                         onChange: setClientSecret,
@@ -485,9 +480,9 @@ export function CredentialsForm(props: {
                         id: 'subscriptionId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('addConnection.subscriptionId.label'),
-                        placeholder: t('addConnection.subscriptionId.placeholder'),
-                        labelHelp: t('addConnection.subscriptionId.labelHelp'),
+                        label: t('credentialsForm.subscriptionId.label'),
+                        placeholder: t('credentialsForm.subscriptionId.placeholder'),
+                        labelHelp: t('credentialsForm.subscriptionId.labelHelp'),
                         value: subscriptionId,
                         onChange: setSubscriptionId,
                         isRequired: true,
@@ -496,9 +491,9 @@ export function CredentialsForm(props: {
                         id: 'tenantId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('addConnection.tenantId.label'),
-                        placeholder: t('addConnection.tenantId.placeholder'),
-                        labelHelp: t('addConnection.tenantId.labelHelp'),
+                        label: t('credentialsForm.tenantId.label'),
+                        placeholder: t('credentialsForm.tenantId.placeholder'),
+                        labelHelp: t('credentialsForm.tenantId.labelHelp'),
                         value: tenantId,
                         onChange: setTenantId,
                         isRequired: true,
@@ -506,16 +501,21 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: 'VMWare vCenter',
-                wizardTitle: 'Enter the VMWare vCenter details',
+                title: t('credentialsForm.vCenterCredentials.title'),
+                wizardTitle: t('credentialsForm.vCenterCredentials.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.vCenterCredentials.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'vcenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.vcenter.label'),
-                        placeholder: t('addConnection.vcenter.placeholder'),
-                        labelHelp: t('addConnection.vcenter.labelHelp'),
+                        label: t('credentialsForm.vcenter.label'),
+                        placeholder: t('credentialsForm.vcenter.placeholder'),
+                        labelHelp: t('credentialsForm.vcenter.labelHelp'),
                         value: vcenter,
                         onChange: setVcenter,
                         isRequired: true,
@@ -524,9 +524,9 @@ export function CredentialsForm(props: {
                         id: 'username',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.username.label'),
-                        placeholder: t('addConnection.username.placeholder'),
-                        labelHelp: t('addConnection.username.labelHelp'),
+                        label: t('credentialsForm.username.label'),
+                        placeholder: t('credentialsForm.username.placeholder'),
+                        labelHelp: t('credentialsForm.username.labelHelp'),
                         value: username,
                         onChange: setUsername,
                         isRequired: true,
@@ -535,9 +535,9 @@ export function CredentialsForm(props: {
                         id: 'password',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.password.label'),
-                        placeholder: t('addConnection.password.placeholder'),
-                        labelHelp: t('addConnection.password.labelHelp'),
+                        label: t('credentialsForm.password.label'),
+                        placeholder: t('credentialsForm.password.placeholder'),
+                        labelHelp: t('credentialsForm.password.labelHelp'),
                         value: password,
                         onChange: setPassword,
                         isRequired: true,
@@ -547,9 +547,9 @@ export function CredentialsForm(props: {
                         id: 'cacertificate',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'TextArea',
-                        label: t('addConnection.cacertificate.label'),
-                        placeholder: t('addConnection.cacertificate.placeholder'),
-                        labelHelp: t('addConnection.cacertificate.labelHelp'),
+                        label: t('credentialsForm.cacertificate.label'),
+                        placeholder: t('credentialsForm.cacertificate.placeholder'),
+                        labelHelp: t('credentialsForm.cacertificate.labelHelp'),
                         value: cacertificate,
                         onChange: setCacertificate,
                         validation: (value) => validateCertificate(value, t),
@@ -559,16 +559,21 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'VMWare vSphere',
-                wizardTitle: 'Enter the VMWare vSphere details',
+                title: t('credentialsForm.vSphereCredentials.title'),
+                wizardTitle: t('credentialsForm.vSphereCredentials.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.vSphereCredentials.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'vmClusterName',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.vmClusterName.label'),
-                        placeholder: t('addConnection.vmClusterName.placeholder'),
-                        labelHelp: t('addConnection.vmClusterName.labelHelp'),
+                        label: t('credentialsForm.vmClusterName.label'),
+                        placeholder: t('credentialsForm.vmClusterName.placeholder'),
+                        labelHelp: t('credentialsForm.vmClusterName.labelHelp'),
                         value: vmClusterName,
                         onChange: setVmClusterName,
                         isRequired: true,
@@ -577,9 +582,9 @@ export function CredentialsForm(props: {
                         id: 'datacenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.datacenter.label'),
-                        placeholder: t('addConnection.datacenter.placeholder'),
-                        labelHelp: t('addConnection.datacenter.labelHelp'),
+                        label: t('credentialsForm.datacenter.label'),
+                        placeholder: t('credentialsForm.datacenter.placeholder'),
+                        labelHelp: t('credentialsForm.datacenter.labelHelp'),
                         value: datacenter,
                         onChange: setDatacenter,
                         isRequired: true,
@@ -588,9 +593,9 @@ export function CredentialsForm(props: {
                         id: 'datastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('addConnection.datastore.label'),
-                        placeholder: t('addConnection.datastore.placeholder'),
-                        labelHelp: t('addConnection.datastore.labelHelp'),
+                        label: t('credentialsForm.datastore.label'),
+                        placeholder: t('credentialsForm.datastore.placeholder'),
+                        labelHelp: t('credentialsForm.datastore.labelHelp'),
                         value: datastore,
                         onChange: setDatastore,
                         isRequired: true,
@@ -598,16 +603,21 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: 'Openstack',
-                wizardTitle: 'Enter the Openstack details',
+                title: t('credentialsForm.openStackCredentials.title'),
+                wizardTitle: t('credentialsForm.openStackCredentials.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.openStackCredentials.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'openstackCloudsYaml',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'TextArea',
-                        label: t('addConnection.openstackCloudsYaml.label'),
-                        placeholder: t('addConnection.openstackCloudsYaml.placeholder'),
-                        labelHelp: t('addConnection.openstackCloudsYaml.labelHelp'),
+                        label: t('credentialsForm.openstackCloudsYaml.label'),
+                        placeholder: t('credentialsForm.openstackCloudsYaml.placeholder'),
+                        labelHelp: t('credentialsForm.openstackCloudsYaml.labelHelp'),
                         value: openstackCloudsYaml,
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
@@ -617,9 +627,9 @@ export function CredentialsForm(props: {
                         id: 'openstackCloud',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'Text',
-                        label: t('addConnection.openstackCloud.label'),
-                        placeholder: t('addConnection.openstackCloud.placeholder'),
-                        labelHelp: t('addConnection.openstackCloud.labelHelp'),
+                        label: t('credentialsForm.openstackCloud.label'),
+                        placeholder: t('credentialsForm.openstackCloud.placeholder'),
+                        labelHelp: t('credentialsForm.openstackCloud.labelHelp'),
                         value: openstackCloud,
                         onChange: setOpenstackCloud,
                         isRequired: true,
@@ -628,16 +638,21 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Baremetal',
-                wizardTitle: 'Enter the Bare-metal details',
+                title: t('credentialsForm.bareMetalCredentials.title'),
+                wizardTitle: t('credentialsForm.bareMetalCredentials.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.bareMetalCredentials.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'libvirtURI',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('addConnection.libvirtURI.label'),
-                        placeholder: t('addConnection.libvirtURI.placeholder'),
-                        labelHelp: t('addConnection.libvirtURI.labelHelp'),
+                        label: t('credentialsForm.libvirtURI.label'),
+                        placeholder: t('credentialsForm.libvirtURI.placeholder'),
+                        labelHelp: t('credentialsForm.libvirtURI.labelHelp'),
                         value: libvirtURI,
                         onChange: setLibvirtURI,
                         validation: (value) => validateLibvirtURI(value, t),
@@ -647,9 +662,9 @@ export function CredentialsForm(props: {
                         id: 'sshKnownHosts',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'TextArea',
-                        label: t('addConnection.sshKnownHosts.label'),
-                        placeholder: t('addConnection.sshKnownHosts.placeholder'),
-                        labelHelp: t('addConnection.sshKnownHosts.labelHelp'),
+                        label: t('credentialsForm.sshKnownHosts.label'),
+                        placeholder: t('credentialsForm.sshKnownHosts.placeholder'),
+                        labelHelp: t('credentialsForm.sshKnownHosts.labelHelp'),
                         value: sshKnownHosts,
                         onChange: setSshKnownHosts,
                         isRequired: true,
@@ -657,16 +672,21 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: t('addConnection.configureDisconnectedInstall.label'),
-                wizardTitle: 'Enter the disconnected environment information',
+                title: t('credentialsForm.bareMetalDisconnected.title'),
+                wizardTitle: t('credentialsForm.bareMetalDisconnected.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.bareMetalDisconnected.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'imageMirror',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('addConnection.imageMirror.label'),
-                        placeholder: t('addConnection.imageMirror.placeholder'),
-                        labelHelp: t('addConnection.imageMirror.labelHelp'),
+                        label: t('credentialsForm.imageMirror.label'),
+                        placeholder: t('credentialsForm.imageMirror.placeholder'),
+                        labelHelp: t('credentialsForm.imageMirror.labelHelp'),
                         value: imageMirror,
                         onChange: setImageMirror,
                         validation: (value) => validateImageMirror(value, t),
@@ -675,9 +695,9 @@ export function CredentialsForm(props: {
                         id: 'bootstrapOSImage',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('addConnection.bootstrapOSImage.label'),
-                        placeholder: t('addConnection.bootstrapOSImage.placeholder'),
-                        labelHelp: t('addConnection.bootstrapOSImage.labelHelp'),
+                        label: t('credentialsForm.bootstrapOSImage.label'),
+                        placeholder: t('credentialsForm.bootstrapOSImage.placeholder'),
+                        labelHelp: t('credentialsForm.bootstrapOSImage.labelHelp'),
                         value: bootstrapOSImage,
                         onChange: setBootstrapOSImage,
                     },
@@ -685,9 +705,9 @@ export function CredentialsForm(props: {
                         id: 'clusterOSImage',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('addConnection.clusterOSImage.label'),
-                        placeholder: t('addConnection.clusterOSImage.placeholder'),
-                        labelHelp: t('addConnection.clusterOSImage.labelHelp'),
+                        label: t('credentialsForm.clusterOSImage.label'),
+                        placeholder: t('credentialsForm.clusterOSImage.placeholder'),
+                        labelHelp: t('credentialsForm.clusterOSImage.labelHelp'),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
                     },
@@ -695,9 +715,9 @@ export function CredentialsForm(props: {
                         id: 'additionalTrustBundle',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'TextArea',
-                        label: t('addConnection.additionalTrustBundle.label'),
-                        placeholder: t('addConnection.additionalTrustBundle.placeholder'),
-                        labelHelp: t('addConnection.additionalTrustBundle.labelHelp'),
+                        label: t('credentialsForm.additionalTrustBundle.label'),
+                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
+                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
                         value: additionalTrustBundle,
                         onChange: setAdditionalTrustBundle,
                     },
@@ -705,15 +725,11 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Ansible credentials',
-                wizardTitle: 'Enter the Ansible Automation Platform information',
+                title: t('credentialsForm.ansibleCredentials.title'),
+                wizardTitle: t('credentialsForm.ansibleCredentials.wizardTitle'),
                 description: (
-                    <a
-                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        How do I get Ansible Automation Platform information?
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.ansibleCredentials.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -721,8 +737,9 @@ export function CredentialsForm(props: {
                         id: 'ansibleHost',
                         isHidden: credentialsType !== Provider.ansible,
                         type: 'Text',
-                        label: t('addConnection.ansible.host.label'),
-                        placeholder: t('addConnection.ansible.host.placeholder'),
+                        label: t('credentialsForm.ansibleHost.label'),
+                        placeholder: t('credentialsForm.ansibleHost.placeholder'),
+                        // labelHelp: t('credentialsForm.ansibleHost.labelHelp'), // TODO
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
@@ -731,8 +748,9 @@ export function CredentialsForm(props: {
                         id: 'ansibleToken',
                         isHidden: credentialsType !== Provider.ansible,
                         type: 'Text',
-                        label: t('addConnection.ansible.token.label'),
-                        placeholder: t('addConnection.ansible.token.placeholder'),
+                        label: t('credentialsForm.ansibleToken.label'),
+                        placeholder: t('credentialsForm.ansibleToken.placeholder'),
+                        // labelHelp: t('credentialsForm.ansibleToken.labelHelp'), // TODO
                         value: ansibleToken,
                         onChange: setAnsibleToken,
                         isRequired: true,
@@ -740,16 +758,21 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: 'Openshift cluster manager credentials',
-                wizardTitle: 'Enter the Openshift cluster manager credentials',
+                title: t('credentialsForm.openshift.title'),
+                wizardTitle: t('credentialsForm.openshift.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.openshift.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'ocmAPIToken',
                         isHidden: credentialsType !== Provider.redhatcloud,
                         type: 'Text',
-                        label: t('addConnection.ocmapitoken.label'),
-                        placeholder: t('addConnection.ocmapitoken.placeholder'),
-                        labelHelp: t('addConnection.ocmapitoken.labelHelp'),
+                        label: t('credentialsForm.ocmapitoken.label'),
+                        placeholder: t('credentialsForm.ocmapitoken.placeholder'),
+                        labelHelp: t('credentialsForm.ocmapitoken.labelHelp'),
                         value: ocmAPIToken,
                         onChange: setOcmAPIToken,
                         isRequired: true,
@@ -759,7 +782,13 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Base domain',
+                title: t('credentialsForm.baseDomain.title'),
+                wizardTitle: t('credentialsForm.baseDomain.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.baseDomain.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'baseDomain',
@@ -772,9 +801,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('addConnection.baseDomain.label'),
-                        placeholder: t('addConnection.baseDomain.placeholder'),
-                        labelHelp: t('addConnection.baseDomain.labelHelp'),
+                        label: t('credentialsForm.baseDomain.label'),
+                        placeholder: t('credentialsForm.baseDomain.placeholder'),
+                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
@@ -783,7 +812,13 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'Pull secret',
+                title: t('credentialsForm.pullSecret.title'),
+                wizardTitle: t('credentialsForm.pullSecret.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.pullSecret.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'pullSecret',
@@ -796,9 +831,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('addConnection.pullSecret.label'),
-                        placeholder: t('addConnection.pullSecret.placeholder'),
-                        labelHelp: t('addConnection.pullSecret.labelHelp'),
+                        label: t('credentialsForm.pullSecret.label'),
+                        placeholder: t('credentialsForm.pullSecret.placeholder'),
+                        labelHelp: t('credentialsForm.pullSecret.labelHelp'),
                         value: pullSecret,
                         onChange: setPullSecret,
                         validation: (value) => validateJSON(value, t),
@@ -809,7 +844,13 @@ export function CredentialsForm(props: {
                 columns: 1,
             },
             {
-                title: 'SSH key',
+                title: t('credentialsForm.sshKey.title'),
+                wizardTitle: t('credentialsForm.sshKey.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.sshKey.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'sshPrivatekey',
@@ -822,9 +863,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('addConnection.sshPrivateKey.label'),
-                        placeholder: t('addConnection.sshPrivateKey.placeholder'),
-                        labelHelp: t('addConnection.sshPrivateKey.labelHelp'),
+                        label: t('credentialsForm.sshPrivateKey.label'),
+                        placeholder: t('credentialsForm.sshPrivateKey.placeholder'),
+                        labelHelp: t('credentialsForm.sshPrivateKey.labelHelp'),
                         value: sshPrivatekey,
                         onChange: setSshPrivatekey,
                         validation: (value) => validatePrivateSshKey(value, t),
@@ -842,9 +883,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('addConnection.sshPublicKey.label'),
-                        placeholder: t('addConnection.sshPublicKey.placeholder'),
-                        labelHelp: t('addConnection.sshPublicKey.labelHelp'),
+                        label: t('credentialsForm.sshPublicKey.label'),
+                        placeholder: t('credentialsForm.sshPublicKey.placeholder'),
+                        labelHelp: t('credentialsForm.sshPublicKey.labelHelp'),
                         value: sshPublickey,
                         onChange: setSshPublickey,
                         validation: (value) => validatePublicSshKey(value, t),
@@ -870,8 +911,9 @@ export function CredentialsForm(props: {
                 })
             }
         },
-        submitText: isEditing ? 'Save' : 'Add',
-        submittingText: isEditing ? 'Saving' : 'Adding',
+        submitText: isEditing ? t('credentialsForm.submitButton.save') : t('credentialsForm.submitButton.add'),
+        submittingText: isEditing ? t('credentialsForm.submitButton.saving') : t('credentialsForm.submitButton.adding'),
+        // TODO Cancel Text
         cancel: () => history.push(NavigationPath.credentials),
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
