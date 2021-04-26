@@ -32,6 +32,7 @@
         "frontend:clean": "cd frontend && npm run clean",
         "docker:build": "docker build -t console .",
         "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "prepare": "husky install"
     },
     "dependencies": {
