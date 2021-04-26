@@ -13,6 +13,8 @@ type RbacDropdownProps<T = unknown> = {
     isKebab?: boolean
     text: string
     id: string
+    isDisabled?: boolean
+    tooltip?: string
 }
 
 type Actions<T = unknown> = {
@@ -78,6 +80,8 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             isPlain={true}
             text={props.text}
             onToggle={onToggle}
+            isDisabled={props.isDisabled}
+            tooltip={props.tooltip}
         />
     )
 }

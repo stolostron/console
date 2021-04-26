@@ -14,6 +14,7 @@ import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'
+import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 
 export function NodePoolsPageContent() {
     return (
@@ -28,6 +29,7 @@ export function NodePoolsPageContent() {
 export function NodesPoolsTable() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
+
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
     function getLabelCellFn(label: string) {
@@ -173,15 +175,18 @@ export function NodesPoolsTable() {
     }
 
     return (
-        <AcmTable<NodeInfo>
-            plural="nodes"
-            items={nodes}
-            columns={columns}
-            keyFn={keyFn}
-            tableActions={[]}
-            bulkActions={[]}
-            rowActions={[]}
-        />
+        <>
+            <ScaleClusterAlert />
+            <AcmTable<NodeInfo>
+                plural="nodes"
+                items={nodes}
+                columns={columns}
+                keyFn={keyFn}
+                tableActions={[]}
+                bulkActions={[]}
+                rowActions={[]}
+            />
+        </>
     )
 }
 
