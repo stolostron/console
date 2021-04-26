@@ -1,22 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { discoveryConfigState } from '../../../atoms'
 import { nockCreate, nockDelete, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
-import { ProviderID } from '../../../lib/providers'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { FeatureGate } from '../../../resources/feature-gate'
-import { NavigationPath } from '../../../NavigationPath'
 import {
+    packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
-    packProviderConnection,
 } from '../../../resources/provider-connection'
 import DiscoveryConfigPage from './DiscoveryConfig'
-import { discoveryConfigState } from '../../../atoms'
 
 const mockFeatureGate: FeatureGate = {
     apiVersion: 'config.openshift.io/v1',
@@ -32,7 +32,7 @@ const credential: ProviderConnection = {
         name: 'connection',
         namespace: 'discovery',
         labels: {
-            'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
+            'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
             'cluster.open-cluster-management.io/cloudconnection': '',
         },
     },
@@ -43,6 +43,7 @@ const credential: ProviderConnection = {
         sshPublickey: '',
         ocmAPIToken: 'test-ocm-api-token',
     },
+    type: 'Opaque',
 }
 
 const mockCredential = [packProviderConnection({ ...credential })]

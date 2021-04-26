@@ -11,41 +11,47 @@ import {
     AcmTable,
     compareStrings,
     Provider,
+    ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
-import { getProviderByKey, ProviderID } from '../../lib/providers'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection, filterForProviderSecrets } from '../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { Secret } from '../../resources/secret'
+import moment from 'moment'
 
 export default function CredentialsPage() {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['credentials'])
     const [secrets] = useRecoilState(secretsState)
-    const providerConnections = filterForProviderSecrets(secrets)
+    const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
+    console.log(secrets)
     return (
         <AcmPage>
-            <AcmPageHeader title={t('manageCredentials')} />
+            <AcmPageHeader title={t('credentialsPage.title')} />
             <AcmPageContent id="credentials">
-                <PageSection variant="light" isFilled={true}>
-                    <CredentialsTable
-                        providerConnections={providerConnections}
-                        discoveryConfigs={discoveryConfigs}
-                        secrets={secrets}
-                    />
+                <PageSection>
+                    <Card>
+                        <CardBody>
+                            <CredentialsTable
+                                providerConnections={providerConnections}
+                                discoveryConfigs={discoveryConfigs}
+                                secrets={secrets}
+                            />
+                        </CardBody>
+                    </Card>
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
@@ -55,18 +61,21 @@ export default function CredentialsPage() {
 // Ingoring coverage since this will move one the console header navigation is done
 /* istanbul ignore next */
 const AddConnectionBtn = () => {
-    const { t } = useTranslation(['connection'])
+    const { t } = useTranslation(['credentials'])
     return (
         <AcmButton component={Link} to={NavigationPath.addCredentials}>
-            {t('add')}
+            {t('credentials.tableAction.add')}
         </AcmButton>
     )
 }
 
-function getProvider(labels: Record<string, string> | undefined) {
+function getProviderName(labels: Record<string, string> | undefined) {
     const label = labels?.['cluster.open-cluster-management.io/provider']
-    const provider = getProviderByKey(label as ProviderID)
-    return provider.name
+    if (label) {
+        const providerName = (ProviderLongTextMap as Record<string, string>)[label]
+        if (providerName) return providerName
+    }
+    return 'unknown'
 }
 
 export function CredentialsTable(props: {
@@ -74,7 +83,7 @@ export function CredentialsTable(props: {
     discoveryConfigs?: DiscoveryConfig[]
     secrets?: Secret[]
 }) {
-    const { t } = useTranslation(['connection', 'common'])
+    const { t } = useTranslation(['credentials', 'common'])
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Secret> | { open: false }>({
         open: false,
@@ -82,10 +91,10 @@ export function CredentialsTable(props: {
 
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-        if (label === ProviderID.RHOCM && !CredentialIsInUseByDiscovery(item)) {
-            return t('connections.actions.enableClusterDiscovery')
+        if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {
+            return t('credentials.additionalActions.enableClusterDiscovery')
         } else {
-            return t('connections.actions.editClusterDiscovery')
+            return t('credentials.additionalActions.editClusterDiscovery')
         }
     }
 
@@ -114,22 +123,27 @@ export function CredentialsTable(props: {
                 gridBreakPoint={TableGridBreakpoint.none}
                 emptyState={
                     <AcmEmptyState
-                        title={t('empty.title')}
-                        message={<Trans i18nKey={'connection:empty.subtitle'} components={{ bold: <strong /> }} />}
+                        title={t('credentialsPage.empty.title')}
+                        message={
+                            <Trans
+                                i18nKey="credentials:credentialsPage.empty.subtitle"
+                                components={{ bold: <strong /> }}
+                            />
+                        }
                         action={<AddConnectionBtn />}
                     />
                 }
-                plural={t('connections')}
+                plural={t('credentialsPage.title')}
                 items={props.secrets}
                 columns={[
                     {
-                        header: t('table.header.name'),
+                        header: t('credentials.tableHeader.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (secret) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link
-                                    to={NavigationPath.editCredentials
+                                    to={NavigationPath.viewCredentials
                                         .replace(':namespace', secret.metadata.namespace as string)
                                         .replace(':name', secret.metadata.name as string)}
                                 >
@@ -139,13 +153,36 @@ export function CredentialsTable(props: {
                         ),
                     },
                     {
-                        header: t('table.header.additionalActions'),
+                        header: t('credentials.tableHeader.type'),
+                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
+                            return compareStrings(
+                                getProviderName(a.metadata?.labels),
+                                getProviderName(b.metadata?.labels)
+                            )
+                        },
+                        cell: (item: Secret) => {
+                            const provider = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            if (provider) return <AcmInlineProvider provider={provider as Provider} />
+                            else return <Fragment />
+                        },
+                        search: (item: Secret) => {
+                            return getProviderName(item.metadata?.labels)
+                        },
+                    },
+                    {
+                        header: t('credentials.tableHeader.namespace'),
+                        sort: 'metadata.namespace',
+                        search: 'metadata.namespace',
+                        cell: 'metadata.namespace',
+                    },
+                    {
+                        header: t('credentials.tableHeader.additionalActions'),
                         search: (item: Secret) => {
                             return getAdditionalActions(item)
                         },
                         cell: (item: Secret) => {
                             const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            if (label === ProviderID.RHOCM) {
+                            if (label === Provider.redhatcloud) {
                                 if (CredentialIsInUseByDiscovery(item)) {
                                     return (
                                         <Link
@@ -153,13 +190,13 @@ export function CredentialsTable(props: {
                                                 .replace(':namespace', item.metadata.namespace as string)
                                                 .replace(':name', 'discovery')}
                                         >
-                                            {t('connections.actions.editClusterDiscovery')}
+                                            {t('credentials.additionalActions.editClusterDiscovery')}
                                         </Link>
                                     )
                                 } else {
                                     return (
                                         <Link to={NavigationPath.addDiscoveryConfig}>
-                                            {t('connections.actions.enableClusterDiscovery')}
+                                            {t('credentials.additionalActions.enableClusterDiscovery')}
                                         </Link>
                                     )
                                 }
@@ -172,51 +209,14 @@ export function CredentialsTable(props: {
                         },
                     },
                     {
-                        header: t('table.header.provider'),
-                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
-                            return compareStrings(getProvider(a.metadata?.labels), getProvider(b.metadata?.labels))
-                        },
-                        cell: (item: Secret) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
-                            let provider
-                            // TODO: Add unique provider for ANS in ProviderTextMap (ui-components)
-                            switch (label) {
-                                case ProviderID.GCP:
-                                    provider = Provider.gcp
-                                    break
-                                case ProviderID.AWS:
-                                    provider = Provider.aws
-                                    break
-                                case ProviderID.AZR:
-                                    provider = Provider.azure
-                                    break
-                                case ProviderID.VMW:
-                                    provider = Provider.vmware
-                                    break
-                                case ProviderID.BMC:
-                                    provider = Provider.baremetal
-                                    break
-                                case ProviderID.RHOCM:
-                                    provider = Provider.redhatcloud
-                                    break
-                                case ProviderID.OST:
-                                    provider = Provider.openstack
-                                    break
-                                case ProviderID.UKN:
-                                default:
-                                    provider = Provider.other
-                            }
-                            return <AcmInlineProvider provider={provider} />
-                        },
-                        search: (item: Secret) => {
-                            return getProvider(item.metadata?.labels)
-                        },
-                    },
-                    {
-                        header: t('table.header.namespace'),
-                        sort: 'metadata.namespace',
-                        search: 'metadata.namespace',
-                        cell: 'metadata.namespace',
+                        header: t('credentials.tableHeader.created'),
+                        sort: 'metadata.creationTimestamp',
+                        cell: (resource) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                {resource.metadata.creationTimestamp &&
+                                    moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
+                            </span>
+                        ),
                     },
                     {
                         header: '',
@@ -225,7 +225,7 @@ export function CredentialsTable(props: {
                             const actions = [
                                 {
                                     id: 'editConnection',
-                                    text: t('edit'),
+                                    text: t('credentials.tableAction.edit'),
                                     isDisabled: true,
                                     click: (secret: Secret) => {
                                         history.push(
@@ -238,7 +238,7 @@ export function CredentialsTable(props: {
                                 },
                                 {
                                     id: 'deleteConnection',
-                                    text: t('delete'),
+                                    text: t('credentials.tableAction.deleteSingle'),
                                     isDisabled: true,
                                     click: (secret: Secret) => {
                                         setModalProps({
@@ -286,7 +286,7 @@ export function CredentialsTable(props: {
                 tableActions={[
                     {
                         id: 'add',
-                        title: t('add'),
+                        title: t('credentials.tableAction.add'),
                         click: () => {
                             history.push(NavigationPath.addCredentials)
                         },
@@ -295,7 +295,7 @@ export function CredentialsTable(props: {
                 bulkActions={[
                     {
                         id: 'deleteConnection',
-                        title: t('delete.batch'),
+                        title: t('credentials.tableAction.deleteMultiple'),
                         click: (secrets: Secret[]) => {
                             setModalProps({
                                 open: true,

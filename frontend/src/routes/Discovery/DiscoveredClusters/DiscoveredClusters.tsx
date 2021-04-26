@@ -8,6 +8,7 @@ import {
     AcmPageContent,
     AcmTable,
     IAcmTableColumn,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
@@ -21,10 +22,9 @@ import { Link, useHistory } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource } from '../../../lib/resource-request'
-import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
-import { filterForProviderSecrets, ProviderConnection } from '../../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { useRecoilState } from 'recoil'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
@@ -233,13 +233,13 @@ export function DiscoveredClustersPageContent() {
 
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
     const [secrets] = useRecoilState(secretsState)
-    const credentials = filterForProviderSecrets(secrets)
+    const credentials = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
     const cloudRedHatCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
-        const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-        if (labels === ProviderID.RHOCM) {
+        const provider = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+        if (provider === Provider.redhatcloud) {
             cloudRedHatCredentials.push(credential)
         }
     })
