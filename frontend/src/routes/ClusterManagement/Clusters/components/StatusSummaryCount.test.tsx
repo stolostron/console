@@ -12,6 +12,7 @@ window.open = jest.fn()
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
+    displayName: 'test-cluster',
     namespace: 'test-cluster',
     status: ClusterStatus.ready,
     distribution: {

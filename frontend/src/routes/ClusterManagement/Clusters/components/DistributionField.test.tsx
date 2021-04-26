@@ -93,6 +93,7 @@ describe('DistributionField', () => {
 
         const mockCluster: Cluster = {
             name: 'clusterName',
+            displayName: 'clusterName',
             namespace: 'clusterName',
             provider: undefined,
             status: ClusterStatus.ready,
