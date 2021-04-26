@@ -11,7 +11,7 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -64,36 +64,43 @@ export default function ClustersPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <ClustersTable
-                    clusters={clusters}
-                    tableActions={[
-                        {
-                            id: 'createCluster',
-                            title: t('managed.createCluster'),
-                            click: () => history.push(NavigationPath.createCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                        {
-                            id: 'importCluster',
-                            title: t('managed.importCluster'),
-                            click: () => history.push(NavigationPath.importCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                    ]}
-                    emptyState={
-                        <AcmEmptyState
-                            key="mcEmptyState"
-                            title={t('managed.emptyStateHeader')}
-                            message={
-                                <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <ClustersTable
+                            clusters={clusters}
+                            tableActions={[
+                                {
+                                    id: 'createCluster',
+                                    title: t('managed.createCluster'),
+                                    click: () => history.push(NavigationPath.createCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                                {
+                                    id: 'importCluster',
+                                    title: t('managed.importCluster'),
+                                    click: () => history.push(NavigationPath.importCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                            ]}
+                            emptyState={
+                                <AcmEmptyState
+                                    key="mcEmptyState"
+                                    title={t('managed.emptyStateHeader')}
+                                    message={
+                                        <Trans
+                                            i18nKey={'cluster:managed.emptyStateMsg'}
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
+                                    action={<AddCluster type="button" />}
+                                />
                             }
-                            action={<AddCluster type="button" />}
                         />
-                    }
-                />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )
