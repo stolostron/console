@@ -139,9 +139,9 @@ export function ClusterSetManageClustersContent() {
                     columns={[
                         {
                             header: t('table.name'),
-                            sort: 'name',
-                            search: 'name',
-                            cell: (cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
+                            sort: 'displayName',
+                            search: 'displayName',
+                            cell: (cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
                         },
                         {
                             header: t('table.assignedToSet'),

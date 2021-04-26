@@ -11,11 +11,10 @@ import { ActionGroup, Button } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../components/ErrorPage'
-import { Cluster } from '../../../../lib/get-cluster'
 import { patchResource } from '../../../../lib/resource-request'
 import { IResource } from '../../../../resources/resource'
 
-export function EditLabels(props: { cluster?: Cluster; resource?: IResource; close: () => void }) {
+export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [labels, setLabels] = useState<Record<string, string>>({})
 
@@ -33,7 +32,7 @@ export function EditLabels(props: { cluster?: Cluster; resource?: IResource; clo
                     &nbsp;
                     <AcmLabelsInput
                         id="labels-input"
-                        label={`${props.resource?.metadata?.name} ${t('labels.lower')}`}
+                        label={t('labels.lower', { resourceName: props.displayName ?? props.resource?.metadata?.name })}
                         buttonLabel={t('labels.button.add')}
                         value={labels}
                         onChange={(labels) => setLabels(labels!)}

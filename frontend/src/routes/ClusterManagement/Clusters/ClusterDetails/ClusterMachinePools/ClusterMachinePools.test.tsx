@@ -13,6 +13,7 @@ import { clusterName, mockMachinePoolManual, mockMachinePoolAuto } from '../Clus
 
 const mockCluster: Cluster = {
     name: clusterName,
+    displayName: clusterName,
     namespace: clusterName,
     status: ClusterStatus.ready,
     distribution: {

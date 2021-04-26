@@ -2,22 +2,38 @@
 
 import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
+import { ClusterClaimApiVersion, ClusterClaimKind } from '../resources/cluster-claim'
 import { deleteResources } from './delete-resources'
-import { IRequestResult, deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
+import { deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
+import { Cluster } from '../lib/get-cluster'
+import { IResource } from '../resources/resource'
 
-export function deleteCluster(clusterName: string, ignoreClusterDeploymentNotFound = false) {
-    const deleteResourcesResult = deleteResources([
+export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
+    const resources: IResource[] = [
         {
             apiVersion: ManagedClusterApiVersion,
             kind: ManagedClusterKind,
-            metadata: { name: clusterName },
+            metadata: { name: cluster.name! },
         },
         {
             apiVersion: ClusterDeploymentApiVersion,
             kind: ClusterDeploymentKind,
-            metadata: { name: clusterName, namespace: clusterName },
+            metadata: { name: cluster.name!, namespace: cluster.namespace! },
         },
-    ])
+    ]
+
+    if (cluster.hive?.clusterClaimName) {
+        resources.push({
+            apiVersion: ClusterClaimApiVersion,
+            kind: ClusterClaimKind,
+            metadata: {
+                name: cluster.hive?.clusterClaimName!,
+                namespace: cluster.hive.clusterPoolNamespace!,
+            },
+        })
+    }
+
+    const deleteResourcesResult = deleteResources(resources)
 
     return {
         promise: new Promise((resolve, reject) => {
@@ -50,15 +66,4 @@ export function detachCluster(clusterName: string) {
         kind: ManagedClusterKind,
         metadata: { name: clusterName },
     })
-}
-
-export function deleteClusters(
-    clusterNames: string[],
-    destroy?: boolean
-): IRequestResult<PromiseSettledResult<PromiseSettledResult<unknown>[]>[]> {
-    const results = clusterNames.map((clusterName) => deleteCluster(clusterName, destroy))
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
 }

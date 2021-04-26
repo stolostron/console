@@ -151,9 +151,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <AcmPageHeader
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: match.params.id, to: '' },
+                        { text: cluster.displayName!, to: '' },
                     ]}
-                    title={match.params.id}
+                    title={cluster.displayName!}
+                    description={
+                        cluster.name !== cluster.displayName && (
+                            <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.name}</span>
+                        )
+                    }
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem

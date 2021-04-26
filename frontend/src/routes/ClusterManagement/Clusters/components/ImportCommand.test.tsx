@@ -21,6 +21,7 @@ const mockSecretResponse: Secret = {
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
+    displayName: 'test-cluster',
     namespace: 'test-cluster',
     status: ClusterStatus.pendingimport,
     distribution: {
