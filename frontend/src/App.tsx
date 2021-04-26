@@ -23,7 +23,7 @@ const CreateClusterPoolPage = lazy(
 )
 const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
-const AddCredentialPage = lazy(() => import('./routes/Credentials/AddCredentials/AddCredentials'))
+const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
@@ -48,8 +48,9 @@ export default function App() {
                                 <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
                                 <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
                                 <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                <Route exact path={NavigationPath.addCredentials} component={AddCredentialPage} />
-                                <Route exact path={NavigationPath.editCredentials} component={AddCredentialPage} />
+                                <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
+                                <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
+                                <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
                                 <Route
                                     exact
                                     path={NavigationPath.editBareMetalAsset}

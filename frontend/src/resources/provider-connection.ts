@@ -3,10 +3,8 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import * as YAML from 'yamljs'
-import { ProviderID } from '../lib/providers'
-import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
+import { listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
-import { Secret } from './secret'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -19,73 +17,55 @@ export const ProviderConnectionDefinition: IResourceDefinition = {
     kind: ProviderConnectionKind,
 }
 
+export interface ProviderConnectionSpec {
+    awsAccessKeyID?: string
+    awsSecretAccessKeyID?: string
+
+    baseDomainResourceGroupName?: string
+    clientId?: string
+    clientSecret?: string
+    subscriptionId?: string
+    tenantId?: string
+
+    gcProjectID?: string
+    gcServiceAccountKey?: string
+
+    username?: string
+    password?: string
+    vcenter?: string
+    cacertificate?: string
+    vmClusterName?: string
+    datacenter?: string
+    datastore?: string
+
+    libvirtURI?: string
+    sshKnownHosts?: string[]
+    imageMirror?: string
+    bootstrapOSImage?: string
+    clusterOSImage?: string
+    additionalTrustBundle?: string
+
+    ocmAPIToken?: string
+
+    openstackCloudsYaml?: string
+    openstackCloud?: string
+
+    baseDomain?: string
+    pullSecret?: string
+    sshPrivatekey?: string
+    sshPublickey?: string
+
+    ansibleHost?: string
+    ansibleToken?: string
+}
+
 export interface ProviderConnection extends V1Secret {
     apiVersion: ProviderConnectionApiVersionType
     kind: ProviderConnectionKindType
     metadata: V1ObjectMeta
-    data?: {
-        metadata: string
-    }
-    spec?: {
-        awsAccessKeyID?: string
-        awsSecretAccessKeyID?: string
-
-        baseDomainResourceGroupName?: string
-        clientId?: string
-        clientSecret?: string
-        subscriptionId?: string
-        tenantId?: string
-
-        gcProjectID?: string
-        gcServiceAccountKey?: string
-
-        username?: string
-        password?: string
-        vcenter?: string
-        cacertificate?: string
-        vmClusterName?: string
-        datacenter?: string
-        datastore?: string
-
-        libvirtURI?: string
-        sshKnownHosts?: string[]
-        imageMirror?: string
-        bootstrapOSImage?: string
-        clusterOSImage?: string
-        additionalTrustBundle?: string
-
-        ocmAPIToken?: string
-
-        openstackCloudsYaml?: string
-        openstackCloud?: string
-
-        baseDomain: string
-        pullSecret: string
-        sshPrivatekey: string
-        sshPublickey: string
-
-        anisibleSecretName?: string
-        anisibleCuratorTemplateName?: string
-    }
-}
-
-export function getProviderConnectionProviderID(providerConnection: Partial<ProviderConnection>) {
-    const label = providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider']
-    return label as ProviderID
-}
-
-export function setProviderConnectionProviderID(
-    providerConnection: Partial<ProviderConnection>,
-    providerID: ProviderID
-) {
-    if (!providerConnection.metadata) {
-        providerConnection.metadata = {}
-    }
-    if (!providerConnection.metadata.labels) {
-        providerConnection.metadata.labels = {}
-    }
-    providerConnection.metadata.labels['cluster.open-cluster-management.io/provider'] = providerID
-    providerConnection.metadata.labels['cluster.open-cluster-management.io/cloudconnection'] = ''
+    data?: { metadata: string }
+    spec?: ProviderConnectionSpec
+    type: 'Opaque'
 }
 
 export function listProviderConnections() {
@@ -104,59 +84,8 @@ export function listProviderConnections() {
     }
 }
 
-export function getProviderConnection(metadata: { name: string; namespace: string }) {
-    const result = getResource<ProviderConnection>({
-        apiVersion: ProviderConnectionApiVersion,
-        kind: ProviderConnectionKind,
-        metadata,
-    })
-    return {
-        promise: result.promise.then(unpackProviderConnection),
-        abort: result.abort,
-    }
-}
-
-export function filterForProviderSecrets(secrets: Secret[]) {
-    const providerConnections: ProviderConnection[] = []
-
-    secrets.forEach((secret) => {
-        const providerConnection: ProviderConnection = {
-            apiVersion: ProviderConnectionApiVersion,
-            kind: ProviderConnectionKind,
-            metadata: {
-                name: secret.metadata.name,
-                namespace: secret.metadata.namespace,
-                labels: {},
-            },
-        }
-
-        if (secret?.metadata?.labels?.['cluster.open-cluster-management.io/provider'] !== undefined) {
-            Object.assign(providerConnection.metadata.labels, secret.metadata.labels)
-            if (secret.data) {
-                try {
-                    const yaml = Buffer.from(secret?.data?.metadata, 'base64').toString('ascii')
-                    providerConnection.spec = YAML.parse(yaml)
-                } catch {}
-            } else if (secret.stringData) {
-                try {
-                    providerConnection.spec = YAML.parse(secret.stringData.metadata)
-                } catch {}
-            }
-            providerConnections.push(providerConnection)
-        }
-    })
-    return providerConnections
-}
-
-export function createProviderConnection(providerConnection: ProviderConnection) {
-    return createResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
-}
-
-export function replaceProviderConnection(providerConnection: ProviderConnection) {
-    return replaceResource<ProviderConnection>(packProviderConnection({ ...providerConnection }))
-}
-
-export function unpackProviderConnection(providerConnection: ProviderConnection) {
+export function unpackProviderConnection(secret: ProviderConnection | V1Secret) {
+    const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
     if (providerConnection.data) {
         try {
             const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
@@ -174,9 +103,14 @@ export function unpackProviderConnection(providerConnection: ProviderConnection)
 
 export function packProviderConnection(providerConnection: ProviderConnection) {
     if (providerConnection.spec) {
-        providerConnection.stringData = { metadata: YAML.stringify(providerConnection.spec) }
+        const metadata = YAML.stringify(providerConnection.spec)
+        providerConnection.data = {
+            metadata: Buffer.from(metadata).toString('base64'),
+        }
+
+        delete providerConnection.stringData
+        delete providerConnection.spec
     }
-    delete providerConnection.spec
-    delete providerConnection.data
+
     return providerConnection
 }

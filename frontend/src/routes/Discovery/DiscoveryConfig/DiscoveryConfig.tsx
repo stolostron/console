@@ -12,6 +12,7 @@ import {
     AcmPageHeader,
     AcmSelect,
     AcmSubmit,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
@@ -29,7 +30,6 @@ import { Link, RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { ProviderID } from '../../../lib/providers'
 import { NavigationPath } from '../../../NavigationPath'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
@@ -120,7 +120,7 @@ export function AddDiscoveryConfigData(props: { namespace: string; name: string 
                 const CRHCredentials: ProviderConnection[] = []
                 credentials.forEach((credential) => {
                     const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-                    if (labels === ProviderID.RHOCM) {
+                    if (labels === Provider.redhatcloud) {
                         if (
                             !props.namespace &&
                             credential.metadata.namespace &&

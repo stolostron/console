@@ -7,7 +7,7 @@ import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from 
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
 
 import { Secret, SecretApiVersion, SecretKind } from '../resources/secret'
-import { ProviderID } from './providers'
+import { Provider } from '@open-cluster-management/ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,
@@ -57,7 +57,7 @@ export const mockCRHCredential: Secret = {
         name: 'ocm-api-token',
         namespace: 'ocm',
         labels: {
-            'cluster.open-cluster-management.io/provider': ProviderID.RHOCM,
+            'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
         },
     },
 }
