@@ -29,140 +29,6 @@ import { useRecoilState } from 'recoil'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 
-const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
-    {
-        header: 'Name',
-        sort: 'spec.name',
-        search: (discoveredCluster: DiscoveredCluster) => {
-            if (discoveredCluster.spec.console && discoveredCluster.metadata.name) {
-                const searchVals = discoveredCluster.spec.console.split('.')
-                searchVals.push(discoveredCluster.metadata.name)
-                searchVals.push(discoveredCluster.spec.console)
-                return searchVals
-            } else {
-                return discoveredCluster.metadata.name ? discoveredCluster.metadata.name : ''
-            }
-        },
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-                <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                    <ExternalLink />
-                    <span key="dcNamelink" style={{ marginLeft: '16px' }}>
-                        {discoveredCluster.spec.name}
-                    </span>
-                </a>
-            </span>
-        ),
-    },
-    {
-        header: 'Status',
-        sort: 'spec.status',
-        search: 'spec.status',
-        cell: (discoveredCluster) => {
-            let type: StatusType
-            switch (discoveredCluster.spec.status) {
-                case 'Active':
-                    type = StatusType.healthy
-                    break
-                default:
-                    type = StatusType.unknown
-            }
-            return <AcmInlineStatus type={type} status={capitalizeFirstLetter(discoveredCluster.spec.status)} />
-        },
-    },
-    {
-        header: 'Namespace',
-        sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-            compareStrings(a?.metadata.namespace, b?.metadata.namespace),
-        search: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
-        cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
-    },
-    {
-        header: 'Distribution version',
-        sort: 'spec.openshiftVersion',
-        search: (discoveredCluster) => {
-            if (discoveredCluster.spec.openshiftVersion) {
-                return [discoveredCluster.spec.openshiftVersion, 'openshift ' + discoveredCluster.spec.openshiftVersion]
-            } else {
-                return '-'
-            }
-        },
-        cell: (discoveredCluster) => {
-            if (discoveredCluster.spec.openshiftVersion) {
-                return (
-                    <span key="openShiftVersion">{'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}</span>
-                )
-            } else {
-                return '-'
-            }
-        },
-    },
-    {
-        header: 'Infrastructure provider',
-        sort: 'spec.cloudProvider',
-        search: (discoveredCluster) =>
-            discoveredCluster?.spec.cloudProvider ? searchCloudProvider(discoveredCluster.spec.cloudProvider) : '',
-        cell: (discoveredCluster) =>
-            discoveredCluster?.spec.cloudProvider ? (
-                <AcmInlineProvider provider={getProvider(discoveredCluster?.spec.cloudProvider)} />
-            ) : (
-                '-'
-            ),
-    },
-    {
-        header: 'Last active',
-        sort: 'spec.activity_timestamp',
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-                {discoveredCluster.spec.activity_timestamp === undefined
-                    ? ['N/A']
-                    : moment
-                          .duration(
-                              Math.abs(
-                                  new Date().getTime() - new Date(discoveredCluster.spec.activity_timestamp).getTime()
-                              )
-                          )
-                          .humanize()}
-            </span>
-        ),
-    },
-    {
-        header: 'Created',
-        sort: 'spec.creation_timestamp',
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-                {discoveredCluster.spec.creation_timestamp === undefined
-                    ? ['N/A']
-                    : moment
-                          .duration(
-                              Math.abs(
-                                  new Date().getTime() - new Date(discoveredCluster.spec.creation_timestamp).getTime()
-                              )
-                          )
-                          .humanize()}
-            </span>
-        ),
-    },
-    {
-        header: 'Discovered',
-        sort: 'metadata.creationTimestamp',
-        cell: (discoveredCluster) => (
-            <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-                {discoveredCluster.spec.creation_timestamp === undefined
-                    ? ['N/A']
-                    : moment
-                          .duration(
-                              Math.abs(
-                                  new Date().getTime() -
-                                      new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime()
-                              )
-                          )
-                          .humanize()}
-            </span>
-        ),
-    },
-]
-
 export default function DiscoveredClustersPage() {
     return (
         <AcmPageContent id="discovered-clusters">
@@ -319,9 +185,150 @@ export function DiscoveredClustersTable(props: {
         }
     }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
 
+    const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
+        {
+            header: t('dcTbl.name'),
+            sort: 'spec.name',
+            search: (discoveredCluster: DiscoveredCluster) => {
+                if (discoveredCluster.spec.console && discoveredCluster.metadata.name) {
+                    const searchVals = discoveredCluster.spec.console.split('.')
+                    searchVals.push(discoveredCluster.metadata.name)
+                    searchVals.push(discoveredCluster.spec.console)
+                    return searchVals
+                } else {
+                    return discoveredCluster.metadata.name ? discoveredCluster.metadata.name : ''
+                }
+            },
+            cell: (discoveredCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="dcName">
+                    <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
+                        <ExternalLink />
+                        <span key="dcNamelink" style={{ marginLeft: '16px' }}>
+                            {discoveredCluster.spec.name}
+                        </span>
+                    </a>
+                </span>
+            ),
+        },
+        {
+            header: t('dcTbl.status'),
+            sort: 'spec.status',
+            search: 'spec.status',
+            cell: (discoveredCluster) => {
+                let type: StatusType
+                switch (discoveredCluster.spec.status) {
+                    case 'Active':
+                        type = StatusType.healthy
+                        break
+                    default:
+                        type = StatusType.unknown
+                }
+                return <AcmInlineStatus type={type} status={capitalizeFirstLetter(discoveredCluster.spec.status)} />
+            },
+        },
+        {
+            header: t('dcTbl.namespace'),
+            sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
+                compareStrings(a?.metadata.namespace, b?.metadata.namespace),
+            search: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
+            cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
+        },
+        {
+            header: t('dcTbl.distributionVersion'),
+            sort: 'spec.openshiftVersion',
+            search: (discoveredCluster) => {
+                if (discoveredCluster.spec.openshiftVersion) {
+                    return [
+                        discoveredCluster.spec.openshiftVersion,
+                        'openshift ' + discoveredCluster.spec.openshiftVersion,
+                    ]
+                } else {
+                    return '-'
+                }
+            },
+            cell: (discoveredCluster) => {
+                if (discoveredCluster.spec.openshiftVersion) {
+                    return (
+                        <span key="openShiftVersion">
+                            {'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}
+                        </span>
+                    )
+                } else {
+                    return '-'
+                }
+            },
+        },
+        {
+            header: t('dcTbl.infrastructureProvider'),
+            sort: 'spec.cloudProvider',
+            search: (discoveredCluster) =>
+                discoveredCluster?.spec.cloudProvider ? searchCloudProvider(discoveredCluster.spec.cloudProvider) : '',
+            cell: (discoveredCluster) =>
+                discoveredCluster?.spec.cloudProvider ? (
+                    <AcmInlineProvider provider={getProvider(discoveredCluster?.spec.cloudProvider)} />
+                ) : (
+                    '-'
+                ),
+        },
+        {
+            header: t('dcTbl.lastActive'),
+            sort: 'spec.activity_timestamp',
+            cell: (discoveredCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
+                    {discoveredCluster.spec.activity_timestamp === undefined
+                        ? ['N/A']
+                        : moment
+                              .duration(
+                                  Math.abs(
+                                      new Date().getTime() -
+                                          new Date(discoveredCluster.spec.activity_timestamp).getTime()
+                                  )
+                              )
+                              .humanize()}
+                </span>
+            ),
+        },
+        {
+            header: t('dcTbl.created'),
+            sort: 'spec.creation_timestamp',
+            cell: (discoveredCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
+                    {discoveredCluster.spec.creation_timestamp === undefined
+                        ? ['N/A']
+                        : moment
+                              .duration(
+                                  Math.abs(
+                                      new Date().getTime() -
+                                          new Date(discoveredCluster.spec.creation_timestamp).getTime()
+                                  )
+                              )
+                              .humanize()}
+                </span>
+            ),
+        },
+        {
+            header: t('dcTbl.discovered'),
+            sort: 'metadata.creationTimestamp',
+            cell: (discoveredCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
+                    {discoveredCluster.spec.creation_timestamp === undefined
+                        ? ['N/A']
+                        : moment
+                              .duration(
+                                  Math.abs(
+                                      new Date().getTime() -
+                                          new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime()
+                                  )
+                              )
+                              .humanize()}
+                </span>
+            ),
+        },
+    ]
+
     return (
         <AcmTable<DiscoveredCluster>
-            plural="discovered clusters"
+            plural={t('discoveredClusters')}
             items={props.discoveredClusters}
             columns={discoveredClusterCols}
             keyFn={dckeyFn}
