@@ -2,10 +2,10 @@
 
 # --------------------------------------------------------------------------------
 # USERS HTPASSWORD SECRET
-htpasswd -c -B -b users.htpasswd admin adminacm
-htpasswd -b users.htpasswd manager manageracm
-htpasswd -b users.htpasswd viewer vieweracm
-htpasswd -b users.htpasswd none noneacm
+htpasswd -c -B -b users.htpasswd admin $1
+htpasswd -b users.htpasswd manager $1
+htpasswd -b users.htpasswd viewer $1
+htpasswd -b users.htpasswd none $1
 oc create secret generic htpass-secret --from-file=htpasswd=users.htpasswd -n openshift-config
 rm -f users.htpasswd
 
