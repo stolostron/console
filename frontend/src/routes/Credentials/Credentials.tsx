@@ -37,6 +37,7 @@ export default function CredentialsPage() {
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
+    console.log(secrets)
     return (
         <AcmPage>
             <AcmPageHeader title={t('credentialsPage.title')} />
@@ -123,7 +124,12 @@ export function CredentialsTable(props: {
                 emptyState={
                     <AcmEmptyState
                         title={t('credentialsPage.empty.title')}
-                        message={<Trans i18nKey={'credentialsPage.empty.subtitle'} components={{ bold: <strong /> }} />}
+                        message={
+                            <Trans
+                                i18nKey="credentials:credentialsPage.empty.subtitle"
+                                components={{ bold: <strong /> }}
+                            />
+                        }
                         action={<AddConnectionBtn />}
                     />
                 }
