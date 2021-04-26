@@ -1,33 +1,31 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { createCluster } from '../../../../lib/create-cluster'
-import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
-import { NavigationPath } from '../../../../NavigationPath'
+import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import fs from 'fs'
-import path from 'path'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import { DOC_LINKS } from '../../../../lib/doc-util'
-import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
-import './style.css'
-
-// template/data
-import { controlData } from './controlData/ControlData'
-import hiveTemplate from './templates/hive-template.hbs'
-
-import TemplateEditor from 'temptifly'
-import 'temptifly/dist/styles.css'
-
-// include monaco editor
-import MonacoEditor from 'react-monaco-editor'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
+import path from 'path'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+// include monaco editor
+import MonacoEditor from 'react-monaco-editor'
+import { useHistory, useLocation } from 'react-router-dom'
+import TemplateEditor from 'temptifly'
+import 'temptifly/dist/styles.css'
+import { createCluster } from '../../../../lib/create-cluster'
+import { DOC_LINKS } from '../../../../lib/doc-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
+// template/data
+import { controlData } from './controlData/ControlData'
+import './style.css'
+import hiveTemplate from './templates/hive-template.hbs'
+
 declare const window: any
 if (window.monaco) {
     window.monaco.editor.defineTheme('console', {
@@ -147,29 +145,32 @@ export default function CreateClusterPage() {
     }
 
     return (
-        <AcmPage>
-            <AcmPageHeader
-                title={t('page.header.create-cluster')}
-                titleTooltip={
-                    <>
-                        {t('page.header.create-cluster.tooltip')}
-                        <a
-                            href={DOC_LINKS.CREATE_CLUSTER}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('learn.more')}
-                        </a>
-                    </>
-                }
-                breadcrumb={[
-                    { text: t('clusters'), to: NavigationPath.clusters },
-                    { text: t('page.header.create-cluster'), to: '' },
-                ]}
-                switches={switches}
-                actions={portals}
-            />
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={t('page.header.create-cluster')}
+                    titleTooltip={
+                        <>
+                            {t('page.header.create-cluster.tooltip')}
+                            <a
+                                href={DOC_LINKS.CREATE_CLUSTER}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('learn.more')}
+                            </a>
+                        </>
+                    }
+                    breadcrumb={[
+                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('page.header.create-cluster'), to: '' },
+                    ]}
+                    switches={switches}
+                    actions={portals}
+                />
+            }
+        >
             <AcmErrorBoundary>
                 <PageSection className="pf-c-content">
                     <TemplateEditor

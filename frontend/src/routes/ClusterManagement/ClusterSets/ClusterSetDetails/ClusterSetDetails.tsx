@@ -4,30 +4,31 @@ import {
     AcmButton,
     AcmPage,
     AcmPageHeader,
+    AcmPageProcess,
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-    AcmPageProcess,
 } from '@open-cluster-management/ui-components'
+import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { acmRouteState, managedClusterSetsState, clusterPoolsState } from '../../../../atoms'
+import { acmRouteState, clusterPoolsState, managedClusterSetsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { usePrevious } from '../../../../components/usePrevious'
 import { Cluster } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
-import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetClusters'
-import { ClusterSetClusterPoolsPageContent } from './ClusterSetClusterPools/ClusterSetClusterPools'
-import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
-import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
-import { usePrevious } from '../../../../components/usePrevious'
-import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
-import { useClusters } from '../components/useClusters'
-import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { ClusterPool } from '../../../../resources/cluster-pool'
+import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
+import { useClusters } from '../components/useClusters'
+import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
+import { ClusterSetClusterPoolsPageContent } from './ClusterSetClusterPools/ClusterSetClusterPools'
+import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetClusters'
+import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
+import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -97,7 +98,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     if (clusterSet === undefined) {
         return (
-            <AcmPage>
+            <Page>
                 <ErrorPage
                     error={new ResourceError('Not found', 404)}
                     actions={
@@ -106,7 +107,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </AcmButton>
                     }
                 />
-            </AcmPage>
+            </Page>
         )
     }
 
