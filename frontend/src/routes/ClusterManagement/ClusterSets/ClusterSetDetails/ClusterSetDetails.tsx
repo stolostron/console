@@ -19,6 +19,8 @@ import { Cluster } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
+import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetClusters'
+import { ClusterSetClusterPoolsPageContent } from './ClusterSetClusterPools/ClusterSetClusterPools'
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
 import { usePrevious } from '../../../../components/usePrevious'
@@ -147,6 +149,28 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     <AcmSecondaryNavItem
                                         isActive={
                                             location.pathname ===
+                                            NavigationPath.clusterSetClusters.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}>
+                                            {t('tab.clusters')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
+                                            NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
+                                        }
+                                    >
+                                        <Link
+                                            to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)}
+                                        >
+                                            {t('tab.clusterPools')}
+                                        </Link>
+                                    </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            location.pathname ===
                                             NavigationPath.clusterSetAccess.replace(':id', match.params.id)
                                         }
                                     >
@@ -160,6 +184,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterSetClusters}>
+                            <ClusterSetClustersPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterSetClusterPools}>
+                            <ClusterSetClusterPoolsPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterSetAccess}>
                             <ClusterSetAccessManagement />

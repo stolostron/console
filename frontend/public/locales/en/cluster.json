@@ -265,6 +265,7 @@
     "tab.machinepools": "Machine pools",
     "tab.settings": "Settings",
     "tab.clusters": "Clusters",
+    "tab.clusterPools": "Cluster pools",
     "tab.access": "Access management",
 
     "labels.capital": "Labels",
@@ -286,6 +287,9 @@
     "summary.violations.launch": "Go to Policies",
     "summary.cluster.issues.description": "By total risk:",
     "summary.status.loading": "Loading application and violation status",
+
+    "summary.clusters.launch": "Go to Clusters",
+    "summary.clusterPools.launch": "Go to Cluster pools",
 
     "policy.report.flyout.title": "{{count}} identified issues",
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
