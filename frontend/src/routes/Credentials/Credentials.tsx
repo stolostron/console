@@ -108,15 +108,8 @@ export function CredentialsTable(props: {
     }
 
     function getDiscoveryConfigName(namespace: string) {
-        if (props.discoveryConfigs) {
-            for (let i = 0; i < props.discoveryConfigs.length; i++) {
-                const discoNamespace = props.discoveryConfigs[i].metadata.namespace
-                if (discoNamespace === namespace) {
-                    return props.discoveryConfigs[i].metadata.name!
-                }
-            }
-        }
-        return ''
+        const discovery = props.discoveryConfigs?.find((config) => config.metadata.namespace === namespace)
+        return discovery?.metadata.name ?? ''
     }
 
     return (
