@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -60,30 +60,25 @@ export function ClusterSetManageResourcesContent() {
     const [managedClusters, clusterPools] = useRecoilValue(waitForAll([managedClustersState, clusterPoolsState]))
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
-    const [selectedResources, setSelectedResources] = useState<IResource[]>([])
+    const [selectedResources, setSelectedResources] = useState<IResource[]>(
+        [...managedClusters, ...clusterPools].filter(
+            (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+        )
+    )
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
-
-    useEffect(() => {
-        if (canJoinClusterSets !== undefined) {
-            setSelectedResources(
-                [...managedClusters, ...clusterPools].filter(
-                    (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
-                )
-            )
-        }
-    }, [canJoinClusterSets, managedClusters, clusterPools, clusterSet?.metadata.name])
 
     const availableResources = [...managedClusters, ...clusterPools].filter((resource) => {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
         return clusterSet === undefined || canJoinClusterSetList?.includes(clusterSet)
     })
-
     const notSelectedResources = availableResources.filter(
         (ar) => selectedResources.find((sr) => sr.metadata!.uid === ar.metadata!.uid) === undefined
     )
     const removedResources = notSelectedResources.filter(
         (resource) => resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
     )
+
+    console.log('SELECTED', selectedResources)
 
     return (
         <>

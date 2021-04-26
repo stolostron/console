@@ -2,6 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
+import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockCreate, nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
@@ -84,7 +85,11 @@ function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: stri
     )
 }
 
-const Component = (props: { cluster: Cluster }) => <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
+const Component = (props: { cluster: Cluster }) => (
+    <RecoilRoot>
+        <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
+    </RecoilRoot>
+)
 
 describe('ClusterActionDropdown', () => {
     beforeEach(() => {
