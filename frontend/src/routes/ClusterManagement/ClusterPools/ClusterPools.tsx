@@ -426,7 +426,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                 items={props.clusters}
                 columns={[
                     {
-                        header: t('table.clusterName'),
+                        header: t('table.name'),
                         sort: 'displayName',
                         search: 'displayName',
                         cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
