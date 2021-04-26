@@ -20,6 +20,7 @@ import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
+    clusterPoolsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClusterSetsState,
