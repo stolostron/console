@@ -299,9 +299,9 @@ export function CredentialsForm(props: {
                     {
                         id: 'credentialsType',
                         type: 'Select',
-                        label: t('credentialsForm.credentialsName.label'),
-                        placeholder: t('credentialsForm.credentialsName.placeholder'),
-                        // labelHelp: t('credentialsForm.credentialsName.labelHelp'), // TODO
+                        label: t('credentialsForm.credentialsType.label'),
+                        placeholder: t('credentialsForm.credentialsType.placeholder'),
+                        // labelHelp: t('credentialsForm.credentialsType.labelHelp'), // TODO
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
@@ -754,15 +754,16 @@ export function CredentialsForm(props: {
                         value: ansibleToken,
                         onChange: setAnsibleToken,
                         isRequired: true,
+                        isSecret: true,
                     },
                 ],
             },
             {
-                title: t('credentialsForm.openshift.title'),
-                wizardTitle: t('credentialsForm.openshift.wizardTitle'),
+                title: t('credentialsForm.openshiftCredentials.title'),
+                wizardTitle: t('credentialsForm.openshiftCredentials.wizardTitle'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.openshift.wizardDescription')}
+                        {t('credentialsForm.openshiftCredentials.wizardDescription')}
                     </a>
                 ),
                 inputs: [
