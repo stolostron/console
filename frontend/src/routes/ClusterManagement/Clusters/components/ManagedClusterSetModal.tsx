@@ -18,9 +18,9 @@ export function ManagedClusterSetModal(props: { close: () => void; open: boolean
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                sort: 'name',
+                header: t('table.displayName'),
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                sort: 'displayName',
             },
             {
                 header: t('table.status'),

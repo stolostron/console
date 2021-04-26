@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
+    displayName: 'cluster-0-no-available',
     namespace: 'cluster-0-no-available',
     status: ClusterStatus.ready,
     isHive: false,
@@ -38,6 +39,7 @@ const mockClusterNoAvailable: Cluster = {
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
+    displayName: 'cluster-1-ready1',
     namespace: 'cluster-1-ready1',
     status: ClusterStatus.ready,
     isHive: false,
@@ -68,6 +70,7 @@ const mockClusterReady1: Cluster = {
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
+    displayName: 'cluster-2-ready2',
     namespace: 'cluster-2-ready2',
     status: ClusterStatus.ready,
     isHive: false,
@@ -98,6 +101,7 @@ const mockClusterReady2: Cluster = {
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
+    displayName: 'cluster-3-offline',
     namespace: 'cluster-3-offline',
     status: ClusterStatus.offline,
     isHive: false,
@@ -128,6 +132,7 @@ const mockClusterOffline: Cluster = {
 }
 const mockClusterFailedUpgrade: Cluster = {
     name: 'cluster-4-failedupgrade',
+    displayName: 'cluster-4-failedupgrade',
     namespace: 'cluster-4-failedupgrade',
     status: ClusterStatus.ready,
     isHive: false,
@@ -164,7 +169,7 @@ const allClusters: Array<Cluster> = [
     mockClusterFailedUpgrade,
 ]
 
-describe('BattchUpgradeModal', () => {
+describe('BatchUpgradeModal', () => {
     it('should only show upgradeable ones, and select latest version as default', () => {
         const { queryByText } = render(<BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />)
         expect(queryByText('cluster-0-no-available')).toBeFalsy()

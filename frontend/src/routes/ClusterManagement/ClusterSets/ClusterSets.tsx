@@ -145,8 +145,8 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 columns={[
                     {
                         header: t('table.name'),
-                        sort: 'name',
-                        search: 'name',
+                        sort: 'metadata.name',
+                        search: 'metadata.name',
                         cell: (managedClusterSet: ManagedClusterSet) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link

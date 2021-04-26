@@ -44,6 +44,7 @@ export const clusterDangerStatuses = [
 
 export type Cluster = {
     name: string | undefined
+    displayName: string | undefined
     namespace: string | undefined
     status: ClusterStatus
     statusMessage: string | undefined
@@ -136,6 +137,11 @@ export function getCluster(
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
+        displayName:
+            clusterDeployment?.spec?.clusterPoolRef?.claimName ??
+            clusterDeployment?.metadata.name ??
+            managedCluster?.metadata.name ??
+            managedClusterInfo?.metadata.name,
         namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
         status,
         statusMessage,
@@ -169,12 +175,12 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
         isHibernatable,
         clusterPool: clusterDeployment?.spec?.clusterPoolRef?.poolName,
         clusterPoolNamespace: clusterDeployment?.spec?.clusterPoolRef?.namespace,
+        clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
         secrets: {
             kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef.name,
             kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef.name,
             installConfig: clusterDeployment?.spec?.provisioning?.installConfigSecretRef?.name,
         },
-        clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
         lifetime: clusterClaim?.spec?.lifetime,
     }
 }

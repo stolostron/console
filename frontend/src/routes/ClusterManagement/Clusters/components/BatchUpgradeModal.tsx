@@ -78,8 +78,8 @@ export function BatchUpgradeModal(props: {
             columns={[
                 {
                     header: t('upgrade.table.name'),
-                    sort: 'name',
-                    cell: 'name',
+                    sort: 'displayName',
+                    cell: 'displayName',
                 },
                 {
                     header: t('upgrade.table.currentversion'),
