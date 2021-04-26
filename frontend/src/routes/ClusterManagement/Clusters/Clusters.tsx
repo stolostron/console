@@ -39,7 +39,15 @@ import { useAllClusters } from './components/useAllClusters'
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
-    const clusters = useAllClusters()
+    let clusters = useAllClusters()
+    clusters = clusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -130,8 +138,8 @@ export function ClustersTable(props: {
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                sort: 'name',
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                sort: 'displayName',
             },
             {
                 header: t('table.status'),
@@ -174,12 +182,12 @@ export function ClustersTable(props: {
                 columns={[
                     {
                         header: t('table.name'),
-                        sort: 'name',
-                        search: 'name',
+                        sort: 'displayName',
+                        search: 'displayName',
                         cell: (cluster) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                    {cluster.name}
+                                    {cluster.displayName}
                                 </Link>
                             </span>
                         ),
@@ -373,7 +381,7 @@ export function ClustersTable(props: {
                                 description: t('bulk.message.destroy'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
+                                actionFn: (cluster) => deleteCluster(cluster, true),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 confirmText: t('confirm').toLowerCase(),

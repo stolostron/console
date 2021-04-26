@@ -44,7 +44,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 apiVersion: ClusterClaimApiVersion,
                 kind: ClusterClaimKind,
                 metadata: {
-                    generateName: `${props.clusterPool.metadata.name}-`,
+                    name: '',
                     namespace: props.clusterPool?.metadata.namespace,
                 },
                 spec: {
@@ -97,34 +97,22 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     <AcmAlertContext.Consumer>
                         {(alertContext) => (
                             <>
-                                <div>{t('clusterClaim.create.message')}</div>
-                                &nbsp;
-                                <DescriptionList isHorizontal isAutoColumnWidths>
-                                    <DescriptionListGroup>
-                                        <DescriptionListTerm>{t('clusterClaim.clusterPool.name')}</DescriptionListTerm>
-                                        <DescriptionListDescription>
-                                            {props.clusterPool?.metadata.name}
-                                        </DescriptionListDescription>
-                                    </DescriptionListGroup>
-                                    <DescriptionListGroup>
-                                        <DescriptionListTerm>
-                                            {t('clusterClaim.clusterPool.namespace')}
-                                        </DescriptionListTerm>
-                                        <DescriptionListDescription>
-                                            {clusterClaim?.metadata.namespace}
-                                        </DescriptionListDescription>
-                                    </DescriptionListGroup>
-                                </DescriptionList>
+                                <div>
+                                    <Trans
+                                        i18nKey="cluster:clusterClaim.create.message"
+                                        values={{ clusterPoolName: props.clusterPool?.metadata.name }}
+                                        components={{ bold: <strong /> }}
+                                    />
+                                </div>
                                 &nbsp;
                                 <AcmTextInput
-                                    id="clusterClaimLifetime"
-                                    label={t('clusterClaim.lifetime.label')}
-                                    placeholder={t('clusterClaim.lifetime.placeholder')}
-                                    labelHelp={t('clusterClaim.lifetime.tooltip')}
-                                    value={clusterClaim?.spec?.lifetime}
-                                    onChange={(lifetime) => {
+                                    id="clusterClaimName"
+                                    label={t('clusterClaim.name.label')}
+                                    placeholder={t('clusterClaim.name.placeholder')}
+                                    value={clusterClaim?.metadata?.name}
+                                    onChange={(name) => {
                                         updateClusterClaim((clusterClaim) => {
-                                            clusterClaim.spec!.lifetime = lifetime
+                                            clusterClaim.metadata.name = name
                                         })
                                     }}
                                 />
@@ -195,6 +183,10 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         isAutoColumnWidths
                         style={{ marginBottom: '24px', marginTop: '16px' }}
                     >
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.cluster.displayName')}</DescriptionListTerm>
+                            <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
+                        </DescriptionListGroup>
                         <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>

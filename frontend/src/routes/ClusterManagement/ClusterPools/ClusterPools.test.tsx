@@ -27,6 +27,9 @@ const mockClusterImageSet: ClusterImageSet = {
     kind: ClusterImageSetKind,
     metadata: {
         name: 'test-cluster-image-set',
+        labels: {
+            visible: 'true',
+        },
     },
     spec: {
         releaseImage: 'release-image',
@@ -83,29 +86,15 @@ const mockClusterPool: ClusterPool = {
     },
 }
 
-const mockCreateClusterClaim: ClusterClaim = {
-    apiVersion: ClusterClaimApiVersion,
-    kind: ClusterClaimKind,
-    metadata: {
-        generateName: `${mockClusterPool.metadata.name}-`,
-        namespace: mockClusterPool.metadata.namespace!,
-    },
-    spec: {
-        clusterPoolName: mockClusterPool.metadata.name!,
-        lifetime: '1h',
-    },
-}
-
 const mockClusterClaim: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
     metadata: {
-        name: `${mockClusterPool.metadata.name}-abcd`,
+        name: 'mycluster',
         namespace: mockClusterPool.metadata.namespace!,
     },
     spec: {
         clusterPoolName: mockClusterPool.metadata.name!,
-        lifetime: '1h',
     },
 }
 
@@ -178,8 +167,8 @@ describe('ClusterPools page', () => {
         await clickByLabel('Actions', 0)
         await clickByText('clusterPool.claim', 0)
         await waitForText('clusterClaim.create.title')
-        await typeByTestId('clusterClaimLifetime', mockClusterClaim.spec!.lifetime!)
-        const createNocks: Scope[] = [nockCreate(mockCreateClusterClaim, mockClusterClaim), nockGet(mockClusterClaim)]
+        await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
+        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
         await clickByText('common:claim')
         await waitForNocks(createNocks)
     })

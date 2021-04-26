@@ -9,6 +9,7 @@ import {
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -104,6 +105,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterClaim
     )
     const prevCluster = usePrevious(cluster)
+    const showMachinePoolTab = cluster.isHive && cluster.isManaged && cluster.provider !== Provider.baremetal
 
     const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
     useEffect(() => {
@@ -151,9 +153,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 <AcmPageHeader
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: match.params.id, to: '' },
+                        { text: cluster.displayName!, to: '' },
                     ]}
-                    title={match.params.id}
+                    title={cluster.displayName!}
+                    description={
+                        cluster.name !== cluster.displayName && (
+                            <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.name}</span>
+                        )
+                    }
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem
@@ -174,7 +181,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     {t('tab.nodes')}
                                 </Link>
                             </AcmSecondaryNavItem>
-                            {cluster.isHive && (
+                            {showMachinePoolTab && (
                                 <AcmSecondaryNavItem
                                     isActive={
                                         location.pathname ===
@@ -222,7 +229,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         <Route exact path={NavigationPath.clusterNodes}>
                             <NodePoolsPageContent />
                         </Route>
-                        {cluster.isHive && (
+                        {showMachinePoolTab && (
                             <Route exact path={NavigationPath.clusterMachinePools}>
                                 <MachinePoolsPageContent />
                             </Route>

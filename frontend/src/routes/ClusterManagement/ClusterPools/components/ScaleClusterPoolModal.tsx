@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import {
     AcmForm,
     AcmSubmit,
@@ -11,14 +11,7 @@ import {
     AcmAlertContext,
     AcmNumberInput,
 } from '@open-cluster-management/ui-components'
-import {
-    ModalVariant,
-    ActionGroup,
-    DescriptionList,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
-} from '@patternfly/react-core'
+import { ModalVariant, ActionGroup } from '@patternfly/react-core'
 import { ClusterPool } from '../../../../resources/cluster-pool'
 import { patchResource } from '../../../../lib/resource-request'
 
@@ -55,23 +48,13 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                 <AcmAlertContext.Consumer>
                     {(alertContext) => (
                         <>
-                            <div>{t('clusterPool.modal.scale.message')}</div>
-                            <DescriptionList isHorizontal isAutoColumnWidths>
-                                <DescriptionListGroup>
-                                    <DescriptionListTerm>{t('clusterPool.modal.scale.poolName')}</DescriptionListTerm>
-                                    <DescriptionListDescription>
-                                        {props.clusterPool?.metadata.name}
-                                    </DescriptionListDescription>
-                                </DescriptionListGroup>
-                                <DescriptionListGroup>
-                                    <DescriptionListTerm>
-                                        {t('clusterPool.modal.scale.poolNamespace')}
-                                    </DescriptionListTerm>
-                                    <DescriptionListDescription>
-                                        {props.clusterPool?.metadata.namespace}
-                                    </DescriptionListDescription>
-                                </DescriptionListGroup>
-                            </DescriptionList>
+                            <div>
+                                <Trans
+                                    i18nKey="cluster:clusterPool.modal.scale.message"
+                                    values={{ clusterPoolName: props.clusterPool?.metadata.name }}
+                                    components={{ bold: <strong /> }}
+                                />
+                            </div>
                             <AcmNumberInput
                                 label={t('clusterPool.modal.scale.input')}
                                 id="scale"

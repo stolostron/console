@@ -47,6 +47,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
     if (clusterPool) {
         groupClusterDeployments = clusterDeployments.filter(
             (cd) =>
+                cd.spec?.clusterPoolRef?.claimName === undefined &&
                 cd.spec?.clusterPoolRef?.poolName === clusterPool.metadata.name &&
                 cd.spec?.clusterPoolRef?.namespace === clusterPool.metadata.namespace
         )
