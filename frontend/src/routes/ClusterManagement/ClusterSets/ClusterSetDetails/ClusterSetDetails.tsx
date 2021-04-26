@@ -19,7 +19,7 @@ import { Cluster } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
-import { ClusterSetManageClustersPage } from './ClusterSetManageClusters/ClusterSetManageClusters'
+import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
 import { usePrevious } from '../../../../components/usePrevious'
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
@@ -122,7 +122,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
                     </Route>
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
-                        <ClusterSetManageClustersPage />
+                        <ClusterSetManageResourcesPage />
                     </Route>
                     <AcmPage hasDrawer>
                         <AcmPageHeader

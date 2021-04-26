@@ -14,7 +14,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
     managedClusterSetsState,
@@ -24,6 +24,7 @@ import {
     managedClustersState,
     clusterManagementAddonsState,
     managedClusterAddonsState,
+    clusterPoolsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { mapAddons } from '../../../lib/get-addons'
@@ -31,11 +32,16 @@ import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../resources/managed-cluster-set'
+import {
+    ManagedClusterSet,
+    ManagedClusterSetDefinition,
+    managedClusterSetLabel,
+} from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
+import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 
 export default function ClusterSetsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -57,6 +63,7 @@ export default function ClusterSetsPage() {
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
+            clusterPoolsState,
         ])
     )
 
@@ -101,7 +108,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
-    const history = useHistory()
+    const [createClusterSetModalOpen, setCreateClusterSetModalOpen] = useState<boolean>(false)
     const [canCreateClusterSet, setCanCreateClusterSet] = useState<boolean>(false)
     useEffect(() => {
         const canCreateManagedClusterSet = canUser('create', ManagedClusterSetDefinition)
@@ -110,6 +117,8 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             .catch((err) => console.error(err))
         return () => canCreateManagedClusterSet.abort()
     }, [])
+
+    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
 
     const modalColumns = useMemo(
         () => [
@@ -127,8 +136,16 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
                 ),
             },
+            {
+                header: t('table.clusterPools'),
+                cell: (managedClusterSet: ManagedClusterSet) => {
+                    return clusterPools.filter(
+                        (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
+                    ).length
+                },
+            },
         ],
-        [t]
+        [t, clusterPools]
     )
 
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
@@ -137,6 +154,10 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
 
     return (
         <Fragment>
+            <CreateClusterSetModal
+                isOpen={createClusterSetModalOpen}
+                onClose={() => setCreateClusterSetModalOpen(false)}
+            />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <AcmTable<ManagedClusterSet>
                 gridBreakPoint={TableGridBreakpoint.none}
@@ -164,6 +185,14 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         header: t('table.clusters'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
                             return <ClusterStatuses managedClusterSet={managedClusterSet} />
+                        },
+                    },
+                    {
+                        header: t('table.clusterPools'),
+                        cell: (managedClusterSet: ManagedClusterSet) => {
+                            return clusterPools.filter(
+                                (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
+                            ).length
                         },
                     },
                     {
@@ -243,7 +272,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     {
                         id: 'createClusterSet',
                         title: t('managed.createClusterSet'),
-                        click: () => history.push(NavigationPath.createClusterSet),
+                        click: () => setCreateClusterSetModalOpen(true),
                         isDisabled: !canCreateClusterSet,
                         tooltip: t('common:rbac.unauthorized'),
                     },
@@ -262,7 +291,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         action={
                             <AcmButton
                                 role="link"
-                                onClick={() => history.push(NavigationPath.createClusterSet)}
+                                onClick={() => setCreateClusterSetModalOpen(true)}
                                 isDisabled={!canCreateClusterSet}
                                 tooltip={t('common:rbac.unauthorized')}
                             >

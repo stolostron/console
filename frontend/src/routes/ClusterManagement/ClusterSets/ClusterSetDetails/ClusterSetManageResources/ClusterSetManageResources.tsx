@@ -28,7 +28,7 @@ import { ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
 import { managedClustersState, clusterPoolsState } from '../../../../../atoms'
 
-export function ClusterSetManageClustersPage() {
+export function ClusterSetManageResourcesPage() {
     const { t } = useTranslation(['cluster'])
     const { clusterSet } = useContext(ClusterSetContext)
     return (
@@ -46,14 +46,14 @@ export function ClusterSetManageClustersPage() {
             />
             <AcmPageContent id="manage-cluster-set">
                 <PageSection variant="light" isFilled={true}>
-                    <ClusterSetManageClustersContent />
+                    <ClusterSetManageResourcesContent />
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
     )
 }
 
-export function ClusterSetManageClustersContent() {
+export function ClusterSetManageResourcesContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
@@ -189,7 +189,13 @@ export function ClusterSetManageClustersContent() {
                     if (resource.kind === ManagedClusterKind) {
                         return patchClusterSetLabel(resource.metadata!.name!, op, clusterSet!.metadata.name)
                     } else {
-                        return patchResource(resource, [{ op, path: `/metadata/labels/${managedClusterSetLabel}` }])
+                        return patchResource(resource, [
+                            {
+                                op,
+                                path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+                                value: clusterSet?.metadata.name,
+                            },
+                        ])
                     }
                 }}
                 description={
@@ -220,22 +226,22 @@ export function ClusterSetManageClustersContent() {
                                 {
                                     header: t('table.change'),
                                     cell: (resource) => {
-                                        const isSelected = selectedResources.find(
-                                            (selectedResource) =>
-                                                selectedResource.metadata!.uid === resource.metadata!.uid
-                                        )
-                                        const isRemoved = removedResources.find(
-                                            (removedResource) =>
-                                                removedResource.metadata!.uid === resource.metadata!.uid
-                                        )
-                                        if (isSelected) {
+                                        if (
+                                            removedResources.find(
+                                                (removedResource) =>
+                                                    removedResource.metadata!.uid === resource.metadata!.uid
+                                            )
+                                        ) {
+                                            return t('managedClusterSet.form.removed')
+                                        } else if (
+                                            resource.metadata!.labels?.[managedClusterSetLabel] ===
+                                            clusterSet?.metadata.name
+                                        ) {
+                                            return t('managedClusterSet.form.unchanged')
+                                        } else {
                                             return resource.metadata!.labels?.[managedClusterSetLabel] === undefined
                                                 ? t('managedClusterSet.form.added')
                                                 : t('managedClusterSet.form.transferred')
-                                        } else if (isRemoved) {
-                                            return t('managedClusterSet.form.removed')
-                                        } else {
-                                            return t('managedClusterSet.form.unchanged')
                                         }
                                     },
                                 },

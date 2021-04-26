@@ -15,9 +15,6 @@ const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Cluster
 const ClusterSetDetailsPage = lazy(
     () => import('./routes/ClusterManagement/ClusterSets/ClusterSetDetails/ClusterSetDetails')
 )
-const CreateClusterSetPage = lazy(
-    () => import('./routes/ClusterManagement/ClusterSets/CreateClusterSet/CreateClusterSet')
-)
 const CreateClusterPoolPage = lazy(
     () => import('./routes/ClusterManagement/ClusterPools/CreateClusterPool/CreateClusterPool')
 )
@@ -39,7 +36,6 @@ export default function App() {
                             <Switch>
                                 <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                 <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-                                <Route exact path={NavigationPath.createClusterSet} component={CreateClusterSetPage} />
                                 <Route
                                     exact
                                     path={NavigationPath.createClusterPool}

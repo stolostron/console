@@ -25,7 +25,7 @@ import {
     managedClusterSetsState,
 } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterSetManageClustersPage } from './ClusterSetManageClusters'
+import { ClusterSetManageResourcesPage } from './ClusterSetManageResources'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { nockPatch, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import {
@@ -183,6 +183,7 @@ const Component = () => (
             value={{
                 clusterSet: mockManagedClusterSet,
                 clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
+                clusterPools: [],
             }}
         >
             <MemoryRouter
@@ -190,7 +191,7 @@ const Component = () => (
             >
                 <Switch>
                     <Route exact path={NavigationPath.clusterSetManage}>
-                        <ClusterSetManageClustersPage />
+                        <ClusterSetManageResourcesPage />
                     </Route>
                     <Route exact path={NavigationPath.clusterSetOverview}>
                         <div id="redirected" />
