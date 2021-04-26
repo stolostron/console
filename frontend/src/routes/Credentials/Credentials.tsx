@@ -43,7 +43,7 @@ export default function CredentialsPage() {
             <AcmPageHeader title={t('credentialsPage.title')} />
             <AcmPageContent id="credentials">
                 <PageSection>
-                    <Card>
+                    <Card isLarge>
                         <CardBody>
                             <CredentialsTable
                                 providerConnections={providerConnections}

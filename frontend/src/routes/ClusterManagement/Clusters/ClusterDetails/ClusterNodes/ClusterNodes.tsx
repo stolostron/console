@@ -8,19 +8,23 @@ import {
     IAcmTableColumn,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
-import { ClusterContext } from '../ClusterDetails'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
+import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
-            <PageSection variant="light" isFilled>
-                <NodesPoolsTable />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <NodesPoolsTable />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )

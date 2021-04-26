@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
@@ -11,8 +11,12 @@ export function ClustersSettingsPageContent() {
     const { addons } = useContext(ClusterContext)
     return (
         <AcmPageContent id="addons">
-            <PageSection variant="light" isFilled>
-                <ClusterSettingsTable addons={addons} />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <ClusterSettingsTable addons={addons} />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )

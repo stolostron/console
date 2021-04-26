@@ -18,6 +18,8 @@ import {
 import {
     ActionGroup,
     Button,
+    Card,
+    CardBody,
     Label,
     PageSection,
     SelectOption,
@@ -69,8 +71,12 @@ export default function ImportClusterPage() {
                 }
             />
             <AcmPageContent id="import-cluster">
-                <PageSection variant="light" isFilled={true}>
-                    <ImportClusterPageContent />
+                <PageSection>
+                    <Card isLarge>
+                        <CardBody>
+                            <ImportClusterPageContent />
+                        </CardBody>
+                    </Card>
                 </PageSection>
             </AcmPageContent>
         </AcmPage>

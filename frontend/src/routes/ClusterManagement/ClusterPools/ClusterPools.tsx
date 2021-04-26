@@ -10,7 +10,7 @@ import {
     Provider,
     AcmButton,
 } from '@open-cluster-management/ui-components'
-import { PageSection, TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { PageSection, TextContent, Text, TextVariants, CardBody, Card } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -40,8 +40,12 @@ export default function ClusterPoolsPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <ClusterPoolsTable />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <ClusterPoolsTable />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )

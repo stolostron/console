@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, Bullseye, PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -27,8 +27,12 @@ export default function BareMetalAssetsPage() {
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
     return (
         <AcmPageContent id="bare-metal-assets">
-            <PageSection variant="light" isFilled>
-                <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )

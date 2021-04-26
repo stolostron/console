@@ -14,7 +14,7 @@ import {
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Button, Card, CardBody, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -64,8 +64,12 @@ export default function CreateBareMetalAssetPage() {
                     ]}
                 />
                 <AcmPageContent id="edit-bare-metal-asset">
-                    <PageSection variant="light" isFilled={true}>
-                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    <PageSection>
+                        <Card isLarge>
+                            <CardBody>
+                                <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                            </CardBody>
+                        </Card>
                     </PageSection>
                 </AcmPageContent>
             </AcmPage>
@@ -94,8 +98,12 @@ export default function CreateBareMetalAssetPage() {
                 ]}
             />
             <AcmPageContent id="create-bare-metal-asset">
-                <PageSection variant="light" isFilled={true}>
-                    <CreateBareMetalAssetPageData />
+                <PageSection>
+                    <Card isLarge>
+                        <CardBody>
+                            <CreateBareMetalAssetPageData />
+                        </CardBody>
+                    </Card>
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
