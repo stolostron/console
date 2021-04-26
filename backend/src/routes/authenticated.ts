@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
-import { get, Agent } from 'https'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Agent, get } from 'https'
+import * as rawBody from 'raw-body'
 import { parseCookies } from '../lib/cookies'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
@@ -17,7 +18,14 @@ export function authenticated(req: Http2ServerRequest, res: Http2ServerResponse)
             headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
             agent: new Agent({ rejectUnauthorized: false }),
         },
-        (response) => res.writeHead(response.statusCode).end()
+        (response) => {
+            res.writeHead(response.statusCode).end()
+            try {
+                void rawBody(response, { length: response.headers['content-length'] })
+            } catch (err) {
+                logger.error(err)
+            }
+        }
     ).on('error', (err) => {
         logger.error(err)
         respondInternalServerError(req, res)
