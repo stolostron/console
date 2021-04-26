@@ -58,8 +58,8 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             rbac: [rbacPatch(props.managedClusterSet)],
         },
         {
-            id: 'manage-clusterSet-clusters',
-            text: t('set.manage-clusters'),
+            id: 'manage-clusterSet-resources',
+            text: t('set.manage-resources'),
             click: (managedClusterSet: ManagedClusterSet) => {
                 history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
             },
