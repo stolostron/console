@@ -25,7 +25,7 @@ import {
 } from '../../../resources/cluster-curator'
 import { unpackProviderConnection } from '../../../resources/provider-connection'
 
-export default function IntegrationsPage() {
+export default function AnsibleAutomationPage() {
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -33,13 +33,13 @@ export default function IntegrationsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <IntegrationTable></IntegrationTable>
+                <AnsibleJobTemplateTable></AnsibleJobTemplateTable>
             </PageSection>
         </AcmPageContent>
     )
 }
 
-function IntegrationTable() {
+function AnsibleJobTemplateTable() {
     // Load Data
     const [secrets] = useRecoilState(secretsState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)

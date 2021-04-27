@@ -22,7 +22,7 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 // import { ResourceAttributes } from '../../../resources/self-subject-access-review'
-import IntegrationsPage from './Integrations'
+import AnsibleAutomationPage from './Integrations'
 
 const mockAnsibleConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -117,7 +117,7 @@ function TestIntegrationPage(props: { providerConnections: ProviderConnection[];
                     path={NavigationPath.integrations}
                     render={(props: any) => {
                         testLocation = props.location
-                        return <IntegrationsPage />
+                        return <AnsibleAutomationPage />
                     }}
                 />
             </MemoryRouter>
