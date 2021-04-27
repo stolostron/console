@@ -42,7 +42,7 @@ export default function CredentialsPage() {
         <AcmPage header={<AcmPageHeader title={t('credentialsPage.title')} />}>
             <AcmPageContent id="credentials">
                 <PageSection>
-                    <Card>
+                    <Card isLarge>
                         <CardBody>
                             <CredentialsTable
                                 providerConnections={providerConnections}
@@ -249,12 +249,12 @@ export function CredentialsTable(props: {
                                             description: t('bulk.message.delete'),
                                             columns: [
                                                 {
-                                                    header: t('table.header.name'),
+                                                    header: t('credentials.tableHeader.name'),
                                                     cell: 'metadata.name',
                                                     sort: 'metadata.name',
                                                 },
                                                 {
-                                                    header: t('table.header.namespace'),
+                                                    header: t('credentials.tableHeader.namespace'),
                                                     cell: 'metadata.namespace',
                                                     sort: 'metadata.namespace',
                                                 },
@@ -305,12 +305,12 @@ export function CredentialsTable(props: {
                                 description: t('bulk.message.delete'),
                                 columns: [
                                     {
-                                        header: t('table.header.name'),
+                                        header: t('credentials.tableHeader.name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('table.header.namespace'),
+                                        header: t('credentials.tableHeader.namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },

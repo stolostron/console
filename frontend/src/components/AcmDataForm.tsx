@@ -14,6 +14,7 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    Divider,
     Form,
     FormFieldGroupExpandable,
     FormFieldGroupHeader,
@@ -67,7 +68,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
     const { formData } = props
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
-    const [isHorizontal, setIsHorizontal] = useState(props.isHorizontal ?? true)
+    const isHorizontal = props.isHorizontal ?? false
     const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
 
     return (
@@ -81,17 +82,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                         breadcrumb={formData.breadcrumb}
                         actions={
                             <ActionList>
-                                {process.env.NODE_ENV !== 'production' && (
-                                    <ActionListItem>
-                                        <ToggleGroup>
-                                            <ToggleGroupItem
-                                                text="Horizontal"
-                                                isSelected={isHorizontal}
-                                                onChange={() => setIsHorizontal(!isHorizontal)}
-                                            />
-                                        </ToggleGroup>
-                                    </ActionListItem>
-                                )}
                                 {mode === 'details' && (
                                     <ActionListItem>
                                         <ToggleGroup>
@@ -164,7 +154,7 @@ export function AcmDataForm(
             return (
                 <AcmDataFormWizard
                     formData={formData}
-                    isHorizontal={isHorizontal ?? true}
+                    isHorizontal={isHorizontal ?? false}
                     showSecrets={showSecrets ?? true}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
@@ -174,11 +164,7 @@ export function AcmDataForm(
         case 'details':
             return (
                 <Form>
-                    <AcmDataFormDetails
-                        formData={formData}
-                        showSecrets={showSecrets}
-                        isHorizontal={isHorizontal ?? true}
-                    />
+                    <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
                 </Form>
             )
 
@@ -377,7 +363,7 @@ export function AcmDataFormWizard(props: {
                         )}
                     </AlertGroup>
                 )}
-                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} isHorizontal={isHorizontal} />
+                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
             </Form>
         ),
         nextButtonText: 'Create',
@@ -487,20 +473,21 @@ export function AcmDataFormWizard(props: {
     return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
-export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean; isHorizontal: boolean }) {
-    const { formData, showSecrets, isHorizontal } = props
+export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean }) {
+    const { formData, showSecrets } = props
     return (
         <Fragment>
-            {formData.sections.map((section) => {
+            {formData.sections.map((section, index) => {
                 if (!sectionHasValue(section)) return <Fragment />
                 if (sectionHidden(section)) return <Fragment />
                 return (
                     <FormSection key={section.title}>
+                        {index !== 0 && <Divider />}
                         <Title headingLevel="h2">{section.title}</Title>
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
-                                columnModifier={{ default: section.columns === 1 || isHorizontal ? '1Col' : '2Col' }}
-                                isHorizontal={props.isHorizontal}
+                                columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
+                                isHorizontal={true}
                             >
                                 {section.inputs &&
                                     section.inputs.map((input) => {
@@ -557,13 +544,13 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                 <DescriptionList
                                                     columnModifier={{
                                                         default:
-                                                            group.columns === 1 || isHorizontal
+                                                            group.columns === 1
                                                                 ? '1Col'
                                                                 : group.columns === 2
                                                                 ? '2Col'
                                                                 : undefined,
                                                     }}
-                                                    isHorizontal={props.isHorizontal}
+                                                    isHorizontal={true}
                                                 >
                                                     {group.inputs.map((input) => {
                                                         if (inputHidden(input)) return <Fragment />

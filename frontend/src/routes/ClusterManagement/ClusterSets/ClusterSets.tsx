@@ -1,35 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useContext, useEffect, useState, useMemo } from 'react'
 import {
     AcmAlertContext,
+    AcmButton,
     AcmEmptyState,
     AcmInlineStatusGroup,
+    AcmLabels,
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-    AcmButton,
-    AcmLabels,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { useTranslation, Trans } from 'react-i18next'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
-    managedClusterSetsState,
     certificateSigningRequestsState,
     clusterDeploymentsState,
-    managedClusterInfosState,
-    managedClustersState,
     clusterManagementAddonsState,
-    managedClusterAddonsState,
     clusterPoolsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClusterSetsState,
+    managedClustersState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
+import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 // import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -38,9 +39,8 @@ import {
     managedClusterSetLabel,
 } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
-import { ClusterStatuses } from './components/ClusterStatuses'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
-import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
+import { ClusterStatuses } from './components/ClusterStatuses'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 
 export default function ClusterSetsPage() {
@@ -79,8 +79,12 @@ export default function ClusterSetsPage() {
     usePageContext(clusters.length > 0, PageActions)
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />{' '}
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )

@@ -11,7 +11,7 @@ import {
     AcmButton,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { PageSection, TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { PageSection, TextContent, Text, TextVariants, CardBody, Card } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -54,41 +54,46 @@ export default function ClusterPoolsPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <ClusterPoolsTable
-                    clusterPools={clusterPools}
-                    tableActions={[
-                        {
-                            id: 'createClusterPool',
-                            title: t('managed.createClusterPool'),
-                            click: () => history.push(NavigationPath.createClusterPool),
-                            isDisabled: !canCreateClusterPool,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                    ]}
-                    emptyState={
-                        <AcmEmptyState
-                            key="mcEmptyState"
-                            title={t('managed.clusterPools.emptyStateHeader')}
-                            message={
-                                <Trans
-                                    i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
-                                    components={{ bold: <strong />, p: <p /> }}
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        {' '}
+                        <ClusterPoolsTable
+                            clusterPools={clusterPools}
+                            tableActions={[
+                                {
+                                    id: 'createClusterPool',
+                                    title: t('managed.createClusterPool'),
+                                    click: () => history.push(NavigationPath.createClusterPool),
+                                    isDisabled: !canCreateClusterPool,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                            ]}
+                            emptyState={
+                                <AcmEmptyState
+                                    key="mcEmptyState"
+                                    title={t('managed.clusterPools.emptyStateHeader')}
+                                    message={
+                                        <Trans
+                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                            components={{ bold: <strong />, p: <p /> }}
+                                        />
+                                    }
+                                    action={
+                                        <AcmButton
+                                            role="link"
+                                            onClick={() => history.push(NavigationPath.createClusterPool)}
+                                            disabled={!canCreateClusterPool}
+                                            tooltip={t('common:rbac.unauthorized')}
+                                        >
+                                            {t('managed.createClusterPool')}
+                                        </AcmButton>
+                                    }
                                 />
                             }
-                            action={
-                                <AcmButton
-                                    role="link"
-                                    onClick={() => history.push(NavigationPath.createClusterPool)}
-                                    disabled={!canCreateClusterPool}
-                                    tooltip={t('common:rbac.unauthorized')}
-                                >
-                                    {t('managed.createClusterPool')}
-                                </AcmButton>
-                            }
                         />
-                    }
-                />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )
@@ -421,7 +426,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                 items={props.clusters}
                 columns={[
                     {
-                        header: t('table.clusterName'),
+                        header: t('table.name'),
                         sort: 'displayName',
                         search: 'displayName',
                         cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
