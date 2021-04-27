@@ -55,8 +55,8 @@ export interface ProviderConnectionSpec {
     sshPrivatekey?: string
     sshPublickey?: string
 
-    ansibleHost?: string
-    ansibleToken?: string
+    host?: string
+    token?: string
 }
 
 export interface ProviderConnection extends V1Secret {
