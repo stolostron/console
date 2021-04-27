@@ -25,7 +25,7 @@ import {
 } from '../../../resources/cluster-curator'
 import { unpackProviderConnection } from '../../../resources/provider-connection'
 
-export default function AnsibleAutomationPage() {
+export default function AnsibleAutomationsPage() {
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])

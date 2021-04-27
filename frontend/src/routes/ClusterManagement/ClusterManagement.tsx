@@ -20,7 +20,7 @@ const DiscoveredClustersPage = lazy(() => import('./../Discovery/DiscoveredClust
 const ClusterSetsPage = lazy(() => import('./ClusterSets/ClusterSets'))
 const ClusterPoolsPage = lazy(() => import('./ClusterPools/ClusterPools'))
 const BareMetalAssetsPage = lazy(() => import('../BareMetalAssets/BareMetalAssetsPage'))
-const AnsibleAutomationPage = lazy(() => import('./Integrations/Integrations'))
+const AnsibleAutomationsPage = lazy(() => import('./Integrations/Integrations'))
 
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
@@ -117,7 +117,7 @@ export default function ClusterManagementPage() {
                             <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         )}
                         <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
-                        <Route exact path={NavigationPath.integrations} component={AnsibleAutomationPage} />
+                        <Route exact path={NavigationPath.integrations} component={AnsibleAutomationsPage} />
                         <Route exact path={NavigationPath.console}>
                             <Redirect to={NavigationPath.clusters} />
                         </Route>
