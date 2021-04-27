@@ -293,8 +293,13 @@ export function CredentialsForm(props: {
         breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
-                title: t('credentialsPage.title'),
+                title: t('credentialsForm.credentialsType.title'),
                 wizardTitle: t('credentialsForm.credentialsType.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.credentialsType.wizardDescription')}
+                    </a>
+                ),
                 inputs: [
                     {
                         id: 'credentialsType',
@@ -362,11 +367,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.awsCredentials.title'),
                 wizardTitle: t('credentialsForm.awsCredentials.wizardTitle'),
                 description: (
-                    <a
-                        href={DOC_LINKS.CREATE_CONNECTION} // TODO
-                        target="_blank"
-                        rel="noreferrer"
-                    >
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.awsCredentials.wizardDescription')}
                     </a>
                 ),
