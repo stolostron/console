@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '@open-cluster-management/ui-components'
+import {
+    AcmEmptyState,
+    AcmIcon,
+    AcmPage,
+    AcmPageHeader,
+    Provider,
+    ProviderIconMap,
+    ProviderLongTextMap,
+} from '@open-cluster-management/ui-components'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -46,7 +55,7 @@ const credentialProviders: Provider[] = [
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { name, namespace } = match.params
-    // const { t } = useTranslation(['credentials'])
+    const { t } = useTranslation(['credentials', 'common'])
 
     let isEditing = false
     let isViewing = false
@@ -93,7 +102,33 @@ export default function CredentialsFormPage({ match }: RouteComponentProps<{ nam
         )
     } else {
         if (!projects) return <LoadingPage />
-        // if (projects.length === 0) // TODO <ErrorPage error={t('credentialsForm.error.noNamespacesFound')} />
+        if (projects.length === 0) {
+            return (
+                <AcmPage
+                    header={
+                        <AcmPageHeader
+                            title={t('credentialsForm.title.add')}
+                            breadcrumb={[
+                                { text: t('credentialsPage.title'), to: NavigationPath.credentials },
+                                { text: t('credentialsForm.title.add') },
+                            ]}
+                        />
+                    }
+                >
+                    <PageSection>
+                        <Card isLarge>
+                            <CardBody>
+                                <AcmEmptyState
+                                    title={t('common:rbac.title.unauthorized')}
+                                    message={t('common:rbac.namespaces.unauthorized')}
+                                    showIcon={false}
+                                />
+                            </CardBody>
+                        </Card>
+                    </PageSection>
+                </AcmPage>
+            )
+        }
         return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
     }
 }
