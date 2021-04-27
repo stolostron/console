@@ -7,10 +7,6 @@ import {
     AcmModal,
     AcmSelect,
     AcmSubmit,
-    AcmTable,
-    AcmTablePaginationContextProvider,
-    AcmTextInput,
-    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
@@ -21,12 +17,9 @@ import {
     ProgressMeasureLocation,
     SelectOption,
 } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
-import { prependListener } from 'node:process'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getErrorInfo } from '../components/ErrorPage'
-import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
 export interface IDropdownActionModalProps<T = undefined> {
     open: true
@@ -56,7 +49,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
     const { t } = useTranslation(['common'])
     const [progress, setProgress] = useState(0)
     const [progressCount, setProgressCount] = useState(0)
-    const [confirm, setConfirm] = useState('')
+    const [, setConfirm] = useState('')
     const [error, setError] = useState<ItemError<T> | undefined>()
     const [selection, setSelection] = useState<string | undefined>('')
 

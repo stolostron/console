@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { createResource, listResources, getResource, replaceResource } from '../lib/resource-request'
+import { V1ObjectMeta } from '@kubernetes/client-node'
+import { createResource, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
-import { IRequestResult } from '../lib/resource-request'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
 export type ClusterCuratorApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
@@ -62,11 +61,7 @@ export function createClusterCurator(clusterCurator: ClusterCurator) {
 }
 
 export function filterForTemplatedCurators(clusterCurators: ClusterCurator[]) {
-    return clusterCurators.filter((curator) => {
-        if (curator.spec?.desiredCuration === undefined) {
-            return curator
-        }
-    })
+    return clusterCurators.filter((curator) => curator.spec?.desiredCuration === undefined)
 }
 
 export function getTemplateJobsNum(clusterCurator: ClusterCurator) {

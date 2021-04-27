@@ -11,7 +11,7 @@ import { PageSection } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+// import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
@@ -62,12 +62,7 @@ function IntegrationTable() {
     })
     const { t } = useTranslation(['cluster', 'common'])
 
-    const history = useHistory()
-
-    const actionFn = (curatorTemplate: ClusterCurator, ansibleCredentialName: string) => {
-        console.log('in actionFn')
-        return LinkAnsibleCredential(curatorTemplate as ClusterCurator, ansibleCredentialName)
-    }
+    //const history = useHistory()
 
     // Set table
     return (
