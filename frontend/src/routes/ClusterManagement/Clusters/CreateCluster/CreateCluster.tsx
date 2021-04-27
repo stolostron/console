@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmErrorBoundary, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import fs from 'fs'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
 import path from 'path'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { useHistory, useLocation } from 'react-router-dom'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -172,26 +172,28 @@ export default function CreateClusterPage() {
             }
         >
             <AcmErrorBoundary>
-                <PageSection className="pf-c-content">
-                    <TemplateEditor
-                        type={'cluster'}
-                        title={'Cluster YAML'}
-                        monacoEditor={<MonacoEditor />}
-                        controlData={controlData}
-                        template={template}
-                        portals={Portals}
-                        fetchControl={fetchControl}
-                        createControl={{
-                            createResource,
-                            cancelCreate,
-                            pauseCreate,
-                            creationStatus: creationStatus?.status,
-                            creationMsg: creationStatus?.messages,
-                        }}
-                        logging={process.env.NODE_ENV !== 'production'}
-                        i18n={i18n}
-                    />
-                </PageSection>
+                <AcmPageContent id="create-cluster">
+                    <PageSection className="pf-c-content" variant="light" isFilled>
+                        <TemplateEditor
+                            type={'cluster'}
+                            title={'Cluster YAML'}
+                            monacoEditor={<MonacoEditor />}
+                            controlData={controlData}
+                            template={template}
+                            portals={Portals}
+                            fetchControl={fetchControl}
+                            createControl={{
+                                createResource,
+                                cancelCreate,
+                                pauseCreate,
+                                creationStatus: creationStatus?.status,
+                                creationMsg: creationStatus?.messages,
+                            }}
+                            logging={process.env.NODE_ENV !== 'production'}
+                            i18n={i18n}
+                        />
+                    </PageSection>
+                </AcmPageContent>
             </AcmErrorBoundary>
         </AcmPage>
     )
