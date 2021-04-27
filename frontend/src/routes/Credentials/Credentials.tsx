@@ -37,7 +37,6 @@ export default function CredentialsPage() {
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
-    console.log(secrets)
     return (
         <AcmPage header={<AcmPageHeader title={t('credentialsPage.title')} />}>
             <AcmPageContent id="credentials">
