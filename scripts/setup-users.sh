@@ -17,8 +17,8 @@ cd $DIR
 htpasswd -c -B -b users.htpasswd cluster-manager-admin $PASSWORD
 htpasswd -b users.htpasswd cluster-admin $PASSWORD
 htpasswd -b users.htpasswd admin $PASSWORD
-htpasswd -b users.htpasswd manager $PASSWORD
-htpasswd -b users.htpasswd viewer $PASSWORD
+htpasswd -b users.htpasswd edit $PASSWORD
+htpasswd -b users.htpasswd view $PASSWORD
 htpasswd -b users.htpasswd none $PASSWORD
 oc delete secret htpass-secret -n openshift-config &> /dev/null
 oc create secret generic htpass-secret --from-file=htpasswd=users.htpasswd -n openshift-config
