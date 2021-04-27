@@ -3,33 +3,25 @@
 import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRecoilState } from 'recoil'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { patchClusterSetLabel } from '../../../../lib/patch-cluster'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
-import { ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
 import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
-import { ManagedClusterSetModal } from './ManagedClusterSetModal'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
-import { managedClusterSetsState } from '../../../../atoms'
-import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { createImportResources } from '../../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
-    const [managedClusterSets] = useRecoilState(managedClusterSetsState)
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
-    const [showManagedClusterSetModal, setShowManagedClusterSetModal] = useState<boolean>(false)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -40,8 +32,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                sort: 'name',
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                sort: 'displayName',
             },
             {
                 header: t('table.status'),
@@ -58,11 +50,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
             },
-            {
-                header: t('table.set'),
-                sort: `labels.${managedClusterSetLabel}`,
-                cell: (cluster: Cluster) => cluster?.clusterSet ?? '-',
-            },
         ],
         [t]
     )
@@ -78,6 +65,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     onCloseClick: () => setDrawerContext(undefined),
                     panelContent: (
                         <EditLabels
+                            displayName={cluster.displayName!}
                             resource={{
                                 ...ManagedClusterDefinition,
                                 metadata: { name: cluster.name, labels: cluster.labels },
@@ -90,34 +78,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: true,
             rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
-        },
-        {
-            id: 'manage-set',
-            text: cluster?.clusterSet ? t('managed.removeSet') : t('managed.addSet'),
-            click: (cluster: Cluster) => {
-                if (cluster?.clusterSet) {
-                    setModalProps({
-                        open: true,
-                        isDanger: true,
-                        title: t('bulk.title.removeSet'),
-                        action: t('remove'),
-                        processing: t('removing'),
-                        resources: [cluster],
-                        description: t('bulk.message.removeSet'),
-                        columns: modalColumns,
-                        keyFn: (cluster) => cluster.name as string,
-                        actionFn: (cluster) => patchClusterSetLabel(cluster.name!, 'remove'),
-                        close: () => setModalProps({ open: false }),
-                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                    })
-                } else {
-                    setShowManagedClusterSetModal(true)
-                }
-            },
-            isDisabled: !!cluster?.clusterSet,
-            rbac: cluster?.clusterSet
-                ? [rbacCreate(ManagedClusterSetDefinition, undefined, cluster?.clusterSet, 'join')]
-                : undefined,
         },
         {
             id: 'upgrade-cluster',
@@ -149,8 +109,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     columns: [
                         {
                             header: t('upgrade.table.name'),
-                            sort: 'name',
-                            cell: 'name',
+                            sort: 'displayName',
+                            cell: 'displayName',
                         },
                         {
                             header: t('table.provider'),
@@ -251,7 +211,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
-                    confirmText: cluster.name,
+                    confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
@@ -271,12 +231,12 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     description: t('bulk.message.destroy'),
                     columns: modalColumns,
                     keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => deleteCluster(cluster.name!),
+                    actionFn: (cluster) => deleteCluster(cluster),
                     close: () => {
                         setModalProps({ open: false })
                     },
                     isDanger: true,
-                    confirmText: cluster.name,
+                    confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
@@ -297,10 +257,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             'detach-cluster',
         ]
         actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
-    }
-
-    if ((!cluster?.clusterSet && managedClusterSets.length === 0) || cluster.status === ClusterStatus.detaching) {
-        actions = actions.filter((a) => a.id !== 'manage-set')
     }
 
     if (cluster.status !== ClusterStatus.hibernating) {
@@ -343,13 +299,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     return (
         <>
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
-            {showManagedClusterSetModal && (
-                <ManagedClusterSetModal
-                    clusters={[cluster]}
-                    open={showManagedClusterSetModal}
-                    close={() => setShowManagedClusterSetModal(false)}
-                />
-            )}
             <BulkActionModel<Cluster> {...modalProps} />
             <RbacDropdown<Cluster>
                 id={`${cluster.name}-actions`}

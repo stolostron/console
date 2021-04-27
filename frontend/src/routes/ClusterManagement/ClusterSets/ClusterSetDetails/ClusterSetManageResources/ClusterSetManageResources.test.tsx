@@ -25,7 +25,7 @@ import {
     managedClusterSetsState,
 } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterSetManageClustersPage } from './ClusterSetManageClusters'
+import { ClusterSetManageResourcesPage } from './ClusterSetManageResources'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { nockPatch, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import {
@@ -35,6 +35,7 @@ import {
     clickByTestId,
     clickByText,
     waitForNocks,
+    waitForNotText,
 } from '../../../../../lib/test-util'
 
 const mockManagedClusterAdd: ManagedCluster = {
@@ -42,6 +43,7 @@ const mockManagedClusterAdd: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-add',
+        uid: 'managed-cluster-add',
         labels: {},
     },
     spec: { hubAcceptsClient: true },
@@ -59,6 +61,7 @@ const mockClusterDeploymentAdd: ClusterDeployment = {
     metadata: {
         name: mockManagedClusterAdd.metadata.name!,
         namespace: mockManagedClusterAdd.metadata.name!,
+        uid: mockManagedClusterAdd.metadata.name!,
         labels: {},
     },
 }
@@ -67,6 +70,7 @@ const mockManagedClusterRemove: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-remove',
+        uid: 'managed-cluster-remove',
         labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
     },
     spec: { hubAcceptsClient: true },
@@ -84,6 +88,7 @@ const mockClusterDeploymentRemove: ClusterDeployment = {
     metadata: {
         name: mockManagedClusterRemove.metadata.name!,
         namespace: mockManagedClusterRemove.metadata.name!,
+        uid: mockManagedClusterRemove.metadata.name!,
         labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
     },
 }
@@ -92,6 +97,7 @@ const mockManagedClusterUnchanged: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-unchanged',
+        uid: 'managed-cluster-unchanged',
         labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
     },
     spec: { hubAcceptsClient: true },
@@ -109,6 +115,7 @@ const mockManagedClusterSetTransfer: ManagedClusterSet = {
     kind: ManagedClusterSetKind,
     metadata: {
         name: 'test-cluster-set-transfer',
+        uid: 'test-cluster-set-transfer',
     },
     spec: {},
 }
@@ -118,6 +125,7 @@ const mockManagedClusterTransfer: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-transfer',
+        uid: 'managed-cluster-transfer',
         labels: { [managedClusterSetLabel!]: mockManagedClusterSetTransfer.metadata.name },
     },
     spec: { hubAcceptsClient: true },
@@ -183,6 +191,7 @@ const Component = () => (
             value={{
                 clusterSet: mockManagedClusterSet,
                 clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
+                clusterPools: [],
             }}
         >
             <MemoryRouter
@@ -190,7 +199,7 @@ const Component = () => (
             >
                 <Switch>
                     <Route exact path={NavigationPath.clusterSetManage}>
-                        <ClusterSetManageClustersPage />
+                        <ClusterSetManageResourcesPage />
                     </Route>
                     <Route exact path={NavigationPath.clusterSetOverview}>
                         <div id="redirected" />
@@ -207,10 +216,12 @@ describe('ClusterSetManageClusters', () => {
     })
     test('can update cluster assignments', async () => {
         const { container } = render(<Component />)
+        await waitForNotText('Loading')
         await waitForText(mockManagedClusterAdd.metadata.name!)
         await waitForText(mockManagedClusterRemove.metadata.name!)
         await waitForText(mockManagedClusterUnchanged.metadata.name!)
         await waitForText(mockManagedClusterTransfer.metadata.name!)
+
         await waitForText('2 selected')
 
         // verify cluster to add is not assigned
@@ -249,7 +260,7 @@ describe('ClusterSetManageClusters', () => {
         // unselect the cluster to remove
         await clickByLabel('Select row 1')
         // select the cluster to transfer
-        await clickByLabel('Select row 2')
+        await clickByLabel('Select row 3')
 
         await clickByTestId('save')
 

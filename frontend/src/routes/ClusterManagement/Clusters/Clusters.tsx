@@ -11,7 +11,7 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -33,13 +33,20 @@ import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
-import { managedClusterSetLabel } from '../../../resources/managed-cluster-set'
 import { useAllClusters } from './components/useAllClusters'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster'])
     const alertContext = useContext(AcmAlertContext)
-    const clusters = useAllClusters()
+    let clusters = useAllClusters()
+    clusters = clusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -57,36 +64,43 @@ export default function ClustersPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <ClustersTable
-                    clusters={clusters}
-                    tableActions={[
-                        {
-                            id: 'createCluster',
-                            title: t('managed.createCluster'),
-                            click: () => history.push(NavigationPath.createCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                        {
-                            id: 'importCluster',
-                            title: t('managed.importCluster'),
-                            click: () => history.push(NavigationPath.importCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                    ]}
-                    emptyState={
-                        <AcmEmptyState
-                            key="mcEmptyState"
-                            title={t('managed.emptyStateHeader')}
-                            message={
-                                <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <ClustersTable
+                            clusters={clusters}
+                            tableActions={[
+                                {
+                                    id: 'createCluster',
+                                    title: t('managed.createCluster'),
+                                    click: () => history.push(NavigationPath.createCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                                {
+                                    id: 'importCluster',
+                                    title: t('managed.importCluster'),
+                                    click: () => history.push(NavigationPath.importCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                            ]}
+                            emptyState={
+                                <AcmEmptyState
+                                    key="mcEmptyState"
+                                    title={t('managed.emptyStateHeader')}
+                                    message={
+                                        <Trans
+                                            i18nKey={'cluster:managed.emptyStateMsg'}
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
+                                    action={<AddCluster type="button" />}
+                                />
                             }
-                            action={<AddCluster type="button" />}
                         />
-                    }
-                />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )
@@ -130,8 +144,8 @@ export function ClustersTable(props: {
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.name}</span>,
-                sort: 'name',
+                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                sort: 'displayName',
             },
             {
                 header: t('table.status'),
@@ -147,11 +161,6 @@ export function ClustersTable(props: {
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-            },
-            {
-                header: t('table.set'),
-                sort: `labels.${managedClusterSetLabel}`,
-                cell: (cluster: Cluster) => cluster?.clusterSet ?? '-',
             },
         ],
         [t]
@@ -174,12 +183,12 @@ export function ClustersTable(props: {
                 columns={[
                     {
                         header: t('table.name'),
-                        sort: 'name',
-                        search: 'name',
+                        sort: 'displayName',
+                        search: 'displayName',
                         cell: (cluster) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                    {cluster.name}
+                                    {cluster.displayName}
                                 </Link>
                             </span>
                         ),
@@ -373,7 +382,7 @@ export function ClustersTable(props: {
                                 description: t('bulk.message.destroy'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
+                                actionFn: (cluster) => deleteCluster(cluster, true),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 confirmText: t('confirm').toLowerCase(),

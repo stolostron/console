@@ -19,19 +19,19 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
     return (
         <AcmPageProcess
             isLoading={props.isLoading}
-            loadingTitle={t(`${props.cluster?.status}.inprogress`, { clusterName: props.cluster?.name })}
+            loadingTitle={t(`${props.cluster?.status}.inprogress`, { clusterName: props.cluster?.displayName })}
             loadingMessage={
                 <Trans
                     i18nKey={`cluster:${props.cluster?.status}.inprogress.message`}
-                    values={{ clusterName: props.cluster?.name }}
+                    values={{ clusterName: props.cluster?.displayName }}
                     components={{ bold: <strong /> }}
                 />
             }
-            successTitle={t(`${props.cluster?.status}.success`, { clusterName: props.cluster?.name })}
+            successTitle={t(`${props.cluster?.status}.success`, { clusterName: props.cluster?.displayName })}
             successMessage={
                 <Trans
                     i18nKey={`cluster:${props.cluster?.status}.success.message`}
-                    values={{ clusterName: props.cluster?.name }}
+                    values={{ clusterName: props.cluster?.displayName }}
                     components={{ bold: <strong /> }}
                 />
             }

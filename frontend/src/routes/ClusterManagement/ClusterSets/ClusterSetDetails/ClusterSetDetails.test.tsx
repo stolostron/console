@@ -94,9 +94,16 @@ describe('ClusterSetDetails page', () => {
         render(<Component />)
         await waitForNocks(getNocks)
     })
-    test('renders', () => {
+    test('renders', async () => {
         waitForText(mockManagedClusterSet.metadata.name!, true)
-        waitForText(clusterSetCluster.metadata.name!)
+        await waitForText('table.details')
+
+        await clickByText('tab.clusters')
+        await waitForText('clusters')
+        await waitForText(clusterSetCluster.metadata.name!)
+
+        await clickByText('tab.clusterPools')
+        await waitForText('clusterPools')
     })
     test('can remove users from cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
@@ -183,5 +190,59 @@ describe('ClusterSetDetails page', () => {
         })
         await clickByText('common:add')
         await waitForNocks([createNock])
+    })
+})
+
+describe('ClusterSetDetails error', () => {
+    const Component = () => (
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(managedClusterSetsState, [])
+                snapshot.set(clusterDeploymentsState, [])
+                snapshot.set(managedClusterInfosState, [])
+                snapshot.set(managedClustersState, [])
+                snapshot.set(certificateSigningRequestsState, [])
+            }}
+        >
+            <MemoryRouter
+                initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+            >
+                <Switch>
+                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+                </Switch>
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+    test('renders error page when cluster set does not exist', async () => {
+        render(<Component />)
+        await waitForText('Not found')
+    })
+})
+
+describe('ClusterSetDetails deletion', () => {
+    const clusterSet = JSON.parse(JSON.stringify(mockManagedClusterSet))
+    clusterSet.metadata.deletionTimestamp = '2021-04-16T15:26:18Z'
+    const Component = () => (
+        <RecoilRoot
+            initializeState={(snapshot) => {
+                snapshot.set(managedClusterSetsState, [clusterSet])
+                snapshot.set(clusterDeploymentsState, [])
+                snapshot.set(managedClusterInfosState, [])
+                snapshot.set(managedClustersState, [])
+                snapshot.set(certificateSigningRequestsState, [])
+            }}
+        >
+            <MemoryRouter
+                initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+            >
+                <Switch>
+                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+                </Switch>
+            </MemoryRouter>
+        </RecoilRoot>
+    )
+    test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
+        render(<Component />)
+        await waitForText('deleting.managedClusterSet.inprogress')
     })
 })

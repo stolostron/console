@@ -9,6 +9,7 @@ import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 
 const mockDestroyCluster: Cluster = {
     name: 'test-cluster',
+    displayName: 'test-cluster',
     namespace: 'test-cluster',
     provider: undefined,
     status: ClusterStatus.destroying,

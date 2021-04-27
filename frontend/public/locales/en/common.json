@@ -19,6 +19,8 @@
     "updating": "Updating",
     "add": "Add",
     "adding": "Adding",
+    "create": "Create",
+    "creating": "Creating",
     "clipboardCopy": "Copy to clipboard",
     "copied": "Successfully copied to clipboard",
     "retry": "Retry",
@@ -29,6 +31,7 @@
     "there.were.errors": "There were errors processing the request(s)",
     "type.to.confirm": "Confirm by typing \"{0}\" below:",
     "close": "Close",
+    "outOf": "{{firstNumber}} out of {{secondNumber}}",
 
     "yes": "Yes",
     "no": "No",

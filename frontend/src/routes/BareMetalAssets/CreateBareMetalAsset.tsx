@@ -14,7 +14,7 @@ import {
     AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Button, Card, CardBody, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -42,9 +42,43 @@ export default function CreateBareMetalAssetPage() {
 
     if (params.namespace && params.name) {
         return (
-            <AcmPage>
+            <AcmPage
+                header={
+                    <AcmPageHeader
+                        title={t('bma:editBareMetalAsset.title')}
+                        titleTooltip={
+                            <>
+                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                <a
+                                    href={DOC_LINKS.BARE_METAL_ASSETS}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('common:learn.more')}
+                                </a>
+                            </>
+                        }
+                        breadcrumb={[
+                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('bma:editBareMetalAsset.title'), to: '' },
+                        ]}
+                    />
+                }
+            >
+                <AcmPageContent id="edit-bare-metal-asset">
+                    <PageSection variant="light" isFilled={true}>
+                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
+                    </PageSection>
+                </AcmPageContent>
+            </AcmPage>
+        )
+    }
+    return (
+        <AcmPage
+            header={
                 <AcmPageHeader
-                    title={t('bma:editBareMetalAsset.title')}
+                    title={t('bma:createBareMetalAsset.title')}
                     titleTooltip={
                         <>
                             {t('bma:createBareMetalAsset.title.tooltip')}
@@ -60,42 +94,18 @@ export default function CreateBareMetalAssetPage() {
                     }
                     breadcrumb={[
                         { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                        { text: t('bma:editBareMetalAsset.title'), to: '' },
+                        { text: t('bma:createBareMetalAsset.title'), to: '' },
                     ]}
                 />
-                <AcmPageContent id="edit-bare-metal-asset">
-                    <PageSection variant="light" isFilled={true}>
-                        <EditBareMetalAssetPageData name={params.name} namespace={params.namespace} />
-                    </PageSection>
-                </AcmPageContent>
-            </AcmPage>
-        )
-    }
-    return (
-        <AcmPage>
-            <AcmPageHeader
-                title={t('bma:createBareMetalAsset.title')}
-                titleTooltip={
-                    <>
-                        {t('bma:createBareMetalAsset.title.tooltip')}
-                        <a
-                            href={DOC_LINKS.BARE_METAL_ASSETS}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('common:learn.more')}
-                        </a>
-                    </>
-                }
-                breadcrumb={[
-                    { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                    { text: t('bma:createBareMetalAsset.title'), to: '' },
-                ]}
-            />
+            }
+        >
             <AcmPageContent id="create-bare-metal-asset">
-                <PageSection variant="light" isFilled={true}>
-                    <CreateBareMetalAssetPageData />
+                <PageSection>
+                    <Card isLarge>
+                        <CardBody>
+                            <CreateBareMetalAssetPageData />
+                        </CardBody>
+                    </Card>
                 </PageSection>
             </AcmPageContent>
         </AcmPage>

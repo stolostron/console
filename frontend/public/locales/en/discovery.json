@@ -1,4 +1,6 @@
 {
+    "quickActions": "Quick Action",
+    "quickActions.AddRHOCMCredential": "Add OpenShift Cluster Manager credential",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
     "discovery.import": "Import cluster",
@@ -38,5 +40,14 @@
 
     "emptystate.discoveryEnabled.title": "No discovered clusters found",
     "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters, yet. Cluster discovery has been enabled, so return to this page later or edit to add more connections to the discovery.",
-    "emptystate.viewDocumentation": "View documentation"
+    "emptystate.viewDocumentation": "View documentation",
+
+    "dcTbl.name": "Name",
+    "dcTbl.status": "Status",
+    "dcTbl.namespace": "Namespace",
+    "dcTbl.distributionVersion": "Distribution version",
+    "dcTbl.infrastructureProvider": "Infrastructure provider",
+    "dcTbl.lastActive": "Last active",
+    "dcTbl.created": "Created",
+    "dcTbl.discovered": "Discovered"
 } 

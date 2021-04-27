@@ -8,18 +8,23 @@ import {
     IAcmTableColumn,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
+import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 
 export function NodePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
-            <PageSection variant="light" isFilled>
-                <NodesPoolsTable />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <NodesPoolsTable />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )
@@ -28,6 +33,7 @@ export function NodePoolsPageContent() {
 export function NodesPoolsTable() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
+
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
     function getLabelCellFn(label: string) {
@@ -173,15 +179,18 @@ export function NodesPoolsTable() {
     }
 
     return (
-        <AcmTable<NodeInfo>
-            plural="nodes"
-            items={nodes}
-            columns={columns}
-            keyFn={keyFn}
-            tableActions={[]}
-            bulkActions={[]}
-            rowActions={[]}
-        />
+        <>
+            <ScaleClusterAlert />
+            <AcmTable<NodeInfo>
+                plural="nodes"
+                items={nodes}
+                columns={columns}
+                keyFn={keyFn}
+                tableActions={[]}
+                bulkActions={[]}
+                rowActions={[]}
+            />
+        </>
     )
 }
 

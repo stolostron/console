@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { nockDelete } from '../../../lib/nock-util'
-import { waitForNock, waitForText, clickByText } from '../../../lib/test-util'
+import { waitForText, waitForNotText } from '../../../lib/test-util'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { MemoryRouter } from 'react-router-dom'
@@ -14,7 +13,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
         apiVersion: 'discovery.open-cluster-management.io/v1',
         kind: 'DiscoveredCluster',
-        metadata: { name: 'test-cluster-01' },
+        metadata: { name: 'test-cluster-01', namespace: 'alpha' },
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'aws',
@@ -49,10 +48,24 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             status: 'Stale',
         },
     },
+    {
+        apiVersion: 'discovery.open-cluster-management.io/v1',
+        kind: 'DiscoveredCluster',
+        metadata: { name: 'test-cluster-03', namespace: 'discovered-cluster-namespace' },
+        spec: {
+            activity_timestamp: '2020-07-30T19:09:43Z',
+            cloudProvider: 'openstack',
+            isManagedCluster: true,
+            console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
+            creation_timestamp: '2020-07-30T19:09:43Z',
+            name: 'test-cluster-02',
+            openshiftVersion: '4.6.1',
+            status: 'Stale',
+        },
+    },
 ]
 
 test('DiscoveredClusters Table', async () => {
-    const deleteNock = nockDelete(mockDiscoveryConfig)
     render(
         <RecoilRoot
             initializeState={(snapshot) => {
@@ -68,26 +81,17 @@ test('DiscoveredClusters Table', async () => {
         </RecoilRoot>
     )
 
-    await waitForText('discovery.edit')
-    await waitForText('discovery.disable')
-    await waitForText(mockDiscoveredClusters[0].spec.providerConnections![0].name!)
+    await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
 
     // Ensure data for each discoveredcluster appears in table
     mockDiscoveredClusters.forEach(async (dc) => {
+        // Ensures managed clusters dont show up in table
+        if (dc.spec.isManagedCluster) {
+            await waitForNotText(dc.metadata.name!)
+        }
         await waitForText(dc.metadata.name!)
         await waitForText('OpenShift ' + dc.spec.openshiftVersion)
-        if (dc.spec.cloudProvider === 'aws') {
-            await waitForText('Amazon Web Services')
-        } else {
-            await waitForText(dc.spec.cloudProvider)
-        }
     })
-
-    // Test Delete Buttons
-    await clickByText('discovery.disable')
-    await waitForText('disable.button')
-    await clickByText('disable.button')
-    await waitForNock(deleteNock)
 })
 
 test('Discovery featuregate enabled, but no provider connections or discoveryconfig (Empty State 1)', async () => {

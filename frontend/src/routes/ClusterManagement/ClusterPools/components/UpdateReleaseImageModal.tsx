@@ -68,10 +68,11 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                         >
                             {clusterImageSets
                                 ?.filter((cis) => cis.spec?.releaseImage !== currentImageSet?.spec!.releaseImage)
-                                ?.sort((a: ClusterImageSet, b: ClusterImageSet) => {
+                                .filter((cis) => cis.metadata.labels?.visible === 'true')
+                                .sort((a: ClusterImageSet, b: ClusterImageSet) => {
                                     return b.spec!.releaseImage.localeCompare(a.spec!.releaseImage)
                                 })
-                                ?.map((cis) => {
+                                .map((cis) => {
                                     const releaseImage = cis?.spec?.releaseImage
                                     const tagStartIndex = releaseImage?.indexOf(':') ?? 0
                                     const version = releaseImage?.slice(

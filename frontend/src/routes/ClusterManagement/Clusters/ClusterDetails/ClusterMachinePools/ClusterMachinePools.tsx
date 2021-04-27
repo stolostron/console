@@ -1,31 +1,37 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { useTranslation, Trans } from 'react-i18next'
 import {
+    AcmEmptyState,
     AcmPageContent,
     AcmTable,
-    IAcmTableColumn,
-    AcmEmptyState,
     compareStrings,
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
-import { MachinePool } from '../../../../../resources/machine-pool'
-import { ClusterContext } from '../ClusterDetails'
+import { useContext, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useRecoilState } from 'recoil'
 import { machinePoolsState } from '../../../../../atoms'
-import { rbacPatch, rbacDelete } from '../../../../../lib/rbac-util'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
+import { rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { deleteResource } from '../../../../../lib/resource-request'
+import { MachinePool } from '../../../../../resources/machine-pool'
+import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
+import { ClusterContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
 
 export function MachinePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
-            <PageSection variant="light" isFilled>
-                <MachinePoolsTable />
+            <PageSection>
+                <Card isLarge>
+                    <CardBody>
+                        <MachinePoolsTable />
+                    </CardBody>
+                </Card>
             </PageSection>
         </AcmPageContent>
     )
@@ -187,6 +193,8 @@ export function MachinePoolsTable() {
                         isKebab={true}
                         text={`${machinePool.metadata.name}-actions`}
                         actions={actions}
+                        tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster!.status}`) })}
+                        isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster!.status)}
                     />
                 )
             },
@@ -195,6 +203,7 @@ export function MachinePoolsTable() {
 
     return (
         <>
+            <ScaleClusterAlert />
             <BulkActionModel<MachinePool> {...modalProps} />
             <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
             <AcmTable<MachinePool>

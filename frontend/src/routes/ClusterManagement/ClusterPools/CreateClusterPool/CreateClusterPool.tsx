@@ -145,29 +145,32 @@ export default function CreateClusterPoolPage() {
     }
 
     return (
-        <AcmPage>
-            <AcmPageHeader
-                title={t('page.header.create-clusterPool')}
-                titleTooltip={
-                    <>
-                        {t('page.header.create-clusterPool.tooltip')}
-                        <a
-                            href={DOC_LINKS.CREATE_CLUSTER}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('learn.more')}
-                        </a>
-                    </>
-                }
-                breadcrumb={[
-                    { text: t('clusterPools'), to: NavigationPath.clusterPools },
-                    { text: t('page.header.create-clusterPool'), to: '' },
-                ]}
-                switches={switches}
-                actions={portals}
-            />
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={t('page.header.create-clusterPool')}
+                    titleTooltip={
+                        <>
+                            {t('page.header.create-clusterPool.tooltip')}
+                            <a
+                                href={DOC_LINKS.CREATE_CLUSTER}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('learn.more')}
+                            </a>
+                        </>
+                    }
+                    breadcrumb={[
+                        { text: t('clusterPools'), to: NavigationPath.clusterPools },
+                        { text: t('page.header.create-clusterPool'), to: '' },
+                    ]}
+                    switches={switches}
+                    actions={portals}
+                />
+            }
+        >
             <AcmErrorBoundary>
                 <PageSection className="pf-c-content">
                     <TemplateEditor
