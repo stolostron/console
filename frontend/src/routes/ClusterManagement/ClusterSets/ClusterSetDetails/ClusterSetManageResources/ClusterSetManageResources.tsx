@@ -1,49 +1,53 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useRecoilValue, waitForAll } from 'recoil'
-import { PageSection, ActionGroup, Title } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
 import {
-    AcmPage,
-    AcmPageHeader,
-    AcmPageContent,
-    AcmForm,
-    AcmTable,
-    AcmButton,
     AcmAlertGroup,
+    AcmButton,
     AcmEmptyState,
+    AcmForm,
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmTable,
     compareStrings,
 } from '@open-cluster-management/ui-components'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
+import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
+import { useRecoilValue, waitForAll } from 'recoil'
+import { clusterPoolsState, managedClustersState } from '../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../components/BulkActionModel'
-import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { patchClusterSetLabel } from '../../../../../lib/patch-cluster'
 import { patchResource, ResourceErrorCode } from '../../../../../lib/resource-request'
-import { IResource } from '../../../../../resources/resource'
+import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { managedClustersState, clusterPoolsState } from '../../../../../atoms'
+import { IResource } from '../../../../../resources/resource'
+import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
+import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetManageResourcesPage() {
     const { t } = useTranslation(['cluster'])
     const { clusterSet } = useContext(ClusterSetContext)
     return (
-        <AcmPage hasDrawer>
-            <AcmPageHeader
-                breadcrumb={[
-                    { text: t('clusterSets'), to: NavigationPath.clusterSets },
-                    {
-                        text: clusterSet?.metadata.name!,
-                        to: NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!),
-                    },
-                    { text: t('page.header.cluster-set.manage-assignments'), to: '' },
-                ]}
-                title={t('page.header.cluster-set.manage-assignments')}
-            />
+        <AcmPage
+            hasDrawer
+            header={
+                <AcmPageHeader
+                    breadcrumb={[
+                        { text: t('clusterSets'), to: NavigationPath.clusterSets },
+                        {
+                            text: clusterSet?.metadata.name!,
+                            to: NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!),
+                        },
+                        { text: t('page.header.cluster-set.manage-assignments'), to: '' },
+                    ]}
+                    title={t('page.header.cluster-set.manage-assignments')}
+                />
+            }
+        >
             <AcmPageContent id="manage-cluster-set">
                 <PageSection variant="light" isFilled={true}>
                     <ClusterSetManageResourcesContent />

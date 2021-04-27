@@ -15,6 +15,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -28,7 +29,6 @@ import { NavigationPath } from '../../NavigationPath'
 import { DiscoveryConfig } from '../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { Secret } from '../../resources/secret'
-import moment from 'moment'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['credentials'])
@@ -39,8 +39,7 @@ export default function CredentialsPage() {
     useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
     console.log(secrets)
     return (
-        <AcmPage>
-            <AcmPageHeader title={t('credentialsPage.title')} />
+        <AcmPage header={<AcmPageHeader title={t('credentialsPage.title')} />}>
             <AcmPageContent id="credentials">
                 <PageSection>
                     <Card isLarge>

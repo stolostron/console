@@ -11,6 +11,7 @@ import {
     AcmSecondaryNavItem,
     Provider,
 } from '@open-cluster-management/ui-components'
+import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
@@ -18,14 +19,15 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
     certificateSigningRequestsState,
+    clusterClaimsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
-    clusterClaimsState,
 } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { usePrevious } from '../../../../components/usePrevious'
 import { Addon, mapAddons } from '../../../../lib/get-addons'
 import { Cluster, ClusterStatus, getCluster } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
@@ -35,11 +37,10 @@ import { SecretDefinition } from '../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
+import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
 import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
 import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
-import { usePrevious } from '../../../../components/usePrevious'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
@@ -125,7 +126,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     if (!clusterExists) {
         return (
-            <AcmPage>
+            <Page>
                 <ErrorPage
                     error={new ResourceError('Not found', 404)}
                     actions={
@@ -134,22 +135,14 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </AcmButton>
                     }
                 />
-            </AcmPage>
+            </Page>
         )
     }
 
     return (
-        <AcmPage hasDrawer>
-            <ClusterContext.Provider
-                value={{
-                    cluster,
-                    addons,
-                    importCommand,
-                    setImportCommand,
-                    importCommandError,
-                    setImportCommandError,
-                }}
-            >
+        <AcmPage
+            hasDrawer
+            header={
                 <AcmPageHeader
                     breadcrumb={[
                         { text: t('clusters'), to: NavigationPath.clusters },
@@ -220,7 +213,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         </AcmActionGroup>
                     }
                 />
-
+            }
+        >
+            <ClusterContext.Provider
+                value={{
+                    cluster,
+                    addons,
+                    importCommand,
+                    setImportCommand,
+                    importCommandError,
+                    setImportCommandError,
+                }}
+            >
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusterOverview}>
