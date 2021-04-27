@@ -388,7 +388,7 @@
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
 
-    "integration.title": "Ansible job templates",
+    "integration.title": "Ansible automations",
     "integration.emptyStateHeader": "You don't have any integrations",
     "integration.emptyStateMsg": "Select <bold>Create integration</bold> to create a Ansible integration.",
     "integration.edit":"Edit template",
