@@ -50,6 +50,7 @@ export function startWatching(): void {
     ServerSideEvents.eventFilter = eventFilter
 
     watchResource(token, 'v1', 'namespaces')
+    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')
     watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
