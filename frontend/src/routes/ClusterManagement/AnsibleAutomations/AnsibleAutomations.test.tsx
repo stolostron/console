@@ -22,7 +22,7 @@ import {
     ProviderConnectionKind,
 } from '../../../resources/provider-connection'
 // import { ResourceAttributes } from '../../../resources/self-subject-access-review'
-import AnsibleAutomationsPage from './Integrations'
+import AnsibleAutomationsPage from './AnsibleAutomations'
 
 const mockAnsibleConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -112,9 +112,9 @@ function TestIntegrationPage(props: { providerConnections: ProviderConnection[];
                 snapshot.set(clusterCuratorsState, props.clusterCurators || [])
             }}
         >
-            <MemoryRouter initialEntries={[NavigationPath.integrations]}>
+            <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
                 <Route
-                    path={NavigationPath.integrations}
+                    path={NavigationPath.ansibleAutomations}
                     render={(props: any) => {
                         testLocation = props.location
                         return <AnsibleAutomationsPage />
@@ -131,7 +131,7 @@ describe('ansible job page', () => {
     test('should render the table with templates', async () => {
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator1.metadata!.name!)
-        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.integrations))
+        await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.ansibleAutomations))
     })
 
     test('should be able to delete a template', async () => {

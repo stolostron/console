@@ -234,7 +234,7 @@ function AnsibleJobTemplateTable() {
                             <AcmButton
                                 role="link"
                                 onClick={() => {
-                                    // TODO: make sure addtemplate can handle new integrations
+                                    // TODO: make sure addtemplate can handle new ansible Automations
                                     //history.push(NavigationPath.addIntegration)
                                 }}
                                 // disabled={}
