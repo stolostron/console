@@ -170,8 +170,8 @@ export function CredentialsForm(props: {
     )
 
     // Ansible
-    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.spec?.ansibleHost ?? '')
-    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.spec?.ansibleToken ?? '')
+    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.spec?.host ?? '')
+    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.spec?.token ?? '')
 
     // Red Hat Cloud State
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
@@ -262,8 +262,8 @@ export function CredentialsForm(props: {
                 data.spec!.sshPublickey = sshPublickey
                 break
             case Provider.ansible:
-                data.spec!.ansibleHost = ansibleHost
-                data.spec!.ansibleToken = ansibleToken
+                data.spec!.host = ansibleHost
+                data.spec!.token = ansibleToken
                 break
 
             case Provider.redhatcloud:
