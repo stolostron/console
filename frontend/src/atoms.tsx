@@ -6,6 +6,7 @@ import { AcmRoute } from '@open-cluster-management/ui-components'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
+import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
 import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
@@ -32,6 +33,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
     default: [],
 })
 export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', default: [] })
+export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clusterCurators', default: [] })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
 export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
@@ -71,6 +73,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterClaims] = useRecoilState(clusterClaimsState)
+    const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
@@ -93,6 +96,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterClaimKind]: setClusterClaims,
+        [ClusterCuratorKind]: setClusterCurators,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
         [ClusterPoolKind]: setClusterPools,
