@@ -71,7 +71,7 @@ function IntegrationTable() {
             <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
             <AcmTable<ClusterCurator>
                 gridBreakPoint={TableGridBreakpoint.none}
-                plural="integrations"
+                plural="templates"
                 items={templatedCurators}
                 columns={[
                     {
@@ -87,7 +87,6 @@ function IntegrationTable() {
                         cell: (clusterCurator) => {
                             if (clusterCurator.spec?.install?.towerAuthSecret === undefined) {
                                 //Connect to Modal
-                                console.log('checking table curator template', clusterCurator)
                                 return (
                                     <AcmButton
                                         isInline
@@ -95,7 +94,7 @@ function IntegrationTable() {
                                         isSmall
                                         tooltip={
                                             <Trans
-                                                i18nKey="cluster:integration.modal.noCredentials"
+                                                i18nKey="cluster:template.modal.noCredentials"
                                                 components={{ bold: <strong /> }}
                                             />
                                         }
@@ -103,22 +102,22 @@ function IntegrationTable() {
                                         onClick={() => {
                                             setDropdownModalProps({
                                                 open: true,
-                                                title: t('integration.modal.linkProvider.title'),
-                                                action: t('integration.modal.linkProvider.submit'),
-                                                processing: t('integration.modal.linkProvider.submitting'),
+                                                title: t('template.modal.linkProvider.title'),
+                                                action: t('template.modal.linkProvider.submit'),
+                                                processing: t('template.modal.linkProvider.submitting'),
                                                 resource: clusterCurator,
-                                                description: t('integration.modal.linkProvider.message'),
+                                                description: t('template.modal.linkProvider.message'),
                                                 actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
                                                 isDanger: false,
                                                 selectOptions: ansibleCredentials,
-                                                selectLabel: t('integration.modal.linkProvider.label'),
-                                                selectPlaceholder: t('integration.modal.linkProvider.placeholder'),
+                                                selectLabel: t('template.modal.linkProvider.label'),
+                                                selectPlaceholder: t('template.modal.linkProvider.placeholder'),
                                                 confirmText: 'Link',
                                             })
                                         }}
                                     >
-                                        {t('integration.link')}
+                                        {t('template.link')}
                                     </AcmButton>
                                 )
                             } else return clusterCurator.spec.install.towerAuthSecret
@@ -146,25 +145,25 @@ function IntegrationTable() {
                 rowActions={[
                     {
                         id: 'edit-template',
-                        title: t('integration.edit'),
+                        title: t('template.edit'),
                         click: () => {
                             // history.push(NavigationPath.addIntegration)
                         },
                     },
                     {
                         id: 'delete',
-                        title: t('integration.delete'),
+                        title: t('template.delete'),
                         click: (curator) => {
                             setBulkModalProps({
                                 open: true,
-                                title: t('integration.modal.delete.title'),
+                                title: t('template.modal.delete.title'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [curator],
                                 description: curator.spec?.install?.towerAuthSecret ? (
                                     <div>
                                         <Trans
-                                            i18nKey="cluster:integration.modal.delete.message.linked"
+                                            i18nKey="cluster:template.modal.delete.message.linked"
                                             values={{
                                                 curatorTemplate: curator.metadata.name as string,
                                                 ansibleCredential: curator.spec.install.towerAuthSecret as string,
@@ -173,7 +172,7 @@ function IntegrationTable() {
                                         />
                                     </div>
                                 ) : (
-                                    t('integration.modal.delete.message.noLink')
+                                    t('template.modal.delete.message.noLink')
                                 ),
                                 columns: [
                                     {
@@ -198,15 +197,15 @@ function IntegrationTable() {
                 bulkActions={[
                     {
                         id: 'deleteTemplate',
-                        title: t('bulk.delete.integrations'),
+                        title: t('bulk.delete.templates'),
                         click: (curators: ClusterCurator[]) => {
                             setBulkModalProps({
                                 open: true,
-                                title: t('bulk.delete.integrations'),
+                                title: t('bulk.delete.templates'),
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [...curators],
-                                description: t('bulk.delete.integration.message'),
+                                description: t('bulk.delete.templates.message'),
                                 columns: [
                                     {
                                         header: t('table.name'),
@@ -229,13 +228,13 @@ function IntegrationTable() {
                 ]}
                 emptyState={
                     <AcmEmptyState
-                        title={t('integration.emptyStateHeader')}
-                        message={<Trans i18nKey={t('integration.emptyStateMsg')} components={{ bold: <strong /> }} />}
+                        title={t('template.emptyStateHeader')}
+                        message={<Trans i18nKey={t('template.emptyStateMsg')} components={{ bold: <strong /> }} />}
                         action={
                             <AcmButton
                                 role="link"
                                 onClick={() => {
-                                    // TODO: make sure addIntegration can handle new integrations
+                                    // TODO: make sure addtemplate can handle new integrations
                                     //history.push(NavigationPath.addIntegration)
                                 }}
                                 // disabled={}

@@ -99,7 +99,7 @@ export default function ClusterManagementPage() {
                                 <Link to={NavigationPath.bareMetalAssets}>{t('bma:bmas')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.integrations)}>
-                                <Link to={NavigationPath.integrations}>{t('cluster:integration.title')}</Link>
+                                <Link to={NavigationPath.integrations}>{t('cluster:template.title')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
