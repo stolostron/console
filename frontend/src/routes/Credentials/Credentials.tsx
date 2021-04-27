@@ -115,6 +115,11 @@ export function CredentialsTable(props: {
         return inUse
     }
 
+    function getDiscoveryConfigName(namespace: string) {
+        const discovery = props.discoveryConfigs?.find((config) => config.metadata.namespace === namespace)
+        return discovery?.metadata.name ?? ''
+    }
+
     return (
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
@@ -187,7 +192,7 @@ export function CredentialsTable(props: {
                                         <Link
                                             to={NavigationPath.editDiscoveryConfig
                                                 .replace(':namespace', item.metadata.namespace as string)
-                                                .replace(':name', 'discovery')}
+                                                .replace(':name', getDiscoveryConfigName(item.metadata.namespace!))}
                                         >
                                             {t('credentials.additionalActions.editClusterDiscovery')}
                                         </Link>

@@ -20,12 +20,14 @@ export interface DiscoveredCluster extends IResource {
     kind: DiscoveredClusterKindType
     metadata: V1ObjectMeta
     spec: {
-        activity_timestamp: string
-        cloudProvider: string
+        name: string
         console: string
         creation_timestamp?: string
-        name: string
+        activity_timestamp: string
         openshiftVersion: string
+        cloudProvider: string
+        status: string
+        isManagedCluster?: boolean
         providerConnections?: {
             apiVersion: string
             kind: string
@@ -34,16 +36,12 @@ export interface DiscoveredCluster extends IResource {
             resourceVersion: string
             uid: string
         }[]
-        status: string
     }
 }
 
 export function listDiscoveredClusters() {
-    return listResources<DiscoveredCluster>(
-        {
-            apiVersion: DiscoveredClusterApiVersion,
-            kind: DiscoveredClusterKind,
-        },
-        ['isManagedCluster!=true']
-    ) // do not list discovered clusters that are already managed
+    return listResources<DiscoveredCluster>({
+        apiVersion: DiscoveredClusterApiVersion,
+        kind: DiscoveredClusterKind,
+    })
 }
