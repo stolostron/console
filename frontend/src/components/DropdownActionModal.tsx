@@ -146,7 +146,6 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                                   })
                                                   .then(() => {
                                                       if (error.length === 0) props.close()
-                                                      else console.log('error: ', error)
                                                   })
                                           }
                                       }}

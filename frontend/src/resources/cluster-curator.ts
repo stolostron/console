@@ -84,7 +84,6 @@ export function getTemplateJobsNum(clusterCurator: ClusterCurator) {
 }
 
 export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentialName: string) {
-    console.log('checking template in linking function', template)
     const copy = JSON.parse(JSON.stringify(template)) as ClusterCurator
 
     if (!copy.spec) copy.spec = {}
