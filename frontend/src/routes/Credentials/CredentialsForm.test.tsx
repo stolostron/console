@@ -364,8 +364,8 @@ describe('add credentials page', () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection('ans', {
-            ansibleHost: 'ansibleHost',
-            ansibleToken: 'ansibleToken',
+            host: 'ansibleHost',
+            token: 'ansibleToken',
         })
 
         // Credentials type
@@ -378,8 +378,8 @@ describe('add credentials page', () => {
         await clickByText('Next')
 
         // ans credentials
-        await typeByTestId('ansibleHost', providerConnection.spec?.ansibleHost!)
-        await typeByTestId('ansibleToken', providerConnection.spec?.ansibleToken!)
+        await typeByTestId('ansibleHost', providerConnection.spec?.host!)
+        await typeByTestId('ansibleToken', providerConnection.spec?.token!)
         await clickByText('Next')
 
         // Add Credentials
