@@ -487,7 +487,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
                                 columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
-                                isHorizontal={true}
+                                isHorizontal={false}
                             >
                                 {section.inputs &&
                                     section.inputs.map((input) => {
@@ -550,7 +550,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                                 ? '2Col'
                                                                 : undefined,
                                                     }}
-                                                    isHorizontal={true}
+                                                    isHorizontal={false}
                                                 >
                                                     {group.inputs.map((input) => {
                                                         if (inputHidden(input)) return <Fragment />
