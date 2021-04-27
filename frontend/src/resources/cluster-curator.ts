@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
-import { createResource, listResources, getResource } from '../lib/resource-request'
+import { createResource, listResources, getResource, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 import { IRequestResult } from '../lib/resource-request'
 
@@ -42,7 +42,6 @@ export interface ClusterCurator {
             prehook?: AnsibleJob[]
             posthook?: AnsibleJob[]
         }
-        curatorJob?: string
     }
 }
 
@@ -82,4 +81,22 @@ export function getTemplateJobsNum(clusterCurator: ClusterCurator) {
     if (clusterCurator.spec?.destroy?.posthook) num += clusterCurator.spec?.destroy?.posthook.length
 
     return num
+}
+
+export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentialName: string) {
+    console.log('checking template in linking function', template)
+    const copy = JSON.parse(JSON.stringify(template)) as ClusterCurator
+
+    if (!copy.spec) copy.spec = {}
+    if (!copy.spec.install) copy.spec.install = {}
+    if (!copy.spec.upgrade) copy.spec.upgrade = {}
+    if (!copy.spec.scale) copy.spec.scale = {}
+    if (!copy.spec.destroy) copy.spec.destroy = {}
+
+    if (!copy.spec.install.towerAuthSecret) copy.spec.install.towerAuthSecret = ansibleCredentialName
+    if (!copy.spec.upgrade.towerAuthSecret) copy.spec.upgrade.towerAuthSecret = ansibleCredentialName
+    if (!copy.spec.scale.towerAuthSecret) copy.spec.scale.towerAuthSecret = ansibleCredentialName
+    if (!copy.spec.destroy.towerAuthSecret) copy.spec.destroy.towerAuthSecret = ansibleCredentialName
+
+    return replaceResource<ClusterCurator>(copy)
 }

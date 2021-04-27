@@ -21,9 +21,9 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { Secret, SecretKind } from './resources/secret'
+import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -40,6 +40,7 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clustercurators', default: [] })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
@@ -88,6 +89,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setSecrets] = useRecoilState(secretsState)
+    const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -110,6 +112,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [SecretKind]: setSecrets,
+        [ClusterCuratorKind]: setClusterCurators,
     }
 
     useEffect(() => {
