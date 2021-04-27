@@ -47,17 +47,11 @@ interface ItemError<T> {
 
 export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProps<T> | { open: false }) {
     const { t } = useTranslation(['common'])
-    const [progress, setProgress] = useState(0)
-    const [progressCount, setProgressCount] = useState(0)
-    const [, setConfirm] = useState('')
     const [error, setError] = useState<ItemError<T> | undefined>()
     const [selection, setSelection] = useState<string | undefined>('')
 
     useEffect(() => {
-        setConfirm('')
         setError(undefined)
-        setProgress(0)
-        setProgressCount(1)
     }, [props.open])
 
     if (props.open === false) {
@@ -88,18 +82,6 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                     </SelectOption>
                                 ))}
                             </AcmSelect>
-                            <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                                {progress > 0 ? (
-                                    <Progress
-                                        value={(progress * 100) / progressCount}
-                                        measureLocation={
-                                            progress ? ProgressMeasureLocation.outside : ProgressMeasureLocation.none
-                                        }
-                                    />
-                                ) : (
-                                    <div style={{ minHeight: '24px' }} />
-                                )}
-                            </div>
                         </Fragment>
                     ) : (
                         <Fragment>
@@ -158,8 +140,4 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
             </AcmModal>
         </AcmFormProvider>
     )
-}
-
-export function errorIsNot(codes: ResourceErrorCode[]) {
-    return (error: Error) => error instanceof ResourceError && !codes.includes(error.code)
 }
