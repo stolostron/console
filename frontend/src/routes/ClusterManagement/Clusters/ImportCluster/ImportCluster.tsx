@@ -39,37 +39,40 @@ import { createResource, ResourceError, ResourceErrorCode } from '../../../../li
 import { NavigationPath } from '../../../../NavigationPath'
 import { createKlusterletAddonConfig } from '../../../../resources/klusterlet-add-on-config'
 import { createManagedCluster } from '../../../../resources/managed-cluster'
-import { createProject } from '../../../../resources/project'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-import { IResource } from '../../../../resources/resource'
-import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { createProject } from '../../../../resources/project'
+import { IResource } from '../../../../resources/resource'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
+import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     return (
-        <AcmPage>
-            <AcmPageHeader
-                title={t('page.header.import-cluster')}
-                breadcrumb={[
-                    { text: t('clusters'), to: NavigationPath.clusters },
-                    { text: t('page.header.import-cluster'), to: '' },
-                ]}
-                titleTooltip={
-                    <>
-                        {t('page.header.import-cluster.tooltip')}
-                        <a
-                            href={DOC_LINKS.IMPORT_CLUSTER}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'block', marginTop: '4px' }}
-                        >
-                            {t('common:learn.more')}
-                        </a>
-                    </>
-                }
-            />
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={t('page.header.import-cluster')}
+                    breadcrumb={[
+                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('page.header.import-cluster'), to: '' },
+                    ]}
+                    titleTooltip={
+                        <>
+                            {t('page.header.import-cluster.tooltip')}
+                            <a
+                                href={DOC_LINKS.IMPORT_CLUSTER}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
+                />
+            }
+        >
             <AcmPageContent id="import-cluster">
                 <PageSection>
                     <Card isLarge>

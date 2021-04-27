@@ -17,22 +17,22 @@ import {
 import {
     ActionGroup,
     ButtonVariant,
+    Divider,
     PageSection,
     SelectOption,
     Text,
     TextVariants,
-    Divider,
 } from '@patternfly/react-core'
-import { deleteResource } from '../../../lib/resource-request'
 import { useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState } from '../../../atoms'
-import { ErrorPage } from '../../../components/ErrorPage'
-import { NavigationPath } from '../../../NavigationPath'
-import { getErrorInfo } from '../../../components/ErrorPage'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
+import discoveryVersions from '../../../components/discoveryVersions.json'
+import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
+import { deleteResource } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
@@ -42,29 +42,31 @@ import {
     replaceDiscoveryConfig,
 } from '../../../resources/discovery-config'
 import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
-import discoveryVersions from '../../../components/discoveryVersions.json'
 
 export default function DiscoveryConfigPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { t } = useTranslation(['discovery'])
     return (
-        <AcmPage>
-            {match?.params.namespace ? (
-                <AcmPageHeader
-                    title={t('editDiscoveryConfig.title')}
-                    breadcrumb={[
-                        { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                        { text: t('editDiscoveryConfig.title'), to: '' },
-                    ]}
-                />
-            ) : (
-                <AcmPageHeader
-                    title={t('addDiscoveryConfig.title')}
-                    breadcrumb={[
-                        { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                        { text: t('addDiscoveryConfig.title'), to: '' },
-                    ]}
-                />
-            )}
+        <AcmPage
+            header={
+                match?.params.namespace ? (
+                    <AcmPageHeader
+                        title={t('editDiscoveryConfig.title')}
+                        breadcrumb={[
+                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('editDiscoveryConfig.title'), to: '' },
+                        ]}
+                    />
+                ) : (
+                    <AcmPageHeader
+                        title={t('addDiscoveryConfig.title')}
+                        breadcrumb={[
+                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('addDiscoveryConfig.title'), to: '' },
+                        ]}
+                    />
+                )
+            }
+        >
             <AcmPageContent id="discoveryConfig">
                 <PageSection variant="light" isFilled>
                     <AddDiscoveryConfigData namespace={match?.params.namespace} name={match?.params.name} />

@@ -54,8 +54,9 @@ export default function ClusterManagementPage() {
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
     return (
-        <AcmPage hasDrawer>
-            <PageContext.Provider value={{ actions, setActions }}>
+        <AcmPage
+            hasDrawer
+            header={
                 <AcmPageHeader
                     title={t('page.header.cluster-management')}
                     titleTooltip={
@@ -100,7 +101,9 @@ export default function ClusterManagementPage() {
                     }
                     actions={actions}
                 />
-
+            }
+        >
+            <PageContext.Provider value={{ actions, setActions }}>
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
