@@ -28,17 +28,17 @@ import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
 import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
-export interface IDropdownActionModelProps {
+export interface IDropdownActionModalProps<T = undefined> {
     open: true
     action: string
     title: string
     processing: string
     selectOptions: Array<string>
-    //resources: Array<T>
+    resource: T
     close: () => void
     onCancel?: () => void
     description: string | React.ReactNode
-    actionFn?: (item: string) => IRequestResult
+    actionFn?: (item: T, selection: string) => IRequestResult
     //preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
@@ -53,13 +53,13 @@ interface ItemError<T> {
     error: Error
 }
 
-export function DropdownActionModel<T = unknown>(props: IDropdownActionModelProps | { open: false }) {
+export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProps<T> | { open: false }) {
     const { t } = useTranslation(['common'])
     const [progress, setProgress] = useState(0)
     const [progressCount, setProgressCount] = useState(0)
     const [confirm, setConfirm] = useState('')
     const [errors, setErrors] = useState<ItemError<T>[] | undefined>()
-    const [selection, setSelection] = useState<string | undefined>()
+    const [selection, setSelection] = useState<string | undefined>('')
 
     useEffect(() => {
         setConfirm('')
@@ -137,50 +137,25 @@ export function DropdownActionModel<T = unknown>(props: IDropdownActionModelProp
                                   <AcmSubmit
                                       key="submit-action"
                                       id="submit-button"
-                                      isDisabled={
-                                          !props.selectOptions?.length ||
-                                          (props.confirmText !== undefined && confirm !== props.confirmText)
-                                      }
+                                      isDisabled={!selection}
                                       variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                       onClick={async () => {
                                           const errors: ItemError<T>[] = []
-                                          //   if (props.preActionFn) {
-                                          //       props.preActionFn(props.resources, errors)
-                                          //   }
-                                          //   if (errors.length === 0) {
-                                          //       setProgressCount(props.resources.length)
-                                          //       const requestResult = resultsSettled(
-                                          //           props.resources.map((resource) => {
-                                          //               const r = props.actionFn(resource)
-                                          //               return {
-                                          //                   promise: r.promise.finally(() =>
-                                          //                       setProgress((progress) => progress + 1)
-                                          //                   ),
-                                          //                   abort: r.abort,
-                                          //               }
-                                          //           })
-                                          //       )
-                                          //   const promiseResults = await requestResult.promise
-                                          //   promiseResults.forEach((promiseResult, index) => {
-                                          //       if (promiseResult.status === 'rejected') {
-                                          //           let validError = true
-                                          //           if (props.isValidError) {
-                                          //               validError = props.isValidError(promiseResult.reason)
-                                          //           }
-                                          //           if (validError) {
-                                          //               errors.push({
-                                          //                   item: props.resources[index],
-                                          //                   error: promiseResult.reason,
-                                          //               })
-                                          //           }
-                                          //       }
-                                          //   })
-                                          // }
-                                          //   await new Promise((resolve) => setTimeout(resolve, 500))
-                                          //   setErrors(errors)
-                                          //   if (errors.length === 0) {
-                                          //       props.close()
-                                          //   }
+
+                                          if (props.actionFn) {
+                                              console.log('running actionFn')
+                                              console.log('checking props.reso: ', props.resource)
+                                              props
+                                                  .actionFn(props.resource, selection as string)
+                                                  .promise.catch((err) => {
+                                                      console.log('caught err: ', err)
+                                                      setErrors([err])
+                                                  })
+                                                  .then(() => {
+                                                      if (!errors) props.close()
+                                                      else console.log('error: ', errors)
+                                                  })
+                                          }
                                       }}
                                       label={props.action}
                                       processingLabel={props.processing}

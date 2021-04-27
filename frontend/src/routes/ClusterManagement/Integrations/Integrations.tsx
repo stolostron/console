@@ -8,58 +8,76 @@ import {
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { PageSection, Button } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { mapProps, TableGridBreakpoint } from '@patternfly/react-table'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState, secretsState } from '../../../atoms'
 import { errorIsNot, BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { deleteResource } from '../../../lib/resource-request'
-// import { NavigationPath } from '../../../NavigationPath'
+import { deleteResource, replaceResource } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerSecret, filterForAnsibleSecrets } from '../../../resources/ansible-tower-secret'
-import { ClusterCurator, filterForTemplatedCurators, getTemplateJobsNum } from '../../../resources/cluster-curator'
-import { DropdownActionModel, IDropdownActionModelProps } from '../../../components/DropdownActionModal'
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    filterForTemplatedCurators,
+    getTemplateJobsNum,
+    LinkAnsibleCredential,
+} from '../../../resources/cluster-curator'
+import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { filterForProviderSecrets } from '../../../resources/provider-connection'
+import { Resource } from 'i18next'
+import { IResource } from '../../../resources/resource'
+import { Secret } from '../../../resources/secret'
 
 export default function IntegrationsPage() {
     const alertContext = useContext(AcmAlertContext)
+    const [secrets] = useRecoilState(secretsState)
+    const [clusterCurators] = useRecoilState(clusterCuratorsState)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <IntegrationTable></IntegrationTable>
+                <IntegrationTable secrets={secrets} clusterCurators={clusterCurators}></IntegrationTable>
             </PageSection>
         </AcmPageContent>
     )
 }
 
-function IntegrationTable() {
+function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCurator[] }) {
     // Load Data
-    const [secrets] = useRecoilState(secretsState)
+    const { secrets, clusterCurators } = props
+    console.log('checking secrets: ', secrets)
     const ansibleSecrets = filterForAnsibleSecrets(secrets)
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
-    const [templatedCurators] = useState(filterForTemplatedCurators(clusterCurators))
-    const providers = filterForProviderSecrets(secrets)
+    const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
         open: false,
     })
 
-    const [dropdownModalProps, setDropdownModalProps] = useState<IDropdownActionModelProps | { open: false }>({
+    const [dropdownModalProps, setDropdownModalProps] = useState<
+        IDropdownActionModalProps<ClusterCurator> | { open: false }
+    >({
         open: false,
     })
     const { t } = useTranslation(['cluster'])
 
     const history = useHistory()
 
+    const actionFn = (curatorTemplate: ClusterCurator, ansibleCredentialName: string) => {
+        console.log('in actionFn')
+        return LinkAnsibleCredential(curatorTemplate as ClusterCurator, ansibleCredentialName)
+    }
+
     // Set table
     return (
         <Fragment>
             <BulkActionModel<ClusterCurator> {...bulkModalProps} />
-            <DropdownActionModel {...dropdownModalProps} />
+            <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
             <AcmTable<ClusterCurator>
                 gridBreakPoint={TableGridBreakpoint.none}
                 plural="integrations"
@@ -77,7 +95,8 @@ function IntegrationTable() {
                         header: t('table.linkedCred'),
                         cell: (clusterCurator) => {
                             if (clusterCurator.spec?.install?.towerAuthSecret === undefined) {
-                                //Connect to model
+                                //Connect to Modal
+                                console.log('checking table curator template', clusterCurator)
                                 return (
                                     <Button
                                         isInline
@@ -86,16 +105,16 @@ function IntegrationTable() {
                                         onClick={() => {
                                             setDropdownModalProps({
                                                 open: true,
-                                                title: t('integration.modal.delete.title'),
-                                                action: t('common:delete'),
-                                                processing: t('common:deleting'),
-                                                // resources: [clusterCurator],
-                                                description: t('integration.modal.delete.message'),
-                                                // actionFn: deleteResource,
+                                                title: t('integration.modal.linkProvider.title'),
+                                                action: t('integration.modal.linkProvider.submit'),
+                                                processing: t('integration.modal.linkProvider.submitting'),
+                                                resource: clusterCurator,
+                                                description: t('integration.modal.linkProvider.message'),
+                                                actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
-                                                isDanger: true,
-                                                selectOptions: providers.map(
-                                                    (provider) => provider.metadata.name as string
+                                                isDanger: false,
+                                                selectOptions: ansibleSecrets.map(
+                                                    (secret) => secret.metadata.name as string
                                                 ),
                                                 selectLabel: t('integration.modal.linkProvider.label'),
                                                 selectPlaceholder: t('integration.modal.linkProvider.placeholder'),
@@ -106,8 +125,7 @@ function IntegrationTable() {
                                         {t('integration.link')}
                                     </Button>
                                 )
-                            }
-                            return ''
+                            } else return clusterCurator.spec.install.towerAuthSecret
                         },
                     },
                     {
@@ -118,7 +136,6 @@ function IntegrationTable() {
                     },
                 ]}
                 keyFn={(clusterCurator: ClusterCurator) => {
-                    console.log('uid: ', clusterCurator.metadata.uid as string)
                     return clusterCurator.metadata.uid as string
                 }}
                 tableActions={[
