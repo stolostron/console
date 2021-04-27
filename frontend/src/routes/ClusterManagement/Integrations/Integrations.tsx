@@ -7,53 +7,49 @@ import {
     AcmPageContent,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { PageSection, Button } from '@patternfly/react-core'
-import { mapProps, TableGridBreakpoint } from '@patternfly/react-table'
+import { PageSection } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState, secretsState } from '../../../atoms'
-import { errorIsNot, BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { deleteResource, replaceResource } from '../../../lib/resource-request'
-import { NavigationPath } from '../../../NavigationPath'
-import { AnsibleTowerSecret, filterForAnsibleSecrets } from '../../../resources/ansible-tower-secret'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
+import { deleteResource } from '../../../lib/resource-request'
 import {
     ClusterCurator,
-    ClusterCuratorApiVersion,
-    ClusterCuratorKind,
     filterForTemplatedCurators,
     getTemplateJobsNum,
     LinkAnsibleCredential,
 } from '../../../resources/cluster-curator'
-import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
-import { filterForProviderSecrets } from '../../../resources/provider-connection'
-import { Resource } from 'i18next'
-import { IResource } from '../../../resources/resource'
-import { Secret } from '../../../resources/secret'
+import { unpackProviderConnection } from '../../../resources/provider-connection'
 
 export default function IntegrationsPage() {
     const alertContext = useContext(AcmAlertContext)
-    const [secrets] = useRecoilState(secretsState)
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     return (
         <AcmPageContent id="clusters">
             <PageSection variant="light" isFilled={true}>
-                <IntegrationTable secrets={secrets} clusterCurators={clusterCurators}></IntegrationTable>
+                <IntegrationTable></IntegrationTable>
             </PageSection>
         </AcmPageContent>
     )
 }
 
-function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCurator[] }) {
+function IntegrationTable() {
     // Load Data
-    const { secrets, clusterCurators } = props
-    console.log('checking secrets: ', secrets)
-    const ansibleSecrets = filterForAnsibleSecrets(secrets)
+    const [secrets] = useRecoilState(secretsState)
+    const [clusterCurators] = useRecoilState(clusterCuratorsState)
+    const providerConnections = secrets.map(unpackProviderConnection)
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
+    const ansibleCredentials = providerConnections.map((providerConnection) => {
+        if (providerConnection.spec?.ansibleHost) {
+            return providerConnection.metadata.name as string
+        } else return ''
+    })
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
         open: false,
@@ -64,7 +60,7 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
     >({
         open: false,
     })
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
 
     const history = useHistory()
 
@@ -98,10 +94,17 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
                                 //Connect to Modal
                                 console.log('checking table curator template', clusterCurator)
                                 return (
-                                    <Button
+                                    <AcmButton
                                         isInline
                                         variant="link"
                                         isSmall
+                                        tooltip={
+                                            <Trans
+                                                i18nKey="cluster:integration.modal.noCredentials"
+                                                components={{ bold: <strong /> }}
+                                            />
+                                        }
+                                        isDisabled={ansibleCredentials.length === 0}
                                         onClick={() => {
                                             setDropdownModalProps({
                                                 open: true,
@@ -113,9 +116,7 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
                                                 actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
                                                 isDanger: false,
-                                                selectOptions: ansibleSecrets.map(
-                                                    (secret) => secret.metadata.name as string
-                                                ),
+                                                selectOptions: ansibleCredentials,
                                                 selectLabel: t('integration.modal.linkProvider.label'),
                                                 selectPlaceholder: t('integration.modal.linkProvider.placeholder'),
                                                 confirmText: 'Link',
@@ -123,7 +124,7 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
                                         }}
                                     >
                                         {t('integration.link')}
-                                    </Button>
+                                    </AcmButton>
                                 )
                             } else return clusterCurator.spec.install.towerAuthSecret
                         },
@@ -165,7 +166,52 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
                                 action: t('common:delete'),
                                 processing: t('common:deleting'),
                                 resources: [curator],
-                                description: t('integration.modal.delete.message'),
+                                description: curator.spec?.install?.towerAuthSecret ? (
+                                    <div>
+                                        <Trans
+                                            i18nKey="cluster:integration.modal.delete.message.linked"
+                                            values={{
+                                                curatorTemplate: curator.metadata.name as string,
+                                                ansibleCredential: curator.spec.install.towerAuthSecret as string,
+                                            }}
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    </div>
+                                ) : (
+                                    t('integration.modal.delete.message.noLink')
+                                ),
+                                columns: [
+                                    {
+                                        header: t('table.name'),
+                                        cell: 'metadata.name',
+                                        sort: 'metadata.name',
+                                    },
+                                    {
+                                        header: t('table.namespace'),
+                                        cell: 'metadata.namespace',
+                                        sort: 'metadata.namespace',
+                                    },
+                                ],
+                                keyFn: (curator: ClusterCurator) => curator.metadata.uid as string,
+                                actionFn: deleteResource,
+                                close: () => setBulkModalProps({ open: false }),
+                                isDanger: true,
+                            })
+                        },
+                    },
+                ]}
+                bulkActions={[
+                    {
+                        id: 'deleteTemplate',
+                        title: t('bulk.delete.integrations'),
+                        click: (curators: ClusterCurator[]) => {
+                            setBulkModalProps({
+                                open: true,
+                                title: t('bulk.delete.integrations'),
+                                action: t('common:delete'),
+                                processing: t('common:deleting'),
+                                resources: [...curators],
+                                description: t('bulk.delete.integration.message'),
                                 columns: [
                                     {
                                         header: t('table.name'),
@@ -189,12 +235,7 @@ function IntegrationTable(props: { secrets: Secret[]; clusterCurators: ClusterCu
                 emptyState={
                     <AcmEmptyState
                         title={t('integration.emptyStateHeader')}
-                        message={
-                            <Trans
-                                i18nKey={t('integration.emptyStateMsg')}
-                                components={{ bold: <strong />, p: <p /> }}
-                            />
-                        }
+                        message={<Trans i18nKey={t('integration.emptyStateMsg')} components={{ bold: <strong /> }} />}
                         action={
                             <AcmButton
                                 role="link"

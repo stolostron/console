@@ -39,7 +39,6 @@ export interface IDropdownActionModalProps<T = undefined> {
     onCancel?: () => void
     description: string | React.ReactNode
     actionFn?: (item: T, selection: string) => IRequestResult
-    //preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
     emptyState?: JSX.Element
@@ -58,12 +57,12 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
     const [progress, setProgress] = useState(0)
     const [progressCount, setProgressCount] = useState(0)
     const [confirm, setConfirm] = useState('')
-    const [errors, setErrors] = useState<ItemError<T>[] | undefined>()
+    const [error, setError] = useState<ItemError<T> | undefined>()
     const [selection, setSelection] = useState<string | undefined>('')
 
     useEffect(() => {
         setConfirm('')
-        setErrors(undefined)
+        setError(undefined)
         setProgress(0)
         setProgressCount(1)
     }, [props.open])
@@ -72,22 +71,11 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
         return <></>
     }
 
-    function getItemError(item: T) {
-        if (errors) {
-            for (const error of errors) {
-                if (error.item === item) {
-                    return getErrorInfo(error.error)
-                }
-            }
-        }
-        return undefined
-    }
-
     return (
         <AcmFormProvider>
             <AcmModal variant={ModalVariant.medium} title={props.title} isOpen={true} onClose={props.close}>
                 <AcmForm style={{ gap: 0 }}>
-                    {!errors ? (
+                    {!error ? (
                         <Fragment>
                             {props.description}
                             <AcmSelect
@@ -122,12 +110,18 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                         </Fragment>
                     ) : (
                         <Fragment>
-                            <AcmAlert isInline noClose variant="danger" title={t('common:there.were.errors')} />
+                            <AcmAlert
+                                isInline
+                                noClose
+                                variant="danger"
+                                title={t('common:there.were.errors')}
+                                message={error.error.message}
+                            />
                             <div style={{ minHeight: '24px' }} />
                         </Fragment>
                     )}
                     <ActionGroup>
-                        {errors
+                        {error
                             ? [
                                   <Button variant="primary" key="close-action" onClick={props.close}>
                                       {t('common:close')}
@@ -140,20 +134,19 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                       isDisabled={!selection}
                                       variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                       onClick={async () => {
-                                          const errors: ItemError<T>[] = []
+                                          const error: ItemError<T>[] = []
 
                                           if (props.actionFn) {
-                                              console.log('running actionFn')
-                                              console.log('checking props.reso: ', props.resource)
                                               props
                                                   .actionFn(props.resource, selection as string)
                                                   .promise.catch((err) => {
-                                                      console.log('caught err: ', err)
-                                                      setErrors([err])
+                                                      console.log(err)
+                                                      setError(err)
+                                                      error.push(err)
                                                   })
                                                   .then(() => {
-                                                      if (!errors) props.close()
-                                                      else console.log('error: ', errors)
+                                                      if (error.length === 0) props.close()
+                                                      else console.log('error: ', error)
                                                   })
                                           }
                                       }}
