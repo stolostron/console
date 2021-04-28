@@ -22,7 +22,7 @@ import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } fr
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation, TFunction } from 'react-i18next'
-import { PolicyReport } from '../../../../resources/policy-report'
+import { PolicyReport, PolicyReportResults } from '../../../../resources/policy-report'
 
 const useStyles = makeStyles({
     body: {
@@ -82,8 +82,8 @@ function formatText(text: string) {
     })
 }
 
-function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
-    const clusterRiskScores = data.map((issue) => issue.results[0].properties.total_risk)
+function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
+    const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {
             key: t('policy.report.critical'),
@@ -135,7 +135,7 @@ function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
                 right: 145,
                 top: 20,
             }}
-            title={`${data.length}`}
+            title={`${data.results.length}`}
             subTitle={t('policy.report.flyout.donut.chart.text')}
             width={400}
             height={200}
@@ -146,15 +146,15 @@ function renderDonutChart(data: PolicyReport[], t: TFunction<string[]>) {
 
 function DetailsView(props: {
     setDetailsView: React.Dispatch<React.SetStateAction<boolean>>
-    selectedPolicy: PolicyReport | undefined
+    selectedReport: PolicyReportResults | undefined
 }) {
-    const { setDetailsView, selectedPolicy } = props
+    const { setDetailsView, selectedReport } = props
     const { t } = useTranslation(['cluster'])
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
     function riskLevel() {
-        const riskScore = _.get(selectedPolicy, 'results[0].properties.total_risk')
+        const riskScore = _.get(selectedReport, 'properties.total_risk')
         let totalRisk, riskIcon
 
         const riskComponent = (totalRisk: string, riskIcon: any) => {
@@ -212,15 +212,16 @@ function DetailsView(props: {
     }
 
     function categories() {
-        const categories = _.get(selectedPolicy, 'results[0].category', '')
+        const categories = _.get(selectedReport, 'category', '')
         if (categories && categories !== '') {
-            const categoriesToHide = categories.slice(1)
+            const categoriesToHide = categories.split(',').slice(1)
             return <AcmLabels labels={categories.split(',')} collapse={categoriesToHide} />
         }
+        return <AcmLabels labels={[]} />
     }
 
     function matchedDate() {
-        const d = new Date(_.get(selectedPolicy, 'results[0].properties.created_at', '')).toDateString()
+        const d = new Date(_.get(selectedReport, 'properties.created_at', '')).toDateString()
         return d
     }
 
@@ -237,8 +238,8 @@ function DetailsView(props: {
                 </FlexItem>
             </Flex>
             <TextContent className={classes.titleText}>
-                <Text component={TextVariants.h2}>{_.get(selectedPolicy, 'results[0].message', '')}</Text>
-                <Text component={TextVariants.h4}>{_.get(selectedPolicy, 'results[0].properties.details', '')}</Text>
+                <Text component={TextVariants.h2}>{_.get(selectedReport, 'message', '')}</Text>
+                <Text component={TextVariants.h4}>{_.get(selectedReport, 'properties.details', '')}</Text>
             </TextContent>
             <Grid className={classes.subDetailComponents} hasGutter>
                 <GridItem span={5}>
@@ -287,12 +288,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Text>{formatText(_.get(selectedPolicy, 'results[0].properties.resolution', ''))}</Text>
+                        <Text>{formatText(_.get(selectedReport, 'properties.resolution', ''))}</Text>
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Text>{formatText(_.get(selectedPolicy, 'results[0].properties.reason', ''))}</Text>
+                        <Text>{formatText(_.get(selectedReport, 'properties.reason', ''))}</Text>
                     </TextContent>
                 </Tab>
             </Tabs>
@@ -300,58 +301,59 @@ function DetailsView(props: {
     )
 }
 
-export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
+export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const classes = useStyles()
     const { t } = useTranslation(['cluster'])
     const [detailsView, setDetailsView] = useState<boolean>(false)
-    const [selectedPolicy, setSelectedPolicy] = useState<PolicyReport>()
+    const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
 
     return detailsView ? (
-        <DetailsView setDetailsView={setDetailsView} selectedPolicy={selectedPolicy} />
+        <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
     ) : (
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
-                <Text component={TextVariants.h2}>{t('policy.report.flyout.title', { count: props.data.length })}</Text>
+                <Text component={TextVariants.h2}>
+                    {t('policy.report.flyout.title', { count: props.data.results.length })}
+                </Text>
                 <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
             </TextContent>
             <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
             <TextContent className={classes.tableTitle}>
                 <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
             </TextContent>
-            <AcmTable<PolicyReport>
+            <AcmTable<PolicyReportResults>
                 plural="Recommendations"
-                items={props.data}
+                items={props.data.results}
                 columns={[
                     {
                         header: t('policy.report.table.description'),
-                        search: (policyReport) => policyReport.results[0].message,
-                        sort: (a: PolicyReport, b: PolicyReport) =>
-                            compareStrings(a.results[0].message, b.results[0].message),
-                        cell: (item: PolicyReport) => (
+                        search: (report) => report.message,
+                        sort: (a: PolicyReportResults, b: PolicyReportResults) => compareStrings(a.message, b.message),
+                        cell: (item: PolicyReportResults) => (
                             <Button
                                 variant="link"
                                 onClick={() => {
                                     setDetailsView(true)
-                                    setSelectedPolicy(item)
+                                    setSelectedReport(item)
                                 }}
                                 isInline
                                 component="span"
                             >
-                                {item.results[0].message}
+                                {item.message}
                             </Button>
                         ),
                     },
                     {
                         header: t('policy.report.table.category'),
                         search: (policyReport) => {
-                            if (policyReport.results[0].category && policyReport.results[0].category !== '') {
-                                return policyReport.results[0].category.split(',')
+                            if (policyReport.category && policyReport.category !== '') {
+                                return policyReport.category.split(',')
                             }
                             return ''
                         },
-                        cell: (item: PolicyReport) => {
-                            if (item.results[0].category && item.results[0].category !== '') {
-                                const categories = item.results[0].category.split(',')
+                        cell: (item: PolicyReportResults) => {
+                            if (item.category && item.category !== '') {
+                                const categories = item.category.split(',')
                                 const categoriesToHide = categories.slice(1)
                                 return <AcmLabels labels={categories} collapse={categoriesToHide} />
                             }
@@ -360,13 +362,13 @@ export function ClusterPolicySidebar(props: { data: PolicyReport[] }) {
                     },
                     {
                         header: t('policy.report.table.totalRisk'),
-                        search: (policyReport) => policyReport.results[0].properties.total_risk,
-                        sort: (a: PolicyReport, b: PolicyReport) =>
-                            compareStrings(a.results[0].properties.total_risk, b.results[0].properties.total_risk),
-                        cell: (item: PolicyReport) => item.results[0].properties.total_risk,
+                        search: (policyReport) => policyReport.properties.total_risk,
+                        sort: (a: PolicyReportResults, b: PolicyReportResults) =>
+                            compareStrings(a.properties.total_risk, b.properties.total_risk),
+                        cell: (item: PolicyReportResults) => item.properties.total_risk,
                     },
                 ]}
-                keyFn={(item: any) => item.metadata.uid}
+                keyFn={(item: any) => item.policy}
                 tableActions={[]}
                 bulkActions={[]}
                 rowActions={[]}

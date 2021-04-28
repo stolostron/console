@@ -21,6 +21,8 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
+import { PolicyReport, PolicyReportKind } from './resources/policy-report'
+
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { Secret, SecretKind } from './resources/secret'
 import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
@@ -53,6 +55,7 @@ export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managed
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
+export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
@@ -90,6 +93,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
+    const [, setPolicyReports] = useRecoilState(policyreportState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -113,6 +117,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [NamespaceKind]: setNamespaces,
         [SecretKind]: setSecrets,
         [ClusterCuratorKind]: setClusterCurators,
+        [PolicyReportKind]: setPolicyReports,
     }
 
     useEffect(() => {
