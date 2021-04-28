@@ -104,7 +104,7 @@ export async function createCluster(resources: any[]) {
     if (errors.length === 0 && replaces.length > 0) {
         results = replaces.map((resource) => replaceResource(resource))
         response = await Promise.allSettled(results.map((result: any) => result.promise))
-        response.forEach((result, inx) => {
+        response.forEach((result) => {
             if (result.status === 'rejected') {
                 errors.push({ message: result.reason.message })
             }
@@ -115,7 +115,7 @@ export async function createCluster(resources: any[]) {
     if (errors.length === 0 && clusterResources.length > 0) {
         results = clusterResources.map((resource: any) => createResource(resource))
         response = await Promise.allSettled(results.map((result) => result.promise))
-        response.forEach((result, inx) => {
+        response.forEach((result) => {
             if (result.status === 'rejected') {
                 errors.push({ message: result.reason.message })
             }

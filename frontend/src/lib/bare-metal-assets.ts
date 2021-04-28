@@ -119,7 +119,7 @@ export async function attachBMAs(
         return patchResource(asset, patch)
     })
     const response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach((result, inx) => {
+    response.forEach((result) => {
         if (result.status === 'rejected') {
             errors.push({ name: 'attachBMA', message: result.reason.message })
         }
@@ -201,7 +201,7 @@ export async function createBMAs(bmas: any[], assets: BareMetalAsset[] = [], err
     const namespaces = Object.keys(keyBy(bmas, 'namespace'))
     results = namespaces.map((namespace) => createProject(namespace))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach((result, inx) => {
+    response.forEach((result) => {
         if (result.status === 'rejected') {
             if (result.reason.code !== 409) {
                 errors.push({ name: 'create BMA namespaces', message: result.reason.message })
@@ -212,14 +212,14 @@ export async function createBMAs(bmas: any[], assets: BareMetalAsset[] = [], err
     // create the bma and its secret
     results = bmas.map((asset) => createBareMetalAssetSecret(asset))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach((result, inx) => {
+    response.forEach((result) => {
         if (result.status === 'rejected') {
             errors.push({ name: 'create BMA secret', message: result.reason.message })
         }
     })
     results = bmas.map((asset) => createBareMetalAssetResource(asset))
     response = await Promise.allSettled(results.map((result) => result.promise))
-    response.forEach((result, inx) => {
+    response.forEach((result) => {
         if (result.status === 'rejected') {
             errors.push({ name: 'create BMA resource', message: result.reason.message })
         } else {

@@ -228,7 +228,7 @@ function DetailsView(props: {
         <div className={classes.body}>
             <Flex className={classes.backAction}>
                 <FlexItem spacer={{ default: 'spacerSm' }}>
-                    <AngleLeftIcon fill={'var(--pf-global--palette--black-500)'} />
+                    <AngleLeftIcon color={'var(--pf-global--palette--black-500)'} />
                 </FlexItem>
                 <FlexItem>
                     <Button variant="link" isInline component="span" onClick={() => setDetailsView(false)}>
@@ -281,7 +281,7 @@ function DetailsView(props: {
                     {matchedDate()}
                 </GridItem>
             </Grid>
-            <Tabs activeKey={tabState} onSelect={(e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
+            <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
                 <Tab
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}

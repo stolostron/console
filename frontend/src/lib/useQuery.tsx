@@ -48,7 +48,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
                     if (!dataRef.current.ismounted) return
                     if (err instanceof ResourceError) {
                         switch (err.code) {
-                            case ResourceErrorCode.RequestCancelled:
+                            case ResourceErrorCode.RequestAborted:
                                 aborted = true
                                 return
                             case ResourceErrorCode.TooManyRequests:

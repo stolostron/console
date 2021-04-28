@@ -57,7 +57,7 @@ export class ServerSideEvents {
         for (const clientID in this.clients) {
             const compressionStream = this.clients[clientID].compressionStream
             if (compressionStream) compressionStream.end()
-            await new Promise<void>((resolve) => this.clients[clientID].writableStream.end(resolve))
+            await new Promise<void>((resolve) => this.clients[clientID]?.writableStream.end(resolve))
         }
 
         this.clients = {}

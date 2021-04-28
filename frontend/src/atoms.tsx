@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import { AcmRoute } from '@open-cluster-management/ui-components'
@@ -248,5 +248,5 @@ export function LoadData(props: { children?: ReactNode }) {
 
     if (loading) return <LoadingPage />
 
-    return props.children
+    return <Fragment>{props.children}</Fragment>
 }

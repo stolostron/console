@@ -165,11 +165,11 @@ export function nockCreate(resource: IResource, response?: IResource, statusCode
 export function nockIgnoreRBAC() {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .persist()
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body) => true)
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', () => true)
         .optionally()
         .reply(
             201,
-            (uri, requestBody: SelfSubjectAccessReview) => {
+            (_uri, requestBody: SelfSubjectAccessReview) => {
                 return {
                     apiVersion: SelfSubjectAccessReviewApiVersion,
                     kind: SelfSubjectAccessReviewKind,

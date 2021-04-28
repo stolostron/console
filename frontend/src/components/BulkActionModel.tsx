@@ -29,6 +29,7 @@ export interface IBulkActionModelProps<T = undefined> {
     open: true
     action: string
     title: string
+    plural?: string
     processing: string
     resources: Array<T>
     close: () => void
@@ -89,7 +90,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                 <AcmTablePaginationContextProvider localStorageKey="model">
                                     <AcmTable<T>
                                         gridBreakPoint={TableGridBreakpoint.none}
-                                        plural={props.plural}
+                                        plural={props.plural ?? ''}
                                         items={props.resources}
                                         columns={props.columns}
                                         keyFn={props.keyFn}

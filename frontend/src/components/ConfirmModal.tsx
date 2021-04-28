@@ -10,7 +10,7 @@ export interface IConfirmModalProps {
     confirm: () => void
     confirmText?: string
     cancel: () => void
-    title: string | ReactNode
+    title: string
     message: string | ReactNode
     isDanger?: boolean
 }
