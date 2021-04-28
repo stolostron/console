@@ -207,6 +207,7 @@ describe('StatusSummaryCount', () => {
             </MemoryRouter>
         </RecoilRoot>
     )
+
     test('renders', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
         render(<Component />)
