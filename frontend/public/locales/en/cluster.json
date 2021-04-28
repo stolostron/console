@@ -136,6 +136,8 @@
     "table.newReleaseImage": "New release image",
     "table.type": "Type",
     "table.kind": "Kind",
+    "table.claimedBy": "Claimed by",
+    "table.createdBy": "Created by",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
