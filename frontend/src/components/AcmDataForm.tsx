@@ -373,7 +373,7 @@ export function AcmDataFormWizard(props: {
     const Footer = (
         <WizardFooter>
             <WizardContextConsumer>
-                {({ activeStep, goToStepByName, goToStepById, onNext, onBack, onClose }) => {
+                {({ activeStep, onNext, onBack, onClose }) => {
                     setSectionName(activeStep.id as string)
                     const section = formData.sections.find((section) => section.title === activeStep.id)
                     if (section) {

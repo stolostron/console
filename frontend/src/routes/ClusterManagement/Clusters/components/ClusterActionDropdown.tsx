@@ -82,7 +82,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
-            click: (cluster: Cluster) => setShowUpgradeModal(true),
+            click: (_cluster: Cluster) => setShowUpgradeModal(true),
             isDisabled: true,
             rbac: [rbacCreate(ManagedClusterActionDefinition, cluster.namespace)],
         },

@@ -99,10 +99,10 @@ export function ImportClusterPageContent() {
     //    const [Username, setUsername] = useState<string | undefined>()
     //    const [Password, setPassword] = useState<string | undefined>()
     const [importMode, setimportMode] = useState<string | undefined>()
-    const [credentialMode, setcredentialMode] = useState<string | undefined>()
+    // const [credentialMode, setcredentialMode] = useState<string | undefined>()
     const [kubeConfigText, setkubeConfigText] = useState<string | undefined>()
     const [manualButton, setmanualButton] = useState<boolean>(false)
-    const [credentialBool, setcredentialBool] = useState<boolean>(false)
+    const [credentialBool] = useState<boolean>(false)
     const onReset = () => {
         setClusterName('')
         setManagedClusterSet(undefined)
@@ -186,7 +186,7 @@ export function ImportClusterPageContent() {
                         {!manualButton && (
                             <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>
                         )}
-                        {!manualButton && (
+                        {/* {!manualButton && (
                             <AcmSelect
                                 label={t('import.credential.select')}
                                 placeholder={t('import.credential.default')}
@@ -204,15 +204,15 @@ export function ImportClusterPageContent() {
                                             setcredentialBool(false)
                                     }
                                 }}
-                            >
-                                {/* <SelectOption key="credentials" value="credentials">
+                            > */}
+                        {/* <SelectOption key="credentials" value="credentials">
                                 {t('import.credential.choice')}
                             </SelectOption> */}
-                                <SelectOption key="kubeconfig" value="kubeconfig">
+                        {/* <SelectOption key="kubeconfig" value="kubeconfig">
                                     {t('import.config.choice')}
                                 </SelectOption>
                             </AcmSelect>
-                        )}
+                        )} */}
 
                         {/* <AcmTextInput
                         id="username"
@@ -260,7 +260,7 @@ export function ImportClusterPageContent() {
                                     setSubmitted(true)
                                     alertContext.clearAlerts()
                                     /* istanbul ignore next */
-                                    const clusterLabels = {
+                                    const clusterLabels: Record<string, string> = {
                                         cloud: 'auto-detect',
                                         vendor: 'auto-detect',
                                         name: clusterName,

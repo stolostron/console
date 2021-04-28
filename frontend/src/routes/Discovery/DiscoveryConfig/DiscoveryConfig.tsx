@@ -321,7 +321,7 @@ export function DiscoveryConfigPageContent(props: {
                 }}
                 isRequired
             >
-                {lastActive.map((e, i) => (
+                {lastActive.map((e) => (
                     <SelectOption key={e.day} value={e.value}>
                         {e.stringDay}
                     </SelectOption>
