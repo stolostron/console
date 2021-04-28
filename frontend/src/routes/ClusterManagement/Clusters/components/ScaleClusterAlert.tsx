@@ -16,7 +16,7 @@ export function ScaleClusterAlert() {
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
 
     // check for a scaling in progress
-    const workerNodeCount: number | undefined = cluster?.nodes?.nodeList.filter(
+    const workerNodeCount: number | undefined = cluster?.nodes?.nodeList?.filter(
         (node: NodeInfo) => node.labels?.['node-role.kubernetes.io/worker'] !== undefined
     )?.length
     let totalDesiredReplicas = 0
@@ -26,7 +26,7 @@ export function ScaleClusterAlert() {
         }
     })
 
-    if (workerNodeCount !== undefined && workerNodeCount !== totalDesiredReplicas) {
+    if (cluster?.nodes?.nodeList.length !== 0 && workerNodeCount !== totalDesiredReplicas) {
         return (
             <AcmAlert
                 isInline
