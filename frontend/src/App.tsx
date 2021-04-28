@@ -20,10 +20,11 @@ const CreateClusterPoolPage = lazy(
 )
 const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
-const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
+const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
+const AnsibleAutomationsPage = lazy(() => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomations'))
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
@@ -47,6 +48,11 @@ export default function App() {
                                 <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
                                 <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
                                 <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
+                                <Route
+                                    exact
+                                    path={NavigationPath.addAnsibleAutomation}
+                                    component={AnsibleAutomationsPage}
+                                />
                                 <Route
                                     exact
                                     path={NavigationPath.editBareMetalAsset}

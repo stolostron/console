@@ -33,4 +33,7 @@ export enum NavigationPath {
     addDiscoveryConfig = '/multicloud/add-discovery-config',
     editDiscoveryConfig = '/multicloud/discovery-configs/:namespace/:name',
     ansibleAutomations = '/multicloud/ansible-automations',
+    addAnsibleAutomation = '/multicloud/ansible-automations/add',
+    editAnsibleAutomation = '/multicloud/ansible-automations/edit/:namespace/:name',
+    viewAnsibleAutomation = '/multicloud/ansible-automations/view/:namespace/:name',
 }
