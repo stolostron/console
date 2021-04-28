@@ -44,6 +44,7 @@ import {
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
+import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, useState } from 'react'
@@ -291,11 +292,19 @@ export function AcmDataFormWizard(props: {
     const steps: WizardStep[] = formData.sections
         .map((section) => {
             if (sectionHidden(section)) return undefined
-            const color = showFormErrors && sectionHasErrors(section) ? '#A30000' : undefined
-            const fontWeight = color !== undefined ? 'bold' : undefined
+            const hasError = showFormErrors && sectionHasErrors(section)
             return {
                 id: section.title,
-                name: <span style={{ color, fontWeight }}>{section.title}</span>,
+                name: (
+                    <span>
+                        {section.title}
+                        {hasError && (
+                            <span style={{ paddingLeft: '8px' }}>
+                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                            </span>
+                        )}
+                    </span>
+                ),
                 component: (
                     <Form isHorizontal={isHorizontal}>
                         {(showFormErrors || showSectionErrors[sectionName]) &&
