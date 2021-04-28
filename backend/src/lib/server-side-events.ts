@@ -117,11 +117,11 @@ export class ServerSideEvents {
                 if (event) {
                     const eventString = this.createEventString(event)
 
-                    if (client.compressionStream) {
+                    if (client?.compressionStream) {
                         const writeResult = client.compressionStream.write(eventString, 'utf8')
                         if (!writeResult)
                             await new Promise<void>((resolve) => client.compressionStream.once('drain', resolve))
-                    } else {
+                    } else if (client?.writableStream) {
                         const writeResult = client.writableStream.write(eventString, 'utf8')
                         if (!writeResult)
                             await new Promise<void>((resolve) => client.writableStream.once('drain', resolve))
@@ -245,7 +245,7 @@ export class ServerSideEvents {
             [HTTP2_HEADER_CONTENT_ENCODING]: encoding,
         })
         res.on('close', () => {
-            if (this.clients[clientID].writableStream === writableStream) {
+            if (this.clients[clientID]?.writableStream === writableStream) {
                 delete this.clients[clientID]
             }
         })
@@ -281,18 +281,17 @@ export class ServerSideEvents {
 
     private static keepAlivePing(): void {
         for (const clientID in this.clients) {
-            const compressionStream = this.clients[clientID].compressionStream
-            if (compressionStream) {
+            const client = this.clients[clientID]
+            if (client?.compressionStream) {
                 try {
-                    compressionStream.write(':\n\n')
-                    compressionStream.flush()
+                    client.compressionStream.write(':\n\n')
+                    client.compressionStream.flush()
                 } catch (err) {
                     logger.error(err)
                 }
-            } else {
-                const clientStream = this.clients[clientID].writableStream
+            } else if (client?.writableStream) {
                 try {
-                    clientStream.write(':\n\n')
+                    client.writableStream.write(':\n\n')
                 } catch (err) {
                     logger.error(err)
                 }
