@@ -8,18 +8,10 @@ import {
     AcmSelect,
     AcmSubmit,
 } from '@open-cluster-management/ui-components'
-import {
-    ActionGroup,
-    Button,
-    ButtonVariant,
-    ModalVariant,
-    Progress,
-    ProgressMeasureLocation,
-    SelectOption,
-} from '@patternfly/react-core'
+import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IRequestResult, ResourceError, ResourceErrorCode } from '../lib/resource-request'
+import { IRequestResult } from '../lib/resource-request'
 
 export interface IDropdownActionModalProps<T = undefined> {
     open: true
