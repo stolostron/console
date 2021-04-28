@@ -3,10 +3,13 @@
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RecoilRoot } from 'recoil'
+import { policyreportState } from '../../../../atoms'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockSearch, nockNamespacedList } from '../../../../lib/nock-util'
+import { nockSearch } from '../../../../lib/nock-util'
+import { PolicyReport } from '../../../../resources/policy-report'
 
 window.open = jest.fn()
 
@@ -156,87 +159,60 @@ const mockSearchResponse = {
     },
 }
 
-const mockPolicyReportList = {
-    kind: 'PolicyReportList',
-    apiVersion: 'v1',
-    metadata: {},
-    items: [
-        {
-            apiVersion: 'wgpolicyk8s.io/v1alpha2',
-            kind: 'PolicyReport',
-            metadata: {
-                creationTimestamp: '2021-03-06T18:38:14Z',
-                name: 'policyreport testing risk 1 policy',
-                namespace: 'test-cluster',
-                uid: 'uid.report.risk.1',
-            },
-            results: [
-                {
-                    category: 'category,category1,category2',
-                    properties: {
-                        created_at: '2021-03-02T21:26:04Z',
-                        details: 'policyreport testing risk 1 details',
-                        reason: 'policyreport testing risk 1 reason',
-                        resolution: 'policyreport testing risk 1 resolution',
-                        total_risk: '1',
-                    },
-                    message: 'policyreport testing risk 1',
-                    policy: 'policyreport testing risk 1 policy',
-                    result: 'policyreport testing risk 1 result',
-                },
-            ],
+const mockPolicyReports: PolicyReport[] = [
+    {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'PolicyReport',
+        metadata: {
+            name: 'test-cluster',
+            namespace: 'test-cluster',
+            uid: 'uid.report.risk.1',
         },
-        {
-            apiVersion: 'wgpolicyk8s.io/v1alpha2',
-            kind: 'PolicyReport',
-            metadata: {
-                creationTimestamp: '2021-03-06T18:38:14Z',
-                name: 'policyreport testing risk 2 policy',
-                namespace: 'test-cluster',
-                uid: 'uid.report.risk.2',
-            },
-            results: [
-                {
-                    category: 'category,category1,category2',
-                    properties: {
-                        created_at: '2021-03-02T21:26:04Z',
-                        details: 'policyreport testing risk 2 details',
-                        reason: 'policyreport testing risk 2 reason',
-                        resolution: 'policyreport testing risk 2 resolution',
-                        total_risk: '2',
-                    },
-                    message: 'policyreport testing risk 2',
-                    policy: 'policyreport testing risk 2 policy',
-                    result: 'policyreport testing risk 2 result',
+        results: [
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '1',
+                    component: 'rule.id.3',
                 },
-            ],
-        },
-    ],
-}
+                message: 'policyreport testing risk 1',
+                policy: 'policyreport testing risk 1 policy',
+                result: 'policyreport testing risk 1 result',
+            },
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                properties: {
+                    created_at: '2021-04-02T21:26:04Z',
+                    total_risk: '3',
+                    component: 'rule.id.3',
+                },
+                message: 'policyreport testing risk 3',
+                policy: 'policyreport testing risk 3 policy',
+                result: 'policyreport testing risk 3 result',
+            },
+        ],
+    },
+]
 
 describe('StatusSummaryCount', () => {
     const Component = () => (
-        <MemoryRouter>
-            <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-                <StatusSummaryCount />
-            </ClusterContext.Provider>
-        </MemoryRouter>
+        <RecoilRoot initializeState={(snapshot) => snapshot.set(policyreportState, mockPolicyReports)}>
+            <MemoryRouter>
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+                    <StatusSummaryCount />
+                </ClusterContext.Provider>
+            </MemoryRouter>
+        </RecoilRoot>
     )
     test('renders', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
-        const policyReportNock = nockNamespacedList(
-            {
-                apiVersion: 'wgpolicyk8s.io/v1alpha2',
-                kind: 'PolicyReport',
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockPolicyReportList
-        )
         render(<Component />)
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
-            await waitFor(() => expect(policyReportNock.isDone()).toBeTruthy())
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 

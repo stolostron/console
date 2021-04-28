@@ -4,10 +4,11 @@ import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/
 import { useCallback, useContext, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { policyreportState } from '../../../../atoms'
 import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'
 import { NavigationPath } from '../../../../NavigationPath'
-import { listNamespacedPolicyReports } from '../../../../resources/policy-report'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
@@ -18,6 +19,7 @@ const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) 
 }
 
 export function StatusSummaryCount() {
+    const [policyReports] = useRecoilState(policyreportState)
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
@@ -26,18 +28,18 @@ export function StatusSummaryCount() {
     const { data, loading, startPolling } = useQuery(
         useCallback(() => queryStatusCount(cluster?.name!), [cluster?.name])
     )
-    const { data: policyReportData = [] } = useQuery(
-        useCallback(() => listNamespacedPolicyReports(cluster?.namespace!), [cluster?.namespace])
-    )
 
     useEffect(startPolling, [startPolling])
 
-    const policyReportViolationsCount = policyReportData.length
-    const criticalCount = policyReportData.filter((item) => item.results[0].properties.total_risk === '4').length
-    const majorCount = policyReportData.filter((item) => item.results[0].properties.total_risk === '3').length
-    const minorCount = policyReportData.filter((item) => item.results[0].properties.total_risk === '2').length
-    const lowCount = policyReportData.filter((item) => item.results[0].properties.total_risk === '1').length
-    const warningCount = policyReportData.filter((item) => item.results[0].properties.total_risk === '0').length
+    const policyReport = policyReports.filter((pr) => pr.metadata.name === cluster?.name)[0]
+    const policyReportViolationsCount = (policyReport && policyReport.results.length) ?? 0
+    const criticalCount =
+        policyReport && policyReport.results.filter((item) => item.properties.total_risk === '4').length
+    const majorCount = policyReport && policyReport.results.filter((item) => item.properties.total_risk === '3').length
+    const minorCount = policyReport && policyReport.results.filter((item) => item.properties.total_risk === '2').length
+    const lowCount = policyReport && policyReport.results.filter((item) => item.properties.total_risk === '1').length
+    const warningCount =
+        policyReport && policyReport.results.filter((item) => item.properties.total_risk === '0').length
 
     return (
         <div style={{ marginTop: '24px' }}>
@@ -101,7 +103,7 @@ export function StatusSummaryCount() {
                             setDrawerContext({
                                 isExpanded: true,
                                 onCloseClick: () => setDrawerContext(undefined),
-                                panelContent: <ClusterPolicySidebar data={policyReportData} />,
+                                panelContent: <ClusterPolicySidebar data={policyReport} />,
                                 panelContentProps: { minSize: '50%' },
                             })
                         },
@@ -120,9 +122,9 @@ export function StatusSummaryCount() {
                                   })
                                 : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: policyReportData.some(
-                            (item) => parseInt(item.results[0].properties.total_risk, 10) >= 3
-                        ),
+                        isDanger:
+                            policyReport &&
+                            policyReport.results.some((item) => parseInt(item.properties.total_risk, 10) >= 3),
                     },
                 ]}
             />

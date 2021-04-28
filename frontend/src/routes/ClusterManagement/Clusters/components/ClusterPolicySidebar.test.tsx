@@ -5,59 +5,80 @@ import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { PolicyReport } from '../../../../resources/policy-report'
 import { clickByText, waitForText } from '../../../../lib/test-util'
 
-const testData: PolicyReport[] = [
-    {
-        apiVersion: 'wgpolicyk8s.io/v1alpha2',
-        kind: 'PolicyReport',
-        metadata: {
-            name: 'policyreport testing risk 1 policy',
-            namespace: 'test-cluster',
-            uid: 'uid.report.risk.1',
-        },
-        results: [
-            {
-                category: 'category,category1,category2',
-                properties: {
-                    created_at: '2021-03-02T21:26:04Z',
-                    details: 'policyreport testing risk 1 details',
-                    reason: 'policyreport testing risk 1 reason',
-                    resolution: 'policyreport testing\n\nrisk 1 resolution',
-                    total_risk: '1',
-                },
-                message: 'policyreport testing risk 1',
-                policy: 'policyreport testing risk 1 policy',
-                result: 'policyreport testing risk 1 result',
-            },
-        ],
+const mockPolicyReports: PolicyReport = {
+    apiVersion: 'wgpolicyk8s.io/v1alpha2',
+    kind: 'PolicyReport',
+    metadata: {
+        name: 'test-cluster',
+        namespace: 'test-cluster',
+        uid: 'uid.report.risk.1',
     },
-    {
-        apiVersion: 'wgpolicyk8s.io/v1alpha2',
-        kind: 'PolicyReport',
-        metadata: {
-            name: 'policyreport testing risk 2 policy',
-            namespace: 'test-cluster',
-            uid: 'uid.report.risk.2',
-        },
-        results: [
-            {
-                category: 'category,category1,category2',
-                properties: {
-                    created_at: '2021-03-02T21:26:04Z',
-                    details: 'policyreport testing risk 2 details',
-                    reason: 'policyreport testing risk 2 reason',
-                    resolution: 'policyreport testing risk 2 resolution',
-                    total_risk: '2',
-                },
-                message: 'policyreport testing risk 2',
-                policy: 'policyreport testing risk 2 policy',
-                result: 'policyreport testing risk 2 result',
+    results: [
+        {
+            category: 'category,category1,category2',
+            scored: false,
+            properties: {
+                created_at: '2021-03-02T21:26:04Z',
+                total_risk: '0',
+                component: 'rule.id.0',
             },
-        ],
-    },
-]
+            message: 'policyreport testing risk 0',
+            policy: 'policyreport testing risk 0 policy',
+            result: 'policyreport testing risk 0 result',
+        },
+        {
+            category: 'category,category1,category2',
+            scored: false,
+            properties: {
+                created_at: '2021-03-02T21:26:04Z',
+                total_risk: '1',
+                component: 'rule.id.1',
+            },
+            message: 'policyreport testing risk 1',
+            policy: 'policyreport testing risk 1 policy',
+            result: 'policyreport testing risk 1 result',
+        },
+        {
+            category: 'category,category1,category2',
+            scored: false,
+            properties: {
+                created_at: '2021-03-02T21:26:04Z',
+                total_risk: '2',
+                component: 'rule.id.2',
+            },
+            message: 'policyreport testing risk 2',
+            policy: 'policyreport testing risk 2 policy',
+            result: 'policyreport testing risk 2 result',
+        },
+        {
+            category: 'category,category1,category2',
+            scored: false,
+            properties: {
+                created_at: '2021-04-02T21:26:04Z',
+                total_risk: '3',
+                component: 'rule.id.3',
+            },
+            message: 'policyreport testing risk 3',
+            policy: 'policyreport testing risk 3 policy',
+            result: 'policyreport testing risk 3 result',
+        },
+        {
+            category: 'category,category1,category2',
+            scored: false,
+            properties: {
+                created_at: '2021-03-02T21:26:04Z',
+                total_risk: '4',
+                component: 'rule.id.4',
+            },
+            message: 'policyreport testing risk 4',
+            policy: 'policyreport testing risk 4 policy',
+            result: 'policyreport testing risk 4 result',
+        },
+    ],
+}
 
 describe('ClusterPolicySidebar', () => {
-    const Component = () => <ClusterPolicySidebar data={testData} />
+    const Component = () => <ClusterPolicySidebar data={mockPolicyReports} />
     test('renders', async () => {
         render(<Component />)
         await act(async () => {
@@ -70,15 +91,6 @@ describe('ClusterPolicySidebar', () => {
 
             // wait for drilldown risk subdetail component
             await waitForText('policy.report.low')
-
-            // Wait for the policyreport remediation text to be displayed
-            await waitForText('policy.report.flyout.details.tab.remediation')
-            await waitForText('policyreport testing')
-            await waitForText('risk 1 resolution')
-
-            // Click reason tab and wait for text to be displayed
-            await clickByText('policy.report.flyout.details.tab.reason')
-            await waitForText('policyreport testing risk 1 reason')
 
             // Click back button and wait for static text
             await clickByText('policy.report.flyout.back')
