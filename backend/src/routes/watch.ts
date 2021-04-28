@@ -80,6 +80,7 @@ export function startWatching(): void {
             'metadata.name': 'console-public',
         },
     })
+    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
 }
 
 const watchRequests: Record<string, ClientRequest> = {}
