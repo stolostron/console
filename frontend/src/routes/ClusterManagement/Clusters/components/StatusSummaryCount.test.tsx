@@ -159,41 +159,43 @@ const mockSearchResponse = {
     },
 }
 
-const mockPolicyReports: PolicyReport[] = [{
-    apiVersion: 'wgpolicyk8s.io/v1alpha2',
-    kind: 'PolicyReport',
-    metadata: {
-        name: 'test-cluster',
-        namespace: 'test-cluster',
-        uid: 'uid.report.risk.1',
+const mockPolicyReports: PolicyReport[] = [
+    {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'PolicyReport',
+        metadata: {
+            name: 'test-cluster',
+            namespace: 'test-cluster',
+            uid: 'uid.report.risk.1',
+        },
+        results: [
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '1',
+                    component: 'rule.id.3',
+                },
+                message: 'policyreport testing risk 1',
+                policy: 'policyreport testing risk 1 policy',
+                result: 'policyreport testing risk 1 result',
+            },
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                properties: {
+                    created_at: '2021-04-02T21:26:04Z',
+                    total_risk: '3',
+                    component: 'rule.id.3',
+                },
+                message: 'policyreport testing risk 3',
+                policy: 'policyreport testing risk 3 policy',
+                result: 'policyreport testing risk 3 result',
+            },
+        ],
     },
-    results: [
-        {
-            category: 'category,category1,category2',
-            scored: false,
-            properties: {
-                created_at: '2021-03-02T21:26:04Z',
-                total_risk: '1',
-                component: 'rule.id.3',
-            },
-            message: 'policyreport testing risk 1',
-            policy: 'policyreport testing risk 1 policy',
-            result: 'policyreport testing risk 1 result',
-        },
-        {
-            category: 'category,category1,category2',
-            scored: false,
-            properties: {
-                created_at: '2021-04-02T21:26:04Z',
-                total_risk: '3',
-                component: 'rule.id.3',
-            },
-            message: 'policyreport testing risk 3',
-            policy: 'policyreport testing risk 3 policy',
-            result: 'policyreport testing risk 3 result',
-        },
-    ],
-}]
+]
 
 describe('StatusSummaryCount', () => {
     const Component = () => (
