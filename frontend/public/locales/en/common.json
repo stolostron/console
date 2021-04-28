@@ -1,5 +1,7 @@
 {
     "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
     "confirm": "Confirm",
     "select": "Select",
     "delete": "Delete",
@@ -32,6 +34,8 @@
     "type.to.confirm": "Confirm by typing \"{0}\" below:",
     "close": "Close",
     "outOf": "{{firstNumber}} out of {{secondNumber}}",
+    "wizard.review.title": "Review your selections",
+    "wizard.review.description": "Go back to a step if you have any changes to make.",
 
     "yes": "Yes",
     "no": "No",

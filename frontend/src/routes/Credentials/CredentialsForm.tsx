@@ -950,7 +950,12 @@ export function CredentialsForm(props: {
         },
         submitText: isEditing ? t('credentialsForm.submitButton.save') : t('credentialsForm.submitButton.add'),
         submittingText: isEditing ? t('credentialsForm.submitButton.saving') : t('credentialsForm.submitButton.adding'),
-        // TODO Cancel Text
+        reviewTitle: 'common:wizard.review.title',
+        reviewDescription: 'common:wizard.review.description',
+        cancelLabel: t('common:cancel'),
+        nextLabel: t('common:next'),
+        backLabel: t('common:back'),
+
         cancel: () => history.push(NavigationPath.credentials),
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
