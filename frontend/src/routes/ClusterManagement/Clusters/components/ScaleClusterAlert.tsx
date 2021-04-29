@@ -26,7 +26,11 @@ export function ScaleClusterAlert() {
         }
     })
 
-    if (cluster?.nodes?.nodeList.length !== 0 && workerNodeCount !== totalDesiredReplicas) {
+    if (
+        cluster?.nodes?.nodeList.length !== 0 &&
+        workerNodeCount !== undefined &&
+        workerNodeCount !== totalDesiredReplicas
+    ) {
         return (
             <AcmAlert
                 isInline
@@ -54,7 +58,6 @@ export function ScaleClusterAlert() {
                         </a>
                     </>
                 }
-            />
         )
     }
 
