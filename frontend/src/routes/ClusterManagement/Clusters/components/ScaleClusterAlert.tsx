@@ -58,6 +58,7 @@ export function ScaleClusterAlert() {
                         </a>
                     </>
                 }
+            />
         )
     }
 
