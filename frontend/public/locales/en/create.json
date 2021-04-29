@@ -238,7 +238,7 @@
     "clusterPool.tooltip.creation.ocp.size": "The desired number of clusters for the cluster pool.",
     "clusterPool.tooltip.creation.ocp.name": "The unique name of your cluster pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
     "clusterPool.tooltip.creation.ocp.namespace": "The namespace to create your cluster pool. Multiple cluster pools can be created in the same namespace.",
-    "clusterPool.placeholder.creation.ocp.namespace": "Select a namespace",
+    "clusterPool.placeholder.creation.ocp.namespace": "Select or create a namespace",
     "clusterPool.creation.ocp.choose.distribution": "Select the type of Kubernetes distribution to use for your cluster pool.",
 
     "tooltip.text.overview": "View operations details across all of your providers.",

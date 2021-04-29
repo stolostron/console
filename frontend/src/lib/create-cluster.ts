@@ -71,16 +71,16 @@ export async function createCluster(resources: any[]) {
                 messages: [{ message: `The ${namespace} cluster already exists` }],
             }
         }
+    }
 
-        // create project only for create cluster
-        try {
-            await createProject(namespace).promise
-        } catch (err) {
-            if (err.code !== 409) {
-                return {
-                    status: 'ERROR',
-                    messages: [{ message: err.message }],
-                }
+    // create project and ignore if it already exists
+    try {
+        await createProject(namespace).promise
+    } catch (err) {
+        if (err.code !== 409) {
+            return {
+                status: 'ERROR',
+                messages: [{ message: err.message }],
             }
         }
     }

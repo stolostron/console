@@ -26,6 +26,7 @@ import {
     ProviderConnectionKind,
 } from '../../../../resources/provider-connection'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
+import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../resources/project'
 import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPoolPage from './CreateClusterPool'
@@ -73,6 +74,12 @@ const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const mockCreateProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: mockNamespace.metadata.name },
 }
 
 ///////////////////////////////// CREATE RESOURCE MOCKS //////////////////////////////////////////////////
@@ -234,6 +241,7 @@ describe('CreateClusterPool', () => {
 
         // start filling in the form
         await typeByTestId('eman', clusterName!)
+        await typeByTestId('emanspace', mockCreateProject.metadata.name!)
         await clickByTestId('cluster.create.aws.subtitle')
 
         // wait for tables/combos to fill in
@@ -250,6 +258,7 @@ describe('CreateClusterPool', () => {
         // nocks for cluster creation
         const createNocks = [
             // create the managed cluster
+            nockCreate(mockCreateProject),
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
             nockCreate(mockPrivateSecret),
