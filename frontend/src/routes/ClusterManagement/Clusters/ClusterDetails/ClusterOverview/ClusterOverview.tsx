@@ -155,6 +155,10 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             key: t('table.credentials'),
                             value: <LoginCredentials canGetSecret={props.canGetSecret} />,
                         },
+                        {
+                            key: cluster?.owner.claimedBy ? t('table.claimedBy') : t('table.createdBy'),
+                            value: cluster?.owner.claimedBy ?? cluster?.owner.createdBy,
+                        },
                     ]}
                 />
                 {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
