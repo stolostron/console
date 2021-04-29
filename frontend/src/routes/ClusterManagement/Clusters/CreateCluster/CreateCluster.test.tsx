@@ -275,7 +275,7 @@ const mockClusterDeployment = {
         controlPlaneConfig: {
             servingCertificates: {},
         },
-        installAttemptsLimit: 2,
+        installAttemptsLimit: 1,
         installed: false,
         platform: {
             baremetal: {
