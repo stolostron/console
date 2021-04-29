@@ -5,15 +5,16 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { managedClusterSetsState } from '../../../../atoms'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../lib/nock-util'
 import {
+    clickByPlaceholderText,
     clickByRole,
     clickByTestId,
+    clickByText,
     typeByTestId,
     waitForNocks,
     waitForText,
-    clickByText,
-    clickByPlaceholderText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
@@ -40,7 +41,6 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { managedClusterSetsState } from '../../../../atoms'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -474,8 +474,6 @@ describe('CreateCluster', () => {
 
         // create the form
         const { container } = render(<Component />)
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // start filling in the form
         await typeByTestId('eman', clusterName!)
