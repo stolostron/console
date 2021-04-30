@@ -54,16 +54,19 @@ export interface ProviderConnectionSpec {
     pullSecret?: string
     sshPrivatekey?: string
     sshPublickey?: string
+}
 
+export interface ProviderConnectionStringData {
     host?: string
     token?: string
 }
 
-export interface ProviderConnection extends V1Secret {
+export interface ProviderConnection {
     apiVersion: ProviderConnectionApiVersionType
     kind: ProviderConnectionKindType
     metadata: V1ObjectMeta
-    data?: { metadata: string }
+    data?: { metadata: string } & ProviderConnectionStringData
+    stringData?: ProviderConnectionStringData
     spec?: ProviderConnectionSpec
     type: 'Opaque'
 }
@@ -87,30 +90,45 @@ export function listProviderConnections() {
 export function unpackProviderConnection(secret: ProviderConnection | V1Secret) {
     const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
     if (providerConnection.data) {
-        try {
-            const yaml = Buffer.from(providerConnection?.data?.metadata, 'base64').toString('ascii')
-            providerConnection.spec = YAML.parse(yaml)
-        } catch {}
-    } else if (providerConnection.stringData) {
-        try {
-            providerConnection.spec = YAML.parse(providerConnection.stringData.metadata)
-        } catch {}
+        if (!providerConnection.stringData) providerConnection.stringData = {}
+        const data = (providerConnection.data as unknown) as Record<string, string>
+        const stringData = providerConnection.stringData as Record<string, string>
+
+        for (const key in providerConnection.data) {
+            stringData[key] = Buffer.from(data[key], 'base64').toString('ascii')
+        }
+
+        if (stringData.metadata) {
+            try {
+                providerConnection.spec = YAML.parse(stringData.metadata)
+            } catch {}
+        }
+
+        delete providerConnection.data
     }
-    delete providerConnection.stringData
-    delete providerConnection.data
     return providerConnection
 }
 
 export function packProviderConnection(providerConnection: ProviderConnection) {
     if (providerConnection.spec) {
-        const metadata = YAML.stringify(providerConnection.spec)
-        providerConnection.data = {
-            metadata: Buffer.from(metadata).toString('base64'),
+        if (Object.keys(providerConnection.spec).length > 0) {
+            const metadata = YAML.stringify(providerConnection.spec)
+            providerConnection.data = { metadata: Buffer.from(metadata).toString('base64') }
+        } else {
+            delete providerConnection.data
         }
-
-        delete providerConnection.stringData
         delete providerConnection.spec
     }
-
+    if (providerConnection.stringData === undefined) {
+        delete providerConnection.stringData
+    } else if (providerConnection.stringData) {
+        if (
+            Object.keys(providerConnection.stringData).filter(
+                (key) => (providerConnection.stringData as Record<string, string>)[key] === undefined
+            ).length === 0
+        ) {
+            delete providerConnection.stringData
+        }
+    }
     return providerConnection
 }

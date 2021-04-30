@@ -49,7 +49,8 @@ export function MachinePoolsTable() {
 
     function getInstanceType(machinePool: MachinePool) {
         const platformKey = Object.keys(machinePool.spec!.platform)?.[0] ?? ''
-        const type = platformKey && machinePool?.spec?.platform?.[platformKey]?.type
+        const type =
+            platformKey && (machinePool?.spec?.platform as Record<string, { type: string }>)?.[platformKey]?.type
         return type ?? '-'
     }
 

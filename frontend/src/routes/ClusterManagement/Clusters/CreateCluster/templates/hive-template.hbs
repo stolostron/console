@@ -29,7 +29,7 @@ spec:
   clusterName: '{{{name}}}'
   controlPlaneConfig:
     servingCertificates: {}
-  installAttemptsLimit: 2
+  installAttemptsLimit: 1
   installed: false
   platform:
 
@@ -446,7 +446,7 @@ metadata:
 stringData:
   cloud: '{{{../../openstackCloud}}}'
 {{#if ../../showSecrets}}
-  clouds.yaml: |- 
+  clouds.yaml: |-
     {{{../../openstackCloudsYaml}}}
 {{else}}
   clouds.yaml: # injected on create

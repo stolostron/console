@@ -65,6 +65,10 @@ export type Cluster = {
     isHive: boolean
     isManaged: boolean
     clusterSet: string | undefined
+    owner: {
+        createdBy: string | undefined
+        claimedBy: string | undefined
+    }
 }
 
 export type DistributionInfo = {
@@ -158,11 +162,29 @@ export function getCluster(
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
             managedClusterInfo?.metadata?.labels?.[managedClusterSetLabel] ||
             clusterDeployment?.metadata?.labels?.[managedClusterSetLabel],
+        owner: getOwner(clusterDeployment, clusterClaim),
     }
 }
 
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
+
+export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
+    const userIdentity = 'open-cluster-management.io/user-identity'
+    const cdUserIdentity = clusterDeployment?.metadata.annotations?.[userIdentity]
+    const ccUserIdentity = clusterClaim?.metadata.annotations?.[userIdentity]
+
+    const decode = (value: string | undefined) => {
+        if (!value) return undefined
+        const buff = new Buffer(value, 'base64')
+        return buff.toString('ascii')
+    }
+
+    return {
+        createdBy: decode(cdUserIdentity),
+        claimedBy: decode(ccUserIdentity),
+    }
+}
 
 export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const isInstalled = clusterDeployment?.spec?.installed

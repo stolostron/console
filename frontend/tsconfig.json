@@ -19,7 +19,7 @@
         "strictPropertyInitialization": true,
 
         "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
+        "noImplicitReturns": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
 

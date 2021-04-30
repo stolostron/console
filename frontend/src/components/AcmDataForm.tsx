@@ -14,7 +14,7 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
-    Divider,
+    Flex,
     Form,
     FormFieldGroupExpandable,
     FormFieldGroupHeader,
@@ -44,6 +44,7 @@ import {
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
+import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, useState } from 'react'
@@ -263,7 +264,7 @@ export function AcmDataFormDefault(props: {
                             </ActionListItem>
                             <ActionListItem>
                                 <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
-                                    Cancel
+                                    {formData.cancelLabel}
                                 </Button>
                             </ActionListItem>
                         </ActionListGroup>
@@ -291,11 +292,19 @@ export function AcmDataFormWizard(props: {
     const steps: WizardStep[] = formData.sections
         .map((section) => {
             if (sectionHidden(section)) return undefined
-            const color = showFormErrors && sectionHasErrors(section) ? '#A30000' : undefined
-            const fontWeight = color !== undefined ? 'bold' : undefined
+            const hasError = showFormErrors && sectionHasErrors(section)
             return {
                 id: section.title,
-                name: <span style={{ color, fontWeight }}>{section.title}</span>,
+                name: (
+                    <span>
+                        {section.title}
+                        {hasError && (
+                            <span style={{ paddingLeft: '8px' }}>
+                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                            </span>
+                        )}
+                    </span>
+                ),
                 component: (
                     <Form isHorizontal={isHorizontal}>
                         {(showFormErrors || showSectionErrors[sectionName]) &&
@@ -363,17 +372,16 @@ export function AcmDataFormWizard(props: {
                         )}
                     </AlertGroup>
                 )}
-                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
+                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} wizardSummary={true} />
             </Form>
         ),
-        nextButtonText: 'Create',
         canJumpTo: !isSubmitting,
     })
 
     const Footer = (
         <WizardFooter>
             <WizardContextConsumer>
-                {({ activeStep, goToStepByName, goToStepById, onNext, onBack, onClose }) => {
+                {({ activeStep, onNext, onBack, onClose }) => {
                     setSectionName(activeStep.id as string)
                     const section = formData.sections.find((section) => section.title === activeStep.id)
                     if (section) {
@@ -399,17 +407,17 @@ export function AcmDataFormWizard(props: {
                                         isSubmitting
                                     }
                                 >
-                                    Next
+                                    {formData.nextLabel}
                                 </Button>
                                 <Button
                                     variant="secondary"
                                     onClick={onBack}
                                     isDisabled={activeStep.id === formData.sections[0].title || isSubmitting}
                                 >
-                                    Back
+                                    {formData.backLabel}
                                 </Button>
                                 <Button variant="link" onClick={onClose} isDisabled={isSubmitting}>
-                                    Cancel
+                                    {formData.cancelLabel}
                                 </Button>
                             </Fragment>
                         )
@@ -450,14 +458,14 @@ export function AcmDataFormWizard(props: {
                                         </ActionListItem>
                                         <ActionListItem>
                                             <Button variant="secondary" onClick={onBack} isDisabled={isSubmitting}>
-                                                Back
+                                                {formData.backLabel}
                                             </Button>
                                         </ActionListItem>
                                     </ActionListGroup>
                                     <ActionListGroup>
                                         <ActionListItem>
                                             <Button variant="link" onClick={formData.cancel} isDisabled={isSubmitting}>
-                                                Cancel
+                                                {formData.cancelLabel}
                                             </Button>
                                         </ActionListItem>
                                     </ActionListGroup>
@@ -473,21 +481,51 @@ export function AcmDataFormWizard(props: {
     return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
-export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean }) {
-    const { formData, showSecrets } = props
+export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean; wizardSummary?: boolean }) {
+    const { formData, showSecrets, wizardSummary } = props
+    let i = 0
     return (
         <Fragment>
-            {formData.sections.map((section, index) => {
+            {wizardSummary && formData.reviewTitle !== undefined && (
+                <Fragment>
+                    <Title headingLevel="h2">{formData.reviewTitle}</Title>
+                    {formData.reviewDescription && <Text component="p">{formData.reviewDescription}</Text>}
+                </Fragment>
+            )}
+            {/* <Divider /> */}
+            {formData.sections.map((section) => {
                 if (!sectionHasValue(section)) return <Fragment />
                 if (sectionHidden(section)) return <Fragment />
+                i++
                 return (
                     <FormSection key={section.title}>
-                        {index !== 0 && <Divider />}
-                        <Title headingLevel="h2">{section.title}</Title>
+                        {/* {index !== 0 && <Divider />} */}
+
+                        <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                            {wizardSummary && (
+                                <span
+                                    style={{
+                                        backgroundColor: 'var(--pf-c-wizard__nav-link--before--BackgroundColor)',
+                                        borderRadius: 'var(--pf-c-wizard__nav-link--before--BorderRadius)',
+                                        width: 'var(--pf-c-wizard__nav-link--before--Width)',
+                                        height: 'var(--pf-c-wizard__nav-link--before--Height)',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 'var(--pf-c-wizard__nav-link--before--FontSize)',
+                                    }}
+                                >
+                                    {i.toString()}
+                                </span>
+                            )}
+                            <Title headingLevel="h3">{section.title}</Title>
+                        </Flex>
+
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
                                 columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
-                                isHorizontal={true}
+                                isHorizontal={false}
+                                style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                             >
                                 {section.inputs &&
                                     section.inputs.map((input) => {

@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '@open-cluster-management/ui-components'
+import {
+    AcmEmptyState,
+    AcmIcon,
+    AcmPage,
+    AcmPageHeader,
+    Provider,
+    ProviderIconMap,
+    ProviderLongTextMap,
+} from '@open-cluster-management/ui-components'
+import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -46,7 +55,7 @@ const credentialProviders: Provider[] = [
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { name, namespace } = match.params
-    // const { t } = useTranslation(['credentials'])
+    const { t } = useTranslation(['credentials', 'common'])
 
     let isEditing = false
     let isViewing = false
@@ -93,7 +102,33 @@ export default function CredentialsFormPage({ match }: RouteComponentProps<{ nam
         )
     } else {
         if (!projects) return <LoadingPage />
-        // if (projects.length === 0) // TODO <ErrorPage error={t('credentialsForm.error.noNamespacesFound')} />
+        if (projects.length === 0) {
+            return (
+                <AcmPage
+                    header={
+                        <AcmPageHeader
+                            title={t('credentialsForm.title.add')}
+                            breadcrumb={[
+                                { text: t('credentialsPage.title'), to: NavigationPath.credentials },
+                                { text: t('credentialsForm.title.add') },
+                            ]}
+                        />
+                    }
+                >
+                    <PageSection>
+                        <Card isLarge>
+                            <CardBody>
+                                <AcmEmptyState
+                                    title={t('common:rbac.title.unauthorized')}
+                                    message={t('common:rbac.namespaces.unauthorized')}
+                                    showIcon={false}
+                                />
+                            </CardBody>
+                        </Card>
+                    </PageSection>
+                </AcmPage>
+            )
+        }
         return <CredentialsForm namespaces={projects} isEditing={false} isViewing={false} />
     }
 }
@@ -170,8 +205,8 @@ export function CredentialsForm(props: {
     )
 
     // Ansible
-    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.spec?.host ?? '')
-    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.spec?.token ?? '')
+    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
+    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
 
     // Red Hat Cloud State
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
@@ -189,6 +224,7 @@ export function CredentialsForm(props: {
                     'cluster.open-cluster-management.io/cloudconnection': '',
                 },
             },
+            stringData: {},
             spec: {},
         }
         switch (credentialsType) {
@@ -262,8 +298,8 @@ export function CredentialsForm(props: {
                 data.spec!.sshPublickey = sshPublickey
                 break
             case Provider.ansible:
-                data.spec!.host = ansibleHost
-                data.spec!.token = ansibleToken
+                data.stringData!.host = ansibleHost
+                data.stringData!.token = ansibleToken
                 break
 
             case Provider.redhatcloud:
@@ -915,7 +951,12 @@ export function CredentialsForm(props: {
         },
         submitText: isEditing ? t('credentialsForm.submitButton.save') : t('credentialsForm.submitButton.add'),
         submittingText: isEditing ? t('credentialsForm.submitButton.saving') : t('credentialsForm.submitButton.adding'),
-        // TODO Cancel Text
+        reviewTitle: t('common:wizard.review.title'),
+        reviewDescription: t('common:wizard.review.description'),
+        cancelLabel: t('common:cancel'),
+        nextLabel: t('common:next'),
+        backLabel: t('common:back'),
+
         cancel: () => history.push(NavigationPath.credentials),
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />

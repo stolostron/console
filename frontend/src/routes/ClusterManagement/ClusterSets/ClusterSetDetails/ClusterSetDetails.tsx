@@ -127,62 +127,72 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
                         <ClusterSetManageResourcesPage />
                     </Route>
-                    <AcmPage hasDrawer>
-                        <AcmPageHeader
-                            breadcrumb={[
-                                { text: t('clusterSets'), to: NavigationPath.clusterSets },
-                                { text: match.params.id, to: '' },
-                            ]}
-                            title={match.params.id}
-                            actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
-                            navigation={
-                                <AcmSecondaryNav>
-                                    <AcmSecondaryNavItem
-                                        isActive={
-                                            location.pathname ===
-                                            NavigationPath.clusterSetOverview.replace(':id', match.params.id)
-                                        }
-                                    >
-                                        <Link to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}>
-                                            {t('tab.overview')}
-                                        </Link>
-                                    </AcmSecondaryNavItem>
-                                    <AcmSecondaryNavItem
-                                        isActive={
-                                            location.pathname ===
-                                            NavigationPath.clusterSetClusters.replace(':id', match.params.id)
-                                        }
-                                    >
-                                        <Link to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}>
-                                            {t('tab.clusters')}
-                                        </Link>
-                                    </AcmSecondaryNavItem>
-                                    <AcmSecondaryNavItem
-                                        isActive={
-                                            location.pathname ===
-                                            NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
-                                        }
-                                    >
-                                        <Link
-                                            to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)}
+                    <AcmPage
+                        hasDrawer
+                        header={
+                            <AcmPageHeader
+                                breadcrumb={[
+                                    { text: t('clusterSets'), to: NavigationPath.clusterSets },
+                                    { text: match.params.id, to: '' },
+                                ]}
+                                title={match.params.id}
+                                actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
+                                navigation={
+                                    <AcmSecondaryNav>
+                                        <AcmSecondaryNavItem
+                                            isActive={
+                                                location.pathname ===
+                                                NavigationPath.clusterSetOverview.replace(':id', match.params.id)
+                                            }
                                         >
-                                            {t('tab.clusterPools')}
-                                        </Link>
-                                    </AcmSecondaryNavItem>
-                                    <AcmSecondaryNavItem
-                                        isActive={
-                                            location.pathname ===
-                                            NavigationPath.clusterSetAccess.replace(':id', match.params.id)
-                                        }
-                                    >
-                                        <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
-                                            {t('tab.access')}
-                                        </Link>
-                                    </AcmSecondaryNavItem>
-                                </AcmSecondaryNav>
-                            }
-                        />
-
+                                            <Link
+                                                to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}
+                                            >
+                                                {t('tab.overview')}
+                                            </Link>
+                                        </AcmSecondaryNavItem>
+                                        <AcmSecondaryNavItem
+                                            isActive={
+                                                location.pathname ===
+                                                NavigationPath.clusterSetClusters.replace(':id', match.params.id)
+                                            }
+                                        >
+                                            <Link
+                                                to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}
+                                            >
+                                                {t('tab.clusters')}
+                                            </Link>
+                                        </AcmSecondaryNavItem>
+                                        <AcmSecondaryNavItem
+                                            isActive={
+                                                location.pathname ===
+                                                NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
+                                            }
+                                        >
+                                            <Link
+                                                to={NavigationPath.clusterSetClusterPools.replace(
+                                                    ':id',
+                                                    match.params.id
+                                                )}
+                                            >
+                                                {t('tab.clusterPools')}
+                                            </Link>
+                                        </AcmSecondaryNavItem>
+                                        <AcmSecondaryNavItem
+                                            isActive={
+                                                location.pathname ===
+                                                NavigationPath.clusterSetAccess.replace(':id', match.params.id)
+                                            }
+                                        >
+                                            <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
+                                                {t('tab.access')}
+                                            </Link>
+                                        </AcmSecondaryNavItem>
+                                    </AcmSecondaryNav>
+                                }
+                            />
+                        }
+                    >
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
                         </Route>

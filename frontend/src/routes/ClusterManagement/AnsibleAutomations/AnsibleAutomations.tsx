@@ -47,7 +47,8 @@ function AnsibleJobTemplateTable() {
     const providerConnections = secrets.map(unpackProviderConnection)
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
     const ansibleCredentials = providerConnections.map((providerConnection) => {
-        if (providerConnection.spec?.host) {
+        console.log('provider connections: ', providerConnections)
+        if (providerConnection.stringData?.host) {
             return providerConnection.metadata.name as string
         } else return ''
     })

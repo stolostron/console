@@ -175,7 +175,9 @@ export function ClusterPoolsTable(props: {
                 items={clusterPools}
                 addSubRows={(clusterPool: ClusterPool) => {
                     const clusterPoolClusters = clusters.filter(
-                        (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                        (cluster) =>
+                            cluster.hive.clusterPool === clusterPool.metadata.name &&
+                            cluster.hive.clusterClaimName === undefined
                     )
                     if (clusterPoolClusters.length === 0) {
                         return undefined
