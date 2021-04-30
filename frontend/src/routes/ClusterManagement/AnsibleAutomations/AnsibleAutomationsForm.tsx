@@ -44,7 +44,7 @@ export default function AnsibleAutomationsFormPage({
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
     )
-
+    console.log('checking curator: ', name, namespace)
     useEffect(() => {
         if (isEditing || isViewing) {
             const result = getClusterCurator({ name, namespace })
@@ -102,19 +102,31 @@ export function AnsibleAutomationsForm(props: {
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name as string)
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret as string)
 
-    const [installPreJob, setInstallPreJob] = useState(clusterCurator?.spec?.install?.prehook?.[0].name as string)
-    const [installPostJob, setInstallPostJob] = useState(clusterCurator?.spec?.install?.posthook?.[0].name as string)
-    const [upgradePreJob, setUpgradePreJob] = useState(clusterCurator?.spec?.upgrade?.prehook?.[0].name as string)
-    const [upgradePostJob, setUpgradePostJob] = useState(clusterCurator?.spec?.upgrade?.posthook?.[0].name as string)
-    const [scalePreJob, setScalePreJob] = useState(clusterCurator?.spec?.scale?.prehook?.[0].name as string)
-    const [scalePostJob, setScalePostJob] = useState(clusterCurator?.spec?.scale?.posthook?.[0].name as string)
-    const [destroyPreJob, setDestroyPreJob] = useState(clusterCurator?.spec?.destroy?.prehook?.[0].name as string)
-    const [destroyPostJob, setDestroyPostJob] = useState(clusterCurator?.spec?.destroy?.posthook?.[0].name as string)
+    // fix these
+    const [installPreJob, setInstallPreJob] = useState(
+        (clusterCurator?.spec?.install?.prehook?.[0].name as string) ?? ''
+    )
+    const [installPostJob, setInstallPostJob] = useState(
+        (clusterCurator?.spec?.install?.posthook?.[0].name as string) ?? ''
+    )
+    const [upgradePreJob, setUpgradePreJob] = useState(
+        (clusterCurator?.spec?.upgrade?.prehook?.[0].name as string) ?? ''
+    )
+    const [upgradePostJob, setUpgradePostJob] = useState(
+        (clusterCurator?.spec?.upgrade?.posthook?.[0].name as string) ?? ''
+    )
+    const [scalePreJob, setScalePreJob] = useState((clusterCurator?.spec?.scale?.prehook?.[0].name as string) ?? '')
+    const [scalePostJob, setScalePostJob] = useState((clusterCurator?.spec?.scale?.posthook?.[0].name as string) ?? '')
+    const [destroyPreJob, setDestroyPreJob] = useState(
+        (clusterCurator?.spec?.destroy?.prehook?.[0].name as string) ?? ''
+    )
+    const [destroyPostJob, setDestroyPostJob] = useState(
+        (clusterCurator?.spec?.destroy?.posthook?.[0].name as string) ?? ''
+    )
 
     function stateToData() {
         let ansibleSecretNamespace = ''
         ansibleCredentials.forEach((credential) => {
-            console.log('ansible label: ', credential.metadata.labels)
             if (ansibleSelection === credential.metadata.name) ansibleSecretNamespace = credential.metadata!.namespace!
         })
         const curator: ClusterCurator = {

@@ -152,7 +152,7 @@ function AnsibleJobTemplateTable() {
                             history.push(
                                 NavigationPath.editAnsibleAutomation
                                     .replace(':namespace', curator.metadata.namespace!)
-                                    .replace(':name', curator.metadata.namespace!)
+                                    .replace(':name', curator.metadata.name!)
                             )
                         },
                     },
