@@ -24,8 +24,9 @@ const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/Cre
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
 const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
-const AnsibleAutomationsPage = lazy(() => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomations'))
-
+const AnsibleAutomationFormPage = lazy(
+    () => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomationsForm')
+)
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
     return (
@@ -51,7 +52,12 @@ export default function App() {
                                 <Route
                                     exact
                                     path={NavigationPath.addAnsibleAutomation}
-                                    component={AnsibleAutomationsPage}
+                                    component={AnsibleAutomationFormPage}
+                                />
+                                <Route
+                                    exact
+                                    path={NavigationPath.editAnsibleAutomation}
+                                    component={AnsibleAutomationFormPage}
                                 />
                                 <Route
                                     exact
