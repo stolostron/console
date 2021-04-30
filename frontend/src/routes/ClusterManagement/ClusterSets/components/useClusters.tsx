@@ -7,6 +7,7 @@ import {
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterClaimsState,
 } from '../../../../atoms'
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
@@ -22,6 +23,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         managedClusterInfos,
         certificateSigningRequests,
         managedClusterAddons,
+        clusterClaims,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -29,6 +31,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
+            clusterClaimsState,
         ])
     )
 
@@ -40,7 +43,9 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
             (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
         )
         groupClusterDeployments = clusterDeployments.filter(
-            (cd) => cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+            (cd) =>
+                cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
+                groupManagedClusters.find((mc) => mc.metadata.name === cd.metadata.namespace)
         )
     }
 
@@ -72,7 +77,8 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         groupManagedClusterInfos,
         certificateSigningRequests,
         groupManagedClusters,
-        groupManagedClusterAddons
+        groupManagedClusterAddons,
+        clusterClaims
     )
 
     return clusters
