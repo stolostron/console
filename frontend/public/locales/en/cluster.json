@@ -99,7 +99,7 @@
     "actions": "Actions",
 
     "table.name": "Name",
-    "table.clusterName.helperText": "The name of the cluster's <bold>Namespace</bold>, <bold>ManagedCluster</bold>, and <bold>ClusterDeployment</bold> resources. If the cluster was claimed from a cluster pool, the <bold>ClusterClaim</bold> resource name will be used as the display name for the cluster on the console.",
+    "table.clusterName.helperText": "The common resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>. If the cluster was claimed from a cluster pool, the <bold>ClusterClaim</bold> resource name will be used as the display name for the cluster on the console.",
     "table.clusterId": "Cluster ID",
     "table.status": "Status",
     "table.provider": "Infrastructure provider",
@@ -136,6 +136,8 @@
     "table.newReleaseImage": "New release image",
     "table.type": "Type",
     "table.kind": "Kind",
+    "table.claimedBy": "Claimed by",
+    "table.createdBy": "Created by",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
