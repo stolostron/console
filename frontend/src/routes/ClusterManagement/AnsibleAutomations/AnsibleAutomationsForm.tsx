@@ -1,64 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Grid, GridItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { NavigationPath } from '../../../NavigationPath'
 import { useRecoilState } from 'recoil'
 import { namespacesState, secretsState } from '../../../atoms'
-
-import { AcmIcon, Provider, ProviderIconMap, ProviderLongTextMap } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData } from '../../../components/AcmFormData'
-import { AcmSvgIcon } from '../../../components/AcmSvgIcon'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { DOC_LINKS } from '../../../lib/doc-util'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { createResource, replaceResource } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
 import {
-    Button,
-    DataList,
-    DataListCell,
-    DataListControl,
-    DataListDragButton,
-    DataListItem,
-    DataListItemCells,
-    DataListItemRow,
-    Divider,
-    EmptyState,
-    EmptyStateBody,
-    EmptyStateIcon,
-    EmptyStateVariant,
-    FormGroup,
-    Grid,
-    GridItem,
-    InputGroup,
-    PageSection,
-    SelectOption,
-    Text,
-    TextContent,
-    TextInput,
-    TextVariants,
-    Title,
-    Wizard,
-    WizardStep,
-} from '@patternfly/react-core'
-import {
-    packProviderConnection,
-    ProviderConnection,
-    unpackProviderConnection,
-} from '../../../resources/provider-connection'
-import { IResource } from '../../../resources/resource'
-import { getSecret, SecretDefinition } from '../../../resources/secret'
-import {
-    AnsibleJob,
     ClusterCurator,
     ClusterCuratorApiVersion,
-    ClusterCuratorDefinition,
     ClusterCuratorKind,
     getClusterCurator,
 } from '../../../resources/cluster-curator'
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
+import { IResource } from '../../../resources/resource'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -88,7 +48,12 @@ export default function AnsibleAutomationsFormPage({
     useEffect(() => {
         if (isEditing || isViewing) {
             const result = getClusterCurator({ name, namespace })
-            result.promise.then((curator) => setClusterCuratorTemplate(curator)).catch(setError)
+            result.promise
+                .then((curator) => {
+                    setClusterCuratorTemplate(curator)
+                    console.log('checking curator: ', curator)
+                })
+                .catch(setError)
             return result.abort
         }
         return undefined
@@ -134,17 +99,17 @@ export function AnsibleAutomationsForm(props: {
     // const [credentialsType, setCredentialsType] = useState(
     //     providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/provider'] ?? ''
     // )
-    const [templateName, setTemplateName] = useState('')
-    const [ansibleSelection, setAnsibleSelection] = useState('')
+    const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name as string)
+    const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret as string)
 
-    const [installPreJob, setInstallPreJob] = useState('')
-    const [installPostJob, setInstallPostJob] = useState('')
-    const [upgradePreJob, setUpgradePreJob] = useState('')
-    const [upgradePostJob, setUpgradePostJob] = useState('')
-    const [scalePreJob, setScalePreJob] = useState('')
-    const [scalePostJob, setScalePostJob] = useState('')
-    const [destroyPreJob, setDestroyPreJob] = useState('')
-    const [destroyPostJob, setDestroyPostJob] = useState('')
+    const [installPreJob, setInstallPreJob] = useState(clusterCurator?.spec?.install?.prehook?.[0].name as string)
+    const [installPostJob, setInstallPostJob] = useState(clusterCurator?.spec?.install?.posthook?.[0].name as string)
+    const [upgradePreJob, setUpgradePreJob] = useState(clusterCurator?.spec?.upgrade?.prehook?.[0].name as string)
+    const [upgradePostJob, setUpgradePostJob] = useState(clusterCurator?.spec?.upgrade?.posthook?.[0].name as string)
+    const [scalePreJob, setScalePreJob] = useState(clusterCurator?.spec?.scale?.prehook?.[0].name as string)
+    const [scalePostJob, setScalePostJob] = useState(clusterCurator?.spec?.scale?.posthook?.[0].name as string)
+    const [destroyPreJob, setDestroyPreJob] = useState(clusterCurator?.spec?.destroy?.prehook?.[0].name as string)
+    const [destroyPostJob, setDestroyPostJob] = useState(clusterCurator?.spec?.destroy?.posthook?.[0].name as string)
 
     function stateToData() {
         let ansibleSecretNamespace = ''

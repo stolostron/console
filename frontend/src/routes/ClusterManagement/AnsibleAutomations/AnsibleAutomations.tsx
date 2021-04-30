@@ -148,8 +148,12 @@ function AnsibleJobTemplateTable() {
                     {
                         id: 'edit-template',
                         title: t('template.edit'),
-                        click: () => {
-                            history.push(NavigationPath.editAnsibleAutomation)
+                        click: (curator) => {
+                            history.push(
+                                NavigationPath.editAnsibleAutomation
+                                    .replace(':namespace', curator.metadata.namespace!)
+                                    .replace(':name', curator.metadata.namespace!)
+                            )
                         },
                     },
                     {
