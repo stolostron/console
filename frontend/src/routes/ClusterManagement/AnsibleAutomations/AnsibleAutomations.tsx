@@ -46,12 +46,10 @@ function AnsibleJobTemplateTable() {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
-    const ansibleCredentials = providerConnections.map((providerConnection) => {
-        console.log('provider connections: ', providerConnections)
-        if (providerConnection.stringData?.host) {
-            return providerConnection.metadata.name as string
-        } else return ''
-    })
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
+    )
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
         open: false,
@@ -112,7 +110,9 @@ function AnsibleJobTemplateTable() {
                                                 actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
                                                 isDanger: false,
-                                                selectOptions: ansibleCredentials,
+                                                selectOptions: ansibleCredentials.map(
+                                                    (credential) => credential.metadata.name as string
+                                                ),
                                                 selectLabel: t('template.modal.linkProvider.label'),
                                                 selectPlaceholder: t('template.modal.linkProvider.placeholder'),
                                                 confirmText: 'Link',

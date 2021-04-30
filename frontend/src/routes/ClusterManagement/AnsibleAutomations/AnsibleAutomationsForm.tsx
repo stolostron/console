@@ -80,7 +80,10 @@ export default function AnsibleAutomationsFormPage({
     const providerConnections = secrets.map(unpackProviderConnection)
     const [clusterCuratorTemplate, setClusterCuratorTemplate] = useState<ClusterCurator | undefined>()
 
-    const ansibleCredentials = providerConnections.filter((providerConnection) => providerConnection.spec?.host)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
+    )
 
     useEffect(() => {
         if (isEditing || isViewing) {
@@ -146,6 +149,7 @@ export function AnsibleAutomationsForm(props: {
     function stateToData() {
         let ansibleSecretNamespace = ''
         ansibleCredentials.forEach((credential) => {
+            console.log('ansible label: ', credential.metadata.labels)
             if (ansibleSelection === credential.metadata.name) ansibleSecretNamespace = credential.metadata!.namespace!
         })
         const curator: ClusterCurator = {
@@ -189,20 +193,20 @@ export function AnsibleAutomationsForm(props: {
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
             { text: t('template.create.title') },
         ],
+        reviewDescription: t('template.create.review.description'),
+        reviewTitle: t('template.create.review.title'),
+        cancelLabel: t('common:cancel'),
+        nextLabel: t('common:next'),
+        backLabel: t('common:back'),
         sections: [
             {
-                title: t('template.template.information'),
+                title: t('template.information.title'),
                 wizardTitle: t('template.create.config.wizard.title'),
                 description: (
                     <TextContent>
                         <Grid>
                             <GridItem span={9}>
-                                <Text component={TextVariants.small}>
-                                    The default job templates that you select appear automatically during cluster
-                                    creation when you select your-aws-cloud as the credential. To create a sequence of
-                                    events, select multiple jobs. Drag and drop the job templates to reorder the
-                                    sequence.
-                                </Text>
+                                <Text component={TextVariants.small}>{t('template.information.description')}</Text>
                             </GridItem>
                         </Grid>
                     </TextContent>
