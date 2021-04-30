@@ -13,13 +13,15 @@ import { ServerSideEvents } from './lib/server-side-events'
 import { authenticated } from './routes/authenticated'
 import { login, loginCallback, logout } from './routes/oauth'
 import { proxy } from './routes/proxy'
+import { liveness, readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { upgrade } from './routes/upgrade'
 import { startWatching, stopWatching, watch } from './routes/watch'
 
 export const router = Router<Router.HTTPVersion.V2>()
-router.get(`/readinessProbe`, respondOK)
+router.get(`/readinessProbe`, readiness)
+router.get(`/livenessProbe`, liveness)
 router.get(`/ping`, respondOK)
 router.all(`/api`, proxy)
 router.all(`/api/*`, proxy)

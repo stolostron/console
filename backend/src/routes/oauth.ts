@@ -9,7 +9,7 @@ import { jsonRequest } from '../lib/json-request'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
-const oauthInfoPromise = jsonRequest<OAuthInfo>(
+export const oauthInfoPromise = jsonRequest<OAuthInfo>(
     `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
 ).catch(() => ({
     authorization_endpoint: '',
