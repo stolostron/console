@@ -810,7 +810,6 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('credentialsForm.ocmapitoken.label'),
                         placeholder: t('credentialsForm.ocmapitoken.placeholder'),
-                        labelHelp: t('credentialsForm.ocmapitoken.labelHelp'),
                         value: ocmAPIToken,
                         onChange: setOcmAPIToken,
                         isRequired: true,

@@ -8,7 +8,7 @@ export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 export const DOC_LINKS = {
     CLUSTERS: `${DOC_BASE_PATH}/manage_cluster/managing-your-clusters`,
     BARE_METAL_ASSETS: `${DOC_BASE_PATH}/manage_cluster/creating-and-modifying-bare-metal-assets`,
-    CREATE_CONNECTION: `${DOC_BASE_PATH}/manage_cluster/creating-a-provider-connection`,
+    CREATE_CONNECTION: `https://cloud.redhat.com/openshift/token`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/manage_cluster/creating-a-cluster`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/manage_cluster/importing-a-target-managed-cluster-to-the-hub-cluster`,
 }
