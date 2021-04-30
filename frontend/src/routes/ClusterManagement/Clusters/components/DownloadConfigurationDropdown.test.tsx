@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DownloadConfigurationDropdown } from './DownloadConfigurationDropdown'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
-import { nockGet, mockBadRequestStatus } from '../../../../lib/nock-util'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
+import { mockBadRequestStatus, nockGet } from '../../../../lib/nock-util'
 import { createDownloadFile } from '../../../../lib/utils'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { DownloadConfigurationDropdown } from './DownloadConfigurationDropdown'
 
 jest.mock('../../../../lib/utils', () => ({
     createDownloadFile: jest.fn(),
@@ -102,8 +102,7 @@ describe('DownloadConfigurationDropdown', () => {
         userEvent.click(screen.getByTestId('download-configuration'))
         await waitFor(() => screen.getByTestId('install-config.yaml'))
         userEvent.click(screen.getByTestId('install-config.yaml'))
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        expect(createDownloadFile).toHaveBeenCalled()
+        await waitFor(() => expect(createDownloadFile).toHaveBeenCalled())
     })
     test('can download the cluster kubeconfig', async () => {
         nockGet(mockKubeconfig)
@@ -115,8 +114,7 @@ describe('DownloadConfigurationDropdown', () => {
         userEvent.click(screen.getByTestId('download-configuration'))
         await waitFor(() => screen.getByTestId('kubeconfig'))
         userEvent.click(screen.getByTestId('kubeconfig'))
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        expect(createDownloadFile).toHaveBeenCalled()
+        await waitFor(() => expect(createDownloadFile).toHaveBeenCalled())
     })
     test('renders null when secrets are not available', () => {
         render(
@@ -137,7 +135,6 @@ describe('DownloadConfigurationDropdown', () => {
         userEvent.click(screen.getByTestId('download-configuration'))
         await waitFor(() => screen.getByTestId('kubeconfig'))
         userEvent.click(screen.getByTestId('kubeconfig'))
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        expect(console.error).toHaveBeenCalled()
+        await waitFor(() => expect(console.error).toHaveBeenCalled())
     })
 })

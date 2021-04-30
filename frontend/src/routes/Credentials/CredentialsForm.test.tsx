@@ -14,6 +14,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     ProviderConnectionSpec,
+    ProviderConnectionStringData,
 } from '../../resources/provider-connection'
 import AddCredentialPage2 from './CredentialsForm'
 
@@ -33,7 +34,12 @@ function AddCredentialsTest() {
     )
 }
 
-function createProviderConnection(provider: string, spec: ProviderConnectionSpec, common = false): ProviderConnection {
+function createProviderConnection(
+    provider: string,
+    spec: ProviderConnectionSpec,
+    common = false,
+    stringData?: ProviderConnectionStringData
+): ProviderConnection {
     return {
         apiVersion: ProviderConnectionApiVersion,
         kind: ProviderConnectionKind,
@@ -46,6 +52,7 @@ function createProviderConnection(provider: string, spec: ProviderConnectionSpec
                 'cluster.open-cluster-management.io/cloudconnection': '',
             },
         },
+        stringData,
         spec: common
             ? {
                   ...spec,
@@ -363,7 +370,7 @@ describe('add credentials page', () => {
     it('should create ans credentials', async () => {
         render(<AddCredentialsTest />)
 
-        const providerConnection = createProviderConnection('ans', {
+        const providerConnection = createProviderConnection('ans', {}, false, {
             host: 'ansibleHost',
             token: 'ansibleToken',
         })
@@ -378,8 +385,8 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // ans credentials
-        await typeByTestId('ansibleHost', providerConnection.spec?.host!)
-        await typeByTestId('ansibleToken', providerConnection.spec?.token!)
+        await typeByTestId('ansibleHost', providerConnection.stringData?.host!)
+        await typeByTestId('ansibleToken', providerConnection.stringData?.token!)
         await clickByText('common:next')
 
         // Add Credentials

@@ -3,15 +3,16 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockList, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { managedClusterSetsState, namespacesState } from '../../../../atoms'
+import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../lib/nock-util'
 import {
+    clickByPlaceholderText,
     clickByRole,
     clickByTestId,
+    clickByText,
     typeByTestId,
     waitForNocks,
     waitForText,
-    clickByText,
-    clickByPlaceholderText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -19,18 +20,17 @@ import {
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
 } from '../../../../resources/cluster-image-set'
+import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
+import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../resources/project'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../../resources/provider-connection'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
-import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../resources/project'
-import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPoolPage from './CreateClusterPool'
-import { managedClusterSetsState, namespacesState } from '../../../../atoms'
 
 const clusterName = 'test'
 
@@ -236,8 +236,6 @@ describe('CreateClusterPool', () => {
 
         // create the form
         const { container } = render(<Component />)
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // start filling in the form
         await typeByTestId('eman', clusterName!)

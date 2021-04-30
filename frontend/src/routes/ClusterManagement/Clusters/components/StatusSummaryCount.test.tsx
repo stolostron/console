@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen, waitFor, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../atoms'
-import { StatusSummaryCount } from './StatusSummaryCount'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../lib/get-cluster'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { nockSearch } from '../../../../lib/nock-util'
+import { clickByText, waitForText } from '../../../../lib/test-util'
 import { PolicyReport } from '../../../../resources/policy-report'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { StatusSummaryCount } from './StatusSummaryCount'
 
 window.open = jest.fn()
 
@@ -216,23 +216,22 @@ describe('StatusSummaryCount', () => {
             await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-            userEvent.click(screen.getByText(4))
+            await clickByText('4')
             expect(window.open).toHaveBeenCalled()
 
-            userEvent.click(screen.getByText('summary.applications.launch'))
+            await clickByText('summary.applications.launch')
             expect(window.open).toHaveBeenCalled()
 
-            userEvent.click(screen.getByText(1))
+            await clickByText('1')
             expect(window.open).toHaveBeenCalled()
 
-            userEvent.click(screen.getByText('summary.violations.launch'))
+            await clickByText('summary.violations.launch')
             expect(window.open).toHaveBeenCalled()
 
-            userEvent.click(screen.getByText(6))
-            await new Promise((resolve) => setTimeout(resolve, 1500))
+            await clickByText('6')
 
-            waitFor(() => expect(screen.getByText('summary.cluster.issues')).toBeInTheDocument())
-            expect(screen.getByText('summary.cluster.issues.description.count')).toBeInTheDocument()
+            await waitForText('summary.cluster.issues')
+            await waitForText('summary.cluster.issues.description.count')
         })
     })
 })

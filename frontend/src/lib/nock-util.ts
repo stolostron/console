@@ -153,7 +153,13 @@ export function nockNamespacedList<Resource extends IResource>(
 
 export function nockCreate(resource: IResource, response?: IResource, statusCode = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post(getResourceApiPath(resource), (body) => isEqual(body, resource))
+        .post(getResourceApiPath(resource), (body) => {
+            // if (!isEqual(body, resource)) {
+            //     console.log(body)
+            //     console.log(resource)
+            // }
+            return isEqual(body, resource)
+        })
         .reply(statusCode, response ?? resource, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',

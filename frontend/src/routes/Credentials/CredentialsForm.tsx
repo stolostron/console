@@ -205,8 +205,8 @@ export function CredentialsForm(props: {
     )
 
     // Ansible
-    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.spec?.host ?? '')
-    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.spec?.token ?? '')
+    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
+    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
 
     // Red Hat Cloud State
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
@@ -224,6 +224,7 @@ export function CredentialsForm(props: {
                     'cluster.open-cluster-management.io/cloudconnection': '',
                 },
             },
+            stringData: {},
             spec: {},
         }
         switch (credentialsType) {
@@ -297,8 +298,8 @@ export function CredentialsForm(props: {
                 data.spec!.sshPublickey = sshPublickey
                 break
             case Provider.ansible:
-                data.spec!.host = ansibleHost
-                data.spec!.token = ansibleToken
+                data.stringData!.host = ansibleHost
+                data.stringData!.token = ansibleToken
                 break
 
             case Provider.redhatcloud:
@@ -950,8 +951,8 @@ export function CredentialsForm(props: {
         },
         submitText: isEditing ? t('credentialsForm.submitButton.save') : t('credentialsForm.submitButton.add'),
         submittingText: isEditing ? t('credentialsForm.submitButton.saving') : t('credentialsForm.submitButton.adding'),
-        reviewTitle: 'common:wizard.review.title',
-        reviewDescription: 'common:wizard.review.description',
+        reviewTitle: t('common:wizard.review.title'),
+        reviewDescription: t('common:wizard.review.description'),
         cancelLabel: t('common:cancel'),
         nextLabel: t('common:next'),
         backLabel: t('common:back'),

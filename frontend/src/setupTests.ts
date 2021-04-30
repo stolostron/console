@@ -102,13 +102,14 @@ function setupBeforeEach(): void {
 }
 
 async function setupAfterEach(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 100))
-
+    // await new Promise((resolve) => setTimeout(resolve, 100))
     expect(missingNocks).hasMissingMocks()
     // expect(consoleErrors).toEqual([])
     // expect(consoleWarnings).toEqual([])
     expect(nock.pendingMocks()).hasUnusedMocks()
+}
 
+async function setupAfterEachNock(): Promise<void> {
     nock.emitter.off('no match', logNoMatch)
     nock.cleanAll()
 }
@@ -121,6 +122,7 @@ async function setupAfterAll(): Promise<void> {
 beforeAll(setupBeforeAll)
 beforeEach(setupBeforeEach)
 afterEach(setupAfterEach)
+afterEach(setupAfterEachNock)
 afterAll(setupAfterAll)
 
 jest.mock('react-i18next', () => ({
