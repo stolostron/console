@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { namespacesState, secretsState } from '../../../atoms'
+import { secretsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -33,9 +33,6 @@ export default function AnsibleAutomationsFormPage({
     }
 
     const [error, setError] = useState<Error>()
-    const [namespaces] = useRecoilState(namespacesState)
-    const [projects, setProjects] = useState<string[]>()
-
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const [clusterCuratorTemplate, setClusterCuratorTemplate] = useState<ClusterCurator | undefined>()
@@ -44,14 +41,12 @@ export default function AnsibleAutomationsFormPage({
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
     )
-    console.log('checking curator: ', name, namespace)
     useEffect(() => {
         if (isEditing || isViewing) {
             const result = getClusterCurator({ name, namespace })
             result.promise
                 .then((curator) => {
                     setClusterCuratorTemplate(curator)
-                    console.log('checking curator: ', curator)
                 })
                 .catch(setError)
             return result.abort
@@ -72,8 +67,8 @@ export default function AnsibleAutomationsFormPage({
             />
         )
     } else {
-        //if (!projects) return <LoadingPage />
-        // if (projects.length === 0) // TODO <ErrorPage error={t('credentialsForm.error.noNamespacesFound')} />
+        // TODO: Can we create templates without an ansible secret linked?
+        // Where do we store the template in this scenario?
         return (
             <AnsibleAutomationsForm
                 ansibleCredentials={ansibleCredentials}
