@@ -151,7 +151,13 @@ export function rbacUpdate(resource: IResource, namespace?: string, name?: strin
     return rbacResource('update', resource, namespace, name)
 }
 
-export function canUser(verb: Verb, resource: IResource, namespace?: string, name?: string, subresource?: SubResource) {
+export function canUser(
+    verb: Verb,
+    resource: IResource,
+    namespace?: string,
+    name?: string,
+    _subresource?: SubResource
+) {
     const resourceAttributes = rbacResource(verb, resource, namespace, name)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import { AcmRoute } from '@open-cluster-management/ui-components'
@@ -22,7 +22,7 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-
+import { PolicyReport, PolicyReportKind } from './resources/policy-report'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { Secret, SecretKind } from './resources/secret'
 
@@ -54,6 +54,7 @@ export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managed
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
+export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
 
 interface IEventData {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
@@ -91,6 +92,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setSecrets] = useRecoilState(secretsState)
+    const [, setPolicyReports] = useRecoilState(policyreportState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -114,6 +116,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [SecretKind]: setSecrets,
+        [PolicyReportKind]: setPolicyReports,
     }
 
     useEffect(() => {
@@ -249,5 +252,5 @@ export function LoadData(props: { children?: ReactNode }) {
 
     if (loading) return <LoadingPage />
 
-    return props.children
+    return <Fragment>{props.children}</Fragment>
 }

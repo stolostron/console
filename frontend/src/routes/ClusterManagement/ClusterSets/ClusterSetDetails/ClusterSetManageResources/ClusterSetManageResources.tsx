@@ -82,8 +82,6 @@ export function ClusterSetManageResourcesContent() {
         (resource) => resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
     )
 
-    console.log('SELECTED', selectedResources)
-
     return (
         <>
             <AcmForm>

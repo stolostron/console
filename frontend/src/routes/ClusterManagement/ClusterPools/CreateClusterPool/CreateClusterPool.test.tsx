@@ -3,15 +3,16 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockList, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { managedClusterSetsState, namespacesState } from '../../../../atoms'
+import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../lib/nock-util'
 import {
+    clickByPlaceholderText,
     clickByRole,
     clickByTestId,
+    clickByText,
     typeByTestId,
     waitForNocks,
     waitForText,
-    clickByText,
-    clickByPlaceholderText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -19,17 +20,17 @@ import {
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
 } from '../../../../resources/cluster-image-set'
+import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
+import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../resources/project'
 import {
     packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
 } from '../../../../resources/provider-connection'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
-import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPoolPage from './CreateClusterPool'
-import { managedClusterSetsState, namespacesState } from '../../../../atoms'
 
 const clusterName = 'test'
 
@@ -73,6 +74,12 @@ const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const mockCreateProject: ProjectRequest = {
+    apiVersion: ProjectRequestApiVersion,
+    kind: ProjectRequestKind,
+    metadata: { name: mockNamespace.metadata.name },
 }
 
 ///////////////////////////////// CREATE RESOURCE MOCKS //////////////////////////////////////////////////
@@ -230,10 +237,9 @@ describe('CreateClusterPool', () => {
         // create the form
         const { container } = render(<Component />)
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
         // start filling in the form
         await typeByTestId('eman', clusterName!)
+        await typeByTestId('emanspace', mockCreateProject.metadata.name!)
         await clickByTestId('cluster.create.aws.subtitle')
 
         // wait for tables/combos to fill in
@@ -250,6 +256,7 @@ describe('CreateClusterPool', () => {
         // nocks for cluster creation
         const createNocks = [
             // create the managed cluster
+            nockCreate(mockCreateProject),
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
             nockCreate(mockPrivateSecret),

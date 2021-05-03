@@ -14,6 +14,11 @@ export interface FormData {
     cancel: () => void
     submitText: string
     submittingText: string
+    reviewTitle: string
+    reviewDescription: string
+    cancelLabel: string
+    nextLabel: string
+    backLabel: string
 }
 
 export interface Section {

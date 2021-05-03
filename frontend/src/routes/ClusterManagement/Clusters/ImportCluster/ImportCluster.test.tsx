@@ -4,27 +4,30 @@ import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockGet } from '../../../../lib/nock-util'
+import { discoveredClusterState, discoveryConfigState, managedClusterSetsState, secretsState } from '../../../../atoms'
+import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../lib/test-metadata'
+import {
+    clickByTestId,
+    clickByText,
+    typeByTestId,
+    waitForNocks,
+    waitForTestId,
+    waitForText,
+} from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
 import {
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
 } from '../../../../resources/discovered-cluster'
 import {
-    waitForNocks,
-    waitForText,
-    clickByText,
-    clickByTestId,
-    typeByTestId,
-    waitForTestId,
-} from '../../../../lib/test-util'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
-import {
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
 } from '../../../../resources/klusterlet-add-on-config'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
+import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import {
     Project,
     ProjectApiVersion,
@@ -36,10 +39,6 @@ import {
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import DiscoveredClustersPage from '../../../Discovery/DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
-import { NavigationPath } from '../../../../NavigationPath'
-import { managedClusterSetsState, discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
-import { mockDiscoveryConfig, mockCRHCredential, mockManagedClusterSet } from '../../../../lib/test-metadata'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -243,8 +242,8 @@ describe('ImportCluster', () => {
 
         const { getByTestId, getByText, queryByTestId } = render(<Component />)
 
+        // TODO REMOVE
         await new Promise((resolve) => setTimeout(resolve, 500))
-
         await typeByTestId('clusterName', 'foobar')
 
         await clickByText('import.form.managedClusterSet.placeholder')
@@ -275,15 +274,13 @@ describe('ImportCluster', () => {
 
         render(<Component />)
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
         await clickByText('import.mode.default')
         await clickByText('import.auto.choice')
-        await clickByText('import.credential.default')
-        await clickByText('import.config.choice')
+        // await clickByText('import.credential.default')
+        // await clickByText('import.config.choice')
         await clickByText('import.auto.config.label')
         await clickByTestId('kubeConfigEntry')
         await typeByTestId('kubeConfigEntry', 'Test text')
@@ -294,7 +291,6 @@ describe('ImportCluster', () => {
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByText } = render(<Component />)
-        await new Promise((resolve) => setTimeout(resolve, 500))
         await typeByTestId('clusterName', 'foobar')
         await clickByText('import.mode.default')
         await clickByText('import.manual.choice')
@@ -311,8 +307,6 @@ describe('ImportCluster', () => {
         const deleteProjectNock = nockDelete(mockProjectResponse)
 
         render(<Component />)
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
 
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
@@ -389,8 +383,6 @@ describe('Import Discovered Cluster', () => {
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const importCommandNock = nockGet(mockSecretResponse)
-
-        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Add labels
         await clickByTestId('label-input-button')

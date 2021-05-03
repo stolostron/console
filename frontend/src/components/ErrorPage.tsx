@@ -64,7 +64,7 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
                 title = 'Not implemented'
                 message = 'The resource access is not implemented.'
                 break
-            case ResourceErrorCode.RequestCancelled:
+            case ResourceErrorCode.RequestAborted:
                 title = 'Request cancelled'
                 message = 'The request was cancelled.'
                 break
