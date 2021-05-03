@@ -2,7 +2,7 @@
 
 
 #!/usr/bin/env bash
-set -x
+
 echo > ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
