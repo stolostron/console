@@ -25,6 +25,7 @@ import {
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    clusterCuratorsState,
 } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { usePrevious } from '../../../../components/usePrevious'
@@ -71,6 +72,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         managedClusterAddons,
         clusterManagementAddons,
         clusterClaims,
+        clusterCurators,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -80,6 +82,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             managedClusterAddonsState,
             clusterManagementAddonsState,
             clusterClaimsState,
+            clusterCuratorsState,
         ])
     )
 
@@ -95,6 +98,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
 
     const clusterClaim = clusterClaims.find((cc) => cc.spec?.namespace === clusterDeployment?.metadata?.name)
 
+    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === match.params.id)
+
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
 
     const cluster = getCluster(
@@ -103,7 +108,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         certificateSigningRequests,
         managedCluster,
         clusterAddons,
-        clusterClaim
+        clusterClaim,
+        clusterCurator
     )
     const prevCluster = usePrevious(cluster)
     const showMachinePoolTab = cluster.isHive && cluster.isManaged && cluster.provider !== Provider.baremetal

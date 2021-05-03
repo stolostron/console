@@ -7,6 +7,7 @@ import { ClusterDeployment } from '../resources/cluster-deployment'
 import { ManagedCluster } from '../resources/managed-cluster'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
 import { ClusterClaim } from '../resources/cluster-claim'
+import { ClusterCurator } from '../resources/cluster-curator'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 import { AddonStatus } from './get-addons'
@@ -31,6 +32,11 @@ export enum ClusterStatus {
     'resuming' = 'resuming',
     'degraded' = 'degraded',
     'unknown' = 'unknown',
+    'prehookjob' = 'prehookjob',
+    'prehookfailed' = 'prehookfailed',
+    'posthookjob' = 'posthookjob',
+    'posthookfailed' = 'posthookfailed',
+    'importfailed' = 'importfailed',
 }
 
 export const clusterDangerStatuses = [
@@ -40,6 +46,9 @@ export const clusterDangerStatuses = [
     ClusterStatus.offline,
     ClusterStatus.degraded,
     ClusterStatus.notaccepted,
+    ClusterStatus.prehookfailed,
+    ClusterStatus.posthookfailed,
+    ClusterStatus.importfailed,
 ]
 
 export type Cluster = {
@@ -64,6 +73,7 @@ export type Cluster = {
     }
     isHive: boolean
     isManaged: boolean
+    isCurator: boolean
     clusterSet: string | undefined
     owner: {
         createdBy: string | undefined
@@ -97,7 +107,8 @@ export function mapClusters(
     certificateSigningRequests: CertificateSigningRequest[] = [],
     managedClusters: ManagedCluster[] = [],
     managedClusterAddOns: ManagedClusterAddOn[] = [],
-    clusterClaims: ClusterClaim[] = []
+    clusterClaims: ClusterClaim[] = [],
+    clusterCurators: ClusterCurator[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -113,13 +124,15 @@ export function mapClusters(
         const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
         const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
         const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
+        const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
         return getCluster(
             managedClusterInfo,
             clusterDeployment,
             certificateSigningRequests,
             managedCluster,
             addons,
-            clusterClaim
+            clusterClaim,
+            clusterCurator
         )
     })
 }
@@ -130,14 +143,16 @@ export function getCluster(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
-    clusterClaim: ClusterClaim | undefined
+    clusterClaim: ClusterClaim | undefined,
+    clusterCurator: ClusterCurator | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
         managedClusterInfo,
         certificateSigningRequests,
         managedCluster,
-        managedClusterAddOns
+        managedClusterAddOns,
+        clusterCurator
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -157,6 +172,7 @@ export function getCluster(
         consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
+        isCurator: !!clusterCurator,
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
@@ -366,9 +382,63 @@ export function getClusterStatus(
     managedClusterInfo: ManagedClusterInfo | undefined,
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
-    managedClusterAddOns: ManagedClusterAddOn[]
+    managedClusterAddOns: ManagedClusterAddOn[],
+    clusterCurator: ClusterCurator | undefined
 ) {
     let statusMessage: string | undefined
+
+    // ClusterCurator status
+    let ccStatus: ClusterStatus = ClusterStatus.prehookjob
+    if (clusterCurator) {
+        const checkCuratorConditionInProgress = (
+            condition: string,
+            conditions: V1CustomResourceDefinitionCondition[]
+        ) => {
+            const cond = conditions?.find((c) => c.type === condition)
+            return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
+        }
+
+        const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
+        const clusterCuratorJob = checkForCondition('clustercurator-job', ccConditions)
+
+        // ClusterCurator has not completed so loop through statuses
+        if (!clusterCuratorJob) {
+            // activate-and-monitor <--- might indicate a provision failed
+            const prehookJob = checkForCondition('prehook-ansiblejob', ccConditions)
+            const provisionJob = checkForCondition('hive-provisioning-job', ccConditions)
+            const activateMonitor = checkForCondition('activate-and-monitor', ccConditions)
+            const monitorImport = checkForCondition('monitor-import', ccConditions)
+            const posthookJob = checkForCondition('posthook-ansiblejob', ccConditions)
+
+            if (!prehookJob && (clusterCurator.spec?.install?.prehook?.length ?? 0) > 0) {
+                // Check if pre-hook is in progress or failed
+                ccStatus = checkCuratorConditionInProgress('prehook-ansiblejob', ccConditions)
+                    ? ClusterStatus.prehookjob
+                    : ClusterStatus.prehookfailed
+            } else if (!provisionJob) {
+                // check if provision job is in progress or failed
+                ccStatus = checkCuratorConditionInProgress('hive-provisioning-job', ccConditions)
+                    ? ClusterStatus.creating
+                    : ClusterStatus.provisionfailed
+            } else if (!activateMonitor) {
+                ccStatus = checkCuratorConditionInProgress('activate-and-monitor', ccConditions)
+                    ? ClusterStatus.creating
+                    : ClusterStatus.provisionfailed
+            } else if (!monitorImport) {
+                // check if import is in progress or failed
+                ccStatus = checkCuratorConditionInProgress('monitor-import', ccConditions)
+                    ? ClusterStatus.pendingimport
+                    : ClusterStatus.importfailed
+            } else if (!posthookJob && (clusterCurator.spec?.install?.posthook?.length ?? 0) > 0) {
+                // check if post-hook is in progress or failed
+                ccStatus = checkCuratorConditionInProgress('posthook-ansiblejob', ccConditions)
+                    ? ClusterStatus.posthookjob
+                    : ClusterStatus.posthookfailed
+            }
+
+            return { status: ccStatus, statusMessage }
+        }
+    }
 
     // ClusterDeployment status
     let cdStatus = ClusterStatus.pending

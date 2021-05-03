@@ -6,6 +6,7 @@ import { AcmRoute } from '@open-cluster-management/ui-components'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
+import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
 import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
 import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
 import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
@@ -22,10 +23,8 @@ import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 import { PolicyReport, PolicyReportKind } from './resources/policy-report'
-
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { Secret, SecretKind } from './resources/secret'
-import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -34,6 +33,7 @@ export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>
     default: [],
 })
 export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', default: [] })
+export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clusterCurators', default: [] })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
 export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
@@ -42,7 +42,6 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
-export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clustercurators', default: [] })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
@@ -75,6 +74,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterClaims] = useRecoilState(clusterClaimsState)
+    const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
@@ -92,13 +92,13 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setSecrets] = useRecoilState(secretsState)
-    const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterClaimKind]: setClusterClaims,
+        [ClusterCuratorKind]: setClusterCurators,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
         [ClusterPoolKind]: setClusterPools,
@@ -116,7 +116,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [SecretKind]: setSecrets,
-        [ClusterCuratorKind]: setClusterCurators,
         [PolicyReportKind]: setPolicyReports,
     }
 

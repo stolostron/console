@@ -248,6 +248,24 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
     ]
 
+    // ClusterCurator
+    if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
+        const disabledPreHookActions = [
+            'upgrade-cluster',
+            'search-cluster',
+            'import-cluster',
+            'hibernate-cluster',
+            'resume-cluster',
+            'destroy-cluster',
+        ]
+        actions = actions.filter((a) => !disabledPreHookActions.includes(a.id))
+    }
+
+    if (cluster.status === ClusterStatus.importfailed) {
+        const disabledImportFailedActions = ['upgrade-cluster', 'search-cluster', 'import-cluster', 'detach-cluster']
+        actions = actions.filter((a) => !disabledImportFailedActions.includes(a.id))
+    }
+
     if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
         const disabledHibernationActions = [
             'upgrade-cluster',

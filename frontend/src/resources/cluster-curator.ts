@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node'
+import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { createResource, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
@@ -41,6 +41,9 @@ export interface ClusterCurator {
             prehook?: AnsibleJob[]
             posthook?: AnsibleJob[]
         }
+    }
+    status?: {
+        conditions: V1CustomResourceDefinitionCondition[]
     }
 }
 
