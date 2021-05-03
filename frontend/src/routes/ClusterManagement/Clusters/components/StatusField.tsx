@@ -29,6 +29,9 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.notaccepted:
         case ClusterStatus.offline:
         case ClusterStatus.degraded:
+        case ClusterStatus.prehookfailed:
+        case ClusterStatus.posthookfailed:
+        case ClusterStatus.importfailed:
             type = StatusType.danger
             break
         case ClusterStatus.creating:
@@ -36,6 +39,8 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.detaching:
         case ClusterStatus.stopping:
         case ClusterStatus.resuming:
+        case ClusterStatus.prehookjob:
+        case ClusterStatus.posthookjob:
             type = StatusType.progress
             break
         case ClusterStatus.detached:

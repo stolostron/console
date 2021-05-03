@@ -101,6 +101,26 @@ export type Nodes = {
     nodeList: NodeInfo[]
 }
 
+export type UpgradeInfo = {
+    isUpgrading: boolean
+    upgradeFailed: boolean
+    currentVersion: string | undefined
+    desiredVersion: string | undefined
+    availableUpdates: string[]
+    prehooks: {
+        hasPrehooks: boolean
+        inProgress: boolean
+        success: boolean
+        failed: boolean
+    }
+    posthooks: {
+        hasPosthooks: boolean
+        inProgress: boolean
+        success: boolean
+        failed: boolean
+    }
+}
+
 export function mapClusters(
     clusterDeployments: ClusterDeployment[] = [],
     managedClusterInfos: ManagedClusterInfo[] = [],
@@ -165,7 +185,7 @@ export function getCluster(
         status,
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),
-        distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment),
+        distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
         kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
@@ -184,6 +204,21 @@ export function getCluster(
 
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
+
+const checkCuratorConditionInProgress = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
+}
+
+const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.status === 'True' && cond?.reason === 'Job_failed'
+}
+
+const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
+}
 
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const userIdentity = 'open-cluster-management.io/user-identity'
@@ -287,7 +322,8 @@ export function getProvider(
 export function getDistributionInfo(
     managedClusterInfo: ManagedClusterInfo | undefined,
     managedCluster: ManagedCluster | undefined,
-    clusterDeployment: ClusterDeployment | undefined
+    clusterDeployment: ClusterDeployment | undefined,
+    clusterCurator: ClusterCurator | undefined
 ) {
     let k8sVersion: string | undefined
     let ocp: OpenShiftDistributionInfo | undefined
@@ -314,6 +350,59 @@ export function getDistributionInfo(
         if (displayVersion === undefined) {
             const cdVersion = clusterDeployment.metadata.labels?.['hive.openshift.io/version-major-minor-patch']
             displayVersion = cdVersion ? `OpenShift ${cdVersion}` : undefined
+        }
+    }
+
+    const upgradeInfo: UpgradeInfo = {
+        isUpgrading: false,
+        upgradeFailed: false,
+        currentVersion: undefined,
+        desiredVersion: undefined,
+        availableUpdates: [],
+        prehooks: {
+            hasPrehooks: false,
+            inProgress: false,
+            success: false,
+            failed: false,
+        },
+        posthooks: {
+            hasPosthooks: false,
+            inProgress: false,
+            success: false,
+            failed: false,
+        },
+    }
+
+    if (clusterCurator || managedClusterInfo) {
+        const curatorConditions = clusterCurator?.status?.conditions ?? []
+        const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
+
+        const upgradeClusterCondition = checkCuratorConditionInProgress('upgrade-cluster', curatorConditions)
+        upgradeInfo.isUpgrading =
+            upgradeClusterCondition ||
+            managedClusterInfo?.status?.distributionInfo?.ocp?.version !==
+                managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+
+        upgradeInfo.upgradeFailed =
+            (managedClusterInfo?.status?.distributionInfo.ocp?.desiredVersion !==
+                managedClusterInfo?.status?.distributionInfo.ocp?.version &&
+                managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
+            false
+        upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
+        upgradeInfo.desiredVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+        upgradeInfo.availableUpdates = managedClusterInfo?.status?.distributionInfo?.ocp?.availableUpdates ?? []
+
+        upgradeInfo.prehooks = {
+            hasPrehooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
+            inProgress: isUpgradeCuration && checkCuratorConditionInProgress('prehook-ansiblejob', curatorConditions),
+            success: isUpgradeCuration && checkCuratorConditionDone('prehook-ansiblejob', curatorConditions),
+            failed: isUpgradeCuration && checkCuratorConditionFailed('prehook-ansiblejob', curatorConditions),
+        }
+        upgradeInfo.posthooks = {
+            hasPosthooks: (clusterCurator?.spec?.upgrade?.posthook ?? []).length > 0,
+            inProgress: isUpgradeCuration && checkCuratorConditionInProgress('posthook-ansiblejob', curatorConditions),
+            success: isUpgradeCuration && checkCuratorConditionDone('posthook-ansiblejob', curatorConditions),
+            failed: isUpgradeCuration && checkCuratorConditionFailed('posthook-ansiblejob', curatorConditions),
         }
     }
 
@@ -390,46 +479,39 @@ export function getClusterStatus(
     // ClusterCurator status
     let ccStatus: ClusterStatus = ClusterStatus.prehookjob
     if (clusterCurator) {
-        const checkCuratorConditionInProgress = (
-            condition: string,
-            conditions: V1CustomResourceDefinitionCondition[]
-        ) => {
-            const cond = conditions?.find((c) => c.type === condition)
-            return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
-        }
-
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
-        const clusterCuratorJob = checkForCondition('clustercurator-job', ccConditions)
 
         // ClusterCurator has not completed so loop through statuses
-        if (!clusterCuratorJob) {
-            // activate-and-monitor <--- might indicate a provision failed
-            const prehookJob = checkForCondition('prehook-ansiblejob', ccConditions)
-            const provisionJob = checkForCondition('hive-provisioning-job', ccConditions)
-            const activateMonitor = checkForCondition('activate-and-monitor', ccConditions)
-            const monitorImport = checkForCondition('monitor-import', ccConditions)
-            const posthookJob = checkForCondition('posthook-ansiblejob', ccConditions)
-
-            if (!prehookJob && (clusterCurator.spec?.install?.prehook?.length ?? 0) > 0) {
+        if (
+            !checkCuratorConditionDone('clustercurator-job', ccConditions) &&
+            clusterCurator?.spec?.desiredCuration === 'install'
+        ) {
+            if (
+                !checkCuratorConditionDone('prehook-ansiblejob', ccConditions) &&
+                (clusterCurator.spec?.install?.prehook?.length ?? 0) > 0
+            ) {
                 // Check if pre-hook is in progress or failed
                 ccStatus = checkCuratorConditionInProgress('prehook-ansiblejob', ccConditions)
                     ? ClusterStatus.prehookjob
                     : ClusterStatus.prehookfailed
-            } else if (!provisionJob) {
+            } else if (!checkCuratorConditionDone('hive-provisioning-job', ccConditions)) {
                 // check if provision job is in progress or failed
                 ccStatus = checkCuratorConditionInProgress('hive-provisioning-job', ccConditions)
                     ? ClusterStatus.creating
                     : ClusterStatus.provisionfailed
-            } else if (!activateMonitor) {
+            } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
                 ccStatus = checkCuratorConditionInProgress('activate-and-monitor', ccConditions)
                     ? ClusterStatus.creating
                     : ClusterStatus.provisionfailed
-            } else if (!monitorImport) {
+            } else if (!checkCuratorConditionDone('monitor-import', ccConditions)) {
                 // check if import is in progress or failed
                 ccStatus = checkCuratorConditionInProgress('monitor-import', ccConditions)
                     ? ClusterStatus.pendingimport
                     : ClusterStatus.importfailed
-            } else if (!posthookJob && (clusterCurator.spec?.install?.posthook?.length ?? 0) > 0) {
+            } else if (
+                !checkCuratorConditionDone('posthook-ansiblejob', ccConditions) &&
+                (clusterCurator.spec?.install?.posthook?.length ?? 0) > 0
+            ) {
                 // check if post-hook is in progress or failed
                 ccStatus = checkCuratorConditionInProgress('posthook-ansiblejob', ccConditions)
                     ? ClusterStatus.posthookjob
