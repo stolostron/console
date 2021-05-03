@@ -31,12 +31,12 @@ export function StatusSummaryCount() {
     useEffect(startPolling, [startPolling])
 
     const policyReport = policyReports.filter((pr) => pr.metadata.name === cluster?.name)[0]
-    const policyReportViolationsCount = policyReport?.results.length ?? 0
-    const criticalCount = policyReport?.results.filter((item) => item.properties?.total_risk === '4').length
-    const majorCount = policyReport?.results.filter((item) => item.properties?.total_risk === '3').length
-    const minorCount = policyReport?.results.filter((item) => item.properties?.total_risk === '2').length
-    const lowCount = policyReport?.results.filter((item) => item.properties?.total_risk === '1').length
-    const warningCount = policyReport?.results.filter((item) => item.properties?.total_risk === '0').length
+    const policyReportViolationsCount = policyReport?.results?.length ?? 0
+    const criticalCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '4').length
+    const majorCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '3').length
+    const minorCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '2').length
+    const lowCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '1').length
+    const warningCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '0').length
 
     return (
         <div style={{ marginTop: '24px' }}>
@@ -119,7 +119,7 @@ export function StatusSummaryCount() {
                                   })
                                 : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: policyReport?.results.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
+                        isDanger: policyReport?.results?.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
                     },
                 ]}
             />
