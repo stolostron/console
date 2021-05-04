@@ -237,7 +237,7 @@
     "status.needsapproval.message": "The cluster is in the process of attaching to the hub cluster, but cannot complete the attachment until the certificate signing request is approved by the cluster administrator.",
     "status.pendingimport.message": "The hub cluster is ready for this cluster to attach. The cluster is automatically imported if it was created by the hub cluster. If this is an existing cluster that is being imported, view the details page of the cluster and follow the steps to complete the import process.",
     "status.ready.message": "The cluster is available. The Kubernetes API server and core management agents are in a healthy state.",
-    "status.offline.message": "The cluster is not available. The xfKubernetes API server or core management agents are not in a healthy state.",
+    "status.offline.message": "The cluster is not available. The Kubernetes API server or core management agents are not in a healthy state.",
     "status.unknown.message": "The cluster is not reachable. The management control plane has not heard from the cluster in the specified <bold>leaseDurationSeconds</bold> interval configured in the <bold>ManagedCluster</bold> resource.",
     "status.hibernating.message": "The cluster is powered down. Virtual machine and network resources are not being utilized.",
     "status.resuming.message": "The cluster is powering back on. Cluster operations and consumption of virtual machine and network resources will resume.",
