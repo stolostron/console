@@ -20,17 +20,16 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-01',
+            display_name: 'test-cluster-01',
             openshiftVersion: '4.5.5',
-            providerConnections: [
-                {
-                    apiVersion: 'v1',
-                    kind: 'Secret',
-                    name: 'ocm-api-token',
-                    namespace: 'open-cluster-management',
-                    resourceVersion: '2673462626',
-                    uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
-                },
-            ],
+            credential: {
+                apiVersion: 'v1',
+                kind: 'Secret',
+                name: 'ocm-api-token',
+                namespace: 'open-cluster-management',
+                resourceVersion: '2673462626',
+                uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
+            },
             status: 'Active',
         },
     },
@@ -41,7 +40,8 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         spec: {
             activity_timestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'gcp',
-            console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
+            display_name: 'test-cluster-02',
+            console: 'https://console-openshift-console.apps.test-cluster-02.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
@@ -56,9 +56,10 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             activity_timestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'openstack',
             isManagedCluster: true,
-            console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
+            display_name: 'test-cluster-03',
+            console: 'https://console-openshift-console.apps.test-cluster-03.dev01.red-chesterfield.com',
             creation_timestamp: '2020-07-30T19:09:43Z',
-            name: 'test-cluster-02',
+            name: 'test-cluster-03',
             openshiftVersion: '4.6.1',
             status: 'Stale',
         },
@@ -82,20 +83,14 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
+        await waitForText(mockDiscoveredClusters[0].spec.display_name)
+        await waitForText('OpenShift ' + mockDiscoveredClusters[0].spec.openshiftVersion)
+        await waitForText(mockDiscoveredClusters[1].spec.display_name)
+        await waitForText('OpenShift ' + mockDiscoveredClusters[1].spec.openshiftVersion)
+
+        await waitForNotText(mockDiscoveredClusters[2].spec.display_name) // Ensure managedcluster does not appear
+
         await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
-
-        // Ensure data for each discoveredcluster appears in table
-        mockDiscoveredClusters.forEach(async (dc) => {
-            // Ensures managed clusters dont show up in table
-            if (dc.spec.isManagedCluster) {
-                await waitForNotText(dc.metadata.name!)
-            }
-            await waitForText(dc.metadata.name!)
-            await waitForText('OpenShift ' + dc.spec.openshiftVersion)
-        })
-
-        // TODO - DISCOVERY TEAM - THIS NEEDS TO BE REMOVED
-        await new Promise((resolve) => setTimeout(resolve, 100))
     })
 
     test('Discovery featuregate enabled, but no provider connections or discoveryconfig (Empty State 1)', async () => {
