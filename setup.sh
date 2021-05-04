@@ -25,7 +25,10 @@ echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
 SA_SECRET=`oc get pods -n open-cluster-management --selector=app=console-chart-v2,component=console -o="jsonpath={.items[0].spec.volumes[1].secret.secretName}"`
 SA_TOKEN=`oc get secret -n open-cluster-management ${SA_SECRET} -o="jsonpath={.data.token}"`
-SA_TOKEN=`echo ${SA_TOKEN} | base64 -d -`
+
+echo ${SA_TOKEN} > /tmp/tmp_SA_TOKEN
+SA_TOKEN=`cat /tmp/tmp_SA_TOKEN | base64 -d -`
+rm /tmp/tmp_SA_TOKEN
 echo TOKEN=$SA_TOKEN >> ./backend/.env
 
 REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirectURIs[], \"$OAUTH2_REDIRECT_URL\"] | unique")
