@@ -27,6 +27,7 @@ export function ScaleClusterAlert() {
     })
 
     if (
+        cluster?.isHive &&
         cluster?.nodes?.nodeList.length !== 0 &&
         workerNodeCount !== undefined &&
         workerNodeCount !== totalDesiredReplicas
