@@ -30,6 +30,8 @@ export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; 
             case ClusterStatus.detaching:
             case ClusterStatus.stopping:
             case ClusterStatus.resuming:
+            case ClusterStatus.prehookjob:
+            case ClusterStatus.posthookjob:
                 progress++
                 break
             case ClusterStatus.failed:
@@ -38,6 +40,9 @@ export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; 
             case ClusterStatus.notaccepted:
             case ClusterStatus.offline:
             case ClusterStatus.degraded:
+            case ClusterStatus.prehookfailed:
+            case ClusterStatus.posthookfailed:
+            case ClusterStatus.importfailed:
                 danger++
                 break
             // temporary
