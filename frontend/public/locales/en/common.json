@@ -55,5 +55,7 @@
 
     "openshift.cluster.manager": "OpenShift Cluster Manager",
 
-    "learn.terminology": "Learn more about the terminology"
+    "learn.terminology": "Learn more about the terminology",
+
+    "view.documentation": "View documentation"
 }
