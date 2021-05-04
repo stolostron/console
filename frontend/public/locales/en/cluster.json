@@ -106,9 +106,9 @@
 
     "table.name": "Name",
     "table.name.helperText": "The name of the cluster. If the cluster was claimed from a cluster pool, the ClusterClaim resource name is used as the display name for the cluster on the console. Otherwise, the displayed name is the common resource name shared by multiple resources generated from cluster creation or import.",
-    "table.clusterName": "Resource name",
+    "table.clusterName": "Cluster resource name",
     "table.clusterName.helperText": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>.",
-    "table.clusterClaim": "Cluster claim",
+    "table.clusterClaim": "Cluster claim name",
     "table.clusterClaim.helperText": "If the cluster was claimed from a cluster pool, the <bold>ClusterClaim</bold> resource name is used as the display name for the cluster on the console. For any direct interactions with underlying cluster resources, such as command line actions, use the <bold>Resource name</bold> for those operations.",
     "table.clusterId": "Cluster ID",
     "table.status": "Status",

@@ -51,38 +51,42 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     leftItems={[
                         {
                             key: t('table.clusterName'),
-                            value: cluster!.name,
-                            keyAction: (
-                                <Popover
-                                    bodyContent={
-                                        <Trans
-                                            i18nKey="cluster:table.clusterName.helperText"
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    }
-                                >
-                                    <AcmButton variant="link">
-                                        <OutlinedQuestionCircleIcon />
-                                    </AcmButton>
-                                </Popover>
+                            value: (
+                                <span>
+                                    {cluster!.name}
+                                    <Popover
+                                        bodyContent={
+                                            <Trans
+                                                i18nKey="cluster:table.clusterName.helperText"
+                                                components={{ bold: <strong /> }}
+                                            />
+                                        }
+                                    >
+                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                            <OutlinedQuestionCircleIcon />
+                                        </AcmButton>
+                                    </Popover>
+                                </span>
                             ),
                         },
                         {
                             key: t('table.clusterClaim'),
-                            value: cluster?.hive?.clusterClaimName,
-                            keyAction: (
-                                <Popover
-                                    bodyContent={
-                                        <Trans
-                                            i18nKey="cluster:table.clusterClaim.helperText"
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    }
-                                >
-                                    <AcmButton variant="link">
-                                        <OutlinedQuestionCircleIcon />
-                                    </AcmButton>
-                                </Popover>
+                            value: cluster?.hive?.clusterClaimName && (
+                                <span>
+                                    {cluster?.hive?.clusterClaimName}
+                                    <Popover
+                                        bodyContent={
+                                            <Trans
+                                                i18nKey="cluster:table.clusterClaim.helperText"
+                                                components={{ bold: <strong /> }}
+                                            />
+                                        }
+                                    >
+                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                            <OutlinedQuestionCircleIcon />
+                                        </AcmButton>
+                                    </Popover>
+                                </span>
                             ),
                         },
                         {
