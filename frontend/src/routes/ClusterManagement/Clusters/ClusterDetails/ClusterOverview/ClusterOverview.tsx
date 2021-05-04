@@ -50,13 +50,31 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     title={t('table.details')}
                     leftItems={[
                         {
-                            key: t('table.name'),
+                            key: t('table.clusterName'),
                             value: cluster!.name,
                             keyAction: (
                                 <Popover
                                     bodyContent={
                                         <Trans
                                             i18nKey="cluster:table.clusterName.helperText"
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
+                                >
+                                    <AcmButton variant="link">
+                                        <OutlinedQuestionCircleIcon />
+                                    </AcmButton>
+                                </Popover>
+                            ),
+                        },
+                        {
+                            key: t('table.clusterClaim'),
+                            value: cluster?.hive?.clusterClaimName,
+                            keyAction: (
+                                <Popover
+                                    bodyContent={
+                                        <Trans
+                                            i18nKey="cluster:table.clusterClaim.helperText"
                                             components={{ bold: <strong /> }}
                                         />
                                     }
