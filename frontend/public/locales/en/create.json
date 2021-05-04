@@ -207,6 +207,7 @@
     "creation.ocp.clusterSet": "Cluster set",
     "creation.ocp.namespace": "Cluster namespace",
     "creation.ocp.baseDomain": "Base DNS domain",
+    "placeholder.creation.ocp.baseDomain": "Enter base DNS domain",
     "creation.ocp.imageMirror": "Image Registry Mirror",
     "creation.ocp.region": "Region",
     "creation.ocp.purpose": "Environment",
@@ -230,7 +231,9 @@
     "creation.ocp.otp.instance.flavor": "Instance flavor",
     "creation.ocp.cluster.ost.external.network.name": "External network name",
     "creation.ocp.cluster.ost.api.floating.ip": "API floating IP",
+    "placeholder.creation.ocp.cluster.ost.api.floating.ip": "Enter API floating IP",
     "creation.ocp.cluster.ost.ingress.floating.ip": "Ingress floating IP",
+    "placeholder.creation.ocp.cluster.ost.ingress.floating.ip": "Enter ingress floating IP",
 
     "clusterPool.creation.ocp.name": "Cluster pool name",
     "clusterPool.creation.ocp.namespace": "Cluster pool namespace",
