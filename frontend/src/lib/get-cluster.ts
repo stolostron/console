@@ -86,6 +86,7 @@ export type DistributionInfo = {
     ocp: OpenShiftDistributionInfo | undefined
     displayVersion: string | undefined
     isManagedOpenShift: boolean
+    upgradeInfo: UpgradeInfo
 }
 
 export type HiveSecrets = {
@@ -108,13 +109,13 @@ export type UpgradeInfo = {
     desiredVersion: string | undefined
     availableUpdates: string[]
     prehooks: {
-        hasPrehooks: boolean
+        hasHooks: boolean
         inProgress: boolean
         success: boolean
         failed: boolean
     }
     posthooks: {
-        hasPosthooks: boolean
+        hasHooks: boolean
         inProgress: boolean
         success: boolean
         failed: boolean
@@ -384,8 +385,8 @@ export function getDistributionInfo(
                 managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
 
         upgradeInfo.upgradeFailed =
-            (managedClusterInfo?.status?.distributionInfo.ocp?.desiredVersion !==
-                managedClusterInfo?.status?.distributionInfo.ocp?.version &&
+            (managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
+                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
         upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
@@ -393,13 +394,13 @@ export function getDistributionInfo(
         upgradeInfo.availableUpdates = managedClusterInfo?.status?.distributionInfo?.ocp?.availableUpdates ?? []
 
         upgradeInfo.prehooks = {
-            hasPrehooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
+            hasHooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
             inProgress: isUpgradeCuration && checkCuratorConditionInProgress('prehook-ansiblejob', curatorConditions),
             success: isUpgradeCuration && checkCuratorConditionDone('prehook-ansiblejob', curatorConditions),
             failed: isUpgradeCuration && checkCuratorConditionFailed('prehook-ansiblejob', curatorConditions),
         }
         upgradeInfo.posthooks = {
-            hasPosthooks: (clusterCurator?.spec?.upgrade?.posthook ?? []).length > 0,
+            hasHooks: (clusterCurator?.spec?.upgrade?.posthook ?? []).length > 0,
             inProgress: isUpgradeCuration && checkCuratorConditionInProgress('posthook-ansiblejob', curatorConditions),
             success: isUpgradeCuration && checkCuratorConditionDone('posthook-ansiblejob', curatorConditions),
             failed: isUpgradeCuration && checkCuratorConditionFailed('posthook-ansiblejob', curatorConditions),
@@ -418,7 +419,7 @@ export function getDistributionInfo(
     }
 
     if (displayVersion) {
-        return { k8sVersion, ocp, displayVersion, isManagedOpenShift }
+        return { k8sVersion, ocp, displayVersion, isManagedOpenShift, upgradeInfo }
     }
 
     return undefined
@@ -494,13 +495,13 @@ export function getClusterStatus(
                 ccStatus = checkCuratorConditionInProgress('prehook-ansiblejob', ccConditions)
                     ? ClusterStatus.prehookjob
                     : ClusterStatus.prehookfailed
+            } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
+                ccStatus = checkCuratorConditionInProgress('activate-and-monitor', ccConditions)
+                    ? ClusterStatus.creating
+                    : ClusterStatus.provisionfailed
             } else if (!checkCuratorConditionDone('hive-provisioning-job', ccConditions)) {
                 // check if provision job is in progress or failed
                 ccStatus = checkCuratorConditionInProgress('hive-provisioning-job', ccConditions)
-                    ? ClusterStatus.creating
-                    : ClusterStatus.provisionfailed
-            } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
-                ccStatus = checkCuratorConditionInProgress('activate-and-monitor', ccConditions)
                     ? ClusterStatus.creating
                     : ClusterStatus.provisionfailed
             } else if (!checkCuratorConditionDone('monitor-import', ccConditions)) {
