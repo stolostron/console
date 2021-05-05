@@ -463,6 +463,7 @@ describe('CreateCluster', () => {
 
     test('can create bare metal cluster', async () => {
         window.scrollBy = () => {}
+        jest.setTimeout(60000)
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
