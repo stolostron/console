@@ -5,16 +5,15 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { managedClusterSetsState } from '../../../../atoms'
-import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../lib/nock-util'
+import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
-    clickByPlaceholderText,
     clickByRole,
     clickByTestId,
-    clickByText,
     typeByTestId,
     waitForNocks,
     waitForText,
+    clickByText,
+    clickByPlaceholderText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
@@ -41,6 +40,7 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
+import { managedClusterSetsState } from '../../../../atoms'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -275,7 +275,7 @@ const mockClusterDeployment = {
         controlPlaneConfig: {
             servingCertificates: {},
         },
-        installAttemptsLimit: 1,
+        installAttemptsLimit: 2,
         installed: false,
         platform: {
             baremetal: {
@@ -475,26 +475,36 @@ describe('CreateCluster', () => {
         // create the form
         const { container } = render(<Component />)
 
-        // start filling in the form
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the name
         await typeByTestId('eman', clusterName!)
+        await clickByText('Next')
+
+        // step 2 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // finish the form
+        // step 3 -- the imageset and connection
         await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
         await clickByRole('option', 0)
-
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(mockProviderConnection[0].metadata.name!)
+        await clickByText('Next')
 
+        // step 4 -- the hosts
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
         }
+        await clickByText('Next')
+
+        // step 5 -- the network
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await clickByText('Next')
 
         // nocks for cluster creation
         const createNocks = [
@@ -537,7 +547,7 @@ describe('CreateCluster', () => {
         ]
 
         // click create button
-        await clickByTestId('create-button-portal-id-btn')
+        await clickByText('Create')
 
         expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('success.create.creating')
