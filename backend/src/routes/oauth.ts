@@ -62,7 +62,8 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
 }
 
 export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = parseCookies(req)['acm-access-token-cookie']
+    //const token = parseCookies(req)['acm-access-token-cookie']
+    const token = 'sha256~kzksaOSVGq_kZev1Vmrfn7hq7JtbyeIagvQtklNSXVo'//parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
     let tokenName = token

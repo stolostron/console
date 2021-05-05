@@ -52,7 +52,7 @@ export interface requestException {
 }
 
 // singleRequestTimeout sets limit to all http.requests in this file
-const singleRequestTimeout = 60000
+const singleRequestTimeout = 30000
 
 const gvrManagedClusterView: KubernetesGVR = {
     apiGroup: ManagedClusterViewApiGroup,
