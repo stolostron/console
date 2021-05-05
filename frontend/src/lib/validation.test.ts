@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable jest/no-conditional-expect */
 
 import {
     validateKubernetesDnsName,
