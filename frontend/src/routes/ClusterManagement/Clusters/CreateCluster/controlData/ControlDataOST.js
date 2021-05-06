@@ -68,6 +68,16 @@ const controlDataOST = [
         active: '',
         validation: VALIDATE_IP,
     },
+    ///////////////////////  external DNS   /////////////////////////////////////
+    {
+        id: 'externalDNS',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.external.dns',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
+        active: '',
+        validation: VALIDATE_IP,
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
