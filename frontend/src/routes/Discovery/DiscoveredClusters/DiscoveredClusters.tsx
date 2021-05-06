@@ -237,6 +237,24 @@ export function DiscoveredClustersTable(props: {
             },
         },
         {
+            header: t('dcTbl.lastActive'),
+            sort: 'spec.activity_timestamp',
+            cell: (discoveredCluster) => (
+                <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
+                    {discoveredCluster.spec.activity_timestamp === undefined
+                        ? ['N/A']
+                        : moment
+                              .duration(
+                                  Math.abs(
+                                      new Date().getTime() -
+                                          new Date(discoveredCluster.spec.activity_timestamp).getTime()
+                                  )
+                              )
+                              .humanize()}
+                </span>
+            ),
+        },
+        {
             header: t('dcTbl.namespace'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
                 compareStrings(a?.metadata.namespace, b?.metadata.namespace),
@@ -279,24 +297,6 @@ export function DiscoveredClustersTable(props: {
                 ) : (
                     '-'
                 ),
-        },
-        {
-            header: t('dcTbl.lastActive'),
-            sort: 'spec.activity_timestamp',
-            cell: (discoveredCluster) => (
-                <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-                    {discoveredCluster.spec.activity_timestamp === undefined
-                        ? ['N/A']
-                        : moment
-                              .duration(
-                                  Math.abs(
-                                      new Date().getTime() -
-                                          new Date(discoveredCluster.spec.activity_timestamp).getTime()
-                                  )
-                              )
-                              .humanize()}
-                </span>
-            ),
         },
         {
             header: t('dcTbl.created'),
