@@ -6,9 +6,9 @@
     "proxy": "https://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.14.3",
-        "@open-cluster-management/ui-components": "^0.93.0",
-        "@patternfly/react-core": "^4.116.0",
-        "@patternfly/react-table": "^4.26.12",
+        "@open-cluster-management/ui-components": "^0.96.0",
+        "@patternfly/react-core": "^4.116.2",
+        "@patternfly/react-table": "^4.26.14",
         "@types/lodash": "^4.14.168",
         "@types/moment": "^2.13.0",
         "@types/react": "^17.0.5",
@@ -63,7 +63,7 @@
         "lint:fix": "eslint src --ext .ts,.tsx --fix",
         "check": "prettier --check src",
         "check:fix": "prettier --write src",
-        "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
+        "update": "rm -rf package-lock.json node_modules && npx npm-check-updates -u -t minor && npm install && npm audit fix && npm dedup && npm test && npm run lint:fix && npm run lint && npm run check:fix",
         "clean": "rm -rf coverage build"
     },
     "eslintConfig": {

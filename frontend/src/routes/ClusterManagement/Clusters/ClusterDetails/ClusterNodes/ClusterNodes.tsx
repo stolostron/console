@@ -8,8 +8,9 @@ import {
     IAcmTableColumn,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
@@ -20,11 +21,7 @@ export function NodePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
             <PageSection>
-                <Card isLarge>
-                    <CardBody>
-                        <NodesPoolsTable />
-                    </CardBody>
-                </Card>
+                <NodesPoolsTable />
             </PageSection>
         </AcmPageContent>
     )
@@ -182,6 +179,7 @@ export function NodesPoolsTable() {
         <>
             <ScaleClusterAlert />
             <AcmTable<NodeInfo>
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="nodes"
                 items={nodes}
                 columns={columns}

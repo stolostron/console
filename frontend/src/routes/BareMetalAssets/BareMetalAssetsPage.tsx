@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, Bullseye, Card, CardBody, PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -28,11 +28,7 @@ export default function BareMetalAssetsPage() {
     return (
         <AcmPageContent id="bare-metal-assets">
             <PageSection>
-                <Card isLarge>
-                    <CardBody>
-                        <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
-                    </CardBody>
-                </Card>
+                <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
             </PageSection>
         </AcmPageContent>
     )
@@ -157,7 +153,7 @@ export function BareMetalAssetsTable(props: {
             <BulkActionModel<BareMetalAsset> {...modalProps} />
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTable<BareMetalAsset>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 emptyState={
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}

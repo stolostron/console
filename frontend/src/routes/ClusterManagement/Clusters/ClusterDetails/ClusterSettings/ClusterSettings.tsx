@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
@@ -12,11 +13,7 @@ export function ClustersSettingsPageContent() {
     return (
         <AcmPageContent id="addons">
             <PageSection>
-                <Card isLarge>
-                    <CardBody>
-                        <ClusterSettingsTable addons={addons} />
-                    </CardBody>
-                </Card>
+                <ClusterSettingsTable addons={addons} />
             </PageSection>
         </AcmPageContent>
     )
@@ -26,6 +23,7 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
     const { t } = useTranslation(['cluster'])
     return (
         <AcmTable<Addon>
+            gridBreakPoint={TableGridBreakpoint.gridLg}
             plural="add-ons"
             items={props.addons}
             columns={[
