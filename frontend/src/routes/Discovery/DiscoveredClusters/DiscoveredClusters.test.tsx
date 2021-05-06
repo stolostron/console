@@ -3,8 +3,8 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { discoveredClusterState, discoveryConfigState, featureGatesState, secretsState } from '../../../atoms'
-import { mockCRHCredential, mockDiscoveryConfig, mockDiscoveryFeatureGate } from '../../../lib/test-metadata'
+import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
+import { mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
 import { waitForNotText, waitForText } from '../../../lib/test-util'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import DiscoveredClustersPage from './DiscoveredClusters'
@@ -71,7 +71,6 @@ describe('DiscoveredClusters', () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                     snapshot.set(discoveredClusterState, mockDiscoveredClusters)
                     snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
                     snapshot.set(secretsState, [mockCRHCredential])
@@ -93,11 +92,10 @@ describe('DiscoveredClusters', () => {
         await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
     })
 
-    test('Discovery featuregate enabled, but no provider connections or discoveryconfig (Empty State 1)', async () => {
+    test('No provider connections or discoveryconfig (Empty State 1)', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                     snapshot.set(discoveredClusterState, [])
                     snapshot.set(discoveryConfigState, [])
                     snapshot.set(secretsState, [])
@@ -113,11 +111,10 @@ describe('DiscoveredClusters', () => {
         await waitForText('emptystate.addCredential')
     })
 
-    test('Discovery featuregate enabled, CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
+    test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                     snapshot.set(discoveredClusterState, [])
                     snapshot.set(discoveryConfigState, [])
                     snapshot.set(secretsState, [mockCRHCredential])
@@ -133,11 +130,10 @@ describe('DiscoveredClusters', () => {
         await waitForText('emptystate.enableClusterDiscovery')
     })
 
-    test('Discovery featuregate enabled, CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {
+    test('CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(featureGatesState, [mockDiscoveryFeatureGate])
                     snapshot.set(discoveredClusterState, [])
                     snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
                     snapshot.set(secretsState, [mockCRHCredential])
