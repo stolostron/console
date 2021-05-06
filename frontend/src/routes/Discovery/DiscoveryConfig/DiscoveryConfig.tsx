@@ -5,7 +5,6 @@ import {
     AcmButton,
     AcmForm,
     AcmFormSection,
-    AcmLoadingPage,
     AcmMultiSelect,
     AcmPage,
     AcmPageContent,
@@ -29,12 +28,14 @@ import { useContext, useEffect, useState, Fragment } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveryConfigState } from '../../../atoms'
+import { discoveryConfigState, secretsState } from '../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import discoveryVersions from '../../../components/discoveryVersions.json'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { Secret } from '../../../resources/secret'
+
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
@@ -42,7 +43,6 @@ import {
     DiscoveryConfigKind,
     replaceDiscoveryConfig,
 } from '../../../resources/discovery-config'
-import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
@@ -73,7 +73,7 @@ export default function DiscoveryConfigPage() {
             }
         >
             <AcmPageContent id="discoveryConfig">
-                <PageSection>
+                <PageSection variant="light">
                     <AddDiscoveryConfigData />
                 </PageSection>
             </AcmPageContent>
@@ -83,8 +83,8 @@ export default function DiscoveryConfigPage() {
 
 export function AddDiscoveryConfigData() {
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [credentials, setCredentials] = useState<ProviderConnection[]>([])
+    const [secrets] = useRecoilState(secretsState)
+    const [credentials, setCredentials] = useState<Secret[]>([])
     const [discoveryNamespaces, setDiscoveryNamespaces] = useState<string[]>([])
 
     // Used to filter out Credentials which already have a corresponding DiscoveryConfig
@@ -100,24 +100,15 @@ export function AddDiscoveryConfigData() {
 
     // Retrieves RHOCM Credentials
     useEffect(() => {
-        setIsLoading(true)
-        const credentialsResult = listProviderConnections().promise
-        credentialsResult.then((credentials) => {
-            const CRHCredentials: ProviderConnection[] = []
-            credentials.forEach((credential) => {
-                const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-                if (labels === Provider.redhatcloud) {
-                    CRHCredentials.push(credential)
-                }
-            })
-            setCredentials(CRHCredentials)
-            setIsLoading(false)
+        const CRHCredentials: Secret[] = []
+        secrets.forEach((credential) => {
+            const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+            if (labels === Provider.redhatcloud) {
+                CRHCredentials.push(credential)
+            }
         })
-    }, [])
-
-    if (isLoading) {
-        return <AcmLoadingPage />
-    }
+        setCredentials(CRHCredentials)
+    }, [secrets])
 
     return (
         <DiscoveryConfigPageContent
@@ -130,7 +121,7 @@ export function AddDiscoveryConfigData() {
 
 export function DiscoveryConfigPageContent(props: {
     discoveryConfigs: DiscoveryConfig[]
-    credentials: ProviderConnection[]
+    credentials: Secret[]
     discoveryNamespaces: string[]
 }) {
     const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
@@ -154,7 +145,7 @@ export function DiscoveryConfigPageContent(props: {
     const history = useHistory()
     const location = useLocation()
     const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
-    const [credentials, setCredentials] = useState<ProviderConnection[]>([])
+    const [credentials, setCredentials] = useState<Secret[]>([])
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
         confirm: () => {},
@@ -165,7 +156,7 @@ export function DiscoveryConfigPageContent(props: {
 
     // Trims list of credentials
     useEffect(() => {
-        const credentials: ProviderConnection[] = []
+        const credentials: Secret[] = []
         props.credentials.forEach((credential) => {
             if (!editing) {
                 // If adding a new DiscoveryConfig, include all credentials not configured with discovery
@@ -342,6 +333,7 @@ export function DiscoveryConfigPageContent(props: {
                         }
                     })
                 }}
+                isDisabled={editing && !discoveryConfig.metadata.namespace}
                 isRequired
             >
                 {credentials?.map((credential) => (

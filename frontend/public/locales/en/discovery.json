@@ -18,7 +18,7 @@
 
     "discoveryConfig.filterform.header": "Set filters to discover clusters",
     "discoveryConfig.header.add": "Select a credential",
-    "discoveryConfig.header.edit": "Select a namespace and credential",
+    "discoveryConfig.header.edit": "Select a namespace, then select a credential",
     "discoveryConfig.subheader": "Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Cluster management page.",
     "discoveryConfig.filterform.subheader": "Set filters to discover only relevant clusters.", 
 
@@ -29,11 +29,11 @@
     "discoveryConfig.discoveryVersions.labelHelp": "Only Red Hat OpenShift clusters that match the selected versions are found.",
     "discoveryConfig.connections.label": "Credential",
     "discoveryConfig.connections.labelHelp": "Choose a credential that is used to find discovered clusters.",
-    "discoveryConfig.connections.placeholder": "Select a namespace first",
+    "discoveryConfig.connections.placeholder": "Select a credential",
     "discoveryConfig.connections.addCredentials": "Add credentials",
     "discoveryConfig.namespaces.label": "Namespace",
     "discoveryConfig.namespaces.labelHelp": "Select the namespace to configure discovery in",
-    "discoveryConfig.namespaces.placeholder": "Select the namespace to configure for",
+    "discoveryConfig.namespaces.placeholder": "Select a namespace",
 
 
     "discoveryConfig.testFilter": "Test filter",

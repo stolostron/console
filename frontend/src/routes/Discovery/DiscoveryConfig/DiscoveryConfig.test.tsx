@@ -4,18 +4,13 @@ import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { discoveryConfigState } from '../../../atoms'
-import { nockCreate, nockDelete, nockGet, nockList, nockReplace } from '../../../lib/nock-util'
+import { discoveryConfigState, secretsState } from '../../../atoms'
+import { nockCreate, nockDelete, nockGet, nockReplace } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { FeatureGate } from '../../../resources/feature-gate'
-import {
-    packProviderConnection,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../resources/provider-connection'
+import { Secret, SecretKind, SecretApiVersion } from '../../../resources/secret'
 import DiscoveryConfigPage from './DiscoveryConfig'
 
 const mockFeatureGate: FeatureGate = {
@@ -25,9 +20,9 @@ const mockFeatureGate: FeatureGate = {
     spec: { featureSet: 'DiscoveryEnabled' },
 }
 
-const credential: ProviderConnection = {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
+const credential: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
     metadata: {
         name: 'connection',
         namespace: 'discovery',
@@ -36,17 +31,10 @@ const credential: ProviderConnection = {
             'cluster.open-cluster-management.io/cloudconnection': '',
         },
     },
-    spec: {
-        baseDomain: '',
-        pullSecret: '',
-        sshPrivatekey: '',
-        sshPublickey: '',
-        ocmAPIToken: 'test-ocm-api-token',
-    },
     type: 'Opaque',
 }
 
-const mockCredential = [packProviderConnection({ ...credential })]
+// const mockCredential = [packProviderConnection({ ...credential })]
 
 const discoveryConfig: DiscoveryConfig = {
     apiVersion: DiscoveryConfigApiVersion,
@@ -85,6 +73,7 @@ function TestAddDiscoveryConfigPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(discoveryConfigState, [])
+                snapshot.set(secretsState, [credential])
             }}
         >
             <MemoryRouter>
@@ -124,10 +113,7 @@ beforeEach(() => {
 
 describe('discovery config page', () => {
     it('Create DiscoveryConfig', async () => {
-        const nocks = [nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection='])]
-
         const { container } = render(<TestAddDiscoveryConfigPage />)
-        await waitForNocks(nocks)
 
         // Select LastActive
         await waitFor(() =>
@@ -153,10 +139,7 @@ describe('discovery config page', () => {
     })
 
     it('Edit DiscoveryConfig', async () => {
-        const nocks = [
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockGet(discoveryConfig, discoveryConfig),
-        ]
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
@@ -184,10 +167,7 @@ describe('discovery config page', () => {
     })
 
     it('Delete DiscoveryConfig', async () => {
-        const nocks = [
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockGet(discoveryConfig, discoveryConfig),
-        ]
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
