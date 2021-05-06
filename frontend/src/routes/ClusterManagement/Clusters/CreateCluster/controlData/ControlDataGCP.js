@@ -335,7 +335,7 @@ const controlDataGCP = [
     {
         id: 'wpoolsStep',
         type: 'step',
-        title: 'Worker cluster pools',
+        title: 'Worker pools',
     },
     {
         id: 'nodes',

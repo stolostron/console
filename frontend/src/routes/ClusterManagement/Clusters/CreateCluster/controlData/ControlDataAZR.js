@@ -462,7 +462,7 @@ const controlDataAZR = [
     {
         id: 'mpoolsStep',
         type: 'step',
-        title: 'Master cluster pool',
+        title: 'Master node',
     },
     {
         id: 'nodes',
@@ -529,7 +529,7 @@ const controlDataAZR = [
     {
         id: 'wpoolsStep',
         type: 'step',
-        title: 'Worker cluster pools',
+        title: 'Worker pools',
     },
     {
         id: 'nodes',
