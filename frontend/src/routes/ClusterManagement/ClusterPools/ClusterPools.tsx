@@ -86,40 +86,42 @@ export default function ClusterPoolsPage() {
                             </FlexItem>
                         </Flex>
                     </AcmExpandableCard>
-                    <ClusterPoolsTable
-                        clusterPools={clusterPools}
-                        tableActions={[
-                            {
-                                id: 'createClusterPool',
-                                title: t('managed.createClusterPool'),
-                                click: () => history.push(NavigationPath.createClusterPool),
-                                isDisabled: !canCreateClusterPool,
-                                tooltip: t('common:rbac.unauthorized'),
-                            },
-                        ]}
-                        emptyState={
-                            <AcmEmptyState
-                                key="mcEmptyState"
-                                title={t('managed.clusterPools.emptyStateHeader')}
-                                message={
-                                    <Trans
-                                        i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
-                                        components={{ bold: <strong />, p: <p /> }}
-                                    />
-                                }
-                                action={
-                                    <AcmButton
-                                        role="link"
-                                        onClick={() => history.push(NavigationPath.createClusterPool)}
-                                        disabled={!canCreateClusterPool}
-                                        tooltip={t('common:rbac.unauthorized')}
-                                    >
-                                        {t('managed.createClusterPool')}
-                                    </AcmButton>
-                                }
-                            />
-                        }
-                    />
+                    <Stack>
+                        <ClusterPoolsTable
+                            clusterPools={clusterPools}
+                            tableActions={[
+                                {
+                                    id: 'createClusterPool',
+                                    title: t('managed.createClusterPool'),
+                                    click: () => history.push(NavigationPath.createClusterPool),
+                                    isDisabled: !canCreateClusterPool,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                            ]}
+                            emptyState={
+                                <AcmEmptyState
+                                    key="mcEmptyState"
+                                    title={t('managed.clusterPools.emptyStateHeader')}
+                                    message={
+                                        <Trans
+                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                            components={{ bold: <strong />, p: <p /> }}
+                                        />
+                                    }
+                                    action={
+                                        <AcmButton
+                                            role="link"
+                                            onClick={() => history.push(NavigationPath.createClusterPool)}
+                                            disabled={!canCreateClusterPool}
+                                            tooltip={t('common:rbac.unauthorized')}
+                                        >
+                                            {t('managed.createClusterPool')}
+                                        </AcmButton>
+                                    }
+                                />
+                            }
+                        />
+                    </Stack>
                 </Stack>
             </PageSection>
         </AcmPageContent>
