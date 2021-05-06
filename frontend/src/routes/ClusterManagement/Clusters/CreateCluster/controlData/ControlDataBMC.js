@@ -17,14 +17,11 @@ import {
     VALIDATE_MAC_ADDRESS,
 } from 'temptifly'
 import { listBareMetalAssets } from '../../../../../resources/bare-metal-asset'
-import { withRouter } from 'react-router-dom'
 import { withTranslation } from 'react-i18next'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
-import WrappedCreateBareMetalAssetModal from '../components/WrappedCreateBareMetalAssetModal'
 import _ from 'lodash'
 
 const ImportBareMetalAssetsButton = withTranslation(['create'])(WrappedImportBareMetalAssetsButton)
-const CreateBareMetalAssetModal = withRouter(withTranslation(['create'])(WrappedCreateBareMetalAssetModal))
 
 const VALID_BMC_ADDR_REGEXP = new RegExp(
     '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
@@ -159,6 +156,11 @@ const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
+        id: 'imageStep',
+        type: 'step',
+        title: 'Image and connection',
+    },
+    {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
@@ -190,13 +192,15 @@ const controlDataBMC = [
 
     ///////////////////////  hosts  /////////////////////////////////////
     {
+        id: 'hostsStep',
+        type: 'step',
+        title: 'Hosts',
+    },
+    {
         id: 'hostsSections',
         type: 'section',
         title: 'creation.ocp.cluster.hosts',
         tooltip: 'tooltip.creation.ocp.cluster.hosts',
-        overline: true,
-        collapsable: true,
-        shadowed: true,
     },
     {
         id: 'chooseHosts',
@@ -207,10 +211,7 @@ const controlDataBMC = [
         id: 'hosts',
         type: 'table',
         prompts: {
-            actions: [
-                <CreateBareMetalAssetModal key="create-bma" />,
-                <ImportBareMetalAssetsButton key="import-bmas" />,
-            ],
+            actions: [<ImportBareMetalAssetsButton key="import-bmas" />],
         },
         validation: {
             tester: validateTable.bind(null),
@@ -306,7 +307,11 @@ const controlDataBMC = [
         type: 'hidden',
         getActive: getRoleCount.bind(null, 'worker'),
     },
-    ...networkingControlData,
+    {
+        id: 'networkStep',
+        type: 'step',
+        title: 'Networking',
+    },
     {
         id: 'provisioningNetworkCIDR',
         type: 'text',
@@ -369,6 +374,7 @@ const controlDataBMC = [
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },
+    ...networkingControlData,
 ]
 
 export default controlDataBMC
