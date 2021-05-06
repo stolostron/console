@@ -197,7 +197,6 @@ export function ClusterPoolsTable(props: {
             <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
             <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
             <AcmTable<ClusterPool>
-                gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusterPools"
                 items={clusterPools}
                 addSubRows={(clusterPool: ClusterPool) => {
@@ -446,7 +445,6 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
         <div className={classes.table}>
             <AcmTable<Cluster>
                 noBorders
-                gridBreakPoint={TableGridBreakpoint.none}
                 keyFn={(cluster: Cluster) => cluster.name!}
                 key="clusterPoolClustersTable"
                 autoHidePagination

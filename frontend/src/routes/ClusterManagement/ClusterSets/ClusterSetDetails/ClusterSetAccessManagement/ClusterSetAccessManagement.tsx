@@ -143,7 +143,6 @@ export function ClusterSetAccessManagement() {
                         groups={groups}
                     />
                     <AcmTable<ClusterRoleBinding>
-                        gridBreakPoint={TableGridBreakpoint.none}
                         plural="clusterRoleBindings"
                         items={clusterRoleBindings}
                         keyFn={keyFn}

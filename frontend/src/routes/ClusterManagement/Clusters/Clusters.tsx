@@ -170,7 +170,6 @@ export function ClustersTable(props: {
                 }}
             />
             <AcmTable<Cluster>
-                gridBreakPoint={TableGridBreakpoint.none}
                 plural="clusters"
                 items={props.clusters}
                 columns={[

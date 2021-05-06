@@ -119,7 +119,6 @@ export function CredentialsTable(props: {
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
             <AcmTable<Secret>
-                gridBreakPoint={TableGridBreakpoint.none}
                 emptyState={
                     <AcmEmptyState
                         title={t('credentialsPage.empty.title')}
