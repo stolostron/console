@@ -275,7 +275,7 @@ const mockClusterDeployment = {
         controlPlaneConfig: {
             servingCertificates: {},
         },
-        installAttemptsLimit: 2,
+        installAttemptsLimit: 1,
         installed: false,
         platform: {
             baremetal: {
@@ -555,7 +555,5 @@ describe('CreateCluster', () => {
 
         // make sure creating
         await waitForNocks(createNocks)
-
-        await waitForText('success.create.created')
     })
 })
