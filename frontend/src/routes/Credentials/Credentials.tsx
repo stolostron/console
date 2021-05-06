@@ -114,11 +114,6 @@ export function CredentialsTable(props: {
         return inUse
     }
 
-    function getDiscoveryConfigName(namespace: string) {
-        const discovery = props.discoveryConfigs?.find((config) => config.metadata.namespace === namespace)
-        return discovery?.metadata.name ?? ''
-    }
-
     return (
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
@@ -188,17 +183,13 @@ export function CredentialsTable(props: {
                             if (label === Provider.redhatcloud) {
                                 if (CredentialIsInUseByDiscovery(item)) {
                                     return (
-                                        <Link
-                                            to={NavigationPath.editDiscoveryConfig
-                                                .replace(':namespace', item.metadata.namespace as string)
-                                                .replace(':name', getDiscoveryConfigName(item.metadata.namespace!))}
-                                        >
+                                        <Link to={NavigationPath.configureDiscovery}>
                                             {t('credentials.additionalActions.editClusterDiscovery')}
                                         </Link>
                                     )
                                 } else {
                                     return (
-                                        <Link to={NavigationPath.addDiscoveryConfig}>
+                                        <Link to={NavigationPath.createDiscovery}>
                                             {t('credentials.additionalActions.enableClusterDiscovery')}
                                         </Link>
                                     )

@@ -3,6 +3,7 @@
 import {
     AcmAlertContext,
     AcmButton,
+    AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
     AcmInlineStatus,
@@ -14,8 +15,7 @@ import {
     Provider,
     compareStrings,
 } from '@open-cluster-management/ui-components'
-import { Title, CardHeader, PageSection, Card, CardBody, Stack, StackItem } from '@patternfly/react-core'
-import AddIcon from '@patternfly/react-icons/dist/js/icons/add-circle-o-icon'
+import { PageSection, Card, CardBody } from '@patternfly/react-core'
 import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 import * as moment from 'moment'
 import { useContext, useEffect, useState } from 'react'
@@ -58,13 +58,42 @@ function EmptyStateNoCRHCredentials() {
 
 function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
     const { t } = useTranslation(['discovery'])
+    const history = useHistory()
+
+    const namespaces: string[] = []
+    props.credentials?.forEach((credential) => {
+        if (!namespaces.includes(credential.metadata.namespace!)) {
+            namespaces.push(credential.metadata.namespace!)
+        }
+    })
+    const onSelect = () => {
+        // TODO: Filter by namespace
+        history.push(NavigationPath.createDiscovery)
+    }
+
+    const action =
+        props.credentials!.length > 1 ? (
+            <AcmDropdown
+                text="Configure discovery settings"
+                onSelect={onSelect}
+                id="configureDiscoveryDropdown"
+                isKebab={false}
+                isPrimary={true}
+                dropdownItems={namespaces.map((namespace) => {
+                    return {
+                        id: namespace,
+                        text: namespace,
+                    }
+                })}
+            />
+        ) : (
+            <AcmButton component={Link} to={NavigationPath.createDiscovery}>
+                {t('emptystate.enableClusterDiscovery')}
+            </AcmButton>
+        )
     return (
         <AcmEmptyState
-            action={
-                <AcmButton component={Link} to={NavigationPath.addDiscoveryConfig}>
-                    {t('emptystate.enableClusterDiscovery')}
-                </AcmButton>
-            }
+            action={action}
             title={t('emptystate.credentials.title')}
             message={
                 <Trans
@@ -101,7 +130,6 @@ function EmptyStateAwaitingDiscoveredClusters() {
 }
 
 export function DiscoveredClustersPageContent() {
-    const { t } = useTranslation(['discovery'])
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -131,32 +159,15 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
     return (
-        <Stack hasGutter>
-            <StackItem>
-                <Card>
-                    <CardHeader>
-                        <Title headingLevel="h4">{t('quickActions')}</Title>
-                        <span>
-                            &nbsp;
-                            <Link to={NavigationPath.addCredentials}>
-                                {t('quickActions.AddRHOCMCredential')} <AddIcon />
-                            </Link>
-                        </span>
-                    </CardHeader>
-                </Card>
-            </StackItem>
-            <StackItem>
-                <Card>
-                    <CardBody>
-                        <DiscoveredClustersTable
-                            discoveredClusters={unmanagedClusters}
-                            credentials={credentials}
-                            discoveryConfigs={discoveryConfigs}
-                        />
-                    </CardBody>
-                </Card>
-            </StackItem>
-        </Stack>
+        <Card>
+            <CardBody>
+                <DiscoveredClustersTable
+                    discoveredClusters={unmanagedClusters}
+                    credentials={credentials}
+                    discoveryConfigs={discoveryConfigs}
+                />
+            </CardBody>
+        </Card>
     )
 }
 
@@ -332,7 +343,18 @@ export function DiscoveredClustersTable(props: {
             columns={discoveredClusterCols}
             keyFn={dckeyFn}
             key="tbl-discoveredclusters"
-            tableActions={[]}
+            tableActions={[
+                {
+                    id: 'configureDiscovery',
+                    title: t('discovery.configureDiscovery'),
+                    click: () => history.push(NavigationPath.configureDiscovery),
+                },
+                {
+                    id: 'addDiscovery',
+                    title: t('discovery.addDiscovery'),
+                    click: () => history.push(NavigationPath.createDiscovery),
+                },
+            ]}
             bulkActions={[]}
             rowActions={[
                 {
