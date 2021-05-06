@@ -11,10 +11,10 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterManagementAddonsState } from '../../../atoms'
@@ -25,8 +25,8 @@ import { Cluster } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
-import { ClusterDeploymentDefinition, ClusterDeployment } from '../../../resources/cluster-deployment'
 import { usePageContext } from '../ClusterManagement'
 import { AddCluster } from './components/AddCluster'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
@@ -65,42 +65,35 @@ export default function ClustersPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <Card isLarge>
-                    <CardBody>
-                        <ClustersTable
-                            clusters={clusters}
-                            tableActions={[
-                                {
-                                    id: 'createCluster',
-                                    title: t('managed.createCluster'),
-                                    click: () => history.push(NavigationPath.createCluster),
-                                    isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
-                                },
-                                {
-                                    id: 'importCluster',
-                                    title: t('managed.importCluster'),
-                                    click: () => history.push(NavigationPath.importCluster),
-                                    isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
-                                },
-                            ]}
-                            emptyState={
-                                <AcmEmptyState
-                                    key="mcEmptyState"
-                                    title={t('managed.emptyStateHeader')}
-                                    message={
-                                        <Trans
-                                            i18nKey={'cluster:managed.emptyStateMsg'}
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    }
-                                    action={<AddCluster type="button" />}
-                                />
+                <ClustersTable
+                    clusters={clusters}
+                    tableActions={[
+                        {
+                            id: 'createCluster',
+                            title: t('managed.createCluster'),
+                            click: () => history.push(NavigationPath.createCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                        {
+                            id: 'importCluster',
+                            title: t('managed.importCluster'),
+                            click: () => history.push(NavigationPath.importCluster),
+                            isDisabled: !canCreateCluster,
+                            tooltip: t('common:rbac.unauthorized'),
+                        },
+                    ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.emptyStateHeader')}
+                            message={
+                                <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
                             }
+                            action={<AddCluster type="button" />}
                         />
-                    </CardBody>
-                </Card>
+                    }
+                />
             </PageSection>
         </AcmPageContent>
     )
@@ -177,7 +170,7 @@ export function ClustersTable(props: {
                 }}
             />
             <AcmTable<Cluster>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusters"
                 items={props.clusters}
                 columns={[

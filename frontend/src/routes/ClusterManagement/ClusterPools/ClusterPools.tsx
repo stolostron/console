@@ -1,41 +1,40 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useContext, useEffect, useState, useMemo } from 'react'
+import { makeStyles } from '@material-ui/styles'
 import {
     AcmAlertContext,
+    AcmButton,
     AcmEmptyState,
+    AcmExpandableCard,
+    AcmInlineProvider,
     AcmPageContent,
     AcmTable,
-    AcmInlineProvider,
-    Provider,
-    AcmButton,
     IAcmTableAction,
-    AcmExpandableCard,
+    Provider,
 } from '@open-cluster-management/ui-components'
-import { PageSection, TextContent, Text, TextVariants, CardBody, Card, Flex, FlexItem } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useTranslation, Trans } from 'react-i18next'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { makeStyles } from '@material-ui/styles'
-import { clusterPoolsState, clusterImageSetsState } from '../../../atoms'
+import { clusterImageSetsState, clusterPoolsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { RbacDropdown } from '../../../components/Rbac'
-import { canUser, rbacDelete, rbacCreate, rbacPatch } from '../../../lib/rbac-util'
-import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
-import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
+import { RbacButton, RbacDropdown } from '../../../components/Rbac'
+import { DOC_LINKS } from '../../../lib/doc-util'
 import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
-import { NavigationPath } from '../../../NavigationPath'
+import { canUser, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
-import { useAllClusters } from '../Clusters/components/useAllClusters'
+import { NavigationPath } from '../../../NavigationPath'
+import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
+import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
 import { StatusField } from '../Clusters/components/StatusField'
+import { useAllClusters } from '../Clusters/components/useAllClusters'
+import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
-import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
-import { RbacButton } from '../../../components/Rbac'
-import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -58,72 +57,70 @@ export default function ClusterPoolsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
-                    <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                        <FlexItem flex={{ default: 'flex_1' }}>
-                            <TextContent>
-                                <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
-                                <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
-                            </TextContent>
-                        </FlexItem>
-                        <FlexItem flex={{ default: 'flex_1' }}>
-                            <TextContent>
-                                <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
-                                <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
-                            </TextContent>
-                        </FlexItem>
-                    </Flex>
-                    <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                        <FlexItem>
-                            <AcmButton
-                                onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
-                                variant="link"
-                                role="link"
-                            >
-                                {t('common:view.documentation')}
-                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                            </AcmButton>
-                        </FlexItem>
-                    </Flex>
-                </AcmExpandableCard>
-                <Card isLarge style={{ marginTop: '24px' }}>
-                    <CardBody>
-                        <ClusterPoolsTable
-                            clusterPools={clusterPools}
-                            tableActions={[
-                                {
-                                    id: 'createClusterPool',
-                                    title: t('managed.createClusterPool'),
-                                    click: () => history.push(NavigationPath.createClusterPool),
-                                    isDisabled: !canCreateClusterPool,
-                                    tooltip: t('common:rbac.unauthorized'),
-                                },
-                            ]}
-                            emptyState={
-                                <AcmEmptyState
-                                    key="mcEmptyState"
-                                    title={t('managed.clusterPools.emptyStateHeader')}
-                                    message={
-                                        <Trans
-                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
-                                            components={{ bold: <strong />, p: <p /> }}
-                                        />
-                                    }
-                                    action={
-                                        <AcmButton
-                                            role="link"
-                                            onClick={() => history.push(NavigationPath.createClusterPool)}
-                                            disabled={!canCreateClusterPool}
-                                            tooltip={t('common:rbac.unauthorized')}
-                                        >
-                                            {t('managed.createClusterPool')}
-                                        </AcmButton>
-                                    }
-                                />
-                            }
-                        />
-                    </CardBody>
-                </Card>
+                <Stack hasGutter style={{ height: 'unset' }}>
+                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
+                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <TextContent>
+                                    <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
+                                    <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
+                                </TextContent>
+                            </FlexItem>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <TextContent>
+                                    <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
+                                    <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
+                                </TextContent>
+                            </FlexItem>
+                        </Flex>
+                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
+                            <FlexItem>
+                                <AcmButton
+                                    onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                    variant="link"
+                                    role="link"
+                                >
+                                    {t('common:view.documentation')}
+                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                                </AcmButton>
+                            </FlexItem>
+                        </Flex>
+                    </AcmExpandableCard>
+                    <ClusterPoolsTable
+                        clusterPools={clusterPools}
+                        tableActions={[
+                            {
+                                id: 'createClusterPool',
+                                title: t('managed.createClusterPool'),
+                                click: () => history.push(NavigationPath.createClusterPool),
+                                isDisabled: !canCreateClusterPool,
+                                tooltip: t('common:rbac.unauthorized'),
+                            },
+                        ]}
+                        emptyState={
+                            <AcmEmptyState
+                                key="mcEmptyState"
+                                title={t('managed.clusterPools.emptyStateHeader')}
+                                message={
+                                    <Trans
+                                        i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                        components={{ bold: <strong />, p: <p /> }}
+                                    />
+                                }
+                                action={
+                                    <AcmButton
+                                        role="link"
+                                        onClick={() => history.push(NavigationPath.createClusterPool)}
+                                        disabled={!canCreateClusterPool}
+                                        tooltip={t('common:rbac.unauthorized')}
+                                    >
+                                        {t('managed.createClusterPool')}
+                                    </AcmButton>
+                                }
+                            />
+                        }
+                    />
+                </Stack>
             </PageSection>
         </AcmPageContent>
     )
@@ -200,7 +197,7 @@ export function ClusterPoolsTable(props: {
             <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
             <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
             <AcmTable<ClusterPool>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusterPools"
                 items={clusterPools}
                 addSubRows={(clusterPool: ClusterPool) => {
@@ -448,8 +445,8 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
     return (
         <div className={classes.table}>
             <AcmTable<Cluster>
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 noBorders
-                gridBreakPoint={TableGridBreakpoint.none}
                 keyFn={(cluster: Cluster) => cluster.name!}
                 key="clusterPoolClustersTable"
                 autoHidePagination

@@ -32,8 +32,8 @@ export default function AnsibleAutomationsPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <AnsibleJobTemplateTable></AnsibleJobTemplateTable>
+            <PageSection>
+                <AnsibleJobTemplateTable />
             </PageSection>
         </AcmPageContent>
     )
@@ -70,7 +70,7 @@ function AnsibleJobTemplateTable() {
             <BulkActionModel<ClusterCurator> {...bulkModalProps} />
             <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
             <AcmTable<ClusterCurator>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="templates"
                 items={templatedCurators}
                 columns={[

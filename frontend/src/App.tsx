@@ -9,6 +9,7 @@ import { acmRouteState, LoadData } from './atoms'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
+import './App.css'
 
 const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
 const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))

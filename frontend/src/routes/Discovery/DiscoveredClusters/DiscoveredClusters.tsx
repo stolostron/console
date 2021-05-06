@@ -6,27 +6,28 @@ import {
     AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
-    AcmInlineStatus,
     AcmInlineProvider,
-    StatusType,
+    AcmInlineStatus,
     AcmPageContent,
     AcmTable,
+    compareStrings,
     IAcmTableColumn,
     Provider,
-    compareStrings,
+    StatusType,
 } from '@open-cluster-management/ui-components'
 import { PageSection, Card, CardBody } from '@patternfly/react-core'
 import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
+import { TableGridBreakpoint } from '@patternfly/react-table'
 import * as moment from 'moment'
 import { useContext, useEffect, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
-import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { useRecoilState } from 'recoil'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
-import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
+import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -198,23 +199,17 @@ export function DiscoveredClustersTable(props: {
     const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         {
             header: t('dcTbl.name'),
-            sort: 'spec.name',
-            search: (discoveredCluster: DiscoveredCluster) => {
-                if (discoveredCluster.spec.console && discoveredCluster.metadata.name) {
-                    const searchVals = discoveredCluster.spec.console.split('.')
-                    searchVals.push(discoveredCluster.metadata.name)
-                    searchVals.push(discoveredCluster.spec.console)
-                    return searchVals
-                } else {
-                    return discoveredCluster.metadata.name ? discoveredCluster.metadata.name : ''
-                }
-            },
+            sort: 'spec.display_name',
+            search: (discoveredCluster: DiscoveredCluster) => [
+                discoveredCluster.spec.console,
+                discoveredCluster.spec.display_name,
+            ],
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
                         <ExternalLink />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
-                            {discoveredCluster.spec.name}
+                            {discoveredCluster.spec.display_name}
                         </span>
                     </a>
                 </span>
@@ -338,6 +333,7 @@ export function DiscoveredClustersTable(props: {
 
     return (
         <AcmTable<DiscoveredCluster>
+            gridBreakPoint={TableGridBreakpoint.gridLg}
             plural={t('discoveredClusters')}
             items={props.discoveredClusters}
             columns={discoveredClusterCols}

@@ -4,17 +4,17 @@ import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
+    AcmExpandableCard,
     AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-    AcmExpandableCard,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection, Text, TextContent, TextVariants, Flex, FlexItem } from '@patternfly/react-core'
+import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -29,6 +29,7 @@ import {
     managedClustersState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { DOC_LINKS } from '../../../lib/doc-util'
 import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
@@ -44,7 +45,6 @@ import { usePageContext } from '../ClusterManagement'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
-import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function ClusterSetsPage() {
     const { t } = useTranslation(['cluster', 'common'])
@@ -84,39 +84,37 @@ export default function ClusterSetsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
-                    <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                        <FlexItem flex={{ default: 'flex_1' }}>
-                            <TextContent>
-                                <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
-                                <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
-                            </TextContent>
-                        </FlexItem>
-                        <FlexItem flex={{ default: 'flex_1' }}>
-                            <TextContent>
-                                <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                                <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                            </TextContent>
-                        </FlexItem>
-                    </Flex>
-                    <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                        <FlexItem>
-                            <AcmButton
-                                onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
-                                variant="link"
-                                role="link"
-                            >
-                                {t('common:view.documentation')}
-                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                            </AcmButton>
-                        </FlexItem>
-                    </Flex>
-                </AcmExpandableCard>
-                <Card isLarge style={{ marginTop: '24px' }}>
-                    <CardBody>
-                        <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />{' '}
-                    </CardBody>
-                </Card>
+                <Stack hasGutter style={{ height: 'unset' }}>
+                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
+                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <TextContent>
+                                    <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
+                                    <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
+                                </TextContent>
+                            </FlexItem>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <TextContent>
+                                    <Text component={TextVariants.h4}>{t('submariner')}</Text>
+                                    <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
+                                </TextContent>
+                            </FlexItem>
+                        </Flex>
+                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
+                            <FlexItem>
+                                <AcmButton
+                                    onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                    variant="link"
+                                    role="link"
+                                >
+                                    {t('common:view.documentation')}
+                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                                </AcmButton>
+                            </FlexItem>
+                        </Flex>
+                    </AcmExpandableCard>
+                    <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
+                </Stack>
             </PageSection>
         </AcmPageContent>
     )
@@ -196,7 +194,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <AcmTable<ManagedClusterSet>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusterSets"
                 items={props.managedClusterSets}
                 columns={[
