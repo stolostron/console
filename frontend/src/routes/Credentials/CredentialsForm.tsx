@@ -21,7 +21,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, replaceResource } from '../../lib/resource-request'
+import { createResource, patchResource } from '../../lib/resource-request'
 import {
     validateBaseDomain,
     validateCertificate,
@@ -40,7 +40,7 @@ import {
     unpackProviderConnection,
 } from '../../resources/provider-connection'
 import { IResource } from '../../resources/resource'
-import { getSecret, SecretDefinition } from '../../resources/secret'
+import { getSecret, Secret, SecretDefinition } from '../../resources/secret'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
@@ -305,6 +305,9 @@ export function CredentialsForm(props: {
             case Provider.redhatcloud:
                 data.spec!.ocmAPIToken = ocmAPIToken
                 break
+        }
+        if (props.providerConnection?.stringData?.['credential-hash']) {
+            data.stringData!['credential-hash'] = props.providerConnection?.stringData?.['credential-hash']
         }
         return packProviderConnection(data)
     }
@@ -935,15 +938,19 @@ export function CredentialsForm(props: {
         ],
         submit: () => {
             if (isEditing) {
-                return replaceResource(stateToData() as IResource).promise.then(async () => {
-                    if (process.env.NODE_ENV === 'development')
-                        await new Promise((resolve) => setTimeout(resolve, 4000))
+                const secret = stateToData() as Secret
+                const patch: { op: 'replace'; path: string; value: unknown }[] = []
+                if (secret.stringData) {
+                    patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
+                }
+                if (secret.data) {
+                    patch.push({ op: 'replace', path: `/data`, value: secret.data })
+                }
+                return patchResource(secret, patch).promise.then(() => {
                     history.push(NavigationPath.credentials)
                 })
             } else {
-                return createResource(stateToData() as IResource).promise.then(async () => {
-                    if (process.env.NODE_ENV === 'development')
-                        await new Promise((resolve) => setTimeout(resolve, 4000))
+                return createResource(stateToData() as IResource).promise.then(() => {
                     history.push(NavigationPath.credentials)
                 })
             }
