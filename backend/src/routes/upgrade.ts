@@ -9,8 +9,7 @@ import { respond, respondOK, unauthorized } from '../lib/respond'
 import { getRemoteResource, requestException, updateRemoteResource } from '../lib/utils'
 
 export async function upgrade(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    //const token = parseCookies(req)['acm-access-token-cookie']
-    const token = 'sha256~kzksaOSVGq_kZev1Vmrfn7hq7JtbyeIagvQtklNSXVo'//parseCookies(req)['acm-access-token-cookie']
+    const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
     req.setTimeout(2 * 60 * 1000)

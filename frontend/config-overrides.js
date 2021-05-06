@@ -19,14 +19,5 @@ module.exports = override(
 
    addWebpackPlugin(new MonacoWebpackPlugin({
      languages: ['yaml']
-   })),
-  
-  // TO INCLUDE TEMPTIFLY SRC DIRECTLY
-  removeModuleScopePlugin(),
-  ...addExternalBabelPlugins(
-    '@babel/plugin-proposal-class-properties',
-    '@babel/plugin-syntax-class-properties',
-    '@babel/plugin-transform-react-jsx',
-  ),
-  
+   }))
 );
