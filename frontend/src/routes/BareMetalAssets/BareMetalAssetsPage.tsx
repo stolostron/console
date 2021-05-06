@@ -153,6 +153,7 @@ export function BareMetalAssetsTable(props: {
             <BulkActionModel<BareMetalAsset> {...modalProps} />
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTable<BareMetalAsset>
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 emptyState={
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}

@@ -206,6 +206,7 @@ export function MachinePoolsTable() {
             <Card isLarge>
                 <CardBody>
                     <AcmTable<MachinePool>
+                        gridBreakPoint={TableGridBreakpoint.gridLg}
                         plural="machinepools"
                         items={machinePools}
                         columns={columns}

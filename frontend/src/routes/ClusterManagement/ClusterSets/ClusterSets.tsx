@@ -194,6 +194,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <AcmTable<ManagedClusterSet>
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusterSets"
                 items={props.managedClusterSets}
                 columns={[

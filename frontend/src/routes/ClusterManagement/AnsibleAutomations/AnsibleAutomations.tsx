@@ -70,7 +70,7 @@ function AnsibleJobTemplateTable() {
             <BulkActionModel<ClusterCurator> {...bulkModalProps} />
             <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
             <AcmTable<ClusterCurator>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="templates"
                 items={templatedCurators}
                 columns={[
