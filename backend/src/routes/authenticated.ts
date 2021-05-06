@@ -9,8 +9,7 @@ import { respondInternalServerError, unauthorized } from '../lib/respond'
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
 export function authenticated(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    //const token = parseCookies(req)['acm-access-token-cookie']
-    const token = 'sha256~kzksaOSVGq_kZev1Vmrfn7hq7JtbyeIagvQtklNSXVo'//parseCookies(req)['acm-access-token-cookie']
+    const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
     get(

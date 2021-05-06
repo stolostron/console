@@ -23,8 +23,7 @@ const proxyResponseHeaders = [
 ]
 
 export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    //const token = parseCookies(req)['acm-access-token-cookie']
-    const token = 'sha256~kzksaOSVGq_kZev1Vmrfn7hq7JtbyeIagvQtklNSXVo'//parseCookies(req)['acm-access-token-cookie']
+    const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
 
     const url = req.url
