@@ -9,16 +9,8 @@ import { nockCreate, nockDelete, nockGet, nockReplace } from '../../../lib/nock-
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { FeatureGate } from '../../../resources/feature-gate'
 import { Secret, SecretKind, SecretApiVersion } from '../../../resources/secret'
 import DiscoveryConfigPage from './DiscoveryConfig'
-
-const mockFeatureGate: FeatureGate = {
-    apiVersion: 'config.openshift.io/v1',
-    kind: 'FeatureGate',
-    metadata: { name: 'open-cluster-management-discovery' },
-    spec: { featureSet: 'DiscoveryEnabled' },
-}
 
 const credential: Secret = {
     apiVersion: SecretApiVersion,
@@ -33,8 +25,6 @@ const credential: Secret = {
     },
     type: 'Opaque',
 }
-
-// const mockCredential = [packProviderConnection({ ...credential })]
 
 const discoveryConfig: DiscoveryConfig = {
     apiVersion: DiscoveryConfigApiVersion,
@@ -108,7 +98,6 @@ function TestEditConnectionPage() {
 
 beforeEach(() => {
     sessionStorage.clear()
-    nockGet(mockFeatureGate, undefined, 200, true)
 })
 
 describe('discovery config page', () => {

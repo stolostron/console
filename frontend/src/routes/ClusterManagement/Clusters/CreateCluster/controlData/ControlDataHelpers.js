@@ -162,16 +162,7 @@ export const setAvailableConnections = (provider, control, result) => {
 export const networkingControlData = [
     ///////////////////////  networking  /////////////////////////////////////
     {
-        id: 'networking',
-        type: 'section',
-        title: 'creation.ocp.networking',
-        overline: true,
-        collapsable: true,
-        collapsed: true,
-    },
-    {
         name: 'creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
         tooltip: 'tooltip.creation.ocp.baseDomain',
         id: 'baseDomain',
         type: 'text',

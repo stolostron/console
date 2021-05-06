@@ -305,7 +305,6 @@ export function DiscoveryConfigPageContent(props: {
                                         props.discoveryConfigs[i].spec.filters?.openShiftVersions
                                 })
                                 break
-                                // setDiscoveryConfig(props.discoveryConfigs[i])
                             }
                         }
                     }}
