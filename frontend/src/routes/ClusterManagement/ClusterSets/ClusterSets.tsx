@@ -113,7 +113,9 @@ export default function ClusterSetsPage() {
                             </FlexItem>
                         </Flex>
                     </AcmExpandableCard>
-                    <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
+                    <Stack>
+                        <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
+                    </Stack>
                 </Stack>
             </PageSection>
         </AcmPageContent>

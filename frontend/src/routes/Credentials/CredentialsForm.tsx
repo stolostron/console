@@ -8,7 +8,7 @@ import {
     ProviderIconMap,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -115,16 +115,12 @@ export default function CredentialsFormPage({ match }: RouteComponentProps<{ nam
                         />
                     }
                 >
-                    <PageSection>
-                        <Card isLarge>
-                            <CardBody>
-                                <AcmEmptyState
-                                    title={t('common:rbac.title.unauthorized')}
-                                    message={t('common:rbac.namespaces.unauthorized')}
-                                    showIcon={false}
-                                />
-                            </CardBody>
-                        </Card>
+                    <PageSection variant="light" isFilled>
+                        <AcmEmptyState
+                            title={t('common:rbac.title.unauthorized')}
+                            message={t('common:rbac.namespaces.unauthorized')}
+                            showIcon={false}
+                        />
                     </PageSection>
                 </AcmPage>
             )
