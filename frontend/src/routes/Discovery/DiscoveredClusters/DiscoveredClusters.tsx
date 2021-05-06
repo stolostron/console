@@ -131,31 +131,23 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
 
     return (
-        <Stack hasGutter>
-            <StackItem>
-                <Card>
-                    <CardHeader>
-                        <Title headingLevel="h4">{t('quickActions')}</Title>
-                        <span>
-                            &nbsp;
-                            <Link to={NavigationPath.addCredentials}>
-                                {t('quickActions.AddRHOCMCredential')} <AddIcon />
-                            </Link>
-                        </span>
-                    </CardHeader>
-                </Card>
-            </StackItem>
-            <StackItem>
-                <Card>
-                    <CardBody>
-                        <DiscoveredClustersTable
-                            discoveredClusters={unmanagedClusters}
-                            credentials={credentials}
-                            discoveryConfigs={discoveryConfigs}
-                        />
-                    </CardBody>
-                </Card>
-            </StackItem>
+        <Stack hasGutter style={{ height: 'unset' }}>
+            <Card>
+                <CardHeader>
+                    <Title headingLevel="h4">{t('quickActions')}</Title>
+                    <span>
+                        &nbsp;
+                        <Link to={NavigationPath.addCredentials}>
+                            {t('quickActions.AddRHOCMCredential')} <AddIcon />
+                        </Link>
+                    </span>
+                </CardHeader>
+            </Card>
+            <DiscoveredClustersTable
+                discoveredClusters={unmanagedClusters}
+                credentials={credentials}
+                discoveryConfigs={discoveryConfigs}
+            />
         </Stack>
     )
 }

@@ -32,8 +32,8 @@ export default function AnsibleAutomationsPage() {
 
     return (
         <AcmPageContent id="clusters">
-            <PageSection variant="light" isFilled={true}>
-                <AnsibleJobTemplateTable></AnsibleJobTemplateTable>
+            <PageSection>
+                <AnsibleJobTemplateTable />
             </PageSection>
         </AcmPageContent>
     )
