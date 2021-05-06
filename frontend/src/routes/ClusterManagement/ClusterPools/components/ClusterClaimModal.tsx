@@ -131,12 +131,19 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                     .then(async (result) => {
                                                         const updatedClaim = (await pollClaim(result)) as ClusterClaim
                                                         if (updatedClaim) {
-                                                            await createImportResources(
-                                                                updatedClaim.spec!.namespace!,
-                                                                props.clusterPool?.metadata.labels?.[
-                                                                    managedClusterSetLabel
-                                                                ]
-                                                            ).promise
+                                                            try {
+                                                                // this will eventually be moved to a controller
+                                                                // some users may run into issue creating the import resources
+                                                                // so we will just ignore any errors from these requests
+                                                                createImportResources(
+                                                                    updatedClaim.spec!.namespace!,
+                                                                    props.clusterPool?.metadata.labels?.[
+                                                                        managedClusterSetLabel
+                                                                    ]
+                                                                )
+                                                            } catch (err) {
+                                                                console.error(err)
+                                                            }
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
                                                         } else {

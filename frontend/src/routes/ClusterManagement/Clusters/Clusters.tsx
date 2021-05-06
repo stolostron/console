@@ -183,6 +183,7 @@ export function ClustersTable(props: {
                 columns={[
                     {
                         header: t('table.name'),
+                        tooltip: t('table.name.helperText'),
                         sort: 'displayName',
                         search: 'displayName',
                         cell: (cluster) => (

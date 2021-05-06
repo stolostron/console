@@ -86,6 +86,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             options.logRequest(req, res)
                         } else {
                             if (req.url === '/readinessProbe') return
+                            if (req.url === '/livenessProbe') return
 
                             let msg: Record<string, string | number | undefined>
                             res.getHeader('content-type') === 'test/event/stream'

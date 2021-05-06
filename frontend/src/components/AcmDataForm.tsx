@@ -983,6 +983,10 @@ function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
             isOpen={open}
             onToggle={() => setOpen(!open)}
             {...props}
+            onSelect={(e, v) => {
+                props.onSelect?.(e, v)
+                setOpen(false)
+            }}
             aria-invalid={validated === ValidatedOptions.error}
         >
             {props.children}

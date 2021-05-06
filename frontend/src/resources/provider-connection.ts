@@ -122,11 +122,7 @@ export function packProviderConnection(providerConnection: ProviderConnection) {
     if (providerConnection.stringData === undefined) {
         delete providerConnection.stringData
     } else if (providerConnection.stringData) {
-        if (
-            Object.keys(providerConnection.stringData).filter(
-                (key) => (providerConnection.stringData as Record<string, string>)[key] === undefined
-            ).length === 0
-        ) {
+        if (Object.keys(providerConnection.stringData).length === 0) {
             delete providerConnection.stringData
         }
     }

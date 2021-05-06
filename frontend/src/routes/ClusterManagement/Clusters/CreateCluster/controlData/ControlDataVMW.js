@@ -53,6 +53,7 @@ const controlDataVMW = [
     },
     {
         name: 'creation.ocp.baseDomain',
+        placeholder: 'placeholder.creation.ocp.baseDomain',
         tooltip: 'tooltip.creation.ocp.baseDomain',
         id: 'baseDomain',
         type: 'text',

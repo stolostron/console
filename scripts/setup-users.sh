@@ -49,11 +49,11 @@ echo
 echo
 echo CREATING ROLE BINDINGS
 echo
-oc create clusterrolebinding cluster-manager-admin --clusterrole=open-cluster-management:cluster-manager-admin --user=cluster-manager-admin
-oc create clusterrolebinding cluster-admin --clusterrole=cluster-admin --user=cluster-admin
-oc create clusterrolebinding admin --clusterrole=admin --user=admin
-oc create clusterrolebinding edit --clusterrole=edit --user=edit
-oc create clusterrolebinding view --clusterrole=view --user=view
+oc create clusterrolebinding cluster-manager-admin-binding --clusterrole=open-cluster-management:cluster-manager-admin --user=cluster-manager-admin
+oc create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=cluster-admin
+oc create clusterrolebinding admin-binding --clusterrole=admin --user=admin
+oc create clusterrolebinding edit-binding --clusterrole=edit --user=edit
+oc create clusterrolebinding view-binding --clusterrole=view --user=view
 echo
 
 echo

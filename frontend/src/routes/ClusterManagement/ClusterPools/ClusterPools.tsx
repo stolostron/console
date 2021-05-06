@@ -10,9 +10,11 @@ import {
     Provider,
     AcmButton,
     IAcmTableAction,
+    AcmExpandableCard,
 } from '@open-cluster-management/ui-components'
-import { PageSection, TextContent, Text, TextVariants, CardBody, Card } from '@patternfly/react-core'
+import { PageSection, TextContent, Text, TextVariants, CardBody, Card, Flex, FlexItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -33,11 +35,12 @@ import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
 import { RbacButton } from '../../../components/Rbac'
+import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -55,9 +58,36 @@ export default function ClusterPoolsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <Card isLarge>
+                <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
+                    <Flex spaceItems={{ default: 'spaceItemsLg' }}>
+                        <FlexItem flex={{ default: 'flex_1' }}>
+                            <TextContent>
+                                <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
+                                <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
+                            </TextContent>
+                        </FlexItem>
+                        <FlexItem flex={{ default: 'flex_1' }}>
+                            <TextContent>
+                                <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
+                                <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
+                            </TextContent>
+                        </FlexItem>
+                    </Flex>
+                    <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
+                        <FlexItem>
+                            <AcmButton
+                                onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                variant="link"
+                                role="link"
+                            >
+                                {t('common:view.documentation')}
+                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                            </AcmButton>
+                        </FlexItem>
+                    </Flex>
+                </AcmExpandableCard>
+                <Card isLarge style={{ marginTop: '24px' }}>
                     <CardBody>
-                        {' '}
                         <ClusterPoolsTable
                             clusterPools={clusterPools}
                             tableActions={[

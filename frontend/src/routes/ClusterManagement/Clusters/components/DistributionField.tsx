@@ -26,6 +26,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
         props.cluster?.distribution.ocp?.upgradeFailed &&
         props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
     ) {
+        // UPGRADE FAILED
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>
@@ -64,6 +65,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
         props.cluster?.distribution.ocp?.version &&
         props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
     ) {
+        // UPGRADE IN PROGRESS
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>
@@ -102,6 +104,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
         props.cluster?.distribution.ocp?.availableUpdates?.length > 0 &&
         !props.cluster?.distribution.isManagedOpenShift // don't allow upgrade for managed OpenShift
     ) {
+        // UPGRADE AVAILABLE
         return (
             <>
                 <div>{props.cluster?.distribution?.displayVersion}</div>
@@ -120,6 +123,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
             </>
         )
     } else {
+        // NO UPGRADE, JUST VERSION
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
 }

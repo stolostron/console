@@ -11,4 +11,10 @@ export const DOC_LINKS = {
     CREATE_CONNECTION: `${DOC_BASE_PATH}/manage_cluster/creating-a-provider-connection`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/manage_cluster/creating-a-cluster`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/manage_cluster/importing-a-target-managed-cluster-to-the-hub-cluster`,
+    CLUSTER_SETS: `${DOC_BASE_PATH}/manage_cluster/managedclustersets`,
+    CLUSTER_POOLS: `${DOC_BASE_PATH}`,
+}
+
+export const OCM_LINKS = {
+    RETRIEVE_TOKEN: `https://cloud.redhat.com/openshift/token`,
 }
