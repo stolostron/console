@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { createResource, replaceResource } from '../lib/resource-request'
+import { createResource, getResource, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
@@ -61,6 +61,10 @@ export function createClusterCurator(clusterCurator: ClusterCurator) {
     }
     clusterCurator.metadata.labels['open-cluster-management'] = 'curator'
     return createResource<ClusterCurator>(clusterCurator)
+}
+
+export function getClusterCurator(metadata: { name: string; namespace: string }) {
+    return getResource<ClusterCurator>({ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind, metadata })
 }
 
 export function filterForTemplatedCurators(clusterCurators: ClusterCurator[]) {
