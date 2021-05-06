@@ -280,7 +280,7 @@ const controlDataGCP = [
     {
         id: 'mpoolsStep',
         type: 'step',
-        title: 'Master cluster pool',
+        title: 'Master node',
     },
     {
         id: 'nodes',
