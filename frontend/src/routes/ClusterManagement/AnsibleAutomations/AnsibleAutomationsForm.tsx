@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Grid, GridItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
@@ -91,13 +90,9 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
 
-    // const [credentialsType, setCredentialsType] = useState(
-    //     providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/provider'] ?? ''
-    // )
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name as string)
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret as string)
 
-    // fix these
     const [installPreJob, setInstallPreJob] = useState(
         (clusterCurator?.spec?.install?.prehook?.[0].name as string) ?? ''
     )
@@ -174,15 +169,7 @@ export function AnsibleAutomationsForm(props: {
             {
                 title: t('template.information.title'),
                 wizardTitle: t('template.create.config.wizard.title'),
-                description: (
-                    <TextContent>
-                        <Grid>
-                            <GridItem span={9}>
-                                <Text component={TextVariants.small}>{t('template.information.description')}</Text>
-                            </GridItem>
-                        </Grid>
-                    </TextContent>
-                ),
+                description: t('template.information.description'),
                 inputs: [
                     {
                         id: 'Template',
@@ -215,16 +202,6 @@ export function AnsibleAutomationsForm(props: {
             {
                 title: t('template.create.install'),
                 wizardTitle: t('template.create.install.wizard.title'),
-                description: (
-                    <TextContent>
-                        <Grid>
-                            <GridItem span={9}>
-                                <Text component={TextVariants.small}></Text>
-                            </GridItem>
-                        </Grid>
-                    </TextContent>
-                ),
-
                 inputs: [
                     {
                         id: 'installPreJob',
@@ -247,16 +224,6 @@ export function AnsibleAutomationsForm(props: {
             {
                 title: t('template.create.upgrade'),
                 wizardTitle: t('template.create.upgrade.wizard.title'),
-                description: (
-                    <TextContent>
-                        <Grid>
-                            <GridItem span={9}>
-                                <Text component={TextVariants.small}></Text>
-                            </GridItem>
-                        </Grid>
-                    </TextContent>
-                ),
-
                 inputs: [
                     {
                         id: 'upgradePreJob',
@@ -279,16 +246,6 @@ export function AnsibleAutomationsForm(props: {
             {
                 title: t('template.create.scale'),
                 wizardTitle: t('template.create.scale.wizard.title'),
-                description: (
-                    <TextContent>
-                        <Grid>
-                            <GridItem span={9}>
-                                <Text component={TextVariants.small}></Text>
-                            </GridItem>
-                        </Grid>
-                    </TextContent>
-                ),
-
                 inputs: [
                     {
                         id: 'scalePreJob',
@@ -311,16 +268,6 @@ export function AnsibleAutomationsForm(props: {
             {
                 title: t('template.create.destroy'),
                 wizardTitle: t('template.create.destroy.wizard.title'),
-                description: (
-                    <TextContent>
-                        <Grid>
-                            <GridItem span={9}>
-                                <Text component={TextVariants.small}></Text>
-                            </GridItem>
-                        </Grid>
-                    </TextContent>
-                ),
-
                 inputs: [
                     {
                         id: 'destroyPreJob',

@@ -60,23 +60,23 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job' }],
-            posthook: [{ name: 'test-job' }],
+            prehook: [{ name: 'test-job-install' }],
+            posthook: [{ name: 'test-job-install' }],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job' }],
-            posthook: [{ name: 'test-job' }],
+            prehook: [{ name: 'test-job-upgrade' }],
+            posthook: [{ name: 'test-job-upgrade' }],
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job' }],
-            posthook: [{ name: 'test-job' }],
+            prehook: [{ name: 'test-job-scale' }],
+            posthook: [{ name: 'test-job-scale' }],
         },
         destroy: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job' }],
-            posthook: [{ name: 'test-job' }],
+            prehook: [{ name: 'test-job-destroy' }],
+            posthook: [{ name: 'test-job-destroy' }],
         },
     },
 }
@@ -99,18 +99,18 @@ describe('add ansible job template page', () => {
         await clickByText('common:next')
 
         // upgrade templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.upgrade.prehook[0].name, 0)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.upgrade.prehook[0].name, 1)
         await clickByText('common:next')
 
         // scale templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.scale.prehook[0].name, 0)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.scale.prehook[0].name, 1)
         await clickByText('common:next')
 
         // destroy templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.destroy.prehook[0].name, 0)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.destroy.prehook[0].name, 1)
         await clickByText('common:next')
 
         // add template
