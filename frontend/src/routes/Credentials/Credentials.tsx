@@ -83,6 +83,8 @@ export function CredentialsTable(props: {
         open: false,
     })
 
+    sessionStorage.removeItem('DiscoveryCredential')
+
     function getAdditionalActions(item: Secret) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
         if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {

@@ -98,9 +98,7 @@ export function AddDiscoveryConfigData() {
         setDiscoveryNamespaces(namespaces)
     }, [discoveryConfigs])
 
-    // Retrieves set of Credentials
-    // If editing a DiscoveryConfig, only show existing CRH Credentials in that namespace
-    // If adding a DiscoveryConfig, only show all CRH credentials across all namespaces which are not configured with a DiscoveryConfig.
+    // Retrieves RHOCM Credentials
     useEffect(() => {
         setIsLoading(true)
         const credentialsResult = listProviderConnections().promise
@@ -135,19 +133,20 @@ export function DiscoveryConfigPageContent(props: {
     credentials: ProviderConnection[]
     discoveryNamespaces: string[]
 }) {
+    const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
         metadata: {
             name: '',
-            namespace: '',
+            namespace: credentialsRef.split('/', 2)[0] || '',
         },
         spec: {
             filters: {
                 lastActive: 7,
                 openShiftVersions: [],
             },
-            credential: '',
+            credential: credentialsRef.split('/', 2)[1] || '',
         },
     })
     const alertContext = useContext(AcmAlertContext)
@@ -164,14 +163,17 @@ export function DiscoveryConfigPageContent(props: {
         message: '',
     })
 
+    // Trims list of credentials
     useEffect(() => {
         const credentials: ProviderConnection[] = []
         props.credentials.forEach((credential) => {
             if (!editing) {
+                // If adding a new DiscoveryConfig, include all credentials not configured with discovery
                 if (!props.discoveryNamespaces.includes(credential.metadata.namespace!)) {
                     credentials.push(credential)
                 }
             } else if (credential.metadata.namespace === discoveryConfig?.metadata?.namespace) {
+                // Else if editing, only show Credentials in the current discoveryConfigs namespace
                 credentials.push(credential)
             }
         })

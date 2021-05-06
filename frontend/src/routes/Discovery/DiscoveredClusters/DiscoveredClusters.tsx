@@ -15,7 +15,7 @@ import {
     Provider,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { PageSection, Card, CardBody } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import * as moment from 'moment'
@@ -61,14 +61,9 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const { t } = useTranslation(['discovery'])
     const history = useHistory()
 
-    const namespaces: string[] = []
-    props.credentials?.forEach((credential) => {
-        if (!namespaces.includes(credential.metadata.namespace!)) {
-            namespaces.push(credential.metadata.namespace!)
-        }
-    })
-    const onSelect = () => {
+    const onSelect = (credential: string) => {
         // TODO: Filter by namespace
+        sessionStorage.setItem('DiscoveryCredential', credential)
         history.push(NavigationPath.createDiscovery)
     }
 
@@ -80,10 +75,10 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
                 id="configureDiscoveryDropdown"
                 isKebab={false}
                 isPrimary={true}
-                dropdownItems={namespaces.map((namespace) => {
+                dropdownItems={props.credentials!.map((credential) => {
                     return {
-                        id: namespace,
-                        text: namespace,
+                        id: credential.metadata.namespace! + '/' + credential.metadata.name!,
+                        text: credential.metadata.namespace! + '/' + credential.metadata.name!,
                     }
                 })}
             />
@@ -158,17 +153,14 @@ export function DiscoveredClustersPageContent() {
 
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
+    sessionStorage.removeItem('DiscoveryCredential')
 
     return (
-        <Card>
-            <CardBody>
-                <DiscoveredClustersTable
-                    discoveredClusters={unmanagedClusters}
-                    credentials={credentials}
-                    discoveryConfigs={discoveryConfigs}
-                />
-            </CardBody>
-        </Card>
+        <DiscoveredClustersTable
+            discoveredClusters={unmanagedClusters}
+            credentials={credentials}
+            discoveryConfigs={discoveryConfigs}
+        />
     )
 }
 
