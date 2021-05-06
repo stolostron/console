@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { readFileSync } from 'fs'
-import { ClientRequest } from 'http'
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent, request } from 'https'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
+import { fetchRetry } from '../lib/fetch-retry'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
+import { setLive } from './liveness'
 
 export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
@@ -85,8 +86,6 @@ export function startWatching(): void {
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
 }
 
-const watchRequests: Record<string, ClientRequest> = {}
-
 export function watchResource(
     token: string,
     apiVersion: string,
@@ -130,14 +129,13 @@ export function watchResource(
     const url = `${process.env.CLUSTER_API_URL}${path}`
 
     let buffer: Buffer = Buffer.from('')
-    const clientRequest = request(
-        url,
-        {
-            headers: { authorization: `Bearer ${token}` },
-            agent: new Agent({ rejectUnauthorized: false }),
-        },
-        (res) => {
-            if (res.statusCode === 200) {
+
+    fetchRetry(url, {
+        headers: { authorization: `Bearer ${token}` },
+        agent: new Agent({ rejectUnauthorized: false }),
+    })
+        .then((res) => {
+            if (res.status === 200) {
                 if (process.env.LOG_WATCHES) {
                     logger.debug({ msg: 'watching start', kind, resourceVersion })
                 }
@@ -151,34 +149,35 @@ export function watchResource(
                 //     }
                 // }
 
-                res.on('data', (chunk) => {
-                    if (chunk instanceof Buffer) {
-                        let oldBuffer = buffer
-                        buffer = Buffer.concat([buffer, chunk])
-                        oldBuffer.fill(0)
-                        chunk.fill(0)
+                res.body
+                    .on('data', (chunk) => {
+                        if (chunk instanceof Buffer) {
+                            let oldBuffer = buffer
+                            buffer = Buffer.concat([buffer, chunk])
+                            oldBuffer.fill(0)
+                            chunk.fill(0)
 
-                        let index = buffer.indexOf('\n')
-                        while (index !== -1) {
-                            // TODO - Security: Search for secret and zero out secret
+                            let index = buffer.indexOf('\n')
+                            while (index !== -1) {
+                                // TODO - Security: Search for secret and zero out secret
 
-                            const data = buffer.slice(0, index)
-                            try {
-                                const watchEvent = JSON.parse(data.toString()) as WatchEvent
-                                const eventResourceVersion = handleWatchEvent(watchEvent)
-                                if (eventResourceVersion) resourceVersion = eventResourceVersion
-                            } catch (err) {
-                                logger.error(err)
+                                const data = buffer.slice(0, index)
+                                try {
+                                    const watchEvent = JSON.parse(data.toString()) as WatchEvent
+                                    const eventResourceVersion = handleWatchEvent(watchEvent)
+                                    if (eventResourceVersion) resourceVersion = eventResourceVersion
+                                } catch (err) {
+                                    logger.error(err)
+                                }
+                                buffer = buffer.slice(index + 1)
+                                index = buffer.indexOf('\n')
                             }
-                            buffer = buffer.slice(index + 1)
-                            index = buffer.indexOf('\n')
-                        }
 
-                        oldBuffer = buffer
-                        buffer = Buffer.from(buffer)
-                        oldBuffer.fill(0)
-                    }
-                })
+                            oldBuffer = buffer
+                            buffer = Buffer.from(buffer)
+                            oldBuffer.fill(0)
+                        }
+                    })
                     .on('error', (err: Error) => {
                         logger.error({ msg: 'watching error', kind, error: err.message })
                     })
@@ -190,16 +189,17 @@ export function watchResource(
                         watchResource(token, apiVersion, kind, options, resourceVersion)
                     })
             } else {
-                logger.error({ msg: 'watch error', kind, statusCode: res.statusCode })
-                setTimeout(() => watchResource(token, apiVersion, kind, options, resourceVersion), 30 * 1000)
+                if (stopping) return
+                logger.error({ msg: 'watch error', kind, status: res.status })
+                setLive(false)
             }
-        }
-    )
-    watchRequests[kind] = clientRequest
-    clientRequest.on('error', (err) => {
-        logger.error({ msg: 'watch request error', error: err.message })
-    })
-    clientRequest.end()
+        })
+        .catch((err) => {
+            if (stopping) return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            logger.error({ msg: 'watch fetch error', err })
+            setLive(false)
+        })
 }
 
 function handleWatchEvent(watchEvent: WatchEvent): string {
@@ -367,8 +367,4 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
 let stopping = false
 export function stopWatching(): void {
     stopping = true
-    for (const kind in watchRequests) {
-        const clientRequest = watchRequests[kind]
-        clientRequest.destroy()
-    }
 }

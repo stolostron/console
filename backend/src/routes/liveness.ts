@@ -6,9 +6,15 @@ import { oauthInfoPromise } from './oauth'
 // The kubelet uses liveness probes to know when to restart a container.
 export async function liveness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise
-    if (!oauthInfo.authorization_endpoint) {
+    if (!oauthInfo.authorization_endpoint || !isLive) {
         return respondInternalServerError(req, res)
     } else {
         return respondOK(req, res)
     }
+}
+
+let isLive = true
+
+export function setLive(value: boolean): void {
+    isLive = value
 }
