@@ -158,7 +158,7 @@ export function canUser(
     name?: string,
     _subresource?: SubResource
 ) {
-    const resourceAttributes = rbacResource(verb, resource, namespace, name)
+    const resourceAttributes = rbacResource(verb, resource, namespace, name, _subresource)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview
 }
