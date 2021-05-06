@@ -32,6 +32,7 @@ import {
     Stack,
     Text,
     TextArea,
+    TextContent,
     TextInput,
     Tile,
     Title,
@@ -320,7 +321,11 @@ export function AcmDataFormWizard(props: {
                                 </AlertGroup>
                             )}
                         <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
-                        {section.description && <Text component="small">{section.description}</Text>}
+                        {section.description && (
+                            <TextContent>
+                                <Text component="small">{section.description}</Text>
+                            </TextContent>
+                        )}
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.title]}
