@@ -258,7 +258,6 @@ export function DiscoveryConfigPageContent(props: {
         alertContext.clearAlerts()
         return new Promise(async (resolve, reject) => {
             try {
-                console.log(discoveryConfig)
                 if (!editing) {
                     discoveryConfig.metadata!.name = 'discovery'
                     await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise

@@ -14,3 +14,7 @@ export const DOC_LINKS = {
     CLUSTER_SETS: `${DOC_BASE_PATH}/manage_cluster/managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}`,
 }
+
+export const OCM_LINKS = {
+    RETRIEVE_TOKEN: `https://cloud.redhat.com/openshift/token`,
+}

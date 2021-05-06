@@ -1,5 +1,5 @@
 {
-    "quickActions": "Quick Action",
+    "quickActions": "Quick action",
     "quickActions.AddRHOCMCredential": "Add OpenShift Cluster Manager credential",
     "discovery.disable": "Disable cluster discovery",
     "discovery.edit": "Edit cluster discovery",
@@ -16,23 +16,25 @@
     "addDiscoveryConfig.title": "Create a discovery setting",
     "editDiscoveryConfig.title": "Configure discovery settings",
 
-    "discoveryConfig.filterform.header": "Set filter(s) for your discovered clusters",
+    "discoveryConfig.filterform.header": "Set filters to discover clusters",
     "discoveryConfig.header.add": "Select a credential",
     "discoveryConfig.header.edit": "Select a namespace and credential",
-    "discoveryConfig.subheader": "Select the namespace and credential you are using for discovery in this namespace. This will allow you to set configuration for discovery. If you select a different credential, the other one will not be used.",
-    "discoveryConfig.filterform.subheader": "Set filters for the discovered clusters from your credentials to make sure you only process and add the clusters relevant to you. Only the 100 most recent clusters will be shown.", 
+    "discoveryConfig.subheader": "Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Cluster management page.",
+    "discoveryConfig.filterform.subheader": "Set filters to discover only relevant clusters.", 
+
     "discoveryConfig.lastActiveFilter.label": "Last active",
-    "discoveryConfig.lastActiveFilter.labelHelp": "Only discoveredclusters active within this time period (in days) will be found",
+    "discoveryConfig.lastActiveFilter.labelHelp": "Only discovered clusters active within this time period are found.",
     "discoveryConfig.lastActiveFilter.placeholder": "7",
-    "discoveryConfig.discoveryVersions.label": "OpenShift version",
-    "discoveryConfig.discoveryVersions.labelHelp": "Only OpenShift clusters matching the selected versions will be found",
+    "discoveryConfig.discoveryVersions.label": "Red Hat OpenShift version",
+    "discoveryConfig.discoveryVersions.labelHelp": "Only Red Hat OpenShift clusters that match the selected versions are found.",
     "discoveryConfig.connections.label": "Credential",
-    "discoveryConfig.connections.labelHelp": "Uses the selected credential to find discovered clusters",
+    "discoveryConfig.connections.labelHelp": "Choose a credential that is used to find discovered clusters.",
     "discoveryConfig.connections.placeholder": "Select a namespace first",
     "discoveryConfig.connections.addCredentials": "Add credentials",
     "discoveryConfig.namespaces.label": "Namespace",
     "discoveryConfig.namespaces.labelHelp": "Select the namespace to configure discovery in",
     "discoveryConfig.namespaces.placeholder": "Select the namespace to configure for",
+
 
     "discoveryConfig.testFilter": "Test filter",
     "discoveryConfig.add": "Add",
@@ -41,15 +43,15 @@
     "discoveryConfig.delete": "Delete",
 
     "emptystate.defaultState.title": "No discovered clusters found",
-    "emptystate.defaultState.msg": "You don't have any discovered clusters, yet. Credential(s) of type <bold>Red Hat OpenShift Cluster Manager</bold> must be added to create a DiscoveryConfig.",
+    "emptystate.defaultState.msg": "You don't have any discovered clusters. Credentials of <bold>Red Hat OpenShift Cluster Manager</bold> type must be added to configure Discovery.",
     "emptystate.addCredential": "Add credential",
 
     "emptystate.credentials.title": "No discovered clusters found",
-    "emptystate.credentials.msg": "You don't have any discovered clusters, yet. You have {{discoveryConfigTotal}} credential(s) to discover clusters from. Click the <bold>Enable cluster discovery</bold> button to set up a filter for discovered clusters from your connections.",
-    "emptystate.enableClusterDiscovery": "Enable cluster discovery",
+    "emptystate.credentials.msg": "You don't have any discovered clusters. You have {{discoveryConfigTotal}} credentials. Click the <bold>Configure Discovery</bold> button to set up a filter for discovered clusters from your connections.",
+    "emptystate.enableClusterDiscovery": "Configure Discovery",
 
     "emptystate.discoveryEnabled.title": "No discovered clusters found",
-    "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters, yet. Cluster discovery has been enabled, so return to this page later or edit to add more connections to the discovery.",
+    "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, or configure Discovery again.",
     "emptystate.viewDocumentation": "View documentation",
 
     "dcTbl.name": "Name",

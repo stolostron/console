@@ -105,15 +105,9 @@ function TestEditConnectionPage() {
                 snapshot.set(discoveryConfigState, [discoveryConfig])
             }}
         >
-            <MemoryRouter
-                initialEntries={[
-                    NavigationPath.editDiscoveryConfig
-                        .replace(':namespace', discoveryConfig.metadata.namespace!)
-                        .replace(':name', discoveryConfig.metadata.name!),
-                ]}
-            >
+            <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
                 <Route
-                    path={NavigationPath.editDiscoveryConfig}
+                    path={NavigationPath.configureDiscovery}
                     render={(props: any) => {
                         return <DiscoveryConfigPage {...props} />
                     }}
@@ -130,10 +124,7 @@ beforeEach(() => {
 
 describe('discovery config page', () => {
     it('Create DiscoveryConfig', async () => {
-        const nocks = [
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-        ]
+        const nocks = [nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection='])]
 
         const { container } = render(<TestAddDiscoveryConfigPage />)
         await waitForNocks(nocks)
@@ -164,12 +155,16 @@ describe('discovery config page', () => {
     it('Edit DiscoveryConfig', async () => {
         const nocks = [
             nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
             nockGet(discoveryConfig, discoveryConfig),
         ]
 
         const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
+
+        // Select Namespace
+        await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+        await clickByText(discoveryConfig.metadata.namespace!)
 
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
@@ -191,12 +186,16 @@ describe('discovery config page', () => {
     it('Delete DiscoveryConfig', async () => {
         const nocks = [
             nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
-            nockList(credential, mockCredential, ['cluster.open-cluster-management.io/cloudconnection=']),
             nockGet(discoveryConfig, discoveryConfig),
         ]
 
-        render(<TestEditConnectionPage />)
+        const { container } = render(<TestEditConnectionPage />)
         await waitForNocks(nocks)
+
+        // Select Namespace
+        await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+        await clickByText(discoveryConfig.metadata.namespace!)
 
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
