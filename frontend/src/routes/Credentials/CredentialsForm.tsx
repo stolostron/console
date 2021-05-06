@@ -306,6 +306,9 @@ export function CredentialsForm(props: {
                 data.spec!.ocmAPIToken = ocmAPIToken
                 break
         }
+        if (props.providerConnection?.stringData?.['credential-hash']) {
+            data.stringData!['credential-hash'] = props.providerConnection?.stringData?.['credential-hash']
+        }
         return packProviderConnection(data)
     }
     const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')

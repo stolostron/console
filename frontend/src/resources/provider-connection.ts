@@ -59,6 +59,7 @@ export interface ProviderConnectionSpec {
 export interface ProviderConnectionStringData {
     host?: string
     token?: string
+    'credential-hash'?: string
 }
 
 export interface ProviderConnection {
