@@ -13,6 +13,11 @@ const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
+        id: 'imageStep',
+        type: 'step',
+        title: 'Image and connection',
+    },
+    {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
@@ -42,43 +47,18 @@ const controlDataOST = [
     },
     ...labelControlData,
 
-    ///////////////////////  openstack  /////////////////////////////////////
-    {
-        id: 'externalNetworkName',
-        name: 'creation.ocp.cluster.ost.external.network.name',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
-        type: 'text',
-        active: '',
-    },
-    {
-        id: 'apiFloatingIP',
-        type: 'text',
-        name: 'creation.ocp.cluster.ost.api.floating.ip',
-        placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
-        active: '',
-        validation: VALIDATE_IP,
-    },
-    {
-        id: 'ingressFloatingIP',
-        type: 'text',
-        name: 'creation.ocp.cluster.ost.ingress.floating.ip',
-        placeholder: 'placeholder.creation.ocp.cluster.ost.ingress.floating.ip',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
-        active: '',
-        validation: VALIDATE_IP,
-    },
-
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
+        id: 'mpoolsStep',
+        type: 'step',
+        title: 'Master node',
+    },
+    {
         id: 'nodes',
         type: 'section',
-        title: 'creation.ocp.node.pools',
+        title: 'creation.ocp.master.node.pools',
         info: 'creation.ocp.cluster.node.pool.info',
-        overline: true,
-        collapsable: true,
-        collapsed: true,
     },
     ///////////////////////  master pool  /////////////////////////////////////
     {
@@ -110,6 +90,11 @@ const controlDataOST = [
         ],
     },
     ///////////////////////  worker pools  /////////////////////////////////////
+    {
+        id: 'wpoolsStep',
+        type: 'step',
+        title: 'Worker pools',
+    },
     {
         id: 'workerPools',
         type: 'group',
@@ -166,6 +151,35 @@ const controlDataOST = [
                 cacheUserValueKey: 'create.cluster.compute.node.count',
             },
         ],
+    },
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'networkStep',
+        type: 'step',
+        title: 'Networking',
+    },
+    {
+        id: 'externalNetworkName',
+        name: 'creation.ocp.cluster.ost.external.network.name',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
+        type: 'text',
+        active: '',
+    },
+    {
+        id: 'apiFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.api.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
+        id: 'ingressFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.ingress.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
+        active: '',
+        validation: VALIDATE_IP,
     },
     ...networkingControlData,
 ]

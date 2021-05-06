@@ -39,10 +39,9 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
 
 export const controlData = [
     {
-        id: 'main',
-        type: 'section',
-        title: 'creation.ocp.cluster.details',
-        collapsable: true,
+        id: 'detailStep',
+        type: 'step',
+        title: 'Basic information',
     },
     {
         name: 'creation.ocp.name',
@@ -75,13 +74,16 @@ export const controlData = [
 
     ///////////////////////  container platform  /////////////////////////////////////
     {
+        id: 'distStep',
+        type: 'step',
+        title: 'Distribution',
+    },
+    {
         id: 'chooseDist',
         type: 'section',
         title: 'creation.ocp.distribution',
         info: 'creation.ocp.choose.distribution',
         tooltip: 'tooltip.creation.ocp.choose.distribution',
-        overline: true,
-        collapsable: true,
     },
     {
         id: 'distribution',

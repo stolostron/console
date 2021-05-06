@@ -12,6 +12,11 @@ const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
+        id: 'imageStep',
+        type: 'step',
+        title: 'Image and connection',
+    },
+    {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image.vmw',
         id: 'imageSet',
@@ -41,58 +46,18 @@ const controlDataVMW = [
         encode: ['cacertificate'],
     },
     ...labelControlData,
-
-    ///////////////////////  networking  /////////////////////////////////////
-    {
-        id: 'networking',
-        type: 'section',
-        title: 'creation.ocp.networking',
-        overline: true,
-        collapsable: true,
-        collapsed: false,
-    },
-    {
-        name: 'creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-    },
-    {
-        id: 'networkType',
-        name: 'creation.ocp.cluster.vmw.network.type',
-        tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
-        type: 'text',
-        active: '',
-    },
-    {
-        id: 'apiVIP',
-        type: 'text',
-        name: 'creation.ocp.api.vip',
-        tooltip: 'tooltip.creation.ocp.api.vip',
-        active: '',
-        validation: VALIDATE_IP,
-    },
-    {
-        id: 'ingressVIP',
-        type: 'text',
-        name: 'creation.ocp.ingress.vip',
-        tooltip: 'tooltip.creation.ocp.ingress.vip',
-        active: '',
-        validation: VALIDATE_IP,
-    },
-
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
+        id: 'mpoolsStep',
+        type: 'step',
+        title: 'Master node',
+    },
+    {
         id: 'nodes',
         type: 'section',
-        title: 'creation.ocp.node.pools',
+        title: 'creation.ocp.master.node.pools',
         info: 'creation.ocp.cluster.node.pool.info',
-        overline: true,
-        collapsable: true,
-        collapsed: true,
     },
     ///////////////////////  master pool  /////////////////////////////////////
     {
@@ -147,6 +112,17 @@ const controlDataVMW = [
         ],
     },
     ///////////////////////  worker pools  /////////////////////////////////////
+    {
+        id: 'wpoolsStep',
+        type: 'step',
+        title: 'Worker pools',
+    },
+    {
+        id: 'nodes',
+        type: 'section',
+        title: 'creation.ocp.worker.node.pools',
+        info: 'creation.ocp.cluster.node.pool.info',
+    },
     {
         id: 'workerPools',
         type: 'group',
@@ -225,6 +201,48 @@ const controlDataVMW = [
                 cacheUserValueKey: 'create.cluster.compute.node.count',
             },
         ],
+    },
+
+    ///////////////////////  networking  /////////////////////////////////////
+    {
+        id: 'networkStep',
+        type: 'step',
+        title: 'Networks',
+    },
+    {
+        id: 'networking',
+        type: 'section',
+        title: 'creation.ocp.networking',
+    },
+    {
+        name: 'creation.ocp.baseDomain',
+        tooltip: 'tooltip.creation.ocp.baseDomain',
+        id: 'baseDomain',
+        type: 'text',
+        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+    },
+    {
+        id: 'networkType',
+        name: 'creation.ocp.cluster.vmw.network.type',
+        tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
+        type: 'text',
+        active: '',
+    },
+    {
+        id: 'apiVIP',
+        type: 'text',
+        name: 'creation.ocp.api.vip',
+        tooltip: 'tooltip.creation.ocp.api.vip',
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
+        id: 'ingressVIP',
+        type: 'text',
+        name: 'creation.ocp.ingress.vip',
+        tooltip: 'tooltip.creation.ocp.ingress.vip',
+        active: '',
+        validation: VALIDATE_IP,
     },
 ]
 

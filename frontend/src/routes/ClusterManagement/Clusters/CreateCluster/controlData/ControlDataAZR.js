@@ -423,6 +423,11 @@ const controlDataAZR = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
+        id: 'imageStep',
+        type: 'step',
+        title: 'Image and connection',
+    },
+    {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
@@ -455,13 +460,15 @@ const controlDataAZR = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
+        id: 'mpoolsStep',
+        type: 'step',
+        title: 'Master node',
+    },
+    {
         id: 'nodes',
         type: 'section',
-        title: 'creation.ocp.node.pools',
+        title: 'creation.ocp.master.node.pools',
         info: 'creation.ocp.cluster.node.pool.info',
-        overline: true,
-        collapsable: true,
-        collapsed: true,
     },
     ///////////////////////  region  /////////////////////////////////////
     {
@@ -519,6 +526,17 @@ const controlDataAZR = [
         ],
     },
     ///////////////////////  worker pools  /////////////////////////////////////
+    {
+        id: 'wpoolsStep',
+        type: 'step',
+        title: 'Worker pools',
+    },
+    {
+        id: 'nodes',
+        type: 'section',
+        title: 'creation.ocp.worker.node.pools',
+        info: 'creation.ocp.cluster.node.pool.info',
+    },
     {
         id: 'workerPools',
         type: 'group',
@@ -600,6 +618,11 @@ const controlDataAZR = [
                 cacheUserValueKey: 'create.cluster.persistent.storage',
             },
         ],
+    },
+    {
+        id: 'networkStep',
+        type: 'step',
+        title: 'Networking',
     },
     ...networkingControlData,
 ]
