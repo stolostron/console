@@ -40,7 +40,7 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { managedClusterSetsState } from '../../../../atoms'
+import { managedClusterSetsState, secretsState } from '../../../../atoms'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -82,7 +82,6 @@ const providerConnection: ProviderConnection = {
         sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
     },
 }
-const mockProviderConnection = [packProviderConnection({ ...providerConnection })]
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: BareMetalAssetApiVersion,
@@ -429,6 +428,7 @@ describe('CreateCluster', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [])
+                    snapshot.set(secretsState, [providerConnection as Secret])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
@@ -467,9 +467,6 @@ describe('CreateCluster', () => {
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
-            nockList(providerConnection, mockProviderConnection, [
-                'cluster.open-cluster-management.io/cloudconnection=',
-            ]),
             nockList(bareMetalAsset, mockBareMetalAssets),
         ]
 
@@ -493,7 +490,7 @@ describe('CreateCluster', () => {
         container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
         await clickByRole('option', 0)
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
-        await clickByText(mockProviderConnection[0].metadata.name!)
+        await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')
 
         // step 4 -- the hosts

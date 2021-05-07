@@ -2,7 +2,7 @@
 
 import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
 import { listClusterImageSets } from '../../../../../resources/cluster-image-set'
-import { listProviderConnections } from '../../../../../resources/provider-connection'
+import { unpackProviderConnection } from '../../../../../resources/provider-connection'
 import { NavigationPath } from '../../../../../NavigationPath'
 import _ from 'lodash'
 
@@ -12,17 +12,6 @@ export const CREATE_CLOUD_CONNECTION = {
     url: NavigationPath.addCredentials,
     positionBottomRight: true,
     id: 'add-provider-connection',
-}
-
-export const LOAD_CLOUD_CONNECTIONS = (provider) => {
-    return {
-        query: () => {
-            return listProviderConnections().promise
-        },
-        emptyDesc: 'creation.ocp.cloud.no.connections',
-        loadingDesc: 'creation.ocp.cloud.loading.connections',
-        setAvailable: setAvailableConnections.bind(null, provider),
-    }
 }
 
 export const LOAD_OCP_IMAGES = (provider) => {
@@ -124,39 +113,24 @@ export const setAvailableOCPMap = (control) => {
     }
 }
 
-export const setAvailableConnections = (provider, control, result) => {
-    const { loading } = result
-    const { data } = result
-    const connections = data
-    control.available = []
+export const setAvailableConnections = (control, secrets) => {
+    const connections = secrets.filter(
+        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/provider'] === control.providerId
+    )
     control.availableMap = {}
-    control.isLoading = false
-    const error = connections ? null : result.error
-    if (error) {
-        control.isFailed = true
-    } else if (connections) {
-        control.isLoaded = true
-        control.available = []
-        control.availableMap = {}
+    connections?.forEach?.((c) => {
+        const unpackedSecret = unpackProviderConnection(c)
+        const spec = unpackedSecret.spec ?? {}
+        const replacements = {}
+        Object.keys(spec).forEach((key) => {
+            replacements[key] = spec[key]
+        })
+        control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
-        connections.forEach((item) => {
-            const { metadata, spec } = item
-            const { name, labels } = metadata
-            if (provider === labels['cluster.open-cluster-management.io/provider']) {
-                control.available.push(name)
-                const replacements = {}
-                Object.keys(spec).forEach((key) => {
-                    replacements[key] = spec[key]
-                })
-                control.availableMap[name] = {
-                    replacements,
-                }
-            }
-        })
-    } else {
-        control.isLoading = loading
-    }
+        control.isLoaded = true
+    })
+    control.available = connections.map((secret) => secret.metadata.name)
 }
 
 export const networkingControlData = [

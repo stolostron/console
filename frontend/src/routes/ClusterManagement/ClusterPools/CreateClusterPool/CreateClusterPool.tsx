@@ -18,7 +18,9 @@ import './style.css'
 
 // template/data
 import { controlData } from './controlData/ControlData'
+import { setAvailableConnections } from './controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
+import { secretsState } from '../../../../atoms'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -65,6 +67,7 @@ export default function CreateClusterPoolPage() {
     const history = useHistory()
     const location = useLocation()
     const [namespaces] = useRecoilState(namespacesState)
+    const [secrets] = useRecoilState(secretsState)
 
     // create portals for buttons in header
     const switches = (
@@ -131,13 +134,22 @@ export default function CreateClusterPoolPage() {
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     for (let i = 0; i < controlData.length; i++) {
+        if (controlData[i].id === 'namespace') {
+            controlData[i].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
+        }
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
-            break
+        }
+        if (controlData[i].id === 'infrastructure') {
+            controlData[i]?.available?.forEach((provider) => {
+                provider.change?.insertControlData?.forEach((control) => {
+                    if (control.id === 'connection') {
+                        setAvailableConnections(control, secrets)
+                    }
+                })
+            })
         }
     }
-
-    controlData[2].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
 
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined) {

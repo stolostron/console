@@ -3,7 +3,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { managedClusterSetsState, namespacesState } from '../../../../atoms'
+import { managedClusterSetsState, namespacesState, secretsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
@@ -68,7 +68,6 @@ const providerConnection: ProviderConnection = {
         sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
     },
 }
-const mockProviderConnection = [packProviderConnection({ ...providerConnection })]
 
 const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
@@ -192,6 +191,7 @@ describe('CreateClusterPool', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClusterSetsState, [])
                     snapshot.set(namespacesState, [mockNamespace])
+                    snapshot.set(secretsState, [providerConnection as Secret])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createClusterPool]}>
@@ -229,9 +229,6 @@ describe('CreateClusterPool', () => {
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
-            nockList(providerConnection, mockProviderConnection, [
-                'cluster.open-cluster-management.io/cloudconnection=',
-            ]),
         ]
 
         // create the form
@@ -251,7 +248,7 @@ describe('CreateClusterPool', () => {
         await clickByRole('option', 0)
 
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
-        await clickByText(mockProviderConnection[0].metadata.name!)
+        await clickByText(providerConnection.metadata.name!)
 
         // nocks for cluster creation
         const createNocks = [
