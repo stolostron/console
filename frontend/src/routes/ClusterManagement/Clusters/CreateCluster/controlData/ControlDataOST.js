@@ -76,7 +76,7 @@ const controlDataOST = [
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.typef',
+                name: 'creation.ocp.instance.type',
                 tooltip: 'tooltip.creation.ocp.otp.instance.type',
                 id: 'masterType',
                 type: 'text',
@@ -169,6 +169,7 @@ const controlDataOST = [
         id: 'apiFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
         active: '',
         validation: VALIDATE_IP,
@@ -177,6 +178,7 @@ const controlDataOST = [
         id: 'ingressFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.ingress.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.ingress.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
         active: '',
         validation: VALIDATE_IP,
