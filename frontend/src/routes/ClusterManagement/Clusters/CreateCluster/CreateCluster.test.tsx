@@ -33,7 +33,6 @@ import {
     ProjectRequestKind,
 } from '../../../../resources/project'
 import {
-    packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
@@ -18,7 +18,7 @@ import './style.css'
 
 // template/data
 import { controlData } from './controlData/ControlData'
-import { setAvailableConnections } from './controlData/ControlDataHelpers'
+import { setAvailableConnections } from '../../Clusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState } from '../../../../atoms'
 
@@ -184,26 +184,28 @@ export default function CreateClusterPoolPage() {
             }
         >
             <AcmErrorBoundary>
-                <PageSection className="pf-c-content">
-                    <TemplateEditor
-                        type={'ClusterPool'}
-                        title={'ClusterPool YAML'}
-                        monacoEditor={<MonacoEditor />}
-                        controlData={controlData}
-                        template={template}
-                        portals={Portals}
-                        fetchControl={fetchControl}
-                        createControl={{
-                            createResource,
-                            cancelCreate,
-                            pauseCreate,
-                            creationStatus: creationStatus?.status,
-                            creationMsg: creationStatus?.messages,
-                        }}
-                        logging={process.env.NODE_ENV !== 'production'}
-                        i18n={i18n}
-                    />
-                </PageSection>
+                <AcmPageContent id="create-cluster-pool">
+                    <PageSection className="pf-c-content" variant="light" isFilled>
+                        <TemplateEditor
+                            type={'ClusterPool'}
+                            title={'ClusterPool YAML'}
+                            monacoEditor={<MonacoEditor />}
+                            controlData={controlData}
+                            template={template}
+                            portals={Portals}
+                            fetchControl={fetchControl}
+                            createControl={{
+                                createResource,
+                                cancelCreate,
+                                pauseCreate,
+                                creationStatus: creationStatus?.status,
+                                creationMsg: creationStatus?.messages,
+                            }}
+                            logging={process.env.NODE_ENV !== 'production'}
+                            i18n={i18n}
+                        />
+                    </PageSection>
+                </AcmPageContent>
             </AcmErrorBoundary>
         </AcmPage>
     )

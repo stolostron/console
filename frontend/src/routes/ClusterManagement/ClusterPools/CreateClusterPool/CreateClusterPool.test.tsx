@@ -24,7 +24,6 @@ import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../..
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../resources/namespace'
 import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../resources/project'
 import {
-    packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
@@ -227,9 +226,7 @@ describe('CreateClusterPool', () => {
     test('can create a cluster pool', async () => {
         window.scrollBy = () => {}
 
-        const initialNocks = [
-            nockList(clusterImageSet, mockClusterImageSet),
-        ]
+        const initialNocks = [nockList(clusterImageSet, mockClusterImageSet)]
 
         // create the form
         const { container } = render(<Component />)
@@ -237,6 +234,9 @@ describe('CreateClusterPool', () => {
         // start filling in the form
         await typeByTestId('eman', clusterName!)
         await typeByTestId('emanspace', mockCreateProject.metadata.name!)
+
+        await clickByText('Next')
+
         await clickByTestId('cluster.create.aws.subtitle')
 
         // wait for tables/combos to fill in
@@ -250,6 +250,8 @@ describe('CreateClusterPool', () => {
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(providerConnection.metadata.name!)
 
+        await clickByText('Review')
+
         // nocks for cluster creation
         const createNocks = [
             // create the managed cluster
@@ -262,7 +264,7 @@ describe('CreateClusterPool', () => {
         ]
 
         // click create button
-        await clickByTestId('create-button-portal-id-btn')
+        await clickByText('Create')
 
         expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('success.create.creating')
