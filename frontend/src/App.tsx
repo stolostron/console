@@ -9,6 +9,7 @@ import { acmRouteState, LoadData } from './atoms'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
+import './App.css'
 
 const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
 const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))
@@ -20,11 +21,13 @@ const CreateClusterPoolPage = lazy(
 )
 const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
 const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
-const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
 const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
+const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
-
+const AnsibleAutomationFormPage = lazy(
+    () => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomationsForm')
+)
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
     return (
@@ -47,6 +50,16 @@ export default function App() {
                                 <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
                                 <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
                                 <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
+                                <Route
+                                    exact
+                                    path={NavigationPath.addAnsibleAutomation}
+                                    component={AnsibleAutomationFormPage}
+                                />
+                                <Route
+                                    exact
+                                    path={NavigationPath.editAnsibleAutomation}
+                                    component={AnsibleAutomationFormPage}
+                                />
                                 <Route
                                     exact
                                     path={NavigationPath.editBareMetalAsset}

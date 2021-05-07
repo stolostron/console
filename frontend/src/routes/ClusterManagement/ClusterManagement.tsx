@@ -11,7 +11,7 @@ import { createContext, ElementType, Fragment, lazy, ReactNode, Suspense, useCon
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, featureGatesState } from '../../atoms'
+import { acmRouteState } from '../../atoms'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -49,8 +49,6 @@ export default function ClusterManagementPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'bma'])
-    const [featureGates] = useRecoilState(featureGatesState)
-    const discoveryFeatureGate = featureGates.find((fg) => fg.metadata.name === 'open-cluster-management-discovery')
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
@@ -84,15 +82,11 @@ export default function ClusterManagementPage() {
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
                                 <Link to={NavigationPath.clusterPools}>{t('cluster:clusterPools')}</Link>
                             </AcmSecondaryNavItem>
-                            {discoveryFeatureGate && (
-                                <AcmSecondaryNavItem
-                                    isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
-                                >
-                                    <Link to={NavigationPath.discoveredClusters}>
-                                        {t('cluster:clusters.discovered')}
-                                    </Link>
-                                </AcmSecondaryNavItem>
-                            )}
+                            <AcmSecondaryNavItem
+                                isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
+                            >
+                                <Link to={NavigationPath.discoveredClusters}>{t('cluster:clusters.discovered')}</Link>
+                            </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.bareMetalAssets)}
                             >
@@ -115,9 +109,7 @@ export default function ClusterManagementPage() {
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
                         <Route exact path={NavigationPath.clusterSets} component={ClusterSetsPage} />
                         <Route exact path={NavigationPath.clusterPools} component={ClusterPoolsPage} />
-                        {discoveryFeatureGate && (
-                            <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
-                        )}
+                        <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
                         <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
                         <Route exact path={NavigationPath.ansibleAutomations} component={AnsibleAutomationsPage} />
                         <Route exact path={NavigationPath.console}>

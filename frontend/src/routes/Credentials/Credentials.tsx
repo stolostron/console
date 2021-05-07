@@ -13,7 +13,7 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
@@ -41,15 +41,11 @@ export default function CredentialsPage() {
         <AcmPage header={<AcmPageHeader title={t('credentialsPage.title')} />}>
             <AcmPageContent id="credentials">
                 <PageSection>
-                    <Card isLarge>
-                        <CardBody>
-                            <CredentialsTable
-                                providerConnections={providerConnections}
-                                discoveryConfigs={discoveryConfigs}
-                                secrets={secrets}
-                            />
-                        </CardBody>
-                    </Card>
+                    <CredentialsTable
+                        providerConnections={providerConnections}
+                        discoveryConfigs={discoveryConfigs}
+                        secrets={secrets}
+                    />
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
@@ -123,7 +119,7 @@ export function CredentialsTable(props: {
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
             <AcmTable<Secret>
-                gridBreakPoint={TableGridBreakpoint.none}
+                gridBreakPoint={TableGridBreakpoint.gridLg}
                 emptyState={
                     <AcmEmptyState
                         title={t('credentialsPage.empty.title')}

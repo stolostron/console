@@ -35,7 +35,7 @@
     "close": "Close",
     "outOf": "{{firstNumber}} out of {{secondNumber}}",
     "wizard.review.title": "Review your selections",
-    "wizard.review.description": "Go back to a step if you have any changes to make.",
+    "wizard.review.description": "Return to a step to make changes.",
 
     "yes": "Yes",
     "no": "No",

@@ -2,7 +2,14 @@
 /* istanbul ignore file */
 import { readFileSync } from 'fs'
 import { STATUS_CODES } from 'http'
-import { createSecureServer, createServer, Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import {
+    constants,
+    createSecureServer,
+    createServer,
+    Http2Server,
+    Http2ServerRequest,
+    Http2ServerResponse,
+} from 'http2'
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
 import { logger } from './logger'
@@ -73,12 +80,16 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                     })
                 })
                 .on('request', (req: Http2ServerRequest, res: Http2ServerResponse) => {
+                    if (isStopping) {
+                        res.setHeader(constants.HTTP2_HEADER_CONNECTION, 'close')
+                    }
+
                     const start = process.hrtime()
                     const socket = (req.socket as unknown) as ISocketRequests
                     socket.activeRequests++
                     req.on('close', () => {
                         socket.activeRequests--
-                        if (isShuttingDown) {
+                        if (isStopping) {
                             req.socket.destroy()
                         }
 
@@ -140,11 +151,11 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
     }
 }
 
-let isShuttingDown = false
+let isStopping = false
 
 export async function stopServer(): Promise<void> {
-    if (isShuttingDown) return
-    isShuttingDown = true
+    if (isStopping) return
+    isStopping = true
 
     for (const socketID of Object.keys(sockets)) {
         const socket = sockets[socketID]
@@ -157,15 +168,32 @@ export async function stopServer(): Promise<void> {
 
     if (server?.listening) {
         logger.debug({ msg: 'closing server' })
-        await new Promise<void>((resolve) =>
-            server?.close((err: Error | undefined) => {
-                if (err) {
-                    logger.error({ msg: 'server close error', name: err.name, error: err.message })
-                } else {
-                    logger.debug({ msg: 'server closed' })
-                }
-                resolve()
-            })
-        )
+        if (process.env.NODE_ENV === 'production') {
+            await new Promise<void>((resolve) =>
+                setTimeout(
+                    () =>
+                        server?.close((err: Error | undefined) => {
+                            if (err) {
+                                logger.error({ msg: 'server close error', name: err.name, error: err.message })
+                            } else {
+                                logger.debug({ msg: 'server closed' })
+                            }
+                            resolve()
+                        }),
+                    25 * 1000
+                )
+            )
+        } else {
+            await new Promise<void>((resolve) =>
+                server?.close((err: Error | undefined) => {
+                    if (err) {
+                        logger.error({ msg: 'server close error', name: err.name, error: err.message })
+                    } else {
+                        logger.debug({ msg: 'server closed' })
+                    }
+                    resolve()
+                })
+            )
+        }
     }
 }
