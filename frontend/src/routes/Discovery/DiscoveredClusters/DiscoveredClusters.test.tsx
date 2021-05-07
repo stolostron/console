@@ -11,16 +11,17 @@ import DiscoveredClustersPage from './DiscoveredClusters'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1',
+        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-01', namespace: 'alpha' },
         spec: {
-            activity_timestamp: '2020-07-30T19:09:43Z',
+            activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'aws',
+            isManagedCluster: false,
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
-            creation_timestamp: '2020-07-30T19:09:43Z',
+            creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-01',
-            display_name: 'test-cluster-01',
+            displayName: 'test-cluster-01',
             openshiftVersion: '4.5.5',
             credential: {
                 apiVersion: 'v1',
@@ -34,31 +35,32 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         },
     },
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1',
+        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-02', namespace: 'discovered-cluster-namespace' },
         spec: {
-            activity_timestamp: '2020-07-30T19:09:43Z',
+            activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'gcp',
-            display_name: 'test-cluster-02',
+            isManagedCluster: false,
+            displayName: 'test-cluster-02',
             console: 'https://console-openshift-console.apps.test-cluster-02.dev01.red-chesterfield.com',
-            creation_timestamp: '2020-07-30T19:09:43Z',
+            creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
             status: 'Stale',
         },
     },
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1',
+        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-03', namespace: 'discovered-cluster-namespace' },
         spec: {
-            activity_timestamp: '2020-07-30T19:09:43Z',
+            activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'openstack',
             isManagedCluster: true,
-            display_name: 'test-cluster-03',
+            displayName: 'test-cluster-03',
             console: 'https://console-openshift-console.apps.test-cluster-03.dev01.red-chesterfield.com',
-            creation_timestamp: '2020-07-30T19:09:43Z',
+            creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-03',
             openshiftVersion: '4.6.1',
             status: 'Stale',
@@ -82,12 +84,12 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText(mockDiscoveredClusters[0].spec.display_name)
+        await waitForText(mockDiscoveredClusters[0].spec.displayName)
         await waitForText('OpenShift ' + mockDiscoveredClusters[0].spec.openshiftVersion)
-        await waitForText(mockDiscoveredClusters[1].spec.display_name)
+        await waitForText(mockDiscoveredClusters[1].spec.displayName)
         await waitForText('OpenShift ' + mockDiscoveredClusters[1].spec.openshiftVersion)
 
-        await waitForNotText(mockDiscoveredClusters[2].spec.display_name) // Ensure managedcluster does not appear
+        await waitForNotText(mockDiscoveredClusters[2].spec.displayName) // Ensure managedcluster does not appear
 
         await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
     })

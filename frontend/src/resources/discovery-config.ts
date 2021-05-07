@@ -4,8 +4,8 @@ import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMet
 import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
-export const DiscoveryConfigApiVersion = 'discovery.open-cluster-management.io/v1'
-export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.io/v1'
+export const DiscoveryConfigApiVersion = 'discovery.open-cluster-management.io/v1alpha1'
+export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.io/v1alpha1'
 
 export const DiscoveryConfigKind = 'DiscoveryConfig'
 export type DiscoveryConfigKindType = 'DiscoveryConfig'
