@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmAlertGroup,
+    AcmIcon,
+    AcmIconVariant,
     AcmAlertContext,
     AcmButton,
     AcmDropdown,
@@ -15,11 +18,10 @@ import {
     Provider,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
-import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import * as moment from 'moment'
-import { useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -70,7 +72,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text="Configure discovery settings"
+                text={t('discovery.configureDiscovery')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
@@ -117,7 +119,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
             action={
                 <AcmButton variant="link">
                     <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                        {t('emptystate.viewDocumentation')} <ExternalLink />
+                        {t('emptystate.viewDocumentation')} <AcmIcon icon={AcmIconVariant.openNewTab} />
                     </span>
                 </AcmButton>
             }
@@ -127,6 +129,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
 
 export function DiscoveredClustersPageContent() {
     const alertContext = useContext(AcmAlertContext)
+    const { t } = useTranslation(['discovery'])
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -134,6 +137,7 @@ export function DiscoveredClustersPageContent() {
     const [secrets] = useRecoilState(secretsState)
     const credentials = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [updateListener] = useState<string>(sessionStorage.getItem('DISCOVERY_OP') || '')
 
     const cloudRedHatCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
@@ -142,6 +146,31 @@ export function DiscoveredClustersPageContent() {
             cloudRedHatCredentials.push(credential)
         }
     })
+
+    if (updateListener !== '' && alertContext.activeAlerts.length === 0) {
+        const jsonStr = JSON.parse(updateListener)
+
+        let title = ''
+        switch (jsonStr.Operation) {
+            case 'Create':
+                title = 'discovery:alert.created.header'
+                break
+            case 'Update':
+                title = 'discovery:alert.updated.header'
+                break
+            case 'Delete':
+                title = 'discovery:alert.deleted.header'
+                break
+        }
+        alertContext.addAlert({
+            type: 'success',
+            title: (
+                <Trans i18nKey={title} components={{ bold: <strong /> }} values={{ credentialName: jsonStr.Name }} />
+            ),
+            message: t('alert.msg'),
+        })
+        sessionStorage.removeItem('DISCOVERY_OP')
+    }
 
     const unmanagedClusters: DiscoveredCluster[] = []
     discoveredClusters.forEach((discoveredCluster) => {
@@ -156,11 +185,13 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveryCredential')
 
     return (
-        <DiscoveredClustersTable
-            discoveredClusters={unmanagedClusters}
-            credentials={credentials}
-            discoveryConfigs={discoveryConfigs}
-        />
+        <Fragment>
+            <DiscoveredClustersTable
+                discoveredClusters={unmanagedClusters}
+                credentials={credentials}
+                discoveryConfigs={discoveryConfigs}
+            />
+        </Fragment>
     )
 }
 
@@ -199,7 +230,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                        <ExternalLink />
+                        <AcmIcon icon={AcmIconVariant.openNewTab} />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
                             {discoveredCluster.spec.display_name}
                         </span>
@@ -341,6 +372,7 @@ export function DiscoveredClustersTable(props: {
                     id: 'addDiscovery',
                     title: t('discovery.addDiscovery'),
                     click: () => history.push(NavigationPath.createDiscovery),
+                    variant: ButtonVariant.secondary,
                 },
             ]}
             bulkActions={[]}

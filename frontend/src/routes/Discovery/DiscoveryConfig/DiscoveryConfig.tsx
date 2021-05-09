@@ -5,6 +5,8 @@ import {
     AcmButton,
     AcmForm,
     AcmFormSection,
+    AcmIcon,
+    AcmIconVariant,
     AcmMultiSelect,
     AcmPage,
     AcmPageContent,
@@ -72,7 +74,7 @@ export default function DiscoveryConfigPage() {
                 )
             }
         >
-            <AcmPageContent id="discoveryConfig">
+            <AcmPageContent id="discoveryConfigPageContent">
                 <PageSection variant="light">
                     <AddDiscoveryConfigData />
                 </PageSection>
@@ -207,6 +209,10 @@ export function DiscoveryConfigPageContent(props: {
                                     message: '',
                                 })
                                 resolve(undefined)
+                                sessionStorage.setItem(
+                                    'DISCOVERY_OP',
+                                    JSON.stringify({ Operation: 'Delete', Name: discoveryConfig.metadata.namespace })
+                                )
                                 history.push(NavigationPath.discoveredClusters)
                             } else {
                                 throw Error('Error retrieving discoveryconfigs')
@@ -253,8 +259,16 @@ export function DiscoveryConfigPageContent(props: {
             try {
                 if (!editing) {
                     discoveryConfig.metadata!.name = 'discovery'
+                    sessionStorage.setItem(
+                        'DISCOVERY_OP',
+                        JSON.stringify({ Operation: 'Create', Name: discoveryConfig.metadata.namespace })
+                    )
                     await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                 } else {
+                    sessionStorage.setItem(
+                        'DISCOVERY_OP',
+                        JSON.stringify({ Operation: 'Update', Name: discoveryConfig.metadata.namespace })
+                    )
                     await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                 }
                 resolve(undefined)
@@ -346,7 +360,9 @@ export function DiscoveryConfigPageContent(props: {
             </AcmSelect>
             <Flex style={{ marginTop: '0px' }}>
                 <FlexItem align={{ default: 'alignRight' }}>
-                    <Link to={NavigationPath.addCredentials}>{t('discoveryConfig.connections.addCredentials')}</Link>
+                    <Link to={NavigationPath.addCredentials}>
+                        {t('discoveryConfig.connections.addCredentials')} <AcmIcon icon={AcmIconVariant.openNewTab} />
+                    </Link>
                 </FlexItem>
             </Flex>
             {(discoveryConfig.metadata!.namespace && editing) || !editing ? (
