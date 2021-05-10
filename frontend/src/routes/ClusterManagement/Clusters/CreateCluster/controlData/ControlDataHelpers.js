@@ -49,6 +49,13 @@ const getImageVersion = (image) => {
     return _.get(match, '1', '')
 }
 
+export const getSimplifiedImageName = (image) => {
+    const match = /.+:(.*)-/gm.exec(image)
+    if (match && match[1]) {
+        return `OpenShift ${match[1]}`
+    }
+}
+
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
     const { data } = result
@@ -193,8 +200,6 @@ export const networkingControlData = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.network.title',
                 info: 'creation.ocp.node.network.info',
-                collapsable: true,
-                collapsed: true,
             },
             {
                 id: 'clusterNetwork',
@@ -232,13 +237,3 @@ export const networkingControlData = [
     },
 ]
 
-export const labelControlData = [
-    ///////////////////////  purpose  /////////////////////////////////////
-    {
-        name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
-        id: 'additional',
-        type: 'labels',
-        active: [],
-    },
-]

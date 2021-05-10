@@ -5,7 +5,7 @@ import {
     LOAD_CLOUD_CONNECTIONS,
     LOAD_OCP_IMAGES,
     networkingControlData,
-    labelControlData,
+    getSimplifiedImageName,
 } from './ControlDataHelpers'
 import {
     ControlMode,
@@ -165,6 +165,7 @@ const controlDataBMC = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('bmc'),
         validation: {
@@ -188,7 +189,6 @@ const controlDataBMC = [
         fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ///////////////////////  hosts  /////////////////////////////////////
     {

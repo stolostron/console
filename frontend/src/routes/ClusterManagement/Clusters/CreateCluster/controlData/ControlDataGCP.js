@@ -6,7 +6,7 @@ import {
     LOAD_CLOUD_CONNECTIONS,
     LOAD_OCP_IMAGES,
     networkingControlData,
-    labelControlData,
+    getSimplifiedImageName,
 } from './ControlDataHelpers'
 
 const GCPregions = [
@@ -250,6 +250,7 @@ const controlDataGCP = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('gcp'),
         validation: {
@@ -273,7 +274,6 @@ const controlDataGCP = [
         fetchAvailable: LOAD_CLOUD_CONNECTIONS('gcp'),
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
@@ -311,8 +311,6 @@ const controlDataGCP = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -358,8 +356,6 @@ const controlDataGCP = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {

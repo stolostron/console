@@ -6,7 +6,7 @@ import {
     LOAD_CLOUD_CONNECTIONS,
     LOAD_OCP_IMAGES,
     networkingControlData,
-    labelControlData,
+    getSimplifiedImageName,
 } from './ControlDataHelpers'
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
@@ -432,6 +432,7 @@ const controlDataAZR = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('azr'),
         validation: {
@@ -455,7 +456,6 @@ const controlDataAZR = [
         fetchAvailable: LOAD_CLOUD_CONNECTIONS('azr'),
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
@@ -493,8 +493,6 @@ const controlDataAZR = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -552,8 +550,6 @@ const controlDataAZR = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {

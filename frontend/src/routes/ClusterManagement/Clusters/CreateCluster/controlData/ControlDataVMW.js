@@ -5,7 +5,7 @@ import {
     CREATE_CLOUD_CONNECTION,
     LOAD_CLOUD_CONNECTIONS,
     LOAD_OCP_IMAGES,
-    labelControlData,
+    getSimplifiedImageName,
 } from './ControlDataHelpers'
 
 const controlDataVMW = [
@@ -21,6 +21,7 @@ const controlDataVMW = [
         tooltip: 'tooltip.cluster.create.ocp.image.vmw',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('vmw'),
         validation: {
@@ -45,7 +46,6 @@ const controlDataVMW = [
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },
-    ...labelControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
@@ -70,8 +70,6 @@ const controlDataVMW = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
@@ -138,8 +136,6 @@ const controlDataVMW = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {

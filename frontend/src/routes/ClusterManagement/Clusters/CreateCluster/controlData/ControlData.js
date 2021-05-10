@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALID_DNS_LABEL } from 'temptifly'
+import { VALID_DNS_LABEL, VALIDATE_IP } from 'temptifly'
 import fs from 'fs'
 import path from 'path'
 import Handlebars from 'handlebars'
@@ -65,6 +65,13 @@ export const controlData = [
             required: false,
         },
         available: [],
+    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
     },
     {
         id: 'showSecrets',

@@ -166,8 +166,6 @@ export const networkingControlData = [
         type: 'section',
         title: 'creation.ocp.networking',
         overline: true,
-        collapsable: true,
-        collapsed: true,
     },
     {
         name: 'creation.ocp.baseDomain',
@@ -202,8 +200,6 @@ export const networkingControlData = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.network.title',
                 info: 'creation.ocp.node.network.info',
-                collapsable: true,
-                collapsed: true,
             },
             {
                 id: 'clusterNetwork',
