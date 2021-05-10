@@ -159,6 +159,10 @@ const controlDataOST = [
         tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
         type: 'text',
         active: '',
+        validation: {
+            notification: 'creation.ocp.cluster.ost.must.enter.external.network.name',
+            required: true,
+        },
     },
     {
         id: 'apiFloatingIP',

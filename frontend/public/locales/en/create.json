@@ -231,6 +231,7 @@
     "creation.ocp.datastore": "Default datastore",
     "creation.ocp.otp.instance.flavor": "Instance flavor",
     "creation.ocp.cluster.ost.external.network.name": "External network name",
+    "creation.ocp.cluster.ost.must.enter.external.network.name": "External network name is required.",
     "creation.ocp.cluster.ost.api.floating.ip": "API floating IP",
     "placeholder.creation.ocp.cluster.ost.api.floating.ip": "Enter API floating IP",
     "creation.ocp.cluster.ost.ingress.floating.ip": "Ingress floating IP",
