@@ -70,8 +70,8 @@ export default function App() {
                                     path={NavigationPath.createBareMetalAsset}
                                     component={CreateBareMetalAssetPage}
                                 />
-                                <Route exact path={NavigationPath.addDiscoveryConfig} component={DiscoveryConfig} />
-                                <Route exact path={NavigationPath.editDiscoveryConfig} component={DiscoveryConfig} />
+                                <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
+                                <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
                                 <Route path={NavigationPath.console} component={ClusterManagementPage} />
                                 <Route exact path="*">
                                     <Redirect to={NavigationPath.console} />
