@@ -55,10 +55,10 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             namespace: 'foobar',
         },
         spec: {
-            activity_timestamp: '2020-07-30T19:09:43Z',
+            activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'aws',
             console: 'https://console-openshift-console.apps.foobar.dev01.red-chesterfield.com',
-            creation_timestamp: '2020-07-30T19:09:43Z',
+            creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'foobar',
             openshiftVersion: '4.5.5',
             providerConnections: [
@@ -79,10 +79,10 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         kind: DiscoveredClusterKind,
         metadata: { name: 'test-cluster-02', namespace: 'foobar' },
         spec: {
-            activity_timestamp: '2020-07-30T19:09:43Z',
+            activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
-            creation_timestamp: '2020-07-30T19:09:43Z',
+            creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
             status: 'Stale',

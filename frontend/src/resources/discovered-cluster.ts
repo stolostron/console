@@ -4,8 +4,8 @@ import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMet
 import { listResources } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
-export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1'
-export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1'
+export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1alpha1'
+export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1alpha1'
 
 export const DiscoveredClusterKind = 'DiscoveredCluster'
 export type DiscoveredClusterKindType = 'DiscoveredCluster'
@@ -22,13 +22,13 @@ export interface DiscoveredCluster extends IResource {
     spec: {
         name: string
         console: string
-        display_name: string
-        creation_timestamp?: string
-        activity_timestamp: string
+        displayName: string
+        creationTimestamp?: string
+        activityTimestamp: string
         openshiftVersion: string
         cloudProvider: string
         status: string
-        isManagedCluster?: boolean
+        isManagedCluster: boolean
         credential?: {
             apiVersion: string
             kind: string

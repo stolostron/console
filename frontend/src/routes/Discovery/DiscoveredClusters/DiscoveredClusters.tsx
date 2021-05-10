@@ -191,17 +191,17 @@ export function DiscoveredClustersTable(props: {
     const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         {
             header: t('dcTbl.name'),
-            sort: 'spec.display_name',
+            sort: 'spec.displayName',
             search: (discoveredCluster: DiscoveredCluster) => [
                 discoveredCluster.spec.console,
-                discoveredCluster.spec.display_name,
+                discoveredCluster.spec.displayName,
             ],
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
                         <ExternalLink />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
-                            {discoveredCluster.spec.display_name}
+                            {discoveredCluster.spec.displayName}
                         </span>
                     </a>
                 </span>
@@ -228,13 +228,13 @@ export function DiscoveredClustersTable(props: {
             sort: 'spec.activity_timestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-                    {discoveredCluster.spec.activity_timestamp === undefined
+                    {discoveredCluster.spec.activityTimestamp === undefined
                         ? ['N/A']
                         : moment
                               .duration(
                                   Math.abs(
                                       new Date().getTime() -
-                                          new Date(discoveredCluster.spec.activity_timestamp).getTime()
+                                          new Date(discoveredCluster.spec.activityTimestamp).getTime()
                                   )
                               )
                               .humanize()}
@@ -287,16 +287,16 @@ export function DiscoveredClustersTable(props: {
         },
         {
             header: t('dcTbl.created'),
-            sort: 'spec.creation_timestamp',
+            sort: 'spec.creationTimestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-                    {discoveredCluster.spec.creation_timestamp === undefined
+                    {discoveredCluster.spec.creationTimestamp === undefined
                         ? ['N/A']
                         : moment
                               .duration(
                                   Math.abs(
                                       new Date().getTime() -
-                                          new Date(discoveredCluster.spec.creation_timestamp).getTime()
+                                          new Date(discoveredCluster.spec.creationTimestamp).getTime()
                                   )
                               )
                               .humanize()}
@@ -308,7 +308,7 @@ export function DiscoveredClustersTable(props: {
             sort: 'metadata.creationTimestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-                    {discoveredCluster.spec.creation_timestamp === undefined
+                    {discoveredCluster.spec.creationTimestamp === undefined
                         ? ['N/A']
                         : moment
                               .duration(

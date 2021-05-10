@@ -71,8 +71,8 @@ export function startWatching(): void {
     watchResource(token, 'v1', 'secrets', {
         labelSelector: { 'cluster.open-cluster-management.io/cloudconnection': '' },
     })
-    watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveryConfigs')
-    watchResource(token, 'discovery.open-cluster-management.io/v1', 'discoveredClusters')
+    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
+    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')
     watchResource(token, 'config.openshift.io/v1', 'featureGates', {
         labelSelector: { 'console.open-cluster-management.io': '' },
     })
