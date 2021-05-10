@@ -5,11 +5,12 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../atoms'
-import { nockCreate, nockDelete, nockGet, nockReplace } from '../../../lib/nock-util'
+import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace, nockDelete } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
 import { Secret, SecretKind, SecretApiVersion } from '../../../resources/secret'
+import DiscoveredClustersPage from '../DiscoveredClusters/DiscoveredClusters'
 import DiscoveryConfigPage from './DiscoveryConfig'
 
 const credential: Secret = {
@@ -66,18 +67,16 @@ function TestAddDiscoveryConfigPage() {
                 snapshot.set(secretsState, [credential])
             }}
         >
-            <MemoryRouter>
-                <Route
-                    render={(props: any) => {
-                        return <DiscoveryConfigPage {...props} />
-                    }}
-                />
+            <MemoryRouter initialEntries={[NavigationPath.createDiscovery]}>
+                <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
+                <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
             </MemoryRouter>
         </RecoilRoot>
     )
 }
 
 function TestEditConnectionPage() {
+    nockIgnoreRBAC()
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
@@ -85,12 +84,8 @@ function TestEditConnectionPage() {
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
-                <Route
-                    path={NavigationPath.configureDiscovery}
-                    render={(props: any) => {
-                        return <DiscoveryConfigPage {...props} />
-                    }}
-                />
+                <Route path={NavigationPath.configureDiscovery} render={() => <DiscoveryConfigPage />} />
+                <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
             </MemoryRouter>
         </RecoilRoot>
     )
@@ -104,11 +99,19 @@ describe('discovery config page', () => {
     it('Create DiscoveryConfig', async () => {
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
+        // Select Credential
+        await waitFor(() =>
+            expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
+        )
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
+
         // Select LastActive
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="lastActiveFilter-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
+        await waitForText('14 days')
         await clickByText('14 days')
 
         // Select Version
@@ -116,15 +119,14 @@ describe('discovery config page', () => {
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
         await clickByText('4.7')
 
-        // Select Credential
-        expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
-        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
-        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
-
         // Submit form
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
         await clickByText('discoveryConfig.add')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.msg')
     })
 
     it('Edit DiscoveryConfig', async () => {
@@ -153,6 +155,10 @@ describe('discovery config page', () => {
         const replaceNock = nockReplace(discoveryConfigUpdated)
         await clickByText('discoveryConfig.edit')
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.updated.header')
+        await waitForText('alert.msg')
     })
 
     it('Delete DiscoveryConfig', async () => {
@@ -176,5 +182,9 @@ describe('discovery config page', () => {
         await waitForText('disable.title')
         await clickByText('discoveryConfig.delete.btn')
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.deleted.header')
+        await waitForText('alert.msg')
     })
 })
