@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
 import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
 
 const controlDataOST = [
@@ -71,7 +71,7 @@ const controlDataOST = [
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.typef',
+                name: 'creation.ocp.instance.type',
                 tooltip: 'tooltip.creation.ocp.otp.instance.type',
                 id: 'masterType',
                 type: 'text',
@@ -159,11 +159,16 @@ const controlDataOST = [
         tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
         type: 'text',
         active: '',
+        validation: {
+            notification: 'creation.ocp.cluster.ost.must.enter.external.network.name',
+            required: true,
+        },
     },
     {
         id: 'apiFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
         active: '',
         validation: VALIDATE_IP,
@@ -172,9 +177,19 @@ const controlDataOST = [
         id: 'ingressFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.ingress.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.ingress.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
         active: '',
         validation: VALIDATE_IP,
+    },
+    {
+        id: 'externalDNS',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.external.dns',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
+        active: '',
+        validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
 ]

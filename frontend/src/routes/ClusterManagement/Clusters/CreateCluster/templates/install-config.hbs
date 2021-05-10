@@ -267,6 +267,11 @@ platform:
     externalNetwork: {{{../../externalNetworkName}}}
     lbFloatingIP: {{{../../apiFloatingIP}}}
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
+    {{#if ../../externalDNS}}
+    externalDNS:
+      - {{{../../externalDNS}}}
+    {{/if}}
+
 {{/case}}
 
 {{/switch}}
