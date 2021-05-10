@@ -2,7 +2,6 @@
 
 import {
     CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,

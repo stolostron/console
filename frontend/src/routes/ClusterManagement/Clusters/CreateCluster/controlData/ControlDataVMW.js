@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
-import {
-    CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
-    LOAD_OCP_IMAGES,
-    getSimplifiedImageName,
-} from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, getSimplifiedImageName } from './ControlDataHelpers'
 
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
