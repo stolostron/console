@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_CLOUD_CONNECTIONS,
@@ -190,7 +190,7 @@ const controlDataOST = [
         placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
         tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
         active: '',
-        validation: VALIDATE_IP,
+        validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
 ]
