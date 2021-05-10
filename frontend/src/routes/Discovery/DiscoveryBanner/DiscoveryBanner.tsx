@@ -3,7 +3,6 @@
 import { Secret } from '../../../resources/secret'
 import {
     ButtonVariant,
-    Dropdown,
     Card,
     CardBody,
     CardTitle,
@@ -11,20 +10,18 @@ import {
     Split,
     SplitItem,
     ActionGroup,
-    DropdownItem,
 } from '@patternfly/react-core'
-import { AcmButton, AcmDropdown, Provider } from '@open-cluster-management/ui-components'
+import { AcmButton, Provider } from '@open-cluster-management/ui-components'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { useEffect, useState } from 'react'
 import { secretsState, discoveryConfigState } from '../../../atoms'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import DiscoveryPng from '../../../components/ACM-Discovery-illus.png'
 import { NavigationPath } from '../../../NavigationPath'
 
 export function DiscoveryBanner() {
     const { t } = useTranslation(['discovery'])
-    const history = useHistory()
     const [secrets] = useRecoilState(secretsState)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [RHOCMCredentials, setRHOCMsCredentials] = useState<Secret[]>([])
@@ -52,14 +49,7 @@ export function DiscoveryBanner() {
         setDismissed(true)
     }
 
-    const onSelect = (credential: string) => {
-        // TODO: Filter by namespace
-        sessionStorage.setItem('DiscoveryCredential', credential)
-        history.push(NavigationPath.createDiscovery)
-    }
-
     let Msg: React.ReactNode = null
-    let PrimaryButton: React.ReactNode = null
     switch (RHOCMCredentials.length) {
         case 1:
             Msg = (
@@ -68,13 +58,6 @@ export function DiscoveryBanner() {
                     components={{ bold: <strong /> }}
                     values={{ credentialName: RHOCMCredentials[0].metadata.name }}
                 />
-            )
-            PrimaryButton = (
-                <Link to={NavigationPath.createDiscovery}>
-                    <AcmButton key="enableDiscovery" variant={ButtonVariant.primary}>
-                        {t('discovery.addDiscovery')}
-                    </AcmButton>
-                </Link>
             )
             break
         default:
@@ -85,29 +68,11 @@ export function DiscoveryBanner() {
                     values={{ credentialsTotal: RHOCMCredentials.length }}
                 />
             )
-            PrimaryButton = (
-                <AcmDropdown
-                    text={t('discovery.configureDiscovery')}
-                    id="discoveryDropdown"
-                    onSelect={onSelect}
-                    isKebab={false}
-                    isPrimary={true}
-                    dropdownItems={RHOCMCredentials.map((credential) => {
-                        return {
-                            id: credential.metadata.namespace! + '/' + credential.metadata.name!,
-                            text: credential.metadata.namespace! + '/' + credential.metadata.name!,
-                            isDisabled: false,
-                        }
-                    })}
-                />
-            )
     }
 
     if (dismissed || RHOCMCredentials.length === 0) {
         return null
     }
-
-    console.log(RHOCMCredentials)
 
     return (
         <Card key="discoveryBanner">
@@ -122,7 +87,11 @@ export function DiscoveryBanner() {
                     <CardBody>{Msg}</CardBody>
                     <CardFooter>
                         <ActionGroup>
-                            {PrimaryButton}
+                            <Link to={NavigationPath.createDiscovery}>
+                                <AcmButton key="enableDiscovery" variant={ButtonVariant.primary}>
+                                    {t('discovery.addDiscovery')}
+                                </AcmButton>
+                            </Link>
                             <AcmButton variant={ButtonVariant.link} onClick={dismiss} style={{ marginLeft: '16px' }}>
                                 {t('clusters.banner.dismiss')}
                             </AcmButton>

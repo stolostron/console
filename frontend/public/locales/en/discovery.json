@@ -7,9 +7,9 @@
     "discovery.configureDiscovery": "Configure discovery settings",
     "discovery.addDiscovery": "Create discovery settings",
 
-    "alert.created.header": "<bold>{{credentialName}}</bold> discovery settings have been created",
-    "alert.updated.header": "<bold>{{credentialName}}</bold> have been updated",
-    "alert.deleted.header": "<bold>{{discoveryNamespace}}</bold> discovery settings have been removed",
+    "alert.created.header": "{{credentialName}} discovery setting has been created successfully",
+    "alert.updated.header": "{{credentialName}} discovery setting has been updated successfully",
+    "alert.deleted.header": "{{credentialName}} discovery setting has been removed successfully",
     "alert.msg": "You can configure settings in Clusters > Discovered clusters",
 
 

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmAlertGroup,
     AcmIcon,
     AcmIconVariant,
     AcmAlertContext,
@@ -164,9 +163,7 @@ export function DiscoveredClustersPageContent() {
         }
         alertContext.addAlert({
             type: 'success',
-            title: (
-                <Trans i18nKey={title} components={{ bold: <strong /> }} values={{ credentialName: jsonStr.Name }} />
-            ),
+            title: <Trans i18nKey={title} values={{ credentialName: jsonStr.Name }} />,
             message: t('alert.msg'),
         })
         sessionStorage.removeItem('DISCOVERY_OP')

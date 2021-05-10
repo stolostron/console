@@ -10,7 +10,6 @@ import {
     AcmPageContent,
     AcmTable,
     IAcmTableAction,
-    Provider,
 } from '@open-cluster-management/ui-components'
 import { PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
@@ -51,7 +50,6 @@ export default function ClustersPage() {
         }
     })
 
-    // localStorage.clear()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 

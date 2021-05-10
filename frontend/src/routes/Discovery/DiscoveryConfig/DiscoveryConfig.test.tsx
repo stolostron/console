@@ -5,7 +5,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace } from '../../../lib/nock-util'
+import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace, nockDelete } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
@@ -84,12 +84,8 @@ function TestEditConnectionPage() {
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
-                <Route
-                    path={NavigationPath.configureDiscovery}
-                    render={(props: any) => {
-                        return <DiscoveryConfigPage {...props} />
-                    }}
-                />
+                <Route path={NavigationPath.configureDiscovery} render={() => <DiscoveryConfigPage />} />
+                <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
             </MemoryRouter>
         </RecoilRoot>
     )
@@ -102,8 +98,6 @@ beforeEach(() => {
 describe('discovery config page', () => {
     it('Create DiscoveryConfig', async () => {
         const { container } = render(<TestAddDiscoveryConfigPage />)
-
-        console.log(container)
 
         // Select Credential
         await waitFor(() =>
@@ -129,56 +123,68 @@ describe('discovery config page', () => {
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
         await clickByText('discoveryConfig.add')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.msg')
     })
 
-    // it('Edit DiscoveryConfig', async () => {
-    //     const nocks = [nockGet(discoveryConfig, discoveryConfig)]
+    it('Edit DiscoveryConfig', async () => {
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
-    //     const { container } = render(<TestEditConnectionPage />)
-    //     await waitForNocks(nocks)
+        const { container } = render(<TestEditConnectionPage />)
+        await waitForNocks(nocks)
 
-    //     // Select Namespace
-    //     await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
-    //     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
-    //     await clickByText(discoveryConfig.metadata.namespace!)
+        // Select Namespace
+        await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+        await clickByText(discoveryConfig.metadata.namespace!)
 
-    //     // Ensure Form is prepopulated
-    //     await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
-    //     await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
-    //     await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+        // Ensure Form is prepopulated
+        await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
+        await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
+        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
 
-    //     // Change form
-    //     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
-    //     await clickByText('30 days')
+        // Change form
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
+        await clickByText('30 days')
 
-    //     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
-    //     await clickByText('4.8')
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
+        await clickByText('4.8')
 
-    //     const replaceNock = nockReplace(discoveryConfigUpdated)
-    //     await clickByText('discoveryConfig.edit')
-    //     await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
-    // })
+        const replaceNock = nockReplace(discoveryConfigUpdated)
+        await clickByText('discoveryConfig.edit')
+        await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
 
-    // it('Delete DiscoveryConfig', async () => {
-    //     const nocks = [nockGet(discoveryConfig, discoveryConfig)]
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.updated.header')
+        await waitForText('alert.msg')
+    })
 
-    //     const { container } = render(<TestEditConnectionPage />)
-    //     await waitForNocks(nocks)
+    it('Delete DiscoveryConfig', async () => {
+        const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
-    //     // Select Namespace
-    //     await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
-    //     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
-    //     await clickByText(discoveryConfig.metadata.namespace!)
+        const { container } = render(<TestEditConnectionPage />)
+        await waitForNocks(nocks)
 
-    //     // Ensure Form is prepopulated
-    //     await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
-    //     await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
-    //     await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+        // Select Namespace
+        await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+        await clickByText(discoveryConfig.metadata.namespace!)
 
-    //     const deleteNock = nockDelete(discoveryConfigUpdated)
-    //     await clickByText('discoveryConfig.delete')
-    //     await waitForText('disable.title')
-    //     await clickByText('discoveryConfig.delete.btn')
-    //     await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
-    // })
+        // Ensure Form is prepopulated
+        await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
+        await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
+        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+
+        const deleteNock = nockDelete(discoveryConfigUpdated)
+        await clickByText('discoveryConfig.delete')
+        await waitForText('disable.title')
+        await clickByText('discoveryConfig.delete.btn')
+        await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.deleted.header')
+        await waitForText('alert.msg')
+    })
 })
