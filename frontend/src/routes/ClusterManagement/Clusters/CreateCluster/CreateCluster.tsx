@@ -9,6 +9,7 @@ import { get, keyBy } from 'lodash'
 import path from 'path'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useRecoilState } from 'recoil'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
@@ -23,8 +24,10 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { controlData } from './controlData/ControlData'
+import { setAvailableConnections } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
+import { secretsState } from '../../../../atoms'
 
 declare const window: any
 if (window.monaco) {
@@ -61,6 +64,7 @@ const Portals = Object.freeze({
 export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
+    const [secrets] = useRecoilState(secretsState)
 
     // create portals for buttons in header
     const switches = (
@@ -135,7 +139,15 @@ export default function CreateClusterPage() {
     for (let i = 0; i < controlData.length; i++) {
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
-            break
+        }
+        if (controlData[i].id === 'infrastructure') {
+            controlData[i]?.available?.forEach((provider) => {
+                provider.change?.insertControlData?.forEach((control) => {
+                    if (control.id === 'connection') {
+                        setAvailableConnections(control, secrets)
+                    }
+                })
+            })
         }
     }
 

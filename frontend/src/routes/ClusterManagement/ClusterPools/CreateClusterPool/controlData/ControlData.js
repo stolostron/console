@@ -6,9 +6,9 @@ import path from 'path'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 
-import controlDataAWS from './ControlDataAWS'
-import controlDataGCP from './ControlDataGCP'
-import controlDataAZR from './ControlDataAZR'
+import controlDataAWS from '../../../Clusters/CreateCluster/controlData/ControlDataAWS'
+import controlDataGCP from '../../../Clusters/CreateCluster/controlData/ControlDataGCP'
+import controlDataAZR from '../../../Clusters/CreateCluster/controlData/ControlDataAZR'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo } from '../../../Clusters/CreateCluster/controlData/Logos'
 
 const installConfig =
@@ -36,10 +36,9 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
 
 export const controlData = [
     {
-        id: 'main',
-        type: 'section',
-        title: 'creation.ocp.cluster.details',
-        collapsable: true,
+        id: 'detailStep',
+        type: 'step',
+        title: 'Basic information',
     },
     {
         name: 'clusterPool.creation.ocp.name',
@@ -94,13 +93,16 @@ export const controlData = [
 
     ///////////////////////  container platform  /////////////////////////////////////
     {
+        id: 'distStep',
+        type: 'step',
+        title: 'Distribution',
+    },
+    {
         id: 'chooseDist',
         type: 'section',
         title: 'creation.ocp.distribution',
         info: 'creation.ocp.choose.distribution',
         tooltip: 'tooltip.creation.ocp.choose.distribution',
-        overline: true,
-        collapsable: true,
     },
     {
         id: 'distribution',

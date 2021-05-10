@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
@@ -18,7 +18,9 @@ import './style.css'
 
 // template/data
 import { controlData } from './controlData/ControlData'
+import { setAvailableConnections } from '../../Clusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
+import { secretsState } from '../../../../atoms'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -65,6 +67,7 @@ export default function CreateClusterPoolPage() {
     const history = useHistory()
     const location = useLocation()
     const [namespaces] = useRecoilState(namespacesState)
+    const [secrets] = useRecoilState(secretsState)
 
     // create portals for buttons in header
     const switches = (
@@ -131,13 +134,22 @@ export default function CreateClusterPoolPage() {
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     for (let i = 0; i < controlData.length; i++) {
+        if (controlData[i].id === 'namespace') {
+            controlData[i].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
+        }
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
-            break
+        }
+        if (controlData[i].id === 'infrastructure') {
+            controlData[i]?.available?.forEach((provider) => {
+                provider.change?.insertControlData?.forEach((control) => {
+                    if (control.id === 'connection') {
+                        setAvailableConnections(control, secrets)
+                    }
+                })
+            })
         }
     }
-
-    controlData[2].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
 
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined) {
@@ -172,26 +184,28 @@ export default function CreateClusterPoolPage() {
             }
         >
             <AcmErrorBoundary>
-                <PageSection className="pf-c-content">
-                    <TemplateEditor
-                        type={'ClusterPool'}
-                        title={'ClusterPool YAML'}
-                        monacoEditor={<MonacoEditor />}
-                        controlData={controlData}
-                        template={template}
-                        portals={Portals}
-                        fetchControl={fetchControl}
-                        createControl={{
-                            createResource,
-                            cancelCreate,
-                            pauseCreate,
-                            creationStatus: creationStatus?.status,
-                            creationMsg: creationStatus?.messages,
-                        }}
-                        logging={process.env.NODE_ENV !== 'production'}
-                        i18n={i18n}
-                    />
-                </PageSection>
+                <AcmPageContent id="create-cluster-pool">
+                    <PageSection className="pf-c-content" variant="light" isFilled>
+                        <TemplateEditor
+                            type={'ClusterPool'}
+                            title={'ClusterPool YAML'}
+                            monacoEditor={<MonacoEditor />}
+                            controlData={controlData}
+                            template={template}
+                            portals={Portals}
+                            fetchControl={fetchControl}
+                            createControl={{
+                                createResource,
+                                cancelCreate,
+                                pauseCreate,
+                                creationStatus: creationStatus?.status,
+                                creationMsg: creationStatus?.messages,
+                            }}
+                            logging={process.env.NODE_ENV !== 'production'}
+                            i18n={i18n}
+                        />
+                    </PageSection>
+                </AcmPageContent>
             </AcmErrorBoundary>
         </AcmPage>
     )

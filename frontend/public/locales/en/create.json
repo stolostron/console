@@ -231,10 +231,14 @@
     "creation.ocp.datastore": "Default datastore",
     "creation.ocp.otp.instance.flavor": "Instance flavor",
     "creation.ocp.cluster.ost.external.network.name": "External network name",
+    "creation.ocp.cluster.ost.must.enter.external.network.name": "External network name is required.",
     "creation.ocp.cluster.ost.api.floating.ip": "API floating IP",
     "placeholder.creation.ocp.cluster.ost.api.floating.ip": "Enter API floating IP",
     "creation.ocp.cluster.ost.ingress.floating.ip": "Ingress floating IP",
     "placeholder.creation.ocp.cluster.ost.ingress.floating.ip": "Enter ingress floating IP",
+    "creation.ocp.cluster.ost.external.dns": "External DNS",
+    "placeholder.creation.ocp.cluster.ost.external.dns": "OPTIONAL: Enter external DNS",
+
 
     "clusterPool.creation.ocp.name": "Cluster pool name",
     "clusterPool.creation.ocp.namespace": "Cluster pool namespace",
@@ -303,6 +307,7 @@
     "tooltip.creation.ocp.cluster.ost.external.network.name": "The name for the external OpenStack network.",
     "tooltip.creation.ocp.cluster.ost.api.floating.ip": "The existing floating IP address on the external network for the OpenShift API",
     "tooltip.creation.ocp.cluster.ost.ingress.floating.ip": "The existing floating IP address on the external network for the ingress port",
+    "tooltip.creation.ocp.cluster.ost.external.dns": "The external DNS address for name resolution on the private network.",
 
     "placeholder.creation.ocp.clusterSet": "Select a cluster set",
 
