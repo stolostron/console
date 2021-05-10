@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
-import {
-    CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
-    LOAD_OCP_IMAGES,
-    labelControlData,
-} from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, labelControlData } from './ControlDataHelpers'
 
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -37,11 +32,12 @@ const controlDataVMW = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'vmw',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },

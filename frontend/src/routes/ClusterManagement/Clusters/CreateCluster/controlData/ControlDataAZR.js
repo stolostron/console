@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
-import {
-    CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
-    LOAD_OCP_IMAGES,
-    networkingControlData,
-    labelControlData,
-} from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
@@ -448,11 +442,12 @@ const controlDataAZR = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'azr',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('azr'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...labelControlData,

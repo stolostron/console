@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
-import {
-    CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
-    LOAD_OCP_IMAGES,
-    networkingControlData,
-    labelControlData,
-} from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -614,7 +608,8 @@ const controlDataAWS = [
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('aws'),
+        available: [],
+        providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...labelControlData,

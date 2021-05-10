@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    CREATE_CLOUD_CONNECTION,
-    LOAD_CLOUD_CONNECTIONS,
-    LOAD_OCP_IMAGES,
-    networkingControlData,
-    labelControlData,
-} from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
 import {
     ControlMode,
     VALIDATE_CIDR,
@@ -181,11 +175,12 @@ const controlDataBMC = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'bmc',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('bmc'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...labelControlData,
