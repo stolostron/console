@@ -449,11 +449,12 @@ const controlDataAZR = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'azr',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('azr'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
 

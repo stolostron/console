@@ -11,12 +11,13 @@ import { PageSection } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-// import { useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { deleteResource } from '../../../lib/resource-request'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     ClusterCurator,
     filterForTemplatedCurators,
@@ -45,11 +46,10 @@ function AnsibleJobTemplateTable() {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
-    const ansibleCredentials = providerConnections.map((providerConnection) => {
-        if (providerConnection.stringData?.host) {
-            return providerConnection.metadata.name as string
-        } else return ''
-    })
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
+    )
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
         open: false,
@@ -62,7 +62,7 @@ function AnsibleJobTemplateTable() {
     })
     const { t } = useTranslation(['cluster', 'common'])
 
-    //const history = useHistory()
+    const history = useHistory()
 
     // Set table
     return (
@@ -110,7 +110,9 @@ function AnsibleJobTemplateTable() {
                                                 actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
                                                 isDanger: false,
-                                                selectOptions: ansibleCredentials,
+                                                selectOptions: ansibleCredentials.map(
+                                                    (credential) => credential.metadata.name as string
+                                                ),
                                                 selectLabel: t('template.modal.linkProvider.label'),
                                                 selectPlaceholder: t('template.modal.linkProvider.placeholder'),
                                                 confirmText: 'Link',
@@ -138,7 +140,7 @@ function AnsibleJobTemplateTable() {
                         id: 'add',
                         title: t('template.create'),
                         click: () => {
-                            // history.push(NavigationPath.addIntegration)
+                            history.push(NavigationPath.addAnsibleAutomation)
                         },
                     },
                 ]}
@@ -146,8 +148,12 @@ function AnsibleJobTemplateTable() {
                     {
                         id: 'edit-template',
                         title: t('template.edit'),
-                        click: () => {
-                            // history.push(NavigationPath.addIntegration)
+                        click: (curator) => {
+                            history.push(
+                                NavigationPath.editAnsibleAutomation
+                                    .replace(':namespace', curator.metadata.namespace!)
+                                    .replace(':name', curator.metadata.name!)
+                            )
                         },
                     },
                     {
@@ -235,7 +241,7 @@ function AnsibleJobTemplateTable() {
                                 role="link"
                                 onClick={() => {
                                     // TODO: make sure addtemplate can handle new ansible Automations
-                                    //history.push(NavigationPath.addIntegration)
+                                    history.push(NavigationPath.addAnsibleAutomation)
                                 }}
                                 // disabled={}
                                 // tooltip={t('common:rbac.unauthorized')}

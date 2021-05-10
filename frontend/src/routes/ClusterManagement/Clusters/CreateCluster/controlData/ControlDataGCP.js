@@ -267,11 +267,12 @@ const controlDataGCP = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'gcp',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('gcp'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
 

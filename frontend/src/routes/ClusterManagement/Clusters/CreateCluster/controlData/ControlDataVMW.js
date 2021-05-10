@@ -38,11 +38,12 @@ const controlDataVMW = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'vmw',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('vmw'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },

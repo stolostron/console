@@ -5,7 +5,6 @@ import {
     AcmButton,
     AcmForm,
     AcmFormSection,
-    AcmLoadingPage,
     AcmMultiSelect,
     AcmPage,
     AcmPageContent,
@@ -18,40 +17,45 @@ import {
     ActionGroup,
     ButtonVariant,
     Divider,
+    Flex,
+    FlexItem,
     PageSection,
     SelectOption,
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState, Fragment } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, RouteComponentProps, useHistory } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveryConfigState } from '../../../atoms'
+import { discoveryConfigState, secretsState } from '../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../components/ConfirmModal'
 import discoveryVersions from '../../../components/discoveryVersions.json'
-import { ErrorPage, getErrorInfo } from '../../../components/ErrorPage'
+import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { Secret } from '../../../resources/secret'
+
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    getDiscoveryConfig,
     replaceDiscoveryConfig,
 } from '../../../resources/discovery-config'
-import { listProviderConnections, ProviderConnection } from '../../../resources/provider-connection'
 
-export default function DiscoveryConfigPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
+export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
+    const location = useLocation()
+
     return (
         <AcmPage
             header={
-                match?.params.namespace ? (
+                location.pathname === NavigationPath.configureDiscovery ? (
                     <AcmPageHeader
                         title={t('editDiscoveryConfig.title')}
                         breadcrumb={[
+                            { text: t('clusters'), to: NavigationPath.clusters },
                             { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
                             { text: t('editDiscoveryConfig.title'), to: '' },
                         ]}
@@ -60,6 +64,7 @@ export default function DiscoveryConfigPage({ match }: RouteComponentProps<{ nam
                     <AcmPageHeader
                         title={t('addDiscoveryConfig.title')}
                         breadcrumb={[
+                            { text: t('clusters'), to: NavigationPath.clusters },
                             { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
                             { text: t('addDiscoveryConfig.title'), to: '' },
                         ]}
@@ -68,37 +73,19 @@ export default function DiscoveryConfigPage({ match }: RouteComponentProps<{ nam
             }
         >
             <AcmPageContent id="discoveryConfig">
-                <PageSection variant="light" isFilled>
-                    <AddDiscoveryConfigData namespace={match?.params.namespace} name={match?.params.name} />
+                <PageSection variant="light">
+                    <AddDiscoveryConfigData />
                 </PageSection>
             </AcmPageContent>
         </AcmPage>
     )
 }
 
-export function AddDiscoveryConfigData(props: { namespace: string; name: string }) {
-    const { t } = useTranslation(['discovery', 'common'])
-    const [error, setError] = useState<Error>()
-    const [retry, setRetry] = useState(0)
+export function AddDiscoveryConfigData() {
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [credentials, setCredentials] = useState<ProviderConnection[]>([])
+    const [secrets] = useRecoilState(secretsState)
+    const [credentials, setCredentials] = useState<Secret[]>([])
     const [discoveryNamespaces, setDiscoveryNamespaces] = useState<string[]>([])
-
-    const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
-        apiVersion: DiscoveryConfigApiVersion,
-        kind: DiscoveryConfigKind,
-        metadata: {
-            name: '',
-            namespace: '',
-        },
-        spec: {
-            filters: {
-                lastActive: 7,
-            },
-            credential: '',
-        },
-    })
 
     // Used to filter out Credentials which already have a corresponding DiscoveryConfig
     useEffect(() => {
@@ -111,101 +98,81 @@ export function AddDiscoveryConfigData(props: { namespace: string; name: string 
         setDiscoveryNamespaces(namespaces)
     }, [discoveryConfigs])
 
-    // Retrieves set of Credentials
-    // If editing a DiscoveryConfig, only show existing CRH Credentials in that namespace
-    // If adding a DiscoveryConfig, only show all CRH credentials across all namespaces which are not configured with a DiscoveryConfig.
+    // Retrieves RHOCM Credentials
     useEffect(() => {
-        setIsLoading(true)
-        const credentialsResult = listProviderConnections().promise
-        credentialsResult
-            .then((credentials) => {
-                const CRHCredentials: ProviderConnection[] = []
-                credentials.forEach((credential) => {
-                    const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
-                    if (labels === Provider.redhatcloud) {
-                        if (
-                            !props.namespace &&
-                            credential.metadata.namespace &&
-                            !discoveryNamespaces.includes(credential.metadata.namespace)
-                        ) {
-                            // If no namespace is set, and discovery is not configured in namespace, add all credentials
-                            CRHCredentials.push(credential)
-                        } else if (credential.metadata.namespace === props.namespace) {
-                            // else, only retrieve credentials in the namespace of the discoveryconfig
-                            CRHCredentials.push(credential)
-                        }
-                    }
-                })
-                setCredentials(CRHCredentials)
-                setIsLoading(false)
-            })
-            .catch((err) => {
-                setError(err)
-            })
-    }, [props.namespace, discoveryNamespaces])
+        const CRHCredentials: Secret[] = []
+        secrets.forEach((credential) => {
+            const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+            if (labels === Provider.redhatcloud) {
+                CRHCredentials.push(credential)
+            }
+        })
+        setCredentials(CRHCredentials)
+    }, [secrets])
 
-    // Get Discovery Config if it editing
-    useEffect(() => {
-        setIsLoading(true)
-        if (props.name) {
-            const result = getDiscoveryConfig(props)
-            result.promise
-                .then((discoveryConfig) => {
-                    setDiscoveryConfig(discoveryConfig)
-                })
-                .catch((err) => {
-                    setError(err)
-                })
-                .finally(() => setIsLoading(false))
-            return result.abort
-        } else {
-            return
-        }
-    }, [props])
-
-    if (error) {
-        return (
-            <ErrorPage
-                error={error}
-                actions={
-                    <AcmButton
-                        onClick={() => {
-                            setRetry(retry + 1)
-                        }}
-                    >
-                        {t('common:retry')}
-                    </AcmButton>
-                }
-            />
-        )
-    }
-    if (isLoading) {
-        return <AcmLoadingPage />
-    }
-
-    return <DiscoveryConfigPageContent discoveryConfig={discoveryConfig} credentials={credentials} />
+    return (
+        <DiscoveryConfigPageContent
+            discoveryConfigs={discoveryConfigs}
+            credentials={credentials}
+            discoveryNamespaces={discoveryNamespaces}
+        />
+    )
 }
 
 export function DiscoveryConfigPageContent(props: {
-    discoveryConfig: DiscoveryConfig
-    credentials: ProviderConnection[]
+    discoveryConfigs: DiscoveryConfig[]
+    credentials: Secret[]
+    discoveryNamespaces: string[]
 }) {
-    const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>(props.discoveryConfig)
+    const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
+    const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
+        apiVersion: DiscoveryConfigApiVersion,
+        kind: DiscoveryConfigKind,
+        metadata: {
+            name: '',
+            namespace: credentialsRef.split('/', 2)[0] || '',
+        },
+        spec: {
+            filters: {
+                lastActive: 7,
+                openShiftVersions: [],
+            },
+            credential: credentialsRef.split('/', 2)[1] || '',
+        },
+    })
     const alertContext = useContext(AcmAlertContext)
     const { t } = useTranslation(['discovery', 'common'])
     const history = useHistory()
-    const [editing, setEditing] = useState<boolean>(false)
-
+    const location = useLocation()
+    const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
+    const [credentials, setCredentials] = useState<Secret[]>([])
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
         confirm: () => {},
         cancel: () => {},
-        title: '',
+        title: 'deleteModal',
         message: '',
     })
 
+    // Trims list of credentials
+    useEffect(() => {
+        const credentials: Secret[] = []
+        props.credentials.forEach((credential) => {
+            if (!editing) {
+                // If adding a new DiscoveryConfig, include all credentials not configured with discovery
+                if (!props.discoveryNamespaces.includes(credential.metadata.namespace!)) {
+                    credentials.push(credential)
+                }
+            } else if (credential.metadata.namespace === discoveryConfig?.metadata?.namespace) {
+                // Else if editing, only show Credentials in the current discoveryConfigs namespace
+                credentials.push(credential)
+            }
+        })
+        setCredentials(credentials)
+    }, [props.credentials, discoveryConfig, editing, props.discoveryNamespaces])
+
     type LastActive = { day: number; stringDay: string; value: string }
-    const lastActive: LastActive[] = [
+    const lastActiveArray: LastActive[] = [
         { day: 1, stringDay: '1 day', value: '1d' },
         { day: 2, stringDay: '2 days', value: '2d' },
         { day: 3, stringDay: '3 days', value: '3d' },
@@ -215,27 +182,49 @@ export function DiscoveryConfigPageContent(props: {
         { day: 30, stringDay: '30 days', value: '30d' },
     ]
 
-    useEffect(() => {
-        if (props.discoveryConfig.metadata.name !== '') {
-            setDiscoveryConfig(props.discoveryConfig)
-            setEditing(true)
-        }
-    }, [props.discoveryConfig])
-
     function updateDiscoveryConfig(update: (discoveryConfig: DiscoveryConfig) => void) {
-        const copy = { ...discoveryConfig }
+        const copy = { ...discoveryConfig } as DiscoveryConfig
         update(copy)
         setDiscoveryConfig(copy)
     }
 
     const deleteDiscoveryConfig = async () => {
-        setModalProps({
-            open: true,
-            title: t('disable.title'),
-            confirm: async () => {
-                try {
-                    if (discoveryConfig) {
-                        await deleteResource(discoveryConfig)
+        alertContext.clearAlerts()
+        return new Promise(async (resolve, reject) => {
+            try {
+                setModalProps({
+                    open: true,
+                    title: t('disable.title'),
+                    confirm: async () => {
+                        try {
+                            if (discoveryConfig) {
+                                await deleteResource(discoveryConfig as DiscoveryConfig).promise
+                                setModalProps({
+                                    open: false,
+                                    confirm: () => {},
+                                    cancel: () => {},
+                                    title: '',
+                                    message: '',
+                                })
+                                resolve(undefined)
+                                history.push(NavigationPath.discoveredClusters)
+                            } else {
+                                throw Error('Error retrieving discoveryconfigs')
+                            }
+                        } catch (err) {
+                            alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
+                        }
+                    },
+                    confirmText: t('discoveryConfig.delete.btn'),
+                    message: (
+                        <Trans
+                            i18nKey={'discovery:discoveryConfig.delete.message'}
+                            components={{ bold: <strong /> }}
+                            values={{ discoveryConfigNamespace: discoveryConfig!.metadata!.namespace }}
+                        />
+                    ),
+                    isDanger: true,
+                    cancel: () => {
                         setModalProps({
                             open: false,
                             confirm: () => {},
@@ -243,47 +232,8 @@ export function DiscoveryConfigPageContent(props: {
                             title: '',
                             message: '',
                         })
-                        history.push(NavigationPath.discoveredClusters)
-                    } else {
-                        throw Error('Error retrieving discoveryconfigs')
-                    }
-                } catch (err) {
-                    alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
-                }
-            },
-            confirmText: t('discoveryConfig.delete.btn'),
-            message: (
-                <Trans
-                    i18nKey={'discovery:discoveryConfig.delete.message'}
-                    components={{ bold: <strong /> }}
-                    values={{ discoveryConfigName: discoveryConfig.metadata.name }}
-                />
-            ),
-            isDanger: true,
-            cancel: () => {
-                setModalProps({
-                    open: false,
-                    confirm: () => {},
-                    cancel: () => {},
-                    title: '',
-                    message: '',
+                    },
                 })
-            },
-        })
-    }
-
-    const onSubmit = async () => {
-        alertContext.clearAlerts()
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (!editing) {
-                    discoveryConfig.metadata.name = 'discovery'
-                    await createDiscoveryConfig(discoveryConfig).promise
-                } else {
-                    await replaceDiscoveryConfig(discoveryConfig).promise
-                }
-                resolve(undefined)
-                history.push(NavigationPath.discoveredClusters)
             } catch (err) {
                 if (err instanceof Error) {
                     alertContext.addAlert({
@@ -297,64 +247,82 @@ export function DiscoveryConfigPageContent(props: {
         })
     }
 
+    const onSubmit = async () => {
+        alertContext.clearAlerts()
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!editing) {
+                    discoveryConfig.metadata!.name = 'discovery'
+                    await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                } else {
+                    await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                }
+                resolve(undefined)
+            } catch (err) {
+                if (err instanceof Error) {
+                    alertContext.addAlert({
+                        type: 'danger',
+                        title: t('common:request.failed'),
+                        message: err.message,
+                    })
+                    reject()
+                }
+            } finally {
+                history.push(NavigationPath.discoveredClusters)
+            }
+        })
+    }
+
     return (
         <AcmForm>
             <ConfirmModal {...modalProps} />
-            <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
-            <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
-            <AcmSelect
-                id="lastActiveFilter"
-                label={t('discoveryConfig.lastActiveFilter.label')}
-                labelHelp={t('discoveryConfig.lastActiveFilter.labelHelp')}
-                value={getDiscoveryConfigLastActive(discoveryConfig)}
-                onChange={(lastActive) => {
-                    updateDiscoveryConfig((discoveryConfig) => {
-                        if (lastActive) {
-                            if (!discoveryConfig.spec.filters) {
-                                discoveryConfig.spec.filters = {}
+            <AcmFormSection
+                title={editing ? t('discoveryConfig.header.edit') : t('discoveryConfig.header.add')}
+            ></AcmFormSection>
+            <Text component={TextVariants.h3}>{t('discoveryConfig.subheader')}</Text>
+            {editing ? (
+                <AcmSelect
+                    id="namespaces"
+                    label={t('discoveryConfig.namespaces.label')}
+                    labelHelp={t('discoveryConfig.namespaces.labelHelp')}
+                    value={discoveryConfig?.metadata?.namespace}
+                    placeholder={t('discoveryConfig.namespaces.placeholder')}
+                    onChange={(namespace) => {
+                        for (let i = 0; i < props.discoveryConfigs.length; i = i + 1) {
+                            if (props.discoveryConfigs[i].metadata.namespace === namespace) {
+                                updateDiscoveryConfig((discoveryConfig) => {
+                                    discoveryConfig.metadata.name = props.discoveryConfigs[i].metadata.name
+                                    discoveryConfig.metadata.namespace = props.discoveryConfigs[i].metadata.namespace
+                                    discoveryConfig.metadata.resourceVersion =
+                                        props.discoveryConfigs[i].metadata.resourceVersion
+                                    discoveryConfig.spec.credential = props.discoveryConfigs[i].spec.credential
+                                    if (!discoveryConfig.spec.filters) {
+                                        discoveryConfig.spec.filters = {}
+                                    }
+                                    discoveryConfig.spec.filters.lastActive =
+                                        props.discoveryConfigs[i].spec.filters?.lastActive
+                                    discoveryConfig.spec.filters.openShiftVersions =
+                                        props.discoveryConfigs[i].spec.filters?.openShiftVersions
+                                })
+                                break
                             }
-                            discoveryConfig.spec.filters.lastActive = parseInt(
-                                lastActive.substring(0, lastActive.length - 1)
-                            )
                         }
-                    })
-                }}
-                isRequired
-            >
-                {lastActive.map((e) => (
-                    <SelectOption key={e.day} value={e.value}>
-                        {e.stringDay}
-                    </SelectOption>
-                ))}
-            </AcmSelect>
-            <AcmMultiSelect
-                id="discoveryVersions"
-                label={t('discoveryConfig.discoveryVersions.label')}
-                labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
-                value={discoveryConfig.spec?.filters?.openShiftVersions}
-                onChange={(versions) => {
-                    updateDiscoveryConfig((discoveryConfig) => {
-                        if (!discoveryConfig.spec.filters) {
-                            discoveryConfig.spec.filters = {}
-                        }
-                        discoveryConfig.spec.filters.openShiftVersions = versions
-                    })
-                }}
-                isRequired
-            >
-                {discoveryVersions.map((version) => (
-                    <SelectOption key={version} value={version}>
-                        {version}
-                    </SelectOption>
-                ))}
-            </AcmMultiSelect>
-            <AcmFormSection title={t('discoveryConfig.connections.header')}></AcmFormSection>
-            <Text component={TextVariants.h3}>{t('discoveryConfig.connections.subheader')}</Text>
+                    }}
+                    isRequired
+                >
+                    {props.discoveryNamespaces?.map((namespace) => (
+                        <SelectOption key={namespace} value={namespace}>
+                            {namespace}
+                        </SelectOption>
+                    ))}
+                </AcmSelect>
+            ) : null}
             <AcmSelect
                 id="credentials"
                 label={t('discoveryConfig.connections.label')}
                 labelHelp={t('discoveryConfig.connections.labelHelp')}
                 value={getDiscoveryConfigCredential(discoveryConfig)}
+                placeholder={t('discoveryConfig.connections.placeholder')}
                 onChange={(credential) => {
                     updateDiscoveryConfig((discoveryConfig) => {
                         if (credential) {
@@ -364,9 +332,10 @@ export function DiscoveryConfigPageContent(props: {
                         }
                     })
                 }}
+                isDisabled={editing && !discoveryConfig.metadata.namespace}
                 isRequired
             >
-                {props.credentials?.map((credential) => (
+                {credentials?.map((credential) => (
                     <SelectOption
                         key={credential.metadata.namespace + '/' + credential.metadata.name}
                         value={credential.metadata.namespace + '/' + credential.metadata.name}
@@ -375,6 +344,63 @@ export function DiscoveryConfigPageContent(props: {
                     </SelectOption>
                 ))}
             </AcmSelect>
+            <Flex style={{ marginTop: '0px' }}>
+                <FlexItem align={{ default: 'alignRight' }}>
+                    <Link to={NavigationPath.addCredentials}>{t('discoveryConfig.connections.addCredentials')}</Link>
+                </FlexItem>
+            </Flex>
+            {(discoveryConfig.metadata!.namespace && editing) || !editing ? (
+                <Fragment>
+                    <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
+                    <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
+                    <AcmSelect
+                        id="lastActiveFilter"
+                        label={t('discoveryConfig.lastActiveFilter.label')}
+                        labelHelp={t('discoveryConfig.lastActiveFilter.labelHelp')}
+                        value={getDiscoveryConfigLastActive(discoveryConfig)}
+                        onChange={(lastActive) => {
+                            updateDiscoveryConfig((discoveryConfig) => {
+                                if (lastActive) {
+                                    if (!discoveryConfig.spec.filters) {
+                                        discoveryConfig.spec.filters = {}
+                                    }
+                                    discoveryConfig.spec.filters.lastActive = parseInt(
+                                        lastActive.substring(0, lastActive.length - 1)
+                                    )
+                                }
+                            })
+                        }}
+                        isRequired
+                    >
+                        {lastActiveArray.map((e) => (
+                            <SelectOption key={e.day} value={e.value}>
+                                {e.stringDay}
+                            </SelectOption>
+                        ))}
+                    </AcmSelect>
+                    <AcmMultiSelect
+                        id="discoveryVersions"
+                        label={t('discoveryConfig.discoveryVersions.label')}
+                        labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
+                        value={discoveryConfig?.spec?.filters?.openShiftVersions}
+                        onChange={(versions) => {
+                            updateDiscoveryConfig((discoveryConfig) => {
+                                if (!discoveryConfig.spec.filters) {
+                                    discoveryConfig.spec.filters = {}
+                                }
+                                discoveryConfig.spec.filters.openShiftVersions = versions
+                            })
+                        }}
+                        isRequired
+                    >
+                        {discoveryVersions.map((version) => (
+                            <SelectOption key={version} value={version}>
+                                {version}
+                            </SelectOption>
+                        ))}
+                    </AcmMultiSelect>
+                </Fragment>
+            ) : null}
             <ActionGroup>
                 <AcmSubmit id="applyDiscoveryConfig" onClick={onSubmit} variant={ButtonVariant.primary}>
                     {!editing ? t('discoveryConfig.add') : t('discoveryConfig.edit')}
@@ -389,6 +415,7 @@ export function DiscoveryConfigPageContent(props: {
                         id="deleteDiscoveryConfig"
                         onClick={deleteDiscoveryConfig}
                         variant={ButtonVariant.danger}
+                        isDisabled={discoveryConfig.metadata!.namespace === ''}
                     >
                         {t('discoveryConfig.delete')}
                     </AcmButton>
@@ -398,18 +425,18 @@ export function DiscoveryConfigPageContent(props: {
     )
 }
 
-export function getDiscoveryConfigLastActive(discoveryConfig: Partial<DiscoveryConfig>) {
-    const lastActive = discoveryConfig.spec?.filters?.lastActive || undefined
+export function getDiscoveryConfigLastActive(discoveryConfig?: DiscoveryConfig) {
+    const lastActive = discoveryConfig?.spec?.filters?.lastActive || undefined
     if (lastActive === undefined) {
         return '7d'
     }
     return lastActive.toString().concat('d')
 }
 
-export function getDiscoveryConfigCredential(discoveryConfig: Partial<DiscoveryConfig>) {
-    const credential = discoveryConfig.spec?.credential
-    if (credential !== '' && discoveryConfig.metadata) {
-        return discoveryConfig.metadata.namespace + '/' + credential
+export function getDiscoveryConfigCredential(discoveryConfig?: DiscoveryConfig) {
+    const credential = discoveryConfig?.spec?.credential
+    if (credential !== '' && discoveryConfig?.metadata) {
+        return discoveryConfig?.metadata.namespace + '/' + credential
     }
     return ''
 }

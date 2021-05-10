@@ -17,7 +17,9 @@
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
     },
     "dependencies": {
+        "abort-controller": "^3.0.0",
         "find-my-way": "^4.1.0",
+        "node-fetch": "^2.6.1",
         "pino": "^6.11.3",
         "raw-body": "^2.4.1"
     },
@@ -27,6 +29,7 @@
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/jest": "^26.0.23",
         "@types/node": "^15.x.x",
+        "@types/node-fetch": "^2.5.10",
         "@types/pino": "^6.3.8",
         "@types/prettier": "^2.2.3",
         "@types/raw-body": "^2.3.0",

@@ -615,7 +615,8 @@ const controlDataAWS = [
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('aws'),
+        available: [],
+        providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
     },
 

@@ -8,8 +8,6 @@ import {
     Alert,
     AlertGroup,
     Button,
-    Card,
-    CardBody,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -32,6 +30,7 @@ import {
     Stack,
     Text,
     TextArea,
+    TextContent,
     TextInput,
     Tile,
     Title,
@@ -43,8 +42,8 @@ import {
     WizardStep,
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
-import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
+import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, useState } from 'react'
@@ -124,19 +123,15 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                     />
                 </PageSection>
             ) : (
-                <PageSection>
-                    <Card isLarge>
-                        <CardBody>
-                            <AcmDataForm
-                                {...props}
-                                mode={mode}
-                                showSecrets={showSecrets}
-                                showFormErrors={showFormErrors}
-                                setShowFormErrors={setShowFormErrors}
-                                isHorizontal={isHorizontal}
-                            />
-                        </CardBody>
-                    </Card>
+                <PageSection variant="light" isFilled>
+                    <AcmDataForm
+                        {...props}
+                        mode={mode}
+                        showSecrets={showSecrets}
+                        showFormErrors={showFormErrors}
+                        setShowFormErrors={setShowFormErrors}
+                        isHorizontal={isHorizontal}
+                    />
                 </PageSection>
             )}
         </Page>
@@ -320,7 +315,11 @@ export function AcmDataFormWizard(props: {
                                 </AlertGroup>
                             )}
                         <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
-                        {section.description && <Text component="small">{section.description}</Text>}
+                        {section.description && (
+                            <TextContent>
+                                <Text component="small">{section.description}</Text>
+                            </TextContent>
+                        )}
                         <AcmDataFormInputs
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.title]}

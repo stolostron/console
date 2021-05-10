@@ -39,11 +39,12 @@ const controlDataOST = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'ost',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
-        fetchAvailable: LOAD_CLOUD_CONNECTIONS('ost'),
+        available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
 
