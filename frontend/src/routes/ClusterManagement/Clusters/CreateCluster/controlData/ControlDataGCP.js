@@ -1,7 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
-import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
+import {
+    CREATE_CLOUD_CONNECTION,
+    LOAD_CLOUD_CONNECTIONS,
+    LOAD_OCP_IMAGES,
+    networkingControlData,
+    getSimplifiedImageName,
+} from './ControlDataHelpers'
 
 const GCPregions = [
     'asia-east1',
@@ -244,6 +250,7 @@ const controlDataGCP = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('gcp'),
         validation: {
@@ -268,7 +275,6 @@ const controlDataGCP = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
@@ -306,8 +312,6 @@ const controlDataGCP = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -353,8 +357,6 @@ const controlDataGCP = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {
