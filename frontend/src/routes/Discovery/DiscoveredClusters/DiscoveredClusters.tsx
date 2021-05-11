@@ -9,13 +9,11 @@ import {
     AcmEmptyState,
     AcmEmptyStateImage,
     AcmInlineProvider,
-    AcmInlineStatus,
     AcmPageContent,
     AcmTable,
     compareStrings,
     IAcmTableColumn,
     Provider,
-    StatusType,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
@@ -236,22 +234,6 @@ export function DiscoveredClustersTable(props: {
             ),
         },
         {
-            header: t('dcTbl.status'),
-            sort: 'spec.status',
-            search: 'spec.status',
-            cell: (discoveredCluster) => {
-                let type: StatusType
-                switch (discoveredCluster.spec.status) {
-                    case 'Active':
-                        type = StatusType.healthy
-                        break
-                    default:
-                        type = StatusType.unknown
-                }
-                return <AcmInlineStatus type={type} status={capitalizeFirstLetter(discoveredCluster.spec.status)} />
-            },
-        },
-        {
             header: t('dcTbl.lastActive'),
             sort: 'spec.activityTimestamp',
             cell: (discoveredCluster) => (
@@ -391,10 +373,6 @@ export function DiscoveredClustersTable(props: {
 
 function dckeyFn(cluster: DiscoveredCluster) {
     return cluster.metadata.uid!
-}
-
-function capitalizeFirstLetter(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 function getProvider(provider: string) {

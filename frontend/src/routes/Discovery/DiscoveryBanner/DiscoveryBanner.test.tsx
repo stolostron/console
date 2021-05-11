@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { discoveryConfigState, managedClustersState, secretsState } from '../../../atoms'
+import { discoveryConfigState, managedClustersState } from '../../../atoms'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
@@ -8,58 +8,12 @@ import ClustersPage from '../../ClusterManagement/Clusters/Clusters'
 import DiscoveryConfigPage from '../DiscoveryConfig/DiscoveryConfig'
 import { NavigationPath } from '../../../NavigationPath'
 import { clickByText, waitForNotTestId, waitForNotText, waitForTestId, waitForText } from '../../../lib/test-util'
-import { Secret, SecretApiVersion, SecretKind } from '../../../resources/secret'
-import { mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
-import { Provider } from '@open-cluster-management/ui-components'
-
-export const mockRHOCMCredential0: Secret = {
-    apiVersion: SecretApiVersion,
-    kind: SecretKind,
-    metadata: {
-        name: 'ocm-api-token',
-        namespace: 'ocm',
-        labels: {
-            'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
-        },
-    },
-}
-
-export const mockRHOCMCredential1: Secret = {
-    apiVersion: SecretApiVersion,
-    kind: SecretKind,
-    metadata: {
-        name: 'ocm-api-token',
-        namespace: 'discovery',
-        labels: {
-            'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
-        },
-    },
-}
-
-export const RHOCMCredentials: Secret[] = [mockRHOCMCredential0, mockRHOCMCredential1]
+import { mockDiscoveryConfig } from '../../../lib/test-metadata'
 
 describe('Clusters Page - Discovery Banner', () => {
     beforeEach(() => {
         localStorage.clear()
         nockIgnoreRBAC()
-    })
-
-    test('Discovery Banner should not appear (0 RHOCM Credential, No DiscoConfigs)', async () => {
-        render(
-            <RecoilRoot
-                initializeState={(snapshot) => {
-                    snapshot.set(managedClustersState, [])
-                    snapshot.set(secretsState, [])
-                }}
-            >
-                <MemoryRouter>
-                    <ClustersPage />
-                </MemoryRouter>
-            </RecoilRoot>
-        )
-        await waitForNotText('clusters.banner.header')
-        await waitForNotTestId('discoveryIconPng')
-        await waitForNotText('discovery:clusters.banner.body.single')
     })
 
     test('Discovery Banner should not appear (DiscoConfigs exist)', async () => {
@@ -77,14 +31,13 @@ describe('Clusters Page - Discovery Banner', () => {
         )
         await waitForNotText('clusters.banner.header')
         await waitForNotTestId('discoveryIconPng')
-        await waitForNotText('discovery:clusters.banner.body.single')
+        await waitForNotText('discovery:clusters.banner.body')
     })
-    test('Discovery Banner should appear and route (RHOCM Credentials Exist, No DiscoConfigs)', async () => {
+    test('Discovery Banner should appear and route (No DiscoConfigs)', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
-                    snapshot.set(secretsState, [mockCRHCredential])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.clusters]}>
@@ -96,7 +49,7 @@ describe('Clusters Page - Discovery Banner', () => {
         // Check Resources appear
         await waitForText('clusters.banner.header')
         await waitForTestId('discoveryIconPng')
-        await waitForText('discovery:clusters.banner.body.single')
+        await waitForText('discovery:clusters.banner.body')
         await waitForText('discovery.addDiscovery')
         await clickByText('discovery.addDiscovery')
         // Check Page routes correctly
@@ -111,7 +64,6 @@ describe('Clusters Page - Discovery Banner', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-                    snapshot.set(secretsState, [mockCRHCredential])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.clusters]}>
@@ -123,7 +75,7 @@ describe('Clusters Page - Discovery Banner', () => {
         // Check Resources appear
         await waitForNotText('clusters.banner.header')
         await waitForNotTestId('discoveryIconPng')
-        await waitForNotText('discovery:clusters.banner.body.single')
+        await waitForNotText('discovery:clusters.banner.body')
     })
 
     test('Discovery Banner should dismiss', async () => {
@@ -131,7 +83,6 @@ describe('Clusters Page - Discovery Banner', () => {
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
-                    snapshot.set(secretsState, [mockCRHCredential])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.clusters]}>
@@ -143,7 +94,7 @@ describe('Clusters Page - Discovery Banner', () => {
         // Check Resources appear
         await waitForText('clusters.banner.header')
         await waitForTestId('discoveryIconPng')
-        await waitForText('discovery:clusters.banner.body.single')
+        await waitForText('discovery:clusters.banner.body')
         await waitForText('discovery.addDiscovery')
 
         // Dismiss Banner and ensure it disappears
@@ -152,6 +103,6 @@ describe('Clusters Page - Discovery Banner', () => {
 
         await waitForNotText('clusters.banner.header')
         await waitForNotTestId('discoveryIconPng')
-        await waitForNotText('discovery:clusters.banner.body.single')
+        await waitForNotText('discovery:clusters.banner.body')
     })
 })
