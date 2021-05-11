@@ -462,7 +462,6 @@ describe('CreateCluster', () => {
 
     test('can create bare metal cluster', async () => {
         window.scrollBy = () => {}
-        jest.setTimeout(160000)
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
@@ -486,8 +485,7 @@ describe('CreateCluster', () => {
 
         // step 3 -- the imageset and connection
         await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-        container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-        await clickByRole('option', 0)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')

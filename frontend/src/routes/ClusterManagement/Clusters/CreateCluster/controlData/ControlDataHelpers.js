@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import IntegrationStep, { summarize as summarizeIntegration } from '../components/IntegrationStep'
 import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
 import { listClusterImageSets } from '../../../../../resources/cluster-image-set'
 import { unpackProviderConnection } from '../../../../../resources/provider-connection'
@@ -209,20 +208,5 @@ export const networkingControlData = [
                 validation: VALIDATE_CIDR,
             },
         ],
-    },
-]
-
-export const integrationControlData = [
-    {
-        id: 'integrationStep',
-        type: 'step',
-        title: 'Integration',
-    },
-    {
-        type: 'custom',
-        name: 'creation.app.settings.integration',
-        id: 'integration',
-        component: <IntegrationStep />,
-        summarize: summarizeIntegration,
     },
 ]
