@@ -4,7 +4,10 @@ import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
+    AcmPage,
     AcmPageContent,
+    AcmPageHeader,
+    AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
@@ -12,7 +15,7 @@ import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, secretsState } from '../../../atoms'
+import { acmRouteState, clusterCuratorsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { deleteResource } from '../../../lib/resource-request'
@@ -26,16 +29,22 @@ import {
 import { unpackProviderConnection } from '../../../resources/provider-connection'
 
 export default function AnsibleAutomationsPage() {
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
+
     const alertContext = useContext(AcmAlertContext)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
+    const { t } = useTranslation(['cluster', 'common'])
 
     return (
-        <AcmPageContent id="clusters">
-            <PageSection>
-                <AnsibleJobTemplateTable />
-            </PageSection>
-        </AcmPageContent>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('cluster:template.title')} />}>
+            <AcmPageContent id="clusters">
+                <PageSection>
+                    <AnsibleJobTemplateTable />
+                </PageSection>
+            </AcmPageContent>
+        </AcmPage>
     )
 }
 

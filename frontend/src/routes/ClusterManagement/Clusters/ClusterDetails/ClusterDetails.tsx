@@ -211,7 +211,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
                                 >
                                     <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
-                                        {t('tab.settings')}
+                                        {t('tab.addons')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>

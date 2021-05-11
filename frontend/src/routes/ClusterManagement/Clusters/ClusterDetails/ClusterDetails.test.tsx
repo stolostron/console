@@ -767,7 +767,7 @@ describe('ClusterDetails', () => {
     })
 
     test('settings page renders', async () => {
-        await clickByText('tab.settings')
+        await clickByText('tab.addons')
         await waitForText(mockManagedClusterAddOns[0].metadata.name!)
     })
 

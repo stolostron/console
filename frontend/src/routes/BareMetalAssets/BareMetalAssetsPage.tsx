@@ -1,17 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
+import {
+    AcmButton,
+    AcmEmptyState,
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmRoute,
+    AcmTable,
+} from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, Bullseye, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { bareMetalAssetsState } from '../../atoms'
+import { acmRouteState, bareMetalAssetsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { importBMAs } from '../../lib/bare-metal-assets'
 import { deleteResources } from '../../lib/delete-resources'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { canUser, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
@@ -24,13 +33,40 @@ import {
 import { ManagedClusterDefinition } from '../../resources/managed-cluster'
 
 export default function BareMetalAssetsPage() {
+    const [, setRoute] = useRecoilState(acmRouteState)
+    useEffect(() => setRoute(AcmRoute.BareMetalAssets), [setRoute])
+
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
+    const { t } = useTranslation(['bma', 'common'])
+
     return (
-        <AcmPageContent id="bare-metal-assets">
-            <PageSection>
-                <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
-            </PageSection>
-        </AcmPageContent>
+        <AcmPage
+            hasDrawer
+            header={
+                <AcmPageHeader
+                    title={t('bma:bmas')}
+                    titleTooltip={
+                        <>
+                            {t('bma:bmas.tooltip')}
+                            <a
+                                href={DOC_LINKS.BARE_METAL_ASSETS}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('common:learn.more')}
+                            </a>
+                        </>
+                    }
+                />
+            }
+        >
+            <AcmPageContent id="bare-metal-assets">
+                <PageSection>
+                    <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
+                </PageSection>
+            </AcmPageContent>
+        </AcmPage>
     )
 }
 
