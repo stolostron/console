@@ -12,6 +12,7 @@ import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { quantityToScalar, scalarToQuantity } from '../../../../../lib/units'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
@@ -72,9 +73,8 @@ export function NodesPoolsTable() {
 
     function getNodeMemory(node: NodeInfo): number {
         try {
-            const memory = parseInt(node.capacity!.memory)
-            if (memory === 0) return 0
-            if (isNaN(memory)) return 0
+            console.log(node.capacity!.memory)
+            const memory = quantityToScalar(node.capacity!.memory)
             return memory
         } catch (err) {
             return 0
@@ -86,7 +86,7 @@ export function NodesPoolsTable() {
     function memoryCellFn(node: NodeInfo): ReactNode {
         const memory = getNodeMemory(node)
         if (memory === 0 || memory === undefined) return '-'
-        return formatFileSize(memory)
+        return scalarToQuantity(memory)
     }
 
     const columns: IAcmTableColumn<NodeInfo>[] = [
@@ -188,43 +188,4 @@ export function NodesPoolsTable() {
             />
         </>
     )
-}
-
-// formatFileSize converts a size (Ki) into a proper unit with 2 digit precision. (copied from console-ui)
-function formatFileSize(size: number): string {
-    size = size || 0
-
-    const decimals = 2
-
-    const threshold = 800 // Steps to next unit if exceeded
-    const multiplier = 1024
-    const units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi']
-
-    let factorize = 1,
-        unitIndex
-
-    for (unitIndex = 0; unitIndex < units.length; unitIndex++) {
-        if (unitIndex > 0) {
-            factorize = Math.pow(multiplier, unitIndex)
-        }
-
-        if (size < multiplier * factorize && size < threshold * factorize) {
-            break
-        }
-    }
-
-    if (unitIndex >= units.length) {
-        unitIndex = units.length - 1
-    }
-
-    const fileSize = size / factorize
-
-    let res = fileSize.toFixed(decimals)
-
-    // This removes unnecessary 0 or . chars at the end of the string/decimals
-    if (res.indexOf('.') > -1) {
-        res = res.replace(/\.?0*$/, '')
-    }
-
-    return `${res}${units[unitIndex + 1]}`
 }
