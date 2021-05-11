@@ -237,7 +237,7 @@
     "creation.ocp.cluster.ost.ingress.floating.ip": "Ingress floating IP",
     "placeholder.creation.ocp.cluster.ost.ingress.floating.ip": "Enter ingress floating IP",
     "creation.ocp.cluster.ost.external.dns": "External DNS IP addresses",
-    "placeholder.creation.ocp.cluster.ost.external.dns": "OPTIONAL: Enter one or more external DNS IP addressess",
+    "placeholder.creation.ocp.cluster.ost.external.dns": "OPTIONAL: Enter one or more external DNS IP addresses",
 
 
     "clusterPool.creation.ocp.name": "Cluster pool name",
