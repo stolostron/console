@@ -7,6 +7,12 @@
     "discovery.configureDiscovery": "Configure discovery settings",
     "discovery.addDiscovery": "Create discovery settings",
 
+    "alert.created.header": "{{credentialName}} discovery setting was created successfully",
+    "alert.updated.header": "{{credentialName}} discovery setting was updated successfully",
+    "alert.deleted.header": "{{credentialName}} discovery setting was removed successfully",
+    "alert.msg": "You can configure settings in Clusters > Discovered clusters",
+
+
     "disable.title": "Delete discovery settings",
     "discoveryConfig.delete.btn": "Delete",
     "discoveryConfig.delete.message": "You are deleting the <bold>{{discoveryConfigNamespace}}</bold> discovery setting. All related discovered clusters will be deleted.",
@@ -35,6 +41,9 @@
     "discoveryConfig.namespaces.labelHelp": "Select the namespace to configure discovery in",
     "discoveryConfig.namespaces.placeholder": "Select a namespace",
 
+    "clusters.banner.header": "Enable cluster discovery",
+    "clusters.banner.body": "Create discovery setting to begin connecting clusters from OpenShift Cluster Manager. Edit filters for your discovered clusters to see clusters relevant to you. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab of the Cluster management page.",
+    "clusters.banner.dismiss": "Dismiss",
 
     "discoveryConfig.testFilter": "Test filter",
     "discoveryConfig.add": "Add",

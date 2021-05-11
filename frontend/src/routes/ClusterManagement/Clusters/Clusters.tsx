@@ -11,9 +11,9 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -34,10 +34,12 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
+import { DiscoveryBanner } from '../../Discovery/DiscoveryBanner/DiscoveryBanner'
 
 export default function ClustersPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'discovery'])
     const alertContext = useContext(AcmAlertContext)
+    const [isDiscoveryBannerDismissed] = useState<string>(localStorage.getItem('DiscoveryBannerDismissed') || '')
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -47,6 +49,7 @@ export default function ClustersPage() {
             return true
         }
     })
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -65,35 +68,47 @@ export default function ClustersPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <ClustersTable
-                    clusters={clusters}
-                    tableActions={[
-                        {
-                            id: 'createCluster',
-                            title: t('managed.createCluster'),
-                            click: () => history.push(NavigationPath.createCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                        {
-                            id: 'importCluster',
-                            title: t('managed.importCluster'),
-                            click: () => history.push(NavigationPath.importCluster),
-                            isDisabled: !canCreateCluster,
-                            tooltip: t('common:rbac.unauthorized'),
-                        },
-                    ]}
-                    emptyState={
-                        <AcmEmptyState
-                            key="mcEmptyState"
-                            title={t('managed.emptyStateHeader')}
-                            message={
-                                <Trans i18nKey={'cluster:managed.emptyStateMsg'} components={{ bold: <strong /> }} />
+                <Stack hasGutter={true}>
+                    {isDiscoveryBannerDismissed === 'true' ? null : (
+                        <StackItem>
+                            <DiscoveryBanner />
+                        </StackItem>
+                    )}
+                    <StackItem>
+                        <ClustersTable
+                            clusters={clusters}
+                            tableActions={[
+                                {
+                                    id: 'createCluster',
+                                    title: t('managed.createCluster'),
+                                    click: () => history.push(NavigationPath.createCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                                {
+                                    id: 'importCluster',
+                                    title: t('managed.importCluster'),
+                                    click: () => history.push(NavigationPath.importCluster),
+                                    isDisabled: !canCreateCluster,
+                                    tooltip: t('common:rbac.unauthorized'),
+                                },
+                            ]}
+                            emptyState={
+                                <AcmEmptyState
+                                    key="mcEmptyState"
+                                    title={t('managed.emptyStateHeader')}
+                                    message={
+                                        <Trans
+                                            i18nKey={'cluster:managed.emptyStateMsg'}
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
+                                    action={<AddCluster type="button" />}
+                                />
                             }
-                            action={<AddCluster type="button" />}
                         />
-                    }
-                />
+                    </StackItem>
+                </Stack>
             </PageSection>
         </AcmPageContent>
     )
