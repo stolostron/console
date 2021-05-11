@@ -185,11 +185,11 @@ const controlDataOST = [
     },
     {
         id: 'externalDNS',
-        type: 'text',
+        type: 'values',
         name: 'creation.ocp.cluster.ost.external.dns',
         placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
         tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
-        active: '',
+        active: [],
         validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
