@@ -269,9 +269,10 @@ platform:
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
     {{#if ../../externalDNS}}
     externalDNS:
-      - {{{../../externalDNS}}}
+    {{#each ../../externalDNS}}
+    - {{{.}}}
+    {{/each}}
     {{/if}}
-
 {{/case}}
 
 {{/switch}}
