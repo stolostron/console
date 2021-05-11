@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
-import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
+import {
+    CREATE_CLOUD_CONNECTION,
+    LOAD_OCP_IMAGES,
+    networkingControlData,
+    getSimplifiedImageName,
+} from './ControlDataHelpers'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -588,6 +593,7 @@ const controlDataAWS = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('aws'),
         validation: {
@@ -612,7 +618,6 @@ const controlDataAWS = [
         providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
@@ -651,8 +656,6 @@ const controlDataAWS = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  zone  /////////////////////////////////////
             {
@@ -722,8 +725,6 @@ const controlDataAWS = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {

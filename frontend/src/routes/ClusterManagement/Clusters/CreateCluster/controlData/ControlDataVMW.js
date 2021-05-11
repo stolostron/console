@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
-import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, labelControlData } from './ControlDataHelpers'
+import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, getSimplifiedImageName } from './ControlDataHelpers'
 
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -16,6 +16,7 @@ const controlDataVMW = [
         tooltip: 'tooltip.cluster.create.ocp.image.vmw',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('vmw'),
         validation: {
@@ -41,7 +42,6 @@ const controlDataVMW = [
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },
-    ...labelControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
@@ -66,8 +66,6 @@ const controlDataVMW = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
@@ -134,8 +132,6 @@ const controlDataVMW = [
                 type: 'section',
                 subtitle: 'creation.ocp.node.worker.pool.title',
                 info: 'creation.ocp.node.worker.pool.info',
-                collapsable: true,
-                collapsed: true,
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {

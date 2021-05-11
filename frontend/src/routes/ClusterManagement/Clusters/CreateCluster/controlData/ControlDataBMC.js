@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, networkingControlData, labelControlData } from './ControlDataHelpers'
+import {
+    CREATE_CLOUD_CONNECTION,
+    LOAD_OCP_IMAGES,
+    networkingControlData,
+    getSimplifiedImageName,
+} from './ControlDataHelpers'
 import {
     ControlMode,
     VALIDATE_CIDR,
@@ -159,6 +164,7 @@ const controlDataBMC = [
         tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
+        simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
         fetchAvailable: LOAD_OCP_IMAGES('bmc'),
         validation: {
@@ -183,7 +189,6 @@ const controlDataBMC = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    ...labelControlData,
 
     ///////////////////////  hosts  /////////////////////////////////////
     {
