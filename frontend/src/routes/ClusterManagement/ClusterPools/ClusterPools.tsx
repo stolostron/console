@@ -152,12 +152,10 @@ export function ClusterPoolsTable(props: {
         open: false,
     })
     const [clusterClaimModalProps, setClusterClaimModalProps] = useState<ClusterClaimModalProps | undefined>()
-    const [scaleClusterPoolModalProps, setScaleClusterPoolModalProps] = useState<
-        ScaleClusterPoolModalProps | undefined
-    >()
-    const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] = useState<
-        UpdateReleaseImageModalProps | undefined
-    >()
+    const [scaleClusterPoolModalProps, setScaleClusterPoolModalProps] =
+        useState<ScaleClusterPoolModalProps | undefined>()
+    const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] =
+        useState<UpdateReleaseImageModalProps | undefined>()
 
     const clusters = useAllClusters()
 

@@ -446,11 +446,14 @@ describe('CreateCluster', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         consoleInfos = []
-        console.info = console.groupCollapsed = console.group = (message?: any, ...optionalParams: any[]) => {
-            if (message) {
-                consoleInfos = [...consoleInfos, message, ...optionalParams]
-            }
-        }
+        console.info =
+            console.groupCollapsed =
+            console.group =
+                (message?: any, ...optionalParams: any[]) => {
+                    if (message) {
+                        consoleInfos = [...consoleInfos, message, ...optionalParams]
+                    }
+                }
     })
 
     afterEach(() => {
