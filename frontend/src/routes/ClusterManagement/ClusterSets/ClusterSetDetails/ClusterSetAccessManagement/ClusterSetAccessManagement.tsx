@@ -1,52 +1,50 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext, useCallback, useMemo } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { makeStyles } from '@material-ui/styles'
 import {
-    PageSection,
-    ModalVariant,
+    AcmAlertContext,
+    AcmAlertGroup,
+    AcmButton,
+    AcmEmptyState,
+    AcmExpandableCard,
+    AcmForm,
+    AcmLabels,
+    AcmModal,
+    AcmPageContent,
+    AcmSelect,
+    AcmSubmit,
+    AcmTable,
+    compareStrings,
+} from '@open-cluster-management/ui-components'
+import {
     ActionGroup,
+    ButtonVariant,
+    ModalVariant,
+    PageSection,
+    Popover,
     SelectOption,
     ToggleGroup,
     ToggleGroupItem,
-    Popover,
-    ButtonVariant,
 } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { useCallback, useContext, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
+import { ErrorPage, getErrorInfo } from '../../../../../components/ErrorPage'
+import { createResource, deleteResource, ResourceErrorCode } from '../../../../../lib/resource-request'
+import { useQuery } from '../../../../../lib/useQuery'
 import {
-    AcmPageContent,
-    AcmExpandableCard,
-    AcmTable,
-    AcmEmptyState,
-    AcmButton,
-    AcmModal,
-    AcmForm,
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmSubmit,
-    AcmSelect,
-    AcmLabels,
-    compareStrings,
-} from '@open-cluster-management/ui-components'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import {
-    listClusterRoleBindings,
-    listUsers,
-    listGroups,
     ClusterRoleBinding,
     ClusterRoleBindingKind,
-    User,
-    Group,
-    RbacApiVersion,
     ClusterRoleKind,
+    Group,
+    listClusterRoleBindings,
+    listGroups,
+    listUsers,
+    RbacApiVersion,
+    User,
 } from '../../../../../resources/rbac'
-import { useQuery } from '../../../../../lib/useQuery'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
-import { deleteResource, ResourceErrorCode } from '../../../../../lib/resource-request'
-import { ErrorPage, getErrorInfo } from '../../../../../components/ErrorPage'
-import { makeStyles } from '@material-ui/styles'
-import { createResource } from '../../../../../lib/resource-request'
+import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
     const { t } = useTranslation(['cluster'])
@@ -143,7 +141,6 @@ export function ClusterSetAccessManagement() {
                         groups={groups}
                     />
                     <AcmTable<ClusterRoleBinding>
-                        gridBreakPoint={TableGridBreakpoint.gridLg}
                         plural="clusterRoleBindings"
                         items={clusterRoleBindings}
                         keyFn={keyFn}

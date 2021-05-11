@@ -7,7 +7,6 @@ import { managedClusterSetsState, namespacesState, secretsState } from '../../..
 import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
-    clickByRole,
     clickByTestId,
     clickByText,
     typeByTestId,
@@ -210,11 +209,14 @@ describe('CreateClusterPool', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
         consoleInfos = []
-        console.info = console.groupCollapsed = console.group = (message?: any, ...optionalParams: any[]) => {
-            if (message) {
-                consoleInfos = [...consoleInfos, message, ...optionalParams]
-            }
-        }
+        console.info =
+            console.groupCollapsed =
+            console.group =
+                (message?: any, ...optionalParams: any[]) => {
+                    if (message) {
+                        consoleInfos = [...consoleInfos, message, ...optionalParams]
+                    }
+                }
     })
 
     afterEach(() => {
@@ -244,8 +246,7 @@ describe('CreateClusterPool', () => {
 
         // finish the form
         await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-        container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-        await clickByRole('option', 0)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
 
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(providerConnection.metadata.name!)

@@ -67,6 +67,13 @@ export const controlData = [
         available: [],
     },
     {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
+    },
+    {
         id: 'showSecrets',
         type: 'hidden',
         active: false,

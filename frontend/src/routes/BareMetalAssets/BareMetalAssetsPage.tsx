@@ -2,7 +2,7 @@
 
 import { AcmButton, AcmEmptyState, AcmPageContent, AcmTable } from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, Bullseye, PageSection } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -153,7 +153,6 @@ export function BareMetalAssetsTable(props: {
             <BulkActionModel<BareMetalAsset> {...modalProps} />
             <BulkActionModel<ImportedBareMetalAsset> {...importedProps} />
             <AcmTable<BareMetalAsset>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 emptyState={
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}

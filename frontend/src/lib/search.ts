@@ -50,7 +50,6 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
                 },
             ],
         },
-        query:
-            'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
+        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
     })
 }
