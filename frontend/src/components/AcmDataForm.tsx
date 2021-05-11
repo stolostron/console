@@ -699,7 +699,6 @@ export function AcmDataFormInput(props: {
         }
         case 'TextArea': {
             const value = inputValue(input)
-            const rows = value.split('\n').length
             const hideSecretInput = value !== '' && input.isSecret === true && !showSecrets
             const showSecretToggle = value !== '' && input.isSecret === true
             return (
@@ -725,8 +724,7 @@ export function AcmDataFormInput(props: {
                             isDisabled={inputDisabled(input)}
                             isReadOnly={isReadOnly}
                             resizeOrientation="vertical"
-                            rows={rows}
-                            style={{ minHeight: '88px' }}
+                            autoResize={true}
                         />
                     )}
                     {showSecretToggle && (

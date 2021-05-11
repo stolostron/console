@@ -16,6 +16,7 @@ export enum Units {
 }
 
 export function quantityToScalar(quantity: string): number {
+    console.log(quantity)
     if (typeof quantity !== 'string') {
         return 0
     }
@@ -80,39 +81,10 @@ export function quantityToScalar(quantity: string): number {
 }
 
 export function scalarToQuantity(scalar: number): string {
-    scalar = scalar || 0
-
-    const decimals = 2
-
-    const threshold = 800 // Steps to next unit if exceeded
-    const multiplier = 1024
-    const units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei']
-
-    let factorize = 1,
-        unitIndex
-
-    for (unitIndex = 0; unitIndex < units.length; unitIndex++) {
-        if (unitIndex > 0) {
-            factorize = Math.pow(multiplier, unitIndex)
-        }
-
-        if (scalar < multiplier * factorize && scalar < threshold * factorize) {
-            break
-        }
+    let unit = 1
+    while (scalar > 1024) {
+        scalar /= 1024
+        unit *= 1024
     }
-
-    if (unitIndex >= units.length) {
-        unitIndex = units.length - 1
-    }
-
-    const fileSize = scalar / factorize
-
-    let res = fileSize.toFixed(decimals)
-
-    // This removes unnecessary 0 or . chars at the end of the string/decimals
-    if (res.indexOf('.') > -1) {
-        res = res.replace(/\.?0*$/, '')
-    }
-
-    return `${res}${units[unitIndex + 1]}`
+    return `${scalar.toFixed(1)} ${Units[unit]}`
 }
