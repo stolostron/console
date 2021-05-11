@@ -14,7 +14,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -197,7 +197,6 @@ export function ClusterPoolsTable(props: {
             <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
             <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
             <AcmTable<ClusterPool>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusterPools"
                 items={clusterPools}
                 addSubRows={(clusterPool: ClusterPool) => {
@@ -445,7 +444,6 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
     return (
         <div className={classes.table}>
             <AcmTable<Cluster>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 noBorders
                 keyFn={(cluster: Cluster) => cluster.name!}
                 key="clusterPoolClustersTable"

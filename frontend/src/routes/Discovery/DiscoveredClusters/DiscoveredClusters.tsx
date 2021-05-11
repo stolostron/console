@@ -17,7 +17,6 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import ExternalLink from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
-import { TableGridBreakpoint } from '@patternfly/react-table'
 import * as moment from 'moment'
 import { useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -325,7 +324,6 @@ export function DiscoveredClustersTable(props: {
 
     return (
         <AcmTable<DiscoveredCluster>
-            gridBreakPoint={TableGridBreakpoint.gridLg}
             plural={t('discoveredClusters')}
             items={props.discoveredClusters}
             columns={discoveredClusterCols}

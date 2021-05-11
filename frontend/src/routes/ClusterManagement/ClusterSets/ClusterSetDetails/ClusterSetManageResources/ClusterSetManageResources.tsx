@@ -12,7 +12,6 @@ import {
     compareStrings,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -90,7 +89,6 @@ export function ClusterSetManageResourcesContent() {
                 </Title>
                 <div>{t('manageClusterSet.form.section.table.description')}</div>
                 <AcmTable<IResource>
-                    gridBreakPoint={TableGridBreakpoint.none}
                     plural="resources"
                     items={isLoading ? undefined : availableResources}
                     initialSelectedItems={selectedResources}
@@ -199,7 +197,6 @@ export function ClusterSetManageResourcesContent() {
                     <>
                         <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                         <AcmTable<IResource>
-                            gridBreakPoint={TableGridBreakpoint.none}
                             plural="clusters"
                             items={[...selectedResources, ...removedResources]}
                             keyFn={(resource: IResource) => resource.metadata!.uid!}

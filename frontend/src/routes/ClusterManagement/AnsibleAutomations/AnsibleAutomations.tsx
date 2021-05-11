@@ -8,7 +8,6 @@ import {
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
@@ -70,7 +69,6 @@ function AnsibleJobTemplateTable() {
             <BulkActionModel<ClusterCurator> {...bulkModalProps} />
             <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
             <AcmTable<ClusterCurator>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="templates"
                 items={templatedCurators}
                 columns={[
