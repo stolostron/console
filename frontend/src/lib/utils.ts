@@ -11,7 +11,7 @@ export function getLatest<T>(items: T[], key: string) {
     }
 
     return items.reduce((a, b) => {
-        const [timeA, timeB] = [a, b].map((x: T) => new Date(get((x as unknown) as object, key, '')))
+        const [timeA, timeB] = [a, b].map((x: T) => new Date(get(x as unknown as object, key, '')))
         return timeA > timeB ? a : b
     })
 }

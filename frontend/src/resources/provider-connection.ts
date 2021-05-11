@@ -92,7 +92,7 @@ export function unpackProviderConnection(secret: ProviderConnection | V1Secret) 
     const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
     if (providerConnection.data) {
         if (!providerConnection.stringData) providerConnection.stringData = {}
-        const data = (providerConnection.data as unknown) as Record<string, string>
+        const data = providerConnection.data as unknown as Record<string, string>
         const stringData = providerConnection.stringData as Record<string, string>
 
         for (const key in providerConnection.data) {
