@@ -7,7 +7,6 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
-    clickByRole,
     clickByTestId,
     typeByTestId,
     waitForNocks,
