@@ -21,7 +21,7 @@ const credential: Secret = {
         namespace: 'discovery',
         labels: {
             'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
-            'cluster.open-cluster-management.io/cloudconnection': '',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',

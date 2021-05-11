@@ -217,7 +217,7 @@ export function CredentialsForm(props: {
                 namespace,
                 labels: {
                     'cluster.open-cluster-management.io/provider': credentialsType,
-                    'cluster.open-cluster-management.io/cloudconnection': '',
+                    'cluster.open-cluster-management.io/credentials': '',
                 },
             },
             stringData: {},
