@@ -8,7 +8,7 @@ import {
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
@@ -206,7 +206,6 @@ export function MachinePoolsTable() {
             <Card isLarge>
                 <CardBody>
                     <AcmTable<MachinePool>
-                        gridBreakPoint={TableGridBreakpoint.gridLg}
                         plural="machinepools"
                         items={machinePools}
                         columns={columns}

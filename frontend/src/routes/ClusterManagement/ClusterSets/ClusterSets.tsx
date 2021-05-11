@@ -13,7 +13,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -196,7 +196,6 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <AcmTable<ManagedClusterSet>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 plural="clusterSets"
                 items={props.managedClusterSets}
                 columns={[

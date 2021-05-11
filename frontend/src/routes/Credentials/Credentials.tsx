@@ -14,7 +14,7 @@ import {
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -116,7 +116,6 @@ export function CredentialsTable(props: {
         <Fragment>
             <BulkActionModel<Secret> {...modalProps} />
             <AcmTable<Secret>
-                gridBreakPoint={TableGridBreakpoint.gridLg}
                 emptyState={
                     <AcmEmptyState
                         title={t('credentialsPage.empty.title')}
