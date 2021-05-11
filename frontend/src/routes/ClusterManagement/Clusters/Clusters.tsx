@@ -226,6 +226,8 @@ export function ClustersTable(props: {
                                         'installer.namespace',
                                         'name',
                                         'vendor',
+                                        'managed-by',
+                                        'local-cluster',
                                     ].filter((label) => labelKeys.includes(label)) ?? []
                                 return (
                                     <AcmLabels
