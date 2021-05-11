@@ -291,7 +291,7 @@
     "tab.overview": "Overview",
     "tab.nodes": "Nodes",
     "tab.machinepools": "Machine pools",
-    "tab.settings": "Settings",
+    "tab.addons": "Add-ons",
     "tab.clusters": "Clusters",
     "tab.clusterPools": "Cluster pools",
     "tab.access": "Access management",
