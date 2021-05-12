@@ -24,11 +24,11 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../com
 import { RbacButton, RbacDropdown } from '../../../components/Rbac'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { Cluster, ClusterStatus } from '../../../lib/get-cluster'
-import { canUser, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { ClusterClaimDefinition } from '../../../resources/cluster-claim'
-import { ClusterPool, ClusterPoolDefinition } from '../../../resources/cluster-pool'
+import { ClusterPool } from '../../../resources/cluster-pool'
 import { StatusField } from '../Clusters/components/StatusField'
 import { useAllClusters } from '../Clusters/components/useAllClusters'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
@@ -44,15 +44,6 @@ export default function ClusterPoolsPage() {
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
-
-    const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateClusterPool = canUser('create', ClusterPoolDefinition)
-        canCreateClusterPool.promise
-            .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateClusterPool.abort()
-    }, [])
 
     return (
         <AcmPageContent id="clusters">
@@ -94,8 +85,6 @@ export default function ClusterPoolsPage() {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
                                     click: () => history.push(NavigationPath.createClusterPool),
-                                    isDisabled: !canCreateClusterPool,
-                                    tooltip: t('common:rbac.unauthorized'),
                                 },
                             ]}
                             emptyState={
@@ -112,8 +101,6 @@ export default function ClusterPoolsPage() {
                                         <AcmButton
                                             role="link"
                                             onClick={() => history.push(NavigationPath.createClusterPool)}
-                                            disabled={!canCreateClusterPool}
-                                            tooltip={t('common:rbac.unauthorized')}
                                         >
                                             {t('managed.createClusterPool')}
                                         </AcmButton>
@@ -142,7 +129,6 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 export function ClusterPoolsTable(props: {
     clusterPools: ClusterPool[]
     emptyState: React.ReactNode
-    canCreateClusterPool?: boolean
     tableActions?: IAcmTableAction[]
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
