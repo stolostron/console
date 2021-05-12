@@ -95,8 +95,19 @@ export function ImportClusterPageContent() {
     const [importMode, setimportMode] = useState<string | undefined>()
     const [credentialMode, setcredentialMode] = useState<string | undefined>()
     const [kubeConfigText, setkubeConfigText] = useState<string | undefined>()
-    const [manualButton, setmanualButton] = useState<number>()
-    const [credentialToggle, setcredentialToggle] = useState<number>()
+    enum ManualOptions {
+        default,
+        manual,
+        automatic,
+    }
+    enum CredentialOptions {
+        default,
+        token,
+        kubeconfig,
+    }
+    const [manualButton, setmanualButton] = useState<ManualOptions>()
+    const [credentialToggle, setcredentialToggle] = useState<CredentialOptions>()
+
     const onReset = () => {
         setClusterName('')
         setManagedClusterSet(undefined)
@@ -160,13 +171,13 @@ export function ImportClusterPageContent() {
                                 setimportMode(id)
                                 switch (id) {
                                     case 'automatic-import':
-                                        setmanualButton(1)
+                                        setmanualButton(ManualOptions.automatic)
                                         break
                                     case 'manual-import':
-                                        setmanualButton(2)
+                                        setmanualButton(ManualOptions.manual)
                                         break
                                     default:
-                                        setmanualButton(0)
+                                        setmanualButton(ManualOptions.default)
                                 }
                             }}
                         >
@@ -177,10 +188,10 @@ export function ImportClusterPageContent() {
                                 {t('import.manual.choice')}
                             </SelectOption>
                         </AcmSelect>
-                        {manualButton === 1 && (
+                        {manualButton === ManualOptions.automatic && (
                             <Text component={TextVariants.small}>{t('import.credential.explanation')} </Text>
                         )}
-                        {manualButton === 1 && (
+                        {manualButton === ManualOptions.automatic && (
                             <AcmSelect
                                 label={t('import.credential.select')}
                                 placeholder={t('import.credential.default')}
@@ -189,13 +200,13 @@ export function ImportClusterPageContent() {
                                     setcredentialMode(id)
                                     switch (id) {
                                         case 'credentials':
-                                            setcredentialToggle(1)
+                                            setcredentialToggle(CredentialOptions.token)
                                             break
                                         case 'kubeconfig':
-                                            setcredentialToggle(2)
+                                            setcredentialToggle(CredentialOptions.kubeconfig)
                                             break
                                         default:
-                                            setcredentialToggle(0)
+                                            setcredentialToggle(CredentialOptions.default)
                                     }
                                 }}
                             >
@@ -217,7 +228,9 @@ export function ImportClusterPageContent() {
                                 setToken(token)
                             }}
                             isRequired
-                            hidden={manualButton !== 1 || credentialToggle !== 1}
+                            hidden={
+                                manualButton !== ManualOptions.automatic || credentialToggle !== CredentialOptions.token
+                            }
                         />
                         <AcmTextInput
                             id="server"
@@ -228,7 +241,9 @@ export function ImportClusterPageContent() {
                                 setServer(server)
                             }}
                             isRequired
-                            hidden={manualButton !== 1 || credentialToggle !== 1}
+                            hidden={
+                                manualButton !== ManualOptions.automatic || credentialToggle !== CredentialOptions.token
+                            }
                         />
                         <AcmTextArea
                             id="kubeConfigEntry"
@@ -238,10 +253,15 @@ export function ImportClusterPageContent() {
                             onChange={(file) => {
                                 setkubeConfigText(file)
                             }}
-                            hidden={manualButton !== 1 || credentialToggle !== 2}
+                            hidden={
+                                manualButton !== ManualOptions.automatic ||
+                                credentialToggle !== CredentialOptions.kubeconfig
+                            }
                             isRequired
                         />
-                        {manualButton === 2 && <Text component={TextVariants.small}>{t('import.description')}; </Text>}
+                        {manualButton === ManualOptions.manual && (
+                            <Text component={TextVariants.small}>{t('import.description')}; </Text>
+                        )}
                         <AcmAlertGroup isInline canClose padTop />
                         <ActionGroup>
                             <AcmSubmit
@@ -251,9 +271,13 @@ export function ImportClusterPageContent() {
                                     !clusterName ||
                                     submitted ||
                                     !manualButton ||
-                                    (manualButton === 1 && !credentialToggle) ||
-                                    (manualButton === 1 && credentialToggle === 2 && !kubeConfigText) ||
-                                    (manualButton === 1 && credentialToggle === 1 && (!Server || !Token))
+                                    (manualButton === ManualOptions.automatic && !credentialToggle) ||
+                                    (manualButton === ManualOptions.automatic &&
+                                        credentialToggle === CredentialOptions.kubeconfig &&
+                                        !kubeConfigText) ||
+                                    (manualButton === ManualOptions.automatic &&
+                                        credentialToggle === CredentialOptions.token &&
+                                        (!Server || !Token))
                                 }
                                 onClick={async () => {
                                     setSubmitted(true)
@@ -287,7 +311,10 @@ export function ImportClusterPageContent() {
                                                     .promise
                                             )
 
-                                            if (manualButton === 1 && credentialToggle === 2) {
+                                            if (
+                                                manualButton === ManualOptions.automatic &&
+                                                credentialToggle === CredentialOptions.kubeconfig
+                                            ) {
                                                 createdResources.push(
                                                     await createResource<Secret>({
                                                         apiVersion: SecretApiVersion,
@@ -310,7 +337,10 @@ export function ImportClusterPageContent() {
                                                           )
                                                       )
                                                     : onReset()
-                                            } else if (manualButton === 1 && credentialToggle === 1) {
+                                            } else if (
+                                                manualButton === ManualOptions.automatic &&
+                                                credentialToggle === CredentialOptions.token
+                                            ) {
                                                 createdResources.push(
                                                     await createResource<Secret>({
                                                         apiVersion: SecretApiVersion,
@@ -356,7 +386,7 @@ export function ImportClusterPageContent() {
                                 label={
                                     submitted
                                         ? t('import.form.submitted')
-                                        : manualButton === 2
+                                        : manualButton === ManualOptions.manual
                                         ? t('import.form.submit')
                                         : t('import.auto.button')
                                 }
