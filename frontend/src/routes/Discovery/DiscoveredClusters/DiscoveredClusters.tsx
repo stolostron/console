@@ -26,7 +26,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { DiscoNotifcation } from '../DiscoveryComponents/Notification'
+import { DiscoNotification } from '../DiscoveryComponents/Notification'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -155,7 +155,7 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveryCredential')
     return (
         <Fragment>
-            <DiscoNotifcation />
+            <DiscoNotification />
             <DiscoveredClustersTable
                 discoveredClusters={unmanagedClusters}
                 credentials={credentials}

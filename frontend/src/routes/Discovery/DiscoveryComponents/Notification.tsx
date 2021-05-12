@@ -4,7 +4,7 @@ import { Alert, AlertVariant, AlertGroup, AlertActionCloseButton } from '@patter
 import { Trans, useTranslation } from 'react-i18next'
 
 import { useState } from 'react'
-export function DiscoNotifcation() {
+export function DiscoNotification() {
     const { t } = useTranslation(['discovery'])
     const [closed, setClosed] = useState<Boolean>(false)
 
@@ -39,7 +39,6 @@ export function DiscoNotifcation() {
     return (
         <AlertGroup isToast>
             <Alert
-                isInline
                 variant={AlertVariant.success}
                 title={<Trans i18nKey={title} values={{ credentialName: jsonStr.Name }} />}
                 actionClose={
