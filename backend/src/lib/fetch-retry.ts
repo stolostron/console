@@ -18,9 +18,6 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
         async function fetchAttempt() {
             try {
                 const response = await fetch(url, init)
-                if (response.status < 400) {
-                    return resolve(response)
-                }
                 switch (response.status) {
                     case 429: // Too Many Requests
                         {
@@ -40,7 +37,6 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                         {
                             const retryAfter = Number(response.headers.get('retry-after'))
                             if (!Number.isInteger(retryAfter)) delay = retryAfter
-
                             if (retries > 0) {
                                 retries--
                                 setTimeout(fetchAttempt, delay)
@@ -63,7 +59,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                                 retries--
                                 setTimeout(fetchAttempt, delay)
                             } else {
-                                throw err
+                                reject(err)
                             }
                             break
                         default:
@@ -72,15 +68,15 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                                     retries--
                                     setTimeout(fetchAttempt, delay)
                                 } else {
-                                    throw err
+                                    reject(err)
                                 }
                             } else {
-                                throw err
+                                reject(err)
                             }
                             break
                     }
                 } else {
-                    throw err
+                    reject(err)
                 }
             } finally {
                 if (delay === 0) delay = 100

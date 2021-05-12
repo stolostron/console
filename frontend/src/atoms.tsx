@@ -206,7 +206,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
         let evtSource: EventSource | undefined
         function startWatch() {
-            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/watch`, { withCredentials: true })
+            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/events`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)

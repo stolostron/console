@@ -71,10 +71,10 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                         socketID = nextSocketID++
                     }
                     sockets[socketID] = socket
-                    ;((socket as unknown) as ISocketRequests).socketID = socketID
-                    ;((socket as unknown) as ISocketRequests).activeRequests = 0
+                    ;(socket as unknown as ISocketRequests).socketID = socketID
+                    ;(socket as unknown as ISocketRequests).activeRequests = 0
                     socket.on('close', () => {
-                        const socketID = ((socket as unknown) as ISocketRequests).socketID
+                        const socketID = (socket as unknown as ISocketRequests).socketID
                         if (socketID < nextSocketID) nextSocketID = socketID
                         sockets[socketID] = undefined
                     })
@@ -85,7 +85,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                     }
 
                     const start = process.hrtime()
-                    const socket = (req.socket as unknown) as ISocketRequests
+                    const socket = req.socket as unknown as ISocketRequests
                     socket.activeRequests++
                     req.on('close', () => {
                         socket.activeRequests--
@@ -100,9 +100,9 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             if (req.url === '/livenessProbe') return
 
                             let msg: Record<string, string | number | undefined>
-                            res.getHeader('content-type') === 'test/event/stream'
+                            res.getHeader('content-type') === 'text/event-stream'
                                 ? (msg = {
-                                      msg: 'stream closed',
+                                      msg: 'event stream closed',
                                       path: req.url,
                                       ms: 0,
                                   })
@@ -160,7 +160,7 @@ export async function stopServer(): Promise<void> {
     for (const socketID of Object.keys(sockets)) {
         const socket = sockets[socketID]
         if (socket !== undefined) {
-            if (((socket as unknown) as ISocketRequests).activeRequests === 0) {
+            if ((socket as unknown as ISocketRequests).activeRequests === 0) {
                 socket.destroy()
             }
         }

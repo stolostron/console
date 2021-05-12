@@ -1,22 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { IncomingMessage, OutgoingHttpHeaders } from 'http'
 import { constants } from 'http2'
-import { Agent, get, request, RequestOptions } from 'https'
-import { parseJsonBody } from './body-parser'
+import { Agent } from 'https'
+import { HeadersInit } from 'node-fetch'
+import { fetchRetry } from './fetch-retry'
 
-const {
-    HTTP2_HEADER_CONTENT_TYPE,
-    HTTP2_HEADER_AUTHORIZATION,
-    HTTP2_HEADER_ACCEPT,
-    HTTP2_HEADER_ACCEPT_ENCODING,
-} = constants
+const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_ACCEPT_ENCODING } =
+    constants
+
+const agent = new Agent({ rejectUnauthorized: false })
 
 export function jsonRequest<T>(url: string, token?: string): Promise<T> {
-    const headers: OutgoingHttpHeaders = { accept: 'application/json' }
+    const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: 'application/json' }
     if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
-    return new Promise((resolve) =>
-        get(url, { headers, agent: new Agent({ rejectUnauthorized: false }) }, resolve)
-    ).then(async (res: IncomingMessage) => await parseJsonBody(res))
+    return fetchRetry(url, { headers, agent, compress: true }).then(
+        (response) => response.json() as unknown as Promise<T>
+    )
 }
 
 export interface PostResponse<T> {
@@ -25,36 +23,18 @@ export interface PostResponse<T> {
 }
 
 export function jsonPost<T = unknown>(url: string, body: unknown, token?: string): Promise<PostResponse<T>> {
-    return new Promise<PostResponse<T>>((resolve, reject) => {
-        const headers: OutgoingHttpHeaders = {
-            [HTTP2_HEADER_ACCEPT]: 'application/json',
-            [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
-            [HTTP2_HEADER_ACCEPT_ENCODING]: 'br, gzip, deflate',
-        }
-        const options: RequestOptions = {
-            method: 'POST',
-            headers,
-            agent: new Agent({ rejectUnauthorized: false }),
-        }
-        if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
-
-        const clientRequest = request(process.env.CLUSTER_API_URL + url, options, async (res: IncomingMessage) => {
-            if (res.statusCode) {
-                try {
-                    const body: T = await parseJsonBody(res)
-                    resolve({ statusCode: res.statusCode, body })
-                } catch (err) {
-                    resolve({ statusCode: res.statusCode })
-                }
-            } else {
-                reject()
+    const headers: HeadersInit = {
+        [HTTP2_HEADER_ACCEPT]: 'application/json',
+        [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
+    }
+    if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
+    return fetchRetry(url, { method: 'POST', headers, agent, body: JSON.stringify(body), compress: true }).then(
+        async (response) => {
+            const result = {
+                statusCode: response.status,
+                body: (await response.json()) as unknown as T,
             }
-        })
-        clientRequest.on('error', (err) => {
-            // logger.error(err)
-            reject(err)
-        })
-        clientRequest.write(JSON.stringify(body))
-        clientRequest.end()
-    })
+            return result
+        }
+    )
 }
