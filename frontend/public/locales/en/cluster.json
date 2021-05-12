@@ -1,11 +1,11 @@
 {
-    "page.header.cluster-management": "Cluster management",
+    "page.header.cluster-management": "Clusters",
     "page.header.cluster-management.tooltip": "View all clusters.",
     "page.header.import-cluster": "Import an existing cluster",
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.cluster-set.manage-assignments": "Manage resource assignments",
     "cluster": "Cluster",
-    "clusters": "Clusters",
+    "clusters": "Managed Clusters",
     "clusterSets": "Cluster sets",
     "clusterPools": "Cluster pools",
     "clusterClaims": "Cluster claims",
