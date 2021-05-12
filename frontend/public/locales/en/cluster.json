@@ -5,7 +5,7 @@
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.cluster-set.manage-assignments": "Manage resource assignments",
     "cluster": "Cluster",
-    "clusters": "Managed Clusters",
+    "clusters": "Managed clusters",
     "clusterSets": "Cluster sets",
     "clusterPools": "Cluster pools",
     "clusterClaims": "Cluster claims",
