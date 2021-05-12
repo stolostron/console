@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import { render } from '@testing-library/react'
 import { discoveryConfigState, managedClustersState } from '../../../atoms'
 import { MemoryRouter, Route } from 'react-router-dom'

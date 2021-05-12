@@ -34,7 +34,7 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
-import { DiscoveryBanner } from '../../Discovery/DiscoveryBanner/DiscoveryBanner'
+import { DiscoveryBanner } from '../../Discovery/DiscoveryComponents/Banner'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster', 'discovery'])

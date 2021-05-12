@@ -26,6 +26,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
+import { DiscoNotification } from '../DiscoveryComponents/Notification'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -125,7 +126,6 @@ function EmptyStateAwaitingDiscoveredClusters() {
 
 export function DiscoveredClustersPageContent() {
     const alertContext = useContext(AcmAlertContext)
-    const { t } = useTranslation(['discovery'])
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -133,7 +133,6 @@ export function DiscoveredClustersPageContent() {
     const [secrets] = useRecoilState(secretsState)
     const credentials = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
-    const [updateListener] = useState<string>(sessionStorage.getItem('DISCOVERY_OP') || '')
 
     const cloudRedHatCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
@@ -142,29 +141,6 @@ export function DiscoveredClustersPageContent() {
             cloudRedHatCredentials.push(credential)
         }
     })
-
-    if (updateListener !== '' && alertContext.activeAlerts.length === 0) {
-        const jsonStr = JSON.parse(updateListener)
-
-        let title = ''
-        switch (jsonStr.Operation) {
-            case 'Create':
-                title = 'discovery:alert.created.header'
-                break
-            case 'Update':
-                title = 'discovery:alert.updated.header'
-                break
-            case 'Delete':
-                title = 'discovery:alert.deleted.header'
-                break
-        }
-        alertContext.addAlert({
-            type: 'success',
-            title: <Trans i18nKey={title} values={{ credentialName: jsonStr.Name }} />,
-            message: t('alert.msg'),
-        })
-        sessionStorage.removeItem('DISCOVERY_OP')
-    }
 
     const unmanagedClusters: DiscoveredCluster[] = []
     discoveredClusters.forEach((discoveredCluster) => {
@@ -177,9 +153,9 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveredClusterName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     sessionStorage.removeItem('DiscoveryCredential')
-
     return (
         <Fragment>
+            <DiscoNotification />
             <DiscoveredClustersTable
                 discoveredClusters={unmanagedClusters}
                 credentials={credentials}
