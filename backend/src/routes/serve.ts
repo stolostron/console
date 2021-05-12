@@ -3,7 +3,9 @@ import { createReadStream } from 'fs'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { extname } from 'path'
 import { pipeline } from 'stream'
+import { parseCookies } from '../lib/cookies'
 import { logger } from '../lib/logger'
+import { redirect } from '../lib/respond'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 
@@ -33,6 +35,12 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
             res.setHeader('Cache-Control', cacheControl)
         }
 
+        const cookies = parseCookies(req)
+
+        if (!cookies['_csrf']) {
+            return redirect(res, req.url)
+        }
+
         const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
@@ -54,7 +62,7 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                         // logger.error(err)
                         res.writeHead(404).end()
                     })
-                pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
+                pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
                     // if (err) logger.error(err)
                 })
             } catch (err) {
@@ -73,7 +81,7 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                     // logger.error(err)
                     res.writeHead(404).end()
                 })
-            pipeline(readStream, (res as unknown) as NodeJS.WritableStream, (err) => {
+            pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
                 // if (err) logger.error(err)
             })
         }

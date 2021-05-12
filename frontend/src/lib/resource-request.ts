@@ -348,7 +348,11 @@ export async function fetchRetry<T>(options: {
                 if (status.status !== 'Success') {
                     if (status.code === 401) {
                         // 401 is returned from kubernetes in a Status object if token is not valid
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        if (process.env.NODE_ENV === 'production') {
+                            window.location.reload()
+                        } else {
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        }
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
                         throw new ResourceError(status.message as string, status.code as number)
@@ -365,7 +369,11 @@ export async function fetchRetry<T>(options: {
             switch (response.status) {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
-                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    if (process.env.NODE_ENV === 'production') {
+                        window.location.reload()
+                    } else {
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
 
                 case 408: // Request Timeout
