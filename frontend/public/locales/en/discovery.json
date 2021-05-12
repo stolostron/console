@@ -25,8 +25,8 @@
     "discoveryConfig.filterform.header": "Set filters to discover clusters",
     "discoveryConfig.header.add": "Select a credential",
     "discoveryConfig.header.edit": "Select a namespace, then select a credential",
-    "discoveryConfig.subheader": "Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Cluster management page.",
-    "discoveryConfig.filterform.subheader": "Set filters to discover only relevant clusters.", 
+    "discoveryConfig.subheader": "Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Clusters page.",
+    "discoveryConfig.filterform.subheader": "Set filters to discover only relevant clusters.",
 
     "discoveryConfig.lastActiveFilter.label": "Last active",
     "discoveryConfig.lastActiveFilter.labelHelp": "Only discovered clusters active within this time period are found.",
@@ -42,7 +42,7 @@
     "discoveryConfig.namespaces.placeholder": "Select a namespace",
 
     "clusters.banner.header": "Enable cluster discovery",
-    "clusters.banner.body": "Create discovery setting to begin connecting clusters from OpenShift Cluster Manager. Edit filters for your discovered clusters to see clusters relevant to you. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab of the Cluster management page.",
+    "clusters.banner.body": "Create discovery setting to begin connecting clusters from OpenShift Cluster Manager. Edit filters for your discovered clusters to see clusters relevant to you. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab of the Clusters page.",
     "clusters.banner.dismiss": "Dismiss",
 
     "discoveryConfig.testFilter": "Test filter",
@@ -71,4 +71,4 @@
     "dcTbl.lastActive": "Last active",
     "dcTbl.created": "Created",
     "dcTbl.discovered": "Discovered"
-} 
+}
