@@ -18,9 +18,6 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
         async function fetchAttempt() {
             try {
                 const response = await fetch(url, init)
-                if (response.status < 400) {
-                    return resolve(response)
-                }
                 switch (response.status) {
                     case 429: // Too Many Requests
                         {
@@ -50,7 +47,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                         break
 
                     default:
-                        reject()
+                        resolve(response)
                 }
             } catch (err) {
                 if (err instanceof Error) {
