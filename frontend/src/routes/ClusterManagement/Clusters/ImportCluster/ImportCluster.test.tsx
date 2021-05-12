@@ -126,6 +126,32 @@ const mockAutoSecret: Secret = {
     type: 'Opaque',
 }
 
+const mockAutoTokenSecretResponse: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'auto-import-secret',
+        namespace: 'foobar',
+    },
+    data: { autoImportRetry: '2', token: 'Test token', server: 'Test server' },
+    type: 'Opaque',
+}
+
+const mockAutoTokenSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: 'auto-import-secret',
+        namespace: 'foobar',
+    },
+    stringData: {
+        autoImportRetry: '2',
+        token: 'Test token',
+        server: 'Test server',
+    },
+    type: 'Opaque',
+}
+
 const mockManagedCluster: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -266,7 +292,7 @@ describe('ImportCluster', () => {
         expect(getByTestId('clusterName')).toHaveValue('')
     })
 
-    test('can create resources when auto importing', async () => {
+    test('can create resources when auto importing using kubeconfig', async () => {
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
@@ -279,14 +305,37 @@ describe('ImportCluster', () => {
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
         await clickByText('import.mode.default')
         await clickByText('import.auto.choice')
-        // await clickByText('import.credential.default')
-        // await clickByText('import.config.choice')
+        await clickByText('import.credential.default')
+        await clickByText('import.config.choice')
         await clickByText('import.auto.config.label')
         await clickByTestId('kubeConfigEntry')
         await typeByTestId('kubeConfigEntry', 'Test text')
         await clickByText('import.auto.button')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoSecretNock])
+    })
+    test('can create resources when auto importing using token/server', async () => {
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
+        const importAutoTokenSecretNock = nockCreate(mockAutoTokenSecret, mockAutoTokenSecretResponse)
+
+        render(<Component />)
+
+        await typeByTestId('clusterName', 'foobar')
+        await clickByTestId('label-input-button')
+        await typeByTestId('additionalLabels', 'foo=bar{enter}')
+        await clickByText('import.mode.default')
+        await clickByText('import.auto.choice')
+        await clickByText('import.credential.default')
+        await clickByText('import.credential.choice')
+        await clickByTestId('token')
+        await typeByTestId('token', 'Test token')
+        await clickByTestId('server')
+        await typeByTestId('server', 'Test server')
+        await clickByText('import.auto.button')
+
+        await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoTokenSecretNock])
     })
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
