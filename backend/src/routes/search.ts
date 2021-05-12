@@ -31,7 +31,7 @@ export function search(req: Http2ServerRequest, res: Http2ServerResponse): void 
         request(options, (response) => {
             if (!response) return notFound(req, res)
             res.writeHead(response.statusCode, response.headers)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
+            pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
         }),
         () => logger.error
     )

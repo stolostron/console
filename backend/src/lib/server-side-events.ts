@@ -194,7 +194,7 @@ export class ServerSideEvents {
         res: Http2ServerResponse
     ): ServerSideEventClient {
         const [writableStream, compressionStream, encoding] = getEncodeStream(
-            (res as unknown) as NodeJS.WritableStream,
+            res as unknown as NodeJS.WritableStream,
             req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string,
             process.env.DISABLE_STREAM_COMPRESSION === 'true'
         )
@@ -269,7 +269,7 @@ export class ServerSideEvents {
         }
 
         logger.info({
-            msg: 'stream start',
+            msg: 'event stream start',
             status: 200,
             method: req.method,
             path: req.url,

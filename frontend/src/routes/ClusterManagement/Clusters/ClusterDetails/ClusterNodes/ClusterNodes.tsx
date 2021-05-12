@@ -73,7 +73,6 @@ export function NodesPoolsTable() {
 
     function getNodeMemory(node: NodeInfo): number {
         try {
-            console.log(node.capacity!.memory)
             const memory = quantityToScalar(node.capacity!.memory)
             return memory
         } catch (err) {

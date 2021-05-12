@@ -6,15 +6,21 @@ import { Agent, request } from 'https'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { deleteCookie, parseCookies } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
+import { logger } from '../lib/logger'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
+import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 export const oauthInfoPromise = jsonRequest<OAuthInfo>(
     `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-).catch(() => ({
-    authorization_endpoint: '',
-    token_endpoint: '',
-}))
+).catch((err: Error) => {
+    logger.error({ msg: 'oauth-authorization-server error', error: err.message })
+    setDead()
+    return {
+        authorization_endpoint: '',
+        token_endpoint: '',
+    }
+})
 
 export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise

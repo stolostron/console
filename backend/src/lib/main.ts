@@ -39,17 +39,16 @@ process.on('SIGTERM', () => {
 process.on('uncaughtException', (err) => {
     logger.error({ msg: `process uncaughtException`, error: err.message })
     console.log(err.stack)
-    // void stop()
 })
 
-process.on('multipleResolves', (type, _promise, _reason) => {
-    logger.error({ msg: 'process multipleResolves', type })
-    // void stop()
+process.on('multipleResolves', (type, _promise, reason) => {
+    // node-fetch throws multipleResolves on aborted resolved request
+    if ((reason as { type?: string }).type === 'aborted') return
+    logger.error({ msg: 'process multipleResolves', type, reason: reason as unknown })
 })
 
 process.on('unhandledRejection', (reason, _promise) => {
     logger.error({ msg: 'process unhandledRejection', reason })
-    // void stop()
 })
 
 void start()

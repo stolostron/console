@@ -40,7 +40,6 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                         {
                             const retryAfter = Number(response.headers.get('retry-after'))
                             if (!Number.isInteger(retryAfter)) delay = retryAfter
-
                             if (retries > 0) {
                                 retries--
                                 setTimeout(fetchAttempt, delay)
@@ -51,7 +50,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                         break
 
                     default:
-                        resolve(response)
+                        reject()
                 }
             } catch (err) {
                 if (err instanceof Error) {
@@ -63,7 +62,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                                 retries--
                                 setTimeout(fetchAttempt, delay)
                             } else {
-                                throw err
+                                reject(err)
                             }
                             break
                         default:
@@ -72,15 +71,15 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                                     retries--
                                     setTimeout(fetchAttempt, delay)
                                 } else {
-                                    throw err
+                                    reject(err)
                                 }
                             } else {
-                                throw err
+                                reject(err)
                             }
                             break
                     }
                 } else {
-                    throw err
+                    reject(err)
                 }
             } finally {
                 if (delay === 0) delay = 100

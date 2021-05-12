@@ -1,33 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent, get } from 'https'
-import * as rawBody from 'raw-body'
+import { Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
+import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
+const agent = new Agent({ rejectUnauthorized: false })
 
-export function authenticated(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export async function authenticated(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
-
-    get(
-        process.env.CLUSTER_API_URL + '/apis',
-        {
+    try {
+        const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
             headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
-            agent: new Agent({ rejectUnauthorized: false }),
-        },
-        (response) => {
-            res.writeHead(response.statusCode).end()
-            try {
-                void rawBody(response, { length: response.headers['content-length'] })
-            } catch (err) {
-                logger.error(err)
-            }
-        }
-    ).on('error', (err) => {
+            agent,
+        })
+        res.writeHead(response.status).end()
+        void response.blob()
+    } catch (err) {
         logger.error(err)
         respondInternalServerError(req, res)
-    })
+    }
 }

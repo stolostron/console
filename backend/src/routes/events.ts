@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { readFileSync } from 'fs'
+import AbortController from 'abort-controller'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
@@ -10,9 +10,9 @@ import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
-import { setLive } from './liveness'
+import { serviceAcccountToken, setDead } from './liveness'
 
-export function watch(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
     if (!token) return unauthorized(req, res)
     ServerSideEvents.handleRequest(token, req, res)
@@ -24,6 +24,8 @@ interface WatchEvent {
 }
 
 type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
+
+const watchAbortControllers: Record<string, AbortController> = {}
 
 const resourceCache: {
     [kind: string]: {
@@ -37,16 +39,7 @@ const resourceCache: {
 } = {}
 
 export function startWatching(): void {
-    let token: string
-    try {
-        token = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
-    } catch (err) {
-        token = process.env.TOKEN
-        if (!token) {
-            logger.error('serviceaccount token not found')
-            process.exit(1)
-        }
-    }
+    const token = serviceAcccountToken
 
     ServerSideEvents.eventFilter = eventFilter
 
@@ -130,14 +123,19 @@ export function watchResource(
 
     let buffer: Buffer = Buffer.from('')
 
+    const abortController = new AbortController()
+    if (watchAbortControllers[kind]) watchAbortControllers[kind].abort()
+    watchAbortControllers[kind] = abortController
     fetchRetry(url, {
         headers: { authorization: `Bearer ${token}` },
         agent: new Agent({ rejectUnauthorized: false }),
+        signal: abortController.signal,
     })
         .then((res) => {
+            // delete watchAbortControllers[kind]
             if (res.status === 200) {
-                if (process.env.LOG_WATCHES) {
-                    logger.debug({ msg: 'watching start', kind, resourceVersion })
+                if (process.env.LOG_WATCH) {
+                    logger.info({ msg: 'watch start', kind, resourceVersion })
                 }
                 /* Test code to simulate losing connection to kubernetes */
                 // if (process.env.NODE_ENV === 'development') {
@@ -179,11 +177,12 @@ export function watchResource(
                         }
                     })
                     .on('error', (err: Error) => {
+                        if (err.name === 'AbortError') return
                         logger.error({ msg: 'watching error', kind, error: err.message })
                     })
                     .on('close', () => {
-                        if (process.env.LOG_WATCHES) {
-                            logger.debug({ msg: 'watching stop', kind })
+                        if (process.env.LOG_WATCH) {
+                            logger.info({ msg: 'watch stop', kind })
                         }
                         if (stopping) return
                         watchResource(token, apiVersion, kind, options, resourceVersion)
@@ -191,14 +190,14 @@ export function watchResource(
             } else {
                 if (stopping) return
                 logger.error({ msg: 'watch error', kind, status: res.status })
-                setLive(false)
+                setDead()
             }
         })
-        .catch((err) => {
+        .catch((err: Error) => {
             if (stopping) return
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            logger.error({ msg: 'watch fetch error', err })
-            setLive(false)
+            logger.error({ msg: 'watch fetch error', error: err.message })
+            setDead()
         })
 }
 
@@ -214,8 +213,8 @@ function handleWatchEvent(watchEvent: WatchEvent): string {
         return resource.metadata?.resourceVersion
     }
 
-    if (process.env.LOG_WATCHES === 'true') {
-        logger.debug({
+    if (process.env.LOG_WATCH === 'true') {
+        logger.trace({
             msg: 'watch',
             type: watchEvent.type,
             kind: resource.kind,
@@ -326,7 +325,7 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
     }
 
     const promise = jsonPost<{ status: { allowed: boolean } }>(
-        '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+        process.env.CLUSTER_API_URL + '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
         {
             apiVersion: 'authorization.k8s.io/v1',
             kind: 'SelfSubjectAccessReview',
@@ -357,6 +356,7 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
         }
         return result.body.status.allowed
     })
+
     accessCache[token][key] = {
         time: Date.now(),
         promise,
@@ -367,4 +367,7 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
 let stopping = false
 export function stopWatching(): void {
     stopping = true
+    for (const kind in watchAbortControllers) {
+        watchAbortControllers[kind].abort()
+    }
 }
