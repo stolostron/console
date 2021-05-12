@@ -410,7 +410,7 @@
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
 
-    "template.title": "Automations",
+    "template.title": "Automation",
     "template.emptyStateHeader": "You don't have any Ansible job templates",
     "template.emptyStateMsg": "Select <bold>Create a template</bold> to create a Ansible job template.",
     "template.edit": "Edit template",
