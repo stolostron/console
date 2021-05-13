@@ -141,7 +141,6 @@ export function CreateClusterPool() {
 
             // redirect to created cluster
             if (status === 'DONE') {
-                console.log('createResources', createResources)
                 const name = createResources.find((resource) => resource.kind === 'ClusterPool')?.metadata.name
                 alertContext.addAlert({
                     title: t('clusterPool.creation.success.title'),
