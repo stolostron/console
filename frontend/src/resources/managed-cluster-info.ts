@@ -24,10 +24,17 @@ export interface NodeInfo {
         type: string
     }[]
 }
-
+export type OCPVersionRelease = {
+    version?: string
+    image?: string
+    url?: string
+    channels?: string[]
+}
 export type OpenShiftDistributionInfo = {
     version: string
+    channel?: string
     availableUpdates: string[]
+    versionAvailableUpdates: OCPVersionRelease[]
     desiredVersion: string
     upgradeFailed: boolean
 }

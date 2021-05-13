@@ -114,6 +114,26 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             value: cluster?.distribution?.displayVersion && <DistributionField cluster={cluster} />,
                         },
                         {
+                            key: t('table.channel'),
+                            value: (
+                                <span>
+                                    {cluster!.distribution?.ocp?.channel || ''}
+                                    <Popover
+                                        bodyContent={
+                                            <Trans
+                                                i18nKey="cluster:table.clusterChannel.helperText"
+                                                components={{ bold: <strong /> }}
+                                            />
+                                        }
+                                    >
+                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                                            <OutlinedQuestionCircleIcon />
+                                        </AcmButton>
+                                    </Popover>
+                                </span>
+                            ),
+                        },
+                        {
                             key: t('table.labels'),
                             value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
                             keyAction: cluster?.isManaged && (

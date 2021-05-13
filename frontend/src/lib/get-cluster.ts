@@ -107,7 +107,8 @@ export type UpgradeInfo = {
     upgradeFailed: boolean
     currentVersion: string | undefined
     desiredVersion: string | undefined
-    availableUpdates: string[]
+    availableVersions: string[]
+    availableChannels: string[]
     prehooks: {
         hasHooks: boolean
         inProgress: boolean
@@ -379,6 +380,7 @@ export function getDistributionInfo(
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
 
         const upgradeClusterCondition = checkCuratorConditionInProgress('upgrade-cluster', curatorConditions)
+
         upgradeInfo.isUpgrading =
             upgradeClusterCondition ||
             managedClusterInfo?.status?.distributionInfo?.ocp?.version !==
@@ -391,7 +393,24 @@ export function getDistributionInfo(
             false
         upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
         upgradeInfo.desiredVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
-        upgradeInfo.availableUpdates = managedClusterInfo?.status?.distributionInfo?.ocp?.availableUpdates ?? []
+        upgradeInfo.availableVersions =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates
+                ?.map((versionRelease) => {
+                    return versionRelease.version || ''
+                })
+                .filter((version) => {
+                    return !!version
+                }) || []
+
+        const channelSet = new Set<string>()
+        managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates?.forEach((versionRelease) => {
+            versionRelease.channels?.forEach((channel) => {
+                if (channel) {
+                    channelSet.add(channel)
+                }
+            })
+        })
+        upgradeInfo.availableChannels = Array.from(channelSet)
 
         upgradeInfo.prehooks = {
             hasHooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,

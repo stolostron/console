@@ -11,11 +11,11 @@ import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
-import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { createImportResources } from '../../../../lib/import-cluster'
+import { ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { t } = useTranslation(['cluster'])
@@ -67,7 +67,20 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             text: t('managed.upgrade'),
             click: (_cluster: Cluster) => setShowUpgradeModal(true),
             isDisabled: true,
-            rbac: [rbacCreate(ManagedClusterActionDefinition, cluster.namespace)],
+            rbac: [
+                rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+            ],
+        },
+        {
+            id: 'select-channel',
+            text: t('managed.selectChannel'),
+            click: (_cluster: Cluster) => setShowUpgradeModal(true),
+            isDisabled: true,
+            rbac: [
+                rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+            ],
         },
         {
             id: 'search-cluster',
@@ -235,6 +248,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
         const disabledPreHookActions = [
             'upgrade-cluster',
+            'select-channel',
             'search-cluster',
             'import-cluster',
             'hibernate-cluster',
@@ -245,13 +259,20 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     }
 
     if (cluster.status === ClusterStatus.importfailed) {
-        const disabledImportFailedActions = ['upgrade-cluster', 'search-cluster', 'import-cluster', 'detach-cluster']
+        const disabledImportFailedActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'import-cluster',
+            'detach-cluster',
+        ]
         actions = actions.filter((a) => !disabledImportFailedActions.includes(a.id))
     }
 
     if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
         const disabledHibernationActions = [
             'upgrade-cluster',
+            'select-channel',
             'search-cluster',
             'hibernate-cluster',
             'import-cluster',
@@ -271,13 +292,21 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (
         cluster.distribution?.isManagedOpenShift ||
         cluster.status !== ClusterStatus.ready ||
-        cluster.distribution?.ocp?.availableUpdates === undefined ||
-        cluster.distribution?.ocp?.availableUpdates.length === 0 ||
-        (cluster.distribution?.ocp?.version &&
-            cluster.distribution?.ocp?.desiredVersion &&
-            cluster.distribution?.ocp?.version !== cluster.distribution?.ocp?.desiredVersion)
+        cluster.distribution?.upgradeInfo?.availableVersions === undefined ||
+        cluster.distribution?.upgradeInfo?.availableVersions.length === 0 ||
+        cluster.distribution?.upgradeInfo.isUpgrading
     ) {
         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
+    }
+
+    if (
+        cluster.distribution?.isManagedOpenShift ||
+        cluster.status !== ClusterStatus.ready ||
+        cluster.distribution?.upgradeInfo?.availableChannels === undefined ||
+        cluster.distribution?.upgradeInfo?.availableChannels.length === 0 ||
+        cluster.distribution?.upgradeInfo.isUpgrading
+    ) {
+        actions = actions.filter((a) => a.id !== 'select-channel')
     }
 
     if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
