@@ -49,6 +49,7 @@ const regions = [
     'westeurope',
     'westus',
     'westus2',
+    'westus3',
     'australiacentral',
     'australiasoutheast',
     'canadaeast',
