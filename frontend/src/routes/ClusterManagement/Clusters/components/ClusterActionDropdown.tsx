@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDrawerContext, AcmInlineProvider } from '@open-cluster-management/ui-components'
-import { useContext, useMemo, useState } from 'react'
+import { AcmInlineProvider } from '@open-cluster-management/ui-components'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../components/Rbac'
@@ -18,13 +18,13 @@ import { StatusField } from './StatusField'
 import { createImportResources } from '../../../../lib/import-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster'])
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
+    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
     const { cluster } = props
 
@@ -58,24 +58,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'edit-labels',
             text: t('managed.editLabels'),
-            click: (cluster: Cluster) => {
-                setDrawerContext({
-                    isExpanded: true,
-                    title: t('labels.edit.title'),
-                    onCloseClick: () => setDrawerContext(undefined),
-                    panelContent: (
-                        <EditLabels
-                            displayName={cluster.displayName!}
-                            resource={{
-                                ...ManagedClusterDefinition,
-                                metadata: { name: cluster.name, labels: cluster.labels },
-                            }}
-                            close={() => setDrawerContext(undefined)}
-                        />
-                    ),
-                    panelContentProps: { minSize: '600px' },
-                })
-            },
+            click: () => setShowEditLabels(true),
             isDisabled: true,
             rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
         },
@@ -316,6 +299,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     return (
         <>
+            <EditLabels
+                resource={
+                    showEditLabels
+                        ? { ...ManagedClusterDefinition, metadata: { name: cluster.name, labels: cluster.labels } }
+                        : undefined
+                }
+                displayName={cluster.displayName}
+                close={() => setShowEditLabels(false)}
+            />
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
             <BulkActionModel<Cluster> {...modalProps} />
             <RbacDropdown<Cluster>

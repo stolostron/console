@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-import { AcmHeader, AcmTablePaginationContextProvider } from '@open-cluster-management/ui-components'
+import {
+    AcmHeader,
+    AcmTablePaginationContextProvider,
+    AcmToastProvider,
+    AcmToastGroup,
+} from '@open-cluster-management/ui-components'
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -37,57 +42,64 @@ export default function App() {
         <BrowserRouter>
             <AcmHeader route={route}>
                 <LoadData>
-                    <AcmTablePaginationContextProvider localStorageKey="clusters">
-                        <Suspense fallback={<LoadingPage />}>
-                            <Switch>
-                                <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-                                <Route
-                                    exact
-                                    path={NavigationPath.createClusterPool}
-                                    component={CreateClusterPoolPage}
-                                />
-                                <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
-                                <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
-                                <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
-                                <Route
-                                    exact
-                                    path={NavigationPath.ansibleAutomations}
-                                    component={AnsibleAutomationsPage}
-                                />
-                                <Route
-                                    exact
-                                    path={NavigationPath.addAnsibleAutomation}
-                                    component={AnsibleAutomationFormPage}
-                                />
-                                <Route
-                                    exact
-                                    path={NavigationPath.editAnsibleAutomation}
-                                    component={AnsibleAutomationFormPage}
-                                />
-                                <Route exact path={NavigationPath.bareMetalAssets} component={BareMetalAssetsPage} />
-                                <Route
-                                    exact
-                                    path={NavigationPath.editBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route
-                                    exact
-                                    path={NavigationPath.createBareMetalAsset}
-                                    component={CreateBareMetalAssetPage}
-                                />
-                                <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
-                                <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
-                                <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                                <Route exact path="*">
-                                    <Redirect to={NavigationPath.console} />
-                                </Route>
-                            </Switch>
-                        </Suspense>
-                    </AcmTablePaginationContextProvider>
+                    <AcmToastProvider>
+                        <AcmToastGroup />
+                        <AcmTablePaginationContextProvider localStorageKey="clusters">
+                            <Suspense fallback={<LoadingPage />}>
+                                <Switch>
+                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createClusterPool}
+                                        component={CreateClusterPoolPage}
+                                    />
+                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                                    <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                                    <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
+                                    <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
+                                    <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.ansibleAutomations}
+                                        component={AnsibleAutomationsPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.addAnsibleAutomation}
+                                        component={AnsibleAutomationFormPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.editAnsibleAutomation}
+                                        component={AnsibleAutomationFormPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.bareMetalAssets}
+                                        component={BareMetalAssetsPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.editBareMetalAsset}
+                                        component={CreateBareMetalAssetPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createBareMetalAsset}
+                                        component={CreateBareMetalAssetPage}
+                                    />
+                                    <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
+                                    <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
+                                    <Route path={NavigationPath.console} component={ClusterManagementPage} />
+                                    <Route exact path="*">
+                                        <Redirect to={NavigationPath.console} />
+                                    </Route>
+                                </Switch>
+                            </Suspense>
+                        </AcmTablePaginationContextProvider>
+                    </AcmToastProvider>
                 </LoadData>
             </AcmHeader>
         </BrowserRouter>

@@ -17,14 +17,17 @@ import {
 import { CopyIcon } from '@patternfly/react-icons'
 import i18next from 'i18next'
 import { Fragment, useContext, useEffect, useState } from 'react'
+import { useRecoilState } from 'recoil'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
 import { getSecret } from '../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { secretsState } from '../../../../atoms'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation(['cluster', 'common'])
+    const [secrets] = useRecoilState(secretsState)
     const { cluster, importCommand, setImportCommand } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState<boolean>(false)
@@ -67,7 +70,12 @@ export function ImportCommandContainer() {
         return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
     }
 
-    if (cluster?.status === ClusterStatus.pendingimport) {
+    // do not show command if it's configured to auto-import
+    const autoImportSecret = secrets.find(
+        (s) => s.metadata.namespace === cluster?.namespace && s.metadata.name === 'auto-import-secret'
+    )
+
+    if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
         return (
             <>
                 <div style={{ marginBottom: '12px' }}>
