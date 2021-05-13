@@ -236,12 +236,20 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 200:
                             break
                         default:
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            if (process.env.NODE_ENV === 'production') {
+                                window.location.reload()
+                            } else {
+                                window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            }
                             break
                     }
                 })
                 .catch(() => {
-                    window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    if (process.env.NODE_ENV === 'production') {
+                        window.location.reload()
+                    } else {
+                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    }
                 })
                 .finally(() => {
                     setTimeout(checkLoggedIn, 30 * 1000)
