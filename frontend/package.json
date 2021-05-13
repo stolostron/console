@@ -15,8 +15,6 @@
         "@types/react-dom": "^17.0.4",
         "@types/react-router-dom": "^5.1.7",
         "@types/yamljs": "^0.2.31",
-        "eslint-config-prettier": "^8.3.0",
-        "eslint-plugin-prettier": "^3.4.0",
         "eslint-plugin-react": "^7.23.2",
         "handlebars": "^4.7.7",
         "handlebars-loader": "^1.6.0",
@@ -70,9 +68,7 @@
             "react-app",
             "eslint:recommended",
             "plugin:@typescript-eslint/recommended",
-            "plugin:jest/recommended",
-            "prettier",
-            "plugin:prettier/recommended"
+            "plugin:jest/recommended"
         ],
         "plugins": [
             "react",
@@ -109,7 +105,8 @@
             "@typescript-eslint/ban-types": "off",
             "no-empty": "off",
             "no-constant-condition": "off",
-            "jest/no-export": "off"
+            "jest/no-export": "off",
+            "@typescript-eslint/no-extra-semi": "off"
         }
     },
     "browserslist": {
