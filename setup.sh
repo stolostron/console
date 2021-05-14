@@ -23,7 +23,7 @@ echo BACKEND_URL=$BACKEND_URL >> ./backend/.env
 FRONTEND_URL=https://localhost:3000
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
-SA_SECRET=`oc get pods -n open-cluster-management --selector=app=console-chart-v2,component=console -o="jsonpath={.items[0].spec.volumes[1].secret.secretName}"`
+SA_SECRET=`oc get pods -n open-cluster-management --selector=app=console-chart-v2,component=console -o="jsonpath={.items[0].spec.volumes[2].secret.secretName}"`
 SA_TOKEN=`oc get secret -n open-cluster-management ${SA_SECRET} -o="jsonpath={.data.token}"`
 
 echo ${SA_TOKEN} > /tmp/tmp_SA_TOKEN
