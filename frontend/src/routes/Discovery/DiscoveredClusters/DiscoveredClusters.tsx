@@ -151,7 +151,9 @@ export function DiscoveredClustersPageContent() {
     })
 
     sessionStorage.removeItem('DiscoveredClusterName')
+    sessionStorage.removeItem('DiscoveredClusterDisplayName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
+    sessionStorage.removeItem('DiscoveredClusterApiURL')
     sessionStorage.removeItem('DiscoveryCredential')
     return (
         <Fragment>
@@ -335,7 +337,9 @@ export function DiscoveredClustersTable(props: {
                     title: t('discovery.import'),
                     click: (item) => {
                         sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                        sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
                         sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                        sessionStorage.setItem('DiscoveredClusterApiURL', item.spec.apiUrl)
                         history.push(NavigationPath.importCluster)
                     },
                 },

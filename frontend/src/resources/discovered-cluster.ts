@@ -22,6 +22,7 @@ export interface DiscoveredCluster extends IResource {
     spec: {
         name: string
         console: string
+        apiUrl: string
         displayName: string
         creationTimestamp?: string
         activityTimestamp: string
