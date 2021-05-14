@@ -218,7 +218,7 @@ export function BareMetalAssetsTable(props: {
                             header: t('bareMetalAsset.tableHeader.status'),
                             cell: (bareMetalAsset) => {
                                 if (Array.isArray(bareMetalAsset.status?.conditions)) {
-                                    let mostCurrentStatusTime = new Date()
+                                    let mostCurrentStatusTime = new Date(0)
                                     let mostCurrentStatus: string | undefined = undefined
                                     for (let condition of bareMetalAsset.status!.conditions) {
                                         if (condition.lastTransitionTime >= mostCurrentStatusTime) {
