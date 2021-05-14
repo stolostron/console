@@ -2,7 +2,6 @@
 
 import {
     AcmDescriptionList,
-    AcmDrawerContext,
     AcmInlineCopy,
     AcmInlineProvider,
     AcmLabels,
@@ -12,7 +11,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus, clusterDangerStatuses } from '../../../../../lib/get-cluster'
@@ -20,17 +19,18 @@ import { rbacPatch } from '../../../../../lib/rbac-util'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 import { DistributionField } from '../../components/DistributionField'
-import { EditLabels } from '../../components/EditLabels'
 import { HiveNotification } from '../../components/HiveNotification'
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
+import { EditLabels } from '../../components/EditLabels'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation(['cluster', 'common'])
+    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+
     return (
         <AcmPageContent id="overview">
             <PageSection>
@@ -46,6 +46,18 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 )}
                 <HiveNotification />
                 <ImportCommandContainer />
+                <EditLabels
+                    resource={
+                        showEditLabels
+                            ? {
+                                  ...ManagedClusterDefinition,
+                                  metadata: { name: cluster!.name, labels: cluster!.labels },
+                              }
+                            : undefined
+                    }
+                    displayName={cluster!.displayName}
+                    close={() => setShowEditLabels(false)}
+                />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
@@ -106,26 +118,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
                             keyAction: cluster?.isManaged && (
                                 <RbacButton
-                                    onClick={() => {
-                                        if (cluster) {
-                                            setDrawerContext({
-                                                isExpanded: true,
-                                                title: t('labels.edit.title'),
-                                                onCloseClick: () => setDrawerContext(undefined),
-                                                panelContent: (
-                                                    <EditLabels
-                                                        displayName={cluster.displayName!}
-                                                        resource={{
-                                                            ...ManagedClusterDefinition,
-                                                            metadata: { name: cluster.name, labels: cluster.labels },
-                                                        }}
-                                                        close={() => setDrawerContext(undefined)}
-                                                    />
-                                                ),
-                                                panelContentProps: { minSize: '600px' },
-                                            })
-                                        }
-                                    }}
+                                    onClick={() => setShowEditLabels(true)}
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
                                     rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
@@ -180,6 +173,14 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {
                             key: cluster?.owner.claimedBy ? t('table.claimedBy') : t('table.createdBy'),
                             value: cluster?.owner.claimedBy ?? cluster?.owner.createdBy,
+                        },
+                        {
+                            key: t('table.clusterSet'),
+                            value: cluster?.clusterSet,
+                        },
+                        {
+                            key: t('table.clusterPool'),
+                            value: cluster?.hive?.clusterPool,
                         },
                     ]}
                 />

@@ -1,8 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useRecoilState } from 'recoil'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import {
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    AcmErrorBoundary,
+    AcmToastContext,
+} from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
@@ -64,10 +70,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateClusterPoolPage() {
-    const history = useHistory()
-    const location = useLocation()
-    const [namespaces] = useRecoilState(namespacesState)
-    const [secrets] = useRecoilState(secretsState)
+    const { t } = useTranslation(['create'])
 
     // create portals for buttons in header
     const switches = (
@@ -82,6 +85,50 @@ export default function CreateClusterPoolPage() {
             <div id={Portals.createBtn} />
         </div>
     )
+    return (
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={t('page.header.create-clusterPool')}
+                    titleTooltip={
+                        <>
+                            {t('page.header.create-clusterPool.tooltip')}
+                            <a
+                                href={DOC_LINKS.CREATE_CLUSTER}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ display: 'block', marginTop: '4px' }}
+                            >
+                                {t('learn.more')}
+                            </a>
+                        </>
+                    }
+                    breadcrumb={[
+                        { text: t('clusterPools'), to: NavigationPath.clusterPools },
+                        { text: t('page.header.create-clusterPool'), to: '' },
+                    ]}
+                    switches={switches}
+                    actions={portals}
+                />
+            }
+        >
+            <AcmErrorBoundary>
+                <AcmPageContent id="create-cluster-pool">
+                    <PageSection className="pf-c-content" variant="light" isFilled>
+                        <CreateClusterPool />
+                    </PageSection>
+                </AcmPageContent>
+            </AcmErrorBoundary>
+        </AcmPage>
+    )
+}
+
+export function CreateClusterPool() {
+    const history = useHistory()
+    const location = useLocation()
+    const [namespaces] = useRecoilState(namespacesState)
+    const [secrets] = useRecoilState(secretsState)
+    const alertContext = useContext(AcmToastContext)
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -94,9 +141,13 @@ export default function CreateClusterPoolPage() {
 
             // redirect to created cluster
             if (status === 'DONE') {
-                setTimeout(() => {
-                    history.push(NavigationPath.clusterPools)
-                }, 2000)
+                const name = createResources.find((resource) => resource.kind === 'ClusterPool')?.metadata.name
+                alertContext.addAlert({
+                    title: t('clusterPool.creation.success.title'),
+                    message: t('clusterPool.creation.success.message', { name }),
+                    type: 'success',
+                })
+                history.push(NavigationPath.clusterPools)
             }
         }
     }
@@ -157,56 +208,23 @@ export default function CreateClusterPoolPage() {
     }
 
     return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={t('page.header.create-clusterPool')}
-                    titleTooltip={
-                        <>
-                            {t('page.header.create-clusterPool.tooltip')}
-                            <a
-                                href={DOC_LINKS.CREATE_CLUSTER}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('learn.more')}
-                            </a>
-                        </>
-                    }
-                    breadcrumb={[
-                        { text: t('clusterPools'), to: NavigationPath.clusterPools },
-                        { text: t('page.header.create-clusterPool'), to: '' },
-                    ]}
-                    switches={switches}
-                    actions={portals}
-                />
-            }
-        >
-            <AcmErrorBoundary>
-                <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light" isFilled>
-                        <TemplateEditor
-                            type={'ClusterPool'}
-                            title={'ClusterPool YAML'}
-                            monacoEditor={<MonacoEditor />}
-                            controlData={controlData}
-                            template={template}
-                            portals={Portals}
-                            fetchControl={fetchControl}
-                            createControl={{
-                                createResource,
-                                cancelCreate,
-                                pauseCreate,
-                                creationStatus: creationStatus?.status,
-                                creationMsg: creationStatus?.messages,
-                            }}
-                            logging={process.env.NODE_ENV !== 'production'}
-                            i18n={i18n}
-                        />
-                    </PageSection>
-                </AcmPageContent>
-            </AcmErrorBoundary>
-        </AcmPage>
+        <TemplateEditor
+            type={'ClusterPool'}
+            title={'ClusterPool YAML'}
+            monacoEditor={<MonacoEditor />}
+            controlData={controlData}
+            template={template}
+            portals={Portals}
+            fetchControl={fetchControl}
+            createControl={{
+                createResource,
+                cancelCreate,
+                pauseCreate,
+                creationStatus: creationStatus?.status,
+                creationMsg: creationStatus?.messages,
+            }}
+            logging={process.env.NODE_ENV !== 'production'}
+            i18n={i18n}
+        />
     )
 }

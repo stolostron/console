@@ -16,7 +16,6 @@ export enum Units {
 }
 
 export function quantityToScalar(quantity: string): number {
-    console.log(quantity)
     if (typeof quantity !== 'string') {
         return 0
     }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
@@ -10,7 +10,6 @@ import {
     AcmDescriptionList,
     AcmCountCardSection,
     AcmLabels,
-    AcmDrawerContext,
 } from '@open-cluster-management/ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { RbacButton } from '../../../../../components/Rbac'
@@ -23,11 +22,23 @@ import { NavigationPath } from '../../../../../NavigationPath'
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
-    const { setDrawerContext } = useContext(AcmDrawerContext)
     const { clusterSet, clusters, clusterPools } = useContext(ClusterSetContext)
+    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+
     return (
         <AcmPageContent id="overview">
             <PageSection>
+                <EditLabels
+                    resource={
+                        showEditLabels
+                            ? {
+                                  ...ManagedClusterSetDefinition,
+                                  metadata: { name: clusterSet!.metadata.name, labels: clusterSet!.metadata.labels },
+                              }
+                            : undefined
+                    }
+                    close={() => setShowEditLabels(false)}
+                />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
@@ -40,29 +51,7 @@ export function ClusterSetOverviewPageContent() {
                             value: clusterSet?.metadata.labels && <AcmLabels labels={clusterSet?.metadata.labels} />,
                             keyAction: (
                                 <RbacButton
-                                    onClick={() => {
-                                        if (clusterSet) {
-                                            setDrawerContext({
-                                                isExpanded: true,
-                                                title: t('labels.edit.title'),
-                                                onCloseClick: () => setDrawerContext(undefined),
-                                                panelContent: (
-                                                    <EditLabels
-                                                        displayName={clusterSet!.metadata.name}
-                                                        resource={{
-                                                            ...ManagedClusterSetDefinition,
-                                                            metadata: {
-                                                                name: clusterSet.metadata.name,
-                                                                labels: clusterSet.metadata.labels,
-                                                            },
-                                                        }}
-                                                        close={() => setDrawerContext(undefined)}
-                                                    />
-                                                ),
-                                                panelContentProps: { minSize: '600px' },
-                                            })
-                                        }
-                                    }}
+                                    onClick={() => setShowEditLabels(true)}
                                     variant={ButtonVariant.plain}
                                     aria-label={t('common:labels.edit.title')}
                                     rbac={[

@@ -43,6 +43,7 @@ export interface IBulkActionModelProps<T = undefined> {
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
     emptyState?: JSX.Element
+    showToolbar?: boolean
 }
 
 interface ItemError<T> {
@@ -100,6 +101,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                         bulkActions={[]}
                                         perPageOptions={[]}
                                         autoHidePagination
+                                        showToolbar={props.showToolbar}
                                     />
                                 </AcmTablePaginationContextProvider>
                             )}

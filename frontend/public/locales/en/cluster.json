@@ -148,6 +148,8 @@
     "table.kind": "Kind",
     "table.claimedBy": "Claimed by",
     "table.createdBy": "Created by",
+    "table.clusterSet": "Cluster set",
+    "table.clusterPool": "Cluster pool",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",

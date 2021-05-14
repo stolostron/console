@@ -22,13 +22,15 @@ import {
 import { createResource } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 
-const emptyManagedClusterSet: ManagedClusterSet = {
-    apiVersion: ManagedClusterSetApiVersion,
-    kind: ManagedClusterSetKind,
-    metadata: {
-        name: '',
-    },
-    spec: {},
+function getEmptySet() {
+    return {
+        apiVersion: ManagedClusterSetApiVersion,
+        kind: ManagedClusterSetKind,
+        metadata: {
+            name: '',
+        },
+        spec: {},
+    } as ManagedClusterSet
 }
 
 export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => void }) {
@@ -36,10 +38,11 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
     const history = useHistory()
 
     const [created, setCreated] = useState<boolean>()
-    const [managedClusterSet, setManagedClusterSet] = useState<ManagedClusterSet>(emptyManagedClusterSet)
+    const [managedClusterSet, setManagedClusterSet] = useState<ManagedClusterSet>(getEmptySet())
 
     function reset() {
-        setManagedClusterSet(emptyManagedClusterSet)
+        setManagedClusterSet(getEmptySet())
+        setCreated(false)
         props.onClose?.()
     }
 
