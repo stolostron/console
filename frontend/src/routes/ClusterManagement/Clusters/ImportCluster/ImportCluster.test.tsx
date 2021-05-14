@@ -276,8 +276,6 @@ describe('ImportCluster', () => {
         await clickByText(mockManagedClusterSet.metadata.name!)
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.default')
-        await clickByText('import.manual.choice')
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
         await clickByText('import.form.submit')
 
@@ -303,17 +301,15 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.default')
-        await clickByText('import.auto.choice')
-        await clickByText('import.credential.default')
-        await clickByText('import.config.choice')
-        await clickByText('import.auto.config.label')
+        await clickByText('import.mode.manual')
+        await clickByText('import.mode.kubeconfig')
         await clickByTestId('kubeConfigEntry')
         await typeByTestId('kubeConfigEntry', 'Test text')
         await clickByText('import.auto.button')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoSecretNock])
     })
+
     test('can create resources when auto importing using token/server', async () => {
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
@@ -325,10 +321,8 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.default')
-        await clickByText('import.auto.choice')
-        await clickByText('import.credential.default')
-        await clickByText('import.credential.choice')
+        await clickByText('import.mode.manual')
+        await clickByText('import.mode.token')
         await clickByTestId('token')
         await typeByTestId('token', 'Test token')
         await clickByTestId('server')
@@ -337,12 +331,11 @@ describe('ImportCluster', () => {
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoTokenSecretNock])
     })
+
     test('handles project creation error', async () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByText } = render(<Component />)
         await typeByTestId('clusterName', 'foobar')
-        await clickByText('import.mode.default')
-        await clickByText('import.manual.choice')
         expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
         await clickByText('import.form.submit')
         await waitForText('import.generating')
@@ -360,12 +353,8 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.default')
-        await clickByText('import.manual.choice')
         await clickByText('import.form.submit')
-
         await waitForNocks([createProjectNock, badRequestNock, deleteProjectNock])
-
         await waitForText(mockBadRequestStatus.message, true)
     })
 })
@@ -421,11 +410,7 @@ describe('Import Discovered Cluster', () => {
         await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
 
-        await waitForText('discovery.import')
         await clickByText('discovery.import')
-        await waitForText('import.mode.default')
-        await clickByText('import.mode.default')
-        await clickByText('import.manual.choice')
         await waitForText('import.form.submit')
 
         const projectNock = nockCreate(mockProject, mockProjectResponse)
