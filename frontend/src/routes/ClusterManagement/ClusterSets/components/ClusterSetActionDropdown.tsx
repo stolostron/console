@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo, useState, useContext } from 'react'
+import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AcmDrawerContext } from '@open-cluster-management/ui-components'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
@@ -16,10 +15,11 @@ import { EditLabels } from '../../Clusters/components/EditLabels'
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
     const { t } = useTranslation(['cluster'])
     const history = useHistory()
-    const { setDrawerContext } = useContext(AcmDrawerContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
+
+    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
     const modalColumns = useMemo(
         () => [
@@ -45,15 +45,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         {
             id: 'edit-labels',
             text: t('managed.editLabels'),
-            click: (managedClusterSet: ManagedClusterSet) => {
-                setDrawerContext({
-                    isExpanded: true,
-                    title: t('labels.edit.title'),
-                    onCloseClick: () => setDrawerContext(undefined),
-                    panelContent: <EditLabels resource={managedClusterSet} close={() => setDrawerContext(undefined)} />,
-                    panelContentProps: { minSize: '600px' },
-                })
-            },
+            click: () => setShowEditLabels(true),
             isDisabled: true,
             rbac: [rbacPatch(props.managedClusterSet)],
         },
@@ -95,6 +87,20 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
 
     return (
         <>
+            <EditLabels
+                resource={
+                    showEditLabels
+                        ? {
+                              ...ManagedClusterSetDefinition,
+                              metadata: {
+                                  name: props.managedClusterSet.metadata.name,
+                                  labels: props.managedClusterSet.metadata.labels,
+                              },
+                          }
+                        : undefined
+                }
+                close={() => setShowEditLabels(false)}
+            />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <RbacDropdown<ManagedClusterSet>
                 id={`${props.managedClusterSet.metadata.name}-actions`}

@@ -7,6 +7,7 @@ import { mockBadRequestStatus, nockGet } from '../../../../lib/nock-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
+import { RecoilRoot } from 'recoil'
 
 const mockSecretResponse: Secret = {
     apiVersion: SecretApiVersion,
@@ -50,11 +51,13 @@ describe('ImportCommandContainer', () => {
     const Component = () => {
         const [importCommand, setImportCommand] = useState<string | undefined>()
         return (
-            <ClusterContext.Provider
-                value={{ cluster: mockCluster, addons: undefined, importCommand, setImportCommand }}
-            >
-                <ImportCommandContainer />
-            </ClusterContext.Provider>
+            <RecoilRoot>
+                <ClusterContext.Provider
+                    value={{ cluster: mockCluster, addons: undefined, importCommand, setImportCommand }}
+                >
+                    <ImportCommandContainer />
+                </ClusterContext.Provider>
+            </RecoilRoot>
         )
     }
 
