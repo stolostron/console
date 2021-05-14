@@ -272,7 +272,5 @@ describe('CreateClusterPool', () => {
 
         // make sure creating
         await waitForNocks(createNocks)
-
-        await waitForText('success.create.created')
     })
 })

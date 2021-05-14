@@ -116,6 +116,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                     { op: 'replace', path: '/spec/imageSetRef/name', value: imageSets[clusterPool.metadata.uid!] },
                 ])
             }}
+            showToolbar={false}
         />
     )
 }

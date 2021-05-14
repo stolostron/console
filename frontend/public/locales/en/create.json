@@ -239,7 +239,6 @@
     "creation.ocp.cluster.ost.external.dns": "External DNS IP addresses",
     "placeholder.creation.ocp.cluster.ost.external.dns": "OPTIONAL: Enter one or more external DNS IP addresses",
 
-
     "clusterPool.creation.ocp.name": "Cluster pool name",
     "clusterPool.creation.ocp.namespace": "Cluster pool namespace",
     "clusterPool.creation.ocp.size": "Cluster pool size",
@@ -248,6 +247,8 @@
     "clusterPool.tooltip.creation.ocp.namespace": "The namespace to create your cluster pool. Multiple cluster pools can be created in the same namespace.",
     "clusterPool.placeholder.creation.ocp.namespace": "Select or create a namespace",
     "clusterPool.creation.ocp.choose.distribution": "Select the type of Kubernetes distribution to use for your cluster pool.",
+    "clusterPool.creation.success.title": "Cluster pool created",
+    "clusterPool.creation.success.message": "{{name}} was successfully created.",
 
     "tooltip.text.overview": "View operations details across all of your providers.",
     "tooltip.text.search": "Find resources across clusters with keywords and filters.",
