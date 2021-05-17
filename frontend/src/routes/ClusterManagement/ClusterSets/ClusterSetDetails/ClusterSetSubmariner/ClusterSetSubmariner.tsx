@@ -256,7 +256,13 @@ export function ClusterSetSubmarinerPageContent() {
                                     },
                                 },
                             ]}
-                            tableActions={[]}
+                            tableActions={[
+                                {
+                                    id: 'install-submariner',
+                                    title: t('managed.clusterSets.submariner.addons.install'),
+                                    click: () => setInstallSubmarinerModalOpen(true),
+                                },
+                            ]}
                             emptyState={
                                 <AcmEmptyState
                                     key="mcEmptyState"
@@ -302,6 +308,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             </RbacButton>
                                         ) : (
                                             <AcmButton
+                                                id="install-submarienr"
                                                 variant="primary"
                                                 onClick={() => setInstallSubmarinerModalOpen(true)}
                                             >
