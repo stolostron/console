@@ -12,7 +12,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
             retries = 0
     }
 
-    let delay = 0
+    let delay = 1000
 
     return new Promise(function (resolve, reject) {
         async function fetchAttempt() {
@@ -55,6 +55,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
                     switch ((err as any).code) {
                         case 'ETIMEDOUT':
                         case 'ECONNRESET':
+                        case 'ENOTFOUND':
                             if (retries > 0) {
                                 retries--
                                 setTimeout(fetchAttempt, delay)
