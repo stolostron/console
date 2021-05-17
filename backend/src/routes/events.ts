@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import AbortController from 'abort-controller'
+import { IncomingMessage } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
 import { parseCookies } from '../lib/cookies'
-import { fetchRetry } from '../lib/fetch-retry'
+import { requestRetry } from '../lib/request-retry'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { noop } from '../lib/noop'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
@@ -25,7 +26,7 @@ interface WatchEvent {
 
 type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
 
-const watchAbortControllers: Record<string, AbortController> = {}
+const abortControllers: Record<string, AbortController> = {}
 
 const resourceCache: {
     [kind: string]: {
@@ -106,106 +107,91 @@ export function watchResource(
         path += Object.keys(options.fieldSelector).map((key) => `${key}=${options.fieldSelector[key]}`)
     }
 
-    // TODO - Handle resuming a watch
-    // https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes
-    // required permissions to list resources
-
-    // path += '&allowWatchBookmarks'
-
-    // if (resourceVersion) {
-    //     if (kind === 'managedClusterInfos') {
-    //         path += `&resourceVersion=${resourceVersion}`
-    //     }
-    //     logger.debug(path)
-    // }
+    path += '&allowWatchBookmarks'
 
     const url = `${process.env.CLUSTER_API_URL}${path}`
 
     let buffer: Buffer = Buffer.from('')
-
     const abortController = new AbortController()
-    if (watchAbortControllers[kind]) watchAbortControllers[kind].abort()
-    watchAbortControllers[kind] = abortController
-    fetchRetry(url, {
-        headers: { authorization: `Bearer ${token}` },
-        agent: new Agent({ rejectUnauthorized: false }),
+
+    function onResponse(res: IncomingMessage) {
+        if (res.statusCode === 200) {
+            if (process.env.LOG_WATCH) {
+                logger.info({ msg: 'watch start', kind })
+            }
+            res.on('data', (chunk) => {
+                if (chunk instanceof Buffer) {
+                    let oldBuffer = buffer
+                    buffer = Buffer.concat([buffer, chunk])
+                    oldBuffer.fill(0)
+                    chunk.fill(0)
+
+                    let index = buffer.indexOf('\n')
+                    while (index !== -1) {
+                        // TODO - Security: Search for secret and zero out secret
+
+                        const data = buffer.slice(0, index)
+                        try {
+                            const watchEvent = JSON.parse(data.toString()) as WatchEvent
+                            handleWatchEvent(watchEvent)
+                        } catch (err) {
+                            logger.error(err)
+                        }
+                        buffer = buffer.slice(index + 1)
+                        index = buffer.indexOf('\n')
+                    }
+
+                    oldBuffer = buffer
+                    buffer = Buffer.from(buffer)
+                    oldBuffer.fill(0)
+                }
+            }).on('end', () => noop)
+        } else {
+            res.on('data', () => noop)
+            res.on('end', () => noop)
+        }
+    }
+
+    function onClose() {
+        if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+        if (stopping) return
+        watchResource(token, apiVersion, kind, options)
+    }
+
+    function onError(err: Error) {
+        if (stopping) return
+        logger.error({
+            msg: 'watching error',
+            kind,
+            error: err.message,
+            code: (err as unknown as { code: string })?.code,
+        })
+        switch ((err as unknown as { code: string }).code) {
+            case 'ENOTFOUND':
+                setDead()
+                break
+        }
+    }
+
+    requestRetry({
+        url,
+        token,
+        timeout: 4 * 60 * 1000 + Math.floor(Math.random() * 30 * 1000),
+        onResponse,
+        onError,
+        onClose,
         signal: abortController.signal,
     })
-        .then((res) => {
-            // delete watchAbortControllers[kind]
-            if (res.status === 200) {
-                if (process.env.LOG_WATCH) {
-                    logger.info({ msg: 'watch start', kind, resourceVersion })
-                }
-                /* Test code to simulate losing connection to kubernetes */
-                // if (process.env.NODE_ENV === 'development') {
-                //     if (kind === 'managedClusterInfos') {
-                //         setTimeout(() => {
-                //             logger.debug('res.destroy')
-                //             res.destroy()
-                //         }, 2000 + Math.floor(Math.random() * 10 * 1000))
-                //     }
-                // }
-
-                res.body
-                    .on('data', (chunk) => {
-                        if (chunk instanceof Buffer) {
-                            let oldBuffer = buffer
-                            buffer = Buffer.concat([buffer, chunk])
-                            oldBuffer.fill(0)
-                            chunk.fill(0)
-
-                            let index = buffer.indexOf('\n')
-                            while (index !== -1) {
-                                // TODO - Security: Search for secret and zero out secret
-
-                                const data = buffer.slice(0, index)
-                                try {
-                                    const watchEvent = JSON.parse(data.toString()) as WatchEvent
-                                    const eventResourceVersion = handleWatchEvent(watchEvent)
-                                    if (eventResourceVersion) resourceVersion = eventResourceVersion
-                                } catch (err) {
-                                    logger.error(err)
-                                }
-                                buffer = buffer.slice(index + 1)
-                                index = buffer.indexOf('\n')
-                            }
-
-                            oldBuffer = buffer
-                            buffer = Buffer.from(buffer)
-                            oldBuffer.fill(0)
-                        }
-                    })
-                    .on('error', (err: Error) => {
-                        if (err.name === 'AbortError') return
-                        logger.error({ msg: 'watching error', kind, error: err.message })
-                    })
-                    .on('close', () => {
-                        if (process.env.LOG_WATCH) {
-                            logger.info({ msg: 'watch stop', kind })
-                        }
-                        if (stopping) return
-                        watchResource(token, apiVersion, kind, options, resourceVersion)
-                    })
-            } else {
-                if (stopping) return
-                logger.error({ msg: 'watch error', kind, status: res.status })
-                setDead()
-            }
-        })
-        .catch((err: Error) => {
-            if (stopping) return
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            logger.error({ msg: 'watch fetch error', error: err.message })
-            setDead()
-        })
+    abortControllers[kind] = abortController
 }
 
 function handleWatchEvent(watchEvent: WatchEvent): string {
     let { object: resource } = watchEvent
 
     if (watchEvent.type === 'ERROR') {
-        logger.warn({ msg: 'watch error event', event: watchEvent })
+        if ((watchEvent.object as { code?: number })?.code !== 410) {
+            logger.warn({ msg: 'watch error event', event: watchEvent })
+        }
         return
     }
 
@@ -367,7 +353,7 @@ function canAccess(resource: IResource, verb: 'get' | 'list', token: string): Pr
 let stopping = false
 export function stopWatching(): void {
     stopping = true
-    for (const kind in watchAbortControllers) {
-        watchAbortControllers[kind].abort()
+    for (const kind in abortControllers) {
+        abortControllers[kind].abort()
     }
 }
