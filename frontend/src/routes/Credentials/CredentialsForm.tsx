@@ -16,7 +16,6 @@ import { useRecoilState } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
-import { AcmSvgIcon } from '../../components/AcmSvgIcon'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
@@ -350,11 +349,7 @@ export function CredentialsForm(props: {
                                 return {
                                     id: provider,
                                     value: provider,
-                                    icon: (
-                                        <AcmSvgIcon>
-                                            <AcmIcon icon={ProviderIconMap[provider]} />
-                                        </AcmSvgIcon>
-                                    ),
+                                    icon: <AcmIcon icon={ProviderIconMap[provider]} />,
                                     text: ProviderLongTextMap[provider],
                                 }
                             }),
