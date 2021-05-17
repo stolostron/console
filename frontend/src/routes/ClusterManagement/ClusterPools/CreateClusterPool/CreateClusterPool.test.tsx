@@ -53,7 +53,7 @@ const providerConnection: ProviderConnection = {
         name: 'connection',
         namespace: clusterName,
         labels: {
-            'cluster.open-cluster-management.io/provider': 'aws',
+            'cluster.open-cluster-management.io/type': 'aws',
             'cluster.open-cluster-management.io/credentials': '',
         },
     },

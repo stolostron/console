@@ -136,7 +136,7 @@ export function DiscoveredClustersPageContent() {
 
     const cloudRedHatCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
-        const provider = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+        const provider = credential.metadata.labels!['cluster.open-cluster-management.io/type']
         if (provider === Provider.redhatcloud) {
             cloudRedHatCredentials.push(credential)
         }

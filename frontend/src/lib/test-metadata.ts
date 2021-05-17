@@ -57,7 +57,7 @@ export const mockCRHCredential: Secret = {
         name: 'ocm-api-token',
         namespace: 'ocm',
         labels: {
-            'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
+            'cluster.open-cluster-management.io/type': Provider.redhatcloud,
         },
     },
 }
