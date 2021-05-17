@@ -32,14 +32,10 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
         message = t('status.submariner.network.insufficientClusters.message')
         path = NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)
         linkText = t('page.header.cluster-set.manage-assignments')
-    } else if (submarinerAddons.length === 0) {
+    } else if (submarinerAddons.length < 2) {
         type = StatusType.pending
-        status = t('status.submariner.network.noSubmarinersInstalled')
-        message = t('status.submariner.network.noSubmarinersInstalled.message')
-    } else if (submarinerAddons.length === 1) {
-        type = StatusType.pending
-        status = t('status.submariner.network.needMoreSubmariner')
-        message = t('status.submariner.network.needMoreSubmariner.message')
+        status = t('status.submariner.network.insufficientSubmariners')
+        message = t('status.submariner.network.insufficientSubmariners.message')
     } else {
         const unhealthySubmariners = submarinerAddons!.filter((mca) => !submarinerHealthCheck(mca))
         if (unhealthySubmariners.length > 0) {

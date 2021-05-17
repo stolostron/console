@@ -183,9 +183,14 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             {
                 header: t('table.clusterPools'),
                 cell: (managedClusterSet: ManagedClusterSet) => {
-                    return clusterPools.filter(
+                    const pools = clusterPools.filter(
                         (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                    ).length
+                    )
+                    if (pools.length === 0) {
+                        return '-'
+                    } else {
+                        return pools.length
+                    }
                 },
             },
         ],
@@ -239,9 +244,14 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                     {
                         header: t('table.clusterPools'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
-                            return clusterPools.filter(
+                            const pools = clusterPools.filter(
                                 (cp) => cp.metadata.labels?.[managedClusterSetLabel] === managedClusterSet.metadata.name
-                            ).length
+                            )
+                            if (pools.length === 0) {
+                                return '-'
+                            } else {
+                                return pools.length
+                            }
                         },
                     },
                     {
