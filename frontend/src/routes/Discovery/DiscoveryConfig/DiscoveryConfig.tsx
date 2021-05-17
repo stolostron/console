@@ -137,7 +137,6 @@ export function DiscoveryConfigPageContent(props: {
         spec: {
             filters: {
                 lastActive: 7,
-                openShiftVersions: [],
             },
             credential: credentialsRef.split('/', 2)[1] || '',
         },
@@ -365,7 +364,7 @@ export function DiscoveryConfigPageContent(props: {
                     </Link>
                 </FlexItem>
             </Flex>
-            {(discoveryConfig.metadata!.namespace && editing) || !editing ? (
+            {discoveryConfig.metadata!.namespace ? (
                 <Fragment>
                     <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
                     <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
@@ -399,6 +398,7 @@ export function DiscoveryConfigPageContent(props: {
                         label={t('discoveryConfig.discoveryVersions.label')}
                         labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
                         value={discoveryConfig?.spec?.filters?.openShiftVersions}
+                        placeholder={t('discoveryConfig.discoveryVersions.placeholder')}
                         onChange={(versions) => {
                             updateDiscoveryConfig((discoveryConfig) => {
                                 if (!discoveryConfig.spec.filters) {
@@ -407,7 +407,6 @@ export function DiscoveryConfigPageContent(props: {
                                 discoveryConfig.spec.filters.openShiftVersions = versions
                             })
                         }}
-                        isRequired
                     >
                         {discoveryVersions.map((version) => (
                             <SelectOption key={version} value={version}>
