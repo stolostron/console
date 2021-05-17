@@ -210,12 +210,12 @@ export function ImportClusterPageContent() {
                     <AcmSubmit
                         id="submit"
                         variant="primary"
-                        // isDisabled={
-                        //     !clusterName ||
-                        //     submitted ||
-                        //     (importMode === ImportMode.kubeconfig && !kubeConfig) ||
-                        //     (importMode === ImportMode.token && (!server || !token))
-                        // }
+                        isDisabled={
+                            !clusterName ||
+                            submitted ||
+                            (importMode === ImportMode.kubeconfig && !kubeConfig) ||
+                            (importMode === ImportMode.token && (!server || !token))
+                        }
                         onClick={async () => {
                             setSubmitted(true)
                             alertContext.clearAlerts()
