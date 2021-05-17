@@ -134,11 +134,11 @@ export function DiscoveredClustersPageContent() {
     const credentials = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
-    const cloudRedHatCredentials: ProviderConnection[] = []
+    const RHOCMCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
         const provider = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
         if (provider === Provider.redhatcloud) {
-            cloudRedHatCredentials.push(credential)
+            RHOCMCredentials.push(credential)
         }
     })
 
@@ -158,7 +158,7 @@ export function DiscoveredClustersPageContent() {
             <DiscoNotification />
             <DiscoveredClustersTable
                 discoveredClusters={unmanagedClusters}
-                credentials={credentials}
+                credentials={RHOCMCredentials}
                 discoveryConfigs={discoveryConfigs}
             />
         </Fragment>
