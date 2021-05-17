@@ -63,7 +63,7 @@ export function startWatching(): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'v1', 'secrets', {
-        labelSelector: { 'cluster.open-cluster-management.io/cloudconnection': '' },
+        labelSelector: { 'cluster.open-cluster-management.io/credentials': '' },
     })
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')

@@ -38,7 +38,7 @@ export default function AnsibleAutomationsFormPage({
 
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/provider'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
     useEffect(() => {
         if (isEditing || isViewing) {

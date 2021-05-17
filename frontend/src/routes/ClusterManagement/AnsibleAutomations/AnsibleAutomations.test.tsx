@@ -31,7 +31,7 @@ const mockAnsibleConnection1: ProviderConnection = {
         name: 'ansible-connection-1',
         namespace: 'default',
         labels: {
-            'cluster.open-cluster-management.io/provider': 'ans',
+            'cluster.open-cluster-management.io/type': 'ans',
         },
     },
     type: 'Opaque',
@@ -44,7 +44,7 @@ const mockAnsibleConnection2: ProviderConnection = {
         name: 'ansible-connection-3',
         namespace: 'default',
         labels: {
-            'cluster.open-cluster-management.io/provider': 'ans',
+            'cluster.open-cluster-management.io/type': 'ans',
         },
     },
     type: 'Opaque',
@@ -57,7 +57,7 @@ const mockAnsibleConnection3: ProviderConnection = {
         name: 'ansible-connection-3',
         namespace: 'default',
         labels: {
-            'cluster.open-cluster-management.io/provider': 'ans',
+            'cluster.open-cluster-management.io/type': 'ans',
         },
     },
     type: 'Opaque',

@@ -141,7 +141,7 @@ export function CredentialsForm(props: {
     const history = useHistory()
 
     const [credentialsType, setCredentialsType] = useState(
-        providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/provider'] ?? ''
+        providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
     )
 
     // Details
@@ -216,8 +216,8 @@ export function CredentialsForm(props: {
                 name,
                 namespace,
                 labels: {
-                    'cluster.open-cluster-management.io/provider': credentialsType,
-                    'cluster.open-cluster-management.io/cloudconnection': '',
+                    'cluster.open-cluster-management.io/type': credentialsType,
+                    'cluster.open-cluster-management.io/credentials': '',
                 },
             },
             stringData: {},

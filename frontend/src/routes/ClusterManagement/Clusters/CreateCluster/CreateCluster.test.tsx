@@ -64,7 +64,7 @@ const providerConnection: ProviderConnection = {
         name: 'connection',
         namespace: clusterName,
         labels: {
-            'cluster.open-cluster-management.io/provider': 'bmc',
+            'cluster.open-cluster-management.io/type': 'bmc',
         },
     },
     spec: {

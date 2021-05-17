@@ -122,7 +122,7 @@ export const setAvailableOCPMap = (control) => {
 
 export const setAvailableConnections = (control, secrets) => {
     const connections = secrets.filter(
-        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/provider'] === control.providerId
+        (secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === control.providerId
     )
     control.availableMap = {}
     connections?.forEach?.((c) => {

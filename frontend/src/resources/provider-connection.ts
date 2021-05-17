@@ -78,7 +78,7 @@ export function listProviderConnections() {
             apiVersion: ProviderConnectionApiVersion,
             kind: ProviderConnectionKind,
         },
-        ['cluster.open-cluster-management.io/cloudconnection=']
+        ['cluster.open-cluster-management.io/credentials=']
     )
     return {
         promise: result.promise.then((providerConnections) => {
