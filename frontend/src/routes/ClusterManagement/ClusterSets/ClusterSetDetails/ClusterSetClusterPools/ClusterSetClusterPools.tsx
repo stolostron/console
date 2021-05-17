@@ -4,7 +4,7 @@ import { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { PageSection } from '@patternfly/react-core'
-import { AcmPageContent, AcmExpandableCard, AcmEmptyState } from '@open-cluster-management/ui-components'
+import { AcmPageContent, AcmEmptyState } from '@open-cluster-management/ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
 import { RbacButton } from '../../../../../components/Rbac'
@@ -18,40 +18,38 @@ export function ClusterSetClusterPoolsPageContent() {
     return (
         <AcmPageContent id="cluster-pools">
             <PageSection>
-                <AcmExpandableCard title={t('clusterPools')}>
-                    <ClusterPoolsTable
-                        clusterPools={clusterPools!}
-                        emptyState={
-                            <AcmEmptyState
-                                key="mcEmptyState"
-                                title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
-                                message={
-                                    <Trans
-                                        i18nKey={'cluster:managed.clusterSets.clusterPools.emptyStateMsg'}
-                                        components={{ bold: <strong /> }}
-                                    />
-                                }
-                                action={
-                                    <RbacButton
-                                        component={Link}
-                                        to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
-                                        variant="primary"
-                                        rbac={[
-                                            rbacCreate(
-                                                ManagedClusterSetDefinition,
-                                                undefined,
-                                                clusterSet!.metadata.name,
-                                                'join'
-                                            ),
-                                        ]}
-                                    >
-                                        {t('managed.clusterSets.clusters.emptyStateButton')}
-                                    </RbacButton>
-                                }
-                            />
-                        }
-                    />
-                </AcmExpandableCard>
+                <ClusterPoolsTable
+                    clusterPools={clusterPools!}
+                    emptyState={
+                        <AcmEmptyState
+                            key="mcEmptyState"
+                            title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
+                            message={
+                                <Trans
+                                    i18nKey={'cluster:managed.clusterSets.clusterPools.emptyStateMsg'}
+                                    components={{ bold: <strong /> }}
+                                />
+                            }
+                            action={
+                                <RbacButton
+                                    component={Link}
+                                    to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                                    variant="primary"
+                                    rbac={[
+                                        rbacCreate(
+                                            ManagedClusterSetDefinition,
+                                            undefined,
+                                            clusterSet!.metadata.name,
+                                            'join'
+                                        ),
+                                    ]}
+                                >
+                                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                                </RbacButton>
+                            }
+                        />
+                    }
+                />
             </PageSection>
         </AcmPageContent>
     )

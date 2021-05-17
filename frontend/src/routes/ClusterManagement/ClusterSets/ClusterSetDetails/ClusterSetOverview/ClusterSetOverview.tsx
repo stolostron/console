@@ -18,12 +18,16 @@ import { EditLabels } from '../../../Clusters/components/EditLabels'
 import { rbacPatch } from '../../../../../lib/rbac-util'
 import { clusterDangerStatuses } from '../../../../../lib/get-cluster'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { submarinerHealthCheck } from '../ClusterSetSubmariner/ClusterSetSubmariner'
+import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
-    const { clusterSet, clusters, clusterPools } = useContext(ClusterSetContext)
+    const { clusterSet, clusters, clusterPools, submarinerAddons } = useContext(ClusterSetContext)
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+
+    const unhealthySubmariners = submarinerAddons!.filter((mca) => !submarinerHealthCheck(mca))
 
     return (
         <AcmPageContent id="overview">
@@ -47,6 +51,12 @@ export function ClusterSetOverviewPageContent() {
                             value: clusterSet?.metadata.name,
                         },
                         {
+                            key: t('table.networkStatus'),
+                            value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
+                        },
+                    ]}
+                    rightItems={[
+                        {
                             key: t('table.labels'),
                             value: clusterSet?.metadata.labels && <AcmLabels labels={clusterSet?.metadata.labels} />,
                             keyAction: (
@@ -69,6 +79,21 @@ export function ClusterSetOverviewPageContent() {
                         id="summary-status"
                         title={t('summary.status')}
                         cards={[
+                            {
+                                id: 'submariners',
+                                count: submarinerAddons!.length,
+                                title: t('submariner.addons'),
+                                linkText: t('summary.submariner.launch'),
+                                onLinkClick: () =>
+                                    push(
+                                        NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
+                                    ),
+                                countClick: () =>
+                                    push(
+                                        NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
+                                    ),
+                                isDanger: unhealthySubmariners.length > 0,
+                            },
                             {
                                 id: 'clusters',
                                 count: clusters!.length,

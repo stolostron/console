@@ -42,6 +42,7 @@ import {
     managedClusterSetLabel,
 } from '../../../resources/managed-cluster-set'
 import { usePageContext } from '../ClusterManagement'
+import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
@@ -106,9 +107,10 @@ export default function ClusterSetsPage() {
                                     onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
                                     variant="link"
                                     role="link"
+                                    icon={<ExternalLinkAltIcon />}
+                                    iconPosition="right"
                                 >
                                     {t('common:view.documentation')}
-                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                                 </AcmButton>
                             </FlexItem>
                         </Flex>
@@ -166,6 +168,12 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 sort: 'name',
             },
             {
+                header: t('table.networkStatus'),
+                cell: (managedClusterSet: ManagedClusterSet) => {
+                    return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
+                },
+            },
+            {
                 header: t('table.clusters'),
                 sort: 'status',
                 cell: (managedClusterSet: ManagedClusterSet) => (
@@ -215,6 +223,12 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 </Link>
                             </span>
                         ),
+                    },
+                    {
+                        header: t('table.networkStatus'),
+                        cell: (managedClusterSet: ManagedClusterSet) => {
+                            return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
+                        },
                     },
                     {
                         header: t('table.clusters'),

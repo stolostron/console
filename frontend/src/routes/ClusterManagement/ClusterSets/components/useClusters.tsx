@@ -47,6 +47,15 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
                 cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
                 groupManagedClusters.find((mc) => mc.metadata.name === cd.metadata.namespace)
         )
+
+        // prevent the unclaimed clusters from showing up in cluster set clusters
+        groupClusterDeployments = groupClusterDeployments.filter((cd) => {
+            if (cd.spec?.clusterPoolRef?.poolName !== undefined) {
+                return cd.spec?.clusterPoolRef?.claimName !== undefined
+            } else {
+                return true
+            }
+        })
     }
 
     if (clusterPool) {

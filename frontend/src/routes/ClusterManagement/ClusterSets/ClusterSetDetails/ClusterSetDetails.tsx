@@ -14,7 +14,7 @@ import { createContext, Fragment, Suspense, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { acmRouteState, clusterPoolsState, managedClusterSetsState } from '../../../../atoms'
+import { acmRouteState, clusterPoolsState, managedClusterSetsState, managedClusterAddonsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { usePrevious } from '../../../../components/usePrevious'
 import { Cluster } from '../../../../lib/get-cluster'
@@ -22,6 +22,7 @@ import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterPool } from '../../../../resources/cluster-pool'
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
+import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusters } from '../components/useClusters'
 import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
@@ -29,15 +30,18 @@ import { ClusterSetClusterPoolsPageContent } from './ClusterSetClusterPools/Clus
 import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetClusters'
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
+import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
     readonly clusters: Cluster[] | undefined
     readonly clusterPools: ClusterPool[] | undefined
+    readonly submarinerAddons: ManagedClusterAddOn[] | undefined
 }>({
     clusterSet: undefined,
     clusters: undefined,
     clusterPools: undefined,
+    submarinerAddons: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -47,7 +51,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
-    const [managedClusterSets] = useRecoilValue(waitForAll([managedClusterSetsState]))
+    const [managedClusterSets, managedClusterAddons] = useRecoilValue(
+        waitForAll([managedClusterSetsState, managedClusterAddonsState])
+    )
 
     const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
     const prevClusterSet = usePrevious(clusterSet)
@@ -56,6 +62,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [clusterPools] = useRecoilState(clusterPoolsState)
     const clusterSetClusterPools = clusterPools.filter(
         (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+    )
+
+    const submarinerAddons = managedClusterAddons.filter(
+        (mca) => mca.metadata.name === 'submariner' && clusters?.find((c) => c.namespace === mca.metadata.namespace)
     )
 
     if (prevClusterSet?.metadata?.deletionTimestamp) {
@@ -117,6 +127,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 clusterSet,
                 clusters,
                 clusterPools: clusterSetClusterPools,
+                submarinerAddons,
             }}
         >
             <Suspense fallback={<Fragment />}>
@@ -149,6 +160,18 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                 to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}
                                             >
                                                 {t('tab.overview')}
+                                            </Link>
+                                        </AcmSecondaryNavItem>
+                                        <AcmSecondaryNavItem
+                                            isActive={
+                                                location.pathname ===
+                                                NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
+                                            }
+                                        >
+                                            <Link
+                                                to={NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)}
+                                            >
+                                                {t('tab.submariner')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem
@@ -195,6 +218,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     >
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
+                        </Route>
+                        <Route exact path={NavigationPath.clusterSetSubmariner}>
+                            <ClusterSetSubmarinerPageContent />
                         </Route>
                         <Route exact path={NavigationPath.clusterSetClusters}>
                             <ClusterSetClustersPageContent />
