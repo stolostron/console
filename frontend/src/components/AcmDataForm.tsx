@@ -523,7 +523,7 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
                                 columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
-                                isHorizontal={false}
+                                isHorizontal={true}
                                 style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                             >
                                 {section.inputs &&
@@ -556,12 +556,14 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                                             colSpan={input.type === 'TextArea' ? 2 : 1}
                                                         >
                                                             <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                                                            <DescriptionListDescription>
+                                                            <DescriptionListDescription
+                                                                style={{ whiteSpace: 'pre-wrap' }}
+                                                            >
                                                                 {input.isSecret && !showSecrets
                                                                     ? '****************'
                                                                     : inputValue(input)
                                                                           .split('\n')
-                                                                          .map((line) => <p>{line}</p>)}
+                                                                          .map((line) => <div>{line}</div>)}
                                                             </DescriptionListDescription>
                                                         </DescriptionListGroup>
                                                     )
