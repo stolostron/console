@@ -12,6 +12,7 @@ import { patchResource, ResourceErrorCode } from '../../../../lib/resource-reque
 import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
 import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { createImportResources } from '../../../../lib/import-cluster'
@@ -21,6 +22,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const { t } = useTranslation(['cluster'])
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
+    const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -75,7 +77,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'select-channel',
             text: t('managed.selectChannel'),
-            click: (_cluster: Cluster) => setShowUpgradeModal(true),
+            click: (_cluster: Cluster) => setShowChannelSelectModal(true),
             isDisabled: true,
             rbac: [
                 rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -292,8 +294,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (
         cluster.distribution?.isManagedOpenShift ||
         cluster.status !== ClusterStatus.ready ||
-        cluster.distribution?.upgradeInfo?.availableVersions === undefined ||
-        cluster.distribution?.upgradeInfo?.availableVersions.length === 0 ||
+        cluster.distribution?.upgradeInfo?.availableUpdates === undefined ||
+        cluster.distribution?.upgradeInfo?.availableUpdates.length === 0 ||
         cluster.distribution?.upgradeInfo.isUpgrading
     ) {
         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
@@ -338,6 +340,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 close={() => setShowEditLabels(false)}
             />
             <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
+            <BatchChannelSelectModal
+                clusters={[cluster]}
+                open={showChannelSelectModal}
+                close={() => setShowChannelSelectModal(false)}
+            />
             <BulkActionModel<Cluster> {...modalProps} />
             <RbacDropdown<Cluster>
                 id={`${cluster.name}-actions`}

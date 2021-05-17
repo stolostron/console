@@ -22,10 +22,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-    if (
-        props.cluster?.distribution.ocp?.upgradeFailed &&
-        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
-    ) {
+    if (props.cluster?.distribution.upgradeInfo.upgradeFailed) {
         // UPGRADE FAILED
         return (
             <>
@@ -33,17 +30,19 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <AcmInlineStatus
                     type={StatusType.danger}
                     status={t('upgrade.upgradefailed', {
-                        version: props.cluster?.consoleURL ? '' : props.cluster?.distribution.ocp?.desiredVersion,
+                        version: props.cluster?.consoleURL
+                            ? ''
+                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
                     })}
                     popover={
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
                                   bodyContent: t('upgrade.upgradefailed.message', {
                                       clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
                                   footerContent: (
                                       <a
@@ -60,11 +59,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 />
             </>
         )
-    } else if (
-        props.cluster?.distribution.ocp?.desiredVersion &&
-        props.cluster?.distribution.ocp?.version &&
-        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
-    ) {
+    } else if (props.cluster?.distribution.upgradeInfo.isUpgrading) {
         // UPGRADE IN PROGRESS
         return (
             <>
@@ -72,18 +67,23 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <AcmInlineStatus
                     type={StatusType.progress}
                     status={t('upgrade.upgrading.version', {
-                        version: props.cluster?.distribution.ocp?.desiredVersion,
+                        version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                     })}
                     popover={
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgrading', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent: t('upgrade.upgrading.message', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
+                                  bodyContent:
+                                      t('upgrade.upgrading.message', {
+                                          clusterName: props.cluster?.name,
+                                          version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                      }) +
+                                      (props.cluster?.distribution.upgradeInfo.upgradePercentage &&
+                                          t('upgrade.upgrading.pregress', {
+                                              percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
+                                          })),
                                   footerContent: (
                                       <a
                                           href={`${props.cluster?.consoleURL}/settings/cluster`}
@@ -100,9 +100,8 @@ export function DistributionField(props: { cluster?: Cluster }) {
             </>
         )
     } else if (
-        props.cluster?.distribution.ocp?.availableUpdates &&
-        props.cluster?.distribution.ocp?.availableUpdates?.length > 0 &&
-        !props.cluster?.distribution.isManagedOpenShift // don't allow upgrade for managed OpenShift
+        props.cluster?.distribution.upgradeInfo.hasAvailableUpdates
+        //&& !props.cluster?.distribution.upgradeInfo.isSelectingChannel //curator will not be able to be modified
     ) {
         // UPGRADE AVAILABLE
         return (

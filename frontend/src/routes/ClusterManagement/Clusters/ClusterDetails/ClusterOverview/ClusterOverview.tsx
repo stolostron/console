@@ -15,7 +15,8 @@ import { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus, clusterDangerStatuses } from '../../../../../lib/get-cluster'
-import { rbacPatch } from '../../../../../lib/rbac-util'
+import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
+import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
 import { DistributionField } from '../../components/DistributionField'
@@ -25,12 +26,140 @@ import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { EditLabels } from '../../components/EditLabels'
 import { ClusterContext } from '../ClusterDetails'
+import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+    const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const leftItems = [
+        {
+            key: t('table.clusterName'),
+            value: (
+                <span>
+                    {cluster!.name}
+                    <Popover
+                        bodyContent={
+                            <Trans i18nKey="cluster:table.clusterName.helperText" components={{ bold: <strong /> }} />
+                        }
+                    >
+                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                            <OutlinedQuestionCircleIcon />
+                        </AcmButton>
+                    </Popover>
+                </span>
+            ),
+        },
+        {
+            key: t('table.clusterClaim'),
+            value: cluster?.hive?.clusterClaimName && (
+                <span>
+                    {cluster?.hive?.clusterClaimName}
+                    <Popover
+                        bodyContent={
+                            <Trans i18nKey="cluster:table.clusterClaim.helperText" components={{ bold: <strong /> }} />
+                        }
+                    >
+                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                            <OutlinedQuestionCircleIcon />
+                        </AcmButton>
+                    </Popover>
+                </span>
+            ),
+        },
+        {
+            key: t('table.status'),
+            value: cluster?.status && <StatusField cluster={cluster} />,
+        },
+        {
+            key: t('table.provider'),
+            value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
+        },
+        {
+            key: t('table.distribution'),
+            value: cluster?.distribution?.displayVersion && <DistributionField cluster={cluster} />,
+        },
+        {
+            key: t('table.channel'),
+            value: (
+                <span>
+                    {cluster!.distribution?.ocp?.channel || ''}
+                    <Popover
+                        bodyContent={
+                            <Trans
+                                i18nKey="cluster:table.clusterChannel.helperText"
+                                components={{ bold: <strong /> }}
+                            />
+                        }
+                    >
+                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                            <OutlinedQuestionCircleIcon />
+                        </AcmButton>
+                    </Popover>
+                </span>
+            ),
+        },
+        {
+            filterKey: 'channel',
+            key: t('table.channel'),
+            value: (
+                <span>
+                    {cluster!.distribution?.ocp?.channel || ''}
+                    <Popover
+                        bodyContent={
+                            <Trans
+                                i18nKey="cluster:table.clusterChannel.helperText"
+                                components={{ bold: <strong /> }}
+                            />
+                        }
+                    >
+                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
+                            <OutlinedQuestionCircleIcon />
+                        </AcmButton>
+                    </Popover>
+                </span>
+            ),
+            keyAction: cluster?.isManaged &&
+                (!cluster.distribution?.upgradeInfo.isUpgrading ||
+                    !cluster.distribution?.upgradeInfo.isSelectingChannel) && (
+                    <RbacButton
+                        onClick={() => {
+                            if (cluster) {
+                                setShowChannelSelectModal(true)
+                            }
+                        }}
+                        variant={ButtonVariant.plain}
+                        aria-label={t('common:labels.edit.title')}
+                        rbac={[
+                            rbacPatch(ClusterCuratorDefinition, undefined, cluster?.name),
+                            rbacCreate(ClusterCuratorDefinition, undefined, cluster?.name),
+                        ]}
+                    >
+                        <PencilAltIcon />
+                    </RbacButton>
+                ),
+        },
 
+        {
+            key: t('table.labels'),
+            value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
+            keyAction: cluster?.isManaged && (
+                <RbacButton
+                    onClick={() => setShowEditLabels(true)}
+                    variant={ButtonVariant.plain}
+                    aria-label={t('common:labels.edit.title')}
+                    rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
+                >
+                    <PencilAltIcon />
+                </RbacButton>
+            ),
+        },
+    ]
+    // should only show channel for ocp clusters
+    if (!cluster?.distribution?.ocp?.version) {
+        leftItems.filter((item) => item.filterKey !== 'channel')
+    }
     return (
         <AcmPageContent id="overview">
             <PageSection>
@@ -60,94 +189,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 />
                 <AcmDescriptionList
                     title={t('table.details')}
-                    leftItems={[
-                        {
-                            key: t('table.clusterName'),
-                            value: (
-                                <span>
-                                    {cluster!.name}
-                                    <Popover
-                                        bodyContent={
-                                            <Trans
-                                                i18nKey="cluster:table.clusterName.helperText"
-                                                components={{ bold: <strong /> }}
-                                            />
-                                        }
-                                    >
-                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
-                                            <OutlinedQuestionCircleIcon />
-                                        </AcmButton>
-                                    </Popover>
-                                </span>
-                            ),
-                        },
-                        {
-                            key: t('table.clusterClaim'),
-                            value: cluster?.hive?.clusterClaimName && (
-                                <span>
-                                    {cluster?.hive?.clusterClaimName}
-                                    <Popover
-                                        bodyContent={
-                                            <Trans
-                                                i18nKey="cluster:table.clusterClaim.helperText"
-                                                components={{ bold: <strong /> }}
-                                            />
-                                        }
-                                    >
-                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
-                                            <OutlinedQuestionCircleIcon />
-                                        </AcmButton>
-                                    </Popover>
-                                </span>
-                            ),
-                        },
-                        {
-                            key: t('table.status'),
-                            value: cluster?.status && <StatusField cluster={cluster} />,
-                        },
-                        {
-                            key: t('table.provider'),
-                            value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
-                        },
-                        {
-                            key: t('table.distribution'),
-                            value: cluster?.distribution?.displayVersion && <DistributionField cluster={cluster} />,
-                        },
-                        {
-                            key: t('table.channel'),
-                            value: (
-                                <span>
-                                    {cluster!.distribution?.ocp?.channel || ''}
-                                    <Popover
-                                        bodyContent={
-                                            <Trans
-                                                i18nKey="cluster:table.clusterChannel.helperText"
-                                                components={{ bold: <strong /> }}
-                                            />
-                                        }
-                                    >
-                                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
-                                            <OutlinedQuestionCircleIcon />
-                                        </AcmButton>
-                                    </Popover>
-                                </span>
-                            ),
-                        },
-                        {
-                            key: t('table.labels'),
-                            value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
-                            keyAction: cluster?.isManaged && (
-                                <RbacButton
-                                    onClick={() => setShowEditLabels(true)}
-                                    variant={ButtonVariant.plain}
-                                    aria-label={t('common:labels.edit.title')}
-                                    rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
-                                >
-                                    <PencilAltIcon />
-                                </RbacButton>
-                            ),
-                        },
-                    ]}
+                    leftItems={leftItems}
                     rightItems={[
                         {
                             key: t('table.kubeApiServer'),
@@ -213,6 +255,15 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         ClusterStatus.hibernating,
                         ClusterStatus.unknown,
                     ].includes(cluster!.status) && <StatusSummaryCount />}
+                {cluster && (
+                    <BatchChannelSelectModal
+                        clusters={[cluster]}
+                        open={showChannelSelectModal}
+                        close={() => {
+                            setShowChannelSelectModal(false)
+                        }}
+                    />
+                )}
             </PageSection>
         </AcmPageContent>
     )

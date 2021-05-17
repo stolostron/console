@@ -5,20 +5,26 @@ import { SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
-import { ReleaseNotesLink } from './ReleaseNotesLink'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { IRequestResult, patchResource } from '../../../../lib/resource-request'
+import {
+    IRequestResult,
+    patchResource,
+    ResourceError,
+    createResource,
+    ResourceErrorCode,
+} from '../../../../lib/resource-request'
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
-const isUpgradeable = (c: Cluster) => {
-    
-    const hasAvailableUpgrades = !c.distribution?.isManagedOpenShift && c.distribution?.upgradeInfo?.availableVersions && 
-    c.distribution?.upgradeInfo?.availableVersions.length >0
+const isChannelSelectable = (c: Cluster) => {
+    const hasAvailableChannels =
+        !c.distribution?.isManagedOpenShift &&
+        c.distribution?.upgradeInfo?.availableChannels &&
+        c.distribution?.upgradeInfo?.availableChannels.length > 0
     const isUpgrading = c.distribution?.upgradeInfo?.isUpgrading
     const isReady = c.status === ClusterStatus.ready
-    return (!!c.name && isReady && hasAvailableUpgrades && !isUpgrading) || false
+    return (!!c.name && isReady && hasAvailableChannels && !isUpgrading) || false
 }
 
 const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
@@ -38,13 +44,13 @@ export function BatchChannelSelectModal(props: {
 }): JSX.Element {
     const { t } = useTranslation(['cluster'])
     const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
-    const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+    const [channelSelectableClusters, setChannelSelectableClusters] = useState<Array<Cluster>>([])
 
     useEffect(() => {
         // set up latest if not selected
-        const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
-        setSelectChannels(setLatestVersions(newUpgradeableClusters))
-        setUpgradeableClusters(newUpgradeableClusters || [])
+        const newChannelSelectableClusters = props.clusters && props.clusters.filter(isChannelSelectable)
+        setSelectChannels(setLatestVersions(newChannelSelectableClusters))
+        setChannelSelectableClusters(newChannelSelectableClusters || [])
     }, [props.clusters, props.open])
 
     return (
@@ -53,7 +59,7 @@ export function BatchChannelSelectModal(props: {
             title={t('bulk.title.selectChannel')}
             action={t('upgrade.submit')}
             processing={t('upgrade.submit.processing')}
-            resources={upgradeableClusters}
+            resources={channelSelectableClusters}
             close={() => {
                 props.close()
             }}
@@ -67,20 +73,18 @@ export function BatchChannelSelectModal(props: {
                 {
                     header: t('upgrade.table.currentversion'),
                     cell: (item: Cluster) => {
-                        const currentVersion = item?.distribution?.ocp?.version || ''
-                        return <span>{currentVersion}</span>
+                        const currentChannel = item?.distribution?.ocp?.channel || ''
+                        return <span>{currentChannel}</span>
                     },
                 },
                 {
-                    header: t('upgrade.table.newversion'),
+                    header: t('upgrade.table.newchannel'),
                     cell: (cluster: Cluster) => {
-                        const availableUpdates =
-                            cluster.distribution?.upgradeInfo?.availableVersions &&
-                            [...cluster.distribution?.upgradeInfo?.availableVersions].sort(compareVersion)
-                        const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
+                        const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
+                        const hasAvailableChannels = availableChannels.length > 0
                         return (
                             <div>
-                                {hasAvailableUpgrades && (
+                                {hasAvailableChannels && (
                                     <>
                                         <AcmSelect
                                             value={selectChannels[cluster.name || ''] || ''}
@@ -88,20 +92,19 @@ export function BatchChannelSelectModal(props: {
                                             maxHeight={'6em'}
                                             label=""
                                             isRequired
-                                            onChange={(version) => {
-                                                if (cluster.name && version) {
-                                                    selectChannels[cluster.name] = version
+                                            onChange={(channel) => {
+                                                if (cluster.name && channel) {
+                                                    selectChannels[cluster.name] = channel
                                                     setSelectChannels({ ...selectChannels })
                                                 }
                                             }}
                                         >
-                                            {availableUpdates?.map((version) => (
-                                                <SelectOption key={`${cluster.name}-${version}`} value={version}>
-                                                    {version}
+                                            {availableChannels?.map((channel) => (
+                                                <SelectOption key={`${cluster.name}-${channel}`} value={channel}>
+                                                    {channel}
                                                 </SelectOption>
                                             ))}
                                         </AcmSelect>
-                                        <ReleaseNotesLink version={selectChannels[cluster.name!]} />
                                     </>
                                 )}
                             </div>
@@ -118,25 +121,51 @@ export function BatchChannelSelectModal(props: {
                     }
                     return emptyRes
                 }
-                const patch = {
+                const patchSpec = {
                     spec: {
                         desiredCuration: 'upgrade',
                         upgrade: {
                             channel: selectChannels[cluster.name],
-                            desiredUpdate: ''
-                        }
+                            // set channel to empty to make sure we only use channel
+                            desiredUpdate: '',
+                        },
                     },
                 }
-                return patchResource(
-                    {
-                        apiVersion: ClusterCuratorDefinition.apiVersion,
-                        kind: ClusterCuratorDefinition.kind,
-                        metadata: {
-                            name: cluster.name,
-                            namespace: cluster.namespace,
-                        },
-                    } as ClusterCurator,patch
-                )
+                const clusterCurator = {
+                    apiVersion: ClusterCuratorDefinition.apiVersion,
+                    kind: ClusterCuratorDefinition.kind,
+                    metadata: {
+                        name: cluster.name,
+                        namespace: cluster.namespace,
+                    },
+                } as ClusterCurator
+
+                const patchCuratorResult = patchResource(clusterCurator, patchSpec)
+                let createCuratorResult: IRequestResult<ClusterCurator> | undefined = undefined
+                return {
+                    promise: new Promise((resolve, reject) => {
+                        patchCuratorResult.promise
+                            .then((data) => {
+                                console.log('pass')
+                                return resolve(data)
+                            })
+                            .catch((err: ResourceError) => {
+                                if (err.code === ResourceErrorCode.NotFound) {
+                                    // TODO: remove this creation logic when we can make sure clustercurator always exists
+                                    createCuratorResult = createResource({ ...clusterCurator, ...patchSpec })
+                                    createCuratorResult.promise
+                                        .then((data) => resolve(data))
+                                        .catch((err) => reject(err))
+                                } else {
+                                    reject(err)
+                                }
+                            })
+                    }),
+                    abort: () => {
+                        patchCuratorResult.abort()
+                        createCuratorResult?.abort()
+                    },
+                }
             }}
         />
     )
