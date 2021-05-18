@@ -38,7 +38,11 @@ export function ScaleClusterAlert() {
                 noClose
                 style={{ marginBottom: '24px' }}
                 variant="info"
-                title={t('machinePool.alert.scaling.title')}
+                title={
+                    totalDesiredReplicas > workerNodeCount
+                        ? 'machinePool.alert.scaling.increase.title'
+                        : 'machinePool.alert.scaling.decrease.title'
+                }
                 message={
                     <>
                         <Trans

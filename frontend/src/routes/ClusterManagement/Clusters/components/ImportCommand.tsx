@@ -32,6 +32,11 @@ export function ImportCommandContainer() {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState<boolean>(false)
 
+    // do not show command if it's configured to auto-import
+    const autoImportSecret = secrets.find(
+        (s) => s.metadata.namespace === cluster?.namespace && s.metadata.name === 'auto-import-secret'
+    )
+
     useEffect(() => {
         if (
             cluster?.name &&
@@ -39,6 +44,7 @@ export function ImportCommandContainer() {
             !error &&
             !loading &&
             !importCommand &&
+            !autoImportSecret &&
             cluster?.status === ClusterStatus.pendingimport
         ) {
             setLoading(true)
@@ -54,7 +60,7 @@ export function ImportCommandContainer() {
                     setLoading(false)
                 })
         }
-    }, [cluster, error, loading, importCommand, setImportCommand])
+    }, [cluster, error, loading, importCommand, setImportCommand, autoImportSecret])
 
     if (loading) {
         return (
@@ -69,11 +75,6 @@ export function ImportCommandContainer() {
     if (error) {
         return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
     }
-
-    // do not show command if it's configured to auto-import
-    const autoImportSecret = secrets.find(
-        (s) => s.metadata.namespace === cluster?.namespace && s.metadata.name === 'auto-import-secret'
-    )
 
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
         return (
