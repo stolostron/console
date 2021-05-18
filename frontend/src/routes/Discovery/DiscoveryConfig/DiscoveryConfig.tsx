@@ -126,7 +126,7 @@ export function DiscoveryConfigPageContent(props: {
     credentials: Secret[]
     discoveryNamespaces: string[]
 }) {
-    const [credentialsRef] = useState<string>(localStorage.getItem('DiscoveryCredential') || '')
+    const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
