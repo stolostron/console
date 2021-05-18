@@ -28,6 +28,7 @@ export interface DiscoveredCluster extends IResource {
         openshiftVersion: string
         cloudProvider: string
         status: string
+        type: string
         isManagedCluster: boolean
         credential?: {
             apiVersion: string

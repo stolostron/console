@@ -67,6 +67,7 @@
     "dcTbl.name": "Name",
     "dcTbl.status": "Status",
     "dcTbl.namespace": "Namespace",
+    "dcTbl.type": "Type",
     "dcTbl.distributionVersion": "Distribution version",
     "dcTbl.infrastructureProvider": "Infrastructure provider",
     "dcTbl.lastActive": "Last active",
