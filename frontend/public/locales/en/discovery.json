@@ -35,15 +35,15 @@
     "discoveryConfig.discoveryVersions.labelHelp": "All Red Hat OpenShift versions are included by default unless specified in this drop-down menu.",
     "discoveryConfig.discoveryVersions.placeholder": "All available Red Hat OpenShift versions are included by default",
     "discoveryConfig.connections.label": "Credential",
-    "discoveryConfig.connections.labelHelp": "Choose a credential that is used to find discovered clusters.",
+    "discoveryConfig.connections.labelHelp": "Select a credential within that namespace.",
     "discoveryConfig.connections.placeholder": "Select a credential",
     "discoveryConfig.connections.addCredentials": "Add credentials",
     "discoveryConfig.namespaces.label": "Namespace",
-    "discoveryConfig.namespaces.labelHelp": "Select the namespace to configure discovery in",
+    "discoveryConfig.namespaces.labelHelp": "Select the namespace that contains your credentials.",
     "discoveryConfig.namespaces.placeholder": "Select a namespace",
 
     "clusters.banner.header": "Enable cluster discovery",
-    "clusters.banner.body": "Create discovery setting to begin connecting clusters from OpenShift Cluster Manager. Edit filters for your discovered clusters to see clusters relevant to you. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab of the Clusters page.",
+    "clusters.banner.body": "Create discovery settings to connect clusters from OpenShift Cluster Manager. Filter to see relevant clusters. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab.",
     "clusters.banner.dismiss": "Dismiss",
 
     "discoveryConfig.testFilter": "Test filter",
