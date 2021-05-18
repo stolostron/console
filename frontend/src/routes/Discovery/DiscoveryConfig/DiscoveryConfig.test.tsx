@@ -43,6 +43,21 @@ const discoveryConfig: DiscoveryConfig = {
     },
 }
 
+const minDiscoveryConfig: DiscoveryConfig = {
+    apiVersion: DiscoveryConfigApiVersion,
+    kind: DiscoveryConfigKind,
+    metadata: {
+        name: 'discovery',
+        namespace: credential.metadata.namespace!,
+    },
+    spec: {
+        filters: {
+            lastActive: 7,
+        },
+        credential: credential.metadata.name!,
+    },
+}
+
 const discoveryConfigUpdated: DiscoveryConfig = {
     apiVersion: DiscoveryConfigApiVersion,
     kind: DiscoveryConfigKind,
@@ -96,6 +111,26 @@ beforeEach(() => {
 })
 
 describe('discovery config page', () => {
+    it('Create Minimal DiscoveryConfig', async () => {
+        const { container } = render(<TestAddDiscoveryConfigPage />)
+
+        // Select Credential
+        await waitFor(() =>
+            expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
+        )
+        container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
+
+        // Submit form
+        const createDiscoveryConfigNock = nockCreate(minDiscoveryConfig, minDiscoveryConfig)
+        await clickByText('discoveryConfig.add')
+        await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
+
+        // Wait For Notification on DiscoveredClusters page
+        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.msg')
+    })
+
     it('Create DiscoveryConfig', async () => {
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
