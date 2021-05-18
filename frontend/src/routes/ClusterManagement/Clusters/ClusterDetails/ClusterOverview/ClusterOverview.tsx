@@ -184,7 +184,15 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         },
                     ]}
                 />
-                {cluster?.status === ClusterStatus.ready && <StatusSummaryCount />}
+                {cluster!.isManaged &&
+                    [
+                        ClusterStatus.ready,
+                        ClusterStatus.degraded,
+                        ClusterStatus.stopping,
+                        ClusterStatus.resuming,
+                        ClusterStatus.hibernating,
+                        ClusterStatus.unknown,
+                    ].includes(cluster!.status) && <StatusSummaryCount />}
             </PageSection>
         </AcmPageContent>
     )
