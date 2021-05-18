@@ -294,17 +294,6 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
     return finalNetworkMock
 }
 
-export function nockUpgrade(clusterName: string, version: string, response?: string, statusCode = 201, delay = 0) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post('/upgrade', (body) => isEqual(body, { clusterName, version }))
-        .delay(delay)
-        .reply(statusCode, response, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
-}
-
 export const mockBadRequestStatus = {
     kind: StatusKind,
     apiVersion: StatusApiVersion,

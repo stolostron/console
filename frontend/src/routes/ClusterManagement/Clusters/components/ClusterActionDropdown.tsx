@@ -76,7 +76,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
             id: 'select-channel',
-            text: t('managed.selectChannel'),
+            text: t('managed.upgrade.selectChannel'),
             click: (_cluster: Cluster) => setShowChannelSelectModal(true),
             isDisabled: true,
             rbac: [
@@ -294,9 +294,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (
         cluster.distribution?.isManagedOpenShift ||
         cluster.status !== ClusterStatus.ready ||
-        cluster.distribution?.upgradeInfo?.availableUpdates === undefined ||
-        cluster.distribution?.upgradeInfo?.availableUpdates.length === 0 ||
-        cluster.distribution?.upgradeInfo.isUpgrading
+        !cluster.distribution?.upgradeInfo?.hasAvailableUpdates
     ) {
         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
     }
@@ -304,9 +302,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     if (
         cluster.distribution?.isManagedOpenShift ||
         cluster.status !== ClusterStatus.ready ||
-        cluster.distribution?.upgradeInfo?.availableChannels === undefined ||
-        cluster.distribution?.upgradeInfo?.availableChannels.length === 0 ||
-        cluster.distribution?.upgradeInfo.isUpgrading
+        !cluster.distribution?.upgradeInfo?.hasAvailableChannels 
     ) {
         actions = actions.filter((a) => a.id !== 'select-channel')
     }

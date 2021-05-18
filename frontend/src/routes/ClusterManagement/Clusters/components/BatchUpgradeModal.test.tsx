@@ -3,7 +3,6 @@
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { render, waitFor } from '@testing-library/react'
-import { nockUpgrade } from '../../../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 const mockClusterNoAvailable: Cluster = {
@@ -20,7 +19,7 @@ const mockClusterNoAvailable: Cluster = {
             upgradeFailed: false,
         },
         k8sVersion: '1.19',
-        displayVersion: 'Openshift 1.2.3',
+        displayVersion: 'Openshift 1.2.3'
     },
     labels: undefined,
     nodes: undefined,

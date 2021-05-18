@@ -8,6 +8,8 @@ import {
     AcmPageContent,
     AcmAlert,
     AcmButton,
+    AcmInlineStatus,
+    StatusType,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
@@ -81,31 +83,20 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             value: cluster?.distribution?.displayVersion && <DistributionField cluster={cluster} />,
         },
         {
-            key: t('table.channel'),
-            value: (
-                <span>
-                    {cluster!.distribution?.ocp?.channel || ''}
-                    <Popover
-                        bodyContent={
-                            <Trans
-                                i18nKey="cluster:table.clusterChannel.helperText"
-                                components={{ bold: <strong /> }}
-                            />
-                        }
-                    >
-                        <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
-                            <OutlinedQuestionCircleIcon />
-                        </AcmButton>
-                    </Popover>
-                </span>
-            ),
-        },
-        {
             filterKey: 'channel',
             key: t('table.channel'),
             value: (
                 <span>
-                    {cluster!.distribution?.ocp?.channel || ''}
+                    {cluster?.distribution?.upgradeInfo.isSelectingChannel ? (
+                        <AcmInlineStatus
+                            type={StatusType.progress}
+                            status={t('upgrade.selecting.channel', {
+                                channel: cluster?.distribution?.upgradeInfo.desiredChannel,
+                            })}
+                        ></AcmInlineStatus>
+                    ) : (
+                        cluster!.distribution?.upgradeInfo.currentChannel || ''
+                    )}
                     <Popover
                         bodyContent={
                             <Trans
@@ -120,25 +111,23 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     </Popover>
                 </span>
             ),
-            keyAction: cluster?.isManaged &&
-                (!cluster.distribution?.upgradeInfo.isUpgrading ||
-                    !cluster.distribution?.upgradeInfo.isSelectingChannel) && (
-                    <RbacButton
-                        onClick={() => {
-                            if (cluster) {
-                                setShowChannelSelectModal(true)
-                            }
-                        }}
-                        variant={ButtonVariant.plain}
-                        aria-label={t('common:labels.edit.title')}
-                        rbac={[
-                            rbacPatch(ClusterCuratorDefinition, undefined, cluster?.name),
-                            rbacCreate(ClusterCuratorDefinition, undefined, cluster?.name),
-                        ]}
-                    >
-                        <PencilAltIcon />
-                    </RbacButton>
-                ),
+            keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo.hasAvailableChannels && (
+                <RbacButton
+                    onClick={() => {
+                        if (cluster) {
+                            setShowChannelSelectModal(true)
+                        }
+                    }}
+                    variant={ButtonVariant.plain}
+                    aria-label={t('cluster:bulk.title.selectChannel')}
+                    rbac={[
+                        rbacPatch(ClusterCuratorDefinition, undefined, cluster?.name),
+                        rbacCreate(ClusterCuratorDefinition, undefined, cluster?.name),
+                    ]}
+                >
+                    <PencilAltIcon />
+                </RbacButton>
+            ),
         },
 
         {
@@ -156,8 +145,8 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             ),
         },
     ]
-    // should only show channel for ocp clusters
-    if (!cluster?.distribution?.ocp?.version) {
+    // should only show channel for ocp clusters with version
+    if (!cluster?.distribution?.upgradeInfo.currentVersion) {
         leftItems.filter((item) => item.filterKey !== 'channel')
     }
     return (

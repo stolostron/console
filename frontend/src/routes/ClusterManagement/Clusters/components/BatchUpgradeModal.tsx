@@ -32,10 +32,7 @@ const compareVersion = (a: string, b: string) => {
 }
 
 const isUpgradeable = (c: Cluster) => {
-    const hasAvailableUpgrades =
-        !c.distribution?.isManagedOpenShift &&
-        c.distribution?.upgradeInfo?.availableUpdates &&
-        c.distribution?.upgradeInfo?.availableUpdates.length > 0
+    const hasAvailableUpgrades = c.distribution?.upgradeInfo?.hasAvailableUpdates
     const isUpgrading = c.distribution?.upgradeInfo?.isUpgrading
     const isReady = c.status === ClusterStatus.ready
     return (!!c.name && isReady && hasAvailableUpgrades && !isUpgrading) || false
@@ -91,7 +88,7 @@ export function BatchUpgradeModal(props: {
                 {
                     header: t('upgrade.table.currentversion'),
                     cell: (item: Cluster) => {
-                        const currentVersion = item?.distribution?.ocp?.version || ''
+                        const currentVersion = item?.distribution?.upgradeInfo.currentVersion || ''
                         return <span>{currentVersion}</span>
                     },
                 },
@@ -167,7 +164,6 @@ export function BatchUpgradeModal(props: {
                     promise: new Promise((resolve, reject) => {
                         patchCuratorResult.promise
                             .then((data) => {
-                                console.log('pass')
                                 return resolve(data)
                             })
                             .catch((err: ResourceError) => {
@@ -184,7 +180,9 @@ export function BatchUpgradeModal(props: {
                     }),
                     abort: () => {
                         patchCuratorResult.abort()
-                        createCuratorResult?.abort()
+                        if (createCuratorResult) {
+                            createCuratorResult.abort()
+                        }
                     },
                 }
             }}

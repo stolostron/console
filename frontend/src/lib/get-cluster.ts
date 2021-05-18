@@ -218,6 +218,10 @@ const checkCuratorConditionInProgress = (condition: string, conditions: V1Custom
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
 }
+const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.message
+}
 
 const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
@@ -403,30 +407,29 @@ export function getDistributionInfo(
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
-
+        const curatorIsIdle = !(checkCuratorConditionInProgress('clustercurator-job', curatorConditions)) 
         // curator's version is not the same as current curator
         const curatorIsUpgrading =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
             clusterCurator?.spec?.upgrade?.desiredUpdate !==
                 managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
-            (checkCuratorConditionInProgress('upgrade-cluster', curatorConditions) ||
-                checkCuratorConditionInProgress('monitor-upgrade', curatorConditions))
+            !curatorIsIdle
 
         const upgradeCuratorFailed =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
-            clusterCurator?.spec?.upgrade?.desiredUpdate !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
-            (checkCuratorConditionFailed('upgrade-cluster', curatorConditions) ||
-                checkCuratorConditionFailed('monitor-upgrade', curatorConditions))
+            clusterCurator?.spec?.upgrade?.desiredUpdate !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         const isSelectingChannel =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.channel &&
             clusterCurator?.spec?.upgrade?.channel !== managedClusterInfo?.status?.distributionInfo?.ocp.channel &&
-            (checkCuratorConditionInProgress('upgrade-cluster', curatorConditions) ||
-                checkCuratorConditionInProgress('monitor-upgrade', curatorConditions))
+            !curatorIsIdle
+
+        const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
+        const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
+        upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
 
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
@@ -449,21 +452,20 @@ export function getDistributionInfo(
                 .filter((version) => {
                     return !!version
                 }) || []
+
         const hasAvailableUpdates =
-            upgradeInfo.availableUpdates && upgradeInfo.availableUpdates.length > 0 && !isManagedOpenShift
+            upgradeInfo.availableUpdates &&
+            upgradeInfo.availableUpdates.length > 0 &&
+            !isManagedOpenShift &&
+            curatorIsIdle
         upgradeInfo.hasAvailableUpdates = !!hasAvailableUpdates
 
-        const channelSet = new Set<string>()
-        managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates?.forEach((versionRelease) => {
-            versionRelease.channels?.forEach((channel) => {
-                if (channel) {
-                    channelSet.add(channel)
-                }
-            })
-        })
-        upgradeInfo.availableChannels = Array.from(channelSet)
+        upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
         const hasAvailableChannels =
-            upgradeInfo.availableChannels && upgradeInfo.availableChannels.length > 0 && !isManagedOpenShift
+            upgradeInfo.availableChannels &&
+            upgradeInfo.availableChannels.length > 0 &&
+            !isManagedOpenShift &&
+            curatorIsIdle
         upgradeInfo.hasAvailableChannels = !!hasAvailableChannels
 
         upgradeInfo.prehooks = {
@@ -481,7 +483,7 @@ export function getDistributionInfo(
         upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
         upgradeInfo.desiredVersion = curatorIsUpgrading
             ? clusterCurator?.spec?.upgrade?.desiredUpdate
-            : managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+            : managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version
         upgradeInfo.currentChannel = managedClusterInfo?.status?.distributionInfo?.ocp?.channel
         upgradeInfo.desiredChannel = isSelectingChannel
             ? clusterCurator?.spec?.upgrade?.channel

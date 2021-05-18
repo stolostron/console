@@ -35,6 +35,7 @@ import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 import { DiscoveryBanner } from '../../Discovery/DiscoveryComponents/Banner'
+import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster', 'discovery'])
@@ -140,6 +141,7 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     const { t } = useTranslation(['cluster'])
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
+    const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -182,6 +184,13 @@ export function ClustersTable(props: {
                 open={!!upgradeClusters}
                 close={() => {
                     setUpgradeClusters(undefined)
+                }}
+            />
+            <BatchChannelSelectModal
+                clusters={selectChannels}
+                open={!!selectChannels}
+                close={() => {
+                    setSelectChannels(undefined)
                 }}
             />
             <AcmTable<Cluster>
@@ -290,6 +299,14 @@ export function ClustersTable(props: {
                         click: (managedClusters: Array<Cluster>) => {
                             if (!managedClusters) return
                             setUpgradeClusters(managedClusters)
+                        },
+                    },
+                    {
+                        id: 'selectChannels',
+                        title: t('managed.upgrade.selectChannel.plural'),
+                        click: (managedClusters: Array<Cluster>) => {
+                            if (!managedClusters) return
+                            setSelectChannels(managedClusters)
                         },
                     },
                     {

@@ -18,20 +18,18 @@ import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 const isChannelSelectable = (c: Cluster) => {
-    const hasAvailableChannels =
-        !c.distribution?.isManagedOpenShift &&
-        c.distribution?.upgradeInfo?.availableChannels &&
-        c.distribution?.upgradeInfo?.availableChannels.length > 0
+    const hasAvailableChannels = c.distribution?.upgradeInfo?.hasAvailableChannels
     const isUpgrading = c.distribution?.upgradeInfo?.isUpgrading
+    const isSelectingChannel = c.distribution?.upgradeInfo?.isSelectingChannel
     const isReady = c.status === ClusterStatus.ready
-    return (!!c.name && isReady && hasAvailableChannels && !isUpgrading) || false
+    return (!!c.name && isReady && hasAvailableChannels && !isUpgrading && !isSelectingChannel) || false
 }
 
-const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
+const setCurrentChannel = (clusters: Array<Cluster> | undefined): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
-            res[cluster.name] = res[cluster.name] ? res[cluster.name] : cluster.distribution?.ocp?.channel || ''
+            res[cluster.name] = res[cluster.name] ? res[cluster.name] : cluster.distribution?.upgradeInfo.currentChannel || ''
         }
     })
     return res
@@ -49,7 +47,7 @@ export function BatchChannelSelectModal(props: {
     useEffect(() => {
         // set up latest if not selected
         const newChannelSelectableClusters = props.clusters && props.clusters.filter(isChannelSelectable)
-        setSelectChannels(setLatestVersions(newChannelSelectableClusters))
+        setSelectChannels(setCurrentChannel(newChannelSelectableClusters))
         setChannelSelectableClusters(newChannelSelectableClusters || [])
     }, [props.clusters, props.open])
 
@@ -71,9 +69,9 @@ export function BatchChannelSelectModal(props: {
                     cell: 'displayName',
                 },
                 {
-                    header: t('upgrade.table.currentversion'),
+                    header: t('upgrade.table.currentchannel'),
                     cell: (item: Cluster) => {
-                        const currentChannel = item?.distribution?.ocp?.channel || ''
+                        const currentChannel = item?.distribution?.upgradeInfo.currentChannel || ''
                         return <span>{currentChannel}</span>
                     },
                 },
@@ -81,7 +79,7 @@ export function BatchChannelSelectModal(props: {
                     header: t('upgrade.table.newchannel'),
                     cell: (cluster: Cluster) => {
                         const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
-                        const hasAvailableChannels = availableChannels.length > 0
+                        const hasAvailableChannels = cluster.distribution?.upgradeInfo?.hasAvailableChannels
                         return (
                             <div>
                                 {hasAvailableChannels && (
@@ -114,7 +112,11 @@ export function BatchChannelSelectModal(props: {
             ]}
             keyFn={(cluster) => cluster.name as string}
             actionFn={(cluster) => {
-                if (!cluster.name || !selectChannels[cluster.name]) {
+                if (
+                    !cluster.name ||
+                    !selectChannels[cluster.name] ||
+                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo.currentChannel
+                ) {
                     const emptyRes: IRequestResult<string> = {
                         promise: new Promise((resolve) => resolve('')),
                         abort: () => {},
@@ -146,7 +148,6 @@ export function BatchChannelSelectModal(props: {
                     promise: new Promise((resolve, reject) => {
                         patchCuratorResult.promise
                             .then((data) => {
-                                console.log('pass')
                                 return resolve(data)
                             })
                             .catch((err: ResourceError) => {
@@ -163,7 +164,9 @@ export function BatchChannelSelectModal(props: {
                     }),
                     abort: () => {
                         patchCuratorResult.abort()
-                        createCuratorResult?.abort()
+                        if (createCuratorResult) {
+                            createCuratorResult.abort()
+                        }
                     },
                 }
             }}
