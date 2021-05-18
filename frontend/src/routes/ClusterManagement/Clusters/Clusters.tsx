@@ -11,7 +11,7 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { PageSection, Stack, StackItem } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -91,6 +91,7 @@ export default function ClustersPage() {
                                     click: () => history.push(NavigationPath.importCluster),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('common:rbac.unauthorized'),
+                                    variant: ButtonVariant.secondary,
                                 },
                             ]}
                             emptyState={
