@@ -12,6 +12,8 @@ import { Provider } from '@open-cluster-management/ui-components'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import { NavigationPath } from '../../../NavigationPath'
 import DiscoveryConfigPage from '../DiscoveryConfig/DiscoveryConfig'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
+
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -97,6 +99,10 @@ const mockRHOCMSecrets: Secret[] = [
     },
 ]
 
+beforeEach(() => {
+    sessionStorage.clear()
+})
+
 describe('DiscoveredClusters', () => {
     test('DiscoveredClusters Table', async () => {
         render(
@@ -143,6 +149,7 @@ describe('DiscoveredClusters', () => {
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
+        nockIgnoreRBAC()
         const { container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
