@@ -22,7 +22,6 @@ import {
     ClusterImageSetKind,
 } from '../../../../resources/cluster-image-set'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
-import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../../../resources/managed-cluster-info'
 import {
     Project,
     ProjectApiVersion,
@@ -38,7 +37,7 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { managedClusterSetsState, secretsState } from '../../../../atoms'
+import { managedClusterSetsState, secretsState, managedClustersState } from '../../../../atoms'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -425,6 +424,7 @@ describe('CreateCluster', () => {
         return (
             <RecoilRoot
                 initializeState={(snapshot) => {
+                    snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
                     snapshot.set(secretsState, [providerConnection as Secret])
                 }}
@@ -518,11 +518,6 @@ describe('CreateCluster', () => {
             nockGet(mockBareMetalSecrets[1]),
             nockGet(mockBareMetalSecrets[2]),
             nockGet(mockBareMetalSecrets[3]),
-
-            // list no clusters so that creating this cluster doesn't think it already exists
-            nockList({ apiVersion: ManagedClusterInfoApiVersion, kind: ManagedClusterInfoKind }, [], undefined, {
-                managedNamespacesOnly: '',
-            }),
 
             // create the cluster's namespace (project)
             nockCreate(mockClusterProject, mockClusterProjectResponse),

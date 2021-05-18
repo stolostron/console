@@ -2,7 +2,6 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { listResources } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterInfoApiVersion = 'internal.open-cluster-management.io/v1beta1'
@@ -74,15 +73,4 @@ export interface ManagedClusterInfo extends IResource {
             appProtocol?: string
         }
     }
-}
-
-export function listMCIs() {
-    return listResources<ManagedClusterInfo>(
-        {
-            apiVersion: ManagedClusterInfoApiVersion,
-            kind: ManagedClusterInfoKind,
-        },
-        undefined,
-        { managedNamespacesOnly: '' }
-    )
 }
