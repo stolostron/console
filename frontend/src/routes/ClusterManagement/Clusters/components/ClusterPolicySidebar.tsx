@@ -19,7 +19,7 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../resources/policy-report'
@@ -91,20 +91,16 @@ function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
             isPrimary: true,
         },
         {
-            key: t('policy.report.major'),
+            key: t('policy.report.important'),
             value: clusterRiskScores.filter((score: string) => score === '3').length,
         },
         {
-            key: t('policy.report.minor'),
+            key: t('policy.report.moderate'),
             value: clusterRiskScores.filter((score: string) => score === '2').length,
         },
         {
             key: t('policy.report.low'),
             value: clusterRiskScores.filter((score: string) => score === '1').length,
-        },
-        {
-            key: t('policy.report.warning'),
-            value: clusterRiskScores.filter((score: string) => score === '0').length,
         },
     ]
     const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
@@ -191,20 +187,16 @@ function DetailsView(props: {
                 riskIcon = <CriticalRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '3':
-                totalRisk = t('policy.report.major')
+                totalRisk = t('policy.report.important')
                 riskIcon = <ImportantRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '2':
-                totalRisk = t('policy.report.minor')
+                totalRisk = t('policy.report.moderate')
                 riskIcon = <ModerateRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '1':
                 totalRisk = t('policy.report.low')
                 riskIcon = <LowRiskIcon />
-                return riskComponent(totalRisk, riskIcon)
-            case '0':
-                totalRisk = t('policy.report.warning')
-                riskIcon = <ExclamationTriangleIcon />
                 return riskComponent(totalRisk, riskIcon)
             default:
                 return null
