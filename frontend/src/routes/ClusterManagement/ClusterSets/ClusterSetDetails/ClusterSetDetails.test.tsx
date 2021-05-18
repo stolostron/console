@@ -210,7 +210,7 @@ describe('ClusterSetDetails page', () => {
         await clickByPlaceholderText('access.select.user')
         await clickByText(mockUser.metadata.name!)
         await clickByText('access.select.role')
-        await clickByText('Cluster set admin')
+        await clickByText('access.clusterSet.role.admin', 1)
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
             kind: ClusterRoleBindingKind,
@@ -246,7 +246,7 @@ describe('ClusterSetDetails page', () => {
         await clickByPlaceholderText('access.select.group')
         await clickByText(mockGroup.metadata.name!)
         await clickByText('access.select.role')
-        await clickByText('Cluster set view')
+        await clickByText('access.clusterSet.role.view')
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
             kind: ClusterRoleBindingKind,
