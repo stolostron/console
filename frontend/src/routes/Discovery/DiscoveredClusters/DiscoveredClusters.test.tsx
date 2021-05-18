@@ -1,13 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { render, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { mockCRHCredential, mockDiscoveryConfig } from '../../../lib/test-metadata'
-import { waitForNotText, waitForText } from '../../../lib/test-util'
+import { clickByText, waitForNotText, waitForText } from '../../../lib/test-util'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
+import { Secret, SecretApiVersion, SecretKind } from '../../../resources/secret'
+import { Provider } from '@open-cluster-management/ui-components'
 import DiscoveredClustersPage from './DiscoveredClusters'
+import { NavigationPath } from '../../../NavigationPath'
+import DiscoveryConfigPage from '../DiscoveryConfig/DiscoveryConfig'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
@@ -68,6 +73,35 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     },
 ]
 
+const mockRHOCMSecrets: Secret[] = [
+    {
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+            name: 'ocm-api-token',
+            namespace: 'ocm',
+            labels: {
+                'cluster.open-cluster-management.io/type': Provider.redhatcloud,
+            },
+        },
+    },
+    {
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+            name: 'ocm-api-token2',
+            namespace: 'ocm2',
+            labels: {
+                'cluster.open-cluster-management.io/type': Provider.redhatcloud,
+            },
+        },
+    },
+]
+
+beforeEach(() => {
+    sessionStorage.clear()
+})
+
 describe('DiscoveredClusters', () => {
     test('DiscoveredClusters Table', async () => {
         render(
@@ -114,22 +148,31 @@ describe('DiscoveredClusters', () => {
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
-        render(
+        nockIgnoreRBAC()
+        const { container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(discoveredClusterState, [])
                     snapshot.set(discoveryConfigState, [])
-                    snapshot.set(secretsState, [mockCRHCredential])
+                    snapshot.set(secretsState, mockRHOCMSecrets)
                 }}
             >
-                <MemoryRouter>
-                    <DiscoveredClustersPage />
+                <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
+                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+                    <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
                 </MemoryRouter>
             </RecoilRoot>
         )
         await waitForText('emptystate.credentials.title')
         await waitForText('discovery:emptystate.credentials.msg')
-        await waitForText('emptystate.enableClusterDiscovery')
+        await waitForText('discovery.configureDiscovery')
+        await clickByText('discovery.configureDiscovery')
+        await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
+        await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
+        await waitFor(() =>
+            expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
+        )
+        await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     })
 
     test('CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {

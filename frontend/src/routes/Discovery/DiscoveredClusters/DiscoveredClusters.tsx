@@ -61,8 +61,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const history = useHistory()
 
     const onSelect = (credential: string) => {
-        // TODO: Filter by namespace
-        sessionStorage.setItem('DiscoveryCredential', credential)
+        localStorage.setItem('DiscoveryCredential', credential)
         history.push(NavigationPath.createDiscovery)
     }
 
@@ -134,11 +133,11 @@ export function DiscoveredClustersPageContent() {
     const credentials = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
 
-    const cloudRedHatCredentials: ProviderConnection[] = []
+    const RHOCMCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
         const provider = credential.metadata.labels!['cluster.open-cluster-management.io/type']
         if (provider === Provider.redhatcloud) {
-            cloudRedHatCredentials.push(credential)
+            RHOCMCredentials.push(credential)
         }
     })
 
@@ -158,7 +157,7 @@ export function DiscoveredClustersPageContent() {
             <DiscoNotification />
             <DiscoveredClustersTable
                 discoveredClusters={unmanagedClusters}
-                credentials={credentials}
+                credentials={RHOCMCredentials}
                 discoveryConfigs={discoveryConfigs}
             />
         </Fragment>
