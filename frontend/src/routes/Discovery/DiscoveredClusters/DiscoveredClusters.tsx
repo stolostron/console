@@ -61,8 +61,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const history = useHistory()
 
     const onSelect = (credential: string) => {
-        // TODO: Filter by namespace
-        sessionStorage.setItem('DiscoveryCredential', credential)
+        localStorage.setItem('DiscoveryCredential', credential)
         history.push(NavigationPath.createDiscovery)
     }
 
