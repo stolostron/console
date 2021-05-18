@@ -46,7 +46,7 @@ export interface IBulkActionModelProps<T = undefined> {
     showToolbar?: boolean
 }
 
-interface ItemError<T> {
+export interface ItemError<T> {
     item: T
     error: Error
 }

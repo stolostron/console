@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterManagementAddOn } from '../resources/cluster-management-add-on'
+import { ClusterManagementAddOn, ClusterManagementAddOnDefinition } from '../resources/cluster-management-add-on'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
 
 export type Addon = {
@@ -27,12 +27,35 @@ export function mapAddons(
     clusterManagementAddons: ClusterManagementAddOn[],
     managedClusterAddons: ManagedClusterAddOn[] = []
 ) {
-    const addons: Addon[] = clusterManagementAddons.map((cma) => ({
-        name: cma.metadata.name as string,
-        status: getDisplayStatus(cma, managedClusterAddons),
-        message: getDisplayMessage(cma, managedClusterAddons),
-        launchLink: getLaunchLink(cma, managedClusterAddons),
-    }))
+    const addons: Addon[] = managedClusterAddons.map((mca) => {
+        let cma: ClusterManagementAddOn | undefined = clusterManagementAddons.find(
+            (clusterManagementAddOn) => mca.metadata.name === clusterManagementAddOn?.metadata.name
+        )
+        if (cma === undefined) {
+            cma = {
+                ...ClusterManagementAddOnDefinition,
+                metadata: {
+                    name: mca.metadata.name,
+                },
+                spec: {
+                    addOnMeta: {
+                        displayName: mca.status?.addOnMeta.displayName ?? '',
+                        description: mca.status?.addOnMeta.description ?? '',
+                    },
+                    addOnConfiguration: {
+                        crdName: mca.status?.addOnConfiguration.crdName ?? '',
+                        crName: mca.status?.addOnConfiguration.crName ?? '',
+                    },
+                },
+            } as ClusterManagementAddOn
+        }
+        return {
+            name: cma.metadata.name as string,
+            status: getDisplayStatus(cma, managedClusterAddons),
+            message: getDisplayMessage(cma, managedClusterAddons),
+            launchLink: getLaunchLink(cma, managedClusterAddons),
+        }
+    })
     return addons
 }
 

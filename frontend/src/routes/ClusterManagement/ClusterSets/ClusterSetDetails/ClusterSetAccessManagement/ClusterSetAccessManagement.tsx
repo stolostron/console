@@ -6,7 +6,6 @@ import {
     AcmAlertGroup,
     AcmButton,
     AcmEmptyState,
-    AcmExpandableCard,
     AcmForm,
     AcmLabels,
     AcmModal,
@@ -128,92 +127,88 @@ export function ClusterSetAccessManagement() {
     return (
         <AcmPageContent id="access-management">
             <PageSection>
-                <AcmExpandableCard title={t('access.userGroups')}>
-                    <BulkActionModel<ClusterRoleBinding> {...modalProps} />
-                    <AddUsersModal
-                        isOpen={addModalOpen}
-                        onClose={() => {
-                            refresh()
-                            setAddModalOpen(false)
-                        }}
-                        clusterRoleBindings={clusterRoleBindings}
-                        users={users}
-                        groups={groups}
-                    />
-                    <AcmTable<ClusterRoleBinding>
-                        plural="clusterRoleBindings"
-                        items={clusterRoleBindings}
-                        keyFn={keyFn}
-                        columns={columns}
-                        tableActions={[
-                            { id: 'addUserGroup', title: t('access.add'), click: () => setAddModalOpen(true) },
-                        ]}
-                        bulkActions={[
-                            {
-                                id: 'removeAuthorization',
-                                title: t('access.remove'),
-                                click: (clusterRoleBindings: ClusterRoleBinding[]) => {
-                                    setModalProps({
-                                        open: true,
-                                        title: t('bulk.title.removeAuthorization'),
-                                        action: t('remove'),
-                                        processing: t('removing'),
-                                        resources: clusterRoleBindings,
-                                        description: t('bulk.message.removeAuthorization'),
-                                        columns: columns,
-                                        keyFn,
-                                        actionFn: deleteResource,
-                                        close: () => {
-                                            refresh()
-                                            setModalProps({ open: false })
-                                        },
-                                        isDanger: true,
-                                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                                    })
-                                },
+                <BulkActionModel<ClusterRoleBinding> {...modalProps} />
+                <AddUsersModal
+                    isOpen={addModalOpen}
+                    onClose={() => {
+                        refresh()
+                        setAddModalOpen(false)
+                    }}
+                    clusterRoleBindings={clusterRoleBindings}
+                    users={users}
+                    groups={groups}
+                />
+                <AcmTable<ClusterRoleBinding>
+                    plural="clusterRoleBindings"
+                    items={clusterRoleBindings}
+                    keyFn={keyFn}
+                    columns={columns}
+                    tableActions={[{ id: 'addUserGroup', title: t('access.add'), click: () => setAddModalOpen(true) }]}
+                    bulkActions={[
+                        {
+                            id: 'removeAuthorization',
+                            title: t('access.remove'),
+                            click: (clusterRoleBindings: ClusterRoleBinding[]) => {
+                                setModalProps({
+                                    open: true,
+                                    title: t('bulk.title.removeAuthorization'),
+                                    action: t('remove'),
+                                    processing: t('removing'),
+                                    resources: clusterRoleBindings,
+                                    description: t('bulk.message.removeAuthorization'),
+                                    columns: columns,
+                                    keyFn,
+                                    actionFn: deleteResource,
+                                    close: () => {
+                                        refresh()
+                                        setModalProps({ open: false })
+                                    },
+                                    isDanger: true,
+                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                                })
                             },
-                        ]}
-                        rowActions={[
-                            {
-                                id: 'removeAuthorization',
-                                title: t('access.remove'),
-                                click: (clusterRoleBinding: ClusterRoleBinding) => {
-                                    setModalProps({
-                                        open: true,
-                                        title: t('bulk.title.removeAuthorization'),
-                                        action: t('remove'),
-                                        processing: t('removing'),
-                                        resources: [clusterRoleBinding],
-                                        description: t('bulk.message.removeAuthorization'),
-                                        columns: columns,
-                                        keyFn,
-                                        actionFn: deleteResource,
-                                        close: () => {
-                                            refresh()
-                                            setModalProps({ open: false })
-                                        },
-                                        isDanger: true,
-                                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                                    })
-                                },
+                        },
+                    ]}
+                    rowActions={[
+                        {
+                            id: 'removeAuthorization',
+                            title: t('access.remove'),
+                            click: (clusterRoleBinding: ClusterRoleBinding) => {
+                                setModalProps({
+                                    open: true,
+                                    title: t('bulk.title.removeAuthorization'),
+                                    action: t('remove'),
+                                    processing: t('removing'),
+                                    resources: [clusterRoleBinding],
+                                    description: t('bulk.message.removeAuthorization'),
+                                    columns: columns,
+                                    keyFn,
+                                    actionFn: deleteResource,
+                                    close: () => {
+                                        refresh()
+                                        setModalProps({ open: false })
+                                    },
+                                    isDanger: true,
+                                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                                })
                             },
-                        ]}
-                        emptyState={
-                            <AcmEmptyState
-                                key="accessEmptyState"
-                                title={t('access.emptyTitle')}
-                                message={
-                                    <Trans i18nKey={'cluster:access.emptyMessage'} components={{ bold: <strong /> }} />
-                                }
-                                action={
-                                    <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
-                                        {t('access.emptyStateButton')}
-                                    </AcmButton>
-                                }
-                            />
-                        }
-                    />
-                </AcmExpandableCard>
+                        },
+                    ]}
+                    emptyState={
+                        <AcmEmptyState
+                            key="accessEmptyState"
+                            title={t('access.emptyTitle')}
+                            message={
+                                <Trans i18nKey={'cluster:access.emptyMessage'} components={{ bold: <strong /> }} />
+                            }
+                            action={
+                                <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
+                                    {t('access.emptyStateButton')}
+                                </AcmButton>
+                            }
+                        />
+                    }
+                />
             </PageSection>
         </AcmPageContent>
     )

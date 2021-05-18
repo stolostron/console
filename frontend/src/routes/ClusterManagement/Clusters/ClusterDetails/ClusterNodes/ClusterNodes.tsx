@@ -100,12 +100,12 @@ export function NodesPoolsTable() {
                     : `/resources?cluster=${cluster!.name!}&kind=node&apiVersion=v1&name=${node.name}`
                 return (
                     <a href={launchUrl} target={hasOcpConsole ? '_self' : '_blank'} rel="noreferrer">
-                        {node.name}{' '}
                         {hasOcpConsole && (
-                            <span>
+                            <span style={{ marginRight: '8px' }}>
                                 <ExternalLinkAltIcon />
                             </span>
                         )}
+                        {node.name}
                     </a>
                 )
             },
