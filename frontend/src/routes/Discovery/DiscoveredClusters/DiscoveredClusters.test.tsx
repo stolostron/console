@@ -82,7 +82,7 @@ const mockRHOCMSecrets: Secret[] = [
             name: 'ocm-api-token',
             namespace: 'ocm',
             labels: {
-                'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
+                'cluster.open-cluster-management.io/type': Provider.redhatcloud,
             },
         },
     },
@@ -93,7 +93,7 @@ const mockRHOCMSecrets: Secret[] = [
             name: 'ocm-api-token2',
             namespace: 'ocm2',
             labels: {
-                'cluster.open-cluster-management.io/provider': Provider.redhatcloud,
+                'cluster.open-cluster-management.io/type': Provider.redhatcloud,
             },
         },
     },
