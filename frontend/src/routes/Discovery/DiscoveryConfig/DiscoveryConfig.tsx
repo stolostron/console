@@ -126,7 +126,7 @@ export function DiscoveryConfigPageContent(props: {
     credentials: Secret[]
     discoveryNamespaces: string[]
 }) {
-    const [credentialsRef] = useState<string>(localStorage.getItem('DiscoveryCredential') || '')
+    const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
         kind: DiscoveryConfigKind,
@@ -208,7 +208,7 @@ export function DiscoveryConfigPageContent(props: {
                                     message: '',
                                 })
                                 resolve(undefined)
-                                localStorage.setItem(
+                                sessionStorage.setItem(
                                     'DISCOVERY_OP',
                                     JSON.stringify({ Operation: 'Delete', Name: discoveryConfig.metadata.namespace })
                                 )
@@ -258,13 +258,13 @@ export function DiscoveryConfigPageContent(props: {
             try {
                 if (!editing) {
                     discoveryConfig.metadata!.name = 'discovery'
-                    localStorage.setItem(
+                    sessionStorage.setItem(
                         'DISCOVERY_OP',
                         JSON.stringify({ Operation: 'Create', Name: discoveryConfig.metadata.namespace })
                     )
                     await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                 } else {
-                    localStorage.setItem(
+                    sessionStorage.setItem(
                         'DISCOVERY_OP',
                         JSON.stringify({ Operation: 'Update', Name: discoveryConfig.metadata.namespace })
                     )
