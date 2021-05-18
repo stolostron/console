@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { listMCIs } from '../resources/managed-cluster-info'
 import { createResource, replaceResource } from './resource-request'
 import { syncBMAs, attachBMAs } from './bare-metal-assets'
 import { createProject } from '../resources/project'
@@ -9,7 +8,6 @@ import { get, keyBy } from 'lodash'
 export async function createCluster(resources: any[]) {
     // if creating a bare metal cluster
     // make sure all the bare metal assets exist
-    const isCreateCluster = resources.find((resource) => resource.kind === 'ClusterDeployment')
 
     let assets
     let errors: any[] = []
@@ -60,18 +58,6 @@ export async function createCluster(resources: any[]) {
         }
         return true
     })
-
-    if (isCreateCluster) {
-        // make sure this cluster doesn't already exist
-        response = await listMCIs().promise
-        const clusterMap = keyBy(response, 'metadata.name')
-        if (clusterMap[namespace]) {
-            return {
-                status: 'ERROR',
-                messages: [{ message: `The ${namespace} cluster already exists` }],
-            }
-        }
-    }
 
     // create project and ignore if it already exists
     try {

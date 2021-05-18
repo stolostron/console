@@ -27,7 +27,7 @@ import { controlData } from './controlData/ControlData'
 import { setAvailableConnections } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
-import { secretsState } from '../../../../atoms'
+import { secretsState, managedClustersState } from '../../../../atoms'
 
 declare const window: any
 if (window.monaco) {
@@ -65,6 +65,7 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
+    const [managedClusters] = useRecoilState(managedClustersState)
 
     // create portals for buttons in header
     const switches = (
@@ -85,17 +86,27 @@ export default function CreateClusterPage() {
     const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
-            setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            const { status, messages } = await createCluster(createResources)
-            setCreationStatus({ status, messages })
+            const map = keyBy(createResources, 'kind')
+            const clusterName = get(map, 'ClusterDeployment.metadata.name')
 
-            // redirect to created cluster
-            if (status === 'DONE') {
-                setTimeout(() => {
-                    const map = keyBy(createResources, 'kind')
-                    const clusterName = get(map, 'ClusterDeployment.metadata.name')
-                    history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
-                }, 2000)
+            // return error if cluster name is already used
+            const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
+            if (matchedManagedCluster) {
+                return setCreationStatus({
+                    status: 'ERROR',
+                    messages: [{ message: `The cluster name is already used by another cluster.` }],
+                })
+            } else {
+                setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
+                const { status, messages } = await createCluster(createResources)
+                setCreationStatus({ status, messages })
+
+                // redirect to created cluster
+                if (status === 'DONE') {
+                    setTimeout(() => {
+                        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                    }, 2000)
+                }
             }
         }
     }
