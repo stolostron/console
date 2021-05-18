@@ -14,7 +14,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import DiscoveryConfigPage from '../DiscoveryConfig/DiscoveryConfig'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 
-
 const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
         apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
