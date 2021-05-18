@@ -135,7 +135,7 @@ export function DiscoveredClustersPageContent() {
 
     const RHOCMCredentials: ProviderConnection[] = []
     credentials.forEach((credential) => {
-        const provider = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+        const provider = credential.metadata.labels!['cluster.open-cluster-management.io/type']
         if (provider === Provider.redhatcloud) {
             RHOCMCredentials.push(credential)
         }

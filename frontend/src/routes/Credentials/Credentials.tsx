@@ -64,7 +64,7 @@ const AddConnectionBtn = () => {
 }
 
 function getProviderName(labels: Record<string, string> | undefined) {
-    const label = labels?.['cluster.open-cluster-management.io/provider']
+    const label = labels?.['cluster.open-cluster-management.io/type']
     if (label) {
         const providerName = (ProviderLongTextMap as Record<string, string>)[label]
         if (providerName) return providerName
@@ -86,7 +86,7 @@ export function CredentialsTable(props: {
     sessionStorage.removeItem('DiscoveryCredential')
 
     function getAdditionalActions(item: Secret) {
-        const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+        const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
         if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {
             return t('credentials.additionalActions.enableClusterDiscovery')
         } else {
@@ -156,7 +156,7 @@ export function CredentialsTable(props: {
                             )
                         },
                         cell: (item: Secret) => {
-                            const provider = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            const provider = item.metadata.labels?.['cluster.open-cluster-management.io/type']
                             if (provider) return <AcmInlineProvider provider={provider as Provider} />
                             else return <Fragment />
                         },
@@ -176,7 +176,7 @@ export function CredentialsTable(props: {
                             return getAdditionalActions(item)
                         },
                         cell: (item: Secret) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/provider']
+                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
                             if (label === Provider.redhatcloud) {
                                 if (CredentialIsInUseByDiscovery(item)) {
                                     return (

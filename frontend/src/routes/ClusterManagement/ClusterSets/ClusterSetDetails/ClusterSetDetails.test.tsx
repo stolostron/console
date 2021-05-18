@@ -8,18 +8,70 @@ import { waitForText, clickByText, clickByLabel, waitForNocks, clickByPlaceholde
 import { nockIgnoreRBAC, nockDelete, nockCreate } from '../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
-import { ManagedCluster } from '../../../../resources/managed-cluster'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
 import { ClusterRoleBinding, ClusterRoleBindingKind, RbacApiVersion } from '../../../../resources/rbac'
+import {
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+} from '../../../../resources/managed-cluster-add-on'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     managedClusterInfosState,
     managedClustersState,
     managedClusterSetsState,
+    managedClusterAddonsState,
+    clusterPoolsState,
 } from '../../../../atoms'
 import { mockClusterDeployments, mockManagedClusterInfos, mockManagedClusters } from '../../Clusters/Clusters.test'
 import { NavigationPath } from '../../../../NavigationPath'
 import { nockClusterList } from '../../../../lib/nock-util'
+
+const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
+    (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
+)!
+
+const mockManagedClusterExtra: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'managed-cluster-extra-clusterset',
+        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+    },
+    spec: { hubAcceptsClient: true },
+    status: {
+        allocatable: { cpu: '', memory: '' },
+        capacity: { cpu: '', memory: '' },
+        clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'AWS' }],
+        conditions: [],
+        version: { kubernetes: '' },
+    },
+}
+
+const mockSubmarinerAddon: ManagedClusterAddOn = {
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'submariner',
+        namespace: clusterSetCluster.metadata.name,
+    },
+    spec: {
+        installNamespace: 'submariner-operator',
+    },
+}
+
+const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
+    apiVersion: ManagedClusterAddOnApiVersion,
+    kind: ManagedClusterAddOnKind,
+    metadata: {
+        name: 'submariner',
+        namespace: mockManagedClusterExtra.metadata.name,
+    },
+    spec: {
+        installNamespace: 'submariner-operator',
+    },
+}
 
 const Component = () => (
     <RecoilRoot
@@ -27,8 +79,10 @@ const Component = () => (
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
             snapshot.set(clusterDeploymentsState, mockClusterDeployments)
             snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-            snapshot.set(managedClustersState, mockManagedClusters)
+            snapshot.set(managedClustersState, [...mockManagedClusters, mockManagedClusterExtra])
             snapshot.set(certificateSigningRequestsState, [])
+            snapshot.set(managedClusterAddonsState, [mockSubmarinerAddon])
+            snapshot.set(clusterPoolsState, [])
         }}
     >
         <MemoryRouter
@@ -40,10 +94,6 @@ const Component = () => (
         </MemoryRouter>
     </RecoilRoot>
 )
-
-const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
-    (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
-)!
 
 const mockClusterRoleBinding: ClusterRoleBinding = {
     apiVersion: RbacApiVersion,
@@ -95,15 +145,43 @@ describe('ClusterSetDetails page', () => {
         await waitForNocks(getNocks)
     })
     test('renders', async () => {
-        waitForText(mockManagedClusterSet.metadata.name!, true)
+        await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('table.details')
 
         await clickByText('tab.clusters')
-        await waitForText('clusters')
         await waitForText(clusterSetCluster.metadata.name!)
 
         await clickByText('tab.clusterPools')
-        await waitForText('clusterPools')
+    })
+    test('can install submariner add-ons', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!, true)
+        await waitForText('table.details')
+
+        await clickByText('tab.submariner')
+        await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+
+        await clickByText('managed.clusterSets.submariner.addons.install')
+        await waitForText('managed.clusterSets.submariner.addons.install.message')
+        await clickByText('managed.clusterSets.submariner.addons.install.placeholder')
+        await clickByText(mockManagedClusterExtra!.metadata.name!)
+
+        const createNock = nockCreate(mockSubmarinerAddonExtra)
+        await clickByText('common:install')
+        await waitForNocks([createNock])
+    })
+    test('can uninstall submariner add-ons', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!, true)
+        await waitForText('table.details')
+
+        await clickByText('tab.submariner')
+        await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+        await clickByLabel('Actions', 0)
+        await clickByText('uninstall.add-on')
+        await waitForText('bulk.title.uninstallSubmariner')
+
+        const deleteNock = nockDelete(mockSubmarinerAddon)
+        await clickByText('common:uninstall')
+        await waitForNocks([deleteNock])
     })
     test('can remove users from cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [

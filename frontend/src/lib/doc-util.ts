@@ -13,6 +13,7 @@ export const DOC_LINKS = {
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/manage_cluster/importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/manage_cluster/managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}`,
+    SUBMARINER: `${DOC_BASE_PATH}/manage_cluster/submariner`,
 }
 
 export const OCM_LINKS = {

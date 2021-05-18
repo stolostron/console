@@ -70,9 +70,10 @@ export default function ClusterPoolsPage() {
                                     onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
                                     variant="link"
                                     role="link"
+                                    icon={<ExternalLinkAltIcon />}
+                                    iconPosition="right"
                                 >
                                     {t('common:view.documentation')}
-                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                                 </AcmButton>
                             </FlexItem>
                         </Flex>

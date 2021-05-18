@@ -28,8 +28,8 @@ const mockSecret: Secret = {
         name: 'ansible-test-secret',
         namespace: 'namespace-1',
         labels: {
-            'cluster.open-cluster-management.io/provider': Provider.ansible,
-            'cluster.open-cluster-management.io/cloudconnection': '',
+            'cluster.open-cluster-management.io/type': Provider.ansible,
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
 }

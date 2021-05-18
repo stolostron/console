@@ -65,6 +65,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
 
     function reset() {
         props.onClose?.()
+        setClaimed(false)
         setClusterClaim(undefined)
     }
 

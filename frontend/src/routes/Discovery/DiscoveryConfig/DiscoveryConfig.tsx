@@ -104,7 +104,7 @@ export function AddDiscoveryConfigData() {
     useEffect(() => {
         const CRHCredentials: Secret[] = []
         secrets.forEach((credential) => {
-            const labels = credential.metadata.labels!['cluster.open-cluster-management.io/provider']
+            const labels = credential.metadata.labels!['cluster.open-cluster-management.io/type']
             if (labels === Provider.redhatcloud) {
                 CRHCredentials.push(credential)
             }

@@ -37,6 +37,7 @@ const useStyles = makeStyles({
         },
         '& .credentials-toggle': {
             display: 'flex',
+            alignItems: 'center',
             '& svg': {
                 marginRight: '0.4rem',
             },
