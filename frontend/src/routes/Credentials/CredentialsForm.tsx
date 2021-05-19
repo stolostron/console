@@ -319,9 +319,6 @@ export function CredentialsForm(props: {
                 data.spec!.ocmAPIToken = ocmAPIToken
                 break
         }
-        if (props.providerConnection?.stringData?.['credential-hash']) {
-            data.stringData!['credential-hash'] = props.providerConnection?.stringData?.['credential-hash']
-        }
         return packProviderConnection(data)
     }
     const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
@@ -967,8 +964,8 @@ export function CredentialsForm(props: {
         cancelLabel: t('common:cancel'),
         nextLabel: t('common:next'),
         backLabel: t('common:back'),
-
         cancel: () => history.push(NavigationPath.credentials),
+        stateToData,
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
 }

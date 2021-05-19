@@ -198,6 +198,7 @@ export function AnsibleAutomationsForm(props: {
                         isDisabled: isEditing,
                     },
                 ],
+                columns: 1,
             },
             {
                 title: t('template.create.install'),
@@ -220,6 +221,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setInstallPostJob,
                     },
                 ],
+                columns: 1,
             },
             {
                 title: t('template.create.upgrade'),
@@ -242,6 +244,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setUpgradePostJob,
                     },
                 ],
+                columns: 1,
             },
             {
                 title: t('template.create.scale'),
@@ -264,6 +267,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setScalePostJob,
                     },
                 ],
+                columns: 1,
             },
             {
                 title: t('template.create.destroy'),
@@ -286,6 +290,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setDestroyPostJob,
                     },
                 ],
+                columns: 1,
             },
         ],
         submit: () => {
@@ -305,8 +310,8 @@ export function AnsibleAutomationsForm(props: {
         },
         submitText: isEditing ? t('common:save') : t('common:add'),
         submittingText: isEditing ? t('common:saving') : t('common:adding'),
-        // TODO Cancel Text
         cancel: () => history.push(NavigationPath.ansibleAutomations),
+        stateToData,
     }
 
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />

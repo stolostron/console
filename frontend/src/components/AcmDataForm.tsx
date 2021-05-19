@@ -8,10 +8,23 @@ import {
     Alert,
     AlertGroup,
     Button,
+    ClipboardCopyButton,
+    CodeBlock,
+    CodeBlockAction,
+    CodeBlockCode,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    Divider,
+    Drawer,
+    DrawerActions,
+    DrawerCloseButton,
+    DrawerContent,
+    DrawerContentBody,
+    DrawerHead,
+    DrawerPanelBody,
+    DrawerPanelContent,
     Flex,
     Form,
     FormFieldGroupExpandable,
@@ -32,6 +45,7 @@ import {
     Split,
     SplitItem,
     Stack,
+    Switch,
     Text,
     TextArea,
     TextContent,
@@ -50,8 +64,10 @@ import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclama
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Fragment, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
+import * as YAML from 'yamljs'
+import useResizeObserver from '@react-hook/resize-observer'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -69,76 +85,151 @@ function requiredValidationMessage() {
 }
 
 export function AcmDataFormPage(props: AcmDataFormProps) {
+    const pageRef = useRef(null)
+
     const { formData } = props
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
     const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
+    const [drawerExpanded, setDrawerExpanded] = useState(false)
+    const [drawerInline, setDrawerInline] = useState(true)
+    const [copyHint, setCopyHint] = useState<ReactNode>(
+        <span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>
+    )
+
+    useResizeObserver(pageRef, (entry) => {
+        console.log(entry.contentRect.width)
+        setDrawerInline(entry.contentRect.width > 1500)
+    })
 
     return (
-        <Page
-            additionalGroupedContent={
-                <Fragment>
-                    <AcmPageHeader
-                        title={formData.title}
-                        titleTooltip={formData.titleTooltip}
-                        description={formData.description}
-                        breadcrumb={formData.breadcrumb}
-                        actions={
-                            <ActionList>
-                                {mode === 'details' && (
+        <div ref={pageRef} style={{ height: '100%' }}>
+            <Page
+                additionalGroupedContent={
+                    <Fragment>
+                        <AcmPageHeader
+                            title={formData.title}
+                            titleTooltip={formData.titleTooltip}
+                            description={formData.description}
+                            breadcrumb={formData.breadcrumb}
+                            actions={
+                                <ActionList>
+                                    {mode === 'details' && (
+                                        <ActionListItem>
+                                            <ToggleGroup>
+                                                <ToggleGroupItem
+                                                    text="Show secrets"
+                                                    isSelected={showSecrets}
+                                                    onChange={() => setShowSecrets(!showSecrets)}
+                                                />
+                                            </ToggleGroup>
+                                        </ActionListItem>
+                                    )}
                                     <ActionListItem>
-                                        <ToggleGroup>
-                                            <ToggleGroupItem
-                                                text="Show secrets"
-                                                isSelected={showSecrets}
-                                                onChange={() => setShowSecrets(!showSecrets)}
-                                            />
-                                        </ToggleGroup>
+                                        <Switch
+                                            label="YAML"
+                                            isChecked={drawerExpanded}
+                                            onChange={() => setDrawerExpanded(!drawerExpanded)}
+                                        />
                                     </ActionListItem>
-                                )}
-                            </ActionList>
+                                </ActionList>
+                            }
+                        />
+                        {showFormErrors && mode === 'form' && formHasErrors(formData) && (
+                            <PageSection variant="light" style={{ paddingTop: 0 }}>
+                                <AlertGroup>
+                                    {formHasRequiredErrors(formData) ? (
+                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                                    ) : (
+                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
+                                    )}
+                                </AlertGroup>
+                            </PageSection>
+                        )}
+                    </Fragment>
+                }
+                groupProps={{ sticky: 'top' }}
+            >
+                <Drawer isExpanded={drawerExpanded} isInline={drawerInline}>
+                    <DrawerContent
+                        panelContent={
+                            <DrawerPanelContent isResizable={false} defaultSize="600px">
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        backgroundColor: 'var(--pf-global--BackgroundColor--200)',
+                                    }}
+                                >
+                                    <CodeBlock
+                                        actions={
+                                            <CodeBlockAction>
+                                                <ClipboardCopyButton
+                                                    id="copy-button"
+                                                    textId="code-content"
+                                                    aria-label="Copy to clipboard"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(
+                                                            YAML.stringify(formData.stateToData(), 100)
+                                                        )
+                                                        setCopyHint(
+                                                            <span style={{ wordBreak: 'keep-all' }}>
+                                                                Successfully copied to clipboard!
+                                                            </span>
+                                                        )
+                                                        setTimeout(() => {
+                                                            setCopyHint(
+                                                                <span style={{ wordBreak: 'keep-all' }}>
+                                                                    Copy to clipboard
+                                                                </span>
+                                                            )
+                                                        }, 800)
+                                                    }}
+                                                    exitDelay={600}
+                                                    variant="plain"
+                                                >
+                                                    {copyHint}
+                                                </ClipboardCopyButton>
+                                            </CodeBlockAction>
+                                        }
+                                    >
+                                        <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
+                                            {YAML.stringify(formData.stateToData(), 100)}
+                                        </CodeBlockCode>
+                                    </CodeBlock>
+                                </div>
+                            </DrawerPanelContent>
                         }
-                    />
-                    {showFormErrors && mode === 'form' && formHasErrors(formData) && (
-                        <PageSection variant="light" style={{ paddingTop: 0 }}>
-                            <AlertGroup>
-                                {formHasRequiredErrors(formData) ? (
-                                    <Alert isInline variant="danger" title={requiredValidationMessage()} />
-                                ) : (
-                                    <Alert isInline variant="danger" title={generalValidationMessage()} />
-                                )}
-                            </AlertGroup>
-                        </PageSection>
-                    )}
-                </Fragment>
-            }
-            groupProps={{ sticky: 'top' }}
-        >
-            {mode === 'wizard' ? (
-                <PageSection variant="light" isFilled type="wizard">
-                    <AcmDataForm
-                        {...props}
-                        mode={mode}
-                        showSecrets={showSecrets}
-                        showFormErrors={showFormErrors}
-                        setShowFormErrors={setShowFormErrors}
-                        isHorizontal={isHorizontal}
-                    />
-                </PageSection>
-            ) : (
-                <PageSection variant="light" isFilled>
-                    <AcmDataForm
-                        {...props}
-                        mode={mode}
-                        showSecrets={showSecrets}
-                        showFormErrors={showFormErrors}
-                        setShowFormErrors={setShowFormErrors}
-                        isHorizontal={isHorizontal}
-                    />
-                </PageSection>
-            )}
-        </Page>
+                    >
+                        <DrawerContentBody>
+                            {mode === 'wizard' ? (
+                                <PageSection variant="light" isFilled type="wizard" style={{ height: '100%' }}>
+                                    <AcmDataForm
+                                        {...props}
+                                        mode={mode}
+                                        showSecrets={showSecrets}
+                                        showFormErrors={showFormErrors}
+                                        setShowFormErrors={setShowFormErrors}
+                                        isHorizontal={isHorizontal}
+                                    />
+                                </PageSection>
+                            ) : (
+                                <PageSection variant="light" isFilled>
+                                    <AcmDataForm
+                                        {...props}
+                                        mode={mode}
+                                        showSecrets={showSecrets}
+                                        showFormErrors={showFormErrors}
+                                        setShowFormErrors={setShowFormErrors}
+                                        isHorizontal={isHorizontal}
+                                    />
+                                </PageSection>
+                            )}
+                        </DrawerContentBody>
+                    </DrawerContent>
+                </Drawer>
+            </Page>
+        </div>
     )
 }
 

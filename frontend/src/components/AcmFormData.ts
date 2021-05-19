@@ -19,6 +19,7 @@ export interface FormData {
     cancelLabel: string
     nextLabel: string
     backLabel: string
+    stateToData: () => unknown
 }
 
 export interface Section {
