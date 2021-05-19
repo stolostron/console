@@ -20,7 +20,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, patchResource } from '../../lib/resource-request'
+import { createResource, patchResource, replaceResource } from '../../lib/resource-request'
 import {
     validateBaseDomain,
     validateCertificate,
@@ -952,14 +952,17 @@ export function CredentialsForm(props: {
         submit: () => {
             if (isEditing) {
                 const secret = stateToData() as Secret
-                const patch: { op: 'replace'; path: string; value: unknown }[] = []
-                if (secret.stringData) {
-                    patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
-                }
-                if (secret.data) {
-                    patch.push({ op: 'replace', path: `/data`, value: secret.data })
-                }
-                return patchResource(secret, patch).promise.then(() => {
+                // const patch: { op: 'replace'; path: string; value: unknown }[] = []
+                // if (secret.stringData) {
+                //     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
+                // }
+                // if (secret.data) {
+                //     patch.push({ op: 'replace', path: `/data`, value: secret.data })
+                // }
+                // return patchResource(secret, patch).promise.then(() => {
+                //     history.push(NavigationPath.credentials)
+                // })
+                return replaceResource(secret).promise.then(() => {
                     history.push(NavigationPath.credentials)
                 })
             } else {
