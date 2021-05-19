@@ -100,7 +100,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
 
     useResizeObserver(pageRef, (entry) => {
         console.log(entry.contentRect.width)
-        setDrawerInline(entry.contentRect.width > 1500)
+        setDrawerInline(entry.contentRect.width > 1420)
     })
 
     return (
