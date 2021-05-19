@@ -85,13 +85,13 @@ const mockConfigmap: ConfigMap[] = [
         kind: 'ConfigMap',
         apiVersion: 'v1',
         metadata: {
-        name: 'insight-content-data',
-        namespace: 'open-cluster-management',
+            name: 'insight-content-data',
+            namespace: 'open-cluster-management',
         },
         data: {
             'policyreport testing risk 1 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
-        }
-    }
+        },
+    },
 ]
 
 describe('ClusterPolicySidebar', () => {
