@@ -5,6 +5,8 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
+import { nockCreate, nockPatch } from '../../../../lib/nock-util'
+import { ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
     displayName: 'cluster-0-no-available',
@@ -19,7 +21,14 @@ const mockClusterNoAvailable: Cluster = {
             upgradeFailed: false,
         },
         k8sVersion: '1.19',
-        displayVersion: 'Openshift 1.2.3'
+        displayVersion: 'Openshift 1.2.3',
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            hasAvailableUpdates: false,
+            availableUpdates: [],
+            currentVersion: '1.2.3',
+        },
     },
     labels: undefined,
     nodes: undefined,
@@ -51,6 +60,13 @@ const mockClusterReady1: Cluster = {
         },
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            hasAvailableUpdates: true,
+            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2.9', '1.2'],
+            currentVersion: '1.2.3',
+        },
     },
     labels: undefined,
     nodes: undefined,
@@ -82,6 +98,13 @@ const mockClusterReady2: Cluster = {
         },
         k8sVersion: '1.19',
         displayVersion: 'Openshift 2.2.3',
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            hasAvailableUpdates: true,
+            availableUpdates: ['2.2.4', '2.2.5', '2.2.6', '2.2'],
+            currentVersion: '2.2.3',
+        },
     },
     labels: undefined,
     nodes: undefined,
@@ -113,6 +136,13 @@ const mockClusterOffline: Cluster = {
         },
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        upgradeInfo: {
+            upgradeFailed: false,
+            isUpgrading: false,
+            hasAvailableUpdates: true,
+            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+            currentVersion: '1.2.3',
+        },
     },
     labels: undefined,
     nodes: undefined,
@@ -144,6 +174,13 @@ const mockClusterFailedUpgrade: Cluster = {
         },
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        upgradeInfo: {
+            upgradeFailed: true,
+            isUpgrading: false,
+            hasAvailableUpdates: false,
+            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+            currentVersion: '1.2.3',
+        },
     },
     labels: undefined,
     nodes: undefined,
@@ -167,6 +204,35 @@ const allClusters: Array<Cluster> = [
     mockClusterOffline,
     mockClusterFailedUpgrade,
 ]
+const clusterCuratorReady1 = {
+    apiVersion: ClusterCuratorDefinition.apiVersion,
+    kind: ClusterCuratorDefinition.kind,
+    metadata: {
+        name: 'cluster-1-ready1',
+        namespace: 'cluster-1-ready1',
+    },
+}
+const clusterCuratorReady2 = {
+    apiVersion: ClusterCuratorDefinition.apiVersion,
+    kind: ClusterCuratorDefinition.kind,
+    metadata: {
+        name: 'cluster-2-ready2',
+        namespace: 'cluster-2-ready2',
+    },
+}
+const getPatchUpdate = (version: string) => {
+    const data = {
+        spec: {
+            desiredCuration: 'upgrade',
+            upgrade: {
+                // set channel to empty to make sure we only use version
+                channel: '',
+                desiredUpdate: version,
+            },
+        },
+    }
+    return data
+}
 
 describe('BatchUpgradeModal', () => {
     it('should only show upgradeable ones, and select latest version as default', () => {
@@ -193,13 +259,15 @@ describe('BatchUpgradeModal', () => {
                 }}
             />
         )
-        const mockNockUpgrade1 = nockUpgrade('cluster-1-ready1', '1.2.9', 'ok', 200, 0)
-        const mockNockUpgrade2 = nockUpgrade('cluster-2-ready2', '2.2.6', 'ok', 200, 0)
+        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 404)
+        const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('2.2.6') })
         expect(getByText('upgrade.submit')).toBeTruthy()
         userEvent.click(getByText('upgrade.submit'))
         await act(async () => {
             await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+            await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
             await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
             await waitFor(() => expect(isClosed).toBe(true))
         })
@@ -217,8 +285,8 @@ describe('BatchUpgradeModal', () => {
                 }}
             />
         )
-        const mockNockUpgrade1 = nockUpgrade('cluster-1-ready1', '1.2.9', 'ok', 200, 0)
-        const mockNockUpgrade2 = nockUpgrade('cluster-2-ready2', '2.2.6', 'ok', 200, 500)
+        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
         expect(getByText('upgrade.submit')).toBeTruthy()
         userEvent.click(getByText('upgrade.submit'))
         await act(async () => {
@@ -251,8 +319,8 @@ describe('BatchUpgradeModal', () => {
         const { getByText, queryByText } = render(
             <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
         )
-        const mockNockUpgrade1 = nockUpgrade('cluster-1-ready1', '1.2.9', 'ok', 200, 100)
-        const mockNockUpgrade2 = nockUpgrade('cluster-2-ready2', '2.2.6', 'failed', 400, 100)
+        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 400)
         expect(queryByText('cluster-1-ready1')).toBeTruthy()
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
         expect(getByText('upgrade.submit')).toBeTruthy()

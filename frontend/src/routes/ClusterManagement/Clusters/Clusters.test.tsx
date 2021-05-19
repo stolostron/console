@@ -167,6 +167,10 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
                 availableUpdates: ['1.2.4', '1.2.5'],
                 desiredVersion: '1.2.3',
                 upgradeFailed: false,
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
             },
         },
     },
@@ -185,6 +189,10 @@ const mockManagedClusterInfo4: ManagedClusterInfo = {
                 availableUpdates: ['1.2.4', '1.2.5'],
                 desiredVersion: '1.2.4',
                 upgradeFailed: false,
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
             },
         },
     },
@@ -206,6 +214,10 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
                 availableUpdates: ['1.2.4', '1.2.5', '1.2.6'],
                 desiredVersion: '1.2.3',
                 upgradeFailed: false,
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
             },
         },
         nodeList: [
@@ -294,11 +306,19 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
-function getClusterActionsResourceAttributes(name: string) {
+function getClusterCuratorCreateResourceAttributes(name: string) {
     return {
-        resource: 'managedclusteractions',
+        resource: 'clustercurators',
         verb: 'create',
-        group: 'action.open-cluster-management.io',
+        group: 'cluster.open-cluster-management.io',
+        namespace: name,
+    } as ResourceAttributes
+}
+function getClusterCuratorPatchResourceAttributes(name: string) {
+    return {
+        resource: 'clustercurators',
+        verb: 'patch',
+        group: 'cluster.open-cluster-management.io',
         namespace: name,
     } as ResourceAttributes
 }
@@ -390,9 +410,13 @@ describe('Clusters Page', () => {
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
         const rbacCreateManagedClusterNock = nockRBAC(rbacCreate(ManagedClusterDefinition))
-        const upgradeRBACNocks = upgradeableMockManagedClusters.map((mockManagedCluster) => {
-            return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!))
-        })
+        const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
+            prev.push(
+                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),
+                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!))
+            )
+            return prev
+        }, [] as Scope[])
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

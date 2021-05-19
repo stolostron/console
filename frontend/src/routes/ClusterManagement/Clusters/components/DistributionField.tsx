@@ -7,8 +7,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../components/Rbac'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { rbacCreate } from '../../../../lib/rbac-util'
-import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
+import { rbacCreate, rbacPatch } from '../../../../lib/rbac-util'
+import { ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -66,24 +66,24 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.progress}
-                    status={t('upgrade.upgrading.version', {
-                        version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                    })}
+                    status={
+                        t('upgrade.upgrading.version', {
+                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                        }) +
+                        (props.cluster?.distribution.upgradeInfo.upgradePercentage
+                            ? ' (' + props.cluster?.distribution.upgradeInfo.upgradePercentage + ')'
+                            : '')
+                    }
                     popover={
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgrading', {
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent:
-                                      t('upgrade.upgrading.message', {
-                                          clusterName: props.cluster?.name,
-                                          version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                      }) +
-                                      (props.cluster?.distribution.upgradeInfo.upgradePercentage &&
-                                          t('upgrade.upgrading.pregress', {
-                                              percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
-                                          })),
+                                  bodyContent: t('upgrade.upgrading.message', {
+                                      clusterName: props.cluster?.name,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                  }),
                                   footerContent: (
                                       <a
                                           href={`${props.cluster?.consoleURL}/settings/cluster`}
@@ -113,7 +113,10 @@ export function DistributionField(props: { cluster?: Cluster }) {
                         icon={<ArrowCircleUpIcon />}
                         variant={ButtonVariant.link}
                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                        rbac={[rbacCreate(ManagedClusterActionDefinition, props.cluster?.namespace)]}
+                        rbac={[
+                            rbacCreate(ClusterCuratorDefinition, props.cluster?.namespace),
+                            rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
+                        ]}
                     >
                         {t('upgrade.available')}
                     </RbacButton>

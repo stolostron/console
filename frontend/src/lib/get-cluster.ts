@@ -407,7 +407,7 @@ export function getDistributionInfo(
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
-        const curatorIsIdle = !(checkCuratorConditionInProgress('clustercurator-job', curatorConditions)) 
+        const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
         // curator's version is not the same as current curator
         const curatorIsUpgrading =
             isUpgradeCuration &&
@@ -416,10 +416,10 @@ export function getDistributionInfo(
                 managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
             !curatorIsIdle
 
-        const upgradeCuratorFailed =
-            isUpgradeCuration &&
-            clusterCurator?.spec?.upgrade?.desiredUpdate &&
-            clusterCurator?.spec?.upgrade?.desiredUpdate !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
+        // const upgradeCuratorFailed =
+        //     isUpgradeCuration &&
+        //     clusterCurator?.spec?.upgrade?.desiredUpdate &&
+        //     clusterCurator?.spec?.upgrade?.desiredUpdate !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         const isSelectingChannel =
             isUpgradeCuration &&
@@ -438,11 +438,10 @@ export function getDistributionInfo(
                 managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
 
         upgradeInfo.upgradeFailed =
-            upgradeCuratorFailed ||
-            ((managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
+            (managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
                 managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
-                false)
+            false
 
         upgradeInfo.availableUpdates =
             managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates
@@ -456,7 +455,9 @@ export function getDistributionInfo(
         const hasAvailableUpdates =
             upgradeInfo.availableUpdates &&
             upgradeInfo.availableUpdates.length > 0 &&
+            !upgradeInfo.upgradeFailed &&
             !isManagedOpenShift &&
+            !upgradeInfo.isUpgrading &&
             curatorIsIdle
         upgradeInfo.hasAvailableUpdates = !!hasAvailableUpdates
 
@@ -465,6 +466,7 @@ export function getDistributionInfo(
             upgradeInfo.availableChannels &&
             upgradeInfo.availableChannels.length > 0 &&
             !isManagedOpenShift &&
+            !upgradeInfo.isSelectingChannel &&
             curatorIsIdle
         upgradeInfo.hasAvailableChannels = !!hasAvailableChannels
 
