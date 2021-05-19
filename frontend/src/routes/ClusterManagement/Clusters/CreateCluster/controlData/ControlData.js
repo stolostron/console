@@ -198,4 +198,24 @@ export const controlData = [
             required: true,
         },
     },
+    {
+        id: 'integrationStep',
+        type: 'step',
+        title: 'Integration',
+    },
+    {
+        id: 'chooseTemplate',
+        type: 'section',
+        title: 'Integration',
+        info: 'Choose a automation job template to automatically run at different times of creation. (Optional)',
+        tooltip: 'tooltip.creation.ocp.choose.distribution',
+    },
+    {
+        name: 'Ansible Automation Template',
+        id: 'name',
+        type: 'singleselect',
+        validation: {
+            required: false
+        },
+    },
 ]
