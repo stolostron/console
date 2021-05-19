@@ -233,12 +233,23 @@ export function CredentialsForm(props: {
                 name,
                 namespace,
                 labels: {
-                    'cluster.open-cluster-management.io/type': credentialsType,
-                    'cluster.open-cluster-management.io/credentials': '',
+                    ...(providerConnection ? providerConnection.metadata.labels : {}),
+                    ...{
+                        'cluster.open-cluster-management.io/type': credentialsType,
+                        'cluster.open-cluster-management.io/credentials': '',
+                    },
                 },
             },
             stringData: {},
             spec: {},
+        }
+        let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
+        if (annotations) {
+            delete annotations['kubectl.kubernetes.io/last-applied-configuration']
+            if (Object.keys(annotations).length === 0) annotations = undefined
+        }
+        if (annotations) {
+            data.metadata.annotations = annotations
         }
         switch (credentialsType) {
             case Provider.aws:
