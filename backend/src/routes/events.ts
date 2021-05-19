@@ -76,6 +76,11 @@ export function startWatching(): void {
             'metadata.name': 'console-public',
         },
     })
+    watchResource(token, 'v1', 'configmaps', {
+        fieldSelector: {
+            'metadata.name': 'insight-content-data',
+        },
+    })
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
 }
