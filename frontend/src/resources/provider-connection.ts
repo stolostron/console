@@ -45,6 +45,7 @@ export interface ProviderConnectionSpec {
     clusterOSImage?: string
     additionalTrustBundle?: string
 
+    // TODO remove this
     ocmAPIToken?: string
 
     openstackCloudsYaml?: string
@@ -59,7 +60,7 @@ export interface ProviderConnectionSpec {
 export interface ProviderConnectionStringData {
     host?: string
     token?: string
-    'credential-hash'?: string
+    ocmAPIToken?: string
 }
 
 export interface ProviderConnection {

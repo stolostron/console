@@ -221,7 +221,7 @@ export function CredentialsForm(props: {
     const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
     const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
 
-    // Red Hat Cloud State
+    // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
 
     function stateToData() {
@@ -328,6 +328,7 @@ export function CredentialsForm(props: {
 
             case Provider.redhatcloud:
                 data.spec!.ocmAPIToken = ocmAPIToken
+                data.stringData!.ocmAPIToken = ocmAPIToken
                 break
         }
         return packProviderConnection(data)
