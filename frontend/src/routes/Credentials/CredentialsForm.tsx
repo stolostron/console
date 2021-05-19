@@ -166,55 +166,59 @@ export function CredentialsForm(props: {
     const [namespace, setNamespace] = useState(providerConnection?.metadata.namespace ?? '')
 
     // Base Domain
-    const [baseDomain, setBaseDomain] = useState(providerConnection?.spec?.baseDomain ?? '')
+    const [baseDomain, setBaseDomain] = useState(providerConnection?.stringData?.baseDomain ?? '')
 
     // Pull Secret
-    const [pullSecret, setPullSecret] = useState(providerConnection?.spec?.pullSecret ?? '')
+    const [pullSecret, setPullSecret] = useState(providerConnection?.stringData?.pullSecret ?? '')
 
     // SSH Key
-    const [sshPublickey, setSshPublickey] = useState(providerConnection?.spec?.sshPublickey ?? '')
-    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.spec?.sshPrivatekey ?? '')
+    const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.sshPublickey ?? '')
+    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.sshPrivatekey ?? '')
 
     // Amazon Web Services State
-    const [awsAccessKeyID, setAwsAccessKeyID] = useState(providerConnection?.spec?.awsAccessKeyID ?? '')
+    const [awsAccessKeyID, setAwsAccessKeyID] = useState(providerConnection?.stringData?.awsAccessKeyID ?? '')
     const [awsSecretAccessKeyID, setAwsSecretAccessKeyID] = useState(
-        providerConnection?.spec?.awsSecretAccessKeyID ?? ''
+        providerConnection?.stringData?.awsSecretAccessKeyID ?? ''
     )
 
     // Azure Cloud State
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
-        providerConnection?.spec?.baseDomainResourceGroupName ?? ''
+        providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
-    const [clientId, setClientId] = useState(providerConnection?.spec?.clientId ?? '')
-    const [clientSecret, setClientSecret] = useState(providerConnection?.spec?.clientSecret ?? '')
-    const [tenantId, setTenantId] = useState(providerConnection?.spec?.tenantId ?? '')
-    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.spec?.subscriptionId ?? '')
+    const [clientId, setClientId] = useState(providerConnection?.stringData?.clientId ?? '')
+    const [clientSecret, setClientSecret] = useState(providerConnection?.stringData?.clientSecret ?? '')
+    const [tenantId, setTenantId] = useState(providerConnection?.stringData?.tenantId ?? '')
+    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.stringData?.subscriptionId ?? '')
 
     // Google
-    const [gcProjectID, setGcProjectID] = useState(providerConnection?.spec?.gcProjectID ?? '')
-    const [gcServiceAccountKey, setGcServiceAccountKey] = useState(providerConnection?.spec?.gcServiceAccountKey ?? '')
+    const [gcProjectID, setGcProjectID] = useState(providerConnection?.stringData?.gcProjectID ?? '')
+    const [gcServiceAccountKey, setGcServiceAccountKey] = useState(
+        providerConnection?.stringData?.gcServiceAccountKey ?? ''
+    )
 
     // VMWare
-    const [vcenter, setVcenter] = useState(providerConnection?.spec?.vcenter ?? '')
-    const [username, setUsername] = useState(providerConnection?.spec?.username ?? '')
-    const [password, setPassword] = useState(providerConnection?.spec?.password ?? '')
-    const [cacertificate, setCacertificate] = useState(providerConnection?.spec?.cacertificate ?? '')
-    const [vmClusterName, setVmClusterName] = useState(providerConnection?.spec?.vmClusterName ?? '')
-    const [datacenter, setDatacenter] = useState(providerConnection?.spec?.datacenter ?? '')
-    const [datastore, setDatastore] = useState(providerConnection?.spec?.datastore ?? '')
+    const [vcenter, setVcenter] = useState(providerConnection?.stringData?.vcenter ?? '')
+    const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
+    const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
+    const [cacertificate, setCacertificate] = useState(providerConnection?.stringData?.cacertificate ?? '')
+    const [vmClusterName, setVmClusterName] = useState(providerConnection?.stringData?.vmClusterName ?? '')
+    const [datacenter, setDatacenter] = useState(providerConnection?.stringData?.datacenter ?? '')
+    const [datastore, setDatastore] = useState(providerConnection?.stringData?.datastore ?? '')
 
     // OpenStack
-    const [openstackCloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.spec?.openstackCloudsYaml ?? '')
-    const [openstackCloud, setOpenstackCloud] = useState(providerConnection?.spec?.openstackCloud ?? '')
+    const [openstackCloudsYaml, setOpenstackCloudsYaml] = useState(
+        providerConnection?.stringData?.openstackCloudsYaml ?? ''
+    )
+    const [openstackCloud, setOpenstackCloud] = useState(providerConnection?.stringData?.openstackCloud ?? '')
 
     // BareMetal
-    const [libvirtURI, setLibvirtURI] = useState(providerConnection?.spec?.libvirtURI ?? '')
-    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.spec?.sshKnownHosts?.join(',') ?? '')
-    const [imageMirror, setImageMirror] = useState(providerConnection?.spec?.imageMirror ?? '')
-    const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.spec?.bootstrapOSImage ?? '')
-    const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.spec?.clusterOSImage ?? '')
+    const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
+    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts?.join(',') ?? '')
+    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
+    const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
+    const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
     const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
-        providerConnection?.spec?.additionalTrustBundle ?? ''
+        providerConnection?.stringData?.additionalTrustBundle ?? ''
     )
 
     // Ansible
@@ -222,10 +226,10 @@ export function CredentialsForm(props: {
     const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
 
     // Red Hat Cloud
-    const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
+    const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function stateToData() {
-        const data: ProviderConnection = {
+        const secret: ProviderConnection = {
             apiVersion: 'v1',
             kind: 'Secret',
             type: 'Opaque',
@@ -241,7 +245,6 @@ export function CredentialsForm(props: {
                 },
             },
             stringData: {},
-            spec: {},
         }
         let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
         if (annotations) {
@@ -249,60 +252,60 @@ export function CredentialsForm(props: {
             if (Object.keys(annotations).length === 0) annotations = undefined
         }
         if (annotations) {
-            data.metadata.annotations = annotations
+            secret.metadata.annotations = annotations
         }
         switch (credentialsType) {
             case Provider.aws:
-                data.spec!.awsAccessKeyID = awsAccessKeyID
-                data.spec!.awsSecretAccessKeyID = awsSecretAccessKeyID
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.awsAccessKeyID = awsAccessKeyID
+                secret.stringData!.awsSecretAccessKeyID = awsSecretAccessKeyID
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.azure:
-                data.spec!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                data.spec!.clientId = clientId
-                data.spec!.clientSecret = clientSecret
-                data.spec!.tenantId = tenantId
-                data.spec!.subscriptionId = subscriptionId
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
+                secret.stringData!.clientId = clientId
+                secret.stringData!.clientSecret = clientSecret
+                secret.stringData!.tenantId = tenantId
+                secret.stringData!.subscriptionId = subscriptionId
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.gcp:
-                data.spec!.gcProjectID = gcProjectID
-                data.spec!.gcServiceAccountKey = gcServiceAccountKey
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.gcProjectID = gcProjectID
+                secret.stringData!.gcServiceAccountKey = gcServiceAccountKey
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.vmware:
-                data.spec!.vcenter = vcenter
-                data.spec!.username = username
-                data.spec!.password = password
-                data.spec!.cacertificate = cacertificate
-                data.spec!.vmClusterName = vmClusterName
-                data.spec!.datacenter = datacenter
-                data.spec!.datastore = datastore
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.vcenter = vcenter
+                secret.stringData!.username = username
+                secret.stringData!.password = password
+                secret.stringData!.cacertificate = cacertificate
+                secret.stringData!.vmClusterName = vmClusterName
+                secret.stringData!.datacenter = datacenter
+                secret.stringData!.datastore = datastore
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.openstack:
-                data.spec!.openstackCloudsYaml = openstackCloudsYaml
-                data.spec!.openstackCloud = openstackCloud
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.openstackCloudsYaml = openstackCloudsYaml
+                secret.stringData!.openstackCloud = openstackCloud
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.baremetal:
-                data.spec!.libvirtURI = libvirtURI
-                data.spec!.sshKnownHosts = sshKnownHosts
+                secret.stringData!.libvirtURI = libvirtURI
+                secret.stringData!.sshKnownHosts = sshKnownHosts
                     .trim()
                     .split(/[\r\n]+/g)
                     .map((ssh) => {
@@ -312,26 +315,25 @@ export function CredentialsForm(props: {
                         if (ssh.endsWith('"')) ssh = ssh.slice(0, -1)
                         return ssh
                     })
-                data.spec!.imageMirror = imageMirror
-                data.spec!.bootstrapOSImage = bootstrapOSImage
-                data.spec!.clusterOSImage = clusterOSImage
-                data.spec!.additionalTrustBundle = additionalTrustBundle
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.imageMirror = imageMirror
+                secret.stringData!.bootstrapOSImage = bootstrapOSImage
+                secret.stringData!.clusterOSImage = clusterOSImage
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.ansible:
-                data.stringData!.host = ansibleHost
-                data.stringData!.token = ansibleToken
+                secret.stringData!.host = ansibleHost
+                secret.stringData!.token = ansibleToken
                 break
 
             case Provider.redhatcloud:
-                data.spec!.ocmAPIToken = ocmAPIToken
-                data.stringData!.ocmAPIToken = ocmAPIToken
+                secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
         }
-        return packProviderConnection(data)
+        return packProviderConnection(secret)
     }
     const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
     const titleTooltip = (

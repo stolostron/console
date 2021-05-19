@@ -127,10 +127,10 @@ export const setAvailableConnections = (control, secrets) => {
     control.availableMap = {}
     connections?.forEach?.((c) => {
         const unpackedSecret = unpackProviderConnection(c)
-        const spec = unpackedSecret.spec ?? {}
+        const stringData = unpackedSecret.stringData ?? {}
         const replacements = {}
-        Object.keys(spec).forEach((key) => {
-            replacements[key] = spec[key]
+        Object.keys(stringData).forEach((key) => {
+            replacements[key] = stringData[key]
         })
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
