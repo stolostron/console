@@ -12,6 +12,7 @@
     "alert.deleted.header": "{{credentialName}} discovery setting was removed successfully",
     "alert.msg": "You can configure settings in Clusters > Discovered clusters",
 
+    "techpreview.msg": "<bold>Tech preview</bold>: For more information, <a>view documentation</a> on Discovered clusters",
 
     "disable.title": "Delete discovery settings",
     "discoveryConfig.delete.btn": "Delete",
@@ -61,8 +62,7 @@
     "emptystate.enableClusterDiscovery": "Configure Discovery",
 
     "emptystate.discoveryEnabled.title": "No discovered clusters found",
-    "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, or configure Discovery again.",
-    "emptystate.viewDocumentation": "View documentation",
+    "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>",
 
     "dcTbl.name": "Name",
     "dcTbl.status": "Status",
