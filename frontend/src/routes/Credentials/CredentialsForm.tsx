@@ -20,7 +20,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, patchResource, replaceResource } from '../../lib/resource-request'
+import { createResource, replaceResource } from '../../lib/resource-request'
 import {
     validateBaseDomain,
     validateCertificate,

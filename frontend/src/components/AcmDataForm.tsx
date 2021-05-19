@@ -16,14 +16,9 @@ import {
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
-    Divider,
     Drawer,
-    DrawerActions,
-    DrawerCloseButton,
     DrawerContent,
     DrawerContentBody,
-    DrawerHead,
-    DrawerPanelBody,
     DrawerPanelContent,
     Flex,
     Form,
@@ -64,10 +59,10 @@ import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclama
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Fragment, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
-import * as YAML from 'yamljs'
 import useResizeObserver from '@react-hook/resize-observer'
+import { Fragment, ReactNode, useRef, useState } from 'react'
+import * as YAML from 'yamljs'
+import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
 
 export interface AcmDataFormProps {
     formData: FormData
