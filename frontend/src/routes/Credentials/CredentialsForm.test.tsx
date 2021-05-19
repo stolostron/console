@@ -81,11 +81,9 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('aws')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
         // AWS credentials
@@ -93,15 +91,8 @@ describe('add credentials page', () => {
         await typeByTestId('awsSecretAccessKeyID', providerConnection.spec?.awsSecretAccessKeyID!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
-        // Pull secret
+        // Pull secret and SSH
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -129,11 +120,9 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('azr')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
         // AZR credentials
@@ -144,15 +133,8 @@ describe('add credentials page', () => {
         await typeByTestId('subscriptionId', providerConnection.spec?.subscriptionId!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -177,11 +159,9 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('gcp')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
         // GCP credentials
@@ -189,15 +169,8 @@ describe('add credentials page', () => {
         await typeByTestId('gcServiceAccountKey', providerConnection.spec?.gcServiceAccountKey!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -227,35 +200,23 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('vmw')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
-        // vCenter credentials
+        // credentials
         await typeByTestId('vcenter', providerConnection.spec?.vcenter!)
         await typeByTestId('username', providerConnection.spec?.username!)
         await typeByTestId('password', providerConnection.spec?.password!)
         await typeByTestId('cacertificate', providerConnection.spec?.cacertificate!)
-        await clickByText('common:next')
-
-        // vSphere credentials
         await typeByTestId('vmClusterName', providerConnection.spec?.vmClusterName!)
         await typeByTestId('datacenter', providerConnection.spec?.datacenter!)
         await typeByTestId('datastore', providerConnection.spec?.datastore!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -280,11 +241,9 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('ost')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
         // ost credentials
@@ -292,15 +251,8 @@ describe('add credentials page', () => {
         await typeByTestId('openstackCloud', providerConnection.spec?.openstackCloud!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -329,11 +281,9 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('bmc')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
         await clickByText('common:next')
 
         // bmc credentials
@@ -348,15 +298,8 @@ describe('add credentials page', () => {
         await typeByTestId('additionalTrustBundle', providerConnection.spec?.additionalTrustBundle!)
         await clickByText('common:next')
 
-        // Base domain
-        await typeByTestId('baseDomain', providerConnection.spec?.baseDomain!)
-        await clickByText('common:next')
-
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.spec?.pullSecret!)
-        await clickByText('common:next')
-
-        // SSH key
         await typeByTestId('sshPrivatekey', providerConnection.spec?.sshPrivatekey!)
         await typeByTestId('sshPublickey', providerConnection.spec?.sshPublickey!)
         await clickByText('common:next')
@@ -377,9 +320,6 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('ans')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('common:next')
@@ -404,9 +344,6 @@ describe('add credentials page', () => {
 
         // Credentials type
         await clickByTestId('rhocm')
-        await clickByText('common:next')
-
-        // Credential details
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
         await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
         await clickByText('common:next')

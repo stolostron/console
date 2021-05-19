@@ -24,9 +24,13 @@ import {
     PageSection,
     Popover,
     Select,
+    SelectGroup,
     SelectOption,
+    SelectOptionObject,
     SelectProps,
     SelectVariant,
+    Split,
+    SplitItem,
     Stack,
     Text,
     TextArea,
@@ -291,14 +295,14 @@ export function AcmDataFormWizard(props: {
             return {
                 id: section.title,
                 name: (
-                    <span>
-                        {section.title}
+                    <Split>
+                        <SplitItem isFilled>{section.title}</SplitItem>
                         {hasError && (
                             <span style={{ paddingLeft: '8px' }}>
                                 <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
                             </span>
                         )}
-                    </span>
+                    </Split>
                 ),
                 component: (
                     <Form isHorizontal={isHorizontal}>
@@ -325,6 +329,7 @@ export function AcmDataFormWizard(props: {
                             showFormErrors={showFormErrors || showSectionErrors[section.title]}
                             isReadOnly={isSubmitting}
                             showSecrets={showSecrets}
+                            mode="wizard"
                         />
                     </Form>
                 ),
@@ -348,6 +353,7 @@ export function AcmDataFormWizard(props: {
                                 showFormErrors={showFormErrors || showSectionErrors[section.title]}
                                 isReadOnly={isSubmitting}
                                 showSecrets={showSecrets}
+                                mode="wizard"
                             />
                         </Form>
                     ),
@@ -625,6 +631,7 @@ export function AcmDataFormInputs(props: {
     showFormErrors?: boolean
     isReadOnly: boolean
     showSecrets: boolean
+    mode?: 'form' | 'wizard' | 'details'
 }) {
     const { inputs, showFormErrors, isReadOnly, showSecrets } = props
     return (
@@ -638,7 +645,14 @@ export function AcmDataFormInputs(props: {
                             <FormGroup
                                 id={`${input.id}-form-group`}
                                 fieldId={input.id}
-                                label={input.label}
+                                label={
+                                    props.mode === 'wizard' &&
+                                    input.type === 'Select' &&
+                                    input.mode === 'tiles' &&
+                                    input.groups
+                                        ? undefined
+                                        : input.label
+                                }
                                 isRequired={inputRequired(input)}
                                 helperTextInvalid={error}
                                 validated={validated}
@@ -737,13 +751,28 @@ export function AcmDataFormInput(props: {
                 </InputGroup>
             )
         }
-        case 'Select':
+        case 'Select': {
+            const options = selectOptions(input)
+            let selections: string | SelectOptionObject = inputValue(input)
+            if (input.mode === 'icon') {
+                selections = {
+                    toString: () => {
+                        const option = options.find((option) => option.value === inputValue(input))
+                        return (
+                            <Fragment>
+                                {option?.icon && <span style={{ paddingRight: '8px' }}>{option?.icon}</span>}
+                                {option?.text}
+                            </Fragment>
+                        ) as unknown as string
+                    },
+                }
+            }
             return (
                 <Fragment>
                     {input.mode !== 'tiles' ? (
                         <SelectWithToggle
                             id={input.id}
-                            selections={inputValue(input)}
+                            selections={selections}
                             variant={input.mode === 'icon' ? SelectVariant.single : SelectVariant.typeahead}
                             typeAheadAriaLabel="Select a state"
                             placeholderText={inputPlaceholder(input)}
@@ -753,43 +782,89 @@ export function AcmDataFormInput(props: {
                             isDisabled={isReadOnly || inputDisabled(input)}
                             validated={validated}
                         >
-                            {selectOptions(input).map((option, index) => {
-                                return (
-                                    <SelectOption key={index} value={option.value} description={option.description}>
-                                        {input.mode === 'icon' && option.icon && (
-                                            <Fragment>
-                                                {option.icon}
-                                                {'   '}
-                                            </Fragment>
-                                        )}
-                                        {option.text ?? option.value}
-                                    </SelectOption>
-                                )
-                            })}
+                            {input.groups
+                                ? input.groups.map((group, index) => {
+                                      return (
+                                          <SelectGroup key={index} label={group.group}>
+                                              {group.options.map((option, index) => {
+                                                  return (
+                                                      <SelectOption
+                                                          key={index}
+                                                          value={option.value}
+                                                          description={option.description}
+                                                      >
+                                                          {input.mode === 'icon' && option.icon && (
+                                                              <span style={{ paddingRight: '8px' }}>{option.icon}</span>
+                                                          )}
+                                                          {option.text ?? option.value}
+                                                      </SelectOption>
+                                                  )
+                                              })}
+                                          </SelectGroup>
+                                      )
+                                  })
+                                : selectOptions(input).map((option, index) => {
+                                      return (
+                                          <SelectOption
+                                              key={option.value}
+                                              value={option.value}
+                                              description={option.description}
+                                          >
+                                              {input.mode === 'icon' && option.icon && (
+                                                  <span style={{ paddingRight: '8px' }}>{option.icon}</span>
+                                              )}
+                                              {option.text ?? option.value}
+                                          </SelectOption>
+                                      )
+                                  })}
                         </SelectWithToggle>
+                    ) : input.groups ? (
+                        input.groups.map((group, index) => {
+                            return (
+                                <FormSection key={index}>
+                                    <Title headingLevel="h4">{group.group}</Title>
+                                    <Gallery hasGutter>
+                                        {group.options.map((option, index) => (
+                                            <Tile
+                                                key={index}
+                                                id={option.id}
+                                                icon={option.icon}
+                                                title={option.text ?? option.value}
+                                                isStacked
+                                                isDisplayLarge={input.isDisplayLarge}
+                                                isSelected={inputValue(input) === option.value}
+                                                onClick={() => input.onChange(option.value)}
+                                                isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
+                                            >
+                                                {option.description}
+                                            </Tile>
+                                        ))}
+                                    </Gallery>
+                                </FormSection>
+                            )
+                        })
                     ) : (
                         <Gallery hasGutter>
-                            {selectOptions(input).map((option, index) => {
-                                return (
-                                    <Tile
-                                        key={index}
-                                        id={option.id}
-                                        icon={option.icon}
-                                        title={option.text ?? option.value}
-                                        isStacked
-                                        isDisplayLarge={input.isDisplayLarge}
-                                        isSelected={inputValue(input) === option.value}
-                                        onClick={() => input.onChange(option.value)}
-                                        isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
-                                    >
-                                        {option.description}
-                                    </Tile>
-                                )
-                            })}
+                            {selectOptions(input).map((option, index) => (
+                                <Tile
+                                    key={index}
+                                    id={option.id}
+                                    icon={option.icon}
+                                    title={option.text ?? option.value}
+                                    isStacked
+                                    isDisplayLarge={input.isDisplayLarge}
+                                    isSelected={inputValue(input) === option.value}
+                                    onClick={() => input.onChange(option.value)}
+                                    isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
+                                >
+                                    {option.description}
+                                </Tile>
+                            ))}
                         </Gallery>
                     )}
                 </Fragment>
             )
+        }
         default:
             return <Fragment />
     }
@@ -827,8 +902,14 @@ function inputRequired(input: Input) {
 }
 
 function selectOptions(select: SelectInput): SelectInputOptions[] {
-    if (Array.isArray(select.options)) return select.options
-    if (typeof select.options === 'function') return select.options()
+    if (select.groups) {
+        return select.groups.map((group) => group.options).flat()
+    } else {
+        if (Array.isArray(select.options)) {
+            return select.options
+        }
+        if (typeof select.options === 'function') return select.options()
+    }
     return []
 }
 

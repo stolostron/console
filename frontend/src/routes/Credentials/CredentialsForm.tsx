@@ -52,6 +52,24 @@ const credentialProviders: Provider[] = [
     Provider.baremetal,
 ]
 
+enum ProviderGroup {
+    Automation = 'Automation credentials',
+    CloudProvider = 'Cloud provider credentials',
+    Infrastructure = 'Infrastructure credentials',
+}
+
+const providerGroup: Record<string, string> = {
+    [Provider.redhatcloud]: ProviderGroup.Automation,
+    [Provider.ansible]: ProviderGroup.Automation,
+    [Provider.aws]: ProviderGroup.CloudProvider,
+    [Provider.gcp]: ProviderGroup.CloudProvider,
+    [Provider.azure]: ProviderGroup.CloudProvider,
+    [Provider.ibm]: ProviderGroup.CloudProvider,
+    [Provider.openstack]: ProviderGroup.Infrastructure,
+    [Provider.baremetal]: ProviderGroup.Infrastructure,
+    [Provider.vmware]: ProviderGroup.Infrastructure,
+}
+
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { name, namespace } = match.params
     const { t } = useTranslation(['credentials', 'common'])
@@ -327,9 +345,13 @@ export function CredentialsForm(props: {
         breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
-                title: t('credentialsForm.credentialsType.title'),
-                wizardTitle: t('credentialsForm.credentialsType.wizardTitle'),
-                description: (
+                title: credentialsType
+                    ? t('credentialsForm.basicInformation.title')
+                    : t('credentialsForm.credentialsType.title'),
+                wizardTitle: credentialsType
+                    ? t('credentialsForm.basicInformation.wizardTitle')
+                    : t('credentialsForm.credentialsType.wizardTitle'),
+                description: !credentialsType && (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.credentialsType.wizardDescription')}
                     </a>
@@ -340,29 +362,54 @@ export function CredentialsForm(props: {
                         type: 'Select',
                         label: t('credentialsForm.credentialsType.label'),
                         placeholder: t('credentialsForm.credentialsType.placeholder'),
-                        // labelHelp: t('credentialsForm.credentialsType.labelHelp'), // TODO
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
-                        options: () =>
-                            credentialProviders.map((provider) => {
-                                return {
-                                    id: provider,
-                                    value: provider,
-                                    icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                    text: ProviderLongTextMap[provider],
-                                }
-                            }),
-                        mode: isEditing ? 'default' : 'tiles',
+                        groups: [
+                            {
+                                group: ProviderGroup.CloudProvider,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CloudProvider)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                            {
+                                group: ProviderGroup.Automation,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                            {
+                                group: ProviderGroup.Infrastructure,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Infrastructure)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                        ],
+                        mode: isEditing || credentialsType !== '' ? 'icon' : 'tiles',
                         isDisplayLarge: true,
                         isDisabled: isEditing,
                     },
-                ],
-            },
-            {
-                title: t('credentialsForm.basicInformation.title'),
-                wizardTitle: t('credentialsForm.basicInformation.wizardTitle'),
-                inputs: [
                     {
                         id: 'credentialsName',
                         type: 'Text',
@@ -374,6 +421,7 @@ export function CredentialsForm(props: {
                         validation: (value) => validateKubernetesDnsName(value, 'Connection name', t),
                         isRequired: true,
                         isDisabled: isEditing,
+                        isHidden: !credentialsType,
                     },
                     {
                         id: 'namespaceName',
@@ -390,6 +438,25 @@ export function CredentialsForm(props: {
                                 value: namespace,
                             })),
                         isDisabled: isEditing,
+                        isHidden: !credentialsType,
+                    },
+                    {
+                        id: 'baseDomain',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
+                        type: 'Text',
+                        label: t('credentialsForm.baseDomain.label'),
+                        placeholder: t('credentialsForm.baseDomain.placeholder'),
+                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
+                        value: baseDomain,
+                        onChange: setBaseDomain,
+                        validation: (v) => validateBaseDomain(v, t),
                     },
                 ],
             },
@@ -532,11 +599,11 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: t('credentialsForm.vCenterCredentials.title'),
-                wizardTitle: t('credentialsForm.vCenterCredentials.wizardTitle'),
+                title: t('credentialsForm.vCenter.title'),
+                wizardTitle: t('credentialsForm.vCenter.wizardTitle'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.vCenterCredentials.wizardDescription')}
+                        {t('credentialsForm.vCenter.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -586,18 +653,6 @@ export function CredentialsForm(props: {
                         validation: (value) => validateCertificate(value, t),
                         isRequired: true,
                     },
-                ],
-                columns: 1,
-            },
-            {
-                title: t('credentialsForm.vSphereCredentials.title'),
-                wizardTitle: t('credentialsForm.vSphereCredentials.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.vSphereCredentials.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
                     {
                         id: 'vmClusterName',
                         isHidden: credentialsType !== Provider.vmware,
@@ -812,36 +867,7 @@ export function CredentialsForm(props: {
                 ],
                 columns: 1,
             },
-            {
-                title: t('credentialsForm.baseDomain.title'),
-                wizardTitle: t('credentialsForm.baseDomain.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.baseDomain.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
-                    {
-                        id: 'baseDomain',
-                        isHidden: ![
-                            Provider.aws,
-                            Provider.azure,
-                            Provider.baremetal,
-                            Provider.gcp,
-                            Provider.openstack,
-                            Provider.vmware,
-                        ].includes(credentialsType as Provider),
-                        type: 'Text',
-                        label: t('credentialsForm.baseDomain.label'),
-                        placeholder: t('credentialsForm.baseDomain.placeholder'),
-                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
-                        value: baseDomain,
-                        onChange: setBaseDomain,
-                        validation: (v) => validateBaseDomain(v, t),
-                    },
-                ],
-                columns: 1,
-            },
+
             {
                 title: t('credentialsForm.pullSecret.title'),
                 wizardTitle: t('credentialsForm.pullSecret.wizardTitle'),
@@ -871,18 +897,6 @@ export function CredentialsForm(props: {
                         isRequired: true,
                         isSecret: true,
                     },
-                ],
-                columns: 1,
-            },
-            {
-                title: t('credentialsForm.sshKey.title'),
-                wizardTitle: t('credentialsForm.sshKey.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.sshKey.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
                     {
                         id: 'sshPrivatekey',
                         isHidden: ![

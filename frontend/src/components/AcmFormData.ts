@@ -65,6 +65,11 @@ export interface TextArea extends InputBase {
     validation?: (value: string) => string | undefined
 }
 
+export interface SelectGroup {
+    group: string
+    options: SelectInputOptions[]
+}
+
 export interface SelectInputOptions {
     id: string
     value: string
@@ -76,7 +81,8 @@ export interface SelectInputOptions {
 export interface SelectInput extends InputBase {
     type: 'Select'
     label: string
-    options: SelectInputOptions[] | (() => SelectInputOptions[])
+    groups?: SelectGroup[]
+    options?: SelectInputOptions[] | (() => SelectInputOptions[])
     value: string | (() => string)
     onChange: (value: string) => void
     validation?: (value: string) => string
