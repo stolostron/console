@@ -100,8 +100,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
             </>
         )
     } else if (
-        props.cluster?.distribution.upgradeInfo.hasAvailableUpdates
-        //&& !props.cluster?.distribution.upgradeInfo.isSelectingChannel //curator will not be able to be modified
+        props.cluster?.distribution.upgradeInfo.isReadyUpdates
     ) {
         // UPGRADE AVAILABLE
         return (

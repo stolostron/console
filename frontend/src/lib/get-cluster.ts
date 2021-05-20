@@ -104,14 +104,13 @@ export type Nodes = {
 
 export type UpgradeInfo = {
     isUpgrading: boolean
-    hasAvailableUpdates: boolean
+    isReadyUpdates: boolean
     upgradePercentage: string
-    upgradeMessage: string
     upgradeFailed: boolean
     currentVersion: string | undefined
     desiredVersion: string | undefined
     availableUpdates: string[]
-    hasAvailableChannels: boolean
+    isReadySelectChannels: boolean
     isSelectingChannel: boolean
     currentChannel: string | undefined
     desiredChannel: string | undefined
@@ -368,13 +367,12 @@ export function getDistributionInfo(
 
     const upgradeInfo: UpgradeInfo = {
         isUpgrading: false,
-        hasAvailableUpdates: false,
+        isReadyUpdates: false,
         upgradePercentage: '',
-        upgradeMessage: '',
         upgradeFailed: false,
         currentVersion: undefined,
         desiredVersion: undefined,
-        hasAvailableChannels: false,
+        isReadySelectChannels: false,
         isSelectingChannel: false,
         currentChannel: undefined,
         desiredChannel: undefined,
@@ -430,16 +428,15 @@ export function getDistributionInfo(
         const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
         const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
         upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
-
+        const desiredVersion =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
+            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion // backward compatibility
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
-            curatorIsUpgrading ||
-            managedClusterInfo?.status?.distributionInfo?.ocp?.version !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+            curatorIsUpgrading || desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         upgradeInfo.upgradeFailed =
-            (managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            (desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
 
@@ -452,23 +449,24 @@ export function getDistributionInfo(
                     return !!version
                 }) || []
 
-        const hasAvailableUpdates =
+        const isReadyUpdates =
             upgradeInfo.availableUpdates &&
             upgradeInfo.availableUpdates.length > 0 &&
             !upgradeInfo.upgradeFailed &&
             !isManagedOpenShift &&
             !upgradeInfo.isUpgrading &&
             curatorIsIdle
-        upgradeInfo.hasAvailableUpdates = !!hasAvailableUpdates
+        upgradeInfo.isReadyUpdates = !!isReadyUpdates
 
         upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
-        const hasAvailableChannels =
+        const isReadySelectChannels =
             upgradeInfo.availableChannels &&
             upgradeInfo.availableChannels.length > 0 &&
             !isManagedOpenShift &&
             !upgradeInfo.isSelectingChannel &&
-            curatorIsIdle
-        upgradeInfo.hasAvailableChannels = !!hasAvailableChannels
+            curatorIsIdle &&
+            managedCluster?.status?.conditions
+        upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
 
         upgradeInfo.prehooks = {
             hasHooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
@@ -483,9 +481,7 @@ export function getDistributionInfo(
             failed: isUpgradeCuration && checkCuratorConditionFailed('posthook-ansiblejob', curatorConditions),
         }
         upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
-        upgradeInfo.desiredVersion = curatorIsUpgrading
-            ? clusterCurator?.spec?.upgrade?.desiredUpdate
-            : managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version
+        upgradeInfo.desiredVersion = curatorIsUpgrading ? clusterCurator?.spec?.upgrade?.desiredUpdate : desiredVersion
         upgradeInfo.currentChannel = managedClusterInfo?.status?.distributionInfo?.ocp?.channel
         upgradeInfo.desiredChannel = isSelectingChannel
             ? clusterCurator?.spec?.upgrade?.channel

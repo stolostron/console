@@ -18,7 +18,7 @@ const mockDistributionInfo: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: false,
         isUpgrading: false,
-        hasAvailableUpdates: true,
+        isReadyUpdates: true,
         availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
         currentVersion: '1.2.3',
     },
@@ -36,7 +36,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: false,
         isUpgrading: true,
-        hasAvailableUpdates: false,
+        isReadyUpdates: false,
         availableUpdates: ['1.2.4', '1.2.5'],
         currentVersion: '1.2.3',
     },
@@ -54,7 +54,7 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: false,
         isUpgrading: false,
-        hasAvailableUpdates: false,
+        isReadyUpdates: false,
         availableUpdates: [],
         currentVersion: '1.2.3',
     },
@@ -72,7 +72,7 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: true,
         isUpgrading: false,
-        hasAvailableUpdates: false,
+        isReadyUpdates: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
     },
@@ -90,7 +90,7 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: false,
         isUpgrading: false,
-        hasAvailableUpdates: true,
+        isReadyUpdates: true,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
     },
@@ -108,7 +108,7 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
     upgradeInfo: {
         upgradeFailed: false,
         isUpgrading: false,
-        hasAvailableUpdates: false,
+        isReadyUpdates: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
     },

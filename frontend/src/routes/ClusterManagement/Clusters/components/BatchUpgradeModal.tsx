@@ -32,10 +32,9 @@ const compareVersion = (a: string, b: string) => {
 }
 
 const isUpgradeable = (c: Cluster) => {
-    const hasAvailableUpgrades = c.distribution?.upgradeInfo?.hasAvailableUpdates
-    const isUpgrading = c.distribution?.upgradeInfo?.isUpgrading
+    const hasAvailableUpgrades = c.distribution?.upgradeInfo?.isReadyUpdates
     const isReady = c.status === ClusterStatus.ready
-    return (!!c.name && isReady && hasAvailableUpgrades && !isUpgrading) || false
+    return (!!c.name && isReady && hasAvailableUpgrades) || false
 }
 
 const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {

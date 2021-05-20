@@ -303,7 +303,7 @@ export function ClustersTable(props: {
                     },
                     {
                         id: 'selectChannels',
-                        title: t('managed.upgrade.selectChannel.plural'),
+                        title: t('managed.selectChannel.plural'),
                         click: (managedClusters: Array<Cluster>) => {
                             if (!managedClusters) return
                             setSelectChannels(managedClusters)

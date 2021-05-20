@@ -35,7 +35,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
-    const leftItems = [
+    let leftItems = [
         {
             key: t('table.clusterName'),
             value: (
@@ -111,7 +111,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     </Popover>
                 </span>
             ),
-            keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo.hasAvailableChannels && (
+            keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo.isReadySelectChannels && (
                 <RbacButton
                     onClick={() => {
                         if (cluster) {
@@ -146,8 +146,8 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         },
     ]
     // should only show channel for ocp clusters with version
-    if (!cluster?.distribution?.upgradeInfo.currentVersion) {
-        leftItems.filter((item) => item.filterKey !== 'channel')
+    if (!cluster?.distribution?.ocp?.version) {
+        leftItems = leftItems.filter((item) => item.filterKey !== 'channel')
     }
     return (
         <AcmPageContent id="overview">

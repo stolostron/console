@@ -18,18 +18,22 @@ import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 const isChannelSelectable = (c: Cluster) => {
-    const hasAvailableChannels = c.distribution?.upgradeInfo?.hasAvailableChannels
-    const isUpgrading = c.distribution?.upgradeInfo?.isUpgrading
-    const isSelectingChannel = c.distribution?.upgradeInfo?.isSelectingChannel
+    const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels
     const isReady = c.status === ClusterStatus.ready
-    return (!!c.name && isReady && hasAvailableChannels && !isUpgrading && !isSelectingChannel) || false
+    return (!!c.name && isReady && isReadySelectChannels) || false
 }
 
 const setCurrentChannel = (clusters: Array<Cluster> | undefined): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
-            res[cluster.name] = res[cluster.name] ? res[cluster.name] : cluster.distribution?.upgradeInfo.currentChannel || ''
+            const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
+            const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
+            let defaultChannel = availableChannels.length > 0 ? availableChannels[0]: ''
+            if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
+                defaultChannel = currentChannel
+            }
+            res[cluster.name] = res[cluster.name] ? res[cluster.name] : defaultChannel
         }
     })
     return res
@@ -55,8 +59,8 @@ export function BatchChannelSelectModal(props: {
         <BulkActionModel<Cluster>
             open={props.open}
             title={t('bulk.title.selectChannel')}
-            action={t('upgrade.submit')}
-            processing={t('upgrade.submit.processing')}
+            action={t('upgrade.selectChannel.submit')}
+            processing={t('upgrade.selectChannel.submit.processing')}
             resources={channelSelectableClusters}
             close={() => {
                 props.close()
@@ -79,10 +83,10 @@ export function BatchChannelSelectModal(props: {
                     header: t('upgrade.table.newchannel'),
                     cell: (cluster: Cluster) => {
                         const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
-                        const hasAvailableChannels = cluster.distribution?.upgradeInfo?.hasAvailableChannels
+                        const isReadySelectChannels = cluster.distribution?.upgradeInfo?.isReadySelectChannels
                         return (
                             <div>
-                                {hasAvailableChannels && (
+                                {isReadySelectChannels && (
                                     <>
                                         <AcmSelect
                                             value={selectChannels[cluster.name || ''] || ''}
