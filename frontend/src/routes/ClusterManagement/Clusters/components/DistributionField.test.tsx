@@ -126,14 +126,13 @@ function getClusterCuratoResourceAttributes(name: string, verb: string) {
     } as ResourceAttributes
 }
 
-
 describe('DistributionField', () => {
     const renderDistributionInfoField = async (data: DistributionInfo, allowUpgrade: boolean, hasUpgrade = false) => {
         let nockAction: nock.Scope | undefined = undefined
         let nockAction2: nock.Scope | undefined = undefined
         if (hasUpgrade) {
-            nockAction = nockRBAC(getClusterCuratoResourceAttributes('clusterName','patch'), allowUpgrade)
-            nockAction2 = nockRBAC(getClusterCuratoResourceAttributes('clusterName','create'), allowUpgrade)
+            nockAction = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'patch'), allowUpgrade)
+            nockAction2 = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'create'), allowUpgrade)
         }
 
         const mockCluster: Cluster = {

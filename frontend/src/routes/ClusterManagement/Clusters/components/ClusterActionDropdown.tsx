@@ -291,17 +291,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'hibernate-cluster')
     }
 
-    if (
-        cluster.status !== ClusterStatus.ready ||
-        !cluster.distribution?.upgradeInfo?.isReadyUpdates
-    ) {
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
         actions = actions.filter((a) => a.id !== 'upgrade-cluster')
     }
 
-    if (
-        cluster.status !== ClusterStatus.ready ||
-        !cluster.distribution?.upgradeInfo?.isReadySelectChannels 
-    ) {
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
         actions = actions.filter((a) => a.id !== 'select-channel')
     }
 

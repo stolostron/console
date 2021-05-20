@@ -29,7 +29,7 @@ const setCurrentChannel = (clusters: Array<Cluster> | undefined): Record<string,
         if (cluster.name) {
             const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
             const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
-            let defaultChannel = availableChannels.length > 0 ? availableChannels[0]: ''
+            let defaultChannel = availableChannels.length > 0 ? availableChannels[0] : ''
             if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
                 defaultChannel = currentChannel
             }

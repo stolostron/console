@@ -240,7 +240,9 @@ describe('BatchChannelSelectModal', () => {
             userEvent.click(getByText('upgrade.selectChannel.submit.processing')) // do additional click. make sure not calling upgrade again
             userEvent.click(getByText('upgrade.selectChannel.submit.processing'))
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy(), { timeout: 5000 })
+            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy(), {
+                timeout: 5000,
+            })
             await waitFor(() => expect(isClosed).toBe(true))
         })
     })

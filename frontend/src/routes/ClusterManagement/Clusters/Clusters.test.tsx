@@ -173,10 +173,10 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
                     { version: '1.2.5', image: '1.2.5' },
                 ],
                 desired: {
-                    channels: ['stable-1.2','stable-1.3'],
+                    channels: ['stable-1.2', 'stable-1.3'],
                     version: '1.2.3',
-                    image: 'abc'
-                }
+                    image: 'abc',
+                },
             },
         },
     },
@@ -226,10 +226,10 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
                     { version: '1.2.5', image: '1.2.5' },
                 ],
                 desired: {
-                    channels: ['stable-1.2','stable-1.3'],
+                    channels: ['stable-1.2', 'stable-1.3'],
                     version: '1.2.3',
-                    image: 'abc'
-                }
+                    image: 'abc',
+                },
             },
         },
         nodeList: [
@@ -403,7 +403,6 @@ describe('Clusters Page', () => {
         await waitForNotText('managed.upgrade')
         await waitForNotText('managed.selectChannel')
     })
-
 
     test('overflow menu should allow upgrade if has available upgrade', async () => {
         await clickByLabel('Actions', 3)

@@ -240,7 +240,7 @@ export function AcmDataFormDefault(props: {
                                                 const result = formData.submit()
                                                 if ((result as unknown) instanceof Promise) {
                                                     setSubmitText(formData.submittingText)
-                                                    ;((result as unknown) as Promise<void>).catch((err) => {
+                                                    ;(result as unknown as Promise<void>).catch((err) => {
                                                         setSubmitError(err.message)
                                                         setSubmitText(formData.submitText)
                                                     })
@@ -438,7 +438,7 @@ export function AcmDataFormWizard(props: {
                                                             const result = formData.submit()
                                                             if ((result as unknown) instanceof Promise) {
                                                                 setSubmitText(formData.submittingText)
-                                                                ;((result as unknown) as Promise<void>).catch((err) => {
+                                                                ;(result as unknown as Promise<void>).catch((err) => {
                                                                     setSubmitError(err.message)
                                                                     setSubmitText(formData.submitText)
                                                                 })

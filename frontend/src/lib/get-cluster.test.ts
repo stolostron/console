@@ -263,7 +263,7 @@ describe('getDistributionInfo', () => {
             mockClusterCurator
         )
         expect(d?.upgradeInfo.availableUpdates).toEqual(['1.2.4'])
-        expect(d?.upgradeInfo.availableChannels).toEqual(['stable-1.3','stable-1.2'])
+        expect(d?.upgradeInfo.availableChannels).toEqual(['stable-1.3', 'stable-1.2'])
         expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
         expect(d?.upgradeInfo.isSelectingChannel).toBeFalsy()
         expect(d?.upgradeInfo.desiredChannel).toEqual('stable-1.2')
@@ -315,13 +315,13 @@ describe('getDistributionInfo', () => {
             mockManagedClusterInfoHasAvailableUpdates,
             mockManagedClusterOCM,
             mockClusterDeployment,
-            mockClusterCurator, 
+            mockClusterCurator
         )
         expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
         expect(d1?.upgradeInfo.isReadySelectChannels).toBeFalsy()
-        expect(d1?.upgradeInfo.isReadyUpdates).toBeFalsy() 
+        expect(d1?.upgradeInfo.isReadyUpdates).toBeFalsy()
     })
-    it('should return update failed only if update is failed', ()=>{
+    it('should return update failed only if update is failed', () => {
         const d1 = getDistributionInfo(
             mockManagedClusterInfoFailedUpdating,
             mockManagedCluster,
@@ -349,7 +349,6 @@ describe('getDistributionInfo', () => {
         expect(d2?.upgradeInfo.currentVersion).toEqual('1.2.3')
         expect(d2?.upgradeInfo.desiredVersion).toEqual('1.2.4')
         expect(d2?.upgradeInfo.isUpgrading).toBeTruthy()
-
     })
     it('should return channel selecting if curator is running & having a desired channel', () => {
         const d1 = getDistributionInfo(

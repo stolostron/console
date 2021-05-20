@@ -99,9 +99,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 />
             </>
         )
-    } else if (
-        props.cluster?.distribution.upgradeInfo.isReadyUpdates
-    ) {
+    } else if (props.cluster?.distribution.upgradeInfo.isReadyUpdates) {
         // UPGRADE AVAILABLE
         return (
             <>

@@ -344,7 +344,7 @@ export async function fetchRetry<T>(options: {
             } catch {}
 
             if ((responseData as any)?.kind === StatusKind) {
-                const status = (responseData as unknown) as Status
+                const status = responseData as unknown as Status
                 if (status.status !== 'Success') {
                     if (status.code === 401) {
                         // 401 is returned from kubernetes in a Status object if token is not valid

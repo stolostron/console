@@ -464,8 +464,7 @@ export function getDistributionInfo(
             upgradeInfo.availableChannels.length > 0 &&
             !isManagedOpenShift &&
             !upgradeInfo.isSelectingChannel &&
-            curatorIsIdle &&
-            managedCluster?.status?.conditions
+            curatorIsIdle
         upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
 
         upgradeInfo.prehooks = {
