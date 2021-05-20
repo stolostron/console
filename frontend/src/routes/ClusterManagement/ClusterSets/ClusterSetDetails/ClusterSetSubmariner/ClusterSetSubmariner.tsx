@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import {
@@ -23,19 +23,32 @@ import {
     AcmModal,
     AcmForm,
     AcmAlertContext,
-    AcmMultiSelect,
+    AcmSelect,
     AcmSubmit,
     AcmInlineStatus,
     StatusType,
     AcmExpandableCard,
     AcmButton,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../lib/rbac-util'
-import { ManagedClusterAddOn, ManagedClusterAddOnDefinition } from '../../../../../resources/managed-cluster-add-on'
+import { Cluster } from '../../../../../lib/get-cluster'
+import { IResource } from '../../../../../resources/resource'
+import { Secret, listNamespaceSecrets } from '../../../../../resources/secret'
+import {
+    SubmarinerConfig,
+    SubmarinerConfigApiVersion,
+    SubmarinerConfigKind,
+} from '../../../../../resources/submariner-config'
+import {
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+} from '../../../../../resources/managed-cluster-add-on'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
@@ -326,6 +339,9 @@ export function ClusterSetSubmarinerPageContent() {
     )
 }
 
+// supported providers for creating a SubmarinerConfig resource
+const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware]
+
 function InstallSubmarinerModal(props: {
     isOpen: boolean
     onClose: () => void
@@ -333,16 +349,54 @@ function InstallSubmarinerModal(props: {
 }) {
     const { t } = useTranslation(['cluster'])
     const { clusters } = useContext(ClusterSetContext)
-    const [selected, setSelected] = useState<string[] | undefined>(undefined)
-
-    function reset() {
-        props?.onClose()
-        setSelected(undefined)
-    }
+    const [selectedCluster, setSelectedCluster] = useState<Cluster | undefined>(undefined)
+    const [secretList, setSecretList] = useState<Secret[] | undefined>(undefined)
+    const [selectedSecret, setSelectedSecret] = useState<string | undefined>(undefined)
+    const [fetchSecret, setFetchSecret] = useState<boolean>(false)
 
     const availableClusters = clusters!.filter((cluster) => {
         return !props.submarinerAddons.find((addon) => addon.metadata.namespace === cluster.namespace)
     })
+
+    useEffect(() => {
+        if (fetchSecret && selectedCluster) {
+            setFetchSecret(false)
+            /*
+                this map correlates to the secret name from Create cluster page
+                <cluster-name>-<providerMapKey>-creds
+            */
+            const providerMapKey: Record<string, string> = {
+                [Provider.aws]: 'aws',
+                [Provider.gcp]: 'gcp',
+                [Provider.azure]: 'azure',
+                [Provider.vmware]: 'vsphere',
+                [Provider.openstack]: 'openstack',
+            }
+            listNamespaceSecrets(selectedCluster.namespace!)
+                .promise.then((result) => {
+                    setSecretList(result)
+
+                    if (submarinerConfigProviders.includes(selectedCluster!.provider!)) {
+                        // attempt to auto-discover the provider credentials
+                        const providerSecret = result.find(
+                            (secret) =>
+                                secret.metadata.name ===
+                                `${selectedCluster!.name}-${providerMapKey[selectedCluster!.provider!]}-creds`
+                        )
+                        setSelectedSecret(providerSecret?.metadata.name)
+                    }
+                })
+                .catch(() => {})
+        }
+    }, [selectedCluster, availableClusters, fetchSecret])
+
+    function reset() {
+        props?.onClose()
+        setSelectedCluster(undefined)
+        setSecretList(undefined)
+        setSelectedSecret(undefined)
+        setFetchSecret(false)
+    }
 
     return (
         <AcmModal
@@ -351,27 +405,53 @@ function InstallSubmarinerModal(props: {
             isOpen={props.isOpen}
             onClose={reset}
         >
-            <AcmForm style={{ gap: 0 }}>
+            <AcmForm>
                 <AcmAlertContext.Consumer>
                     {(alertContext) => (
                         <>
                             <div style={{ marginBottom: '12px' }}>
                                 {t('managed.clusterSets.submariner.addons.install.message')}
                             </div>
-                            <AcmMultiSelect
+                            <AcmSelect
+                                variant="typeahead"
                                 id="select-clusters"
                                 label={t('managed.clusterSets.submariner.addons.install.select')}
                                 placeholder={t('managed.clusterSets.submariner.addons.install.placeholder')}
-                                value={selected}
+                                value={selectedCluster?.name}
                                 isRequired
-                                onChange={(addons) => setSelected(addons)}
+                                onChange={(selected) => {
+                                    const targetCluster: Cluster | undefined = availableClusters.find(
+                                        (c) => c.name === selected
+                                    )
+                                    setSelectedCluster(targetCluster)
+                                    setFetchSecret(true)
+                                }}
                             >
                                 {availableClusters.map((cluster) => (
                                     <SelectOption key={cluster.name} value={cluster.name}>
                                         {cluster.name}
                                     </SelectOption>
                                 ))}
-                            </AcmMultiSelect>
+                            </AcmSelect>
+
+                            {submarinerConfigProviders.includes(selectedCluster?.provider!) && (
+                                <AcmSelect
+                                    variant="typeahead"
+                                    id="select-provider-secret"
+                                    label={t('managed.clusterSets.submariner.addons.secret.select')}
+                                    placeholder={t('managed.clusterSets.submariner.addons.secret.placeholder')}
+                                    labelHelp={t('managed.clusterSets.submariner.addons.secret.helperText')}
+                                    value={selectedSecret}
+                                    isRequired={submarinerConfigProviders.includes(selectedCluster?.provider!)}
+                                    onChange={(secret) => setSelectedSecret(secret)}
+                                >
+                                    {secretList?.map((secret) => (
+                                        <SelectOption key={secret.metadata.name} value={secret.metadata.name}>
+                                            {secret.metadata.name}
+                                        </SelectOption>
+                                    ))}
+                                </AcmSelect>
+                            )}
                             <ActionGroup>
                                 <AcmSubmit
                                     id="install"
@@ -381,20 +461,35 @@ function InstallSubmarinerModal(props: {
                                     onClick={async () => {
                                         alertContext.clearAlerts()
                                         return new Promise(async (resolve, reject) => {
-                                            const requests = resultsSettled(
-                                                selected!.map((cluster) => {
-                                                    return createResource({
-                                                        ...ManagedClusterAddOnDefinition,
+                                            const calls: IResource[] = [
+                                                createResource<ManagedClusterAddOn>({
+                                                    apiVersion: ManagedClusterAddOnApiVersion,
+                                                    kind: ManagedClusterAddOnKind,
+                                                    metadata: {
+                                                        name: submariner,
+                                                        namespace: selectedCluster?.namespace!,
+                                                    },
+                                                    spec: {
+                                                        installNamespace: 'submariner-operator',
+                                                    },
+                                                }),
+                                            ]
+                                            if (selectedSecret) {
+                                                calls.push(
+                                                    createResource<SubmarinerConfig>({
+                                                        apiVersion: SubmarinerConfigApiVersion,
+                                                        kind: SubmarinerConfigKind,
                                                         metadata: {
-                                                            name: submariner,
-                                                            namespace: cluster,
+                                                            name: 'subconfig',
+                                                            namespace: selectedCluster?.namespace!,
                                                         },
                                                         spec: {
-                                                            installNamespace: 'submariner-operator',
+                                                            credentialsSecret: { name: selectedSecret },
                                                         },
                                                     })
-                                                })
-                                            )
+                                                )
+                                            }
+                                            const requests = resultsSettled(calls)
                                             const results = await requests.promise
                                             const errors: string[] = []
                                             results.forEach((res) => {
