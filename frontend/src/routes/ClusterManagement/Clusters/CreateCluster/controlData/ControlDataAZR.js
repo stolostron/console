@@ -49,6 +49,7 @@ const regions = [
     'westeurope',
     'westus',
     'westus2',
+    'westus3',
     'australiacentral',
     'australiasoutheast',
     'canadaeast',
@@ -60,6 +61,8 @@ const regions = [
     'westindia',
 ]
 
+//  List vm sizes in a location/region
+//    az vm list-sizes --location eastus --output table
 const masterInstanceTypes = [
     { value: 'Standard_D2s_v3', description: '2 vCPU, 8 GiB RAM - General Purpose' },
     { value: 'Standard_D4s_v3', description: '4 vCPU, 16 GiB RAM - General Purpose' },
