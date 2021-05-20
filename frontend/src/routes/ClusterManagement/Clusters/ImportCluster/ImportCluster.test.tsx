@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, managedClusterSetsState, secretsState } from '../../../../atoms'
-import { mockBadRequestStatus, nockCreate, nockDelete, nockGet, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { mockBadRequestStatus, nockCreate, nockGet, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../lib/test-metadata'
 import {
     clickByTestId,
@@ -349,7 +349,6 @@ describe('ImportCluster', () => {
     test('handles resource creation errors', async () => {
         const createProjectNock = nockCreate(mockProject, mockProjectResponse)
         const badRequestNock = nockCreate(mockManagedCluster, mockBadRequestStatus)
-        const deleteProjectNock = nockDelete(mockProjectResponse)
 
         render(<Component />)
 
@@ -357,7 +356,7 @@ describe('ImportCluster', () => {
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
         await clickByText('import.form.submit')
-        await waitForNocks([createProjectNock, badRequestNock, deleteProjectNock])
+        await waitForNocks([createProjectNock, badRequestNock])
         await waitForText(mockBadRequestStatus.message, true)
     })
 })
