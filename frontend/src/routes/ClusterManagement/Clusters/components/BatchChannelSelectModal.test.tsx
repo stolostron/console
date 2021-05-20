@@ -152,14 +152,7 @@ const mockClusterOffline: Cluster = {
 }
 
 const allClusters: Array<Cluster> = [mockClusterNoAvailable, mockClusterReady1, mockClusterReady2, mockClusterOffline]
-const clusterCuratorReady1 = {
-    apiVersion: ClusterCuratorDefinition.apiVersion,
-    kind: ClusterCuratorDefinition.kind,
-    metadata: {
-        name: 'cluster-1-ready1',
-        namespace: 'cluster-1-ready1',
-    },
-}
+
 const clusterCuratorReady2 = {
     apiVersion: ClusterCuratorDefinition.apiVersion,
     kind: ClusterCuratorDefinition.kind,
