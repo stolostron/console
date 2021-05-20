@@ -8,14 +8,14 @@ export function DiscoNotification() {
     const { t } = useTranslation(['discovery'])
     const [closed, setClosed] = useState<Boolean>(false)
 
-    if (!localStorage.getItem('DISCOVERY_OP') || closed) {
+    if (!sessionStorage.getItem('DISCOVERY_OP') || closed) {
         return null
     }
 
-    const jsonStr = JSON.parse(localStorage.getItem('DISCOVERY_OP')!)
+    const jsonStr = JSON.parse(sessionStorage.getItem('DISCOVERY_OP')!)
 
     function closeNotifications() {
-        localStorage.removeItem('DISCOVERY_OP')
+        sessionStorage.removeItem('DISCOVERY_OP')
         setClosed(true)
     }
 

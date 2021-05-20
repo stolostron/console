@@ -81,13 +81,13 @@ export function ImportClusterPageContent() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
-    const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterName') ?? '')
+    const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterDisplayName') ?? '')
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [submitted, setSubmitted] = useState<boolean>(false)
     const [importCommand, setImportCommand] = useState<string | undefined>()
     const [token, setToken] = useState<string | undefined>()
-    const [server, setServer] = useState<string | undefined>()
+    const [server, setServer] = useState<string | undefined>(sessionStorage.getItem('DiscoveredClusterApiURL') ?? '')
     const [kubeConfig, setKubeConfig] = useState<string | undefined>()
     const [importMode, setImportMode] = useState<ImportMode>(ImportMode.manual)
 
@@ -210,6 +210,12 @@ export function ImportClusterPageContent() {
                     <AcmSubmit
                         id="submit"
                         variant="primary"
+                        isDisabled={
+                            !clusterName ||
+                            submitted ||
+                            (importMode === ImportMode.kubeconfig && !kubeConfig) ||
+                            (importMode === ImportMode.token && (!server || !token))
+                        }
                         onClick={async () => {
                             setSubmitted(true)
                             alertContext.clearAlerts()
