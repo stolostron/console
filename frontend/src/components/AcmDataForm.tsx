@@ -127,16 +127,18 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                             </ToggleGroup>
                                         </ActionListItem>
                                     )}
-                                    <ActionListItem>
-                                        <Switch
-                                            label="YAML"
-                                            isChecked={drawerExpanded}
-                                            onChange={() => {
-                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
-                                                setDrawerExpanded(!drawerExpanded)
-                                            }}
-                                        />
-                                    </ActionListItem>
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <ActionListItem>
+                                            <Switch
+                                                label="YAML"
+                                                isChecked={drawerExpanded}
+                                                onChange={() => {
+                                                    localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                    setDrawerExpanded(!drawerExpanded)
+                                                }}
+                                            />
+                                        </ActionListItem>
+                                    )}
                                 </ActionList>
                             }
                         />
