@@ -165,7 +165,7 @@ export function ImportCommand(props: ImportCommandProps) {
 }
 
 export async function pollImportYamlSecret(clusterName: string): Promise<string> {
-    let retries = 10
+    let retries = 20
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
             .promise.then((secret) => {

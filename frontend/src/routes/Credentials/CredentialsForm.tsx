@@ -706,6 +706,7 @@ export function CredentialsForm(props: {
                         value: openstackCloudsYaml,
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
+                        isSecret: true,
                         // TODO YAML VALIDATION
                     },
                     {
