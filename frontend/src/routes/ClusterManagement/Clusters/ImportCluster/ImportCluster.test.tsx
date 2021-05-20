@@ -62,7 +62,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             console: 'https://console-openshift-console.apps.foobar.dev01.red-chesterfield.com',
             creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'foobar',
-            type: "OCP",
+            type: 'OCP',
             openshiftVersion: '4.5.5',
             providerConnections: [
                 {

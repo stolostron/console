@@ -266,8 +266,7 @@ export function DiscoveredClustersTable(props: {
         },
         {
             header: t('dcTbl.type'),
-            sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-                compareStrings(a?.spec.type, b?.spec.type),
+            sort: (a: DiscoveredCluster, b: DiscoveredCluster) => compareStrings(a?.spec.type, b?.spec.type),
             search: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
             cell: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
         },
