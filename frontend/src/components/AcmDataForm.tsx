@@ -17,6 +17,7 @@ import {
     DescriptionListGroup,
     DescriptionListTerm,
     Drawer,
+    DrawerColorVariant,
     DrawerContent,
     DrawerContentBody,
     DrawerPanelContent,
@@ -162,50 +163,44 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                 defaultSize="600px"
                                 maxSize={drawerMaxSize}
                                 minSize="400px"
+                                colorVariant={DrawerColorVariant.light200}
                             >
-                                <div
-                                    style={{
-                                        height: '100%',
-                                        backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-                                    }}
-                                >
-                                    <CodeBlock
-                                        actions={
-                                            <CodeBlockAction>
-                                                <ClipboardCopyButton
-                                                    id="copy-button"
-                                                    textId="code-content"
-                                                    aria-label="Copy to clipboard"
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(
-                                                            YAML.stringify(formData.stateToData(), 100)
-                                                        )
+                                <CodeBlock
+                                    actions={
+                                        <CodeBlockAction>
+                                            <ClipboardCopyButton
+                                                id="copy-button"
+                                                textId="code-content"
+                                                aria-label="Copy to clipboard"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(
+                                                        YAML.stringify(formData.stateToData(), 100)
+                                                    )
+                                                    setCopyHint(
+                                                        <span style={{ wordBreak: 'keep-all' }}>
+                                                            Successfully copied to clipboard!
+                                                        </span>
+                                                    )
+                                                    setTimeout(() => {
                                                         setCopyHint(
                                                             <span style={{ wordBreak: 'keep-all' }}>
-                                                                Successfully copied to clipboard!
+                                                                Copy to clipboard
                                                             </span>
                                                         )
-                                                        setTimeout(() => {
-                                                            setCopyHint(
-                                                                <span style={{ wordBreak: 'keep-all' }}>
-                                                                    Copy to clipboard
-                                                                </span>
-                                                            )
-                                                        }, 800)
-                                                    }}
-                                                    exitDelay={600}
-                                                    variant="plain"
-                                                >
-                                                    {copyHint}
-                                                </ClipboardCopyButton>
-                                            </CodeBlockAction>
-                                        }
-                                    >
-                                        <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
-                                            {YAML.stringify(formData.stateToData(), 100)}
-                                        </CodeBlockCode>
-                                    </CodeBlock>
-                                </div>
+                                                    }, 800)
+                                                }}
+                                                exitDelay={600}
+                                                variant="plain"
+                                            >
+                                                {copyHint}
+                                            </ClipboardCopyButton>
+                                        </CodeBlockAction>
+                                    }
+                                >
+                                    <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
+                                        {YAML.stringify(formData.stateToData(), 100)}
+                                    </CodeBlockCode>
+                                </CodeBlock>
                             </DrawerPanelContent>
                         }
                     >
