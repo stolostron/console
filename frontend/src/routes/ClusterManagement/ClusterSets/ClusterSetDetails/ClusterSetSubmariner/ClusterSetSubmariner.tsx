@@ -94,9 +94,9 @@ export function ClusterSetSubmarinerPageContent() {
                 const connectionDegradedCondition = mca.status?.conditions?.find(
                     (c) => c.type === SubmarinerConnectionDegraded
                 )
-                let type: StatusType = StatusType.unknown
-                let status: string = t('status.submariner.unknown')
-                let message: undefined | string
+                let type: StatusType = StatusType.progress
+                let status: string = t('status.submariner.progressing')
+                let message: string | undefined = t('status.submariner.progressing.message')
                 if (connectionDegradedCondition) {
                     status =
                         connectionDegradedCondition?.status === 'True'
@@ -118,9 +118,9 @@ export function ClusterSetSubmarinerPageContent() {
             header: t('table.submariner.agent'),
             cell: (mca: ManagedClusterAddOn) => {
                 const agentCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerAgentDegraded)
-                let type: StatusType = StatusType.unknown
-                let status: string = t('status.submariner.unknown')
-                let message: undefined | string
+                let type: StatusType = StatusType.progress
+                let status: string = t('status.submariner.progressing')
+                let message: string | undefined = t('status.submariner.progressing.message')
                 if (agentCondition) {
                     status =
                         agentCondition?.status === 'True'
@@ -144,9 +144,9 @@ export function ClusterSetSubmarinerPageContent() {
                 const nodeLabeledCondition = mca.status?.conditions?.find(
                     (c) => c.type === SubmarinerGatewayNodesLabeled
                 )
-                let type: StatusType = StatusType.unknown
-                let status: string = t('status.submariner.unknown')
-                let message: undefined | string
+                let type: StatusType = StatusType.progress
+                let status: string = t('status.submariner.progressing')
+                let message: string | undefined = t('status.submariner.progressing.message')
                 if (nodeLabeledCondition) {
                     status =
                         nodeLabeledCondition?.status === 'True'
