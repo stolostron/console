@@ -302,7 +302,7 @@
     "upgrade.upgrading.message": "Upgrading {{clusterName}} to OpenShift {{version}}.",
     "upgrade.upgrading.message.percentage": "Upgrading {{clusterName}} to OpenShift {{version}}: {{percentage}} complete.",
     "upgrade.upgrading.link": "View upgrade details",
-    "upgrade.upgrading.version": "Upgrading to OpenShift {{version}}",
+    "upgrade.upgrading.version": "Upgrading to {{version}}",
     "upgrade.upgrading.progress": "{{percentage}}",
     "upgrade.upgrading.trigger": "Upgrading ...",
     "upgrade.selecting.channel": "Selecting {{channel}}",
