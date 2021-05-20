@@ -80,7 +80,11 @@ function formatText(text: string) {
         if (str === '') {
             return <br key={`insight-details-linebreak-${idx}`} />
         }
-        return <Text component={TextVariants.p}>{str}</Text>
+        return (
+            <Text component={TextVariants.p} key={`insight-details-text-${idx}`}>
+                {str}
+            </Text>
+        )
     })
 }
 
