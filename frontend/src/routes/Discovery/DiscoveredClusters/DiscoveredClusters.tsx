@@ -15,7 +15,7 @@ import {
     IAcmTableColumn,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { Alert, ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
 import * as moment from 'moment'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -27,6 +27,7 @@ import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { DiscoNotification } from '../DiscoveryComponents/Notification'
+import { BellIcon } from '@patternfly/react-icons'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -108,16 +109,45 @@ function EmptyStateAwaitingDiscoveredClusters() {
     return (
         <AcmEmptyState
             title={t('emptystate.discoveryEnabled.title')}
-            message={t('emptystate.discoveryEnabled.msg')}
+            message={
+                <Trans
+                    i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
+                    components={{
+                        a: (
+                            <a href="/#" target="_blank" rel="noreferrer">
+                                {}
+                            </a>
+                        ),
+                        icon: <AcmIcon icon={AcmIconVariant.openNewTab} />,
+                    }}
+                />
+            }
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
-                <AcmButton variant="link">
-                    <span style={{ whiteSpace: 'nowrap' }} key="dcStatusParent">
-                        {t('emptystate.viewDocumentation')} <AcmIcon icon={AcmIconVariant.openNewTab} />
-                    </span>
-                </AcmButton>
+                <Bullseye>
+                    <ActionList>
+                        <ActionListItem>
+                            <AcmButton
+                                variant={ButtonVariant.primary}
+                                component={Link}
+                                to={NavigationPath.configureDiscovery}
+                            >
+                                {t('discovery.configureDiscovery')}
+                            </AcmButton>
+                        </ActionListItem>
+                        <ActionListItem>
+                            <AcmButton
+                                variant={ButtonVariant.secondary}
+                                component={Link}
+                                to={NavigationPath.createDiscovery}
+                            >
+                                {t('discovery.addDiscovery')}
+                            </AcmButton>
+                        </ActionListItem>
+                    </ActionList>
+                </Bullseye>
             }
         />
     )
@@ -309,42 +339,72 @@ export function DiscoveredClustersTable(props: {
         },
     ]
 
-    return (
-        <AcmTable<DiscoveredCluster>
-            plural={t('discoveredClusters')}
-            items={props.discoveredClusters}
-            columns={discoveredClusterCols}
-            keyFn={dckeyFn}
-            key="tbl-discoveredclusters"
-            tableActions={[
-                {
-                    id: 'configureDiscovery',
-                    title: t('discovery.configureDiscovery'),
-                    click: () => history.push(NavigationPath.configureDiscovery),
-                },
-                {
-                    id: 'addDiscovery',
-                    title: t('discovery.addDiscovery'),
-                    click: () => history.push(NavigationPath.createDiscovery),
-                    variant: ButtonVariant.secondary,
-                },
-            ]}
-            bulkActions={[]}
-            rowActions={[
-                {
-                    id: 'importCluster',
-                    title: t('discovery.import'),
-                    click: (item) => {
-                        sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
-                        sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
-                        sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                        sessionStorage.setItem('DiscoveredClusterApiURL', item.spec.apiUrl)
-                        history.push(NavigationPath.importCluster)
-                    },
-                },
-            ]}
-            emptyState={emptyState}
+    const title = (
+        <Trans
+            i18nKey={'discovery:techpreview.msg'}
+            components={{
+                bold: <strong />,
+                a: (
+                    <a
+                        href="/#"
+                        target="_blank"
+                        rel="noreferrer"
+                        key="techPreviewAlert"
+                        style={{ textDecoration: 'underline', color: 'inherit' }}
+                    >
+                        {}
+                    </a>
+                ),
+            }}
         />
+    )
+
+    return (
+        <Fragment>
+            {/* Tech Preview Message */}
+            <Alert
+                customIcon={<BellIcon />}
+                isInline
+                variant="warning"
+                title={title}
+                style={{ marginBottom: '16px' }}
+            />
+            <AcmTable<DiscoveredCluster>
+                plural={t('discoveredClusters')}
+                items={props.discoveredClusters}
+                columns={discoveredClusterCols}
+                keyFn={dckeyFn}
+                key="tbl-discoveredclusters"
+                tableActions={[
+                    {
+                        id: 'configureDiscovery',
+                        title: t('discovery.configureDiscovery'),
+                        click: () => history.push(NavigationPath.configureDiscovery),
+                    },
+                    {
+                        id: 'addDiscovery',
+                        title: t('discovery.addDiscovery'),
+                        click: () => history.push(NavigationPath.createDiscovery),
+                        variant: ButtonVariant.secondary,
+                    },
+                ]}
+                bulkActions={[]}
+                rowActions={[
+                    {
+                        id: 'importCluster',
+                        title: t('discovery.import'),
+                        click: (item) => {
+                            sessionStorage.setItem('DiscoveredClusterName', item.spec.name)
+                            sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
+                            sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                            sessionStorage.setItem('DiscoveredClusterApiURL', item.spec.apiUrl)
+                            history.push(NavigationPath.importCluster)
+                        },
+                    },
+                ]}
+                emptyState={emptyState}
+            />
+        </Fragment>
     )
 }
 

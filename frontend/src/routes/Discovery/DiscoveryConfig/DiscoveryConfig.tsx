@@ -199,7 +199,7 @@ export function DiscoveryConfigPageContent(props: {
                     confirm: async () => {
                         try {
                             if (discoveryConfig) {
-                                await deleteResource(discoveryConfig as DiscoveryConfig).promise
+                                const deletecmd = await deleteResource(discoveryConfig as DiscoveryConfig).promise
                                 setModalProps({
                                     open: false,
                                     confirm: () => {},
@@ -207,7 +207,7 @@ export function DiscoveryConfigPageContent(props: {
                                     title: '',
                                     message: '',
                                 })
-                                resolve(undefined)
+                                resolve(deletecmd)
                                 sessionStorage.setItem(
                                     'DISCOVERY_OP',
                                     JSON.stringify({ Operation: 'Delete', Name: discoveryConfig.metadata.namespace })
@@ -262,15 +262,18 @@ export function DiscoveryConfigPageContent(props: {
                         'DISCOVERY_OP',
                         JSON.stringify({ Operation: 'Create', Name: discoveryConfig.metadata.namespace })
                     )
-                    await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                    const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                    resolve(importcmd)
+                    history.push(NavigationPath.discoveredClusters)
                 } else {
                     sessionStorage.setItem(
                         'DISCOVERY_OP',
                         JSON.stringify({ Operation: 'Update', Name: discoveryConfig.metadata.namespace })
                     )
-                    await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                    const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
+                    resolve(importcmd)
+                    history.push(NavigationPath.discoveredClusters)
                 }
-                resolve(undefined)
             } catch (err) {
                 if (err instanceof Error) {
                     alertContext.addAlert({
@@ -280,8 +283,6 @@ export function DiscoveryConfigPageContent(props: {
                     })
                     reject()
                 }
-            } finally {
-                history.push(NavigationPath.discoveredClusters)
             }
         })
     }
