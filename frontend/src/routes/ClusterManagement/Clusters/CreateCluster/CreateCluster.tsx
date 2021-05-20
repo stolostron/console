@@ -28,6 +28,7 @@ import { setAvailableConnections } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState, managedClustersState } from '../../../../atoms'
+import { makeStyles } from '@material-ui/styles'
 
 declare const window: any
 if (window.monaco) {
@@ -61,12 +62,20 @@ const Portals = Object.freeze({
     cancelBtn: 'cancel-button-portal-id',
 })
 
+const useStyles = makeStyles({
+    wizardBody: {
+        '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
+            height: '100%',
+        },
+    },
+})
+
 export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
-
+    const classes = useStyles()
     // create portals for buttons in header
     const switches = (
         <div className="switch-controls">
@@ -198,6 +207,7 @@ export default function CreateClusterPage() {
                 <AcmPageContent id="create-cluster">
                     <PageSection className="pf-c-content" variant="light" isFilled>
                         <TemplateEditor
+                            wizardClassName={classes.wizardBody}
                             type={'cluster'}
                             title={'Cluster YAML'}
                             monacoEditor={<MonacoEditor />}
