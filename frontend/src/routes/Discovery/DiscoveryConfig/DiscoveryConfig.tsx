@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    AcmToastContext,
     AcmAlertContext,
     AcmButton,
     AcmForm,
@@ -126,6 +127,7 @@ export function DiscoveryConfigPageContent(props: {
     credentials: Secret[]
     discoveryNamespaces: string[]
 }) {
+    const toastContext = useContext(AcmToastContext)
     const [credentialsRef] = useState<string>(sessionStorage.getItem('DiscoveryCredential') || '')
     const [discoveryConfig, setDiscoveryConfig] = useState<DiscoveryConfig>({
         apiVersion: DiscoveryConfigApiVersion,
@@ -208,15 +210,18 @@ export function DiscoveryConfigPageContent(props: {
                                     message: '',
                                 })
                                 resolve(deletecmd)
-                                sessionStorage.setItem(
-                                    'DISCOVERY_OP',
-                                    JSON.stringify({ Operation: 'Delete', Name: discoveryConfig.metadata.namespace })
-                                )
+                                toastContext.addAlert({
+                                    title: t('discovery:alert.deleted.header'),
+                                    message: t('alert.msg'),
+                                    type: 'success',
+                                    autoClose: true,
+                                })
                                 history.push(NavigationPath.discoveredClusters)
                             } else {
                                 throw Error('Error retrieving discoveryconfigs')
                             }
                         } catch (err) {
+                            toastContext.clearAlerts()
                             alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                         }
                     },
@@ -240,6 +245,7 @@ export function DiscoveryConfigPageContent(props: {
                     },
                 })
             } catch (err) {
+                toastContext.clearAlerts()
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
@@ -258,23 +264,28 @@ export function DiscoveryConfigPageContent(props: {
             try {
                 if (!editing) {
                     discoveryConfig.metadata!.name = 'discovery'
-                    sessionStorage.setItem(
-                        'DISCOVERY_OP',
-                        JSON.stringify({ Operation: 'Create', Name: discoveryConfig.metadata.namespace })
-                    )
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
+                    toastContext.addAlert({
+                        title: t('discovery:alert.created.header'),
+                        message: t('alert.msg'),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.discoveredClusters)
                 } else {
-                    sessionStorage.setItem(
-                        'DISCOVERY_OP',
-                        JSON.stringify({ Operation: 'Update', Name: discoveryConfig.metadata.namespace })
-                    )
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
+                    toastContext.addAlert({
+                        title: t('discovery:alert.updated.header'),
+                        message: t('alert.msg'),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.discoveredClusters)
                 }
             } catch (err) {
+                toastContext.clearAlerts()
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
