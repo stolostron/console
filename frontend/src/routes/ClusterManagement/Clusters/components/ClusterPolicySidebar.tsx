@@ -18,8 +18,10 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { useRecoilState } from 'recoil'
+import { configMapsState } from '../../../../atoms'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation, TFunction } from 'react-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../resources/policy-report'
@@ -74,9 +76,9 @@ const useStyles = makeStyles({
 })
 
 function formatText(text: string) {
-    return text.split('\n').map((str: string) => {
+    return text.split('\n').map((str: string, idx: number) => {
         if (str === '') {
-            return <br />
+            return <br key={`insight-details-linebreak-${idx}`} />
         }
         return <Text component={TextVariants.p}>{str}</Text>
     })
@@ -91,20 +93,16 @@ function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
             isPrimary: true,
         },
         {
-            key: t('policy.report.major'),
+            key: t('policy.report.important'),
             value: clusterRiskScores.filter((score: string) => score === '3').length,
         },
         {
-            key: t('policy.report.minor'),
+            key: t('policy.report.moderate'),
             value: clusterRiskScores.filter((score: string) => score === '2').length,
         },
         {
             key: t('policy.report.low'),
             value: clusterRiskScores.filter((score: string) => score === '1').length,
-        },
-        {
-            key: t('policy.report.warning'),
-            value: clusterRiskScores.filter((score: string) => score === '0').length,
         },
     ]
     const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
@@ -149,6 +147,10 @@ function DetailsView(props: {
     selectedReport: PolicyReportResults | undefined
 }) {
     const { setDetailsView, selectedReport } = props
+    const [configmaps] = useRecoilState(configMapsState)
+    const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
+    let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
+    policyContentData = policyContentData && JSON.parse(policyContentData)
     const { t } = useTranslation(['cluster'])
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
@@ -191,20 +193,16 @@ function DetailsView(props: {
                 riskIcon = <CriticalRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '3':
-                totalRisk = t('policy.report.major')
+                totalRisk = t('policy.report.important')
                 riskIcon = <ImportantRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '2':
-                totalRisk = t('policy.report.minor')
+                totalRisk = t('policy.report.moderate')
                 riskIcon = <ModerateRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '1':
                 totalRisk = t('policy.report.low')
                 riskIcon = <LowRiskIcon />
-                return riskComponent(totalRisk, riskIcon)
-            case '0':
-                totalRisk = t('policy.report.warning')
-                riskIcon = <ExclamationTriangleIcon />
                 return riskComponent(totalRisk, riskIcon)
             default:
                 return null
@@ -287,14 +285,10 @@ function DetailsView(props: {
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    <TextContent>
-                        <Text>{formatText(_.get(selectedReport, 'properties.resolution', ''))}</Text>
-                    </TextContent>
+                    <TextContent>{formatText(policyContentData?.resolution ?? '')}</TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    <TextContent>
-                        <Text>{formatText(_.get(selectedReport, 'properties.reason', ''))}</Text>
-                    </TextContent>
+                    <TextContent>{formatText(policyContentData?.reason ?? '')}</TextContent>
                 </Tab>
             </Tabs>
         </div>

@@ -57,6 +57,8 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         spec: {
             activityTimestamp: '2020-07-30T19:09:43Z',
             cloudProvider: 'aws',
+            apiUrl: 'https://api.foobar.dev01.red-chesterfield.com',
+            displayName: 'foobar',
             console: 'https://console-openshift-console.apps.foobar.dev01.red-chesterfield.com',
             creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'foobar',
