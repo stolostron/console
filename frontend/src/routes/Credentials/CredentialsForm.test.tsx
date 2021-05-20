@@ -9,7 +9,6 @@ import { clickByTestId, clickByText, selectByText, typeByTestId, waitForNock } f
 import { NavigationPath } from '../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../resources/namespace'
 import {
-    packProviderConnection,
     ProviderConnection,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
