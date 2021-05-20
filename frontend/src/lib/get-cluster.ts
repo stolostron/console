@@ -406,18 +406,12 @@ export function getDistributionInfo(
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
         const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
-        // curator's version is not the same as current curator
         const curatorIsUpgrading =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
             clusterCurator?.spec?.upgrade?.desiredUpdate !==
                 managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
             !curatorIsIdle
-
-        // const upgradeCuratorFailed =
-        //     isUpgradeCuration &&
-        //     clusterCurator?.spec?.upgrade?.desiredUpdate &&
-        //     clusterCurator?.spec?.upgrade?.desiredUpdate !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         const isSelectingChannel =
             isUpgradeCuration &&
