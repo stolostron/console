@@ -80,10 +80,16 @@ export function DistributionField(props: { cluster?: Cluster }) {
                                   headerContent: t('upgrade.upgrading', {
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent: t('upgrade.upgrading.message', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                  }),
+                                  bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
+                                      ? t('upgrade.upgrading.message.percentage', {
+                                            clusterName: props.cluster?.name,
+                                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                            percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
+                                        })
+                                      : t('upgrade.upgrading.message', {
+                                            clusterName: props.cluster?.name,
+                                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                        }),
                                   footerContent: (
                                       <a
                                           href={`${props.cluster?.consoleURL}/settings/cluster`}
