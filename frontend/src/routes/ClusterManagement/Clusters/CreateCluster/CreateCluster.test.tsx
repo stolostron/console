@@ -358,7 +358,7 @@ const mockClusterDeployment = {
             imageSetRef: {
                 name: 'ocp-release43',
             },
-            sshKnownHosts: 'sshKnownHosts',
+            sshKnownHosts: ['sshKnownHosts'],
         },
         pullSecretRef: {
             name: 'test-pull-secret',

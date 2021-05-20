@@ -95,7 +95,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -137,7 +137,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -173,7 +173,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -219,7 +219,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -255,7 +255,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -302,7 +302,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -331,7 +331,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
@@ -354,7 +354,7 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // Add Credentials
-        const createNock = nockCreate(packProviderConnection({ ...providerConnection }))
+        const createNock = nockCreate({ ...providerConnection })
         await clickByText('credentialsForm.submitButton.add')
         await waitForNock(createNock)
     })
