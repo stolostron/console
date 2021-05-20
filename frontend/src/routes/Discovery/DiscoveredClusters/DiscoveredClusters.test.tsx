@@ -190,7 +190,8 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
         await waitForText('emptystate.discoveryEnabled.title')
-        await waitForText('emptystate.discoveryEnabled.msg')
-        await waitForText('emptystate.viewDocumentation')
+        await waitForText('discovery:emptystate.discoveryEnabled.msg')
+        await waitForText('discovery.configureDiscovery')
+        await waitForText('discovery.addDiscovery')
     })
 })

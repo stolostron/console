@@ -18,6 +18,8 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { useRecoilState } from 'recoil'
+import { configMapsState } from '../../../../atoms'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
@@ -74,9 +76,9 @@ const useStyles = makeStyles({
 })
 
 function formatText(text: string) {
-    return text.split('\n').map((str: string) => {
+    return text.split('\n').map((str: string, idx: number) => {
         if (str === '') {
-            return <br />
+            return <br key={`insight-details-linebreak-${idx}`} />
         }
         return <Text component={TextVariants.p}>{str}</Text>
     })
@@ -145,6 +147,10 @@ function DetailsView(props: {
     selectedReport: PolicyReportResults | undefined
 }) {
     const { setDetailsView, selectedReport } = props
+    const [configmaps] = useRecoilState(configMapsState)
+    const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
+    let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
+    policyContentData = policyContentData && JSON.parse(policyContentData)
     const { t } = useTranslation(['cluster'])
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
@@ -279,14 +285,10 @@ function DetailsView(props: {
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    <TextContent>
-                        <Text>{formatText(_.get(selectedReport, 'properties.resolution', ''))}</Text>
-                    </TextContent>
+                    <TextContent>{formatText(policyContentData?.resolution ?? '')}</TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    <TextContent>
-                        <Text>{formatText(_.get(selectedReport, 'properties.reason', ''))}</Text>
-                    </TextContent>
+                    <TextContent>{formatText(policyContentData?.reason ?? '')}</TextContent>
                 </Tab>
             </Tabs>
         </div>

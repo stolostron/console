@@ -1,8 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, act } from '@testing-library/react'
+import { RecoilRoot } from 'recoil'
+import { configMapsState } from '../../../../atoms'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { PolicyReport } from '../../../../resources/policy-report'
+import { ConfigMap } from '../../../../resources/configmap'
 import { clickByText, waitForText } from '../../../../lib/test-util'
 
 const mockPolicyReports: PolicyReport = {
@@ -77,8 +80,26 @@ const mockPolicyReports: PolicyReport = {
     ],
 }
 
+const mockConfigmap: ConfigMap[] = [
+    {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+            name: 'insight-content-data',
+            namespace: 'open-cluster-management',
+        },
+        data: {
+            'policyreport testing risk 1 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
+        },
+    },
+]
+
 describe('ClusterPolicySidebar', () => {
-    const Component = () => <ClusterPolicySidebar data={mockPolicyReports} />
+    const Component = () => (
+        <RecoilRoot initializeState={(snapshot) => snapshot.set(configMapsState, mockConfigmap)}>
+            <ClusterPolicySidebar data={mockPolicyReports} />
+        </RecoilRoot>
+    )
     test('renders', async () => {
         render(<Component />)
         await act(async () => {
@@ -91,6 +112,13 @@ describe('ClusterPolicySidebar', () => {
 
             // wait for drilldown risk subdetail component
             await waitForText('policy.report.low')
+
+            // wait for resolution
+            await waitForText('testing-resolution')
+
+            // wait for reason
+            await clickByText('policy.report.flyout.details.tab.reason')
+            await waitForText('testing-reason')
 
             // Click back button and wait for static text
             await clickByText('policy.report.flyout.back')
