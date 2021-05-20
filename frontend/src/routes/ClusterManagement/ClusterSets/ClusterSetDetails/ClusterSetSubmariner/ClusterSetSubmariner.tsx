@@ -461,7 +461,7 @@ function InstallSubmarinerModal(props: {
                                     onClick={async () => {
                                         alertContext.clearAlerts()
                                         return new Promise(async (resolve, reject) => {
-                                            const calls: IResource[] = [
+                                            const calls: any[] = [
                                                 createResource<ManagedClusterAddOn>({
                                                     apiVersion: ManagedClusterAddOnApiVersion,
                                                     kind: ManagedClusterAddOnKind,
