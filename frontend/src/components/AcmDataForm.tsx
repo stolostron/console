@@ -62,7 +62,7 @@ import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
-import * as YAML from 'yamljs'
+import YAML from 'yaml'
 import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
 
 export interface AcmDataFormProps {
@@ -174,7 +174,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                                 aria-label="Copy to clipboard"
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(
-                                                        YAML.stringify(formData.stateToData(), 100)
+                                                        YAML.stringify(formData.stateToData())
                                                     )
                                                     setCopyHint(
                                                         <span style={{ wordBreak: 'keep-all' }}>
