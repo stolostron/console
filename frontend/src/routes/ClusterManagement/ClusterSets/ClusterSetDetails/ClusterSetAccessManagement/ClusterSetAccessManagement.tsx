@@ -101,7 +101,26 @@ export function ClusterSetAccessManagement() {
                 },
             },
             {
-                header: t('table.role'),
+                header: t('table.displayRole'),
+                sort: 'roleRef.name',
+                search: 'roleRef.name',
+                cell: (clusterRoleBinding: ClusterRoleBinding) => {
+                    if (
+                        clusterRoleBinding.roleRef.name ===
+                        `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`
+                    ) {
+                        return t('access.clusterSet.role.admin')
+                    } else if (
+                        clusterRoleBinding.roleRef.name ===
+                        `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
+                    ) {
+                        return t('access.clusterSet.role.admin')
+                    }
+                    return '-'
+                },
+            },
+            {
+                header: t('table.clusterRole'),
                 sort: 'roleRef.name',
                 search: 'roleRef.name',
                 cell: 'roleRef.name',
@@ -117,7 +136,7 @@ export function ClusterSetAccessManagement() {
                 cell: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects[0].kind,
             },
         ],
-        [t, groups]
+        [t, groups, clusterSet]
     )
 
     if (error) {
@@ -325,12 +344,12 @@ function AddUsersModal(props: {
                             >
                                 {[
                                     {
-                                        displayName: 'Cluster set admin',
+                                        displayName: t('access.clusterSet.role.admin'),
                                         role: `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata
                                             .name!}`,
                                     },
                                     {
-                                        displayName: 'Cluster set view',
+                                        displayName: t('access.clusterSet.role.view'),
                                         role: `open-cluster-management:managedclusterset:view:${clusterSet!.metadata
                                             .name!}`,
                                     },

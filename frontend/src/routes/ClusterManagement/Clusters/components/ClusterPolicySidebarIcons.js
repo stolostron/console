@@ -4,7 +4,7 @@ export const CriticalRiskIcon = () => {
     return (
         <svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" role="presentation">
             <title>critical</title>
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square">
+            <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd" strokeLinecap="square">
                 <g
                     id="Clusters-Insights-2---disable"
                     transform="translate(-1048.000000, -261.000000)"
@@ -28,7 +28,7 @@ export const ImportantRiskIcon = () => {
     return (
         <svg width="9px" height="11px" viewBox="0 0 9 11" version="1.1" role="presentation">
             <title>important</title>
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="Clusters-Insights-2---disable" transform="translate(-1049.000000, -291.000000)" fill="#EC7A08">
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <g
@@ -49,12 +49,12 @@ export const ModerateRiskIcon = () => {
     return (
         <svg width="10px" height="8px" viewBox="0 0 10 8" version="1.1" role="presentation">
             <title>moderate</title>
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g
                     id="Clusters-Insights-2---disable"
                     transform="translate(-1049.000000, -321.000000)"
                     fill="#F4C145"
-                    fill-rule="nonzero"
+                    fillRule="nonzero"
                 >
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <g id="Group-5" transform="translate(0.000000, 60.500000)">
@@ -74,7 +74,7 @@ export const LowRiskIcon = () => {
     return (
         <svg width="8px" height="11px" viewBox="0 0 8 11" version="1.1" role="presentation">
             <title>low</title>
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="Clusters-Insights-2---disable" transform="translate(-1050.000000, -348.000000)" fill="#2B9AF3">
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <g
