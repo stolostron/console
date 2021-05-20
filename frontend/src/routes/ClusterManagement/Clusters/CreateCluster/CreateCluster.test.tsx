@@ -68,7 +68,7 @@ const providerConnection: ProviderConnection = {
     },
     stringData: {
         libvirtURI: 'qemu+ssh://libvirtURI',
-        sshKnownHosts: ['sshKnownHosts'],
+        sshKnownHosts: 'sshKnownHosts',
         imageMirror: 'image.mirror:123/abc',
         bootstrapOSImage: 'bootstrapOSImage',
         clusterOSImage: 'clusterOSImage',
@@ -358,7 +358,7 @@ const mockClusterDeployment = {
             imageSetRef: {
                 name: 'ocp-release43',
             },
-            sshKnownHosts: ['sshKnownHosts'],
+            sshKnownHosts: 'sshKnownHosts',
         },
         pullSecretRef: {
             name: 'test-pull-secret',

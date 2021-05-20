@@ -267,7 +267,7 @@ describe('add credentials page', () => {
             'bmc',
             {
                 libvirtURI: 'qemu+ssh://libvirtURI',
-                sshKnownHosts: ['sshKnownHosts'],
+                sshKnownHosts: 'sshKnownHosts',
                 imageMirror: 'image.mirror:123/abc',
                 bootstrapOSImage: 'bootstrapOSImage',
                 clusterOSImage: 'clusterOSImage',
@@ -285,7 +285,7 @@ describe('add credentials page', () => {
 
         // bmc credentials
         await typeByTestId('libvirtURI', providerConnection.stringData?.libvirtURI!)
-        await typeByTestId('sshKnownHosts', providerConnection.stringData?.sshKnownHosts?.[0]!)
+        await typeByTestId('sshKnownHosts', providerConnection.stringData?.sshKnownHosts!)
         await clickByText('common:next')
 
         // bmc disconnected

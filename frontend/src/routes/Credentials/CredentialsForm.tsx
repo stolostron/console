@@ -20,7 +20,7 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, replaceResource } from '../../lib/resource-request'
+import { createResource, patchResource } from '../../lib/resource-request'
 import {
     validateBaseDomain,
     validateCertificate,
@@ -33,11 +33,7 @@ import {
     validatePublicSshKey,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
-import {
-    packProviderConnection,
-    ProviderConnection,
-    unpackProviderConnection,
-} from '../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { IResource } from '../../resources/resource'
 import { getSecret, Secret, SecretDefinition } from '../../resources/secret'
 
@@ -213,7 +209,7 @@ export function CredentialsForm(props: {
 
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
-    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts?.join(',') ?? '')
+    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
     const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
     const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
     const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
@@ -306,15 +302,6 @@ export function CredentialsForm(props: {
             case Provider.baremetal:
                 secret.stringData!.libvirtURI = libvirtURI
                 secret.stringData!.sshKnownHosts = sshKnownHosts
-                    .trim()
-                    .split(/[\r\n]+/g)
-                    .map((ssh) => {
-                        ssh = ssh.trim()
-                        if (ssh.startsWith('-')) ssh = ssh.substr(1).trim()
-                        if (ssh.startsWith('"')) ssh = ssh.substr(1)
-                        if (ssh.endsWith('"')) ssh = ssh.slice(0, -1)
-                        return ssh
-                    })
                 secret.stringData!.imageMirror = imageMirror
                 secret.stringData!.bootstrapOSImage = bootstrapOSImage
                 secret.stringData!.clusterOSImage = clusterOSImage
@@ -333,7 +320,8 @@ export function CredentialsForm(props: {
                 secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
         }
-        return packProviderConnection(secret)
+        return secret
+        // return packProviderConnection(secret)
     }
     const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
     const titleTooltip = (
@@ -955,17 +943,11 @@ export function CredentialsForm(props: {
         submit: () => {
             if (isEditing) {
                 const secret = stateToData() as Secret
-                // const patch: { op: 'replace'; path: string; value: unknown }[] = []
-                // if (secret.stringData) {
-                //     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
-                // }
-                // if (secret.data) {
-                //     patch.push({ op: 'replace', path: `/data`, value: secret.data })
-                // }
-                // return patchResource(secret, patch).promise.then(() => {
-                //     history.push(NavigationPath.credentials)
-                // })
-                return replaceResource(secret).promise.then(() => {
+                const patch: { op: 'replace'; path: string; value: unknown }[] = []
+                if (secret.stringData) {
+                    patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
+                }
+                return patchResource(secret, patch).promise.then(() => {
                     history.push(NavigationPath.credentials)
                 })
             } else {

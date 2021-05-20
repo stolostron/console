@@ -79,6 +79,9 @@ function requiredValidationMessage() {
     return <Fragment>You must fill out all required fields before you can proceed.</Fragment>
 }
 
+const minWizardSize = 1000
+const defaultPanelSize = 600
+
 export function AcmDataFormPage(props: AcmDataFormProps) {
     const pageRef = useRef(null)
 
@@ -87,15 +90,17 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
     const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
-    const [drawerExpanded, setDrawerExpanded] = useState(false)
+    const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
     const [drawerInline, setDrawerInline] = useState(true)
+    const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('800px')
     const [copyHint, setCopyHint] = useState<ReactNode>(
         <span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>
     )
 
     useResizeObserver(pageRef, (entry) => {
-        console.log(entry.contentRect.width)
-        setDrawerInline(entry.contentRect.width > 1420)
+        const inline = entry.contentRect.width > minWizardSize + defaultPanelSize
+        setDrawerInline(inline)
+        setDrawerMaxSize(inline ? `${entry.contentRect.width - minWizardSize}px` : undefined)
     })
 
     return (
@@ -125,7 +130,10 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                         <Switch
                                             label="YAML"
                                             isChecked={drawerExpanded}
-                                            onChange={() => setDrawerExpanded(!drawerExpanded)}
+                                            onChange={() => {
+                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                setDrawerExpanded(!drawerExpanded)
+                                            }}
                                         />
                                     </ActionListItem>
                                 </ActionList>
@@ -149,7 +157,12 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                 <Drawer isExpanded={drawerExpanded} isInline={drawerInline}>
                     <DrawerContent
                         panelContent={
-                            <DrawerPanelContent isResizable={false} defaultSize="600px">
+                            <DrawerPanelContent
+                                isResizable={true}
+                                defaultSize="600px"
+                                maxSize={drawerMaxSize}
+                                minSize="400px"
+                            >
                                 <div
                                     style={{
                                         height: '100%',

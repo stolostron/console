@@ -127,11 +127,10 @@ export const setAvailableConnections = (control, secrets) => {
     control.availableMap = {}
     connections?.forEach?.((c) => {
         const unpackedSecret = unpackProviderConnection(c)
-        const stringData = unpackedSecret.stringData ?? {}
-        const replacements = {}
-        Object.keys(stringData).forEach((key) => {
-            replacements[key] = stringData[key]
-        })
+        const replacements = unpackedSecret.stringData ?? {}
+        if (replacements['sshKnownHosts']) {
+            replacements['sshKnownHosts'] = replacements['sshKnownHosts'].split('\n')
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
