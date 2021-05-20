@@ -33,11 +33,7 @@ import {
     validatePublicSshKey,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
-import {
-    packProviderConnection,
-    ProviderConnection,
-    unpackProviderConnection,
-} from '../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
 import { IResource } from '../../resources/resource'
 import { getSecret, Secret, SecretDefinition } from '../../resources/secret'
 
@@ -51,6 +47,24 @@ const credentialProviders: Provider[] = [
     Provider.vmware,
     Provider.baremetal,
 ]
+
+enum ProviderGroup {
+    Automation = 'Automation credentials',
+    CloudProvider = 'Cloud provider credentials',
+    Infrastructure = 'Infrastructure credentials',
+}
+
+const providerGroup: Record<string, string> = {
+    [Provider.redhatcloud]: ProviderGroup.Automation,
+    [Provider.ansible]: ProviderGroup.Automation,
+    [Provider.aws]: ProviderGroup.CloudProvider,
+    [Provider.gcp]: ProviderGroup.CloudProvider,
+    [Provider.azure]: ProviderGroup.CloudProvider,
+    [Provider.ibm]: ProviderGroup.CloudProvider,
+    [Provider.openstack]: ProviderGroup.Infrastructure,
+    [Provider.baremetal]: ProviderGroup.Infrastructure,
+    [Provider.vmware]: ProviderGroup.Infrastructure,
+}
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
     const { name, namespace } = match.params
@@ -148,66 +162,70 @@ export function CredentialsForm(props: {
     const [namespace, setNamespace] = useState(providerConnection?.metadata.namespace ?? '')
 
     // Base Domain
-    const [baseDomain, setBaseDomain] = useState(providerConnection?.spec?.baseDomain ?? '')
+    const [baseDomain, setBaseDomain] = useState(providerConnection?.stringData?.baseDomain ?? '')
 
     // Pull Secret
-    const [pullSecret, setPullSecret] = useState(providerConnection?.spec?.pullSecret ?? '')
+    const [pullSecret, setPullSecret] = useState(providerConnection?.stringData?.pullSecret ?? '')
 
     // SSH Key
-    const [sshPublickey, setSshPublickey] = useState(providerConnection?.spec?.sshPublickey ?? '')
-    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.spec?.sshPrivatekey ?? '')
+    const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.sshPublickey ?? '')
+    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.sshPrivatekey ?? '')
 
     // Amazon Web Services State
-    const [awsAccessKeyID, setAwsAccessKeyID] = useState(providerConnection?.spec?.awsAccessKeyID ?? '')
+    const [awsAccessKeyID, setAwsAccessKeyID] = useState(providerConnection?.stringData?.awsAccessKeyID ?? '')
     const [awsSecretAccessKeyID, setAwsSecretAccessKeyID] = useState(
-        providerConnection?.spec?.awsSecretAccessKeyID ?? ''
+        providerConnection?.stringData?.awsSecretAccessKeyID ?? ''
     )
 
     // Azure Cloud State
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
-        providerConnection?.spec?.baseDomainResourceGroupName ?? ''
+        providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
-    const [clientId, setClientId] = useState(providerConnection?.spec?.clientId ?? '')
-    const [clientSecret, setClientSecret] = useState(providerConnection?.spec?.clientSecret ?? '')
-    const [tenantId, setTenantId] = useState(providerConnection?.spec?.tenantId ?? '')
-    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.spec?.subscriptionId ?? '')
+    const [clientId, setClientId] = useState(providerConnection?.stringData?.clientId ?? '')
+    const [clientSecret, setClientSecret] = useState(providerConnection?.stringData?.clientSecret ?? '')
+    const [tenantId, setTenantId] = useState(providerConnection?.stringData?.tenantId ?? '')
+    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.stringData?.subscriptionId ?? '')
 
     // Google
-    const [gcProjectID, setGcProjectID] = useState(providerConnection?.spec?.gcProjectID ?? '')
-    const [gcServiceAccountKey, setGcServiceAccountKey] = useState(providerConnection?.spec?.gcServiceAccountKey ?? '')
+    const [gcProjectID, setGcProjectID] = useState(providerConnection?.stringData?.gcProjectID ?? '')
+    const [gcServiceAccountKey, setGcServiceAccountKey] = useState(
+        providerConnection?.stringData?.gcServiceAccountKey ?? ''
+    )
 
     // VMWare
-    const [vcenter, setVcenter] = useState(providerConnection?.spec?.vcenter ?? '')
-    const [username, setUsername] = useState(providerConnection?.spec?.username ?? '')
-    const [password, setPassword] = useState(providerConnection?.spec?.password ?? '')
-    const [cacertificate, setCacertificate] = useState(providerConnection?.spec?.cacertificate ?? '')
-    const [vmClusterName, setVmClusterName] = useState(providerConnection?.spec?.vmClusterName ?? '')
-    const [datacenter, setDatacenter] = useState(providerConnection?.spec?.datacenter ?? '')
-    const [datastore, setDatastore] = useState(providerConnection?.spec?.datastore ?? '')
+    const [vcenter, setVcenter] = useState(providerConnection?.stringData?.vcenter ?? '')
+    const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
+    const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
+    const [cacertificate, setCacertificate] = useState(providerConnection?.stringData?.cacertificate ?? '')
+    const [vmClusterName, setVmClusterName] = useState(providerConnection?.stringData?.vmClusterName ?? '')
+    const [datacenter, setDatacenter] = useState(providerConnection?.stringData?.datacenter ?? '')
+    const [datastore, setDatastore] = useState(providerConnection?.stringData?.datastore ?? '')
 
     // OpenStack
-    const [openstackCloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.spec?.openstackCloudsYaml ?? '')
-    const [openstackCloud, setOpenstackCloud] = useState(providerConnection?.spec?.openstackCloud ?? '')
+    const [openstackCloudsYaml, setOpenstackCloudsYaml] = useState(
+        providerConnection?.stringData?.openstackCloudsYaml ?? ''
+    )
+    const [openstackCloud, setOpenstackCloud] = useState(providerConnection?.stringData?.openstackCloud ?? '')
 
     // BareMetal
-    const [libvirtURI, setLibvirtURI] = useState(providerConnection?.spec?.libvirtURI ?? '')
-    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.spec?.sshKnownHosts?.join(',') ?? '')
-    const [imageMirror, setImageMirror] = useState(providerConnection?.spec?.imageMirror ?? '')
-    const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.spec?.bootstrapOSImage ?? '')
-    const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.spec?.clusterOSImage ?? '')
+    const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
+    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
+    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
+    const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
+    const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
     const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
-        providerConnection?.spec?.additionalTrustBundle ?? ''
+        providerConnection?.stringData?.additionalTrustBundle ?? ''
     )
 
     // Ansible
     const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
     const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
 
-    // Red Hat Cloud State
-    const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.spec?.ocmAPIToken ?? '')
+    // Red Hat Cloud
+    const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function stateToData() {
-        const data: ProviderConnection = {
+        const secret: ProviderConnection = {
             apiVersion: 'v1',
             kind: 'Secret',
             type: 'Opaque',
@@ -215,96 +233,95 @@ export function CredentialsForm(props: {
                 name,
                 namespace,
                 labels: {
-                    'cluster.open-cluster-management.io/type': credentialsType,
-                    'cluster.open-cluster-management.io/credentials': '',
+                    ...(providerConnection ? providerConnection.metadata.labels : {}),
+                    ...{
+                        'cluster.open-cluster-management.io/type': credentialsType,
+                        'cluster.open-cluster-management.io/credentials': '',
+                    },
                 },
             },
             stringData: {},
-            spec: {},
+        }
+        let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
+        if (annotations) {
+            delete annotations['kubectl.kubernetes.io/last-applied-configuration']
+            if (Object.keys(annotations).length === 0) annotations = undefined
+        }
+        if (annotations) {
+            secret.metadata.annotations = annotations
         }
         switch (credentialsType) {
             case Provider.aws:
-                data.spec!.awsAccessKeyID = awsAccessKeyID
-                data.spec!.awsSecretAccessKeyID = awsSecretAccessKeyID
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.awsAccessKeyID = awsAccessKeyID
+                secret.stringData!.awsSecretAccessKeyID = awsSecretAccessKeyID
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.azure:
-                data.spec!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                data.spec!.clientId = clientId
-                data.spec!.clientSecret = clientSecret
-                data.spec!.tenantId = tenantId
-                data.spec!.subscriptionId = subscriptionId
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
+                secret.stringData!.clientId = clientId
+                secret.stringData!.clientSecret = clientSecret
+                secret.stringData!.tenantId = tenantId
+                secret.stringData!.subscriptionId = subscriptionId
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.gcp:
-                data.spec!.gcProjectID = gcProjectID
-                data.spec!.gcServiceAccountKey = gcServiceAccountKey
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.gcProjectID = gcProjectID
+                secret.stringData!.gcServiceAccountKey = gcServiceAccountKey
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.vmware:
-                data.spec!.vcenter = vcenter
-                data.spec!.username = username
-                data.spec!.password = password
-                data.spec!.cacertificate = cacertificate
-                data.spec!.vmClusterName = vmClusterName
-                data.spec!.datacenter = datacenter
-                data.spec!.datastore = datastore
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.vcenter = vcenter
+                secret.stringData!.username = username
+                secret.stringData!.password = password
+                secret.stringData!.cacertificate = cacertificate
+                secret.stringData!.vmClusterName = vmClusterName
+                secret.stringData!.datacenter = datacenter
+                secret.stringData!.datastore = datastore
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.openstack:
-                data.spec!.openstackCloudsYaml = openstackCloudsYaml
-                data.spec!.openstackCloud = openstackCloud
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.openstackCloudsYaml = openstackCloudsYaml
+                secret.stringData!.openstackCloud = openstackCloud
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.baremetal:
-                data.spec!.libvirtURI = libvirtURI
-                data.spec!.sshKnownHosts = sshKnownHosts
-                    .trim()
-                    .split(/[\r\n]+/g)
-                    .map((ssh) => {
-                        ssh = ssh.trim()
-                        if (ssh.startsWith('-')) ssh = ssh.substr(1).trim()
-                        if (ssh.startsWith('"')) ssh = ssh.substr(1)
-                        if (ssh.endsWith('"')) ssh = ssh.slice(0, -1)
-                        return ssh
-                    })
-                data.spec!.imageMirror = imageMirror
-                data.spec!.bootstrapOSImage = bootstrapOSImage
-                data.spec!.clusterOSImage = clusterOSImage
-                data.spec!.additionalTrustBundle = additionalTrustBundle
-                data.spec!.baseDomain = baseDomain
-                data.spec!.pullSecret = pullSecret
-                data.spec!.sshPrivatekey = sshPrivatekey
-                data.spec!.sshPublickey = sshPublickey
+                secret.stringData!.libvirtURI = libvirtURI
+                secret.stringData!.sshKnownHosts = sshKnownHosts
+                secret.stringData!.imageMirror = imageMirror
+                secret.stringData!.bootstrapOSImage = bootstrapOSImage
+                secret.stringData!.clusterOSImage = clusterOSImage
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!.sshPrivatekey = sshPrivatekey
+                secret.stringData!.sshPublickey = sshPublickey
                 break
             case Provider.ansible:
-                data.stringData!.host = ansibleHost
-                data.stringData!.token = ansibleToken
+                secret.stringData!.host = ansibleHost
+                secret.stringData!.token = ansibleToken
                 break
 
             case Provider.redhatcloud:
-                data.spec!.ocmAPIToken = ocmAPIToken
+                secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
         }
-        if (props.providerConnection?.stringData?.['credential-hash']) {
-            data.stringData!['credential-hash'] = props.providerConnection?.stringData?.['credential-hash']
-        }
-        return packProviderConnection(data)
+        return secret
+        // return packProviderConnection(secret)
     }
     const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
     const titleTooltip = (
@@ -327,9 +344,13 @@ export function CredentialsForm(props: {
         breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
-                title: t('credentialsForm.credentialsType.title'),
-                wizardTitle: t('credentialsForm.credentialsType.wizardTitle'),
-                description: (
+                title: credentialsType
+                    ? t('credentialsForm.basicInformation.title')
+                    : t('credentialsForm.credentialsType.title'),
+                wizardTitle: credentialsType
+                    ? t('credentialsForm.basicInformation.wizardTitle')
+                    : t('credentialsForm.credentialsType.wizardTitle'),
+                description: !credentialsType && (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.credentialsType.wizardDescription')}
                     </a>
@@ -340,29 +361,54 @@ export function CredentialsForm(props: {
                         type: 'Select',
                         label: t('credentialsForm.credentialsType.label'),
                         placeholder: t('credentialsForm.credentialsType.placeholder'),
-                        // labelHelp: t('credentialsForm.credentialsType.labelHelp'), // TODO
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
-                        options: () =>
-                            credentialProviders.map((provider) => {
-                                return {
-                                    id: provider,
-                                    value: provider,
-                                    icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                    text: ProviderLongTextMap[provider],
-                                }
-                            }),
-                        mode: isEditing ? 'default' : 'tiles',
+                        groups: [
+                            {
+                                group: ProviderGroup.CloudProvider,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CloudProvider)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                            {
+                                group: ProviderGroup.Automation,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                            {
+                                group: ProviderGroup.Infrastructure,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Infrastructure)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                        ],
+                        mode: isEditing || credentialsType !== '' ? 'icon' : 'tiles',
                         isDisplayLarge: true,
                         isDisabled: isEditing,
                     },
-                ],
-            },
-            {
-                title: t('credentialsForm.basicInformation.title'),
-                wizardTitle: t('credentialsForm.basicInformation.wizardTitle'),
-                inputs: [
                     {
                         id: 'credentialsName',
                         type: 'Text',
@@ -374,6 +420,7 @@ export function CredentialsForm(props: {
                         validation: (value) => validateKubernetesDnsName(value, 'Connection name', t),
                         isRequired: true,
                         isDisabled: isEditing,
+                        isHidden: !credentialsType,
                     },
                     {
                         id: 'namespaceName',
@@ -390,6 +437,25 @@ export function CredentialsForm(props: {
                                 value: namespace,
                             })),
                         isDisabled: isEditing,
+                        isHidden: !credentialsType,
+                    },
+                    {
+                        id: 'baseDomain',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
+                        type: 'Text',
+                        label: t('credentialsForm.baseDomain.label'),
+                        placeholder: t('credentialsForm.baseDomain.placeholder'),
+                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
+                        value: baseDomain,
+                        onChange: setBaseDomain,
+                        validation: (v) => validateBaseDomain(v, t),
                     },
                 ],
             },
@@ -532,11 +598,11 @@ export function CredentialsForm(props: {
                 ],
             },
             {
-                title: t('credentialsForm.vCenterCredentials.title'),
-                wizardTitle: t('credentialsForm.vCenterCredentials.wizardTitle'),
+                title: t('credentialsForm.vCenter.title'),
+                wizardTitle: t('credentialsForm.vCenter.wizardTitle'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.vCenterCredentials.wizardDescription')}
+                        {t('credentialsForm.vCenter.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -586,18 +652,6 @@ export function CredentialsForm(props: {
                         validation: (value) => validateCertificate(value, t),
                         isRequired: true,
                     },
-                ],
-                columns: 1,
-            },
-            {
-                title: t('credentialsForm.vSphereCredentials.title'),
-                wizardTitle: t('credentialsForm.vSphereCredentials.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.vSphereCredentials.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
                     {
                         id: 'vmClusterName',
                         isHidden: credentialsType !== Provider.vmware,
@@ -813,36 +867,7 @@ export function CredentialsForm(props: {
                 ],
                 columns: 1,
             },
-            {
-                title: t('credentialsForm.baseDomain.title'),
-                wizardTitle: t('credentialsForm.baseDomain.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.baseDomain.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
-                    {
-                        id: 'baseDomain',
-                        isHidden: ![
-                            Provider.aws,
-                            Provider.azure,
-                            Provider.baremetal,
-                            Provider.gcp,
-                            Provider.openstack,
-                            Provider.vmware,
-                        ].includes(credentialsType as Provider),
-                        type: 'Text',
-                        label: t('credentialsForm.baseDomain.label'),
-                        placeholder: t('credentialsForm.baseDomain.placeholder'),
-                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
-                        value: baseDomain,
-                        onChange: setBaseDomain,
-                        validation: (v) => validateBaseDomain(v, t),
-                    },
-                ],
-                columns: 1,
-            },
+
             {
                 title: t('credentialsForm.pullSecret.title'),
                 wizardTitle: t('credentialsForm.pullSecret.wizardTitle'),
@@ -872,18 +897,6 @@ export function CredentialsForm(props: {
                         isRequired: true,
                         isSecret: true,
                     },
-                ],
-                columns: 1,
-            },
-            {
-                title: t('credentialsForm.sshKey.title'),
-                wizardTitle: t('credentialsForm.sshKey.wizardTitle'),
-                description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.sshKey.wizardDescription')}
-                    </a>
-                ),
-                inputs: [
                     {
                         id: 'sshPrivatekey',
                         isHidden: ![
@@ -935,9 +948,6 @@ export function CredentialsForm(props: {
                 if (secret.stringData) {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
-                if (secret.data) {
-                    patch.push({ op: 'replace', path: `/data`, value: secret.data })
-                }
                 return patchResource(secret, patch).promise.then(() => {
                     history.push(NavigationPath.credentials)
                 })
@@ -954,8 +964,8 @@ export function CredentialsForm(props: {
         cancelLabel: t('common:cancel'),
         nextLabel: t('common:next'),
         backLabel: t('common:back'),
-
         cancel: () => history.push(NavigationPath.credentials),
+        stateToData,
     }
     return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
 }
