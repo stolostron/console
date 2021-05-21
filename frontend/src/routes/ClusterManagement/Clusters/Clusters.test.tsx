@@ -166,7 +166,17 @@ const mockManagedClusterInfo3: ManagedClusterInfo = {
                 version: '1.2.3',
                 availableUpdates: ['1.2.4', '1.2.5'],
                 desiredVersion: '1.2.3',
+                channel: 'stable-1.2',
                 upgradeFailed: false,
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
+                desired: {
+                    channels: ['stable-1.2', 'stable-1.3'],
+                    version: '1.2.3',
+                    image: 'abc',
+                },
             },
         },
     },
@@ -185,6 +195,10 @@ const mockManagedClusterInfo4: ManagedClusterInfo = {
                 availableUpdates: ['1.2.4', '1.2.5'],
                 desiredVersion: '1.2.4',
                 upgradeFailed: false,
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
             },
         },
     },
@@ -206,6 +220,16 @@ const mockManagedClusterInfo5: ManagedClusterInfo = {
                 availableUpdates: ['1.2.4', '1.2.5', '1.2.6'],
                 desiredVersion: '1.2.3',
                 upgradeFailed: false,
+                channel: 'stable-1.2',
+                versionAvailableUpdates: [
+                    { version: '1.2.4', image: '1.2.4' },
+                    { version: '1.2.5', image: '1.2.5' },
+                ],
+                desired: {
+                    channels: ['stable-1.2', 'stable-1.3'],
+                    version: '1.2.3',
+                    image: 'abc',
+                },
             },
         },
         nodeList: [
@@ -294,11 +318,19 @@ const mockCertificateSigningRequest0: CertificateSigningRequest = {
 }
 const mockCertificateSigningRequests = [mockCertificateSigningRequest0]
 
-function getClusterActionsResourceAttributes(name: string) {
+function getClusterCuratorCreateResourceAttributes(name: string) {
     return {
-        resource: 'managedclusteractions',
+        resource: 'clustercurators',
         verb: 'create',
-        group: 'action.open-cluster-management.io',
+        group: 'cluster.open-cluster-management.io',
+        namespace: name,
+    } as ResourceAttributes
+}
+function getClusterCuratorPatchResourceAttributes(name: string) {
+    return {
+        resource: 'clustercurators',
+        verb: 'patch',
+        group: 'cluster.open-cluster-management.io',
         namespace: name,
     } as ResourceAttributes
 }
@@ -361,10 +393,15 @@ describe('Clusters Page', () => {
         await clickByLabel('Actions', 2)
         await waitForNotText('managed.upgrade')
     })
+    test('overflow menu should hide channel select option if no available channels', async () => {
+        await clickByLabel('Actions', 2)
+        await waitForNotText('managed.selectChannel')
+    })
 
-    test('overflow menu should hide upgrade option if currently upgrading', async () => {
+    test('overflow menu should hide upgrade and channel select options if currently upgrading', async () => {
         await clickByLabel('Actions', 4)
         await waitForNotText('managed.upgrade')
+        await waitForNotText('managed.selectChannel')
     })
 
     test('overflow menu should allow upgrade if has available upgrade', async () => {
@@ -373,26 +410,40 @@ describe('Clusters Page', () => {
         await waitForText('upgrade.table.name')
     })
 
-    test('batch upgrade support when upgrading single cluster', async () => {
-        await selectTableRow(3)
-        await clickBulkAction('managed.upgrade.plural')
-        await waitForText(`bulk.title.upgrade`)
+    test('overflow menu should allow channel select if has available channels', async () => {
+        await clickByLabel('Actions', 3)
+        await clickByText('managed.selectChannel')
+        await waitForText('upgrade.table.currentchannel')
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
+        await selectTableRow(1)
+        await selectTableRow(2)
         await selectTableRow(3)
-        await selectTableRow(5)
+        await selectTableRow(4)
         await clickBulkAction('managed.upgrade.plural')
-        await waitForText(`bulk.title.upgrade`)
+        await waitForText(`upgrade.table.currentversion`)
+    })
+    test('batch select channel support when updating multiple clusters', async () => {
+        await selectTableRow(1)
+        await selectTableRow(2)
+        await selectTableRow(3)
+        await selectTableRow(4)
+        await clickBulkAction('managed.selectChannel.plural')
+        await waitForText('upgrade.table.currentchannel')
     })
 })
 
 describe('Clusters Page RBAC', () => {
     test('should perform RBAC checks', async () => {
         const rbacCreateManagedClusterNock = nockRBAC(rbacCreate(ManagedClusterDefinition))
-        const upgradeRBACNocks = upgradeableMockManagedClusters.map((mockManagedCluster) => {
-            return nockRBAC(getClusterActionsResourceAttributes(mockManagedCluster.metadata.name!))
-        })
+        const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
+            prev.push(
+                nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),
+                nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!))
+            )
+            return prev
+        }, [] as Scope[])
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

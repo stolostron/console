@@ -104,10 +104,17 @@ export type Nodes = {
 
 export type UpgradeInfo = {
     isUpgrading: boolean
+    isReadyUpdates: boolean
+    upgradePercentage: string
     upgradeFailed: boolean
     currentVersion: string | undefined
     desiredVersion: string | undefined
     availableUpdates: string[]
+    isReadySelectChannels: boolean
+    isSelectingChannel: boolean
+    currentChannel: string | undefined
+    desiredChannel: string | undefined
+    availableChannels: string[]
     prehooks: {
         hasHooks: boolean
         inProgress: boolean
@@ -209,6 +216,10 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
 const checkCuratorConditionInProgress = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
+}
+const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.message
 }
 
 const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
@@ -356,10 +367,17 @@ export function getDistributionInfo(
 
     const upgradeInfo: UpgradeInfo = {
         isUpgrading: false,
+        isReadyUpdates: false,
+        upgradePercentage: '',
         upgradeFailed: false,
         currentVersion: undefined,
         desiredVersion: undefined,
+        isReadySelectChannels: false,
+        isSelectingChannel: false,
+        currentChannel: undefined,
+        desiredChannel: undefined,
         availableUpdates: [],
+        availableChannels: [],
         prehooks: {
             hasHooks: false,
             inProgress: false,
@@ -373,25 +391,75 @@ export function getDistributionInfo(
             failed: false,
         },
     }
+    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+        (cc) => cc.name === 'product.open-cluster-management.io'
+    )?.value
+
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+    switch (productClaim) {
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
+    }
 
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
+        const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
+        const curatorIsUpgrading =
+            isUpgradeCuration &&
+            clusterCurator?.spec?.upgrade?.desiredUpdate &&
+            clusterCurator?.spec?.upgrade?.desiredUpdate !==
+                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            !curatorIsIdle
 
-        const upgradeClusterCondition = checkCuratorConditionInProgress('upgrade-cluster', curatorConditions)
+        const isSelectingChannel =
+            isUpgradeCuration &&
+            clusterCurator?.spec?.upgrade?.channel &&
+            clusterCurator?.spec?.upgrade?.channel !== managedClusterInfo?.status?.distributionInfo?.ocp.channel &&
+            !curatorIsIdle
+
+        const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
+        const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
+        upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
+        const desiredVersion =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
+            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion // backward compatibility
+        upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
-            upgradeClusterCondition ||
-            managedClusterInfo?.status?.distributionInfo?.ocp?.version !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+            curatorIsUpgrading || desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         upgradeInfo.upgradeFailed =
-            (managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            (desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
-        upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
-        upgradeInfo.desiredVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
-        upgradeInfo.availableUpdates = managedClusterInfo?.status?.distributionInfo?.ocp?.availableUpdates ?? []
+
+        upgradeInfo.availableUpdates =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates
+                ?.map((versionRelease) => {
+                    return versionRelease.version || ''
+                })
+                .filter((version) => {
+                    return !!version
+                }) || []
+
+        const isReadyUpdates =
+            upgradeInfo.availableUpdates &&
+            upgradeInfo.availableUpdates.length > 0 &&
+            !upgradeInfo.upgradeFailed &&
+            !isManagedOpenShift &&
+            !upgradeInfo.isUpgrading &&
+            curatorIsIdle
+        upgradeInfo.isReadyUpdates = !!isReadyUpdates
+
+        upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
+        const isReadySelectChannels =
+            upgradeInfo.availableChannels &&
+            upgradeInfo.availableChannels.length > 0 &&
+            !isManagedOpenShift &&
+            !upgradeInfo.isSelectingChannel &&
+            curatorIsIdle
+        upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
 
         upgradeInfo.prehooks = {
             hasHooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
@@ -405,17 +473,12 @@ export function getDistributionInfo(
             success: isUpgradeCuration && checkCuratorConditionDone('posthook-ansiblejob', curatorConditions),
             failed: isUpgradeCuration && checkCuratorConditionFailed('posthook-ansiblejob', curatorConditions),
         }
-    }
-
-    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
-        (cc) => cc.name === 'product.open-cluster-management.io'
-    )?.value
-
-    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-    switch (productClaim) {
-        case 'OpenShiftDedicated':
-            isManagedOpenShift = true
-            break
+        upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
+        upgradeInfo.desiredVersion = curatorIsUpgrading ? clusterCurator?.spec?.upgrade?.desiredUpdate : desiredVersion
+        upgradeInfo.currentChannel = managedClusterInfo?.status?.distributionInfo?.ocp?.channel
+        upgradeInfo.desiredChannel = isSelectingChannel
+            ? clusterCurator?.spec?.upgrade?.channel
+            : upgradeInfo.currentChannel
     }
 
     if (displayVersion) {
