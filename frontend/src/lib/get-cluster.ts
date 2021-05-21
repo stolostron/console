@@ -484,9 +484,9 @@ export function getClusterStatus(
 
         // ClusterCurator has not completed so loop through statuses
         if (
-            (!checkCuratorConditionDone('clustercurator-job', ccConditions) && clusterCurator?.spec?.desiredCuration === 'install') || 
+            (!checkCuratorConditionDone('clustercurator-job', ccConditions) &&
+                clusterCurator?.spec?.desiredCuration === 'install') ||
             checkCuratorConditionFailed('clustercurator-job', ccConditions)
-            
         ) {
             if (
                 !checkCuratorConditionDone('prehook-ansiblejob', ccConditions) &&
