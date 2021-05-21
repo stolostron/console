@@ -369,44 +369,36 @@ function InstallSubmarinerModal(props: {
     const [selectedSecret, setSelectedSecret] = useState<string | undefined>(undefined)
     const [fetchSecret, setFetchSecret] = useState<boolean>(false)
 
-    const availableClusters = clusters!.filter((cluster) => {
-        return !props.submarinerAddons.find((addon) => addon.metadata.namespace === cluster.namespace)
-    })
+    const availableClusters = clusters!.filter(
+        (cluster) => !props.submarinerAddons.find((addon) => addon.metadata.namespace === cluster.namespace)
+    )
 
     useEffect(() => {
         if (fetchSecret && selectedCluster) {
             setFetchSecret(false)
             setSelectedSecret(undefined)
 
-            // used to try to auto-detect the provider secret in the cluser namespace
+            // used to try to auto-detect the provider secret in the cluster namespace
             const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | undefined> = {
-                [Provider.aws]: (secrets: Secret[]) => {
-                    return secrets.find((s) => s.data?.['aws_access_key_id'])
-                },
-                [Provider.gcp]: (secrets: Secret[]) => {
-                    return secrets.find((s) => s.data?.['osServiceAccount.json'])
-                },
-                [Provider.azure]: (secrets: Secret[]) => {
-                    return secrets.find((s) => s.data?.['osServicePrincipal.json'])
-                },
-                [Provider.vmware]: (secrets: Secret[]) => {
-                    return secrets.find(
+                [Provider.aws]: (secrets: Secret[]) => secrets.find((s) => s.data?.['aws_access_key_id']),
+                [Provider.gcp]: (secrets: Secret[]) => secrets.find((s) => s.data?.['osServiceAccount.json']),
+                [Provider.azure]: (secrets: Secret[]) => secrets.find((s) => s.data?.['osServicePrincipal.json']),
+                [Provider.vmware]: (secrets: Secret[]) =>
+                    secrets.find(
                         (s) =>
                             s.data?.['username'] &&
                             s.data?.['password'] &&
                             s.metadata.labels?.['hive.openshift.io/secret-type'] !== 'kubeadmincreds'
-                    )
-                },
-                [Provider.openstack]: (secrets: Secret[]) => {
-                    return secrets.find((s) => s.data?.['clouds.yaml'])
-                },
+                    ),
+                [Provider.openstack]: (secrets: Secret[]) => secrets.find((s) => s.data?.['clouds.yaml']),
             }
+
             listNamespaceSecrets(selectedCluster.namespace!)
-                .promise.then((result) => {
-                    setSecretList(result)
+                .promise.then((secrets) => {
+                    setSecretList(secrets)
 
                     if (submarinerConfigProviders.includes(selectedCluster!.provider!)) {
-                        const providerSecret = providerAutoDetectSecret[selectedCluster!.provider!](result)
+                        const providerSecret = providerAutoDetectSecret[selectedCluster!.provider!](secrets)
                         setSelectedSecret(providerSecret?.metadata.name)
                     }
                 })
