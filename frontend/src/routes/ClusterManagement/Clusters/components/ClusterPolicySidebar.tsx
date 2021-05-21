@@ -18,6 +18,7 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../atoms'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
@@ -74,19 +75,6 @@ const useStyles = makeStyles({
         },
     },
 })
-
-function formatText(text: string) {
-    return text.split('\n').map((str: string, idx: number) => {
-        if (str === '') {
-            return <br key={`insight-details-linebreak-${idx}`} />
-        }
-        return (
-            <Text component={TextVariants.p} key={`insight-details-text-${idx}`}>
-                {str}
-            </Text>
-        )
-    })
-}
 
 function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
     const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
@@ -241,7 +229,6 @@ function DetailsView(props: {
             </Flex>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>{_.get(selectedReport, 'message', '')}</Text>
-                <Text component={TextVariants.h4}>{_.get(selectedReport, 'properties.details', '')}</Text>
             </TextContent>
             <Grid className={classes.subDetailComponents} hasGutter>
                 <GridItem span={5}>
@@ -289,10 +276,20 @@ function DetailsView(props: {
                     eventKey={0}
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
-                    <TextContent>{formatText(policyContentData?.resolution ?? '')}</TextContent>
+                    <TextContent>
+                        <Markdown
+                            template={policyContentData?.resolution ?? ''}
+                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
+                        />
+                    </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
-                    <TextContent>{formatText(policyContentData?.reason ?? '')}</TextContent>
+                    <TextContent>
+                        <Markdown
+                            template={policyContentData?.reason ?? ''}
+                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
+                        />
+                    </TextContent>
                 </Tab>
             </Tabs>
         </div>
