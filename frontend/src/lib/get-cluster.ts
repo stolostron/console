@@ -541,14 +541,15 @@ export function getClusterStatus(
     let statusMessage: string | undefined
 
     // ClusterCurator status
-    let ccStatus: ClusterStatus = ClusterStatus.prehookjob
+    let ccStatus: ClusterStatus = ClusterStatus.pending
     if (clusterCurator) {
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
 
         // ClusterCurator has not completed so loop through statuses
         if (
-            !checkCuratorConditionDone('clustercurator-job', ccConditions) &&
-            clusterCurator?.spec?.desiredCuration === 'install'
+            (!checkCuratorConditionDone('clustercurator-job', ccConditions) &&
+                clusterCurator?.spec?.desiredCuration === 'install') ||
+            checkCuratorConditionFailed('clustercurator-job', ccConditions)
         ) {
             if (
                 !checkCuratorConditionDone('prehook-ansiblejob', ccConditions) &&
@@ -561,10 +562,7 @@ export function getClusterStatus(
             } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
                 ccStatus = checkCuratorConditionFailed('activate-and-monitor', ccConditions)
                     ? ClusterStatus.provisionfailed
-                    : ClusterStatus.creating
-            } else if (!checkCuratorConditionDone('hive-provisioning-job', ccConditions)) {
-                // check if provision job is in progress or failed
-                ccStatus = checkCuratorConditionFailed('hive-provisioning-job', ccConditions)
+                    : checkCuratorConditionFailed('hive-provisioning-job', ccConditions)
                     ? ClusterStatus.provisionfailed
                     : ClusterStatus.creating
             } else if (!checkCuratorConditionDone('monitor-import', ccConditions)) {
