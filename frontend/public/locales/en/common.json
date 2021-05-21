@@ -34,6 +34,7 @@
     "label.add": "Add label",
     "error": "Error",
     "errors": "Errors",
+    "important": "Important",
     "there.were.errors": "There were errors processing the request(s)",
     "type.to.confirm": "Confirm by typing \"{0}\" below:",
     "close": "Close",

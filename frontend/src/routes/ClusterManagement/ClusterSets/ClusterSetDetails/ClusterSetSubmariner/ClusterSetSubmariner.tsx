@@ -30,14 +30,16 @@ import {
     AcmExpandableCard,
     AcmButton,
     Provider,
+    ProviderLongTextMap,
+    AcmAlertGroup,
 } from '@open-cluster-management/ui-components'
+import { useRecoilState } from 'recoil'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../lib/rbac-util'
 import { Cluster } from '../../../../../lib/get-cluster'
-import { IResource } from '../../../../../resources/resource'
 import { Secret, listNamespaceSecrets } from '../../../../../resources/secret'
 import {
     SubmarinerConfig,
@@ -50,9 +52,11 @@ import {
     ManagedClusterAddOnKind,
 } from '../../../../../resources/managed-cluster-add-on'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { submarinerConfigsState } from '../../../../../atoms'
 import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
-import { deleteResource, createResource, ResourceErrorCode, resultsSettled } from '../../../../../lib/resource-request'
+import { deleteSubmarinerAddon } from '../../../../../lib/delete-submariner'
+import { ResourceErrorCode, createResource, resultsSettled } from '../../../../../lib/resource-request'
 
 type SubmarinerType = 'submariner'
 const submariner: SubmarinerType = 'submariner'
@@ -81,6 +85,7 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 
 export function ClusterSetSubmarinerPageContent() {
     const { t } = useTranslation(['cluster', 'common'])
+    const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterAddOn> | { open: false }>({
         open: false,
@@ -241,7 +246,12 @@ export function ClusterSetSubmarinerPageContent() {
                                             description: t('bulk.message.uninstallSubmariner'),
                                             columns,
                                             keyFn: (mca) => mca.metadata.namespace as string,
-                                            actionFn: deleteResource,
+                                            actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
+                                                const submarinerConfig = submarinerConfigs.find(
+                                                    (sc) => sc.metadata.namespace === mca.metadata.namespace
+                                                )
+                                                return deleteSubmarinerAddon(managedClusterAddOn, submarinerConfig)
+                                            },
                                             close: () => setModalProps({ open: false }),
                                             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
@@ -262,7 +272,12 @@ export function ClusterSetSubmarinerPageContent() {
                                             description: t('bulk.message.uninstallSubmariner'),
                                             columns,
                                             keyFn: (mca) => mca.metadata.namespace as string,
-                                            actionFn: deleteResource,
+                                            actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
+                                                const submarinerConfig = submarinerConfigs.find(
+                                                    (sc) => sc.metadata.namespace === mca.metadata.namespace
+                                                )
+                                                return deleteSubmarinerAddon(managedClusterAddOn, submarinerConfig)
+                                            },
                                             close: () => setModalProps({ open: false }),
                                             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
@@ -321,7 +336,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             </RbacButton>
                                         ) : (
                                             <AcmButton
-                                                id="install-submarienr"
+                                                id="install-submariner"
                                                 variant="primary"
                                                 onClick={() => setInstallSubmarinerModalOpen(true)}
                                             >
@@ -347,7 +362,7 @@ function InstallSubmarinerModal(props: {
     onClose: () => void
     submarinerAddons: ManagedClusterAddOn[]
 }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     const { clusters } = useContext(ClusterSetContext)
     const [selectedCluster, setSelectedCluster] = useState<Cluster | undefined>(undefined)
     const [secretList, setSecretList] = useState<Secret[] | undefined>(undefined)
@@ -361,6 +376,7 @@ function InstallSubmarinerModal(props: {
     useEffect(() => {
         if (fetchSecret && selectedCluster) {
             setFetchSecret(false)
+            setSelectedSecret(undefined)
             /*
                 this map correlates to the secret name from Create cluster page
                 <cluster-name>-<providerMapKey>-creds
@@ -425,6 +441,41 @@ function InstallSubmarinerModal(props: {
                                     )
                                     setSelectedCluster(targetCluster)
                                     setFetchSecret(true)
+                                    if (!submarinerConfigProviders.includes(targetCluster?.provider!)) {
+                                        alertContext.addAlert({
+                                            title: t('common:important'),
+                                            message: (
+                                                <>
+                                                    <Trans
+                                                        i18nKey="cluster:managed.clusterSets.submariner.addons.config.notSupported"
+                                                        values={{
+                                                            cloudProvider: targetCluster!.provider!
+                                                                ? ProviderLongTextMap[targetCluster!.provider!]
+                                                                : targetCluster!.name,
+                                                        }}
+                                                        components={{
+                                                            bold: <strong />,
+                                                            button: (
+                                                                <AcmButton
+                                                                    onClick={() =>
+                                                                        window.open(DOC_LINKS.SUBMARINER, '_blank')
+                                                                    }
+                                                                    variant="link"
+                                                                    role="link"
+                                                                    isInline
+                                                                    icon={<ExternalLinkAltIcon />}
+                                                                    iconPosition="right"
+                                                                />
+                                                            ),
+                                                        }}
+                                                    />
+                                                </>
+                                            ),
+                                            type: 'info',
+                                        })
+                                    } else {
+                                        alertContext.clearAlerts()
+                                    }
                                 }}
                             >
                                 {availableClusters.map((cluster) => (
@@ -434,24 +485,25 @@ function InstallSubmarinerModal(props: {
                                 ))}
                             </AcmSelect>
 
-                            {submarinerConfigProviders.includes(selectedCluster?.provider!) && (
-                                <AcmSelect
-                                    variant="typeahead"
-                                    id="select-provider-secret"
-                                    label={t('managed.clusterSets.submariner.addons.secret.select')}
-                                    placeholder={t('managed.clusterSets.submariner.addons.secret.placeholder')}
-                                    labelHelp={t('managed.clusterSets.submariner.addons.secret.helperText')}
-                                    value={selectedSecret}
-                                    isRequired={submarinerConfigProviders.includes(selectedCluster?.provider!)}
-                                    onChange={(secret) => setSelectedSecret(secret)}
-                                >
-                                    {secretList?.map((secret) => (
-                                        <SelectOption key={secret.metadata.name} value={secret.metadata.name}>
-                                            {secret.metadata.name}
-                                        </SelectOption>
-                                    ))}
-                                </AcmSelect>
-                            )}
+                            <AcmSelect
+                                variant="typeahead"
+                                id="select-provider-secret"
+                                label={t('managed.clusterSets.submariner.addons.secret.select')}
+                                placeholder={t('managed.clusterSets.submariner.addons.secret.placeholder')}
+                                labelHelp={t('managed.clusterSets.submariner.addons.secret.helperText')}
+                                value={selectedSecret}
+                                isRequired={submarinerConfigProviders.includes(selectedCluster?.provider!)}
+                                onChange={(secret) => setSelectedSecret(secret)}
+                                isDisabled={!submarinerConfigProviders.includes(selectedCluster?.provider!)}
+                            >
+                                {secretList?.map((secret) => (
+                                    <SelectOption key={secret.metadata.name} value={secret.metadata.name}>
+                                        {secret.metadata.name}
+                                    </SelectOption>
+                                ))}
+                            </AcmSelect>
+
+                            <AcmAlertGroup isInline canClose padTop />
                             <ActionGroup>
                                 <AcmSubmit
                                     id="install"
@@ -506,7 +558,7 @@ function InstallSubmarinerModal(props: {
                                                 })
                                                 reject()
                                             } else {
-                                                resolve()
+                                                resolve(results)
                                                 reset()
                                             }
                                         })

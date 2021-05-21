@@ -58,6 +58,7 @@
     "managed.clusterSets.submariner.addons.secret.select": "Select provider credential secret",
     "managed.clusterSets.submariner.addons.secret.placeholder": "Select the secret that contains the provider credentials",
     "managed.clusterSets.submariner.addons.secret.helperText": "The provider credential secret that was used to create the cluster. If the cluster was imported, you will need to create the provider credential secret first before continuing. The provider credential secret is required in order to configure the SubmarinerConfig resource.",
+    "managed.clusterSets.submariner.addons.config.notSupported": "The Submariner add-on can be installed, but configuration by a <bold>SubmarinerConfig</bold> resource is not supported for <bold>{{cloudProvider}}</bold>. You may need to follow a few manual configuration steps, view the <button>Submariner documentation</button> for more information.",
     "managed.cluster.machinePools.emptyStateHeader": "No machine pools found.",
     "managed.cluster.machinePools.emptyStateButton": "This cluster doesn't have any machine pools.",
     "managed.import": "Import cluster",
