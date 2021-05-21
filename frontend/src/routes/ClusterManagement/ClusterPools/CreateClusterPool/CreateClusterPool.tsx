@@ -20,7 +20,7 @@ import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { namespacesState } from '../../../../atoms'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
-import './style.css'
+import '../../Clusters/CreateCluster/style.css'
 
 // template/data
 import { controlData } from './controlData/ControlData'
