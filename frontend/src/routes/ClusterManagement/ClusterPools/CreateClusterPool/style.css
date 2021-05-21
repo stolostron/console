@@ -1,16 +1,38 @@
-.pf-c-content .temptifly.showEditor {
-    margin: -24px 0 -3.125rem 0;
+.pf-c-content .temptifly.showEditor,
+.temptifly.showWizard {
+    margin: unset;
+    padding: unset;
+    height: calc(100vh - 187px);
+    margin-top: -1px;
+    background-color: black;
 }
+
 .pf-c-content .temptifly .creation-view-split-container.showEditor {
-    height: calc(100vh - 200px);
+    margin: unset;
+    padding: unset;
 }
-.pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container {
-    padding-top: 1rem;
-    height: calc(100vh - 205px);
+.pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
+.pf-c-content .temptifly.showWizard .creation-view-controls-container {
+    margin: unset;
+    padding: unset;
+    margin-right: -10px;
+    height: calc(100vh - 187px);
 }
+
 .portal-controls {
     display: flex;
 }
 .portal-controls > div {
     margin-left: 16px;
+}
+
+@media (max-width: 1200px) {
+    .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
+    .pf-c-content .temptifly.showWizard .creation-view-controls-container {
+        height: calc(100vh - 179px);
+    }
+    .pf-c-content .temptifly.showEditor,
+    .temptifly.showWizard {
+        height: calc(100vh - 179px);
+    }
 }
