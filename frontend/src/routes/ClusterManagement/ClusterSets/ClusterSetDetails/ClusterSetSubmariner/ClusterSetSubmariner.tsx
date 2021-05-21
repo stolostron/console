@@ -377,28 +377,36 @@ function InstallSubmarinerModal(props: {
         if (fetchSecret && selectedCluster) {
             setFetchSecret(false)
             setSelectedSecret(undefined)
-            /*
-                this map correlates to the secret name from Create cluster page
-                <cluster-name>-<providerMapKey>-creds
-            */
-            const providerMapKey: Record<string, string> = {
-                [Provider.aws]: 'aws',
-                [Provider.gcp]: 'gcp',
-                [Provider.azure]: 'azure',
-                [Provider.vmware]: 'vsphere',
-                [Provider.openstack]: 'openstack',
+
+            // used to try to auto-detect the provider secret in the cluser namespace
+            const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | undefined> = {
+                [Provider.aws]: (secrets: Secret[]) => {
+                    return secrets.find((s) => s.data?.['aws_access_key_id'])
+                },
+                [Provider.gcp]: (secrets: Secret[]) => {
+                    return secrets.find((s) => s.data?.['osServiceAccount.json'])
+                },
+                [Provider.azure]: (secrets: Secret[]) => {
+                    return secrets.find((s) => s.data?.['osServicePrincipal.json'])
+                },
+                [Provider.vmware]: (secrets: Secret[]) => {
+                    return secrets.find(
+                        (s) =>
+                            s.data?.['username'] &&
+                            s.data?.['password'] &&
+                            s.metadata.labels?.['hive.openshift.io/secret-type'] !== 'kubeadmincreds'
+                    )
+                },
+                [Provider.openstack]: (secrets: Secret[]) => {
+                    return secrets.find((s) => s.data?.['clouds.yaml'])
+                },
             }
             listNamespaceSecrets(selectedCluster.namespace!)
                 .promise.then((result) => {
                     setSecretList(result)
 
                     if (submarinerConfigProviders.includes(selectedCluster!.provider!)) {
-                        // attempt to auto-discover the provider credentials
-                        const providerSecret = result.find(
-                            (secret) =>
-                                secret.metadata.name ===
-                                `${selectedCluster!.name}-${providerMapKey[selectedCluster!.provider!]}-creds`
-                        )
+                        const providerSecret = providerAutoDetectSecret[selectedCluster!.provider!](result)
                         setSelectedSecret(providerSecret?.metadata.name)
                     }
                 })
