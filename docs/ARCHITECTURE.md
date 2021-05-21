@@ -10,7 +10,7 @@
 |    ALL | /apis   | Proxy request to cluster /apis                   |
 |    GET | /events | Server side event stream of kubernetes resources |
 
-### Kubernets Cluster API Proxy
+### Kubernetes Cluster API Proxy
 
 The proxy is a passthough to the kubernetes cluster api.
 
@@ -34,7 +34,7 @@ Backpressure is when data is written to a stream faster than the stream can hand
 
 ### Server Side Events
 
-[Server side events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) allow for streaming of changes to a client. It is a http request that stays open and new changes are streamed across. Newlines in the stream indicate the parts of the events. Web browsers [nativly](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) support server side events. Server side events also allow clients to efficiently reconnect and only get newer events and not reload all events.
+[Server side events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) allow for streaming of changes to a client. It is a http request that stays open and new changes are streamed across. Newlines in the stream indicate the parts of the events. Web browsers [natively](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) support server side events. Server side events also allow clients to efficiently reconnect and only get newer events and not reload all events.
 
 The backend uses the Kubernetes cluster API to watch resources that are changing in the cluster. Every event sent to a client is RBAC checked for access before being sent. This is done with `SelfSubjectAccessReview` requests.
 
