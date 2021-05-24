@@ -667,7 +667,7 @@ describe('CreateCluster', () => {
             nockCreate(mockClusterDeployment),
 
             nockCreate(clusterCuratorInstall),
-            nockCreate(providerConnectionAnsibleCopied)
+            nockCreate(providerConnectionAnsibleCopied),
         ]
 
         // click create button
