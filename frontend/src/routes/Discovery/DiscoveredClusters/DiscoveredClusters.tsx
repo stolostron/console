@@ -24,10 +24,12 @@ import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
-import { DiscoveryConfig } from '../../../resources/discovery-config'
+import { DiscoveryConfig, DiscoveryConfigDefinition } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { DiscoNotification } from '../DiscoveryComponents/Notification'
 import { BellIcon } from '@patternfly/react-icons'
+import { canUser } from '../../../lib/rbac-util'
+
 
 export default function DiscoveredClustersPage() {
     return (
@@ -204,8 +206,16 @@ export function DiscoveredClustersTable(props: {
     const { t } = useTranslation(['discovery'])
     const history = useHistory()
 
-    const [emptyState, setEmptyState] = useState<React.ReactNode>()
+    const [canCreateDiscoConfig, setCanCreateDiscoConfig] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateDiscoveryConfig = canUser('create', DiscoveryConfigDefinition)
+        canCreateDiscoveryConfig.promise
+            .then((result) => setCanCreateDiscoConfig(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateDiscoveryConfig.abort()
+    }, [])
 
+    const [emptyState, setEmptyState] = useState<React.ReactNode>()
     useEffect(() => {
         if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
@@ -380,12 +390,16 @@ export function DiscoveredClustersTable(props: {
                         id: 'configureDiscovery',
                         title: t('discovery.configureDiscovery'),
                         click: () => history.push(NavigationPath.configureDiscovery),
+                        isDisabled: !canCreateDiscoConfig,
+                        tooltip: t('common:rbac.unauthorized'),
                     },
                     {
                         id: 'addDiscovery',
                         title: t('discovery.addDiscovery'),
                         click: () => history.push(NavigationPath.createDiscovery),
                         variant: ButtonVariant.secondary,
+                        isDisabled: !canCreateDiscoConfig,
+                        tooltip: t('common:rbac.unauthorized'),
                     },
                 ]}
                 bulkActions={[]}
