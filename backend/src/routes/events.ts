@@ -285,7 +285,7 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
 
             switch (resource.kind) {
                 case 'FeatureGate': // Allow feature gates for all users
-                    return Promise.reject(true)
+                    return Promise.resolve(true)
             }
 
             return canListClusterScopedKind(resource, token).then((allowed) => {

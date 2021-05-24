@@ -40,6 +40,9 @@ export function loadConfigSettings(): void {
             }
         }
         settings = configOutput.parsed
+        if (settings.LOG_LEVEL) {
+            logger.level = settings.LOG_LEVEL
+        }
         const data: SettingsEvent = { type: 'SETTINGS', settings }
         if (settingsEventID) ServerSideEvents.removeEvent(settingsEventID)
         settingsEventID = ServerSideEvents.pushEvent({ data })
