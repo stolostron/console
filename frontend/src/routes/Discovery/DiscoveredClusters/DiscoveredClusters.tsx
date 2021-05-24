@@ -27,7 +27,7 @@ import { DiscoveryConfig, DiscoveryConfigDefinition } from '../../../resources/d
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { BellIcon } from '@patternfly/react-icons'
 import { canUser } from '../../../lib/rbac-util'
-
+import { SecretDefinition } from '../../../resources/secret'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -40,25 +40,39 @@ export default function DiscoveredClustersPage() {
 }
 
 function EmptyStateNoCRHCredentials() {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation(['common', 'discovery'])
+    const [canCreateSecret, setCanCreateSecret] = useState<boolean>(false)
+    useEffect(() => {
+        const canCreateSecret = canUser('create', SecretDefinition)
+        canCreateSecret.promise
+            .then((result) => setCanCreateSecret(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateSecret.abort()
+    }, [])
+
     return (
         <AcmEmptyState
-            title={t('emptystate.defaultState.title')}
+            title={t('discovery:emptystate.defaultState.title')}
             message={<Trans i18nKey={'discovery:emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
-                <AcmButton component={Link} to={NavigationPath.addCredentials}>
-                    {t('emptystate.addCredential')}
+                <AcmButton
+                    isDisabled={!canCreateSecret}
+                    tooltip={t('common:rbac.unauthorized')}
+                    component={Link}
+                    to={NavigationPath.addCredentials}
+                >
+                    {t('discovery:emptystate.addCredential')}
                 </AcmButton>
             }
         />
     )
 }
 
-function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
-    const { t } = useTranslation(['discovery'])
+function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[]; canCreateDiscoveryConfig: boolean }) {
+    const { t } = useTranslation(['common', 'discovery'])
     const history = useHistory()
 
     const onSelect = (credential: string) => {
@@ -69,11 +83,13 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text={t('discovery.configureDiscovery')}
+                text={t('discovery:discovery.configureDiscovery')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
                 isPrimary={true}
+                isDisabled={!props.canCreateDiscoveryConfig}
+                tooltip={t('common:rbac.unauthorized')}
                 dropdownItems={props.credentials!.map((credential) => {
                     return {
                         id: credential.metadata.namespace! + '/' + credential.metadata.name!,
@@ -82,14 +98,19 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
                 })}
             />
         ) : (
-            <AcmButton component={Link} to={NavigationPath.createDiscovery}>
-                {t('emptystate.enableClusterDiscovery')}
+            <AcmButton
+                isDisabled={!props.canCreateDiscoveryConfig}
+                tooltip={t('common:rbac.unauthorized')}
+                component={Link}
+                to={NavigationPath.createDiscovery}
+            >
+                {t('discovery:emptystate.enableClusterDiscovery')}
             </AcmButton>
         )
     return (
         <AcmEmptyState
             action={action}
-            title={t('emptystate.credentials.title')}
+            title={t('discovery:emptystate.credentials.title')}
             message={
                 <Trans
                     i18nKey={'discovery:emptystate.credentials.msg'}
@@ -104,11 +125,14 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     )
 }
 
-function EmptyStateAwaitingDiscoveredClusters() {
-    const { t } = useTranslation(['discovery'])
+function EmptyStateAwaitingDiscoveredClusters(props: {
+    canCreateDiscoveryConfig: boolean
+    canUpdateDiscoveryConfig: boolean
+}) {
+    const { t } = useTranslation(['common', 'discovery'])
     return (
         <AcmEmptyState
-            title={t('emptystate.discoveryEnabled.title')}
+            title={t('discovery:emptystate.discoveryEnabled.title')}
             message={
                 <Trans
                     i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
@@ -133,8 +157,10 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 variant={ButtonVariant.primary}
                                 component={Link}
                                 to={NavigationPath.configureDiscovery}
+                                isDisabled={!props.canUpdateDiscoveryConfig}
+                                tooltip={t('common:rbac.unauthorized')}
                             >
-                                {t('discovery.configureDiscovery')}
+                                {t('discovery:discovery.configureDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                         <ActionListItem>
@@ -142,8 +168,10 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 variant={ButtonVariant.secondary}
                                 component={Link}
                                 to={NavigationPath.createDiscovery}
+                                isDisabled={!props.canCreateDiscoveryConfig}
+                                tooltip={t('common:rbac.unauthorized')}
                             >
-                                {t('discovery.addDiscovery')}
+                                {t('discovery:discovery.addDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                     </ActionList>
@@ -200,12 +228,20 @@ export function DiscoveredClustersTable(props: {
     const history = useHistory()
 
     const [canCreateDiscoConfig, setCanCreateDiscoConfig] = useState<boolean>(false)
+    const [canUpdateDiscoConfig, setCanUpdateDiscoConfig] = useState<boolean>(false)
     useEffect(() => {
         const canCreateDiscoveryConfig = canUser('create', DiscoveryConfigDefinition)
         canCreateDiscoveryConfig.promise
             .then((result) => setCanCreateDiscoConfig(result.status?.allowed!))
             .catch((err) => console.error(err))
-        return () => canCreateDiscoveryConfig.abort()
+        const canUpdateDiscoveryConfig = canUser('update', DiscoveryConfigDefinition)
+        canUpdateDiscoveryConfig.promise
+            .then((result) => setCanUpdateDiscoConfig(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => {
+            canCreateDiscoveryConfig.abort()
+            canUpdateDiscoveryConfig.abort()
+        }
     }, [])
 
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
@@ -215,13 +251,29 @@ export function DiscoveredClustersTable(props: {
         } else if (props.credentials.length === 0 && props.discoveryConfigs?.length === 0) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // No credentials exist, guide user to set up credentials
         } else if (props.credentials.length > 0 && props.discoveryConfigs?.length === 0) {
-            setEmptyState(<EmptyStateCRHCredentials credentials={props.credentials} />) // Credential is set up, guide user to set up discovery config
+            setEmptyState(
+                <EmptyStateCRHCredentials
+                    credentials={props.credentials}
+                    canCreateDiscoveryConfig={canCreateDiscoConfig}
+                />
+            ) // Credential is set up, guide user to set up discovery config
         } else if (props.credentials.length > 0 && props.discoveryConfigs?.length > 0) {
-            setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
+            setEmptyState(
+                <EmptyStateAwaitingDiscoveredClusters
+                    canCreateDiscoveryConfig={canCreateDiscoConfig}
+                    canUpdateDiscoveryConfig={canUpdateDiscoConfig}
+                />
+            ) //Discoveryconfig is set up, wait for discoveredclusters to appear
         } else {
             setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
         }
-    }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
+    }, [
+        props.discoveredClusters,
+        props.credentials,
+        props.discoveryConfigs,
+        canCreateDiscoConfig,
+        canUpdateDiscoConfig,
+    ])
 
     const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         {
@@ -383,7 +435,7 @@ export function DiscoveredClustersTable(props: {
                         id: 'configureDiscovery',
                         title: t('discovery.configureDiscovery'),
                         click: () => history.push(NavigationPath.configureDiscovery),
-                        isDisabled: !canCreateDiscoConfig,
+                        isDisabled: !canUpdateDiscoConfig,
                         tooltip: t('common:rbac.unauthorized'),
                     },
                     {
