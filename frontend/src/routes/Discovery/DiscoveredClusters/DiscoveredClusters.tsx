@@ -258,6 +258,12 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
         },
         {
+            header: t('dcTbl.type'),
+            sort: (a: DiscoveredCluster, b: DiscoveredCluster) => compareStrings(a?.spec.type, b?.spec.type),
+            search: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
+            cell: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
+        },
+        {
             header: t('dcTbl.distributionVersion'),
             sort: 'spec.openshiftVersion',
             search: (discoveredCluster) => {
