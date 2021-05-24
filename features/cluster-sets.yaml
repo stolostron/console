@@ -3,7 +3,7 @@
 apiVersion: config.openshift.io/v1
 kind: FeatureGate
 metadata:
-    name: cluster-sets
+    name: open-cluster-management-cluster-sets
     labels:
         console.open-cluster-management.io: ""
 spec:
