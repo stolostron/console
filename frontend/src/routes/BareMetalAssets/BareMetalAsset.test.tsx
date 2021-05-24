@@ -141,7 +141,7 @@ describe('bare metal asset page', () => {
         await waitForNock(deleteNock)
     })
 
-    test('can delete asset(s) from batch action menu', async () => {
+    test('can delete assets from batch action menu', async () => {
         const clusterNock = nockRBAC(clusterCreationResourceAttributes())
         const deleteNock = nockDelete(mockBareMetalAssets[0])
         render(
