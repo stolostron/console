@@ -37,7 +37,8 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { managedClusterSetsState, secretsState, managedClustersState } from '../../../../atoms'
+import { managedClusterSetsState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../atoms'
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../resources/cluster-curator'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -80,6 +81,67 @@ const providerConnection: ProviderConnection = {
     },
     type: 'Opaque',
 }
+const clusterCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'test-curator-template',
+        namespace: clusterName,
+    },
+    spec: {
+        desiredCuration: undefined,
+    },
+}
+
+const clusterCuratorInstall: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'test-curator-template',
+        namespace: clusterName,
+    },
+    spec: {
+        desiredCuration: 'Install',
+    },
+}
+
+const providerConnectionAnsible: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'ansible-connection',
+        namespace: 'test-ii',
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+        },
+    },
+    stringData: {
+        host: 'test',
+        token: 'test',
+    },
+    type: 'Opaque',
+}
+
+const providerConnectionAnsibleCopied: ProviderConnection = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    metadata: {
+        name: 'ansible-connection',
+        namespace: clusterName,
+        labels: {
+            'cluster.open-cluster-management.io/type': 'ans',
+            'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'test-ii',
+        },
+    },
+    stringData: {
+        host: 'test',
+        token: 'test',
+    },
+    type: 'Opaque',
+}
+
+const mockClusterCurators = [clusterCurator]
 
 const bareMetalAsset: BareMetalAsset = {
     apiVersion: BareMetalAssetApiVersion,
@@ -427,7 +489,8 @@ describe('CreateCluster', () => {
                 initializeState={(snapshot) => {
                     snapshot.set(managedClustersState, [])
                     snapshot.set(managedClusterSetsState, [])
-                    snapshot.set(secretsState, [providerConnection as Secret])
+                    snapshot.set(secretsState, [providerConnection as Secret, providerConnectionAnsible as Secret])
+                    snapshot.set(clusterCuratorsState, mockClusterCurators)
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
@@ -469,6 +532,7 @@ describe('CreateCluster', () => {
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
             nockList(bareMetalAsset, mockBareMetalAssets),
+            nockList(clusterCurator, mockClusterCurators),
         ]
 
         // create the form
@@ -537,6 +601,73 @@ describe('CreateCluster', () => {
             nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes),
             nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes),
             nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('success.create.creating')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
+
+    test('can create cluster with ansible template', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [
+            nockList(clusterImageSet, mockClusterImageSet),
+            nockList(bareMetalAsset, mockBareMetalAssets),
+            nockList(clusterCurator, mockClusterCurators),
+        ]
+
+        // create the form
+        const { container } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the name
+        await typeByTestId('eman', clusterName!)
+        await clickByText('Next')
+
+        // step 2 -- the infrastructure
+        await clickByTestId('cluster.create.aws.subtitle')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // step 3 -- the imageset and connection
+        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByText(providerConnection.metadata.name!)
+        await clickByText('Next')
+
+        // step 4 -- Integration
+        await clickByText('Integration')
+        await clickByPlaceholderText('template.clusterCreate.select.placeholder')
+        await clickByText(clusterCurator.metadata.name!)
+        await clickByText('Next')
+
+        // create
+        await clickByText('Create')
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create the cluster's namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedCluster),
+            nockCreate(mockPullSecret),
+            nockCreate(mockInstallConfigSecret),
+            nockCreate(mockPrivateSecret),
+            nockCreate(mockKlusterletAddonSecret),
+            nockCreate(mockClusterDeployment),
+
+            nockCreate(clusterCuratorInstall),
+            nockCreate(providerConnectionAnsibleCopied)
         ]
 
         // click create button

@@ -201,19 +201,19 @@ export const controlData = [
     {
         id: 'integrationStep',
         type: 'step',
-        title: 'Integration',
+        title: 'template.clusterCreate.title',
     },
     {
         id: 'chooseTemplate',
         type: 'section',
-        title: 'Integration',
-        info: 'Choose a automation job template to automatically run at different times of creation. (Optional)',
+        title: 'template.clusterCreate.title',
+        info: 'template.clusterCreate.info',
     },
     {
-        name: 'Ansible Automation Template',
+        name: 'template.clusterCreate.name',
         id: 'templateName',
         type: 'singleselect',
-        placeholder: 'Select a ansible job template',
+        placeholder: 'template.clusterCreate.select.placeholder',
         available: [],
         validation: {
             required: false,
