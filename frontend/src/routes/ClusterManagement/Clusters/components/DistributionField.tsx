@@ -7,8 +7,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../components/Rbac'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { rbacCreate } from '../../../../lib/rbac-util'
-import { ManagedClusterActionDefinition } from '../../../../resources/managedclusteraction'
+import { rbacCreate, rbacPatch } from '../../../../lib/rbac-util'
+import { ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -22,10 +22,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-    if (
-        props.cluster?.distribution.ocp?.upgradeFailed &&
-        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
-    ) {
+    if (props.cluster?.distribution.upgradeInfo.upgradeFailed) {
         // UPGRADE FAILED
         return (
             <>
@@ -33,17 +30,19 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 <AcmInlineStatus
                     type={StatusType.danger}
                     status={t('upgrade.upgradefailed', {
-                        version: props.cluster?.consoleURL ? '' : props.cluster?.distribution.ocp?.desiredVersion,
+                        version: props.cluster?.consoleURL
+                            ? ''
+                            : props.cluster?.distribution.upgradeInfo.desiredVersion,
                     })}
                     popover={
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgradefailed', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
                                   bodyContent: t('upgrade.upgradefailed.message', {
                                       clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
                                   footerContent: (
                                       <a
@@ -60,30 +59,37 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 />
             </>
         )
-    } else if (
-        props.cluster?.distribution.ocp?.desiredVersion &&
-        props.cluster?.distribution.ocp?.version &&
-        props.cluster?.distribution.ocp?.desiredVersion !== props.cluster?.distribution.ocp?.version
-    ) {
+    } else if (props.cluster?.distribution.upgradeInfo.isUpgrading) {
         // UPGRADE IN PROGRESS
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.progress}
-                    status={t('upgrade.upgrading.version', {
-                        version: props.cluster?.distribution.ocp?.desiredVersion,
-                    })}
+                    status={
+                        t('upgrade.upgrading.version', {
+                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                        }) +
+                        (props.cluster?.distribution.upgradeInfo.upgradePercentage
+                            ? ' (' + props.cluster?.distribution.upgradeInfo.upgradePercentage + ')'
+                            : '')
+                    }
                     popover={
                         props.cluster?.consoleURL
                             ? {
                                   headerContent: t('upgrade.upgrading', {
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
+                                      version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent: t('upgrade.upgrading.message', {
-                                      clusterName: props.cluster?.name,
-                                      version: props.cluster?.distribution.ocp?.desiredVersion,
-                                  }),
+                                  bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
+                                      ? t('upgrade.upgrading.message.percentage', {
+                                            clusterName: props.cluster?.name,
+                                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                            percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
+                                        })
+                                      : t('upgrade.upgrading.message', {
+                                            clusterName: props.cluster?.name,
+                                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                        }),
                                   footerContent: (
                                       <a
                                           href={`${props.cluster?.consoleURL}/settings/cluster`}
@@ -99,11 +105,7 @@ export function DistributionField(props: { cluster?: Cluster }) {
                 />
             </>
         )
-    } else if (
-        props.cluster?.distribution.ocp?.availableUpdates &&
-        props.cluster?.distribution.ocp?.availableUpdates?.length > 0 &&
-        !props.cluster?.distribution.isManagedOpenShift // don't allow upgrade for managed OpenShift
-    ) {
+    } else if (props.cluster?.distribution.upgradeInfo.isReadyUpdates) {
         // UPGRADE AVAILABLE
         return (
             <>
@@ -114,7 +116,10 @@ export function DistributionField(props: { cluster?: Cluster }) {
                         icon={<ArrowCircleUpIcon />}
                         variant={ButtonVariant.link}
                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                        rbac={[rbacCreate(ManagedClusterActionDefinition, props.cluster?.namespace)]}
+                        rbac={[
+                            rbacCreate(ClusterCuratorDefinition, props.cluster?.namespace),
+                            rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
+                        ]}
                     >
                         {t('upgrade.available')}
                     </RbacButton>

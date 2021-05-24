@@ -2,7 +2,6 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
-import * as YAML from 'yamljs'
 import { listResources } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
@@ -17,7 +16,7 @@ export const ProviderConnectionDefinition: IResourceDefinition = {
     kind: ProviderConnectionKind,
 }
 
-export interface ProviderConnectionSpec {
+export interface ProviderConnectionStringData {
     awsAccessKeyID?: string
     awsSecretAccessKeyID?: string
 
@@ -39,7 +38,7 @@ export interface ProviderConnectionSpec {
     datastore?: string
 
     libvirtURI?: string
-    sshKnownHosts?: string[]
+    sshKnownHosts?: string
     imageMirror?: string
     bootstrapOSImage?: string
     clusterOSImage?: string
@@ -54,21 +53,17 @@ export interface ProviderConnectionSpec {
     pullSecret?: string
     sshPrivatekey?: string
     sshPublickey?: string
-}
 
-export interface ProviderConnectionStringData {
     host?: string
     token?: string
-    'credential-hash'?: string
 }
 
 export interface ProviderConnection {
     apiVersion: ProviderConnectionApiVersionType
     kind: ProviderConnectionKindType
     metadata: V1ObjectMeta
-    data?: { metadata: string } & ProviderConnectionStringData
+    data?: ProviderConnectionStringData
     stringData?: ProviderConnectionStringData
-    spec?: ProviderConnectionSpec
     type: 'Opaque'
 }
 
@@ -92,40 +87,25 @@ export function unpackProviderConnection(secret: ProviderConnection | V1Secret) 
     const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
     if (providerConnection.data) {
         if (!providerConnection.stringData) providerConnection.stringData = {}
-        const data = providerConnection.data as unknown as Record<string, string>
+        const data = providerConnection.data as Record<string, string>
         const stringData = providerConnection.stringData as Record<string, string>
-
         for (const key in providerConnection.data) {
             stringData[key] = Buffer.from(data[key], 'base64').toString('ascii')
         }
-
-        if (stringData.metadata) {
-            try {
-                providerConnection.spec = YAML.parse(stringData.metadata)
-            } catch {}
-        }
-
         delete providerConnection.data
     }
     return providerConnection
 }
 
 export function packProviderConnection(providerConnection: ProviderConnection) {
-    if (providerConnection.spec) {
-        if (Object.keys(providerConnection.spec).length > 0) {
-            const metadata = YAML.stringify(providerConnection.spec)
-            providerConnection.data = { metadata: Buffer.from(metadata).toString('base64') }
-        } else {
-            delete providerConnection.data
+    if (!providerConnection.data) providerConnection.data = {}
+    const data = providerConnection.data as Record<string, string>
+    const stringData = providerConnection.stringData as Record<string, string>
+    if (stringData !== undefined) {
+        for (const key in stringData) {
+            data[key] = Buffer.from(stringData[key], 'ascii').toString('base64')
         }
-        delete providerConnection.spec
-    }
-    if (providerConnection.stringData === undefined) {
         delete providerConnection.stringData
-    } else if (providerConnection.stringData) {
-        if (Object.keys(providerConnection.stringData).length === 0) {
-            delete providerConnection.stringData
-        }
     }
     return providerConnection
 }

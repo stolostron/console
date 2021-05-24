@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
@@ -20,9 +20,11 @@ const mockClusterNoAvailable: Cluster = {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: false,
+            isReadySelectChannels: false,
             availableUpdates: [],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            currentChannel: 'fast-1.2',
         },
     },
     labels: undefined,
@@ -53,9 +55,12 @@ const mockClusterReady1: Cluster = {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: true,
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2.9', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            currentChannel: 'stable-1.2',
+            availableChannels: ['stable-1.3', 'stable-1.2'],
         },
     },
     labels: undefined,
@@ -86,9 +91,12 @@ const mockClusterReady2: Cluster = {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: true,
             availableUpdates: ['2.2.4', '2.2.5', '2.2.6', '2.2'],
             currentVersion: '2.2.3',
             desiredVersion: '2.2.3',
+            currentChannel: 'stable-2.2',
+            availableChannels: ['stable-2.3'],
         },
     },
     labels: undefined,
@@ -119,9 +127,12 @@ const mockClusterOffline: Cluster = {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: true,
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            availableChannels: ['stable-2.2', 'stable-2.3'],
+            currentChannel: 'fast-2.2',
         },
     },
     labels: undefined,
@@ -139,54 +150,9 @@ const mockClusterOffline: Cluster = {
     },
     isManaged: true,
 }
-const mockClusterFailedUpgrade: Cluster = {
-    name: 'cluster-4-failedupgrade',
-    displayName: 'cluster-4-failedupgrade',
-    namespace: 'cluster-4-failedupgrade',
-    status: ClusterStatus.ready,
-    isHive: false,
-    distribution: {
-        k8sVersion: '1.19',
-        displayVersion: 'Openshift 1.2.3',
-        upgradeInfo: {
-            upgradeFailed: true,
-            isUpgrading: false,
-            isReadyUpdates: false,
-            availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
-            currentVersion: '1.2.3',
-            desiredVersion: '1.2.4',
-        },
-    },
-    labels: undefined,
-    nodes: undefined,
-    kubeApiServer: '',
-    consoleURL: '',
-    hive: {
-        isHibernatable: true,
-        clusterPool: undefined,
-        secrets: {
-            installConfig: '',
-            kubeadmin: '',
-            kubeconfig: '',
-        },
-    },
-    isManaged: true,
-}
-const allClusters: Array<Cluster> = [
-    mockClusterNoAvailable,
-    mockClusterReady1,
-    mockClusterReady2,
-    mockClusterOffline,
-    mockClusterFailedUpgrade,
-]
-const clusterCuratorReady1 = {
-    apiVersion: ClusterCuratorDefinition.apiVersion,
-    kind: ClusterCuratorDefinition.kind,
-    metadata: {
-        name: 'cluster-1-ready1',
-        namespace: 'cluster-1-ready1',
-    },
-}
+
+const allClusters: Array<Cluster> = [mockClusterNoAvailable, mockClusterReady1, mockClusterReady2, mockClusterOffline]
+
 const clusterCuratorReady2 = {
     apiVersion: ClusterCuratorDefinition.apiVersion,
     kind: ClusterCuratorDefinition.kind,
@@ -201,32 +167,33 @@ const getPatchUpdate = (version: string) => {
             desiredCuration: 'upgrade',
             upgrade: {
                 // set channel to empty to make sure we only use version
-                channel: '',
-                desiredUpdate: version,
+                channel: version,
+                desiredUpdate: '',
             },
         },
     }
     return data
 }
 
-describe('BatchUpgradeModal', () => {
-    it('should only show upgradeable ones, and select latest version as default', () => {
-        const { queryByText } = render(<BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />)
+describe('BatchChannelSelectModal', () => {
+    it('should only show selectable ones, and select current channel as default', () => {
+        const { queryAllByText, queryByText } = render(
+            <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
+        )
         expect(queryByText('cluster-0-no-available')).toBeFalsy()
         expect(queryByText('cluster-1-ready1')).toBeTruthy()
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
         expect(queryByText('cluster-3-offline')).toBeFalsy()
-        expect(queryByText('cluster-4-failedupgrade')).toBeFalsy()
         // check if selecting latest version
-        expect(queryByText('1.2.9')).toBeTruthy()
-        expect(queryByText('1.2.6')).toBeFalsy()
-        expect(queryByText('2.2.6')).toBeTruthy()
-        expect(queryByText('2.2')).toBeFalsy()
+        expect(queryAllByText('stable-1.2')).toHaveLength(2)
+        expect(queryByText('fast-2.2')).toBeFalsy()
+        expect(queryByText('fast-1.2')).toBeFalsy()
+        expect(queryByText('stable-2.2')).toBeTruthy()
     })
     it('should close modal when succeed', async () => {
         let isClosed = false
         const { getByText, queryByText } = render(
-            <BatchUpgradeModal
+            <BatchChannelSelectModal
                 clusters={allClusters}
                 open={true}
                 close={() => {
@@ -234,25 +201,23 @@ describe('BatchUpgradeModal', () => {
                 }}
             />
         )
-        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
-        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 404)
-        const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('2.2.6') })
-        expect(getByText('upgrade.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.submit'))
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 404)
+        const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('stable-2.3') })
+        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
+        userEvent.click(getByText('upgrade.selectChannel.submit'))
         await act(async () => {
-            await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
             await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
-            await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
+            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy())
             await waitFor(() => expect(isClosed).toBe(true))
         })
 
         expect(isClosed).toBe(true)
     })
-    it('should show loading when click upgrade, and upgrade button should be disabled when loading', async () => {
+    it('should show loading when click select, and select button should be disabled when loading', async () => {
         let isClosed = false
         const { getByText, queryByText } = render(
-            <BatchUpgradeModal
+            <BatchChannelSelectModal
                 clusters={allClusters}
                 open={true}
                 close={() => {
@@ -260,17 +225,17 @@ describe('BatchUpgradeModal', () => {
                 }}
             />
         )
-        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
-        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
-        expect(getByText('upgrade.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.submit'))
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
+        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
+        userEvent.click(getByText('upgrade.selectChannel.submit'))
         await act(async () => {
-            await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
-            userEvent.click(getByText('upgrade.submit.processing')) // do additional click. make sure not calling upgrade again
-            userEvent.click(getByText('upgrade.submit.processing'))
-            await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
+            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeTruthy())
+            userEvent.click(getByText('upgrade.selectChannel.submit.processing')) // do additional click. make sure not calling upgrade again
+            userEvent.click(getByText('upgrade.selectChannel.submit.processing'))
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-            await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy(), { timeout: 5000 })
+            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy(), {
+                timeout: 5000,
+            })
             await waitFor(() => expect(isClosed).toBe(true))
         })
     })
@@ -278,7 +243,7 @@ describe('BatchUpgradeModal', () => {
     it('should close modal if click cancel', () => {
         let isClosed = false
         const { getByText } = render(
-            <BatchUpgradeModal
+            <BatchChannelSelectModal
                 clusters={allClusters}
                 open={true}
                 close={() => {
@@ -292,18 +257,16 @@ describe('BatchUpgradeModal', () => {
     it('should show alert when failed; keep failed rows in table with error messages', async () => {
         jest.spyOn(console, 'error').mockImplementation(() => {})
         const { getByText, queryByText } = render(
-            <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+            <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
         )
-        const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
-        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 400)
+        const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 400)
         expect(queryByText('cluster-1-ready1')).toBeTruthy()
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
-        expect(getByText('upgrade.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.submit'))
-        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeTruthy())
-        await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
+        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
+        userEvent.click(getByText('upgrade.selectChannel.submit'))
+        await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeTruthy())
         await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-        await waitFor(() => expect(queryByText('upgrade.submit.processing')).toBeFalsy())
+        await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy())
         await waitFor(() => expect(queryByText('common:there.were.errors')).toBeTruthy())
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
         expect(queryByText('common:error')).toBeTruthy()

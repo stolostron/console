@@ -27,6 +27,9 @@ export interface ClusterCurator {
             posthook?: AnsibleJob[]
         }
         upgrade?: {
+            desiredUpdate?: string
+            channel?: string
+            upstream?: string
             towerAuthSecret?: string
             prehook?: AnsibleJob[]
             posthook?: AnsibleJob[]

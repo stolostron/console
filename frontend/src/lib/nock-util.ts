@@ -211,7 +211,7 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
     )
 }
 
-export function nockPatch(resource: IResource, data: unknown[], response?: IResource, statusCode = 204) {
+export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
@@ -292,17 +292,6 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
     }
 
     return finalNetworkMock
-}
-
-export function nockUpgrade(clusterName: string, version: string, response?: string, statusCode = 201, delay = 0) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
-        .post('/upgrade', (body) => isEqual(body, { clusterName, version }))
-        .delay(delay)
-        .reply(statusCode, response, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Credentials': 'true',
-        })
 }
 
 export const mockBadRequestStatus = {

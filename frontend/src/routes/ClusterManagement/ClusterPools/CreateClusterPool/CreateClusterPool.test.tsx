@@ -57,7 +57,7 @@ const providerConnection: ProviderConnection = {
             'cluster.open-cluster-management.io/credentials': '',
         },
     },
-    spec: {
+    stringData: {
         awsAccessKeyID: 'awsAccessKeyID',
         awsSecretAccessKeyID: 'awsSecretAccessKeyID',
         baseDomain: 'base.domain',
@@ -65,6 +65,7 @@ const providerConnection: ProviderConnection = {
         sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
         sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
     },
+    type: 'Opaque',
 }
 
 const mockNamespace: Namespace = {
@@ -149,7 +150,7 @@ const mockClusterPool: ClusterPool = {
     },
     spec: {
         size: 1,
-        baseDomain: providerConnection.spec?.baseDomain!,
+        baseDomain: providerConnection.stringData?.baseDomain!,
         installConfigSecretTemplateRef: {
             name: mockInstallConfigSecret.metadata.name!,
         },
