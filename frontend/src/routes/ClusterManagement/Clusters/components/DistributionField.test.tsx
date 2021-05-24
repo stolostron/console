@@ -15,6 +15,13 @@ const mockDistributionInfo: DistributionInfo = {
         desiredVersion: '1.2.3',
         upgradeFailed: false,
     },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: true,
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        currentVersion: '1.2.3',
+    },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
     isManagedOpenShift: false,
@@ -25,6 +32,13 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.5'],
         desiredVersion: '1.2.4',
         upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: true,
+        isReadyUpdates: false,
+        availableUpdates: ['1.2.4', '1.2.5'],
+        currentVersion: '1.2.3',
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -37,6 +51,13 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
         desiredVersion: '1.2.3',
         upgradeFailed: false,
     },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        availableUpdates: [],
+        currentVersion: '1.2.3',
+    },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
     isManagedOpenShift: false,
@@ -47,6 +68,13 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         desiredVersion: '1.2.4',
         upgradeFailed: true,
+    },
+    upgradeInfo: {
+        upgradeFailed: true,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -59,6 +87,13 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         desiredVersion: '1.2.3',
         upgradeFailed: true,
     },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: true,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+    },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
     isManagedOpenShift: false,
@@ -70,16 +105,23 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
         desiredVersion: '1.2.3',
         upgradeFailed: false,
     },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+    },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
     isManagedOpenShift: true,
 }
 
-function getClusterActionsResourceAttributes(name: string) {
+function getClusterCuratoResourceAttributes(name: string, verb: string) {
     return {
-        resource: 'managedclusteractions',
-        verb: 'create',
-        group: 'action.open-cluster-management.io',
+        resource: 'clustercurators',
+        verb: verb,
+        group: 'cluster.open-cluster-management.io',
         namespace: name,
     } as ResourceAttributes
 }
@@ -87,8 +129,10 @@ function getClusterActionsResourceAttributes(name: string) {
 describe('DistributionField', () => {
     const renderDistributionInfoField = async (data: DistributionInfo, allowUpgrade: boolean, hasUpgrade = false) => {
         let nockAction: nock.Scope | undefined = undefined
+        let nockAction2: nock.Scope | undefined = undefined
         if (hasUpgrade) {
-            nockAction = nockRBAC(getClusterActionsResourceAttributes('clusterName'), allowUpgrade)
+            nockAction = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'patch'), allowUpgrade)
+            nockAction2 = nockRBAC(getClusterCuratoResourceAttributes('clusterName', 'create'), allowUpgrade)
         }
 
         const mockCluster: Cluster = {
@@ -118,6 +162,9 @@ describe('DistributionField', () => {
         const retResource = render(<DistributionField cluster={mockCluster} />)
         if (nockAction) {
             await waitForNock(nockAction)
+        }
+        if (nockAction2) {
+            await waitForNock(nockAction2)
         }
         return retResource
     }

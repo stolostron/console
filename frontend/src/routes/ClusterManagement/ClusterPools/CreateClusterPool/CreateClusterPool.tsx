@@ -20,7 +20,7 @@ import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { namespacesState } from '../../../../atoms'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
-import './style.css'
+import '../../Clusters/CreateCluster/style.css'
 
 // template/data
 import { controlData } from './controlData/ControlData'
@@ -114,7 +114,7 @@ export default function CreateClusterPoolPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light" isFilled>
+                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
                         <CreateClusterPool />
                     </PageSection>
                 </AcmPageContent>

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Provider } from '@open-cluster-management/ui-components'
+import { AcmToastProvider, AcmToastGroup, Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -83,8 +83,11 @@ function TestAddDiscoveryConfigPage() {
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.createDiscovery]}>
-                <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
-                <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+                <AcmToastProvider>
+                    <AcmToastGroup />
+                    <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
+                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+                </AcmToastProvider>
             </MemoryRouter>
         </RecoilRoot>
     )
@@ -99,8 +102,11 @@ function TestEditConnectionPage() {
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
-                <Route path={NavigationPath.configureDiscovery} render={() => <DiscoveryConfigPage />} />
-                <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+                <AcmToastProvider>
+                    <AcmToastGroup />
+                    <Route path={NavigationPath.configureDiscovery} render={() => <DiscoveryConfigPage />} />
+                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+                </AcmToastProvider>
             </MemoryRouter>
         </RecoilRoot>
     )

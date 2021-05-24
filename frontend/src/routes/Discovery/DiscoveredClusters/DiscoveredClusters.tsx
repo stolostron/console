@@ -3,7 +3,6 @@
 import {
     AcmIcon,
     AcmIconVariant,
-    AcmAlertContext,
     AcmButton,
     AcmDropdown,
     AcmEmptyState,
@@ -17,7 +16,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Alert, ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
 import * as moment from 'moment'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -26,7 +25,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { DiscoveryConfig, DiscoveryConfigDefinition } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { DiscoNotification } from '../DiscoveryComponents/Notification'
 import { BellIcon } from '@patternfly/react-icons'
 import { canUser } from '../../../lib/rbac-util'
 
@@ -156,10 +154,6 @@ function EmptyStateAwaitingDiscoveredClusters() {
 }
 
 export function DiscoveredClustersPageContent() {
-    const alertContext = useContext(AcmAlertContext)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => alertContext.clearAlerts, [])
-
     const [discoveredClusters] = useRecoilState(discoveredClusterState)
     const [secrets] = useRecoilState(secretsState)
     const credentials = secrets.map(unpackProviderConnection)
@@ -188,7 +182,6 @@ export function DiscoveredClustersPageContent() {
     sessionStorage.removeItem('DiscoveryCredential')
     return (
         <Fragment>
-            <DiscoNotification />
             <DiscoveredClustersTable
                 discoveredClusters={unmanagedClusters}
                 credentials={RHOCMCredentials}
