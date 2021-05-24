@@ -55,9 +55,14 @@ export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiCluster
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
+export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
-interface IEventData {
-    type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'LOADED' | 'START'
+interface Settings {
+    LOG_LEVEL?: string
+}
+
+interface WatchEvent {
+    type: 'ADDED' | 'DELETED' | 'MODIFIED'
     object: {
         kind: string
         apiVersion: string
@@ -68,6 +73,13 @@ interface IEventData {
         }
     }
 }
+
+export interface SettingsEvent {
+    type: 'SETTINGS'
+    settings: Record<string, string>
+}
+
+type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
@@ -93,6 +105,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
+    const [, setSettings] = useRecoilState(settingsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -120,7 +133,7 @@ export function LoadData(props: { children?: ReactNode }) {
     }
 
     useEffect(() => {
-        let eventDataQueue: IEventData[] | undefined = []
+        let eventDataQueue: WatchEvent[] | undefined = []
 
         async function processEvents() {
             if (!eventDataQueue) return
@@ -154,7 +167,7 @@ export function LoadData(props: { children?: ReactNode }) {
             eventDataQueue = undefined
         }
 
-        function processEventData(data: IEventData): void {
+        function processEventData(data: WatchEvent): void {
             if (!data.object) return
             const setter = setters[data.object.kind]
             if (!setter) return
@@ -182,7 +195,7 @@ export function LoadData(props: { children?: ReactNode }) {
         function processMessage(event: MessageEvent) {
             if (event.data) {
                 try {
-                    const data = JSON.parse(event.data) as IEventData
+                    const data = JSON.parse(event.data) as ServerSideEventData
                     switch (data.type) {
                         case 'ADDED':
                         case 'MODIFIED':
@@ -196,6 +209,9 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'LOADED':
                             processEvents()
                             setLoading(false)
+                            break
+                        case 'SETTINGS':
+                            setSettings(data.settings)
                             break
                     }
                 } catch (err) {

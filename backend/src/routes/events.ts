@@ -24,7 +24,12 @@ interface WatchEvent {
     object: IResource
 }
 
-type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
+export interface SettingsEvent {
+    type: 'SETTINGS'
+    settings: Record<string, string>
+}
+
+type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 const abortControllers: Record<string, AbortController> = {}
 
@@ -265,6 +270,7 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
     switch (serverSideEvent.data?.type) {
         case 'START':
         case 'LOADED':
+        case 'SETTINGS':
             return Promise.resolve(true)
 
         case 'DELETED':
@@ -276,6 +282,12 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'MODIFIED': {
             const watchEvent = serverSideEvent.data
             const resource = watchEvent.object
+
+            switch (resource.kind) {
+                case 'FeatureGate': // Allow feature gates for all users
+                    return Promise.resolve(true)
+            }
+
             return canListClusterScopedKind(resource, token).then((allowed) => {
                 if (allowed) return true
                 return canListNamespacedScopedKind(resource, token).then((allowed) => {

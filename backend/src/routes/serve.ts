@@ -35,12 +35,6 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
             res.setHeader('Cache-Control', cacheControl)
         }
 
-        const cookies = parseCookies(req)
-
-        if (!cookies['_csrf']) {
-            return redirect(res, req.url)
-        }
-
         const acceptEncoding = (req.headers['accept-encoding'] as string) ?? ''
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
