@@ -7,7 +7,7 @@ import fs from 'fs'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import path from 'path'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -18,17 +18,21 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { useHistory, useLocation } from 'react-router-dom'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
-import { createCluster } from '../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { controlData } from './controlData/ControlData'
-import { setAvailableConnections } from './controlData/ControlDataHelpers'
+import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
-import { secretsState, managedClustersState } from '../../../../atoms'
+import { secretsState, managedClustersState, clusterCuratorsState } from '../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
+import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '../../../../resources/cluster-curator'
+import { createCluster } from '../../../../lib/create-cluster'
+import { unpackProviderConnection } from '../../../../resources/provider-connection'
+import { Secret } from '../../../../resources/secret'
+import { createResource as createResourceTool } from '../../../../lib/resource-request'
 
 declare const window: any
 if (window.monaco) {
@@ -74,7 +78,17 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
+
+    const providerConnections = secrets.map(unpackProviderConnection)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+    )
+
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterCurators] = useRecoilState(clusterCuratorsState)
+    const curatorTemplates = filterForTemplatedCurators(clusterCurators)
+    const [selectedTemplate, setSelectedTemplate] = useState('')
     const classes = useStyles()
     // create portals for buttons in header
     const switches = (
@@ -90,9 +104,19 @@ export default function CreateClusterPage() {
         </div>
     )
 
+    function templiflyOnChange(control: any) {
+        if (control.id === 'templateName') {
+            setSelectedTemplate(control.active)
+        }
+    }
+
+    useEffect(() => {
+        console.log('checking selection: ', selectedTemplate)
+    }, [selectedTemplate])
+
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }) => {
+    const createResource = async (resourceJSON: { createResources: any[] }, control: any) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
@@ -100,22 +124,76 @@ export default function CreateClusterPage() {
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
+
             if (matchedManagedCluster) {
                 return setCreationStatus({
                     status: 'ERROR',
                     messages: [{ message: `The cluster name is already used by another cluster.` }],
                 })
             } else {
+                // check if Template is selected
+                if (selectedTemplate !== '') {
+                    // set installAttemptsLimit to 0
+                    createResources.forEach((resource) => {
+                        if (resource.kind === 'ClusterDeployment') {
+                            resource.spec.installAttemptsLimit = 0
+                        }
+                    })
+                }
+
                 setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
+
+                // creates managedCluster, deployment, secrets etc...
                 const { status, messages } = await createCluster(createResources)
                 setCreationStatus({ status, messages })
 
-                // redirect to created cluster
-                if (status === 'DONE') {
-                    setTimeout(() => {
-                        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
-                    }, 2000)
+                if (status !== 'ERROR' && selectedTemplate !== '') {
+                    // get template, modifty it and create curator cluster namespace
+                    const currentTemplate = curatorTemplates.find(
+                        (template) => template.metadata.name === selectedTemplate
+                    )
+                    const currentTemplateMutable: ClusterCurator = JSON.parse(JSON.stringify(currentTemplate))
+                    if (currentTemplateMutable.spec?.install?.towerAuthSecret)
+                        currentTemplateMutable.spec.install.towerAuthSecret = 'toweraccess'
+                    if (currentTemplateMutable.spec?.scale?.towerAuthSecret)
+                        currentTemplateMutable.spec.scale.towerAuthSecret = 'toweraccess'
+                    if (currentTemplateMutable.spec?.upgrade?.towerAuthSecret)
+                        currentTemplateMutable.spec.upgrade.towerAuthSecret = 'toweraccess'
+                    if (currentTemplateMutable.spec?.destroy?.towerAuthSecret)
+                        currentTemplateMutable.spec.destroy.towerAuthSecret = 'toweraccess'
+                    delete currentTemplateMutable.metadata.creationTimestamp
+                    delete currentTemplateMutable.metadata.resourceVersion
+
+                    currentTemplateMutable!.metadata.name = createResources[0].metadata.namespace
+                    currentTemplateMutable!.metadata.namespace = createResources[0].metadata.namespace
+                    currentTemplateMutable!.spec!.desiredCuration = 'install'
+
+                    createClusterCurator(currentTemplateMutable)
+
+                    // get ansible secret, modifty it and create it in cluster namespace
+                    const ansibleSecret = ansibleCredentials.find(
+                        (secret) => secret.metadata.name === currentTemplate?.spec?.install?.towerAuthSecret
+                    )
+                    const ansibleSecretMutable: Secret = JSON.parse(JSON.stringify(ansibleSecret))
+                    ansibleSecretMutable!.metadata.name = 'toweraccess'
+                    ansibleSecretMutable!.metadata.namespace = createResources[0].metadata.namespace
+                    ansibleSecretMutable!.metadata.labels!['open-cluster-management.io/copiedFromNamespace'] =
+                        ansibleSecret?.metadata.namespace!
+                    ansibleSecretMutable!.metadata.labels!['open-cluster-management.io/copiedFromName'] =
+                        ansibleSecret?.metadata.name!
+
+                    delete ansibleSecretMutable.metadata.creationTimestamp
+                    delete ansibleSecretMutable.metadata.resourceVersion
+
+                    createResourceTool<Secret>(ansibleSecretMutable)
                 }
+
+                // redirect to created cluster
+                // if (status === 'DONE') {
+                //     setTimeout(() => {
+                //         history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                //     }, 2000)
+                // }
             }
         }
     }
@@ -168,6 +246,10 @@ export default function CreateClusterPage() {
                     }
                 })
             })
+        }
+        if (controlData[i].id === 'templateName') {
+            controlData[i].available = curatorTemplates.map((template) => template.metadata.name)
+            setAvailableTemplates(controlData[i], curatorTemplates)
         }
     }
 
@@ -224,6 +306,7 @@ export default function CreateClusterPage() {
                             }}
                             logging={process.env.NODE_ENV !== 'production'}
                             i18n={i18n}
+                            onChange={templiflyOnChange}
                         />
                     </PageSection>
                 </AcmPageContent>

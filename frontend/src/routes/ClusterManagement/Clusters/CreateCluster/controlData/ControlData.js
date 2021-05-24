@@ -208,14 +208,15 @@ export const controlData = [
         type: 'section',
         title: 'Integration',
         info: 'Choose a automation job template to automatically run at different times of creation. (Optional)',
-        tooltip: 'tooltip.creation.ocp.choose.distribution',
     },
     {
         name: 'Ansible Automation Template',
-        id: 'name',
+        id: 'templateName',
         type: 'singleselect',
+        placeholder: 'Select a ansible job template',
+        available: [],
         validation: {
-            required: false
+            required: false,
         },
     },
 ]
