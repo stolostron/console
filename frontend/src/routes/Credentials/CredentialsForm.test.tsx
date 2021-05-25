@@ -229,8 +229,8 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'ost',
             {
-                openstackCloudsYaml: 'openstackCloudsYaml',
-                openstackCloud: 'openstackCloud',
+                openstackCloudsYaml: 'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: https://acme.com\n\t\t\tusername: fakeuser\n\t\t\tpassword: fakepwd',
+                openstackCloud: 'openstack',
             },
             true
         )
@@ -243,8 +243,8 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // ost credentials
-        await typeByTestId('openstackCloudsYaml', providerConnection.stringData?.openstackCloudsYaml!)
         await typeByTestId('openstackCloud', providerConnection.stringData?.openstackCloud!)
+        await typeByTestId('openstackCloudsYaml', providerConnection.stringData?.openstackCloudsYaml!)
         await clickByText('common:next')
 
         // Pull secret

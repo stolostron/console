@@ -150,18 +150,20 @@ export function validateBaseDomain(value: string, t: TFunction) {
 export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFunction) {
     if (yamlValue) {
         try {
+            //ensure we have valid YAML
             const yamlData = YAML.parse(yamlValue)
-            //console.log("yamlData: "+JSON.stringify(yamlData))
-            //console.log("cloud Value: "+cloudValue)
 
+            //check for the clouds key
             const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
             if (clouds !== undefined) {
                 let found = false
                 for (const key in clouds) {
+                    //look for matching cloud name
                     if (cloudValue !== undefined && key === cloudValue) {
                         found = true
                     }
-                    //console.log("key["+key+"]: "+JSON.stringify(clouds[key]))
+                    //check a few of the required fields, especially password, since the user 
+                    //would have had to add this manually
                     if (
                         clouds[key]?.auth?.auth_url === undefined ||
                         clouds[key]?.auth?.password === undefined ||
@@ -170,6 +172,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
                         return t('validate.yaml.not.valid')
                     }
                 }
+                //Uh-oh, cloud name not found in clouds.yaml
                 if (cloudValue !== undefined && !found) {
                     return t('validate.yaml.cloud.not.found')
                 }
