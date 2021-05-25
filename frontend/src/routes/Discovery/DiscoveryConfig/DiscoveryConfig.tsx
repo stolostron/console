@@ -309,16 +309,14 @@ export function DiscoveryConfigPageContent(props: {
             const canUpdateDiscoveryConfig = canUser(
                 'update',
                 DiscoveryConfigDefinition,
-                discoveryConfig.metadata.namespace
+                discoveryConfig.metadata.namespace,
+                'discovery'
             )
+
             canUpdateDiscoveryConfig.promise
-                .then((result) => {
-                    if (result.status?.allowed!) {
-                        alertContext.clearAlerts()
-                    } else {
-                        alertContext.addAlert(getErrorInfo(403))
-                    }
-                })
+                .then((result) =>
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                )
                 .catch((err) => alertContext.addAlert(getErrorInfo(err)))
             return () => {
                 canUpdateDiscoveryConfig.abort()
@@ -327,20 +325,14 @@ export function DiscoveryConfigPageContent(props: {
             const canCreateDiscoveryConfig = canUser(
                 'create',
                 DiscoveryConfigDefinition,
-                discoveryConfig.metadata.namespace
+                discoveryConfig.metadata.namespace,
+                'discovery'
             )
             canCreateDiscoveryConfig.promise
-                .then((result) => {
-                    if (result.status?.allowed!) {
-                        alertContext.clearAlerts()
-                    } else {
-                        console.log('HERE')
-                        console.log(getErrorInfo(new ResourceError('', 403)))
-                        alertContext.addAlert(getErrorInfo(new ResourceError('', 403)))
-                    }
-                })
+                .then((result) =>
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                )
                 .catch((err) => alertContext.addAlert(getErrorInfo(err)))
-
             return () => {
                 canCreateDiscoveryConfig.abort()
             }
@@ -404,7 +396,6 @@ export function DiscoveryConfigPageContent(props: {
                             const metadata = credential.split('/', 2)
                             discoveryConfig.metadata.namespace = metadata[0]
                             discoveryConfig.spec.credential = metadata[1]
-                            // validateNamespacePermissions(metadata[0])
                         }
                     })
                 }}

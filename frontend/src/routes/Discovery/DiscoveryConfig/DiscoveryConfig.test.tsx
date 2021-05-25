@@ -17,6 +17,8 @@ import {
     mockRHOCMSecrets,
     discoveryConfigCreateSelfSubjectAccessRequest,
     discoveryConfigCreateSelfSubjectAccessResponse,
+    discoveryConfigUpdateSelfSubjectAccessRequest,
+    discoveryConfigUpdateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
 
 function TestAddDiscoveryConfigPage() {
@@ -67,10 +69,6 @@ describe('discovery config page', () => {
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
-        // const discoveyConfigUpdateNock = nockCreate(
-        //     discoveryConfigUpdateSelfSubjectAccessRequest,
-        //     discoveryConfigUpdateSelfSubjectAccessResponse
-        // )
         const { container } = render(<TestAddDiscoveryConfigPage />)
         waitForNocks([discoveryConfigCreateNock])
 
@@ -130,6 +128,10 @@ describe('discovery config page', () => {
     })
 
     it('Edit DiscoveryConfig', async () => {
+        const discoveryConfigUpdateNock = nockCreate(
+            discoveryConfigUpdateSelfSubjectAccessRequest,
+            discoveryConfigUpdateSelfSubjectAccessResponse
+        )
         const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
@@ -139,6 +141,8 @@ describe('discovery config page', () => {
         await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
         await clickByText(discoveryConfig.metadata.namespace!)
+
+        await waitForNocks([discoveryConfigUpdateNock])
 
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')

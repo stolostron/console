@@ -155,6 +155,7 @@ export const discoveryConfigCreateSelfSubjectAccessRequest: SelfSubjectAccessRev
             verb: 'create',
             group: 'discovery.open-cluster-management.io',
             namespace: discoveryConfig.metadata.namespace,
+            name: 'discovery',
         },
     },
 }
@@ -169,6 +170,7 @@ export const discoveryConfigCreateSelfSubjectAccessResponse: SelfSubjectAccessRe
             verb: 'create',
             group: 'discovery.open-cluster-management.io',
             namespace: discoveryConfig.metadata.namespace,
+            name: 'discovery',
         },
     },
     status: {
@@ -185,6 +187,8 @@ export const discoveryConfigUpdateSelfSubjectAccessRequest: SelfSubjectAccessRev
             resource: 'discoveryconfigs',
             verb: 'update',
             group: 'discovery.open-cluster-management.io',
+            namespace: discoveryConfig.metadata.namespace,
+            name: 'discovery',
         },
     },
 }
@@ -198,6 +202,8 @@ export const discoveryConfigUpdateSelfSubjectAccessResponse: SelfSubjectAccessRe
             resource: 'discoveryconfigs',
             verb: 'update',
             group: 'discovery.open-cluster-management.io',
+            namespace: discoveryConfig.metadata.namespace,
+            name: 'discovery',
         },
     },
     status: {
