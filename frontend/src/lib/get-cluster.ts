@@ -104,10 +104,17 @@ export type Nodes = {
 
 export type UpgradeInfo = {
     isUpgrading: boolean
+    isReadyUpdates: boolean
+    upgradePercentage: string
     upgradeFailed: boolean
     currentVersion: string | undefined
     desiredVersion: string | undefined
     availableUpdates: string[]
+    isReadySelectChannels: boolean
+    isSelectingChannel: boolean
+    currentChannel: string | undefined
+    desiredChannel: string | undefined
+    availableChannels: string[]
     prehooks: {
         hasHooks: boolean
         inProgress: boolean
@@ -212,6 +219,10 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
 const checkCuratorConditionInProgress = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
+}
+const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.message
 }
 
 const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
@@ -359,42 +370,99 @@ export function getDistributionInfo(
 
     const upgradeInfo: UpgradeInfo = {
         isUpgrading: false,
+        isReadyUpdates: false,
+        upgradePercentage: '',
         upgradeFailed: false,
         currentVersion: undefined,
         desiredVersion: undefined,
+        isReadySelectChannels: false,
+        isSelectingChannel: false,
+        currentChannel: undefined,
+        desiredChannel: undefined,
         availableUpdates: [],
+        availableChannels: [],
         prehooks: {
-            hasPrehooks: false,
+            hasHooks: false,
             inProgress: false,
             success: false,
             failed: false,
         },
         posthooks: {
-            hasPosthooks: false,
+            hasHooks: false,
             inProgress: false,
             success: false,
             failed: false,
         },
     }
+    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+        (cc) => cc.name === 'product.open-cluster-management.io'
+    )?.value
+
+    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+    switch (productClaim) {
+        case 'OpenShiftDedicated':
+            isManagedOpenShift = true
+            break
+    }
 
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
         const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
+        const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
+        const curatorIsUpgrading =
+            isUpgradeCuration &&
+            clusterCurator?.spec?.upgrade?.desiredUpdate &&
+            clusterCurator?.spec?.upgrade?.desiredUpdate !==
+                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            !curatorIsIdle
 
-        const upgradeClusterCondition = checkCuratorConditionInProgress('upgrade-cluster', curatorConditions)
+        const isSelectingChannel =
+            isUpgradeCuration &&
+            clusterCurator?.spec?.upgrade?.channel &&
+            clusterCurator?.spec?.upgrade?.channel !== managedClusterInfo?.status?.distributionInfo?.ocp.channel &&
+            !curatorIsIdle
+
+        const upgradeDetailedMessage = getCuratorConditionMessage('monitor-upgrade', curatorConditions) || ''
+        const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
+        upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
+        const desiredVersion =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
+            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion // backward compatibility
+        upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
-            upgradeClusterCondition ||
-            managedClusterInfo?.status?.distributionInfo?.ocp?.version !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
+            curatorIsUpgrading || desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
 
         upgradeInfo.upgradeFailed =
-            (managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            (desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
-        upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
-        upgradeInfo.desiredVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.desiredVersion
-        upgradeInfo.availableUpdates = managedClusterInfo?.status?.distributionInfo?.ocp?.availableUpdates ?? []
+
+        upgradeInfo.availableUpdates =
+            managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates
+                ?.map((versionRelease) => {
+                    return versionRelease.version || ''
+                })
+                .filter((version) => {
+                    return !!version
+                }) || []
+
+        const isReadyUpdates =
+            upgradeInfo.availableUpdates &&
+            upgradeInfo.availableUpdates.length > 0 &&
+            !upgradeInfo.upgradeFailed &&
+            !isManagedOpenShift &&
+            !upgradeInfo.isUpgrading &&
+            curatorIsIdle
+        upgradeInfo.isReadyUpdates = !!isReadyUpdates
+
+        upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
+        const isReadySelectChannels =
+            upgradeInfo.availableChannels &&
+            upgradeInfo.availableChannels.length > 0 &&
+            !isManagedOpenShift &&
+            !upgradeInfo.isSelectingChannel &&
+            curatorIsIdle
+        upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
 
         upgradeInfo.prehooks = {
             hasHooks: (clusterCurator?.spec?.upgrade?.prehook ?? []).length > 0,
@@ -408,17 +476,12 @@ export function getDistributionInfo(
             success: isUpgradeCuration && checkCuratorConditionDone('posthook-ansiblejob', curatorConditions),
             failed: isUpgradeCuration && checkCuratorConditionFailed('posthook-ansiblejob', curatorConditions),
         }
-    }
-
-    const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
-        (cc) => cc.name === 'product.open-cluster-management.io'
-    )?.value
-
-    let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-    switch (productClaim) {
-        case 'OpenShiftDedicated':
-            isManagedOpenShift = true
-            break
+        upgradeInfo.currentVersion = managedClusterInfo?.status?.distributionInfo?.ocp?.version
+        upgradeInfo.desiredVersion = curatorIsUpgrading ? clusterCurator?.spec?.upgrade?.desiredUpdate : desiredVersion
+        upgradeInfo.currentChannel = managedClusterInfo?.status?.distributionInfo?.ocp?.channel
+        upgradeInfo.desiredChannel = isSelectingChannel
+            ? clusterCurator?.spec?.upgrade?.channel
+            : upgradeInfo.currentChannel
     }
 
     if (displayVersion) {
@@ -481,45 +544,43 @@ export function getClusterStatus(
     let statusMessage: string | undefined
 
     // ClusterCurator status
-    let ccStatus: ClusterStatus = ClusterStatus.prehookjob
+    let ccStatus: ClusterStatus = ClusterStatus.pending
     if (clusterCurator) {
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
 
         // ClusterCurator has not completed so loop through statuses
         if (
-            !checkCuratorConditionDone('clustercurator-job', ccConditions) &&
-            clusterCurator?.spec?.desiredCuration === 'install'
+            (!checkCuratorConditionDone('clustercurator-job', ccConditions) &&
+                clusterCurator?.spec?.desiredCuration === 'install') ||
+            checkCuratorConditionFailed('clustercurator-job', ccConditions)
         ) {
             if (
                 !checkCuratorConditionDone('prehook-ansiblejob', ccConditions) &&
                 (clusterCurator.spec?.install?.prehook?.length ?? 0) > 0
             ) {
                 // Check if pre-hook is in progress or failed
-                ccStatus = checkCuratorConditionInProgress('prehook-ansiblejob', ccConditions)
-                    ? ClusterStatus.prehookjob
-                    : ClusterStatus.prehookfailed
+                ccStatus = checkCuratorConditionFailed('prehook-ansiblejob', ccConditions)
+                    ? ClusterStatus.prehookfailed
+                    : ClusterStatus.prehookjob
             } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
-                ccStatus = checkCuratorConditionInProgress('activate-and-monitor', ccConditions)
-                    ? ClusterStatus.creating
-                    : ClusterStatus.provisionfailed
-            } else if (!checkCuratorConditionDone('hive-provisioning-job', ccConditions)) {
-                // check if provision job is in progress or failed
-                ccStatus = checkCuratorConditionInProgress('hive-provisioning-job', ccConditions)
-                    ? ClusterStatus.creating
-                    : ClusterStatus.provisionfailed
+                ccStatus = checkCuratorConditionFailed('activate-and-monitor', ccConditions)
+                    ? ClusterStatus.provisionfailed
+                    : checkCuratorConditionFailed('hive-provisioning-job', ccConditions)
+                    ? ClusterStatus.provisionfailed
+                    : ClusterStatus.creating
             } else if (!checkCuratorConditionDone('monitor-import', ccConditions)) {
                 // check if import is in progress or failed
-                ccStatus = checkCuratorConditionInProgress('monitor-import', ccConditions)
-                    ? ClusterStatus.pendingimport
-                    : ClusterStatus.importfailed
+                ccStatus = checkCuratorConditionFailed('monitor-import', ccConditions)
+                    ? ClusterStatus.importfailed
+                    : ClusterStatus.pendingimport
             } else if (
                 !checkCuratorConditionDone('posthook-ansiblejob', ccConditions) &&
                 (clusterCurator.spec?.install?.posthook?.length ?? 0) > 0
             ) {
                 // check if post-hook is in progress or failed
-                ccStatus = checkCuratorConditionInProgress('posthook-ansiblejob', ccConditions)
-                    ? ClusterStatus.posthookjob
-                    : ClusterStatus.posthookfailed
+                ccStatus = checkCuratorConditionFailed('posthook-ansiblejob', ccConditions)
+                    ? ClusterStatus.posthookfailed
+                    : ClusterStatus.posthookjob
             }
 
             return { status: ccStatus, statusMessage }

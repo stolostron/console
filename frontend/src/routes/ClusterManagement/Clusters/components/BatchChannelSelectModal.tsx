@@ -5,79 +5,67 @@ import { SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
-import { ReleaseNotesLink } from './ReleaseNotesLink'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import {
     IRequestResult,
     patchResource,
-    createResource,
     ResourceError,
+    createResource,
     ResourceErrorCode,
 } from '../../../../lib/resource-request'
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../resources/cluster-curator'
 import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
-// compare version
-const compareVersion = (a: string, b: string) => {
-    // basic sort semvers without preversion
-    const aVersion = a.split('.')
-    const bVersion = b.split('.')
-    for (let i = 0; i < Math.min(aVersion.length, bVersion.length); i++) {
-        if (aVersion[i] !== bVersion[i]) {
-            return Number(bVersion[i]) - Number(aVersion[i])
-        }
-    }
-    return bVersion.length - aVersion.length
-}
-
-const isUpgradeable = (c: Cluster) => {
-    const hasAvailableUpgrades = c.distribution?.upgradeInfo?.isReadyUpdates
+const isChannelSelectable = (c: Cluster) => {
+    const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels
     const isReady = c.status === ClusterStatus.ready
-    return (!!c.name && isReady && hasAvailableUpgrades) || false
+    return (!!c.name && isReady && isReadySelectChannels) || false
 }
 
-const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
+const setCurrentChannel = (clusters: Array<Cluster> | undefined): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
-            const availableUpdates =
-                cluster.distribution?.upgradeInfo?.availableUpdates &&
-                [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
-            const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
-            res[cluster.name] = res[cluster.name] ? res[cluster.name] : latestVersion
+            const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
+            const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
+            let defaultChannel = availableChannels.length > 0 ? availableChannels[0] : ''
+            if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
+                defaultChannel = currentChannel
+            }
+            res[cluster.name] = res[cluster.name] ? res[cluster.name] : defaultChannel
         }
     })
     return res
 }
 
-export function BatchUpgradeModal(props: {
+export function BatchChannelSelectModal(props: {
     close: () => void
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
     const { t } = useTranslation(['cluster'])
-    const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
-    const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+    const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
+    const [channelSelectableClusters, setChannelSelectableClusters] = useState<Array<Cluster>>([])
 
     useEffect(() => {
         // set up latest if not selected
-        const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
-        setSelectVersions(setLatestVersions(newUpgradeableClusters))
-        setUpgradeableClusters(newUpgradeableClusters || [])
+        const newChannelSelectableClusters = props.clusters && props.clusters.filter(isChannelSelectable)
+        setSelectChannels(setCurrentChannel(newChannelSelectableClusters))
+        setChannelSelectableClusters(newChannelSelectableClusters || [])
     }, [props.clusters, props.open])
 
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            title={t('bulk.title.upgrade')}
-            action={t('upgrade.submit')}
-            processing={t('upgrade.submit.processing')}
-            resources={upgradeableClusters}
+            title={t('bulk.title.selectChannel')}
+            action={t('upgrade.selectChannel.submit')}
+            processing={t('upgrade.selectChannel.submit.processing')}
+            resources={channelSelectableClusters}
             close={() => {
                 props.close()
             }}
-            description={t('bulk.message.upgrade')}
+            description={t('bulk.message.selectChannel')}
             columns={[
                 {
                     header: t('upgrade.table.name'),
@@ -85,43 +73,40 @@ export function BatchUpgradeModal(props: {
                     cell: 'displayName',
                 },
                 {
-                    header: t('upgrade.table.currentversion'),
+                    header: t('upgrade.table.currentchannel'),
                     cell: (item: Cluster) => {
-                        const currentVersion = item?.distribution?.upgradeInfo.currentVersion || ''
-                        return <span>{currentVersion}</span>
+                        const currentChannel = item?.distribution?.upgradeInfo.currentChannel || ''
+                        return <span>{currentChannel}</span>
                     },
                 },
                 {
-                    header: t('upgrade.table.newversion'),
+                    header: t('upgrade.table.newchannel'),
                     cell: (cluster: Cluster) => {
-                        const availableUpdates =
-                            cluster.distribution?.upgradeInfo?.availableUpdates &&
-                            [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
-                        const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
+                        const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
+                        const isReadySelectChannels = cluster.distribution?.upgradeInfo?.isReadySelectChannels
                         return (
                             <div>
-                                {hasAvailableUpgrades && (
+                                {isReadySelectChannels && (
                                     <>
                                         <AcmSelect
-                                            value={selectVersions[cluster.name || ''] || ''}
+                                            value={selectChannels[cluster.name || ''] || ''}
                                             id={`${cluster.name}-upgrade-selector`}
                                             maxHeight={'6em'}
                                             label=""
                                             isRequired
-                                            onChange={(version) => {
-                                                if (cluster.name && version) {
-                                                    selectVersions[cluster.name] = version
-                                                    setSelectVersions({ ...selectVersions })
+                                            onChange={(channel) => {
+                                                if (cluster.name && channel) {
+                                                    selectChannels[cluster.name] = channel
+                                                    setSelectChannels({ ...selectChannels })
                                                 }
                                             }}
                                         >
-                                            {availableUpdates?.map((version) => (
-                                                <SelectOption key={`${cluster.name}-${version}`} value={version}>
-                                                    {version}
+                                            {availableChannels?.map((channel) => (
+                                                <SelectOption key={`${cluster.name}-${channel}`} value={channel}>
+                                                    {channel}
                                                 </SelectOption>
                                             ))}
                                         </AcmSelect>
-                                        <ReleaseNotesLink version={selectVersions[cluster.name!]} />
                                     </>
                                 )}
                             </div>
@@ -131,7 +116,11 @@ export function BatchUpgradeModal(props: {
             ]}
             keyFn={(cluster) => cluster.name as string}
             actionFn={(cluster) => {
-                if (!cluster.name || !selectVersions[cluster.name]) {
+                if (
+                    !cluster.name ||
+                    !selectChannels[cluster.name] ||
+                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo.currentChannel
+                ) {
                     const emptyRes: IRequestResult<string> = {
                         promise: new Promise((resolve) => resolve('')),
                         abort: () => {},
@@ -142,9 +131,9 @@ export function BatchUpgradeModal(props: {
                     spec: {
                         desiredCuration: 'upgrade',
                         upgrade: {
-                            // set channel to empty to make sure we only use version
-                            channel: '',
-                            desiredUpdate: selectVersions[cluster.name],
+                            channel: selectChannels[cluster.name],
+                            // set channel to empty to make sure we only use channel
+                            desiredUpdate: '',
                         },
                     },
                 }

@@ -21,7 +21,6 @@ import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { deleteResources } from '../../../../lib/delete-resources'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { createResource, ResourceError, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -299,7 +298,6 @@ export function ImportClusterPageContent() {
                                             message: err.message,
                                         })
                                     }
-                                    await deleteResources(createdResources).promise
                                     setSubmitted(false)
                                     reject()
                                 } finally {

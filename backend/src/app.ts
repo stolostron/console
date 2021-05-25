@@ -17,8 +17,8 @@ import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
-import { upgrade } from './routes/upgrade'
 import { startWatching, stopWatching, events } from './routes/events'
+import { loadSettings, stopSettingsWatch } from './lib/config'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, readiness)
@@ -36,7 +36,6 @@ router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
 router.get(`/events`, events)
 router.post(`/proxy/search`, search)
-router.post(`/upgrade`, upgrade)
 router.get(`/authenticated`, authenticated)
 router.get(`/*`, serve)
 
@@ -67,6 +66,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 }
 
 export function start(): Promise<Http2Server | undefined> {
+    loadSettings()
     startWatching()
     return startServer({ requestHandler })
 }
@@ -77,6 +77,7 @@ export async function stop(): Promise<void> {
             process.exit(1)
         }, 0.5 * 1000).unref()
     }
+    stopSettingsWatch()
     await ServerSideEvents.dispose()
     stopWatching()
     await stopServer()

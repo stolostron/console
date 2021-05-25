@@ -66,9 +66,9 @@ const providerConnection: ProviderConnection = {
             'cluster.open-cluster-management.io/type': 'bmc',
         },
     },
-    spec: {
+    stringData: {
         libvirtURI: 'qemu+ssh://libvirtURI',
-        sshKnownHosts: ['sshKnownHosts'],
+        sshKnownHosts: 'sshKnownHosts',
         imageMirror: 'image.mirror:123/abc',
         bootstrapOSImage: 'bootstrapOSImage',
         clusterOSImage: 'clusterOSImage',
@@ -78,6 +78,7 @@ const providerConnection: ProviderConnection = {
         sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
         sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
     },
+    type: 'Opaque',
 }
 
 const bareMetalAsset: BareMetalAsset = {

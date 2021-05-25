@@ -30,7 +30,9 @@ export function StatusSummaryCount() {
     )
     useEffect(startPolling, [startPolling])
 
-    const policyReport = policyReports.filter((pr) => pr.metadata.name === cluster?.name)[0]
+    const policyReport = policyReports.filter(
+        (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
+    )[0]
     const policyReportViolationsCount = policyReport?.results?.length ?? 0
     const criticalCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '4').length
     const importantCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '3').length

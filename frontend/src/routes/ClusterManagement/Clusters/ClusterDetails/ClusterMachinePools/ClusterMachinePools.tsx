@@ -44,14 +44,17 @@ export function MachinePoolsTable() {
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
 
     function getInstanceType(machinePool: MachinePool) {
-        const platformKey = Object.keys(machinePool.spec!.platform)?.[0] ?? ''
+        const platformKey =
+            machinePool.spec?.platform && Object.keys(machinePool.spec.platform).length > 0
+                ? Object.keys(machinePool.spec.platform)?.[0]
+                : ''
         const type =
             platformKey && (machinePool?.spec?.platform as Record<string, { type: string }>)?.[platformKey]?.type
         return type ?? '-'
     }
 
     function getAutoscaling(machinePool: MachinePool) {
-        return machinePool.spec!.autoscaling ? t('common:enabled') : t('common:disabled')
+        return machinePool.spec?.autoscaling ? t('common:enabled') : t('common:disabled')
     }
 
     function keyFn(machinePool: MachinePool) {
@@ -70,10 +73,10 @@ export function MachinePoolsTable() {
             sort: 'status.replicas',
             search: 'status.replicas',
             cell: (machinePool: MachinePool) => {
-                if (machinePool.spec!.replicas) {
-                    return `${machinePool.status?.replicas ?? 0}/${machinePool.spec!.replicas}`
+                if (machinePool.spec?.replicas) {
+                    return `${machinePool.status?.replicas ?? 0}/${machinePool.spec.replicas}`
                 } else {
-                    return machinePool.status!.replicas
+                    return '-'
                 }
             },
         },
@@ -82,7 +85,7 @@ export function MachinePoolsTable() {
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getAutoscaling(a), getAutoscaling(b)),
             search: (machinePool: MachinePool) => getAutoscaling(machinePool),
             cell: (machinePool: MachinePool) => {
-                if (machinePool.spec!.replicas) {
+                if (machinePool.spec?.replicas) {
                     return getAutoscaling(machinePool)
                 } else {
                     return `${getAutoscaling(machinePool)}, ${t('machinePool.replica.count', {
@@ -164,7 +167,8 @@ export function MachinePoolsTable() {
                                         sort: 'status.replicas',
                                         search: 'status.replicas',
                                         cell: (machinePool: MachinePool) => {
-                                            return `${machinePool.status!.replicas}/${machinePool.spec!.replicas}`
+                                            if (!machinePool.status?.replicas || !machinePool.spec?.replicas) return '-'
+                                            return `${machinePool.status.replicas}/${machinePool.spec.replicas}`
                                         },
                                     },
                                 ],
@@ -173,12 +177,12 @@ export function MachinePoolsTable() {
                     },
                 ]
 
-                if (machinePool.spec!.autoscaling) {
+                if (machinePool.spec?.autoscaling) {
                     actions = actions.filter((action) => action.id !== 'scaleMachinePool')
                     actions = actions.filter((action) => action.id !== 'enableAutoscale')
                 }
 
-                if (machinePool.spec!.replicas) {
+                if (machinePool.spec?.replicas) {
                     actions = actions.filter((action) => action.id !== 'disableAutoscale')
                     actions = actions.filter((action) => action.id !== 'editAutoscale')
                 }

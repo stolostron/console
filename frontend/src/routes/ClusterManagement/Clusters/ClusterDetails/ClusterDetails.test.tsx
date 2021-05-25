@@ -65,6 +65,22 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
     kind: ManagedClusterInfoKind,
     metadata: { name: clusterName, namespace: clusterName },
     status: {
+        distributionInfo: {
+            ocp: {
+                desired: {
+                    version: '1.2.3',
+                    image: 'abc',
+                    channels: ['stable-1.2', 'stable-1.3'],
+                },
+                version: '1.2.3',
+                channel: 'stable-1.2',
+                availableUpdates: [],
+                desiredVersion: '',
+                upgradeFailed: false,
+                versionAvailableUpdates: [{ version: '1.2.4', image: 'abc' }],
+            },
+            type: 'OCP',
+        },
         conditions: [
             {
                 message: 'Accepted by hub cluster admin',
@@ -747,6 +763,17 @@ describe('ClusterDetails', () => {
 
         await clickByText('common:cancel')
         await waitForNotText('labels.description')
+    })
+
+    test('overview page handles channel select', async () => {
+        await waitForText(clusterName, true)
+        await waitForText(clusterName, true)
+
+        await clickByLabel('cluster:bulk.title.selectChannel')
+        await waitForText('bulk.message.selectChannel')
+
+        await clickByText('common:cancel')
+        await waitForNotText('bulk.message.selectChannel')
     })
 
     test('nodes page renders', async () => {
