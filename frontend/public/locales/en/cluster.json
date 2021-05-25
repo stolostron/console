@@ -266,6 +266,8 @@
     "status.submariner.nodes.notLabeled": "Nodes not labeled",
     "status.submariner.network.healthy": "Healthy",
     "status.submariner.network.healthy.message": "All Submariner add-ons installed in the multi-cluster network are in a healthy state.",
+    "status.submariner.network.progressing": "Progressing",
+    "status.submariner.network.progressing.message": "One or more of the Submariner add-ons installed in the multi-cluster network are in a progressing state.",
     "status.submariner.network.degraded": "Degraded",
     "status.submariner.network.degraded.message": "One or more of the Submariner add-ons installed in the multi-cluster network are in a degraded state.",
     "status.submariner.network.insufficientClusters": "Add clusters",
@@ -343,7 +345,7 @@
     "tab.nodes": "Nodes",
     "tab.machinepools": "Machine pools",
     "tab.addons": "Add-ons",
-    "tab.submariner": "Submariner",
+    "tab.submariner": "Submariner add-ons",
     "tab.clusters": "Managed clusters",
     "tab.clusterPools": "Cluster pools",
     "tab.access": "Access management",
@@ -368,7 +370,7 @@
     "summary.cluster.issues.description": "By total risk:",
     "summary.status.loading": "Loading application and violation status",
 
-    "summary.submariner.launch": "Go to Submariner",
+    "summary.submariner.launch": "Go to Submariner add-ons",
     "summary.clusters.launch": "Go to Managed clusters",
     "summary.clusterPools.launch": "Go to Cluster pools",
 

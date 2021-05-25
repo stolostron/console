@@ -73,17 +73,34 @@ const SubmarinerAgentDegraded: SubmarinerAgentDegradedType = 'SubmarinerAgentDeg
 type SubmarinerConnectionDegradedType = 'SubmarinerConnectionDegraded'
 const SubmarinerConnectionDegraded: SubmarinerConnectionDegradedType = 'SubmarinerConnectionDegraded'
 
+export enum SubmarinerStatus {
+    'progressing' = 'progressing',
+    'healthy' = 'healthy',
+    'degraded' = 'degraded',
+}
+
 export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
     const connectionDegradedCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerConnectionDegraded)
     const agentCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerAgentDegraded)
     const nodeLabeledCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerGatewayNodesLabeled)
 
-    const isHealthyConnection = connectionDegradedCondition?.status === 'False'
-    const isHealthyAgent = agentCondition?.status === 'False'
-    const isNodeLabeled = nodeLabeledCondition?.status === 'True'
+    const isConnectionProgressing = connectionDegradedCondition?.status === undefined
+    const isAgentProgressing = agentCondition?.status === undefined
+    const isNodeLabeledProgressing = nodeLabeledCondition?.status === undefined
 
-    // true = healthy, false = degraded
-    return isHealthyConnection && isHealthyAgent && isNodeLabeled
+    if (isConnectionProgressing || isAgentProgressing || isNodeLabeledProgressing) {
+        return SubmarinerStatus.progressing
+    } else {
+        const isHealthyConnection = connectionDegradedCondition?.status === 'False'
+        const isHealthyAgent = agentCondition?.status === 'False'
+        const isNodeLabeled = nodeLabeledCondition?.status === 'True'
+
+        if (isHealthyConnection && isHealthyAgent && isNodeLabeled) {
+            return SubmarinerStatus.healthy
+        } else {
+            return SubmarinerStatus.degraded
+        }
+    }
 }
 
 export function ClusterSetSubmarinerPageContent() {
