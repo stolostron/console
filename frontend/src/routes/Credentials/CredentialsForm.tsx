@@ -31,6 +31,7 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateCloudsYaml,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
@@ -707,7 +708,7 @@ export function CredentialsForm(props: {
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
                         isSecret: true,
-                        // TODO YAML VALIDATION
+                        validation: (value) => validateCloudsYaml(value, openstackCloud, t),
                     },
                     {
                         id: 'openstackCloud',

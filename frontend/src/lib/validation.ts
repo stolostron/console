@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { get } from 'lodash'
+import YAML from 'yaml'
+
 import { TFunction } from 'i18next'
+
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, name: string, t: TFunction) {
     if (value) {
@@ -139,6 +143,37 @@ export function validateBaseDomain(value: string, t: TFunction) {
         if (!VALID_DNS_NAME_TESTER.test(value)) {
             return t('validate.baseDomain.name')
         }
+    }
+    return undefined
+}
+
+export function validateCloudsYaml(yamlValue: string, cloudValue: string,  t: TFunction) {
+    if (yamlValue) {
+        try {
+            const yamlData = YAML.parse(yamlValue)      
+            //console.log("yamlData: "+JSON.stringify(yamlData))
+            //console.log("cloud Value: "+cloudValue) 
+            
+            const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
+             if (clouds !== undefined) {
+                 let found = false
+                 for (const key in clouds) {
+                     if ((cloudValue !== undefined) && (key === cloudValue)) {
+                        found = true
+                     }
+                     //console.log("key["+key+"]: "+JSON.stringify(clouds[key]))
+                     if ((clouds[key]?.auth?.auth_url === undefined) || (clouds[key]?.auth?.password === undefined) || (clouds[key]?.auth?.username === undefined)) {
+                        return t('validate.yaml.not.valid') 
+                     }
+                 }
+                 if ((cloudValue !== undefined) && !found) {
+                     return t('validate.yaml.cloud.not.found')
+                 }
+             }
+        } catch (e) {
+            return t('validate.yaml.not.valid') 
+        }
+        
     }
     return undefined
 }
