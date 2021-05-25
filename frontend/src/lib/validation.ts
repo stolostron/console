@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { get } from 'lodash'
+import YAML from 'yaml'
+
 import { TFunction } from 'i18next'
+
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, name: string, t: TFunction) {
     if (value) {
@@ -138,6 +142,43 @@ export function validateBaseDomain(value: string, t: TFunction) {
         }
         if (!VALID_DNS_NAME_TESTER.test(value)) {
             return t('validate.baseDomain.name')
+        }
+    }
+    return undefined
+}
+
+export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFunction) {
+    if (yamlValue) {
+        try {
+            //ensure we have valid YAML
+            const yamlData = YAML.parse(yamlValue)
+
+            //check for the clouds key
+            const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
+            if (clouds !== undefined) {
+                let found = false
+                for (const key in clouds) {
+                    //look for matching cloud name
+                    if (cloudValue !== undefined && key === cloudValue) {
+                        found = true
+                    }
+                    //check a few of the required fields, especially password, since the user
+                    //would have had to add this manually
+                    if (
+                        clouds[key]?.auth?.auth_url === undefined ||
+                        clouds[key]?.auth?.password === undefined ||
+                        clouds[key]?.auth?.username === undefined
+                    ) {
+                        return t('validate.yaml.not.valid')
+                    }
+                }
+                //Uh-oh, cloud name not found in clouds.yaml
+                if (cloudValue !== undefined && !found) {
+                    return t('validate.yaml.cloud.not.found')
+                }
+            }
+        } catch (e) {
+            return t('validate.yaml.not.valid')
         }
     }
     return undefined
