@@ -128,7 +128,7 @@ export function CreateClusterPool() {
     const location = useLocation()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
-    const alertContext = useContext(AcmToastContext)
+    const toastContext = useContext(AcmToastContext)
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -142,10 +142,11 @@ export function CreateClusterPool() {
             // redirect to created cluster
             if (status === 'DONE') {
                 const name = createResources.find((resource) => resource.kind === 'ClusterPool')?.metadata.name
-                alertContext.addAlert({
+                toastContext.addAlert({
                     title: t('clusterPool.creation.success.title'),
                     message: t('clusterPool.creation.success.message', { name }),
                     type: 'success',
+                    autoClose: true,
                 })
                 history.push(NavigationPath.clusterPools)
             }

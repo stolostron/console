@@ -22,11 +22,14 @@ import { MachinePool } from '../../../../../resources/machine-pool'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
+import { TechPreviewAlert } from '../../../../../components/TechPreviewAlert'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 
 export function MachinePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
             <PageSection>
+                <TechPreviewAlert i18nKey="cluster:preview.machinePools" docHref={DOC_LINKS.MACHINE_POOLS} />
                 <MachinePoolsTable />
             </PageSection>
         </AcmPageContent>
