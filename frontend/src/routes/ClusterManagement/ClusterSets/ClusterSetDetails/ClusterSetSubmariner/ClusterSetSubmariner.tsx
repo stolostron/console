@@ -396,15 +396,28 @@ function InstallSubmarinerModal(props: {
     useEffect(() => {
         if (fetchSecrets) {
             setFetchSecrets(false)
-            availableClusters
-                .filter((c) => submarinerConfigProviders.includes(c!.provider!))
-                .forEach((c) =>
-                    listNamespaceSecrets(c.namespace!).promise.then((secrets) => {
-                        const providerSecret = providerAutoDetectSecret[c!.provider!](secrets)
-                        // null means secret was not found
-                        setProviderSecretMap({ ...providerSecretMap, [c.name!]: providerSecret?.metadata.name ?? null })
+            const calls = resultsSettled(
+                availableClusters
+                    .filter((c) => submarinerConfigProviders.includes(c!.provider!))
+                    .map((c) => listNamespaceSecrets(c.namespace!))
+            )
+            const map: Record<string, string | null> = {}
+            calls.promise
+                .then((results) => {
+                    results.forEach((res) => {
+                        if (res.status === 'fulfilled') {
+                            const secrets: Secret[] = res.value
+                            const matchedCluster: Cluster | undefined = availableClusters.find(
+                                (c) => c.namespace === secrets?.[0]?.metadata.namespace
+                            )
+                            if (matchedCluster) {
+                                const providerSecret = providerAutoDetectSecret[matchedCluster!.provider!](secrets)
+                                map[matchedCluster.namespace!] = providerSecret?.metadata.name ?? null // null means secret not found
+                            }
+                        }
                     })
-                )
+                })
+                .finally(() => setProviderSecretMap(map))
         }
     }, [availableClusters, providerSecretMap, fetchSecrets])
 

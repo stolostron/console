@@ -16,7 +16,7 @@ export function deleteSubmarinerAddon(managedClusterAddon: ManagedClusterAddOn, 
                     reject(promisesSettledResult[0].reason)
                     return
                 }
-                if (promisesSettledResult[1].status === 'rejected') {
+                if (promisesSettledResult[1]?.status === 'rejected') {
                     const error = promisesSettledResult[1].reason
                     if (error instanceof ResourceError) {
                         if (error.code === ResourceErrorCode.NotFound) {
