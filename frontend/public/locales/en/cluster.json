@@ -392,7 +392,7 @@
     "bulk.message.import": "Importing the clusters will attach them to the hub cluster. In order for the import to succeed, the kubeadmin user must be enabled on the target clusters.",
     "bulk.title.detach": "Detach clusters?",
     "bulk.message.detach": "Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.",
-    "bulk.title.destroy": "Permanently sestroy clusters?",
+    "bulk.title.destroy": "Permanently destroy clusters?",
     "bulk.message.destroy": "This action detaches the cluster and if possible the cluster will be destroyed.",
     "bulk.title.hibernate": "Hibernate clusters?",
     "bulk.message.hibernate": "Moving to the Hibernating state will block any operations for the clusters. While hibernating, the cluster will not consume any virtual machine or network resources. This can be undone at any time.",

@@ -48,7 +48,7 @@
     "bareMetalAsset.importAction.button": "Open file",
     "bareMetalAsset.importAction.message": "The first line of the CSV file must be a comma deliniated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role (optional), username, password.",
 
-    "modal.delete.title.batch": "Delete {{number}} bare metal assets",
+    "modal.delete.title.batch": "Permanently delete bare metal assets?",
     "modal.delete.content.batch": "Deleting a bare metal asset is irreversible.",
     "modal.import.content.batch": "Importing bare metal assets will also create required namespaces.",
 
