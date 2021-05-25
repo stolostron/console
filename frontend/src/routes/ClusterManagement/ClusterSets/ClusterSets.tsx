@@ -46,6 +46,7 @@ import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatu
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
+import { TechPreviewAlert } from '../../../components/TechPreviewAlert'
 
 export default function ClusterSetsPage() {
     const { t } = useTranslation(['cluster', 'common'])
@@ -85,6 +86,7 @@ export default function ClusterSetsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
+                <TechPreviewAlert i18nKey="cluster:preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
                         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
