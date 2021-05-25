@@ -16,10 +16,6 @@ import {
     mockRHOCMSecrets,
     discoveryConfigCreateSelfSubjectAccessRequest,
     discoveryConfigCreateSelfSubjectAccessResponse,
-    discoveryConfigUpdateSelfSubjectAccessRequest,
-    discoveryConfigUpdateSelfSubjectAccessResponse,
-    secretCreateSelfSubjectAccessRequest,
-    secretCreateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
 
 beforeEach(() => {
@@ -28,14 +24,6 @@ beforeEach(() => {
 
 describe('DiscoveredClusters', () => {
     test('DiscoveredClusters Table', async () => {
-        const discoveyConfigCreateNock = nockCreate(
-            discoveryConfigCreateSelfSubjectAccessRequest,
-            discoveryConfigCreateSelfSubjectAccessResponse
-        )
-        const discoveyConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
-        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -49,12 +37,11 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([discoveyConfigCreateNock, discoveyConfigUpdateNock])
 
         await waitForText(mockDiscoveredClusters[0].spec.displayName)
-        await waitForText('OpenShift ' + mockDiscoveredClusters[0].spec.openshiftVersion)
+        await waitForText(mockDiscoveredClusters[0].spec.openshiftVersion)
         await waitForText(mockDiscoveredClusters[1].spec.displayName)
-        await waitForText('OpenShift ' + mockDiscoveredClusters[1].spec.openshiftVersion)
+        await waitForText(mockDiscoveredClusters[1].spec.openshiftVersion)
 
         await waitForNotText(mockDiscoveredClusters[2].spec.displayName) // Ensure managedcluster does not appear
 
@@ -62,15 +49,6 @@ describe('DiscoveredClusters', () => {
     })
 
     test('No provider connections or discoveryconfig (Empty State 1)', async () => {
-        const secretNock = nockCreate(secretCreateSelfSubjectAccessRequest, secretCreateSelfSubjectAccessResponse)
-        const discoveryConfigCreateNock = nockCreate(
-            discoveryConfigCreateSelfSubjectAccessRequest,
-            discoveryConfigCreateSelfSubjectAccessResponse
-        )
-        const discoveryConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
-        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -84,7 +62,6 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([secretNock, discoveryConfigCreateNock, discoveryConfigUpdateNock])
         await waitForText('discovery:emptystate.defaultState.title')
         await waitForText('discovery:emptystate.defaultState.msg')
         await waitForText('discovery:emptystate.addCredential')
@@ -95,10 +72,7 @@ describe('DiscoveredClusters', () => {
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
-        const discoveryConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
-        )
+
         const { container } = render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -113,28 +87,21 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([discoveryConfigCreateNock, discoveryConfigUpdateNock])
         await waitForText('discovery:emptystate.credentials.title')
         await waitForText('discovery:emptystate.credentials.msg')
-        await waitForText('discovery:discovery.configureDiscovery')
-        await clickByText('discovery:discovery.configureDiscovery')
+        await waitForText('discovery:discovery.addDiscovery')
+        await clickByText('discovery:discovery.addDiscovery')
+
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
         )
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
+        await waitForNocks([discoveryConfigCreateNock])
     })
 
     test('CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {
-        const discoveryConfigCreateNock = nockCreate(
-            discoveryConfigCreateSelfSubjectAccessRequest,
-            discoveryConfigCreateSelfSubjectAccessResponse
-        )
-        const discoveryConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
-        )
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -148,7 +115,6 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForNocks([discoveryConfigCreateNock, discoveryConfigUpdateNock])
 
         await waitForText('discovery:emptystate.discoveryEnabled.title')
         await waitForText('discovery:emptystate.discoveryEnabled.msg')

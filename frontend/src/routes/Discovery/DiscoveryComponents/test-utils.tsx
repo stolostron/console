@@ -19,6 +19,7 @@ export const mockDiscoveredClusters: DiscoveredCluster[] = [
             name: 'test-cluster-01',
             displayName: 'test-cluster-01',
             openshiftVersion: '4.5.5',
+            type: 'OCP',
             apiUrl: 'https://api.test-cluster-01.dev01.red-chesterfield.com:6443',
             credential: {
                 apiVersion: 'v1',
@@ -46,6 +47,7 @@ export const mockDiscoveredClusters: DiscoveredCluster[] = [
             name: 'test-cluster-02',
             openshiftVersion: '4.6.1',
             status: 'Stale',
+            type: 'OCP',
         },
     },
     {
@@ -62,6 +64,7 @@ export const mockDiscoveredClusters: DiscoveredCluster[] = [
             creationTimestamp: '2020-07-30T19:09:43Z',
             name: 'test-cluster-03',
             openshiftVersion: '4.6.1',
+            type: 'OCP',
             status: 'Stale',
         },
     },
@@ -151,6 +154,7 @@ export const discoveryConfigCreateSelfSubjectAccessRequest: SelfSubjectAccessRev
             resource: 'discoveryconfigs',
             verb: 'create',
             group: 'discovery.open-cluster-management.io',
+            namespace: discoveryConfig.metadata.namespace,
         },
     },
 }
@@ -164,6 +168,7 @@ export const discoveryConfigCreateSelfSubjectAccessResponse: SelfSubjectAccessRe
             resource: 'discoveryconfigs',
             verb: 'create',
             group: 'discovery.open-cluster-management.io',
+            namespace: discoveryConfig.metadata.namespace,
         },
     },
     status: {

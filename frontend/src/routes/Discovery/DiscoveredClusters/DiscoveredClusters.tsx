@@ -23,12 +23,11 @@ import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../atoms'
 import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
-import { DiscoveryConfig, DiscoveryConfigDefinition } from '../../../resources/discovery-config'
+import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { canUser } from '../../../lib/rbac-util'
-import { SecretDefinition } from '../../../resources/secret'
 import { TechPreviewAlert } from '../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../lib/doc-util'
+import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -42,14 +41,6 @@ export default function DiscoveredClustersPage() {
 
 function EmptyStateNoCRHCredentials() {
     const { t } = useTranslation(['common', 'discovery'])
-    const [canCreateSecret, setCanCreateSecret] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateSecret = canUser('create', SecretDefinition)
-        canCreateSecret.promise
-            .then((result) => setCanCreateSecret(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateSecret.abort()
-    }, [])
 
     return (
         <AcmEmptyState
@@ -59,12 +50,7 @@ function EmptyStateNoCRHCredentials() {
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
-                <AcmButton
-                    isDisabled={!canCreateSecret}
-                    tooltip={t('common:rbac.unauthorized')}
-                    component={Link}
-                    to={NavigationPath.addCredentials}
-                >
+                <AcmButton component={Link} to={NavigationPath.addCredentials}>
                     {t('discovery:emptystate.addCredential')}
                 </AcmButton>
             }
@@ -72,7 +58,7 @@ function EmptyStateNoCRHCredentials() {
     )
 }
 
-function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[]; canCreateDiscoveryConfig: boolean }) {
+function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
     const { t } = useTranslation(['common', 'discovery'])
     const history = useHistory()
 
@@ -84,13 +70,11 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[]; c
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text={t('discovery:discovery.configureDiscovery')}
+                text={t('discovery:discovery.addDiscovery')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
                 isPrimary={true}
-                isDisabled={!props.canCreateDiscoveryConfig}
-                tooltip={t('common:rbac.unauthorized')}
                 dropdownItems={props.credentials!.map((credential) => {
                     return {
                         id: credential.metadata.namespace! + '/' + credential.metadata.name!,
@@ -99,12 +83,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[]; c
                 })}
             />
         ) : (
-            <AcmButton
-                isDisabled={!props.canCreateDiscoveryConfig}
-                tooltip={t('common:rbac.unauthorized')}
-                component={Link}
-                to={NavigationPath.createDiscovery}
-            >
+            <AcmButton component={Link} to={NavigationPath.createDiscovery}>
                 {t('discovery:emptystate.enableClusterDiscovery')}
             </AcmButton>
         )
@@ -126,10 +105,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[]; c
     )
 }
 
-function EmptyStateAwaitingDiscoveredClusters(props: {
-    canCreateDiscoveryConfig: boolean
-    canUpdateDiscoveryConfig: boolean
-}) {
+function EmptyStateAwaitingDiscoveredClusters(props: {}) {
     const { t } = useTranslation(['common', 'discovery'])
     return (
         <AcmEmptyState
@@ -139,7 +115,7 @@ function EmptyStateAwaitingDiscoveredClusters(props: {
                     i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
                     components={{
                         a: (
-                            <a href="/#" target="_blank" rel="noreferrer">
+                            <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
                                 {}
                             </a>
                         ),
@@ -158,8 +134,6 @@ function EmptyStateAwaitingDiscoveredClusters(props: {
                                 variant={ButtonVariant.primary}
                                 component={Link}
                                 to={NavigationPath.configureDiscovery}
-                                isDisabled={!props.canUpdateDiscoveryConfig}
-                                tooltip={t('common:rbac.unauthorized')}
                             >
                                 {t('discovery:discovery.configureDiscovery')}
                             </AcmButton>
@@ -169,8 +143,6 @@ function EmptyStateAwaitingDiscoveredClusters(props: {
                                 variant={ButtonVariant.secondary}
                                 component={Link}
                                 to={NavigationPath.createDiscovery}
-                                isDisabled={!props.canCreateDiscoveryConfig}
-                                tooltip={t('common:rbac.unauthorized')}
                             >
                                 {t('discovery:discovery.addDiscovery')}
                             </AcmButton>
@@ -228,23 +200,6 @@ export function DiscoveredClustersTable(props: {
     const { t } = useTranslation(['discovery'])
     const history = useHistory()
 
-    const [canCreateDiscoConfig, setCanCreateDiscoConfig] = useState<boolean>(false)
-    const [canUpdateDiscoConfig, setCanUpdateDiscoConfig] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateDiscoveryConfig = canUser('create', DiscoveryConfigDefinition)
-        canCreateDiscoveryConfig.promise
-            .then((result) => setCanCreateDiscoConfig(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        const canUpdateDiscoveryConfig = canUser('update', DiscoveryConfigDefinition)
-        canUpdateDiscoveryConfig.promise
-            .then((result) => setCanUpdateDiscoConfig(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => {
-            canCreateDiscoveryConfig.abort()
-            canUpdateDiscoveryConfig.abort()
-        }
-    }, [])
-
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
     useEffect(() => {
         if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
@@ -252,29 +207,13 @@ export function DiscoveredClustersTable(props: {
         } else if (props.credentials.length === 0 && props.discoveryConfigs?.length === 0) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // No credentials exist, guide user to set up credentials
         } else if (props.credentials.length > 0 && props.discoveryConfigs?.length === 0) {
-            setEmptyState(
-                <EmptyStateCRHCredentials
-                    credentials={props.credentials}
-                    canCreateDiscoveryConfig={canCreateDiscoConfig}
-                />
-            ) // Credential is set up, guide user to set up discovery config
+            setEmptyState(<EmptyStateCRHCredentials credentials={props.credentials} />) // Credential is set up, guide user to set up discovery config
         } else if (props.credentials.length > 0 && props.discoveryConfigs?.length > 0) {
-            setEmptyState(
-                <EmptyStateAwaitingDiscoveredClusters
-                    canCreateDiscoveryConfig={canCreateDiscoConfig}
-                    canUpdateDiscoveryConfig={canUpdateDiscoConfig}
-                />
-            ) //Discoveryconfig is set up, wait for discoveredclusters to appear
+            setEmptyState(<EmptyStateAwaitingDiscoveredClusters />) //Discoveryconfig is set up, wait for discoveredclusters to appear
         } else {
             setEmptyState(<EmptyStateNoCRHCredentials />) // If unable to meet any of the above cases, return default state
         }
-    }, [
-        props.discoveredClusters,
-        props.credentials,
-        props.discoveryConfigs,
-        canCreateDiscoConfig,
-        canUpdateDiscoConfig,
-    ])
+    }, [props.discoveredClusters, props.credentials, props.discoveryConfigs])
 
     const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         {
@@ -287,7 +226,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                        <AcmIcon icon={AcmIconVariant.openNewTab} />
+                        <ExternalLinkIcon />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
                             {discoveredCluster.spec.displayName}
                         </span>
@@ -322,34 +261,29 @@ export function DiscoveredClustersTable(props: {
         },
         {
             header: t('dcTbl.type'),
-            sort: (a: DiscoveredCluster, b: DiscoveredCluster) => compareStrings(a?.spec.type, b?.spec.type),
-            search: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
-            cell: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
+            sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
+                compareStrings(getFullAcronym(a?.spec?.type), getFullAcronym(b?.spec?.type)),
+            search: (discoveredCluster) => {
+                if (discoveredCluster.spec.type) {
+                    return [discoveredCluster.spec.type, getFullAcronym(discoveredCluster.spec.type) || '-']
+                } else {
+                    return '-'
+                }
+            },
+            cell: (discoveredCluster) =>
+                discoveredCluster?.spec.type ? getFullAcronym(discoveredCluster?.spec.type) : '-',
         },
         {
-            header: t('dcTbl.distributionVersion'),
+            header: t('dcTbl.openShiftVersion'),
             sort: 'spec.openshiftVersion',
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.openshiftVersion) {
-                    return [
-                        discoveredCluster.spec.openshiftVersion,
-                        'openshift ' + discoveredCluster.spec.openshiftVersion,
-                    ]
+                    return [discoveredCluster.spec.openshiftVersion]
                 } else {
                     return '-'
                 }
             },
-            cell: (discoveredCluster) => {
-                if (discoveredCluster.spec.openshiftVersion) {
-                    return (
-                        <span key="openShiftVersion">
-                            {'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}
-                        </span>
-                    )
-                } else {
-                    return '-'
-                }
-            },
+            cell: (discoveredCluster) => discoveredCluster.spec.openshiftVersion ?? '-',
         },
         {
             header: t('dcTbl.infrastructureProvider'),
@@ -401,6 +335,23 @@ export function DiscoveredClustersTable(props: {
         },
     ]
 
+    function getFullAcronym(type: string) {
+        switch (type.toUpperCase()) {
+            case 'MOA':
+                return t('type.rosa')
+            case 'OCP-ASSISTEDINSTALL':
+                return t('type.ocp')
+            case 'OCP':
+                return t('type.ocp')
+            case 'OSD':
+                return t('type.osd')
+            case 'ARO':
+                return t('type.aro')
+            default:
+                return type
+        }
+    }
+
     return (
         <Fragment>
             <TechPreviewAlert i18nKey="discovery:techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
@@ -415,16 +366,12 @@ export function DiscoveredClustersTable(props: {
                         id: 'configureDiscovery',
                         title: t('discovery.configureDiscovery'),
                         click: () => history.push(NavigationPath.configureDiscovery),
-                        isDisabled: !canUpdateDiscoConfig,
-                        tooltip: t('common:rbac.unauthorized'),
                     },
                     {
                         id: 'addDiscovery',
                         title: t('discovery.addDiscovery'),
                         click: () => history.push(NavigationPath.createDiscovery),
                         variant: ButtonVariant.secondary,
-                        isDisabled: !canCreateDiscoConfig,
-                        tooltip: t('common:rbac.unauthorized'),
                     },
                 ]}
                 bulkActions={[]}

@@ -38,14 +38,16 @@ import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { Secret } from '../../../resources/secret'
-
+import { canUser } from '../../../lib/rbac-util'
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
     replaceDiscoveryConfig,
+    DiscoveryConfigDefinition,
 } from '../../../resources/discovery-config'
+import { ResourceError } from '../../../lib/resource-request'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
@@ -298,6 +300,54 @@ export function DiscoveryConfigPageContent(props: {
         })
     }
 
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (discoveryConfig.metadata.namespace === '') {
+            return
+        }
+        if (editing) {
+            const canUpdateDiscoveryConfig = canUser(
+                'update',
+                DiscoveryConfigDefinition,
+                discoveryConfig.metadata.namespace
+            )
+            canUpdateDiscoveryConfig.promise
+                .then((result) => {
+                    if (result.status?.allowed!) {
+                        alertContext.clearAlerts()
+                    } else {
+                        alertContext.addAlert(getErrorInfo(403))
+                    }
+                })
+                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+            return () => {
+                canUpdateDiscoveryConfig.abort()
+            }
+        } else {
+            const canCreateDiscoveryConfig = canUser(
+                'create',
+                DiscoveryConfigDefinition,
+                discoveryConfig.metadata.namespace
+            )
+            canCreateDiscoveryConfig.promise
+                .then((result) => {
+                    if (result.status?.allowed!) {
+                        alertContext.clearAlerts()
+                    } else {
+                        console.log('HERE')
+                        console.log(getErrorInfo(new ResourceError('', 403)))
+                        alertContext.addAlert(getErrorInfo(new ResourceError('', 403)))
+                    }
+                })
+                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+
+            return () => {
+                canCreateDiscoveryConfig.abort()
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editing, discoveryConfig.metadata.namespace])
+
     return (
         <AcmForm>
             <ConfirmModal {...modalProps} />
@@ -354,6 +404,7 @@ export function DiscoveryConfigPageContent(props: {
                             const metadata = credential.split('/', 2)
                             discoveryConfig.metadata.namespace = metadata[0]
                             discoveryConfig.spec.credential = metadata[1]
+                            // validateNamespacePermissions(metadata[0])
                         }
                     })
                 }}

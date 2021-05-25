@@ -17,8 +17,6 @@ import {
     mockRHOCMSecrets,
     discoveryConfigCreateSelfSubjectAccessRequest,
     discoveryConfigCreateSelfSubjectAccessResponse,
-    discoveryConfigUpdateSelfSubjectAccessRequest,
-    discoveryConfigUpdateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
 
 function TestAddDiscoveryConfigPage() {
@@ -65,15 +63,16 @@ beforeEach(() => {
 
 describe('discovery config page', () => {
     it('Create Minimal DiscoveryConfig', async () => {
-        const discoveyConfigCreateNock = nockCreate(
+        const discoveryConfigCreateNock = nockCreate(
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
         )
-        const discoveyConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
-        )
+        // const discoveyConfigUpdateNock = nockCreate(
+        //     discoveryConfigUpdateSelfSubjectAccessRequest,
+        //     discoveryConfigUpdateSelfSubjectAccessResponse
+        // )
         const { container } = render(<TestAddDiscoveryConfigPage />)
+        waitForNocks([discoveryConfigCreateNock])
 
         // Select Credential
         await waitFor(() =>
@@ -86,7 +85,6 @@ describe('discovery config page', () => {
         const createDiscoveryConfigNock = nockCreate(minDiscoveryConfig, minDiscoveryConfig)
         await clickByText('discoveryConfig.add')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
-        await waitForNocks([discoveyConfigCreateNock, discoveyConfigUpdateNock])
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('discovery:alert.created.header')
@@ -94,13 +92,9 @@ describe('discovery config page', () => {
     })
 
     it('Create DiscoveryConfig', async () => {
-        const discoveyConfigCreateNock = nockCreate(
+        const discoveryConfigCreateNock = nockCreate(
             discoveryConfigCreateSelfSubjectAccessRequest,
             discoveryConfigCreateSelfSubjectAccessResponse
-        )
-        const discoveyConfigUpdateNock = nockCreate(
-            discoveryConfigUpdateSelfSubjectAccessRequest,
-            discoveryConfigUpdateSelfSubjectAccessResponse
         )
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
@@ -110,6 +104,7 @@ describe('discovery config page', () => {
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
         await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
+        waitForNocks([discoveryConfigCreateNock])
 
         // Select LastActive
         await waitFor(() =>
@@ -128,7 +123,6 @@ describe('discovery config page', () => {
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
         await clickByText('discoveryConfig.add')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
-        await waitForNocks([discoveyConfigCreateNock, discoveyConfigUpdateNock])
 
         // Wait For Notification on DiscoveredClusters page
         await waitForText('discovery:alert.created.header')
