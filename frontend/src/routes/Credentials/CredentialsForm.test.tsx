@@ -230,7 +230,7 @@ describe('add credentials page', () => {
             'ost',
             {
                 openstackCloudsYaml:
-                  'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+                    'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
                 openstackCloud: 'openstack',
             },
             true
