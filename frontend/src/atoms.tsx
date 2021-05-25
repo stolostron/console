@@ -22,9 +22,10 @@ import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/manage
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-import { PolicyReport, PolicyReportKind } from './resources/policy-report'
 import { Namespace, NamespaceKind } from './resources/namespace'
+import { PolicyReport, PolicyReportKind } from './resources/policy-report'
 import { Secret, SecretKind } from './resources/secret'
+import { SubmarinerConfig, SubmarinerConfigKind } from './resources/submariner-config'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
@@ -53,9 +54,10 @@ export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'manag
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
-export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
+export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
+export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
@@ -103,9 +105,10 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
-    const [, setSecrets] = useRecoilState(secretsState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
+    const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
+    const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [BareMetalAssetKind]: setBareMetalAssets,
@@ -128,8 +131,9 @@ export function LoadData(props: { children?: ReactNode }) {
         [ManagedClusterSetKind]: setManagedClusterSets,
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
-        [SecretKind]: setSecrets,
         [PolicyReportKind]: setPolicyReports,
+        [SecretKind]: setSecrets,
+        [SubmarinerConfigKind]: setSubmarinerConfigs,
     }
 
     useEffect(() => {
