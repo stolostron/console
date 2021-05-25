@@ -229,7 +229,8 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'ost',
             {
-                openstackCloudsYaml: 'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: https://acme.com\n\t\t\tusername: fakeuser\n\t\t\tpassword: fakepwd',
+                openstackCloudsYaml:
+                    'clouds:\n\topenstack:\n\t\tauth:\n\t\t\tauth_url: "https://acme.com"\n\t\t\tusername: "fakeuser"\n\t\t\tpassword: "fakepwd"',
                 openstackCloud: 'openstack',
             },
             true

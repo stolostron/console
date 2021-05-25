@@ -162,7 +162,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
                     if (cloudValue !== undefined && key === cloudValue) {
                         found = true
                     }
-                    //check a few of the required fields, especially password, since the user 
+                    //check a few of the required fields, especially password, since the user
                     //would have had to add this manually
                     if (
                         clouds[key]?.auth?.auth_url === undefined ||
