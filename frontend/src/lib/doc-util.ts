@@ -14,6 +14,8 @@ export const DOC_LINKS = {
     CLUSTER_SETS: `${DOC_BASE_PATH}/manage_cluster/managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}`,
     SUBMARINER: `${DOC_BASE_PATH}/manage_cluster/submariner`,
+    DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}`,
+    MACHINE_POOLS: `${DOC_BASE_PATH}`,
 }
 
 export const OCM_LINKS = {

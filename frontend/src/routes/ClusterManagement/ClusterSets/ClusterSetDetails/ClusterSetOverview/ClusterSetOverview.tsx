@@ -18,7 +18,7 @@ import { EditLabels } from '../../../Clusters/components/EditLabels'
 import { rbacPatch } from '../../../../../lib/rbac-util'
 import { clusterDangerStatuses } from '../../../../../lib/get-cluster'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { submarinerHealthCheck } from '../ClusterSetSubmariner/ClusterSetSubmariner'
+import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 
 export function ClusterSetOverviewPageContent() {
@@ -27,7 +27,9 @@ export function ClusterSetOverviewPageContent() {
     const { clusterSet, clusters, clusterPools, submarinerAddons } = useContext(ClusterSetContext)
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
-    const unhealthySubmariners = submarinerAddons!.filter((mca) => !submarinerHealthCheck(mca))
+    const unhealthySubmariners = submarinerAddons!.filter(
+        (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
+    )
 
     return (
         <AcmPageContent id="overview">

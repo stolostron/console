@@ -189,7 +189,10 @@ export function getCluster(
             clusterDeployment?.metadata.name ??
             managedCluster?.metadata.name ??
             managedClusterInfo?.metadata.name,
-        namespace: clusterDeployment?.metadata.namespace ?? managedClusterInfo?.metadata.namespace,
+        namespace:
+            managedCluster?.metadata.name ??
+            clusterDeployment?.metadata.namespace ??
+            managedClusterInfo?.metadata.namespace,
         status,
         statusMessage,
         provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment),

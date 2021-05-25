@@ -1,0 +1,10 @@
+# Copyright Contributors to the Open Cluster Management project
+
+apiVersion: config.openshift.io/v1
+kind: FeatureGate
+metadata:
+    name: open-cluster-management-cluster-sets
+    labels:
+        console.open-cluster-management.io: ""
+spec:
+    featureSet: ClusterSetsEnabled
