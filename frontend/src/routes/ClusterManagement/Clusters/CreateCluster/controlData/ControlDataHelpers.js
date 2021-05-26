@@ -139,6 +139,10 @@ export const setAvailableConnections = (control, secrets) => {
     control.available = connections.map((secret) => secret.metadata.name)
 }
 
+export const setAvailableTemplates = (control, templates) => {
+    control.available = templates.map((template) => template.metadata.name)
+}
+
 export const networkingControlData = [
     ///////////////////////  networking  /////////////////////////////////////
     {

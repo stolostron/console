@@ -198,4 +198,25 @@ export const controlData = [
             required: true,
         },
     },
+    {
+        id: 'integrationStep',
+        type: 'step',
+        title: 'template.clusterCreate.title',
+    },
+    {
+        id: 'chooseTemplate',
+        type: 'section',
+        title: 'template.clusterCreate.title',
+        info: 'template.clusterCreate.info',
+    },
+    {
+        name: 'template.clusterCreate.name',
+        id: 'templateName',
+        type: 'singleselect',
+        placeholder: 'template.clusterCreate.select.placeholder',
+        available: [],
+        validation: {
+            required: false,
+        },
+    },
 ]
