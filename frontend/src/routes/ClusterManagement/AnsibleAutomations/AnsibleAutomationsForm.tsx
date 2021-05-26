@@ -194,7 +194,6 @@ export function AnsibleAutomationsForm(props: {
                                 id: credential.metadata.name as string,
                                 value: credential.metadata.name as string,
                             })),
-                        isDisplayLarge: true,
                         isDisabled: isEditing,
                     },
                 ],

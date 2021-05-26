@@ -927,7 +927,7 @@ export function AcmDataFormInput(props: {
                                                 icon={option.icon}
                                                 title={option.text ?? option.value}
                                                 isStacked
-                                                isDisplayLarge={input.isDisplayLarge}
+                                                isDisplayLarge
                                                 isSelected={inputValue(input) === option.value}
                                                 onClick={() => input.onChange(option.value)}
                                                 isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
@@ -948,7 +948,7 @@ export function AcmDataFormInput(props: {
                                     icon={option.icon}
                                     title={option.text ?? option.value}
                                     isStacked
-                                    isDisplayLarge={input.isDisplayLarge}
+                                    isDisplayLarge
                                     isSelected={inputValue(input) === option.value}
                                     onClick={() => input.onChange(option.value)}
                                     isDisabled={option.value !== inputValue(input) && inputDisabled(input)}

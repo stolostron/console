@@ -51,9 +51,9 @@ const credentialProviders: Provider[] = [
 ]
 
 enum ProviderGroup {
-    Automation = 'Automation credentials',
+    Automation = 'Automation & other credentials',
+    Datacenter = 'Datacenter credentials',
     CloudProvider = 'Cloud provider credentials',
-    Infrastructure = 'Infrastructure credentials',
 }
 
 const providerGroup: Record<string, string> = {
@@ -63,9 +63,9 @@ const providerGroup: Record<string, string> = {
     [Provider.gcp]: ProviderGroup.CloudProvider,
     [Provider.azure]: ProviderGroup.CloudProvider,
     [Provider.ibm]: ProviderGroup.CloudProvider,
-    [Provider.openstack]: ProviderGroup.Infrastructure,
-    [Provider.baremetal]: ProviderGroup.Infrastructure,
-    [Provider.vmware]: ProviderGroup.Infrastructure,
+    [Provider.openstack]: ProviderGroup.Datacenter,
+    [Provider.baremetal]: ProviderGroup.Datacenter,
+    [Provider.vmware]: ProviderGroup.Datacenter,
 }
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
@@ -381,6 +381,19 @@ export function CredentialsForm(props: {
                                     }),
                             },
                             {
+                                group: ProviderGroup.Datacenter,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Datacenter)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
+                            {
                                 group: ProviderGroup.Automation,
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
@@ -393,22 +406,8 @@ export function CredentialsForm(props: {
                                         }
                                     }),
                             },
-                            {
-                                group: ProviderGroup.Infrastructure,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Infrastructure)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
-                            },
                         ],
                         mode: isEditing || credentialsType !== '' ? 'icon' : 'tiles',
-                        isDisplayLarge: true,
                         isDisabled: isEditing,
                     },
                     {

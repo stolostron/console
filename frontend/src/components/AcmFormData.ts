@@ -88,7 +88,6 @@ export interface SelectInput extends InputBase {
     onChange: (value: string) => void
     validation?: (value: string) => string
     mode?: 'default' | 'tiles' | 'icon'
-    isDisplayLarge?: boolean
 }
 
 export type Input = TextInput | TextArea | SelectInput
