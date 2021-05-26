@@ -362,7 +362,7 @@
     "formerror.valid.baseDNSPeriod": "The base DNS domain must not begin with a period.",
     "formerror.validation.errors": "Fix validation error(s)",
     "formerror.libvirturi.format": "Provide valid Libvirt URI (driver[+transport]://[username@][hostname][:port]/[path][?extraparameters] )",
-    "formerror.gcProjectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
+    "formerror.projectID.format": "Must consist of 6 to 30 lowercase alphanumeric characters or '-', and must start with a letter and not end with '-'",
 
     "creation.invalid.url": "Value must be a valid URL format.",
     "creation.valid.alphanumeric": "Value must be alphanumeric.",

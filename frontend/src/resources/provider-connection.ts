@@ -17,8 +17,8 @@ export const ProviderConnectionDefinition: IResourceDefinition = {
 }
 
 export interface ProviderConnectionStringData {
-    awsAccessKeyID?: string
-    awsSecretAccessKeyID?: string
+    aws_access_key_id?: string
+    aws_secret_access_key?: string
 
     baseDomainResourceGroupName?: string
     clientId?: string
@@ -26,8 +26,8 @@ export interface ProviderConnectionStringData {
     subscriptionId?: string
     tenantId?: string
 
-    gcProjectID?: string
-    gcServiceAccountKey?: string
+    projectID?: string
+    ['osServiceAccount.json']?: string
 
     username?: string
     password?: string
@@ -46,13 +46,13 @@ export interface ProviderConnectionStringData {
 
     ocmAPIToken?: string
 
-    openstackCloudsYaml?: string
-    openstackCloud?: string
+    ['clouds.yaml']?: string
+    cloud?: string
 
     baseDomain?: string
     pullSecret?: string
-    sshPrivatekey?: string
-    sshPublickey?: string
+    ['ssh-privatekey']?: string
+    ['ssh-publickey']?: string
 
     host?: string
     token?: string
