@@ -24,7 +24,12 @@ interface WatchEvent {
     object: IResource
 }
 
-type ServerSideEventData = WatchEvent | { type: 'START' | 'LOADED' }
+export interface SettingsEvent {
+    type: 'SETTINGS'
+    settings: Record<string, string>
+}
+
+type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 const abortControllers: Record<string, AbortController> = {}
 
@@ -83,6 +88,7 @@ export function startWatching(): void {
     })
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
+    watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
 }
 
 export function watchResource(
@@ -169,9 +175,9 @@ export function watchResource(
             msg: 'watching error',
             kind,
             error: err.message,
-            code: (err as unknown as { code: string })?.code,
+            code: ((err as unknown) as { code: string })?.code,
         })
-        switch ((err as unknown as { code: string }).code) {
+        switch (((err as unknown) as { code: string }).code) {
             case 'ENOTFOUND':
                 setDead()
                 break
@@ -265,6 +271,7 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
     switch (serverSideEvent.data?.type) {
         case 'START':
         case 'LOADED':
+        case 'SETTINGS':
             return Promise.resolve(true)
 
         case 'DELETED':
@@ -276,6 +283,12 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'MODIFIED': {
             const watchEvent = serverSideEvent.data
             const resource = watchEvent.object
+
+            switch (resource.kind) {
+                case 'FeatureGate': // Allow feature gates for all users
+                    return Promise.resolve(true)
+            }
+
             return canListClusterScopedKind(resource, token).then((allowed) => {
                 if (allowed) return true
                 return canListNamespacedScopedKind(resource, token).then((allowed) => {

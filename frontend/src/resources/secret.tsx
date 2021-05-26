@@ -2,7 +2,7 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
-import { getResource } from '../lib/resource-request'
+import { getResource, listNamespacedResources } from '../lib/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const SecretApiVersion = 'v1'
@@ -34,4 +34,8 @@ export function unpackSecret(secret: Secret | Partial<Secret>) {
         }
     }
     return secret
+}
+
+export function listNamespaceSecrets(namespace: string) {
+    return listNamespacedResources<Secret>({ apiVersion: SecretApiVersion, kind: SecretKind, metadata: { namespace } })
 }

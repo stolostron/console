@@ -35,6 +35,7 @@ import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
+import { TechPreviewAlert } from '../../../components/TechPreviewAlert'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
@@ -48,6 +49,7 @@ export default function ClusterPoolsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
+                <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
                         <Flex spaceItems={{ default: 'spaceItemsLg' }}>

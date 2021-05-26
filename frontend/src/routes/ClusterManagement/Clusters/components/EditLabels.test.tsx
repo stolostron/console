@@ -19,15 +19,12 @@ describe('EditLabels', () => {
         expect(getByText('abc=123')).toBeInTheDocument()
         getByTestId('label-input-button').click()
         userEvent.type(getByTestId('labels-input'), `foo=bar{enter}`)
-
-        getByText('common:save').click()
         const nockScope = nockPatch(resource, [
             { op: 'remove', path: `/metadata/labels/abc` },
             { op: 'add', path: `/metadata/labels/abc`, value: '123' },
             { op: 'add', path: `/metadata/labels/foo`, value: 'bar' },
         ])
-
-        // nock.recorder.rec()
+        getByText('common:save').click()
         await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
     })
 

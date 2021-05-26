@@ -31,6 +31,8 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateCloudsYaml,
+    validateBareMetalOSImageURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
@@ -492,7 +494,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.gcpCredentials.title'),
@@ -529,7 +530,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.azureCredentials.title'),
@@ -707,7 +707,7 @@ export function CredentialsForm(props: {
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
                         isSecret: true,
-                        // TODO YAML VALIDATION
+                        validation: (value) => validateCloudsYaml(value, openstackCloud, t),
                     },
                     {
                         id: 'openstackCloud',
@@ -721,7 +721,6 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.bareMetalCredentials.title'),
@@ -786,6 +785,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.bootstrapOSImage.labelHelp'),
                         value: bootstrapOSImage,
                         onChange: setBootstrapOSImage,
+                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'clusterOSImage',
@@ -796,6 +796,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.clusterOSImage.labelHelp'),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
+                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'additionalTrustBundle',
@@ -808,7 +809,6 @@ export function CredentialsForm(props: {
                         onChange: setAdditionalTrustBundle,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.ansibleCredentials.title'),
@@ -865,7 +865,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
 
             {
@@ -938,7 +937,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
         ],
         submit: () => {
@@ -967,5 +965,19 @@ export function CredentialsForm(props: {
         cancel: () => history.push(NavigationPath.credentials),
         stateToData,
     }
-    return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+    return (
+        <AcmDataFormPage
+            formData={formData}
+            mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            edit={() => {
+                if (providerConnection) {
+                    history.push(
+                        NavigationPath.editCredentials
+                            .replace(':namespace', providerConnection.metadata.namespace!)
+                            .replace(':name', providerConnection.metadata.name!)
+                    )
+                }
+            }}
+        />
+    )
 }

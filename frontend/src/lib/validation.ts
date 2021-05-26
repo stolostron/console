@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { get } from 'lodash'
+import YAML from 'yaml'
+
 import { TFunction } from 'i18next'
+
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, name: string, t: TFunction) {
     if (value) {
@@ -38,12 +42,12 @@ export function validatePublicSshKey(value: string, t: TFunction) {
             }
         }
     }
-    return t('validate.publicSshKey.required')
+    return t('validate.publicSshKey')
 }
 
 export function validatePrivateSshKey(value: string, t: TFunction) {
     if (!/-----BEGIN [a-zA-Z]+ PRIVATE KEY-----\n([\s\S]*?)\n-----END [a-zA-Z]+ PRIVATE KEY-----/gm.test(value)) {
-        return t('validate.privateSshKey.required')
+        return t('validate.privateSshKey')
     }
 
     return undefined
@@ -51,7 +55,7 @@ export function validatePrivateSshKey(value: string, t: TFunction) {
 
 export function validateCertificate(value: string, t: TFunction) {
     if (!/-----BEGIN CERTIFICATE-----\n([\s\S]*?)\n-----END CERTIFICATE-----/gm.test(value)) {
-        return t('validate.certificate.required')
+        return t('validate.certificate')
     }
     return undefined
 }
@@ -69,10 +73,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('validate.json.required')
+            return t('validate.json')
         }
     } catch (e) {
-        return t('validate.json.required')
+        return t('validate.json')
     }
     return undefined
 }
@@ -140,5 +144,58 @@ export function validateBaseDomain(value: string, t: TFunction) {
             return t('validate.baseDomain.name')
         }
     }
+    return undefined
+}
+
+export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFunction) {
+    if (yamlValue) {
+        try {
+            //ensure we have valid YAML
+            const yamlData = YAML.parse(yamlValue)
+
+            //check for the clouds key
+            const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
+            if (clouds !== undefined) {
+                let found = false
+                for (const key in clouds) {
+                    //look for matching cloud name
+                    if (cloudValue !== undefined && key === cloudValue) {
+                        found = true
+                    }
+                    //check a few of the required fields, especially password, since the user
+                    //would have had to add this manually
+                    if (
+                        clouds[key]?.auth?.auth_url === undefined ||
+                        clouds[key]?.auth?.password === undefined ||
+                        clouds[key]?.auth?.username === undefined
+                    ) {
+                        return t('validate.yaml.not.valid')
+                    }
+                }
+                //Uh-oh, cloud name not found in clouds.yaml
+                if (cloudValue !== undefined && !found) {
+                    return t('validate.yaml.cloud.not.found')
+                }
+            }
+        } catch (e) {
+            return t('validate.yaml.not.valid')
+        }
+    }
+    return undefined
+}
+
+export function validateBareMetalOSImageURL(value: string, t: TFunction) {
+    const VALID_BARE_METAL_OS_IMAGE_TESTER =
+        /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)sha256=([a-fA-F0-9]{64})$/
+    if (value) {
+        if (value.length === 0) {
+            return undefined
+        }
+
+        if (!VALID_BARE_METAL_OS_IMAGE_TESTER.test(value)) {
+            return t('validate.os.image.url.not.valid')
+        }
+    }
+
     return undefined
 }

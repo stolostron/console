@@ -41,6 +41,7 @@ import {
     Split,
     SplitItem,
     Stack,
+    StackItem,
     Switch,
     Text,
     TextArea,
@@ -48,18 +49,18 @@ import {
     TextInput,
     Tile,
     Title,
-    ToggleGroup,
-    ToggleGroupItem,
     Wizard,
     WizardContextConsumer,
     WizardFooter,
     WizardStep,
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
+import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
+import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
@@ -69,7 +70,7 @@ export interface AcmDataFormProps {
     formData: FormData
     mode?: 'form' | 'wizard' | 'details'
     isHorizontal?: boolean
-    showSecrets?: boolean
+    edit?: () => void
 }
 
 function generalValidationMessage() {
@@ -83,14 +84,13 @@ function requiredValidationMessage() {
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-export function AcmDataFormPage(props: AcmDataFormProps) {
+export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
     const { formData } = props
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
     const [drawerInline, setDrawerInline] = useState(true)
     const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('800px')
@@ -116,30 +116,26 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                             breadcrumb={formData.breadcrumb}
                             actions={
                                 <ActionList>
-                                    {mode === 'details' && (
+                                    {mode === 'details' && props.edit !== undefined && (
                                         <ActionListItem>
-                                            <ToggleGroup>
-                                                <ToggleGroupItem
-                                                    text="Show secrets"
-                                                    isSelected={showSecrets}
-                                                    onChange={() => setShowSecrets(!showSecrets)}
-                                                />
-                                            </ToggleGroup>
-                                        </ActionListItem>
-                                    )}
-                                    {process.env.NODE_ENV === 'development' && (
-                                        <ActionListItem>
-                                            <Switch
-                                                label="YAML"
-                                                isChecked={drawerExpanded}
-                                                onChange={() => {
-                                                    localStorage.setItem('yaml', (!drawerExpanded).toString())
-                                                    setDrawerExpanded(!drawerExpanded)
-                                                }}
-                                            />
+                                            <Button onClick={props.edit}>Edit</Button>
                                         </ActionListItem>
                                     )}
                                 </ActionList>
+                            }
+                            switches={
+                                <Fragment>
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <Switch
+                                            label="YAML"
+                                            isChecked={drawerExpanded}
+                                            onChange={() => {
+                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                setDrawerExpanded(!drawerExpanded)
+                                            }}
+                                        />
+                                    )}
+                                </Fragment>
                             }
                         />
                         {showFormErrors && mode === 'form' && formHasErrors(formData) && (
@@ -200,7 +196,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     }
                                 >
                                     <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
-                                        {YAML.stringify(formData.stateToData(), 100)}
+                                        {YAML.stringify(formData.stateToData())}
                                     </CodeBlockCode>
                                 </CodeBlock>
                             </DrawerPanelContent>
@@ -212,7 +208,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     <AcmDataForm
                                         {...props}
                                         mode={mode}
-                                        showSecrets={showSecrets}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
                                         isHorizontal={isHorizontal}
@@ -223,7 +218,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     <AcmDataForm
                                         {...props}
                                         mode={mode}
-                                        showSecrets={showSecrets}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
                                         isHorizontal={isHorizontal}
@@ -243,15 +237,14 @@ export function AcmDataForm(
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
     }
-) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     switch (props.mode) {
         case 'wizard':
             return (
                 <AcmDataFormWizard
                     formData={formData}
                     isHorizontal={isHorizontal ?? false}
-                    showSecrets={showSecrets ?? true}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
                 />
@@ -260,7 +253,7 @@ export function AcmDataForm(
         case 'details':
             return (
                 <Form>
-                    <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
+                    <AcmDataFormDetails formData={formData} />
                 </Form>
             )
 
@@ -271,7 +264,6 @@ export function AcmDataForm(
                     isHorizontal={isHorizontal}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
-                    showSecrets={showSecrets ?? false}
                 />
             )
     }
@@ -282,9 +274,8 @@ export function AcmDataFormDefault(props: {
     isHorizontal?: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
-    showSecrets: boolean
-}) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+}): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
     const isSubmitting = submitText !== formData.submitText
@@ -299,7 +290,6 @@ export function AcmDataFormDefault(props: {
                             inputs={section.inputs}
                             showFormErrors={showFormErrors}
                             isReadOnly={isSubmitting}
-                            showSecrets={showSecrets}
                         />
                         {section.groups?.map((group) => {
                             if (groupHidden(group)) return <Fragment />
@@ -317,7 +307,6 @@ export function AcmDataFormDefault(props: {
                                         inputs={group.inputs}
                                         showFormErrors={showFormErrors}
                                         isReadOnly={isSubmitting}
-                                        showSecrets={showSecrets}
                                     />
                                 </FormFieldGroupExpandable>
                             )
@@ -373,11 +362,10 @@ export function AcmDataFormDefault(props: {
 export function AcmDataFormWizard(props: {
     formData: FormData
     isHorizontal: boolean
-    showSecrets: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
-}) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+}): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [sectionName, setSectionName] = useState('')
     const [submitText, setSubmitText] = useState(formData.submitText)
@@ -424,7 +412,6 @@ export function AcmDataFormWizard(props: {
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.title]}
                             isReadOnly={isSubmitting}
-                            showSecrets={showSecrets}
                             mode="wizard"
                         />
                     </Form>
@@ -448,7 +435,6 @@ export function AcmDataFormWizard(props: {
                                 inputs={group.inputs}
                                 showFormErrors={showFormErrors || showSectionErrors[section.title]}
                                 isReadOnly={isSubmitting}
-                                showSecrets={showSecrets}
                                 mode="wizard"
                             />
                         </Form>
@@ -473,7 +459,7 @@ export function AcmDataFormWizard(props: {
                         )}
                     </AlertGroup>
                 )}
-                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} wizardSummary={true} />
+                <AcmDataFormDetails formData={formData} wizardSummary={true} />
             </Form>
         ),
         canJumpTo: !isSubmitting,
@@ -582,8 +568,8 @@ export function AcmDataFormWizard(props: {
     return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
-export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean; wizardSummary?: boolean }) {
-    const { formData, showSecrets, wizardSummary } = props
+export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: boolean }): JSX.Element {
+    const { formData, wizardSummary } = props
     let i = 0
     return (
         <Fragment>
@@ -624,54 +610,11 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
 
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
-                                columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
+                                columnModifier={{ default: '1Col' }}
                                 isHorizontal={true}
                                 style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                             >
-                                {section.inputs &&
-                                    section.inputs.map((input) => {
-                                        if (inputHidden(input)) return <Fragment />
-                                        switch (input.type) {
-                                            case 'Select':
-                                                return (
-                                                    inputValue(input) && (
-                                                        <DescriptionListGroup key={input.label}>
-                                                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                                                            <DescriptionListDescription>
-                                                                {input.isSecret && !showSecrets
-                                                                    ? '****************'
-                                                                    : optionText(
-                                                                          selectOptions(input).find(
-                                                                              (option) =>
-                                                                                  option.value === inputValue(input)
-                                                                          )
-                                                                      )}
-                                                            </DescriptionListDescription>
-                                                        </DescriptionListGroup>
-                                                    )
-                                                )
-                                            default:
-                                                return (
-                                                    inputValue(input) && (
-                                                        <DescriptionListGroup
-                                                            key={input.label}
-                                                            colSpan={input.type === 'TextArea' ? 2 : 1}
-                                                        >
-                                                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                                                            <DescriptionListDescription
-                                                                style={{ whiteSpace: 'pre-wrap' }}
-                                                            >
-                                                                {input.isSecret && !showSecrets
-                                                                    ? '****************'
-                                                                    : inputValue(input)
-                                                                          .split('\n')
-                                                                          .map((line) => <div>{line}</div>)}
-                                                            </DescriptionListDescription>
-                                                        </DescriptionListGroup>
-                                                    )
-                                                )
-                                        }
-                                    })}
+                                {section.inputs && section.inputs.map((input) => <AcmInputDescription input={input} />)}
                             </DescriptionList>
                         )}
                         {section.groups && (
@@ -683,31 +626,13 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                             <Title headingLevel="h3">{group.title}</Title>
                                             {anyInputHasValue(group.inputs) && (
                                                 <DescriptionList
-                                                    columnModifier={{
-                                                        default:
-                                                            group.columns === 1
-                                                                ? '1Col'
-                                                                : group.columns === 2
-                                                                ? '2Col'
-                                                                : undefined,
-                                                    }}
+                                                    columnModifier={{ default: '1Col' }}
                                                     isHorizontal={true}
                                                 >
-                                                    {group.inputs.map((input) => {
-                                                        if (inputHidden(input)) return <Fragment />
-                                                        return (
-                                                            input.value && (
-                                                                <DescriptionListGroup key={input.label}>
-                                                                    <DescriptionListTerm>
-                                                                        {input.label}
-                                                                    </DescriptionListTerm>
-                                                                    <DescriptionListDescription>
-                                                                        {input.value}
-                                                                    </DescriptionListDescription>
-                                                                </DescriptionListGroup>
-                                                            )
-                                                        )
-                                                    })}
+                                                    {group.inputs &&
+                                                        group.inputs.map((input) => (
+                                                            <AcmInputDescription input={input} />
+                                                        ))}
                                                 </DescriptionList>
                                             )}
                                         </Fragment>
@@ -722,14 +647,71 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
     )
 }
 
+function AcmInputDescription(props: { input: Input }): JSX.Element {
+    const [showSecrets, setShowSecrets] = useState(false)
+    const { input } = props
+    if (inputHidden(input)) return <Fragment />
+    switch (input.type) {
+        case 'Select':
+            return (
+                <Fragment>
+                    {inputValue(input) && (
+                        <DescriptionListGroup key={input.label}>
+                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                            <DescriptionListDescription>
+                                {input.isSecret && !showSecrets
+                                    ? '****************'
+                                    : optionText(
+                                          selectOptions(input).find((option) => option.value === inputValue(input))
+                                      )}
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>
+                    )}
+                </Fragment>
+            )
+        default:
+            return (
+                <Fragment>
+                    {inputValue(input) && (
+                        <DescriptionListGroup key={input.label} colSpan={input.type === 'TextArea' ? 2 : 1}>
+                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                            <DescriptionListDescription style={{ whiteSpace: 'pre-wrap' }}>
+                                <Split>
+                                    <SplitItem isFilled>
+                                        {input.isSecret && !showSecrets
+                                            ? '****************'
+                                            : inputValue(input)
+                                                  .split('\n')
+                                                  .map((line) => <div>{line}</div>)}
+                                    </SplitItem>
+                                    {input.isSecret && (
+                                        <Stack>
+                                            <Button
+                                                variant="plain"
+                                                style={{ marginTop: '-8px' }}
+                                                onClick={() => setShowSecrets(!showSecrets)}
+                                            >
+                                                {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                                            </Button>
+                                            <StackItem isFilled />
+                                        </Stack>
+                                    )}
+                                </Split>
+                            </DescriptionListDescription>
+                        </DescriptionListGroup>
+                    )}
+                </Fragment>
+            )
+    }
+}
+
 export function AcmDataFormInputs(props: {
     inputs?: Input[]
     showFormErrors?: boolean
     isReadOnly: boolean
-    showSecrets: boolean
     mode?: 'form' | 'wizard' | 'details'
-}) {
-    const { inputs, showFormErrors, isReadOnly, showSecrets } = props
+}): JSX.Element {
+    const { inputs, showFormErrors, isReadOnly } = props
     return (
         <Fragment>
             {inputs?.map((input) => {
@@ -761,12 +743,7 @@ export function AcmDataFormInputs(props: {
                                     />
                                 }
                             >
-                                <AcmDataFormInput
-                                    input={input}
-                                    validated={validated}
-                                    isReadOnly={isReadOnly}
-                                    showSecrets={showSecrets}
-                                />
+                                <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
                             </FormGroup>
                         )}
                     </Fragment>
@@ -776,18 +753,13 @@ export function AcmDataFormInputs(props: {
     )
 }
 
-export function AcmDataFormInput(props: {
-    input: Input
-    validated?: 'error'
-    isReadOnly: boolean
-    showSecrets: boolean
-}) {
+export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
     const { input, validated, isReadOnly } = props
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets)
+    const [showSecrets, setShowSecrets] = useState(input.type === 'TextArea' && inputValue(input) === '')
     switch (input.type) {
         case 'Text': {
             const value = inputValue(input)
-            const showSecretToggle = input.isSecret === true
+            const showSecretToggle = input.isSecret === true && value !== ''
             return (
                 <InputGroup>
                     <TextInput
@@ -804,6 +776,25 @@ export function AcmDataFormInput(props: {
                     {showSecretToggle && (
                         <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
                             {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                        </Button>
+                    )}
+                    {value !== '' ? (
+                        <Button variant="control" onClick={() => input.onChange('')}>
+                            <TimesCircleIcon />
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="control"
+                            onClick={() => {
+                                navigator.clipboard.readText().then((value) => {
+                                    input.onChange(value)
+                                    if (value) {
+                                        setShowSecrets(false)
+                                    }
+                                })
+                            }}
+                        >
+                            <PasteIcon />
                         </Button>
                     )}
                 </InputGroup>
@@ -839,9 +830,29 @@ export function AcmDataFormInput(props: {
                             autoResize={true}
                         />
                     )}
+
                     {showSecretToggle && (
                         <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
                             {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                        </Button>
+                    )}
+                    {value !== '' ? (
+                        <Button variant="control" onClick={() => input.onChange('')}>
+                            <TimesCircleIcon />
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="control"
+                            onClick={() => {
+                                navigator.clipboard.readText().then((value) => {
+                                    input.onChange(value)
+                                    if (value) {
+                                        setShowSecrets(false)
+                                    }
+                                })
+                            }}
+                        >
+                            <PasteIcon />
                         </Button>
                     )}
                 </InputGroup>
@@ -851,15 +862,19 @@ export function AcmDataFormInput(props: {
             const options = selectOptions(input)
             let selections: string | SelectOptionObject = inputValue(input)
             if (input.mode === 'icon') {
+                const value = inputValue(input)
                 selections = {
                     toString: () => {
-                        const option = options.find((option) => option.value === inputValue(input))
+                        const option = options.find((option) => option.value === value)
                         return (
                             <Fragment>
                                 {option?.icon && <span style={{ paddingRight: '8px' }}>{option?.icon}</span>}
                                 {option?.text}
                             </Fragment>
                         ) as unknown as string
+                    },
+                    compareTo: (selectOption: any) => {
+                        return selectOption?.value === value
                     },
                 }
             }
@@ -877,8 +892,9 @@ export function AcmDataFormInput(props: {
                             isCreatable={false}
                             isDisabled={isReadOnly || inputDisabled(input)}
                             validated={validated}
+                            isGrouped={input.groups !== undefined}
                         >
-                            {input.groups
+                            {input.groups !== undefined
                                 ? input.groups.map((group, index) => {
                                       return (
                                           <SelectGroup key={index} label={group.group}>
@@ -889,7 +905,7 @@ export function AcmDataFormInput(props: {
                                                           value={option.value}
                                                           description={option.description}
                                                       >
-                                                          {input.mode === 'icon' && option.icon && (
+                                                          {input.mode === 'icon' && option.icon !== undefined && (
                                                               <span style={{ paddingRight: '8px' }}>{option.icon}</span>
                                                           )}
                                                           {option.text ?? option.value}
@@ -899,14 +915,14 @@ export function AcmDataFormInput(props: {
                                           </SelectGroup>
                                       )
                                   })
-                                : selectOptions(input).map((option, index) => {
+                                : selectOptions(input).map((option) => {
                                       return (
                                           <SelectOption
                                               key={option.value}
                                               value={option.value}
                                               description={option.description}
                                           >
-                                              {input.mode === 'icon' && option.icon && (
+                                              {input.mode === 'icon' && option.icon !== undefined && (
                                                   <span style={{ paddingRight: '8px' }}>{option.icon}</span>
                                               )}
                                               {option.text ?? option.value}
@@ -931,6 +947,9 @@ export function AcmDataFormInput(props: {
                                                 isSelected={inputValue(input) === option.value}
                                                 onClick={() => input.onChange(option.value)}
                                                 isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
+                                                onKeyPress={(event) => {
+                                                    if (event.key === 'Enter') input.onChange(option.value)
+                                                }}
                                             >
                                                 {option.description}
                                             </Tile>
@@ -1150,7 +1169,7 @@ function inputHidden(input: Input): boolean {
     return false
 }
 
-function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
+function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>): JSX.Element {
     // TODO support isReadOnly
     const { validated } = props
     const [open, setOpen] = useState(false)
@@ -1170,21 +1189,22 @@ function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
     )
 }
 
-function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: string }) {
+function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: string }): JSX.Element {
     return props.labelHelp ? (
         <Popover
             id={`${props.id}-label-help-popover`}
             headerContent={props.labelHelpTitle}
             bodyContent={props.labelHelp}
         >
-            <button
+            <Button
+                variant="plain"
                 id={`${props.id}-label-help-button`}
                 aria-label="More info"
                 onClick={(e) => e.preventDefault()}
                 className="pf-c-form__group-label-help"
             >
                 <HelpIcon noVerticalAlign />
-            </button>
+            </Button>
         </Popover>
     ) : (
         <Fragment />

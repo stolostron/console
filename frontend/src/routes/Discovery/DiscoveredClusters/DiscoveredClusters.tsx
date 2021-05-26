@@ -14,7 +14,7 @@ import {
     IAcmTableColumn,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { Alert, ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
+import { ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -25,7 +25,8 @@ import { NavigationPath } from '../../../NavigationPath'
 import { DiscoveredCluster } from '../../../resources/discovered-cluster'
 import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { BellIcon } from '@patternfly/react-icons'
+import { TechPreviewAlert } from '../../../components/TechPreviewAlert'
+import { DOC_LINKS } from '../../../lib/doc-util'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -338,36 +339,9 @@ export function DiscoveredClustersTable(props: {
         },
     ]
 
-    const title = (
-        <Trans
-            i18nKey={'discovery:techpreview.msg'}
-            components={{
-                bold: <strong />,
-                a: (
-                    <a
-                        href="/#"
-                        target="_blank"
-                        rel="noreferrer"
-                        key="techPreviewAlert"
-                        style={{ textDecoration: 'underline', color: 'inherit' }}
-                    >
-                        {}
-                    </a>
-                ),
-            }}
-        />
-    )
-
     return (
         <Fragment>
-            {/* Tech Preview Message */}
-            <Alert
-                customIcon={<BellIcon />}
-                isInline
-                variant="warning"
-                title={title}
-                style={{ marginBottom: '16px' }}
-            />
+            <TechPreviewAlert i18nKey="discovery:techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
             <AcmTable<DiscoveredCluster>
                 plural={t('discoveredClusters')}
                 items={props.discoveredClusters}
