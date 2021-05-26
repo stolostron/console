@@ -89,4 +89,14 @@ export interface SelectInput extends InputBase {
     isDisplayLarge?: boolean
 }
 
-export type Input = TextInput | TextArea | SelectInput
+export interface MultiselectInput extends InputBase {
+    type: 'Multiselect'
+    label: string
+    groups?: SelectGroup[]
+    options?: SelectInputOptions[] | (() => SelectInputOptions[])
+    value: string[]
+    onChange: (value: string[]) => void
+    validation?: (value: string[]) => string
+}
+
+export type Input = TextInput | TextArea | SelectInput | MultiselectInput

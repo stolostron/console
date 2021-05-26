@@ -64,7 +64,7 @@ import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
+import { FormData, Group, Input, MultiselectInput, Section, SelectInput, SelectInputOptions } from './AcmFormData'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -652,23 +652,36 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
     const { input } = props
     if (inputHidden(input)) return <Fragment />
     switch (input.type) {
-        case 'Select':
+        case 'Select': {
+            const value = inputValue(input)
             return (
                 <Fragment>
-                    {inputValue(input) && (
+                    {value && (
                         <DescriptionListGroup key={input.label}>
                             <DescriptionListTerm>{input.label}</DescriptionListTerm>
                             <DescriptionListDescription>
                                 {input.isSecret && !showSecrets
                                     ? '****************'
-                                    : optionText(
-                                          selectOptions(input).find((option) => option.value === inputValue(input))
-                                      )}
+                                    : optionText(selectOptions(input).find((option) => option.value === value))}
                             </DescriptionListDescription>
                         </DescriptionListGroup>
                     )}
                 </Fragment>
             )
+        }
+        case 'Multiselect': {
+            const value = multiselectValue(input)
+            return (
+                <Fragment>
+                    {value.length > 0 && (
+                        <DescriptionListGroup key={input.label}>
+                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                            <DescriptionListDescription>{value.join(', ')}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                    )}
+                </Fragment>
+            )
+        }
         default:
             return (
                 <Fragment>
@@ -778,11 +791,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
                         </Button>
                     )}
-                    {value !== '' ? (
-                        <Button variant="control" onClick={() => input.onChange('')}>
-                            <TimesCircleIcon />
-                        </Button>
-                    ) : (
+                    {value === '' ? (
                         <Button
                             variant="control"
                             onClick={() => {
@@ -796,6 +805,13 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         >
                             <PasteIcon />
                         </Button>
+                    ) : (
+                        !isReadOnly &&
+                        !inputDisabled(input) && (
+                            <Button variant="control" onClick={() => input.onChange('')}>
+                                <TimesCircleIcon />
+                            </Button>
+                        )
                     )}
                 </InputGroup>
             )
@@ -836,11 +852,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
                         </Button>
                     )}
-                    {value !== '' ? (
-                        <Button variant="control" onClick={() => input.onChange('')}>
-                            <TimesCircleIcon />
-                        </Button>
-                    ) : (
+                    {value === '' ? (
                         <Button
                             variant="control"
                             onClick={() => {
@@ -854,15 +866,56 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         >
                             <PasteIcon />
                         </Button>
+                    ) : (
+                        !isReadOnly &&
+                        !inputDisabled(input) && (
+                            <Button variant="control" onClick={() => input.onChange('')}>
+                                <TimesCircleIcon />
+                            </Button>
+                        )
                     )}
                 </InputGroup>
             )
         }
+        case 'Multiselect': {
+            return (
+                <SelectWithToggle
+                    id={input.id}
+                    selections={input.value}
+                    variant={SelectVariant.typeaheadMulti}
+                    placeholderText={input.value.length === 0 ? inputPlaceholder(input) : undefined}
+                    onSelect={(_event, selection) => {
+                        if (!input.value.includes(selection as string)) {
+                            input.onChange([...input.value, ...[selection as string]])
+                        } else {
+                            input.onChange([...input.value.filter((v) => v !== (selection as string))])
+                        }
+                    }}
+                    onClear={inputRequired(input) ? undefined : () => input.onChange([])}
+                    isCreatable={false}
+                    isDisabled={isReadOnly || inputDisabled(input)}
+                    validated={validated}
+                    closeOnSelect={false}
+                >
+                    {selectOptions(input).map((option) => {
+                        return (
+                            <SelectOption key={option.value} value={option.value} description={option.description}>
+                                {option.icon !== undefined && (
+                                    <span style={{ paddingRight: '8px' }}>{option.icon}</span>
+                                )}
+                                {option.text ?? option.value}
+                            </SelectOption>
+                        )
+                    })}
+                </SelectWithToggle>
+            )
+        }
+
         case 'Select': {
+            const value = inputValue(input)
             const options = selectOptions(input)
-            let selections: string | SelectOptionObject = inputValue(input)
+            let selections: string | SelectOptionObject = value
             if (input.mode === 'icon') {
-                const value = inputValue(input)
                 selections = {
                     toString: () => {
                         const option = options.find((option) => option.value === value)
@@ -885,14 +938,14 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             id={input.id}
                             selections={selections}
                             variant={input.mode === 'icon' ? SelectVariant.single : SelectVariant.typeahead}
-                            typeAheadAriaLabel="Select a state"
                             placeholderText={inputPlaceholder(input)}
-                            onSelect={(_event, value) => input.onChange(value as string)}
+                            onSelect={(_event, selection) => input.onChange(selection as string)}
                             onClear={inputRequired(input) ? undefined : () => input.onChange('')}
                             isCreatable={false}
                             isDisabled={isReadOnly || inputDisabled(input)}
                             validated={validated}
                             isGrouped={input.groups !== undefined}
+                            closeOnSelect={true}
                         >
                             {input.groups !== undefined
                                 ? input.groups.map((group, index) => {
@@ -944,7 +997,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                                                 title={option.text ?? option.value}
                                                 isStacked
                                                 isDisplayLarge={input.isDisplayLarge}
-                                                isSelected={inputValue(input) === option.value}
+                                                isSelected={value === option.value}
                                                 onClick={() => input.onChange(option.value)}
                                                 isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
                                                 onKeyPress={(event) => {
@@ -985,11 +1038,17 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     }
 }
 
-function inputValue(input: Input) {
+function inputValue(input: Input): string {
     if (typeof input.value === undefined) return ''
     if (typeof input.value === 'string') return input.value
     if (typeof input.value === 'function') return input.value()
     return ''
+}
+
+function multiselectValue(input: MultiselectInput): string[] {
+    if (typeof input.value === undefined) return []
+    if (Array.isArray(input.value)) return input.value
+    return []
 }
 
 function inputDisabled(input: Input) {
@@ -1016,7 +1075,7 @@ function inputRequired(input: Input) {
     return undefined
 }
 
-function selectOptions(select: SelectInput): SelectInputOptions[] {
+function selectOptions(select: SelectInput | MultiselectInput): SelectInputOptions[] {
     if (select.groups) {
         return select.groups.map((group) => group.options).flat()
     } else {
@@ -1117,7 +1176,7 @@ function inputsHaveErrors(inputs?: Input[]) {
     return false
 }
 
-function inputError(input: Input) {
+function inputError(input: Input): string | undefined {
     if (inputHidden(input)) return undefined
     switch (input.type) {
         case 'Text': {
@@ -1133,6 +1192,11 @@ function inputError(input: Input) {
         case 'Select': {
             const value = inputValue(input)
             if (inputRequired(input) && !value) return requiredMessage
+            return input.validation ? input.validation(value) : undefined
+        }
+        case 'Multiselect': {
+            const value = multiselectValue(input)
+            if (inputRequired(input) && value.length === 0) return requiredMessage
             return input.validation ? input.validation(value) : undefined
         }
     }
@@ -1169,9 +1233,10 @@ function inputHidden(input: Input): boolean {
     return false
 }
 
-function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>): JSX.Element {
+type selectWithToggleProps = Omit<SelectProps, 'onToggle'> & { closeOnSelect: boolean }
+function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
     // TODO support isReadOnly
-    const { validated } = props
+    const { validated, closeOnSelect } = props
     const [open, setOpen] = useState(false)
     return (
         <Select
@@ -1180,7 +1245,7 @@ function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>): JSX.Element {
             {...props}
             onSelect={(e, v) => {
                 props.onSelect?.(e, v)
-                setOpen(false)
+                if (closeOnSelect) setOpen(false)
             }}
             aria-invalid={validated === ValidatedOptions.error}
         >
