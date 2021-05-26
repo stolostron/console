@@ -9,6 +9,7 @@ import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'
 import { configMapsState } from '../../../../atoms'
 import { NavigationPath } from '../../../../NavigationPath'
+import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
@@ -96,12 +97,16 @@ export function StatusField(props: { cluster: Cluster }) {
             popover={{
                 hasAutoWidth: hasAction,
                 bodyContent: (
-                    <Trans
-                        i18nKey={`cluster:status.${props.cluster?.status}.message`}
-                        components={{ bold: <strong /> }}
-                    />
+                    <>
+                        <Trans
+                            i18nKey={`cluster:status.${props.cluster?.status}.message`}
+                            components={{ bold: <strong /> }}
+                        />
+                        <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
+                    </>
                 ),
                 footerContent: hasAction && <Action />,
+                showClose: false,
             }}
         />
     )
