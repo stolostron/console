@@ -9,6 +9,7 @@
         "@open-cluster-management/ui-components": "^0.131.0",
         "@patternfly/react-core": "^4.121.3",
         "@patternfly/react-table": "^4.27.9",
+        "@redhat-cloud-services/rule-components": "^3.1.1",
         "@types/lodash": "^4.14.170",
         "@types/moment": "^2.13.0",
         "@types/react": "^17.0.6",

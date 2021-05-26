@@ -124,7 +124,7 @@ export function ClusterSetManageResourcesContent() {
                     emptyState={
                         <AcmEmptyState
                             key="mcEmptyState"
-                            title={t('managed.emptyStateHeader')}
+                            title={t('createClusterSet.form.section.clusters.emptyTitle')}
                             message={t('createClusterSet.form.section.clusters.emptyMessage')}
                             action={
                                 <AcmButton onClick={() => history.push(NavigationPath.clusterSets)} role="link">
@@ -135,7 +135,7 @@ export function ClusterSetManageResourcesContent() {
                     }
                 />
 
-                <AcmAlertGroup isInline canClose padTop />
+                <AcmAlertGroup isInline canClose />
                 {availableResources.length > 0 && (
                     <ActionGroup>
                         <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>

@@ -6,7 +6,6 @@ import {
     AcmInlineProvider,
     AcmLabels,
     AcmPageContent,
-    AcmAlert,
     AcmButton,
     AcmInlineStatus,
     StatusType,
@@ -16,7 +15,7 @@ import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '
 import { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
-import { ClusterStatus, clusterDangerStatuses } from '../../../../../lib/get-cluster'
+import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
@@ -27,6 +26,7 @@ import { LoginCredentials } from '../../components/LoginCredentials'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { EditLabels } from '../../components/EditLabels'
+import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
 
@@ -152,16 +152,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                {cluster!.statusMessage && (
-                    <AcmAlert
-                        isInline
-                        title={t(`status.${cluster?.status}.alert.title`)}
-                        message={cluster?.statusMessage}
-                        variant={clusterDangerStatuses.includes(cluster!.status) ? 'danger' : 'info'}
-                        noClose
-                        style={{ marginBottom: '12px' }}
-                    />
-                )}
+                <ClusterStatusMessageAlert cluster={cluster!} padBottom />
                 <HiveNotification />
                 <ImportCommandContainer />
                 <EditLabels

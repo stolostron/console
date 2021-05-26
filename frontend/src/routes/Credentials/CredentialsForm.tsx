@@ -31,6 +31,8 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateCloudsYaml,
+    validateBareMetalOSImageURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
@@ -707,7 +709,7 @@ export function CredentialsForm(props: {
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
                         isSecret: true,
-                        // TODO YAML VALIDATION
+                        validation: (value) => validateCloudsYaml(value, openstackCloud, t),
                     },
                     {
                         id: 'openstackCloud',
@@ -786,6 +788,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.bootstrapOSImage.labelHelp'),
                         value: bootstrapOSImage,
                         onChange: setBootstrapOSImage,
+                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'clusterOSImage',
@@ -796,6 +799,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.clusterOSImage.labelHelp'),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
+                        validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
                         id: 'additionalTrustBundle',

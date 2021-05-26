@@ -15,6 +15,12 @@ import {
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
 } from '../../../../resources/managed-cluster-add-on'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
+import {
+    SubmarinerConfig,
+    SubmarinerConfigApiVersion,
+    SubmarinerConfigKind,
+} from '../../../../resources/submariner-config'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
@@ -23,10 +29,11 @@ import {
     managedClusterSetsState,
     managedClusterAddonsState,
     clusterPoolsState,
+    submarinerConfigsState,
 } from '../../../../atoms'
 import { mockClusterDeployments, mockManagedClusterInfos, mockManagedClusters } from '../../Clusters/Clusters.test'
 import { NavigationPath } from '../../../../NavigationPath'
-import { nockClusterList } from '../../../../lib/nock-util'
+import { nockClusterList, nockNamespacedList } from '../../../../lib/nock-util'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
     (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -49,6 +56,33 @@ const mockManagedClusterExtra: ManagedCluster = {
     },
 }
 
+const mockManagedClusterExtraSecret: Secret = {
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata: {
+        name: `${mockManagedClusterExtra.metadata.name}-aws-creds`,
+        namespace: mockManagedClusterExtra.metadata.name,
+    },
+    data: {
+        aws_access_key_id: 'abcdefg',
+    },
+    type: 'Opaque',
+}
+
+const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
+    apiVersion: SubmarinerConfigApiVersion,
+    kind: SubmarinerConfigKind,
+    metadata: {
+        name: 'subconfig',
+        namespace: mockManagedClusterExtra.metadata.name,
+    },
+    spec: {
+        credentialsSecret: {
+            name: mockManagedClusterExtraSecret.metadata.name!,
+        },
+    },
+}
+
 const mockSubmarinerAddon: ManagedClusterAddOn = {
     apiVersion: ManagedClusterAddOnApiVersion,
     kind: ManagedClusterAddOnKind,
@@ -58,6 +92,20 @@ const mockSubmarinerAddon: ManagedClusterAddOn = {
     },
     spec: {
         installNamespace: 'submariner-operator',
+    },
+}
+
+const mockSubmarinerConfig: SubmarinerConfig = {
+    apiVersion: SubmarinerConfigApiVersion,
+    kind: SubmarinerConfigKind,
+    metadata: {
+        name: 'subconfig',
+        namespace: mockSubmarinerAddon.metadata.namespace!,
+    },
+    spec: {
+        credentialsSecret: {
+            name: `${mockSubmarinerAddon.metadata.namespace}-aws-creds`,
+        },
     },
 }
 
@@ -82,6 +130,7 @@ const Component = () => (
             snapshot.set(managedClustersState, [...mockManagedClusters, mockManagedClusterExtra])
             snapshot.set(certificateSigningRequestsState, [])
             snapshot.set(managedClusterAddonsState, [mockSubmarinerAddon])
+            snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
             snapshot.set(clusterPoolsState, [])
         }}
     >
@@ -158,30 +207,41 @@ describe('ClusterSetDetails page', () => {
         await waitForText('table.details')
 
         await clickByText('tab.submariner')
+
+        const secretNock = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
+        await waitForNocks([secretNock])
+
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
-        await clickByText('managed.clusterSets.submariner.addons.install')
+        await clickByText('managed.clusterSets.submariner.addons.install', 0)
         await waitForText('managed.clusterSets.submariner.addons.install.message')
         await clickByText('managed.clusterSets.submariner.addons.install.placeholder')
+
         await clickByText(mockManagedClusterExtra!.metadata.name!)
 
-        const createNock = nockCreate(mockSubmarinerAddonExtra)
+        const nockManagedClusterAddon = nockCreate(mockSubmarinerAddonExtra)
+        const nockSubmarinerConfig = nockCreate(mockManagedClusterExtraSubmarinerConfig)
         await clickByText('common:install')
-        await waitForNocks([createNock])
+        await waitForNocks([nockManagedClusterAddon, nockSubmarinerConfig])
     })
     test('can uninstall submariner add-ons', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('table.details')
 
         await clickByText('tab.submariner')
+
+        const secretNock = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
+        await waitForNocks([secretNock])
+
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
         await clickByLabel('Actions', 0)
         await clickByText('uninstall.add-on')
         await waitForText('bulk.title.uninstallSubmariner')
 
-        const deleteNock = nockDelete(mockSubmarinerAddon)
+        const deleteAddon = nockDelete(mockSubmarinerAddon)
+        const deleteConfig = nockDelete(mockSubmarinerConfig)
         await clickByText('common:uninstall')
-        await waitForNocks([deleteNock])
+        await waitForNocks([deleteAddon, deleteConfig])
     })
     test('can remove users from cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
