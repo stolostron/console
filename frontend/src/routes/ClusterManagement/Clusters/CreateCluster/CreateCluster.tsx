@@ -7,7 +7,7 @@ import fs from 'fs'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import path from 'path'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -110,10 +110,6 @@ export default function CreateClusterPage() {
         }
     }
 
-    useEffect(() => {
-        console.log('checking selection: ', selectedTemplate)
-    }, [selectedTemplate])
-
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }, control: any) => {
@@ -177,23 +173,24 @@ export default function CreateClusterPage() {
                     const ansibleSecretMutable: Secret = JSON.parse(JSON.stringify(ansibleSecret))
                     ansibleSecretMutable!.metadata.name = 'toweraccess'
                     ansibleSecretMutable!.metadata.namespace = createResources[0].metadata.namespace
-                    ansibleSecretMutable!.metadata.labels!['open-cluster-management.io/copiedFromNamespace'] =
+                    ansibleSecretMutable!.metadata.labels!['cluster.open-cluster-management.io/copiedFromNamespace'] =
                         ansibleSecret?.metadata.namespace!
-                    ansibleSecretMutable!.metadata.labels!['open-cluster-management.io/copiedFromName'] =
+                    ansibleSecretMutable!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
                         ansibleSecret?.metadata.name!
 
                     delete ansibleSecretMutable.metadata.creationTimestamp
                     delete ansibleSecretMutable.metadata.resourceVersion
+                    delete ansibleSecretMutable.metadata.labels!['cluster.open-cluster-management.io/credentials']
 
                     createResourceTool<Secret>(ansibleSecretMutable)
                 }
 
                 // redirect to created cluster
-                // if (status === 'DONE') {
-                //     setTimeout(() => {
-                //         history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
-                //     }, 2000)
-                // }
+                if (status === 'DONE') {
+                    setTimeout(() => {
+                        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                    }, 2000)
+                }
             }
         }
     }
