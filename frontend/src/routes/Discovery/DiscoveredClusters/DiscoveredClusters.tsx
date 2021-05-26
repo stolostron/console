@@ -262,16 +262,16 @@ export function DiscoveredClustersTable(props: {
         {
             header: t('dcTbl.type'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-                compareStrings(getFullAcronym(a?.spec?.type), getFullAcronym(b?.spec?.type)),
+                compareStrings(getFullTypeByAcronym(a?.spec?.type), getFullTypeByAcronym(b?.spec?.type)),
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.type) {
-                    return [discoveredCluster.spec.type, getFullAcronym(discoveredCluster.spec.type) || '-']
+                    return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']
                 } else {
                     return '-'
                 }
             },
             cell: (discoveredCluster) =>
-                discoveredCluster?.spec.type ? getFullAcronym(discoveredCluster?.spec.type) : '-',
+                discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
         },
         {
             header: t('dcTbl.openShiftVersion'),
@@ -335,9 +335,11 @@ export function DiscoveredClustersTable(props: {
         },
     ]
 
-    function getFullAcronym(type: string) {
-        switch (type.toUpperCase()) {
+    function getFullTypeByAcronym(acronym: string) {
+        switch (acronym.toUpperCase()) {
             case 'MOA':
+                return t('type.rosa')
+            case 'ROSA':
                 return t('type.rosa')
             case 'OCP-ASSISTEDINSTALL':
                 return t('type.ocp')
@@ -348,7 +350,8 @@ export function DiscoveredClustersTable(props: {
             case 'ARO':
                 return t('type.aro')
             default:
-                return type
+                // Unable to find match, return existing acronym
+                return acronym
         }
     }
 
