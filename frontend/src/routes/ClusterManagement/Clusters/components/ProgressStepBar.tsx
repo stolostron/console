@@ -2,10 +2,15 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep } from '@open-cluster-management/ui-components'
 
-export function ProgressStepBar(props:{title:string, subtitle:string, isCentered:boolean, steps:ProgressTrackerStep[]}) {
+export function ProgressStepBar(props: {
+    title: string
+    subtitle: string
+    isCentered: boolean
+    steps: ProgressTrackerStep[]
+}) {
     // const [policyReports] = useRecoilState(policyreportState)
     // const { cluster } = useContext(ClusterContext)
-    const {title, subtitle, isCentered, steps} = props
+    const { title, subtitle, isCentered, steps } = props
     return (
         <div style={{ marginBottom: '24px' }}>
             <Card>

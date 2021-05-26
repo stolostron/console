@@ -3,8 +3,7 @@
 import { render } from '@testing-library/react'
 import { StatusType } from '@open-cluster-management/ui-components'
 import { ProgressStepBar } from './ProgressStepBar'
-import { clickByLabel, clickByText, waitForText, waitForNock, waitForNocks } from '../../../../lib/test-util'
-
+import { waitForText } from '../../../../lib/test-util'
 
 const installStatusSteps = [
     {
@@ -48,6 +47,5 @@ describe('ProgressStepBar', () => {
         await waitForText('In progress')
         await waitForText('Klusterlet install')
         await waitForText('Post-creation jobs')
-
     })
 })
