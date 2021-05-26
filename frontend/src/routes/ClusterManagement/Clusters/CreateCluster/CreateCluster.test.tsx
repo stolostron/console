@@ -5,17 +5,19 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockCreate, nockGet, nockList, nockPatch, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { clusterCuratorsState, managedClusterSetsState, managedClustersState, secretsState } from '../../../../atoms'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../lib/nock-util'
 import {
+    clickByPlaceholderText,
     clickByTestId,
+    clickByText,
     typeByTestId,
     waitForNocks,
     waitForText,
-    clickByText,
-    clickByPlaceholderText,
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../resources/bare-metal-asset'
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../resources/cluster-curator'
 import {
     ClusterImageSet,
     ClusterImageSetApiVersion,
@@ -37,8 +39,6 @@ import {
 } from '../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { managedClusterSetsState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../atoms'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../resources/cluster-curator'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
@@ -81,27 +81,61 @@ const providerConnection: ProviderConnection = {
     },
     type: 'Opaque',
 }
+// const providerConnectionAWS: ProviderConnection = {
+//     apiVersion: ProviderConnectionApiVersion,
+//     kind: ProviderConnectionKind,
+//     metadata: {
+//         name: 'connection',
+//         namespace: clusterName,
+//         labels: {
+//             'cluster.open-cluster-management.io/type': 'aws',
+//         },
+//     },
+//     stringData: {
+//         libvirtURI: 'qemu+ssh://libvirtURI',
+//         sshKnownHosts: 'sshKnownHosts',
+//         imageMirror: 'image.mirror:123/abc',
+//         bootstrapOSImage: 'bootstrapOSImage',
+//         clusterOSImage: 'clusterOSImage',
+//         additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
+//         baseDomain: 'base.domain',
+//         pullSecret: '{"pullSecret":"secret"}',
+//         sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+//         sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
+//     },
+//     type: 'Opaque',
+// }
 const clusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
     metadata: {
-        name: 'test-curator-template',
+        name: 'test',
         namespace: clusterName,
+        labels: {
+            'open-cluster-management': 'curator',
+        },
     },
     spec: {
         desiredCuration: undefined,
+        install: {
+            towerAuthSecret: 'ansible-connection',
+        },
     },
 }
 
-const clusterCuratorInstall: ClusterCurator = {
+const mockClusterCuratorInstall: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
     metadata: {
-        name: 'test-curator-template',
+        name: 'test',
         namespace: clusterName,
+        labels: {
+            'open-cluster-management': 'curator',
+        },
     },
     spec: {
-        desiredCuration: 'Install',
+        install: { towerAuthSecret: 'toweraccess' },
+        desiredCuration: 'install',
     },
 }
 
@@ -122,16 +156,16 @@ const providerConnectionAnsible: ProviderConnection = {
     type: 'Opaque',
 }
 
-const providerConnectionAnsibleCopied: ProviderConnection = {
+const mockPoviderConnectionAnsibleCopied: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
     kind: ProviderConnectionKind,
     metadata: {
-        name: 'ansible-connection',
+        name: 'toweraccess',
         namespace: clusterName,
         labels: {
             'cluster.open-cluster-management.io/type': 'ans',
             'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
-            'cluster.open-cluster-management.io/copiedFromSecretName': 'test-ii',
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
         },
     },
     stringData: {
@@ -310,6 +344,119 @@ const mockKlusterletAddonSecret = {
         },
         iamPolicyController: {
             enabled: true,
+        },
+    },
+}
+const mockClusterDeploymentAnsible = {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterDeployment',
+    metadata: {
+        name: 'test',
+        namespace: 'test',
+        labels: {
+            cloud: 'BMC',
+            vendor: 'OpenShift',
+        },
+        annotations: {
+            'hive.openshift.io/try-install-once': 'true',
+        },
+    },
+    spec: {
+        baseDomain: 'base.domain',
+        clusterName: 'test',
+        controlPlaneConfig: {
+            servingCertificates: {},
+        },
+        installAttemptsLimit: 0,
+        installed: false,
+        platform: {
+            baremetal: {
+                libvirtSSHPrivateKeySecretRef: {
+                    name: 'test-ssh-private-key',
+                },
+                hosts: [
+                    {
+                        name: 'test-bare-metal-asset-0',
+                        namespace: 'test-bare-metal-asset-namespace',
+                        role: 'master',
+                        bmc: {
+                            address: 'example.com:80',
+                            disableCertificateVerification: true,
+                            username: 'test',
+                            password: 'test',
+                        },
+                        bootMACAddress: '00:90:7F:12:DE:7F',
+                        hardwareProfile: 'default',
+                    },
+                    {
+                        name: 'test-bare-metal-asset-1',
+                        namespace: 'test-bare-metal-asset-namespace',
+                        role: 'master',
+                        bmc: {
+                            address: 'example.com:80',
+                            disableCertificateVerification: true,
+                            username: 'test',
+                            password: 'test',
+                        },
+                        bootMACAddress: '00:90:7F:12:DE:7F',
+                        hardwareProfile: 'default',
+                    },
+                    {
+                        name: 'test-bare-metal-asset-2',
+                        namespace: 'test-bare-metal-asset-namespace',
+                        role: 'master',
+                        bmc: {
+                            address: 'example.com:80',
+                            disableCertificateVerification: true,
+                            username: 'test',
+                            password: 'test',
+                        },
+                        bootMACAddress: '00:90:7F:12:DE:7F',
+                        hardwareProfile: 'default',
+                    },
+                    {
+                        name: 'test-bare-metal-asset-3',
+                        namespace: 'test-bare-metal-asset-namespace',
+                        role: 'worker',
+                        bmc: {
+                            address: 'example.com:80',
+                            disableCertificateVerification: true,
+                            username: 'test',
+                            password: 'test',
+                        },
+                        bootMACAddress: '00:90:7F:12:DE:7F',
+                        hardwareProfile: 'default',
+                    },
+                    {
+                        name: 'test-bare-metal-asset-4',
+                        namespace: 'test-bare-metal-asset-namespace',
+                        role: 'worker',
+                        bmc: {
+                            address: 'example.com:80',
+                            disableCertificateVerification: true,
+                            username: null,
+                            password: null,
+                        },
+                        bootMACAddress: '00:90:7F:12:DE:7F',
+                        hardwareProfile: 'default',
+                    },
+                ],
+            },
+        },
+        provisioning: {
+            installConfigSecretRef: {
+                name: 'test-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-ssh-private-key',
+            },
+            imageSetRef: {
+                name: 'ocp-release43',
+            },
+            sshKnownHosts: ['sshKnownHosts'],
+        },
+        pullSecretRef: {
+            name: 'test-pull-secret',
         },
     },
 }
@@ -526,13 +673,12 @@ describe('CreateCluster', () => {
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
-    test('can create bare metal cluster', async () => {
+    test('can create bare metal cluster without template', async () => {
         window.scrollBy = () => {}
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
             nockList(bareMetalAsset, mockBareMetalAssets),
-            nockList(clusterCurator, mockClusterCurators),
         ]
 
         // create the form
@@ -566,6 +712,9 @@ describe('CreateCluster', () => {
 
         // step 5 -- the network
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await clickByText('Next')
+
+        // ansible template
         await clickByText('Next')
 
         // nocks for cluster creation
@@ -613,13 +762,12 @@ describe('CreateCluster', () => {
         await waitForNocks(createNocks)
     })
 
-    test('can create cluster with ansible template', async () => {
+    test('can create bare metal cluster with ansible template', async () => {
         window.scrollBy = () => {}
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
             nockList(bareMetalAsset, mockBareMetalAssets),
-            nockList(clusterCurator, mockClusterCurators),
         ]
 
         // create the form
@@ -632,7 +780,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 2 -- the infrastructure
-        await clickByTestId('cluster.create.aws.subtitle')
+        await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -644,17 +792,38 @@ describe('CreateCluster', () => {
         await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')
 
-        // step 4 -- Integration
-        await clickByText('Integration')
-        await clickByPlaceholderText('template.clusterCreate.select.placeholder')
-        await clickByText(clusterCurator.metadata.name!)
+        // step 4 -- the hosts
+        const checkAll = container.querySelector('[name="check-all"]')
+        if (checkAll) {
+            userEvent.click(checkAll)
+        }
         await clickByText('Next')
 
-        // create
-        await clickByText('Create')
+        // step 5 -- the network
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await clickByText('Next')
+
+        // ansible template
+        await clickByPlaceholderText('template.clusterCreate.select.placeholder')
+        await clickByText(mockClusterCurators[0].metadata.name!)
+        await clickByText('Next')
 
         // nocks for cluster creation
         const createNocks = [
+            // list only 4 bmas so that one is created
+            // creates 1 less bmas so that backend creates that 1
+            nockList(bareMetalAsset, mockBareMetalAssets2),
+
+            // create bma namespace
+            nockCreate(mockBmaProject, mockBmaProjectResponse),
+
+            // create bmas/secrets
+            nockCreate(mockBareMetalAssets3[0]),
+            nockGet(mockBareMetalSecrets[0]),
+            nockGet(mockBareMetalSecrets[1]),
+            nockGet(mockBareMetalSecrets[2]),
+            nockGet(mockBareMetalSecrets[3]),
+
             // create the cluster's namespace (project)
             nockCreate(mockClusterProject, mockClusterProjectResponse),
 
@@ -664,10 +833,16 @@ describe('CreateCluster', () => {
             nockCreate(mockInstallConfigSecret),
             nockCreate(mockPrivateSecret),
             nockCreate(mockKlusterletAddonSecret),
-            nockCreate(mockClusterDeployment),
+            nockCreate(mockClusterDeploymentAnsible),
+            nockCreate(mockPoviderConnectionAnsibleCopied),
+            nockCreate(mockClusterCuratorInstall),
 
-            nockCreate(clusterCuratorInstall),
-            nockCreate(providerConnectionAnsibleCopied),
+            // assigns cluster name to bmas
+            nockPatch(mockPatchBareMetalReq[0], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[1], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[2], patchBareMetalAssetMasterRes),
+            nockPatch(mockPatchBareMetalReq[3], patchBareMetalAssetWorkerRes),
+            nockPatch(mockPatchBareMetalReq[4], patchBareMetalAssetWorkerRes),
         ]
 
         // click create button
