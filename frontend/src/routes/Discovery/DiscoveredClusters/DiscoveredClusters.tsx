@@ -27,6 +27,7 @@ import { DiscoveryConfig } from '../../../resources/discovery-config'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { TechPreviewAlert } from '../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../lib/doc-util'
+import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -39,17 +40,18 @@ export default function DiscoveredClustersPage() {
 }
 
 function EmptyStateNoCRHCredentials() {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation(['common', 'discovery'])
+
     return (
         <AcmEmptyState
-            title={t('emptystate.defaultState.title')}
+            title={t('discovery:emptystate.defaultState.title')}
             message={<Trans i18nKey={'discovery:emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
                 <AcmButton component={Link} to={NavigationPath.addCredentials}>
-                    {t('emptystate.addCredential')}
+                    {t('discovery:emptystate.addCredential')}
                 </AcmButton>
             }
         />
@@ -57,7 +59,7 @@ function EmptyStateNoCRHCredentials() {
 }
 
 function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation(['common', 'discovery'])
     const history = useHistory()
 
     const onSelect = (credential: string) => {
@@ -68,7 +70,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text={t('discovery.configureDiscovery')}
+                text={t('discovery:discovery.addDiscovery')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
@@ -82,13 +84,13 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
             />
         ) : (
             <AcmButton component={Link} to={NavigationPath.createDiscovery}>
-                {t('emptystate.enableClusterDiscovery')}
+                {t('discovery:emptystate.enableClusterDiscovery')}
             </AcmButton>
         )
     return (
         <AcmEmptyState
             action={action}
-            title={t('emptystate.credentials.title')}
+            title={t('discovery:emptystate.credentials.title')}
             message={
                 <Trans
                     i18nKey={'discovery:emptystate.credentials.msg'}
@@ -103,17 +105,17 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     )
 }
 
-function EmptyStateAwaitingDiscoveredClusters() {
-    const { t } = useTranslation(['discovery'])
+function EmptyStateAwaitingDiscoveredClusters(props: {}) {
+    const { t } = useTranslation(['common', 'discovery'])
     return (
         <AcmEmptyState
-            title={t('emptystate.discoveryEnabled.title')}
+            title={t('discovery:emptystate.discoveryEnabled.title')}
             message={
                 <Trans
                     i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
                     components={{
                         a: (
-                            <a href="/#" target="_blank" rel="noreferrer">
+                            <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
                                 {}
                             </a>
                         ),
@@ -133,7 +135,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.configureDiscovery}
                             >
-                                {t('discovery.configureDiscovery')}
+                                {t('discovery:discovery.configureDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                         <ActionListItem>
@@ -142,7 +144,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.createDiscovery}
                             >
-                                {t('discovery.addDiscovery')}
+                                {t('discovery:discovery.addDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                     </ActionList>
@@ -199,7 +201,6 @@ export function DiscoveredClustersTable(props: {
     const history = useHistory()
 
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
-
     useEffect(() => {
         if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
             setEmptyState(<EmptyStateNoCRHCredentials />) // An object is possibly undefined, return default empty state
@@ -225,7 +226,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                        <AcmIcon icon={AcmIconVariant.openNewTab} />
+                        <ExternalLinkIcon />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
                             {discoveredCluster.spec.displayName}
                         </span>
@@ -260,34 +261,29 @@ export function DiscoveredClustersTable(props: {
         },
         {
             header: t('dcTbl.type'),
-            sort: (a: DiscoveredCluster, b: DiscoveredCluster) => compareStrings(a?.spec.type, b?.spec.type),
-            search: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
-            cell: (discoveredCluster) => discoveredCluster?.spec.type ?? '-',
+            sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
+                compareStrings(getFullTypeByAcronym(a?.spec?.type), getFullTypeByAcronym(b?.spec?.type)),
+            search: (discoveredCluster) => {
+                if (discoveredCluster.spec.type) {
+                    return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']
+                } else {
+                    return '-'
+                }
+            },
+            cell: (discoveredCluster) =>
+                discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
         },
         {
-            header: t('dcTbl.distributionVersion'),
+            header: t('dcTbl.openShiftVersion'),
             sort: 'spec.openshiftVersion',
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.openshiftVersion) {
-                    return [
-                        discoveredCluster.spec.openshiftVersion,
-                        'openshift ' + discoveredCluster.spec.openshiftVersion,
-                    ]
+                    return [discoveredCluster.spec.openshiftVersion]
                 } else {
                     return '-'
                 }
             },
-            cell: (discoveredCluster) => {
-                if (discoveredCluster.spec.openshiftVersion) {
-                    return (
-                        <span key="openShiftVersion">
-                            {'OpenShift '.concat(discoveredCluster.spec.openshiftVersion)}
-                        </span>
-                    )
-                } else {
-                    return '-'
-                }
-            },
+            cell: (discoveredCluster) => discoveredCluster.spec.openshiftVersion ?? '-',
         },
         {
             header: t('dcTbl.infrastructureProvider'),
@@ -338,6 +334,26 @@ export function DiscoveredClustersTable(props: {
             ),
         },
     ]
+
+    function getFullTypeByAcronym(acronym: string) {
+        switch (acronym.toUpperCase()) {
+            case 'MOA':
+                return t('type.rosa')
+            case 'ROSA':
+                return t('type.rosa')
+            case 'OCP-ASSISTEDINSTALL':
+                return t('type.ocp')
+            case 'OCP':
+                return t('type.ocp')
+            case 'OSD':
+                return t('type.osd')
+            case 'ARO':
+                return t('type.aro')
+            default:
+                // Unable to find match, return existing acronym
+                return acronym
+        }
+    }
 
     return (
         <Fragment>
