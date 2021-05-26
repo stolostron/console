@@ -66,7 +66,7 @@ function createProviderConnection(
 describe('add credentials page', () => {
     beforeEach(() => nockIgnoreRBAC())
 
-    it('should create aws credentials', async () => {
+    it('should create aws (Amazon Web Services) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -99,7 +99,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create azr credentials', async () => {
+    it('should create azr (Azure) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -141,7 +141,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create gcp credentials', async () => {
+    it('should create gcp (Google Cloud Platform) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -177,7 +177,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create vmw credentials', async () => {
+    it('should create vmw (VMware) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -223,7 +223,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create ost credentials', async () => {
+    it('should create ost (OpenStack) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -260,7 +260,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create bmc credentials', async () => {
+    it('should create bmc (Bare Metal) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
@@ -269,8 +269,10 @@ describe('add credentials page', () => {
                 libvirtURI: 'qemu+ssh://libvirtURI',
                 sshKnownHosts: 'sshKnownHosts',
                 imageMirror: 'image.mirror:123/abc',
-                bootstrapOSImage: 'bootstrapOSImage',
-                clusterOSImage: 'clusterOSImage',
+                bootstrapOSImage:
+                    'https://mirror.openshift.com/rhcos-46.82.202011260640-0-qemu.qcow2.gz?sha256=123456789012345678901234567890123456789012345678901234567890abcd',
+                clusterOSImage:
+                    'https://mirror.openshift.com/rhcos-46.82.202011260640-0-openstack.qcow2.gz?sha256=123456789012345678901234567890123456789012345678901234567890abcd',
                 additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
             },
             true
@@ -307,7 +309,7 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
-    it('should create ans credentials', async () => {
+    it('should create ans (Ansible) credentials', async () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
