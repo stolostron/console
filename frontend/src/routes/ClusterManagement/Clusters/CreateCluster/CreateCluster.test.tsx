@@ -81,30 +81,7 @@ const providerConnection: ProviderConnection = {
     },
     type: 'Opaque',
 }
-// const providerConnectionAWS: ProviderConnection = {
-//     apiVersion: ProviderConnectionApiVersion,
-//     kind: ProviderConnectionKind,
-//     metadata: {
-//         name: 'connection',
-//         namespace: clusterName,
-//         labels: {
-//             'cluster.open-cluster-management.io/type': 'aws',
-//         },
-//     },
-//     stringData: {
-//         libvirtURI: 'qemu+ssh://libvirtURI',
-//         sshKnownHosts: 'sshKnownHosts',
-//         imageMirror: 'image.mirror:123/abc',
-//         bootstrapOSImage: 'bootstrapOSImage',
-//         clusterOSImage: 'clusterOSImage',
-//         additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-//         baseDomain: 'base.domain',
-//         pullSecret: '{"pullSecret":"secret"}',
-//         sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-//         sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
-//     },
-//     type: 'Opaque',
-// }
+
 const clusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -714,7 +691,7 @@ describe('CreateCluster', () => {
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
-        // ansible template
+        // skipping ansible template
         await clickByText('Next')
 
         // nocks for cluster creation
