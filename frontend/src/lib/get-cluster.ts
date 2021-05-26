@@ -185,10 +185,8 @@ export function getCluster(
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         displayName:
-            clusterDeployment?.spec?.clusterPoolRef?.claimName ??
-            clusterDeployment?.metadata.name ??
-            managedCluster?.metadata.name ??
-            managedClusterInfo?.metadata.name,
+            // clusterDeployment?.spec?.clusterPoolRef?.claimName ??
+            clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
         namespace:
             managedCluster?.metadata.name ??
             clusterDeployment?.metadata.namespace ??
