@@ -77,7 +77,7 @@ export interface SelectInputOptions {
     description?: string
 }
 
-export interface SelectInput extends InputBase {
+interface SelectInputSingle extends InputBase {
     type: 'Select'
     label: string
     groups?: SelectGroup[]
@@ -88,5 +88,19 @@ export interface SelectInput extends InputBase {
     mode?: 'default' | 'tiles' | 'icon'
     isDisplayLarge?: boolean
 }
+
+interface SelectInputMulti extends InputBase {
+    type: 'Select'
+    label: string
+    groups?: SelectGroup[]
+    options?: SelectInputOptions[] | (() => SelectInputOptions[])
+    value: string[]
+    onChange: (value: string[]) => void
+    validation?: (value: string[]) => string
+    mode?: 'default' | 'tiles' | 'icon'
+    isDisplayLarge?: boolean
+}
+
+export type SelectInput = SelectInputSingle | SelectInputMulti
 
 export type Input = TextInput | TextArea | SelectInput
