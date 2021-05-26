@@ -18,6 +18,7 @@ import {
     List,
     ListItem,
 } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmPageContent,
     AcmEmptyState,
@@ -60,6 +61,8 @@ import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cl
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { deleteSubmarinerAddon } from '../../../../../lib/delete-submariner'
 import { ResourceErrorCode, createResource, resultsSettled } from '../../../../../lib/resource-request'
+import { rbacDelete } from '../../../../../lib/rbac-util'
+import { RbacDropdown } from '../../../../../components/Rbac'
 
 type SubmarinerType = 'submariner'
 const submariner: SubmarinerType = 'submariner'
@@ -249,7 +252,57 @@ export function ClusterSetSubmarinerPageContent() {
                         <AcmTable<ManagedClusterAddOn>
                             plural="submariner addons"
                             items={submarinerAddons}
-                            columns={columns}
+                            columns={[
+                                ...columns,
+                                {
+                                    header: '',
+                                    cellTransforms: [fitContent],
+                                    cell: (mca: ManagedClusterAddOn) => {
+                                        const actions = [
+                                            {
+                                                id: 'uninstall-submariner',
+                                                text: t('uninstall.add-on'),
+                                                isDisabled: true,
+                                                rbac: [rbacDelete(mca)],
+                                                click: (mca: ManagedClusterAddOn) => {
+                                                    setModalProps({
+                                                        open: true,
+                                                        title: t('bulk.title.uninstallSubmariner'),
+                                                        action: t('common:uninstall'),
+                                                        processing: t('common:uninstalling'),
+                                                        resources: [mca],
+                                                        description: t('bulk.message.uninstallSubmariner'),
+                                                        columns,
+                                                        keyFn: (mca) => mca.metadata.namespace as string,
+                                                        actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
+                                                            const submarinerConfig = submarinerConfigs.find(
+                                                                (sc) =>
+                                                                    sc.metadata.namespace ===
+                                                                    managedClusterAddOn.metadata.namespace
+                                                            )
+                                                            return deleteSubmarinerAddon(
+                                                                managedClusterAddOn,
+                                                                submarinerConfig
+                                                            )
+                                                        },
+                                                        close: () => setModalProps({ open: false }),
+                                                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                                                    })
+                                                },
+                                            },
+                                        ]
+                                        return (
+                                            <RbacDropdown<ManagedClusterAddOn>
+                                                id={`${mca.metadata.name}-actions`}
+                                                item={mca}
+                                                isKebab={true}
+                                                text={`${mca.metadata.name}-actions`}
+                                                actions={actions}
+                                            />
+                                        )
+                                    },
+                                },
+                            ]}
                             keyFn={keyFn}
                             key="submarinerTable"
                             bulkActions={[
@@ -279,33 +332,7 @@ export function ClusterSetSubmarinerPageContent() {
                                     },
                                 },
                             ]}
-                            rowActions={[
-                                {
-                                    id: 'uninstall-submariner',
-                                    title: t('uninstall.add-on'),
-                                    click: (mca: ManagedClusterAddOn) => {
-                                        setModalProps({
-                                            open: true,
-                                            title: t('bulk.title.uninstallSubmariner'),
-                                            action: t('common:uninstall'),
-                                            processing: t('common:uninstalling'),
-                                            resources: [mca],
-                                            description: t('bulk.message.uninstallSubmariner'),
-                                            columns,
-                                            keyFn: (mca) => mca.metadata.namespace as string,
-                                            actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
-                                                const submarinerConfig = submarinerConfigs.find(
-                                                    (sc) =>
-                                                        sc.metadata.namespace === managedClusterAddOn.metadata.namespace
-                                                )
-                                                return deleteSubmarinerAddon(managedClusterAddOn, submarinerConfig)
-                                            },
-                                            close: () => setModalProps({ open: false }),
-                                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                                        })
-                                    },
-                                },
-                            ]}
+                            rowActions={[]}
                             tableActions={[
                                 {
                                     id: 'install-submariner',

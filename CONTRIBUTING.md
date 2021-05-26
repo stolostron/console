@@ -55,6 +55,11 @@ If the check results in prettier or lint errors, you can have them automatically
 npm run check:fix
 ```
 
+After checking your code for prettier and lint errors, run the following command to unit test your code:  
+```bash
+npm run test
+```
+
 
 ### Testing your change
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
