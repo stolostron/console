@@ -95,7 +95,7 @@ export function StatusField(props: { cluster: Cluster }) {
             type={type}
             status={t(`status.${props.cluster?.status}`)}
             popover={{
-                hasAutoWidth: hasAction,
+                maxWidth: '448px',
                 bodyContent: (
                     <>
                         <Trans
