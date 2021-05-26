@@ -228,7 +228,7 @@
     "creation.ocp.external.bridge": "External network bridge",
     "creation.ocp.vCenter": "vCenter",
     "creation.ocp.datacenter": "Datacenter",
-    "creation.ocp.defaultDatastore": "Default defaultDatastore",
+    "creation.ocp.defaultDatastore": "Default datastore",
     "creation.ocp.otp.instance.flavor": "Instance flavor",
     "creation.ocp.cluster.ost.external.network.name": "External network name",
     "creation.ocp.cluster.ost.must.enter.external.network.name": "External network name is required.",
