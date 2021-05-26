@@ -198,7 +198,6 @@ export function AnsibleAutomationsForm(props: {
                         isDisabled: isEditing,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('template.create.install'),
@@ -221,7 +220,6 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setInstallPostJob,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('template.create.upgrade'),
@@ -244,7 +242,6 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setUpgradePostJob,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('template.create.scale'),
@@ -267,7 +264,6 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setScalePostJob,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('template.create.destroy'),
@@ -290,7 +286,6 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setDestroyPostJob,
                     },
                 ],
-                columns: 1,
             },
         ],
         submit: () => {

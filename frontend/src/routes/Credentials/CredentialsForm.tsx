@@ -493,7 +493,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.gcpCredentials.title'),
@@ -530,7 +529,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.azureCredentials.title'),
@@ -722,7 +720,6 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.bareMetalCredentials.title'),
@@ -809,7 +806,6 @@ export function CredentialsForm(props: {
                         onChange: setAdditionalTrustBundle,
                     },
                 ],
-                columns: 1,
             },
             {
                 title: t('credentialsForm.ansibleCredentials.title'),
@@ -866,7 +862,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
 
             {
@@ -939,7 +934,6 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                 ],
-                columns: 1,
             },
         ],
         submit: () => {
@@ -968,5 +962,19 @@ export function CredentialsForm(props: {
         cancel: () => history.push(NavigationPath.credentials),
         stateToData,
     }
-    return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+    return (
+        <AcmDataFormPage
+            formData={formData}
+            mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            edit={() => {
+                if (providerConnection) {
+                    history.push(
+                        NavigationPath.editCredentials
+                            .replace(':namespace', providerConnection.metadata.namespace!)
+                            .replace(':name', providerConnection.metadata.name!)
+                    )
+                }
+            }}
+        />
+    )
 }
