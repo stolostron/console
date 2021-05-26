@@ -235,6 +235,11 @@ const checkCuratorConditionDone = (condition: string, conditions: V1CustomResour
     return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
 }
 
+const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === condition)
+    return cond?.message
+}
+
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const userIdentity = 'open-cluster-management.io/user-identity'
     const cdUserIdentity = clusterDeployment?.metadata.annotations?.[userIdentity]
@@ -533,6 +538,15 @@ export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
     return { nodeList, ready, unhealthy, unknown }
 }
 
+export enum CuratorCondition {
+    curatorjob = 'clustercurator-job',
+    prehook = 'prehook-ansiblejob',
+    monitor = 'activate-and-monitor',
+    provision = 'hive-provisioning-job',
+    import = 'monitor-import',
+    posthook = 'posthook-ansiblejob',
+}
+
 export function getClusterStatus(
     clusterDeployment: ClusterDeployment | undefined,
     managedClusterInfo: ManagedClusterInfo | undefined,
@@ -550,37 +564,46 @@ export function getClusterStatus(
 
         // ClusterCurator has not completed so loop through statuses
         if (
-            (!checkCuratorConditionDone('clustercurator-job', ccConditions) &&
+            (!checkCuratorConditionDone(CuratorCondition.curatorjob, ccConditions) &&
                 clusterCurator?.spec?.desiredCuration === 'install') ||
-            checkCuratorConditionFailed('clustercurator-job', ccConditions)
+            checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions)
         ) {
             if (
-                !checkCuratorConditionDone('prehook-ansiblejob', ccConditions) &&
+                !checkCuratorConditionDone(CuratorCondition.prehook, ccConditions) &&
                 (clusterCurator.spec?.install?.prehook?.length ?? 0) > 0
             ) {
                 // Check if pre-hook is in progress or failed
-                ccStatus = checkCuratorConditionFailed('prehook-ansiblejob', ccConditions)
-                    ? ClusterStatus.prehookfailed
-                    : ClusterStatus.prehookjob
-            } else if (!checkCuratorConditionDone('activate-and-monitor', ccConditions)) {
-                ccStatus = checkCuratorConditionFailed('activate-and-monitor', ccConditions)
+                if (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions)) {
+                    ccStatus = ClusterStatus.prehookfailed
+                    statusMessage = getConditionStatusMessage(CuratorCondition.prehook, ccConditions)
+                } else {
+                    ccStatus = ClusterStatus.prehookjob
+                }
+            } else if (!checkCuratorConditionDone(CuratorCondition.monitor, ccConditions)) {
+                ccStatus = checkCuratorConditionFailed(CuratorCondition.monitor, ccConditions)
                     ? ClusterStatus.provisionfailed
-                    : checkCuratorConditionFailed('hive-provisioning-job', ccConditions)
+                    : checkCuratorConditionFailed(CuratorCondition.provision, ccConditions)
                     ? ClusterStatus.provisionfailed
                     : ClusterStatus.creating
-            } else if (!checkCuratorConditionDone('monitor-import', ccConditions)) {
+            } else if (!checkCuratorConditionDone(CuratorCondition.import, ccConditions)) {
                 // check if import is in progress or failed
-                ccStatus = checkCuratorConditionFailed('monitor-import', ccConditions)
-                    ? ClusterStatus.importfailed
-                    : ClusterStatus.pendingimport
+                if (checkCuratorConditionFailed(CuratorCondition.import, ccConditions)) {
+                    ccStatus = ClusterStatus.importfailed
+                    statusMessage = getConditionStatusMessage(CuratorCondition.import, ccConditions)
+                } else {
+                    ccStatus = ClusterStatus.pendingimport
+                }
             } else if (
-                !checkCuratorConditionDone('posthook-ansiblejob', ccConditions) &&
+                !checkCuratorConditionDone(CuratorCondition.posthook, ccConditions) &&
                 (clusterCurator.spec?.install?.posthook?.length ?? 0) > 0
             ) {
                 // check if post-hook is in progress or failed
-                ccStatus = checkCuratorConditionFailed('posthook-ansiblejob', ccConditions)
-                    ? ClusterStatus.posthookfailed
-                    : ClusterStatus.posthookjob
+                if (checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions)) {
+                    ccStatus = ClusterStatus.posthookfailed
+                    statusMessage = getConditionStatusMessage(CuratorCondition.posthook, ccConditions)
+                } else {
+                    ccStatus = ClusterStatus.posthookjob
+                }
             }
 
             return { status: ccStatus, statusMessage }
