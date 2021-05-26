@@ -199,7 +199,9 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
-    {"clientId": "{{{../../clientId}}}", "clientSecret": "{{{../../clientSecret}}}", "tenantId": "{{{../../tenantId}}}", "subscriptionId": "{{{../../subscriptionId}}}"}
+{{#each ../../osServicePrincipal.json}}
+    {{{.}}}
+{{/each}}
 {{else}}
   osServicePrincipal.json: # injected on create
 {{/if}}

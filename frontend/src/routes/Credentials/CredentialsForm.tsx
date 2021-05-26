@@ -182,10 +182,28 @@ export function CredentialsForm(props: {
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
         providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
-    const [clientId, setClientId] = useState(providerConnection?.stringData?.clientId ?? '')
-    const [clientSecret, setClientSecret] = useState(providerConnection?.stringData?.clientSecret ?? '')
-    const [tenantId, setTenantId] = useState(providerConnection?.stringData?.tenantId ?? '')
-    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.stringData?.subscriptionId ?? '')
+
+    let osServicePrincipalJson:
+        | {
+              clientId: string
+              clientSecret: string
+              tenantId: string
+              subscriptionId: string
+          }
+        | undefined = undefined
+
+    if (providerConnection?.stringData?.['osServicePrincipal.json']) {
+        try {
+            osServicePrincipalJson = JSON.parse(providerConnection?.stringData?.['osServicePrincipal.json'])
+        } catch {
+            // Do Nothing
+        }
+    }
+
+    const [clientId, setClientId] = useState(osServicePrincipalJson?.clientId ?? '')
+    const [clientSecret, setClientSecret] = useState(osServicePrincipalJson?.clientSecret ?? '')
+    const [tenantId, setTenantId] = useState(osServicePrincipalJson?.tenantId ?? '')
+    const [subscriptionId, setSubscriptionId] = useState(osServicePrincipalJson?.subscriptionId ?? '')
 
     // Google
     const [projectID, setGcProjectID] = useState(providerConnection?.stringData?.projectID ?? '')
@@ -194,13 +212,13 @@ export function CredentialsForm(props: {
     )
 
     // VMWare
-    const [vcenter, setVcenter] = useState(providerConnection?.stringData?.vcenter ?? '')
+    const [vCenter, setVcenter] = useState(providerConnection?.stringData?.vCenter ?? '')
     const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
     const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
     const [cacertificate, setCacertificate] = useState(providerConnection?.stringData?.cacertificate ?? '')
-    const [vmClusterName, setVmClusterName] = useState(providerConnection?.stringData?.vmClusterName ?? '')
+    const [cluster, setVmClusterName] = useState(providerConnection?.stringData?.cluster ?? '')
     const [datacenter, setDatacenter] = useState(providerConnection?.stringData?.datacenter ?? '')
-    const [datastore, setDatastore] = useState(providerConnection?.stringData?.datastore ?? '')
+    const [defaultDatastore, setDatastore] = useState(providerConnection?.stringData?.defaultDatastore ?? '')
 
     // OpenStack
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.stringData?.['clouds.yaml'] ?? '')
@@ -260,10 +278,12 @@ export function CredentialsForm(props: {
                 break
             case Provider.azure:
                 secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                secret.stringData!.clientId = clientId
-                secret.stringData!.clientSecret = clientSecret
-                secret.stringData!.tenantId = tenantId
-                secret.stringData!.subscriptionId = subscriptionId
+                secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
+                    clientId,
+                    clientSecret,
+                    tenantId,
+                    subscriptionId,
+                })
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
@@ -278,13 +298,13 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.vmware:
-                secret.stringData!.vcenter = vcenter
+                secret.stringData!.vCenter = vCenter
                 secret.stringData!.username = username
                 secret.stringData!.password = password
                 secret.stringData!.cacertificate = cacertificate
-                secret.stringData!.vmClusterName = vmClusterName
+                secret.stringData!.cluster = cluster
                 secret.stringData!.datacenter = datacenter
-                secret.stringData!.datastore = datastore
+                secret.stringData!.defaultDatastore = defaultDatastore
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
@@ -571,6 +591,7 @@ export function CredentialsForm(props: {
                         isRequired: true,
                         value: clientSecret,
                         onChange: setClientSecret,
+                        isSecret: true,
                     },
                     {
                         id: 'subscriptionId',
@@ -606,13 +627,13 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'vcenter',
+                        id: 'vCenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.vcenter.label'),
-                        placeholder: t('credentialsForm.vcenter.placeholder'),
-                        labelHelp: t('credentialsForm.vcenter.labelHelp'),
-                        value: vcenter,
+                        label: t('credentialsForm.vCenter.label'),
+                        placeholder: t('credentialsForm.vCenter.placeholder'),
+                        labelHelp: t('credentialsForm.vCenter.labelHelp'),
+                        value: vCenter,
                         onChange: setVcenter,
                         isRequired: true,
                     },
@@ -652,13 +673,13 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                     {
-                        id: 'vmClusterName',
+                        id: 'cluster',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.vmClusterName.label'),
-                        placeholder: t('credentialsForm.vmClusterName.placeholder'),
-                        labelHelp: t('credentialsForm.vmClusterName.labelHelp'),
-                        value: vmClusterName,
+                        label: t('credentialsForm.cluster.label'),
+                        placeholder: t('credentialsForm.cluster.placeholder'),
+                        labelHelp: t('credentialsForm.cluster.labelHelp'),
+                        value: cluster,
                         onChange: setVmClusterName,
                         isRequired: true,
                     },
@@ -674,13 +695,13 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                     {
-                        id: 'datastore',
+                        id: 'defaultDatastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.datastore.label'),
-                        placeholder: t('credentialsForm.datastore.placeholder'),
-                        labelHelp: t('credentialsForm.datastore.labelHelp'),
-                        value: datastore,
+                        label: t('credentialsForm.defaultDatastore.label'),
+                        placeholder: t('credentialsForm.defaultDatastore.placeholder'),
+                        labelHelp: t('credentialsForm.defaultDatastore.labelHelp'),
+                        value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
                     },

@@ -21,21 +21,18 @@ export interface ProviderConnectionStringData {
     aws_secret_access_key?: string
 
     baseDomainResourceGroupName?: string
-    clientId?: string
-    clientSecret?: string
-    subscriptionId?: string
-    tenantId?: string
+    ['osServicePrincipal.json']?: string
 
     projectID?: string
     ['osServiceAccount.json']?: string
 
     username?: string
     password?: string
-    vcenter?: string
+    vCenter?: string
     cacertificate?: string
-    vmClusterName?: string
+    cluster?: string
     datacenter?: string
-    datastore?: string
+    defaultDatastore?: string
 
     libvirtURI?: string
     sshKnownHosts?: string

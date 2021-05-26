@@ -183,13 +183,13 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'vmw',
             {
-                vcenter: 'vcenter',
+                vCenter: 'vCenter',
                 username: 'username',
                 password: 'password',
                 cacertificate: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-                vmClusterName: 'vmClusterName',
+                cluster: 'cluster',
                 datacenter: 'datacenter',
-                datastore: 'datastore',
+                defaultDatastore: 'defaultDatastore',
             },
             true
         )
@@ -202,13 +202,13 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // credentials
-        await typeByTestId('vcenter', providerConnection.stringData?.vcenter!)
+        await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
         await typeByTestId('username', providerConnection.stringData?.username!)
         await typeByTestId('password', providerConnection.stringData?.password!)
         await typeByTestId('cacertificate', providerConnection.stringData?.cacertificate!)
-        await typeByTestId('vmClusterName', providerConnection.stringData?.vmClusterName!)
+        await typeByTestId('cluster', providerConnection.stringData?.cluster!)
         await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
-        await typeByTestId('datastore', providerConnection.stringData?.datastore!)
+        await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
         await clickByText('common:next')
 
         // Pull secret
