@@ -11,7 +11,7 @@ import {
     StatusType,
     AcmProgressTracker,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { ButtonVariant, Card, CardBody, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -227,6 +227,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             setInstallStepsComplete(completedSteps)
         }
     }, [installStatusSteps, clusterCurator?.spec?.desiredCuration])
+
     let leftItems = [
         {
             key: t('table.clusterName'),
@@ -341,6 +342,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     if (!cluster?.distribution?.ocp?.version) {
         leftItems = leftItems.filter((item) => item.filterKey !== 'channel')
     }
+    console.log('checking curator: ', clusterCurator)
     return (
         <AcmPageContent id="overview">
             <PageSection>
@@ -359,14 +361,18 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                {clusterCurator?.spec?.desiredCuration === 'Install' && (
-                    <AcmProgressTracker
-                        Title="Test Title"
-                        Subtitle={'test'}
-                        isStacked={false}
-                        steps={installStatusSteps}
-                        isCentered={true}
-                    ></AcmProgressTracker>
+                {clusterCurator?.spec?.desiredCuration === 'install' && (
+                    <Card>
+                        <CardBody>
+                            <AcmProgressTracker
+                                Title="Test Title"
+                                Subtitle={'test'}
+                                isStacked={false}
+                                steps={installStatusSteps}
+                                isCentered={true}
+                            ></AcmProgressTracker>
+                        </CardBody>
+                    </Card>
                 )}
                 <AcmDescriptionList
                     title={t('table.details')}
