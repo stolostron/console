@@ -9,9 +9,8 @@ import {
     AcmButton,
     AcmInlineStatus,
     StatusType,
-    AcmProgressTracker,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, Card, CardBody, PageSection, Popover } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -30,6 +29,7 @@ import { EditLabels } from '../../components/EditLabels'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
+import { ProgressStepBar } from '../../components/ProgressStepBar'
 
 type StatusItems = {
     statusType: StatusType
@@ -41,7 +41,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { t } = useTranslation(['cluster', 'common'])
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
-    const [, setInstallStepsComplete] = useState(0)
+    const [installStepsComplete, setInstallStepsComplete] = useState(0)
     const [precreationStatus, setPrecreationStatus] = useState<StatusItems>({
         statusType: StatusType.pending,
         statusSubtitle: 'Pending',
@@ -211,13 +211,13 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     }, [cluster?.status])
 
     useEffect(() => {
-        if (clusterCurator?.spec?.desiredCuration === 'Install') {
+        if (clusterCurator?.spec?.desiredCuration === 'install') {
             updateInstallStatusSteps()
         }
     }, [cluster?.status, clusterCurator?.spec?.desiredCuration, updateInstallStatusSteps])
 
     useEffect(() => {
-        if (clusterCurator?.spec?.desiredCuration === 'Install') {
+        if (clusterCurator?.spec?.desiredCuration === 'install') {
             let completedSteps = 0
             installStatusSteps.forEach((step) => {
                 if (step.statusType === StatusType.healthy) {
@@ -362,17 +362,12 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     close={() => setShowEditLabels(false)}
                 />
                 {clusterCurator?.spec?.desiredCuration === 'install' && (
-                    <Card>
-                        <CardBody>
-                            <AcmProgressTracker
-                                Title="Test Title"
-                                Subtitle={'test'}
-                                isStacked={false}
-                                steps={installStatusSteps}
-                                isCentered={true}
-                            ></AcmProgressTracker>
-                        </CardBody>
-                    </Card>
+                    <ProgressStepBar
+                        title="Install in progress"
+                        subtitle={`${installStepsComplete} of ${installStatusSteps.length} complete`}
+                        steps={installStatusSteps}
+                        isCentered={true}
+                    ></ProgressStepBar>
                 )}
                 <AcmDescriptionList
                     title={t('table.details')}
