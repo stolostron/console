@@ -263,7 +263,7 @@
     "status.stepbar.subtitle":"{{stepsDone}} of {{steps}} steps completed",
     "status.prehook.text":"Pre-creation hooks",
     "status.install.text":"Cluster install",
-    "status.import.text":"Klusterlet install",
+    "status.import.text":"Cluster import",
     "status.posthook.text":"Post-creation jobs",
 
     "status.subtitle.healthy":"Complete",

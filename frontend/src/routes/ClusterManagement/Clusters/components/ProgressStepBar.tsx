@@ -5,7 +5,7 @@ import { useRecoilState } from 'recoil'
 import { clusterCuratorsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ProgressStepBar() {
@@ -14,7 +14,6 @@ export function ProgressStepBar() {
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
-    const [stepsCompleted, setStepsCompleted] = useState(0)
 
     const installStatus = [
         ClusterStatus.prehookjob,
@@ -124,16 +123,10 @@ export function ProgressStepBar() {
             },
         ]
 
-        useEffect(() => {
-            let completedSteps = 0
-            steps.forEach((step) => {
-                steps.forEach((step, index) => {
-                    if (step.statusType === StatusType.progress) completedSteps = index
-                })
-            })
-            setStepsCompleted(completedSteps)
-            console.log('checking steps: ', completedSteps)
-        }, [steps])
+        let completedSteps = 0
+        steps.forEach((step, index) => {
+            if (step.statusType === StatusType.progress) completedSteps = index
+        })
 
         return (
             <div style={{ marginBottom: '24px' }}>
@@ -141,7 +134,7 @@ export function ProgressStepBar() {
                     <CardBody>
                         <AcmProgressTracker
                             Title={t('status.stepbar.title')}
-                            Subtitle={t('status.stepbar.subtitle', { stepsDone: stepsCompleted, steps: steps.length })}
+                            Subtitle={t('status.stepbar.subtitle', { stepsDone: completedSteps, steps: steps.length })}
                             isStacked={false}
                             steps={steps}
                             isCentered={true}
