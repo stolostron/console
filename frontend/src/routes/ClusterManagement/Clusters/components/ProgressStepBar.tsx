@@ -10,7 +10,6 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ProgressStepBar() {
     const { t } = useTranslation()
-    // const { cluster } = props
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
