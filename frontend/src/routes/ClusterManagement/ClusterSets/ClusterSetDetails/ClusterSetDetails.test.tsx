@@ -4,8 +4,15 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Switch, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ClusterSetDetailsPage from './ClusterSetDetails'
-import { waitForText, clickByText, clickByLabel, waitForNocks, clickByPlaceholderText } from '../../../../lib/test-util'
-import { nockIgnoreRBAC, nockDelete, nockCreate } from '../../../../lib/nock-util'
+import {
+    waitForText,
+    clickByText,
+    clickByLabel,
+    waitForNocks,
+    clickByPlaceholderText,
+    typeByTestId,
+} from '../../../../lib/test-util'
+import { nockIgnoreRBAC, nockDelete, nockCreate, nockPatch } from '../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources/managed-cluster'
@@ -253,6 +260,46 @@ describe('ClusterSetDetails page', () => {
         const deleteConfig = nockDelete(mockSubmarinerConfig)
         await clickByText('common:uninstall')
         await waitForNocks([deleteAddon, deleteConfig])
+    })
+    test('can update a submariner config', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!, true)
+        await waitForText('table.details')
+
+        await clickByText('tab.submariner')
+
+        await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+
+        await clickByLabel('Actions', 0)
+        await clickByText('submariner.config.edit')
+        await waitForText('submariner.update.form.title')
+
+        await typeByTestId('ike-port', '501')
+
+        const patch = nockPatch(mockSubmarinerConfig, [
+            {
+                op: 'replace',
+                path: '/spec/IPSecIKEPort',
+                value: 501,
+            },
+            {
+                op: 'replace',
+                path: '/spec/IPSecNATTPort',
+                value: submarinerConfigDefault.nattPort,
+            },
+            {
+                op: 'replace',
+                path: '/spec/cableDriver',
+                value: submarinerConfigDefault.cableDriver,
+            },
+            { op: 'add', path: '/spec/gatewayConfig', value: {} },
+            {
+                op: 'replace',
+                path: '/spec/gatewayConfig/gateways',
+                value: submarinerConfigDefault.gateways,
+            },
+        ])
+        await clickByText('common:save')
+        await waitForNocks([patch])
     })
     test('can remove users from cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [

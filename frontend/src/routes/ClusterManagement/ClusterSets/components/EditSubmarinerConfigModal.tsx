@@ -13,7 +13,7 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { ModalVariant, SelectOption, ActionGroup } from '@patternfly/react-core'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { SubmarinerConfig, CableDriver, submarinerConfigDefault } from '../../../../resources/submariner-config'
 import { Cluster } from '../../../../lib/get-cluster'
 import { patchResource } from '../../../../lib/resource-request'
@@ -68,7 +68,9 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
             <AcmAlertContext.Consumer>
                 {(alertContext) => (
                     <AcmForm>
-                        <div>{t('submariner.update.form.message')}</div>
+                        <div>
+                            <Trans i18nKey="cluster:submariner.update.form.message" components={{ bold: <strong /> }} />
+                        </div>
                         <AcmTextInput
                             id="ike-port"
                             type="number"
@@ -148,20 +150,18 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                             value: cableDriver ?? submarinerConfigDefault.cableDriver,
                                         },
                                     ]
-                                    if (
-                                        props.submarinerConfig?.spec.gatewayConfig === undefined &&
-                                        (gateways || awsInstanceType)
-                                    ) {
+                                    if (props.submarinerConfig?.spec.gatewayConfig === undefined) {
                                         patch.push({ op: 'add', path: '/spec/gatewayConfig', value: {} })
                                     }
-                                    if (gateways !== undefined) {
-                                        patch.push({
-                                            op: 'replace',
-                                            path: '/spec/gatewayConfig/gateways',
-                                            value: gateways ? parseInt(gateways) : submarinerConfigDefault.gateways,
-                                        })
-                                    }
-                                    if (props.submarinerConfig?.spec.gatewayConfig?.aws === undefined) {
+                                    patch.push({
+                                        op: 'replace',
+                                        path: '/spec/gatewayConfig/gateways',
+                                        value: gateways ? parseInt(gateways) : submarinerConfigDefault.gateways,
+                                    })
+                                    if (
+                                        props.submarinerConfig?.spec.gatewayConfig?.aws === undefined &&
+                                        awsInstanceType
+                                    ) {
                                         patch.push({ op: 'add', path: '/spec/gatewayConfig/aws', value: {} })
                                     }
                                     if (awsInstanceType !== undefined) {

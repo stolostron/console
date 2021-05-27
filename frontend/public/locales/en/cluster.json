@@ -87,8 +87,8 @@
     "submariner.install.form.gateways.labelHelp": "",
     "submariner.install.form.instancetype.labelHelp": "The EC2 instance type for your compute machines.",
     "submariner.update.form.title": "Edit Submariner configuration",
-    "submariner.update.form.message": "",
-    "submariner.config.edit": "Edit Submariner configuration",
+    "submariner.update.form.message": "Editing the <bold>SubmarinerConfig</bold> will update the configurations of the Submariner add-on on the managed cluster. It may take a few minutes for the changes to take effect.",
+    "submariner.config.edit": "Edit configuration",
 
     "managed.cluster.machinePools.emptyStateHeader": "No machine pools found.",
     "managed.cluster.machinePools.emptyStateButton": "This cluster doesn't have any machine pools.",
