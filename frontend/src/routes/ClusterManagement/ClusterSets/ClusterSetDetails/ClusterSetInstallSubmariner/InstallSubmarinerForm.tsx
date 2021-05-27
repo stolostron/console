@@ -483,25 +483,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 })
 
                 const requests = resultsSettled(calls)
-                const results = await requests.promise
-                const errors: string[] = []
-                results.forEach((res) => {
-                    if (res.status === 'rejected') {
-                        errors.push(res.reason)
-                    }
-                })
-
-                if (errors.length > 0) {
-                    // alertContext.addAlert({
-                    //     type: 'danger',
-                    //     title: t('common:request.failed'),
-                    //     message: `${errors.map((error) => `${error} \n`)}`,
-                    // })
-                    reject()
-                } else {
-                    resolve(results)
-                    history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
-                }
+                return requests.promise.then(() =>
+                    resolve(
+                        history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
+                    )
+                )
             })
         },
     }

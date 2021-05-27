@@ -346,6 +346,7 @@ export function CredentialsForm(props: {
         breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
+                type: 'Section',
                 title: credentialsType
                     ? t('credentialsForm.basicInformation.title')
                     : t('credentialsForm.credentialsType.title'),
@@ -360,7 +361,7 @@ export function CredentialsForm(props: {
                 inputs: [
                     {
                         id: 'credentialsType',
-                        type: 'Select',
+                        type: isEditing || credentialsType ? 'GroupedSelect' : 'GroupedTiles',
                         label: t('credentialsForm.credentialsType.label'),
                         placeholder: t('credentialsForm.credentialsType.placeholder'),
                         value: credentialsType,
@@ -407,8 +408,6 @@ export function CredentialsForm(props: {
                                     }),
                             },
                         ],
-                        mode: isEditing || credentialsType !== '' ? 'icon' : 'tiles',
-                        isDisplayLarge: true,
                         isDisabled: isEditing,
                     },
                     {
@@ -433,11 +432,10 @@ export function CredentialsForm(props: {
                         value: namespace,
                         onChange: setNamespace,
                         isRequired: true,
-                        options: () =>
-                            namespaces.map((namespace) => ({
-                                id: namespace,
-                                value: namespace,
-                            })),
+                        options: namespaces.map((namespace) => ({
+                            id: namespace,
+                            value: namespace,
+                        })),
                         isDisabled: isEditing,
                         isHidden: !credentialsType,
                     },
@@ -462,6 +460,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.awsCredentials.title'),
                 wizardTitle: t('credentialsForm.awsCredentials.wizardTitle'),
                 description: (
@@ -496,6 +495,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.gcpCredentials.title'),
                 wizardTitle: t('credentialsForm.gcpCredentials.wizardTitle'),
                 description: (
@@ -532,6 +532,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.azureCredentials.title'),
                 wizardTitle: t('credentialsForm.azureCredentials.wizardTitle'),
                 description: (
@@ -598,6 +599,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.vCenter.title'),
                 wizardTitle: t('credentialsForm.vCenter.wizardTitle'),
                 description: (
@@ -688,6 +690,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.openStackCredentials.title'),
                 wizardTitle: t('credentialsForm.openStackCredentials.wizardTitle'),
                 description: (
@@ -723,6 +726,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.bareMetalCredentials.title'),
                 wizardTitle: t('credentialsForm.bareMetalCredentials.wizardTitle'),
                 description: (
@@ -757,6 +761,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.bareMetalDisconnected.title'),
                 wizardTitle: t('credentialsForm.bareMetalDisconnected.wizardTitle'),
                 description: (
@@ -811,6 +816,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.ansibleCredentials.title'),
                 wizardTitle: t('credentialsForm.ansibleCredentials.wizardTitle'),
                 description: (
@@ -845,6 +851,7 @@ export function CredentialsForm(props: {
                 ],
             },
             {
+                type: 'Section',
                 title: t('credentialsForm.openshiftCredentials.title'),
                 wizardTitle: t('credentialsForm.openshiftCredentials.wizardTitle'),
                 description: (
@@ -866,8 +873,8 @@ export function CredentialsForm(props: {
                     },
                 ],
             },
-
             {
+                type: 'Section',
                 title: t('credentialsForm.pullSecret.title'),
                 wizardTitle: t('credentialsForm.pullSecret.wizardTitle'),
                 description: (
