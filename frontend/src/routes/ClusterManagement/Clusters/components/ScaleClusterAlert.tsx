@@ -42,8 +42,7 @@ export function ScaleClusterAlert() {
                     totalDesiredReplicas > workerNodeCount
                         ? 'machinePool.alert.scaling.increase.title'
                         : 'machinePool.alert.scaling.decrease.title'
-                )
-                }
+                )}
                 message={
                     <>
                         <Trans
