@@ -25,6 +25,7 @@ export enum ClusterStatus {
     'notaccepted' = 'notaccepted',
     'needsapproval' = 'needsapproval',
     'pendingimport' = 'pendingimport',
+    'importing' = 'importing',
     'ready' = 'ready',
     'offline' = 'offline',
     'hibernating' = 'hibernating',
@@ -591,7 +592,7 @@ export function getClusterStatus(
                     ccStatus = ClusterStatus.importfailed
                     statusMessage = getConditionStatusMessage(CuratorCondition.import, ccConditions)
                 } else {
-                    ccStatus = ClusterStatus.pendingimport
+                    ccStatus = ClusterStatus.importing
                 }
             } else if (
                 !checkCuratorConditionDone(CuratorCondition.posthook, ccConditions) &&
