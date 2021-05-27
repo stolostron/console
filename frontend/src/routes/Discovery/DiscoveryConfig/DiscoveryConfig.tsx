@@ -38,14 +38,16 @@ import { getErrorInfo } from '../../../components/ErrorPage'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { Secret } from '../../../resources/secret'
-
+import { canUser } from '../../../lib/rbac-util'
 import {
     createDiscoveryConfig,
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
     replaceDiscoveryConfig,
+    DiscoveryConfigDefinition,
 } from '../../../resources/discovery-config'
+import { ResourceError } from '../../../lib/resource-request'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
@@ -297,6 +299,46 @@ export function DiscoveryConfigPageContent(props: {
             }
         })
     }
+
+    useEffect(() => {
+        alertContext.clearAlerts()
+        if (discoveryConfig.metadata.namespace === '') {
+            return
+        }
+        if (editing) {
+            const canUpdateDiscoveryConfig = canUser(
+                'update',
+                DiscoveryConfigDefinition,
+                discoveryConfig.metadata.namespace,
+                'discovery'
+            )
+
+            canUpdateDiscoveryConfig.promise
+                .then((result) =>
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                )
+                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+            return () => {
+                canUpdateDiscoveryConfig.abort()
+            }
+        } else {
+            const canCreateDiscoveryConfig = canUser(
+                'create',
+                DiscoveryConfigDefinition,
+                discoveryConfig.metadata.namespace,
+                'discovery'
+            )
+            canCreateDiscoveryConfig.promise
+                .then((result) =>
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                )
+                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+            return () => {
+                canCreateDiscoveryConfig.abort()
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editing, discoveryConfig.metadata.namespace])
 
     return (
         <AcmForm>

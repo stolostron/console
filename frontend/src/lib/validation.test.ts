@@ -11,6 +11,8 @@ import {
     validateLibvirtURI,
     validateBaseDnsName,
     validateImageMirror,
+    validateBareMetalOSImageURL,
+    validateCloudsYaml,
 } from './validation'
 
 const t = (key: string) => key
@@ -179,6 +181,82 @@ describe('validation', () => {
                 expect(validateImageMirror(value, t)).toBeTruthy()
             } else {
                 expect(validateImageMirror(value, t)).toBeUndefined()
+            }
+        })
+    })
+
+    describe('validateCloudsYaml', () => {
+        test.each([
+            [
+                `should allow normal clouds.yaml`,
+                'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+                'openstack',
+                true,
+            ],
+            [
+                `should not allow no clouds key`,
+                'clou:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+                'openstack',
+                false,
+            ],
+            [
+                `should not allow cloud name not found in clouds.yaml`,
+                'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
+                'openst',
+                false,
+            ],
+            [
+                `should not allow missing password in clouds.yaml`,
+                'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"',
+                'openstack',
+                false,
+            ],
+        ])('%s', (name, value, value2, isValid) => {
+            if (!isValid) {
+                expect(validateCloudsYaml(value, value2, t)).toBeTruthy()
+            } else {
+                expect(validateCloudsYaml(value, value2, t)).toBeUndefined()
+            }
+        })
+    })
+
+    describe('validateBareMetalOSImageURL', () => {
+        test.each([
+            [
+                `should allow normal bootstrap OS image url http`,
+                'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-qemu.x86_64.qcow2.gz?sha256=99928ff40c2d8e3aa358d9bd453102e3d1b5e9694fb5d54febc56e275f35da51',
+                true,
+            ],
+            [
+                `should allow normal cluster OS image url http`,
+                'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-openstack.x86_64.qcow2.gz?sha256=2bd648e09f086973accd8ac1e355ce0fcd7dfcc16bc9708c938801fcf10e219e',
+                true,
+            ],
+            [
+                `should allow normal OS image url https`,
+                'https://mirror.openshift.com/rhcos-46.82.202011260640-0-qemu.qcow2.gz?sha256=123456789012345678901234567890123456789012345678901234567890abcd',
+                true,
+            ],
+            [
+                `should not allow missing sha256`,
+                'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-qemu.x86_64.qcow2.gz',
+                false,
+            ],
+            [
+                `should not allow sha256 not equal to 64 characters`,
+                'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-qemu.x86_64.qcow2.gz?sha256=99928ff40c2d8e3aa358d9bd453102e3d1b5e9694fb5d54febc56e275f35',
+                false,
+            ],
+            [
+                `should not allow sha256 not equal to 64 characters`,
+                'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-qemu.x86_64.qcow2.gz?sha256=99928ff40c2d8e3aa358d9bd453102e3d1b5e9694fb5d54febc56e275f35da51abcde',
+                false,
+            ],
+        ])('%s', (name, value, isValid) => {
+            if (!isValid) {
+                expect(validateBareMetalOSImageURL(value, t)).toBeTruthy()
+            } else {
+                expect(validateBareMetalOSImageURL(value, t)).toBeUndefined()
             }
         })
     })

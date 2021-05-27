@@ -1,38 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { loadConfig } from './config'
-loadConfig()
+import { config } from 'dotenv'
+try {
+    config({ path: '.env' })
+} catch (err) {
+    // Do Nothing
+}
 
 /* istanbul ignore file */
 import { cpus, totalmem } from 'os'
-import { logger, logLevel } from './logger'
+import { logger } from './logger'
 import { start, stop } from '../app'
 
-logger.debug({
+logger.info({
     msg: `process start`,
     NODE_ENV: process.env.NODE_ENV,
     cpus: `${Object.keys(cpus()).length}`,
     memory: `${(totalmem() / (1024 * 1024 * 1024)).toPrecision(2).toString()}GB`,
     nodeVersion: `${process.versions.node}`,
-    logLevel: logLevel,
 })
 
 process.on('exit', function processExit(code) {
     if (code !== 0) {
         logger.error({ msg: `process exit`, code: code })
     } else {
-        logger.debug({ msg: `process exit`, code: code })
+        logger.info({ msg: `process exit`, code: code })
     }
 })
 
 process.on('SIGINT', () => {
     // eslint-disable-next-line no-console
     console.log()
-    logger.debug({ msg: 'process SIGINT' })
+    logger.info({ msg: 'process SIGINT' })
     void stop()
 })
 
 process.on('SIGTERM', () => {
-    logger.debug({ msg: 'process SIGTERM' })
+    logger.info({ msg: 'process SIGTERM' })
     void stop()
 })
 
