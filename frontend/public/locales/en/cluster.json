@@ -259,6 +259,13 @@
     "status.posthookjob": "Post-creation hooks",
     "status.posthookfailed": "Failed",
     "status.importfailed": "Failed",
+    "status.job.precreation":"Pre-creation jobs",
+    "status.job.cluster.install":"Cluster install",
+    "status.job.klusterlet.install":"Klusterlet install",
+    "status.job.postcreation":"Post-creation jobs",
+    "status.job.subtitle.complete":"Complete",
+    "status.job.subtitle.progress":"In progress",
+
     "status.submariner.progressing": "Progressing",
     "status.submariner.progressing.message": "The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.",
     "status.submariner.connection.degraded": "Degraded",
@@ -500,7 +507,6 @@
     "template.modal.noCredentials": "You don't have any Ansible credentials. Visit the <bold>Credentials</bold> tab and select <bold>Add credentials</bold> to create an Ansible credential.",
     "template.information.title": "Template information",
     "template.information.description": "The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.",
-    "template.create.title": "Create a job template",
 
     "template.create.name": "Template name",
     "template.create.placeholder": "Enter the name for the template",

@@ -34,6 +34,7 @@ import { Cluster, ClusterStatus, getCluster } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { ResourceError } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
+import { ClusterCurator } from '../../../../resources/cluster-curator'
 import { SecretDefinition } from '../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
@@ -45,6 +46,7 @@ import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 
 export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
+    readonly clusterCurator?: ClusterCurator
     readonly addons: Addon[] | undefined
     readonly importCommand?: string
     readonly importCommandError?: string
@@ -149,6 +151,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         <ClusterContext.Provider
             value={{
                 cluster,
+                clusterCurator,
                 addons,
                 importCommand,
                 setImportCommand,
