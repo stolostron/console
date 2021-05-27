@@ -681,6 +681,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     </DescriptionListDescription>
                 </DescriptionListGroup>
             )
+        case 'TextNumber':
         case 'Number':
             return (
                 <DescriptionListGroup key={input.label}>
@@ -817,15 +818,32 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             {input.isSecret && (
                                 <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
                             )}
-                            {!isReadOnly && !input.isDisabled && <ClearInputButton input={input} />}
+                            {!isReadOnly && !input.isDisabled && (
+                                <ClearInputButton onClick={() => input.onChange('')} />
+                            )}
                         </Fragment>
                     )}
                 </InputGroup>
             )
         }
+        case 'TextNumber': {
+            const { onChange, ...inputProps } = input
+            return (
+                <InputGroup>
+                    <TextInput
+                        {...inputProps}
+                        validated={validated}
+                        isReadOnly={isReadOnly}
+                        type={'number'}
+                        onChange={(value) => {
+                            input.onChange(Number(value))
+                        }}
+                    />
+                </InputGroup>
+            )
+        }
         case 'TextArea': {
-            const value = input.value
-            const hideSecretInput = value !== '' && input.isSecret === true && !showSecrets
+            const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
             return (
                 <InputGroup>
                     {hideSecretInput ? (
@@ -846,14 +864,16 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         />
                     )}
 
-                    {value === '' ? (
+                    {input.value === '' ? (
                         <PasteInputButton input={input} setShowSecrets={setShowSecrets} />
                     ) : (
                         <Fragment>
                             {input.isSecret && (
                                 <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
                             )}
-                            {!isReadOnly && !input.isDisabled && <ClearInputButton input={input} />}
+                            {!isReadOnly && !input.isDisabled && (
+                                <ClearInputButton onClick={() => input.onChange('')} />
+                            )}
                         </Fragment>
                     )}
                 </InputGroup>
@@ -1158,7 +1178,7 @@ function inputHasValue(input: Input): boolean {
         case 'GroupedMultiselect':
             return input.value.length === 0
         default:
-            return !!input.value
+            return input.value !== ''
     }
 }
 
@@ -1264,10 +1284,10 @@ function PasteInputButton(props: { input: InputBase<string>; setShowSecrets: (va
     )
 }
 
-function ClearInputButton(props: { input: InputBase<string> }) {
-    const { input } = props
+function ClearInputButton(props: { onClick: () => void }) {
+    const { onClick } = props
     return (
-        <Button variant="control" onClick={() => input.onChange('')}>
+        <Button variant="control" onClick={onClick}>
             <TimesCircleIcon />
         </Button>
     )

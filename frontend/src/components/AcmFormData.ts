@@ -60,6 +60,10 @@ export interface TextInput extends InputBase<string> {
     isSecret?: boolean
 }
 
+export interface TextNumberInput extends InputBase<number> {
+    type: 'TextNumber'
+}
+
 export interface TextArea extends InputBase<string> {
     type: 'TextArea'
     isSecret?: boolean
@@ -124,6 +128,7 @@ export interface NumberInput extends InputBase<number> {
 
 export type Input =
     | TextInput
+    | TextNumberInput
     | TextArea
     | SelectInput
     | MultiselectInput
