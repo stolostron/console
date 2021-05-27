@@ -76,13 +76,13 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             {
                 active: true,
                 statusType: klusterletStatus.statusType,
-                statusText: t('status.job.cluster.install'),
+                statusText: t('status.job.klusterlet.install'),
                 statusSubtitle: klusterletStatus.statusSubtitle,
             },
             {
                 active: true,
                 statusType: postcreationStatus.statusType,
-                statusText: t('status.job.klusterlet.install'),
+                statusText: t('status.job.postcreation'),
                 statusSubtitle: postcreationStatus.statusSubtitle,
             },
         ],
