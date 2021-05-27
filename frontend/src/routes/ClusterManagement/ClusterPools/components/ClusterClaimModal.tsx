@@ -191,10 +191,10 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         isAutoColumnWidths
                         style={{ marginBottom: '24px', marginTop: '16px' }}
                     >
-                        <DescriptionListGroup>
+                        {/* <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.displayName')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
-                        </DescriptionListGroup>
+                        </DescriptionListGroup> */}
                         <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
