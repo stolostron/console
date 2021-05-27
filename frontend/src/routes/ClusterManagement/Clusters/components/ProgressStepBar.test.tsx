@@ -46,7 +46,7 @@ const clusterCurator1: ClusterCurator = {
         namespace: 'default',
     },
     spec: {
-        desiredCuration:'install',
+        desiredCuration: 'install',
         install: {
             towerAuthSecret: 'ansible-credential-i',
             prehook: [
@@ -60,13 +60,13 @@ const clusterCurator1: ClusterCurator = {
 
 describe('ProgressStepBar', () => {
     test('renders progress bar', async () => {
-        const {container} = render(
+        const { container } = render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <RecoilRoot initializeState={(snapshot) => snapshot.set(clusterCuratorsState, [clusterCurator1])}>
-                <MemoryRouter>
-                    <ProgressStepBar />
-                </MemoryRouter>
-            </RecoilRoot>
+                <RecoilRoot initializeState={(snapshot) => snapshot.set(clusterCuratorsState, [clusterCurator1])}>
+                    <MemoryRouter>
+                        <ProgressStepBar />
+                    </MemoryRouter>
+                </RecoilRoot>
             </ClusterContext.Provider>
         )
         console.log('checking container: ', container.innerHTML)

@@ -5,7 +5,7 @@ import { useRecoilState } from 'recoil'
 import { clusterCuratorsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ProgressStepBar() {
