@@ -20,6 +20,7 @@ import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    submarinerConfigDefault,
 } from '../../../../resources/submariner-config'
 import {
     certificateSigningRequestsState,
@@ -77,6 +78,15 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
         namespace: mockManagedClusterExtra.metadata.name,
     },
     spec: {
+        gatewayConfig: {
+            gateways: submarinerConfigDefault.gateways,
+            aws: {
+                instanceType: submarinerConfigDefault.awsInstanceType,
+            },
+        },
+        IPSecIKEPort: submarinerConfigDefault.ikePort,
+        IPSecNATTPort: submarinerConfigDefault.nattPort,
+        cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterExtraSecret.metadata.name!,
         },
@@ -208,16 +218,20 @@ describe('ClusterSetDetails page', () => {
 
         await clickByText('tab.submariner')
 
-        const secretNock = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
-        await waitForNocks([secretNock])
-
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
+        const secretNock = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
         await clickByText('managed.clusterSets.submariner.addons.install', 0)
-        await waitForText('managed.clusterSets.submariner.addons.install.message')
-        await clickByText('managed.clusterSets.submariner.addons.install.placeholder')
+        await waitForNocks([secretNock])
+
+        await waitForText('submariner.install.step.clusters.title', true)
+
+        await clickByPlaceholderText('submariner.install.form.clusters.placeholder')
 
         await clickByText(mockManagedClusterExtra!.metadata.name!)
+
+        await clickByText('common:next')
+        await clickByText('common:next')
 
         const nockManagedClusterAddon = nockCreate(mockSubmarinerAddonExtra)
         const nockSubmarinerConfig = nockCreate(mockManagedClusterExtraSubmarinerConfig)
@@ -229,9 +243,6 @@ describe('ClusterSetDetails page', () => {
         await waitForText('table.details')
 
         await clickByText('tab.submariner')
-
-        const secretNock = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
-        await waitForNocks([secretNock])
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
         await clickByLabel('Actions', 0)
