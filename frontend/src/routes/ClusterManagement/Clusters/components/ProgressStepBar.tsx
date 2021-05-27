@@ -3,15 +3,16 @@ import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState } from '../../../../atoms'
-import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
+import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
-const [curators] = useRecoilState(clusterCuratorsState)
-
-export function ProgressStepBar(props: { cluster: Cluster | undefined }) {
+export function ProgressStepBar() {
     const { t } = useTranslation()
-    const { cluster } = props
+    // const { cluster } = props
+    const { cluster } = useContext(ClusterContext)
+    const [curators] = useRecoilState(clusterCuratorsState)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
     const [stepsCompleted, setStepsCompleted] = useState(0)
 
@@ -20,7 +21,7 @@ export function ProgressStepBar(props: { cluster: Cluster | undefined }) {
         ClusterStatus.prehookfailed,
         ClusterStatus.creating,
         ClusterStatus.provisionfailed,
-        ClusterStatus.pendingimport,
+        ClusterStatus.importing,
         ClusterStatus.importfailed,
         ClusterStatus.posthookjob,
         ClusterStatus.posthookfailed,
@@ -126,11 +127,12 @@ export function ProgressStepBar(props: { cluster: Cluster | undefined }) {
         useEffect(() => {
             let completedSteps = 0
             steps.forEach((step) => {
-                if (step.statusType === StatusType.healthy) {
-                    completedSteps++
-                }
+                steps.forEach((step, index) => {
+                    if (step.statusType === StatusType.progress) completedSteps = index
+                })
             })
             setStepsCompleted(completedSteps)
+            console.log('checking steps: ', completedSteps)
         }, [steps])
 
         return (

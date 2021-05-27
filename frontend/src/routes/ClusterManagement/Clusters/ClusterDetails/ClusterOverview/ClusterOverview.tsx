@@ -169,7 +169,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                <ProgressStepBar cluster={cluster}></ProgressStepBar>
+                <ProgressStepBar />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={leftItems}
