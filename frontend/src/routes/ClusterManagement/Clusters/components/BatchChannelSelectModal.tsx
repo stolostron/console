@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmSelect } from '@open-cluster-management/ui-components'
-import { SelectOption } from '@patternfly/react-core'
+import { SelectOption, TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../components/BulkActionModel'
@@ -70,7 +70,16 @@ export function BatchChannelSelectModal(props: {
                 {
                     header: t('upgrade.table.name'),
                     sort: 'displayName',
-                    cell: 'displayName',
+                    cell: (cluster) => (
+                        <>
+                            <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                            {cluster.hive.clusterClaimName && (
+                                <TextContent>
+                                    <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                                </TextContent>
+                            )}
+                        </>
+                    ),
                 },
                 {
                     header: t('upgrade.table.currentchannel'),
