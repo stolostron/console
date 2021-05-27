@@ -259,6 +259,13 @@
     "status.posthookjob": "Post-creation hooks",
     "status.posthookfailed": "Failed",
     "status.importfailed": "Failed",
+    "status.job.precreation":"Pre-creation jobs",
+    "status.job.cluster.install":"Cluster install",
+    "status.job.klusterlet.install":"Klusterelet install",
+    "status.job.postcreation":"Post-creation jobs",
+    "status.job.subtitle.complete":"Complete",
+    "status.job.subtitle.progress":"In progress",
+
     "status.submariner.progressing": "Progressing",
     "status.submariner.progressing.message": "The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.",
     "status.submariner.connection.degraded": "Degraded",
