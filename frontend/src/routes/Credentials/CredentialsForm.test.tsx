@@ -106,10 +106,12 @@ describe('add credentials page', () => {
             'azr',
             {
                 baseDomainResourceGroupName: 'baseDomainResourceGroupName',
-                clientId: 'clientId',
-                clientSecret: 'clientSecret',
-                tenantId: 'tenantId',
-                subscriptionId: 'subscriptionId',
+                'osServicePrincipal.json': JSON.stringify({
+                    clientId: 'clientId',
+                    clientSecret: 'clientSecret',
+                    tenantId: 'tenantId',
+                    subscriptionId: 'subscriptionId',
+                }),
             },
             true
         )
@@ -123,10 +125,10 @@ describe('add credentials page', () => {
 
         // AZR credentials
         await typeByTestId('baseDomainResourceGroupName', providerConnection.stringData?.baseDomainResourceGroupName!)
-        await typeByTestId('clientId', providerConnection.stringData?.clientId!)
-        await typeByTestId('clientSecret', providerConnection.stringData?.clientSecret!)
-        await typeByTestId('tenantId', providerConnection.stringData?.tenantId!)
-        await typeByTestId('subscriptionId', providerConnection.stringData?.subscriptionId!)
+        await typeByTestId('clientId', 'clientId')
+        await typeByTestId('clientSecret', 'clientSecret')
+        await typeByTestId('tenantId', 'tenantId')
+        await typeByTestId('subscriptionId', 'subscriptionId')
         await clickByText('common:next')
 
         // Pull secret
