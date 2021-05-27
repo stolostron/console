@@ -28,14 +28,12 @@ export interface Section {
     wizardTitle?: string
     inputs?: Input[]
     groups?: Group[]
-    columns?: 1 | 2
 }
 
 export interface Group {
     title: string
     description?: string
     inputs: Input[]
-    columns?: 1 | 2
 }
 
 export interface InputBase {
@@ -91,4 +89,14 @@ export interface SelectInput extends InputBase {
     isDisplayLarge?: boolean
 }
 
-export type Input = TextInput | TextArea | SelectInput
+export interface MultiselectInput extends InputBase {
+    type: 'Multiselect'
+    label: string
+    groups?: SelectGroup[]
+    options?: SelectInputOptions[] | (() => SelectInputOptions[])
+    value: string[]
+    onChange: (value: string[]) => void
+    validation?: (value: string[]) => string
+}
+
+export type Input = TextInput | TextArea | SelectInput | MultiselectInput
