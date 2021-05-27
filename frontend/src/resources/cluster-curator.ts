@@ -78,7 +78,9 @@ export function listClusterCurators() {
 }
 
 export function filterForTemplatedCurators(clusterCurators: ClusterCurator[]) {
-    return clusterCurators.filter((curator) => curator.spec?.desiredCuration === undefined && curator.status === undefined)
+    return clusterCurators.filter(
+        (curator) => curator.spec?.desiredCuration === undefined && curator.status === undefined
+    )
 }
 
 export function getTemplateJobsNum(clusterCurator: ClusterCurator) {
