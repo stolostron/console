@@ -95,6 +95,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             klusterletStatus.statusSubtitle,
             postcreationStatus.statusType,
             postcreationStatus.statusSubtitle,
+            t,
         ]
     )
     const updateInstallStatusSteps = useCallback(() => {
@@ -107,87 +108,135 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 break
             }
             case 'prehookjob': {
-                setPrecreationStatus({ statusType: StatusType.progress, statusSubtitle: t('status.job.subtitle.progress') })
+                setPrecreationStatus({
+                    statusType: StatusType.progress,
+                    statusSubtitle: t('status.job.subtitle.progress'),
+                })
                 setInstallStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'prehookfailed': {
-                setPrecreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
+                setPrecreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
                 setInstallStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'creating': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.progress, statusSubtitle: t('status.job.subtitle.progress') })
                 setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'provisionfailed': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setInstallStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
+                setInstallStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
                 setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'importfailed': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setKlusterletStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
+                setKlusterletStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'notaccepted': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
                 setKlusterletStatus({ statusType: StatusType.warning, statusSubtitle: t('status.notaccepted') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'needsapproval': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
                 setKlusterletStatus({ statusType: StatusType.progress, statusSubtitle: t('status.needsapproval') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'pendingimport': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setKlusterletStatus({ statusType: StatusType.progress, statusSubtitle: t('status.job.subtitle.progress') })
+                setKlusterletStatus({
+                    statusType: StatusType.progress,
+                    statusSubtitle: t('status.job.subtitle.progress'),
+                })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
                 break
             }
             case 'posthookjob': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setKlusterletStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setPostcreationStatus({ statusType: StatusType.progress, statusSubtitle: t('status.job.subtitle.progress') })
+                setKlusterletStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
+                setPostcreationStatus({
+                    statusType: StatusType.progress,
+                    statusSubtitle: t('status.job.subtitle.progress'),
+                })
                 break
             }
             case 'posthookfailed': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setKlusterletStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setPostcreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
+                setKlusterletStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
+                setPostcreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
                 break
             }
             case 'ready': {
-                setPrecreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setPrecreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 setInstallStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setKlusterletStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
-                setPostcreationStatus({ statusType: StatusType.healthy, statusSubtitle: t('status.job.subtitle.complete') })
+                setKlusterletStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
+                setPostcreationStatus({
+                    statusType: StatusType.healthy,
+                    statusSubtitle: t('status.job.subtitle.complete'),
+                })
                 break
             }
             // unsure of when failed will appear chronologically
             case 'failed': {
-                setPrecreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
-                setInstallStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed')  })
-                setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.failed')  })
+                setPrecreationStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
+                setInstallStatus({ statusType: StatusType.danger, statusSubtitle: t('status.failed') })
+                setKlusterletStatus({ statusType: StatusType.pending, statusSubtitle: t('status.failed') })
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.failed') })
                 break
             }
@@ -208,7 +257,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 setPostcreationStatus({ statusType: StatusType.pending, statusSubtitle: t('status.pending') })
             }
         }
-    }, [cluster?.status])
+    }, [cluster?.status, t])
 
     useEffect(() => {
         if (clusterCurator?.spec?.desiredCuration === 'install') {
