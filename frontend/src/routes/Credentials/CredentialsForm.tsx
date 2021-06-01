@@ -52,9 +52,9 @@ const credentialProviders: Provider[] = [
 ]
 
 enum ProviderGroup {
-    Automation = 'Automation credentials',
+    Automation = 'Automation & other credentials',
+    Datacenter = 'Datacenter credentials',
     CloudProvider = 'Cloud provider credentials',
-    Infrastructure = 'Infrastructure credentials',
 }
 
 const providerGroup: Record<string, string> = {
@@ -64,9 +64,9 @@ const providerGroup: Record<string, string> = {
     [Provider.gcp]: ProviderGroup.CloudProvider,
     [Provider.azure]: ProviderGroup.CloudProvider,
     [Provider.ibm]: ProviderGroup.CloudProvider,
-    [Provider.openstack]: ProviderGroup.Infrastructure,
-    [Provider.baremetal]: ProviderGroup.Infrastructure,
-    [Provider.vmware]: ProviderGroup.Infrastructure,
+    [Provider.openstack]: ProviderGroup.Datacenter,
+    [Provider.baremetal]: ProviderGroup.Datacenter,
+    [Provider.vmware]: ProviderGroup.Datacenter,
 }
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
@@ -402,9 +402,9 @@ export function CredentialsForm(props: {
                                     }),
                             },
                             {
-                                group: ProviderGroup.Automation,
+                                group: ProviderGroup.Datacenter,
                                 options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Datacenter)
                                     .map((provider) => {
                                         return {
                                             id: provider,
@@ -415,9 +415,9 @@ export function CredentialsForm(props: {
                                     }),
                             },
                             {
-                                group: ProviderGroup.Infrastructure,
+                                group: ProviderGroup.Automation,
                                 options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Infrastructure)
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
                                     .map((provider) => {
                                         return {
                                             id: provider,
