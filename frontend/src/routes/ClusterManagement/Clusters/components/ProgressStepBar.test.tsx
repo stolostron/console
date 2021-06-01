@@ -60,7 +60,7 @@ const clusterCurator1: ClusterCurator = {
 
 describe('ProgressStepBar', () => {
     test('renders progress bar', async () => {
-        const { container } = render(
+        render(
             <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                 <RecoilRoot initializeState={(snapshot) => snapshot.set(clusterCuratorsState, [clusterCurator1])}>
                     <MemoryRouter>
