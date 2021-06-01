@@ -26,9 +26,6 @@ export function ScaleClusterAlert() {
         }
     })
 
-    console.log('workerNodecount', workerNodeCount)
-    console.log('totalDesiredReplicas', totalDesiredReplicas)
-
     if (
         cluster?.isHive &&
         cluster?.nodes?.nodeList.length !== 0 &&
