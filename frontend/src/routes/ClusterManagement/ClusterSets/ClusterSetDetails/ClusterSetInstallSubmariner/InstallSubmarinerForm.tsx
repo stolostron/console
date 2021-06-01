@@ -24,7 +24,6 @@ import { RbacButton } from '../../../../../components/Rbac'
 import { Cluster } from '../../../../../lib/get-cluster'
 import { rbacCreate } from '../../../../../lib/rbac-util'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { Secret, listNamespaceSecrets } from '../../../../../resources/secret'
 import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
@@ -37,8 +36,10 @@ import {
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
 } from '../../../../../resources/managed-cluster-add-on'
+import { Secret, SecretApiVersion, SecretKind, listNamespaceSecrets } from '../../../../../resources/secret'
 import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
 import { createResource, resultsSettled } from '../../../../../lib/resource-request'
+import { validateJSON } from '../../../../../lib/validation'
 
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation(['cluster'])
@@ -51,7 +52,6 @@ export function InstallSubmarinerFormPage() {
                 cluster.distribution?.ocp?.version // OpenShift clusters only
         )
     )
-
     if (availableClusters.length === 0) {
         return (
             <AcmPage
@@ -144,7 +144,7 @@ const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | u
 }
 
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation(['cluster', 'credentials', 'common'])
     const { clusterSet } = useContext(ClusterSetContext)
     const history = useHistory()
 
@@ -153,10 +153,15 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [withoutSubmarinerConfigClusters, setWithoutSubmarinerConfigClusters] = useState<Cluster[]>([])
     const [fetchSecrets, setFetchSecrets] = useState<boolean>(true)
 
-    const [ikePorts, setIkePorts] = useState<Record<string, string>>({})
-    const [nattPorts, setNattPorts] = useState<Record<string, string>>({})
+    const [awsAccessKeyIDs, setAwsAccessKeyIDs] = useState<Record<string, string | undefined>>({})
+    const [awsSecretAccessKeyIDs, setAwsSecretAccessKeyIDs] = useState<Record<string, string | undefined>>({})
+
+    const [gcServiceAccountKeys, setGcServiceAccountKeys] = useState<Record<string, any>>({})
+
+    const [ikePorts, setIkePorts] = useState<Record<string, number>>({})
+    const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
-    const [gateways, setGateways] = useState<Record<string, string>>({})
+    const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
@@ -185,7 +190,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         }
                     })
                 })
-                .finally(() => setProviderSecretMap(map))
+                .finally(() => {
+                    const hasSecretClusters = Object.keys(map)
+                    const missingClusters = availableClusters.filter(
+                        (cluster) => !hasSecretClusters.includes(cluster.displayName!)
+                    )
+                    missingClusters.forEach((c) => (map[c.displayName!] = null))
+                    setProviderSecretMap(map)
+                })
         }
     }, [availableClusters, providerSecretMap, fetchSecrets])
 
@@ -236,9 +248,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             {
                 title: t('submariner.install.step.clusters.title'),
                 wizardTitle: t('submariner.install.step.clusters.wizardTitle'),
-                description: (
+                type: 'Section',
+                // descripton: '',
+                alerts: (
                     <>
-                        {/* <div style={{ marginBottom: '12px' }}>{t('submariner.install.step.clusters.message')}</div> */}
                         {withoutSubmarinerConfigClusters.length > 0 && (
                             <AcmAlert
                                 variant="info"
@@ -269,21 +282,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                             })}
                                         >
                                             <List>
-                                                {withoutSubmarinerConfigClusters.map((cluster) => {
-                                                    const isUnsupportedProvider = !submarinerConfigProviders.includes(
-                                                        cluster!.provider!
-                                                    )
-                                                    return (
-                                                        <ListItem>
-                                                            {t(
-                                                                isUnsupportedProvider
-                                                                    ? 'managed.clusterSets.submariner.addons.config.notSupported.provider'
-                                                                    : 'managed.clusterSets.submariner.addons.config.notSupported.secret',
-                                                                { clusterName: cluster.displayName! }
-                                                            )}
-                                                        </ListItem>
-                                                    )
-                                                })}
+                                                {withoutSubmarinerConfigClusters.map((cluster) => (
+                                                    <ListItem>
+                                                        {t(
+                                                            'managed.clusterSets.submariner.addons.config.notSupported.provider',
+                                                            { clusterName: cluster.displayName! }
+                                                        )}
+                                                    </ListItem>
+                                                ))}
                                             </List>
                                         </AcmExpandableSection>
                                     </>
@@ -310,19 +316,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     if (matchedCluster.provider === Provider.vmware) {
                                         return true
                                     }
-                                    return (
-                                        providerSecretMap[cluster] === null ||
-                                        !submarinerConfigProviders.includes(matchedCluster!.provider!)
-                                    )
+                                    return !submarinerConfigProviders.includes(matchedCluster!.provider!)
                                 })
                                 .map((name) => availableClusters.find((c) => c.name === name)!)
 
                             setWithoutSubmarinerConfigClusters(withoutSubmarinerConfigList ?? [])
                         },
                         isRequired: true,
-                        options: () => [
-                            ...availableClusters.map((c) => ({ id: c.displayName!, value: c.displayName! })),
-                        ],
+                        options: [...availableClusters.map((c) => ({ id: c.displayName!, value: c.displayName! }))],
                     },
                 ],
             },
@@ -337,6 +338,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             clusterName,
                             provider: ProviderLongTextMap[cluster.provider!],
                         }),
+                        type: 'Section',
                         description: (
                             <AcmButton
                                 onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
@@ -350,57 +352,69 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         ),
                         inputs: [
                             {
-                                id: 'ike-port',
+                                id: 'credential-secret',
                                 type: 'Text',
-                                label: t('submariner.install.form.ikeport'),
-                                placeholder: t('submariner.install.form.port.placeholder'),
-                                labelHelp: t('submariner.install.form.ikeport.labelHelp'),
-                                value: ikePorts[clusterName] ?? submarinerConfigDefault.ikePort.toString(),
-                                onChange: (value) => {
-                                    const copy = { ...ikePorts }
-                                    copy[clusterName] = value
-                                    setIkePorts(copy)
-                                },
+                                label: t('submariner.install.form.credential.secret'),
+                                placeholder: '',
+                                labelHelp: t('submariner.install.form.credential.secret.labelHelp'),
+                                value: providerSecretMap[clusterName],
+                                isHidden: providerSecretMap[clusterName] === null,
+                                isRequired:
+                                    [Provider.aws, Provider.gcp].includes(cluster.provider!) &&
+                                    providerSecretMap[clusterName] !== null,
+                                isDisabled: providerSecretMap[clusterName] !== null,
+                                onChange: () => {},
                             },
                             {
-                                id: 'natt-port',
+                                id: 'awsAccessKeyID',
                                 type: 'Text',
-                                label: t('submariner.install.form.nattport'),
-                                placeholder: t('submariner.install.form.port.placeholder'),
-                                labelHelp: t('submariner.install.form.nattport.labelHelp'),
-                                value: nattPorts[clusterName] ?? submarinerConfigDefault.nattPort.toString(),
-                                onChange: (value) => {
-                                    const copy = { ...nattPorts }
+                                label: t('credentials:credentialsForm.awsAccessKeyID.label'),
+                                placeholder: t('credentials:credentialsForm.awsAccessKeyID.placeholder'),
+                                labelHelp: t('credentials:credentialsForm.awsAccessKeyID.labelHelp'),
+                                value: awsAccessKeyIDs[clusterName],
+                                onChange: (value: string) => {
+                                    const copy = { ...awsAccessKeyIDs }
                                     copy[clusterName] = value
-                                    setNattPorts(copy)
+                                    setAwsAccessKeyIDs(copy)
                                 },
+                                isHidden: cluster.provider !== Provider.aws || providerSecretMap[clusterName] !== null,
+                                isRequired:
+                                    cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
                             },
                             {
-                                id: 'cable-driver',
-                                type: 'Select',
-                                label: t('submariner.install.form.cabledriver'),
-                                placeholder: t('submariner.install.form.cabledriver.placeholder'),
-                                labelHelp: t('submariner.install.form.cabledriver.labelHelp'),
-                                value: cableDrivers[clusterName] ?? submarinerConfigDefault.cableDriver,
-                                onChange: (value) => {
-                                    const copy = { ...cableDrivers }
-                                    copy[clusterName] = value as CableDriver
-                                    setCableDrivers(copy)
+                                id: 'awsSecretAccessKeyID',
+                                type: 'Text',
+                                label: t('credentials:credentialsForm.awsSecretAccessKeyID.label'),
+                                placeholder: t('credentials:credentialsForm.awsSecretAccessKeyID.placeholder'),
+                                labelHelp: t('credentials:credentialsForm.awsSecretAccessKeyID.labelHelp'),
+                                value: awsSecretAccessKeyIDs[clusterName],
+                                onChange: (value: string) => {
+                                    const copy = { ...awsSecretAccessKeyIDs }
+                                    copy[clusterName] = value
+                                    setAwsSecretAccessKeyIDs(copy)
                                 },
-                                options: Object.values(CableDriver).map((cb) => ({ id: cb, value: cb })),
+                                isHidden: cluster.provider !== Provider.aws || providerSecretMap[clusterName] !== null,
+                                isRequired:
+                                    cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
+                                isSecret: true,
                             },
                             {
-                                id: 'gateways',
-                                type: 'Text',
-                                label: t('submariner.install.form.gateways'),
-                                placeholder: t('submariner.install.form.gateways.placeholder'),
-                                labelHelp: t('submariner.install.form.gateways.labelHelp'),
-                                value: gateways[clusterName] ?? submarinerConfigDefault.gateways.toString(),
+                                id: 'gcServiceAccountKey',
+                                type: 'TextArea',
+                                label: t('credentials:credentialsForm.gcServiceAccountKey.label'),
+                                placeholder: t('credentials:credentialsForm.gcServiceAccountKey.placeholder'),
+                                labelHelp: t('credentials:credentialsForm.gcServiceAccountKey.labelHelp'),
+                                value: gcServiceAccountKeys[clusterName],
                                 onChange: (value) => {
-                                    const copy = { ...gateways }
+                                    const copy = { ...gcServiceAccountKeys }
                                     copy[clusterName] = value
-                                    setGateways(copy)
+                                    setGcServiceAccountKeys(copy)
                                 },
+                                validation: (value) => validateJSON(value, t),
+                                isHidden: cluster.provider !== Provider.gcp || providerSecretMap[clusterName] !== null,
+                                isRequired:
+                                    cluster.provider === Provider.gcp && providerSecretMap[clusterName] === null,
+                                isSecret: true,
                             },
                             {
                                 id: 'aws-instance-type',
@@ -416,6 +430,61 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     setAwsInstanceTypes(copy)
                                 },
                             },
+                            {
+                                id: 'ike-port',
+                                type: 'TextNumber',
+                                label: t('submariner.install.form.ikeport'),
+                                placeholder: t('submariner.install.form.port.placeholder'),
+                                labelHelp: t('submariner.install.form.ikeport.labelHelp'),
+                                value: ikePorts[clusterName] ?? submarinerConfigDefault.ikePort.toString(),
+                                onChange: (value: number) => {
+                                    const copy = { ...ikePorts }
+                                    copy[clusterName] = value
+                                    setIkePorts(copy)
+                                },
+                            },
+                            {
+                                id: 'natt-port',
+                                type: 'TextNumber',
+                                label: t('submariner.install.form.nattport'),
+                                placeholder: t('submariner.install.form.port.placeholder'),
+                                labelHelp: t('submariner.install.form.nattport.labelHelp'),
+                                value: nattPorts[clusterName] ?? submarinerConfigDefault.nattPort.toString(),
+                                onChange: (value: number) => {
+                                    const copy = { ...nattPorts }
+                                    copy[clusterName] = value
+                                    setNattPorts(copy)
+                                },
+                            },
+                            {
+                                id: 'gateways',
+                                type: 'Number',
+                                label: t('submariner.install.form.gateways'),
+                                placeholder: t('submariner.install.form.gateways.placeholder'),
+                                labelHelp: t('submariner.install.form.gateways.labelHelp'),
+                                value: gateways[clusterName] ?? submarinerConfigDefault.gateways,
+                                onChange: (value: number) => {
+                                    const copy = { ...gateways }
+                                    copy[clusterName] = value
+                                    setGateways(copy)
+                                },
+                                min: 0,
+                                step: 1,
+                            },
+                            {
+                                id: 'cable-driver',
+                                type: 'Select',
+                                label: t('submariner.install.form.cabledriver'),
+                                placeholder: t('submariner.install.form.cabledriver.placeholder'),
+                                labelHelp: t('submariner.install.form.cabledriver.labelHelp'),
+                                value: cableDrivers[clusterName] ?? submarinerConfigDefault.cableDriver,
+                                onChange: (value) => {
+                                    const copy = { ...cableDrivers }
+                                    copy[clusterName] = value as CableDriver
+                                    setCableDrivers(copy)
+                                },
+                                options: Object.values(CableDriver).map((cb) => ({ id: cb, value: cb })),
+                            },
                         ],
                     } as Section
                 }),
@@ -425,6 +494,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 const calls: any[] = []
                 selectedClusters?.forEach((selected) => {
                     const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
+                    // ManagedClusterAddOn resource
                     calls.push(
                         createResource<ManagedClusterAddOn>({
                             apiVersion: ManagedClusterAddOnApiVersion,
@@ -438,12 +508,39 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             },
                         })
                     )
+
                     if (submarinerConfigProviders.includes(cluster.provider!)) {
                         if (
                             cluster.provider !== Provider.vmware &&
                             providerSecretMap[cluster.displayName!] === undefined
                         ) {
                             return
+                        }
+
+                        // Create credential secret if one doesn't exist
+                        const secret: Secret = {
+                            apiVersion: SecretApiVersion,
+                            kind: SecretKind,
+                            metadata: {
+                                name: `${cluster.name}-${cluster.provider}-creds`,
+                                namespace: cluster.namespace,
+                            },
+                            stringData: {},
+                            type: 'Opaque',
+                        }
+
+                        // configure secret if one doesn't exist
+                        if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
+                            if (cluster.provider === Provider.aws) {
+                                secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]!
+                                secret.stringData!['aws_secret_access_key'] =
+                                    awsSecretAccessKeyIDs[cluster.displayName!]!
+                            } else if (cluster.provider === Provider.gcp) {
+                                secret.stringData!['osServiceAccount.json'] =
+                                    gcServiceAccountKeys[cluster.displayName!]!
+                            }
+
+                            calls.push(createResource<Secret>(secret))
                         }
 
                         const submarinerConfig: SubmarinerConfig = {
@@ -455,29 +552,36 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             },
                             spec: {
                                 gatewayConfig: {
-                                    gateways:
-                                        parseInt(gateways[cluster.displayName!]) || submarinerConfigDefault.gateways,
+                                    gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                                 },
-                                IPSecIKEPort: parseInt(
-                                    ikePorts[cluster.displayName!] ?? submarinerConfigDefault.ikePort
-                                ),
-                                IPSecNATTPort: parseInt(
-                                    nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort
-                                ),
+                                IPSecIKEPort: ikePorts[cluster.displayName!] ?? submarinerConfigDefault.ikePort,
+                                IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
                                 cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
                             },
                         }
+
                         if (cluster.provider !== Provider.vmware) {
-                            submarinerConfig.spec.credentialsSecret = {
-                                name: providerSecretMap[cluster.displayName!]!,
+                            // use existing secret name
+                            if (providerSecretMap[cluster.displayName!]) {
+                                submarinerConfig.spec.credentialsSecret = {
+                                    name: providerSecretMap[cluster.displayName!]!,
+                                }
+                            } else {
+                                // use secret name that will be created
+                                submarinerConfig.spec.credentialsSecret = {
+                                    name: secret.metadata.name!,
+                                }
                             }
                         }
+
+                        // configure instance type if AWS
                         if (cluster.provider === Provider.aws) {
                             submarinerConfig.spec.gatewayConfig!.aws = {
                                 instanceType:
                                     awsInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.awsInstanceType,
                             }
                         }
+
                         calls.push(createResource<SubmarinerConfig>(submarinerConfig))
                     }
                 })

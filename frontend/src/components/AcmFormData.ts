@@ -28,6 +28,7 @@ export interface Section {
     wizardTitle?: string
     inputs?: Input[]
     groups?: SectionGroupInput[]
+    alerts?: ReactNode
 }
 
 export interface SectionGroupInput {
