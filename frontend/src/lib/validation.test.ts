@@ -155,7 +155,7 @@ describe('validation', () => {
         test.each([
             [`should allow normal dns name`, 'abc', true],
             [`should allow '.' and '-'`, 'a.b-c.d', true],
-            [`should not allow with protocols e.g. http://`, 'http://a.b.c', false],
+            [`should not allow with protocols. For example: http://`, 'http://a.b.c', false],
             [`should not allow start with '.'`, '.abc', false],
             [`should not allow end with '.'`, 'abc.', false],
             [`should not allow start with '-'`, '-abc', false],
