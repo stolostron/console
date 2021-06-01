@@ -13,6 +13,7 @@ export enum NavigationPath {
     clusterSetDetails = '/multicloud/cluster-sets/:id',
     clusterSetOverview = '/multicloud/cluster-sets/:id/overview',
     clusterSetSubmariner = '/multicloud/cluster-sets/:id/submariner',
+    clusterSetSubmarinerInstall = '/multicloud/cluster-sets/:id/install-submariner',
     clusterSetClusters = '/multicloud/cluster-sets/:id/clusters',
     clusterSetClusterPools = '/multicloud/cluster-sets/:id/cluster-pools',
     clusterSetAccess = '/multicloud/cluster-sets/:id/access',

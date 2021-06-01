@@ -15,13 +15,44 @@ export const SubmarinerConfigDefinition: IResourceDefinition = {
     kind: SubmarinerConfigKind,
 }
 
+export enum CableDriver {
+    libreswan = 'libreswan',
+    strongswan = 'strongswan',
+    wireguard = 'wireguard',
+}
+
 export interface SubmarinerConfig extends IResource {
     apiVersion: SubmarinerConfigApiVersionType
     kind: SubmarinerConfigKindType
     metadata: V1ObjectMeta
     spec: {
-        credentialsSecret: {
+        IPSecIKEPort?: number
+        IPSecNATTPort?: number
+        cableDriver?: CableDriver
+        credentialsSecret?: {
             name: string
         }
+        gatewayConfig?: {
+            aws?: {
+                instanceType: string
+            }
+            gateways?: number
+        }
     }
+}
+
+type SubmarinerConfigDefaults = {
+    ikePort: number
+    nattPort: number
+    cableDriver: CableDriver
+    gateways: number
+    awsInstanceType: string
+}
+
+export const submarinerConfigDefault: SubmarinerConfigDefaults = {
+    ikePort: 500,
+    nattPort: 4500,
+    cableDriver: CableDriver.libreswan,
+    gateways: 1,
+    awsInstanceType: 'm5n.large',
 }
