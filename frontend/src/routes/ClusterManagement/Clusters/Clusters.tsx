@@ -11,7 +11,7 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, PageSection, Stack, StackItem } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Stack, StackItem, TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -155,8 +155,17 @@ export function ClustersTable(props: {
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
                 sort: 'displayName',
+                cell: (cluster: Cluster) => (
+                    <>
+                        <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                        {cluster.hive.clusterClaimName && (
+                            <TextContent>
+                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                            </TextContent>
+                        )}
+                    </>
+                ),
             },
             {
                 header: t('table.status'),
@@ -202,13 +211,20 @@ export function ClustersTable(props: {
                         header: t('table.name'),
                         tooltip: t('table.name.helperText'),
                         sort: 'displayName',
-                        search: 'displayName',
+                        search: (cluster) => [cluster.displayName, cluster.hive.clusterClaimName],
                         cell: (cluster) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                    {cluster.displayName}
-                                </Link>
-                            </span>
+                            <>
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
+                                        {cluster.displayName}
+                                    </Link>
+                                </span>
+                                {cluster.hive.clusterClaimName && (
+                                    <TextContent>
+                                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                                    </TextContent>
+                                )}
+                            </>
                         ),
                     },
                     {

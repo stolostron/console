@@ -12,6 +12,14 @@ import {
     CodeBlock,
     CodeBlockAction,
     CodeBlockCode,
+    DataList,
+    DataListAction,
+    DataListCell,
+    DataListControl,
+    DataListDragButton,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -29,6 +37,7 @@ import {
     FormSection,
     Gallery,
     InputGroup,
+    NumberInput,
     Page,
     PageSection,
     Popover,
@@ -37,10 +46,10 @@ import {
     SelectOption,
     SelectOptionObject,
     SelectProps,
-    SelectVariant,
     Split,
     SplitItem,
     Stack,
+    StackItem,
     Switch,
     Text,
     TextArea,
@@ -48,8 +57,6 @@ import {
     TextInput,
     Tile,
     Title,
-    ToggleGroup,
-    ToggleGroupItem,
     Wizard,
     WizardContextConsumer,
     WizardFooter,
@@ -60,16 +67,20 @@ import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclama
 import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
+import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
+import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
+import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
+import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { FormData, Group, Input, Section, SelectInput, SelectInputOptions } from './AcmFormData'
+import { FormData, Input, InputBase, Section, SectionGroupInput, SelectOptionInput } from './AcmFormData'
 
 export interface AcmDataFormProps {
     formData: FormData
     mode?: 'form' | 'wizard' | 'details'
     isHorizontal?: boolean
-    showSecrets?: boolean
+    edit?: () => void
 }
 
 function generalValidationMessage() {
@@ -83,14 +94,13 @@ function requiredValidationMessage() {
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-export function AcmDataFormPage(props: AcmDataFormProps) {
+export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
     const { formData } = props
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets ?? props.mode === 'wizard' ?? false)
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
     const [drawerInline, setDrawerInline] = useState(true)
     const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('800px')
@@ -116,30 +126,26 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                             breadcrumb={formData.breadcrumb}
                             actions={
                                 <ActionList>
-                                    {mode === 'details' && (
+                                    {mode === 'details' && props.edit !== undefined && (
                                         <ActionListItem>
-                                            <ToggleGroup>
-                                                <ToggleGroupItem
-                                                    text="Show secrets"
-                                                    isSelected={showSecrets}
-                                                    onChange={() => setShowSecrets(!showSecrets)}
-                                                />
-                                            </ToggleGroup>
-                                        </ActionListItem>
-                                    )}
-                                    {process.env.NODE_ENV === 'development' && (
-                                        <ActionListItem>
-                                            <Switch
-                                                label="YAML"
-                                                isChecked={drawerExpanded}
-                                                onChange={() => {
-                                                    localStorage.setItem('yaml', (!drawerExpanded).toString())
-                                                    setDrawerExpanded(!drawerExpanded)
-                                                }}
-                                            />
+                                            <Button onClick={props.edit}>Edit</Button>
                                         </ActionListItem>
                                     )}
                                 </ActionList>
+                            }
+                            switches={
+                                <Fragment>
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <Switch
+                                            label="YAML"
+                                            isChecked={drawerExpanded}
+                                            onChange={() => {
+                                                localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                                setDrawerExpanded(!drawerExpanded)
+                                            }}
+                                        />
+                                    )}
+                                </Fragment>
                             }
                         />
                         {showFormErrors && mode === 'form' && formHasErrors(formData) && (
@@ -200,7 +206,7 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     }
                                 >
                                     <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
-                                        {YAML.stringify(formData.stateToData(), 100)}
+                                        {YAML.stringify(formData.stateToData())}
                                     </CodeBlockCode>
                                 </CodeBlock>
                             </DrawerPanelContent>
@@ -212,7 +218,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     <AcmDataForm
                                         {...props}
                                         mode={mode}
-                                        showSecrets={showSecrets}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
                                         isHorizontal={isHorizontal}
@@ -223,7 +228,6 @@ export function AcmDataFormPage(props: AcmDataFormProps) {
                                     <AcmDataForm
                                         {...props}
                                         mode={mode}
-                                        showSecrets={showSecrets}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
                                         isHorizontal={isHorizontal}
@@ -243,15 +247,14 @@ export function AcmDataForm(
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
     }
-) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     switch (props.mode) {
         case 'wizard':
             return (
                 <AcmDataFormWizard
                     formData={formData}
                     isHorizontal={isHorizontal ?? false}
-                    showSecrets={showSecrets ?? true}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
                 />
@@ -260,7 +263,7 @@ export function AcmDataForm(
         case 'details':
             return (
                 <Form>
-                    <AcmDataFormDetails formData={formData} showSecrets={showSecrets} />
+                    <AcmDataFormDetails formData={formData} />
                 </Form>
             )
 
@@ -271,7 +274,6 @@ export function AcmDataForm(
                     isHorizontal={isHorizontal}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
-                    showSecrets={showSecrets ?? false}
                 />
             )
     }
@@ -282,9 +284,8 @@ export function AcmDataFormDefault(props: {
     isHorizontal?: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
-    showSecrets: boolean
-}) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+}): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
     const isSubmitting = submitText !== formData.submitText
@@ -299,7 +300,6 @@ export function AcmDataFormDefault(props: {
                             inputs={section.inputs}
                             showFormErrors={showFormErrors}
                             isReadOnly={isSubmitting}
-                            showSecrets={showSecrets}
                         />
                         {section.groups?.map((group) => {
                             if (groupHidden(group)) return <Fragment />
@@ -317,7 +317,6 @@ export function AcmDataFormDefault(props: {
                                         inputs={group.inputs}
                                         showFormErrors={showFormErrors}
                                         isReadOnly={isSubmitting}
-                                        showSecrets={showSecrets}
                                     />
                                 </FormFieldGroupExpandable>
                             )
@@ -373,11 +372,10 @@ export function AcmDataFormDefault(props: {
 export function AcmDataFormWizard(props: {
     formData: FormData
     isHorizontal: boolean
-    showSecrets: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
-}) {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors, showSecrets } = props
+}): JSX.Element {
+    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [sectionName, setSectionName] = useState('')
     const [submitText, setSubmitText] = useState(formData.submitText)
@@ -424,7 +422,6 @@ export function AcmDataFormWizard(props: {
                             inputs={section.inputs}
                             showFormErrors={showFormErrors || showSectionErrors[section.title]}
                             isReadOnly={isSubmitting}
-                            showSecrets={showSecrets}
                             mode="wizard"
                         />
                     </Form>
@@ -448,7 +445,6 @@ export function AcmDataFormWizard(props: {
                                 inputs={group.inputs}
                                 showFormErrors={showFormErrors || showSectionErrors[section.title]}
                                 isReadOnly={isSubmitting}
-                                showSecrets={showSecrets}
                                 mode="wizard"
                             />
                         </Form>
@@ -473,7 +469,7 @@ export function AcmDataFormWizard(props: {
                         )}
                     </AlertGroup>
                 )}
-                <AcmDataFormDetails formData={formData} showSecrets={showSecrets} wizardSummary={true} />
+                <AcmDataFormDetails formData={formData} wizardSummary={true} />
             </Form>
         ),
         canJumpTo: !isSubmitting,
@@ -582,8 +578,8 @@ export function AcmDataFormWizard(props: {
     return <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
 }
 
-export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: boolean; wizardSummary?: boolean }) {
-    const { formData, showSecrets, wizardSummary } = props
+export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: boolean }): JSX.Element {
+    const { formData, wizardSummary } = props
     let i = 0
     return (
         <Fragment>
@@ -624,54 +620,11 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
 
                         {anyInputHasValue(section.inputs) && (
                             <DescriptionList
-                                columnModifier={{ default: section.columns === 1 ? '1Col' : '2Col' }}
+                                columnModifier={{ default: '1Col' }}
                                 isHorizontal={true}
                                 style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
                             >
-                                {section.inputs &&
-                                    section.inputs.map((input) => {
-                                        if (inputHidden(input)) return <Fragment />
-                                        switch (input.type) {
-                                            case 'Select':
-                                                return (
-                                                    inputValue(input) && (
-                                                        <DescriptionListGroup key={input.label}>
-                                                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                                                            <DescriptionListDescription>
-                                                                {input.isSecret && !showSecrets
-                                                                    ? '****************'
-                                                                    : optionText(
-                                                                          selectOptions(input).find(
-                                                                              (option) =>
-                                                                                  option.value === inputValue(input)
-                                                                          )
-                                                                      )}
-                                                            </DescriptionListDescription>
-                                                        </DescriptionListGroup>
-                                                    )
-                                                )
-                                            default:
-                                                return (
-                                                    inputValue(input) && (
-                                                        <DescriptionListGroup
-                                                            key={input.label}
-                                                            colSpan={input.type === 'TextArea' ? 2 : 1}
-                                                        >
-                                                            <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                                                            <DescriptionListDescription
-                                                                style={{ whiteSpace: 'pre-wrap' }}
-                                                            >
-                                                                {input.isSecret && !showSecrets
-                                                                    ? '****************'
-                                                                    : inputValue(input)
-                                                                          .split('\n')
-                                                                          .map((line) => <div>{line}</div>)}
-                                                            </DescriptionListDescription>
-                                                        </DescriptionListGroup>
-                                                    )
-                                                )
-                                        }
-                                    })}
+                                {section.inputs && section.inputs.map((input) => <AcmInputDescription input={input} />)}
                             </DescriptionList>
                         )}
                         {section.groups && (
@@ -683,31 +636,13 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
                                             <Title headingLevel="h3">{group.title}</Title>
                                             {anyInputHasValue(group.inputs) && (
                                                 <DescriptionList
-                                                    columnModifier={{
-                                                        default:
-                                                            group.columns === 1
-                                                                ? '1Col'
-                                                                : group.columns === 2
-                                                                ? '2Col'
-                                                                : undefined,
-                                                    }}
+                                                    columnModifier={{ default: '1Col' }}
                                                     isHorizontal={true}
                                                 >
-                                                    {group.inputs.map((input) => {
-                                                        if (inputHidden(input)) return <Fragment />
-                                                        return (
-                                                            input.value && (
-                                                                <DescriptionListGroup key={input.label}>
-                                                                    <DescriptionListTerm>
-                                                                        {input.label}
-                                                                    </DescriptionListTerm>
-                                                                    <DescriptionListDescription>
-                                                                        {input.value}
-                                                                    </DescriptionListDescription>
-                                                                </DescriptionListGroup>
-                                                            )
-                                                        )
-                                                    })}
+                                                    {group.inputs &&
+                                                        group.inputs.map((input) => (
+                                                            <AcmInputDescription input={input} />
+                                                        ))}
                                                 </DescriptionList>
                                             )}
                                         </Fragment>
@@ -722,14 +657,139 @@ export function AcmDataFormDetails(props: { formData: FormData; showSecrets?: bo
     )
 }
 
+function AcmInputDescription(props: { input: Input }): JSX.Element {
+    const [showSecrets, setShowSecrets] = useState(false)
+    const { input } = props
+    if (input.isHidden) return <Fragment />
+    if (!inputHasValue(input)) return <Fragment />
+    switch (input.type) {
+        case 'Text':
+        case 'TextArea':
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        <Split>
+                            <SplitItem isFilled>
+                                {input.isSecret && !showSecrets
+                                    ? '****************'
+                                    : input.value.split('\n').map((line) => <div>{line}</div>)}
+                            </SplitItem>
+                            {input.isSecret && (
+                                <Stack>
+                                    <Button
+                                        variant="plain"
+                                        style={{ marginTop: '-8px' }}
+                                        onClick={() => setShowSecrets(!showSecrets)}
+                                    >
+                                        {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                                    </Button>
+                                    <StackItem isFilled />
+                                </Stack>
+                            )}
+                        </Split>
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        case 'TextNumber':
+        case 'Number':
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>{input.value}</DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        case 'Select':
+        case 'Tiles': {
+            const selectedOption = input.options.find((option) => option.value === input.value)
+            if (!selectedOption) return <Fragment>not found</Fragment>
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        {selectedOption.text ?? selectedOption.value}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+        case 'GroupedSelect':
+        case 'GroupedTiles': {
+            let selectedOption: SelectOptionInput | undefined
+            for (const group of input.groups) {
+                selectedOption = group.options.find((option) => option.value === input.value)
+                if (selectedOption !== undefined) break
+            }
+            if (!selectedOption) return <Fragment />
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        {selectedOption.text ?? selectedOption.value}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+        case 'Multiselect': {
+            const selectedOptions: SelectOptionInput[] = []
+            for (const option of input.options) {
+                if (input.value.includes(option.value)) {
+                    selectedOptions.push(option)
+                }
+            }
+            if (selectedOptions.length === 0) return <Fragment />
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+        case 'GroupedMultiselect': {
+            const selectedOptions: SelectOptionInput[] = []
+            for (const group of input.groups) {
+                for (const option of group.options) {
+                    if (input.value.includes(option.value)) {
+                        selectedOptions.push(option)
+                    }
+                }
+            }
+            if (selectedOptions.length === 0) return <Fragment />
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+        case 'OrderedStrings': {
+            if (input.value.length === 0) return <Fragment />
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        <Stack>
+                            {input.value.map((value) => (
+                                <div>{value}</div>
+                            ))}
+                        </Stack>
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+    }
+}
+
 export function AcmDataFormInputs(props: {
     inputs?: Input[]
     showFormErrors?: boolean
     isReadOnly: boolean
-    showSecrets: boolean
     mode?: 'form' | 'wizard' | 'details'
-}) {
-    const { inputs, showFormErrors, isReadOnly, showSecrets } = props
+}): JSX.Element {
+    const { inputs, showFormErrors, isReadOnly } = props
     return (
         <Fragment>
             {inputs?.map((input) => {
@@ -737,22 +797,15 @@ export function AcmDataFormInputs(props: {
                 const validated = showFormErrors && error !== undefined ? 'error' : undefined
                 return (
                     <Fragment key={input.id}>
-                        {!inputHidden(input) && (
+                        {!input.isHidden && (
                             <FormGroup
                                 id={`${input.id}-form-group`}
                                 fieldId={input.id}
-                                label={
-                                    props.mode === 'wizard' &&
-                                    input.type === 'Select' &&
-                                    input.mode === 'tiles' &&
-                                    input.groups
-                                        ? undefined
-                                        : input.label
-                                }
-                                isRequired={inputRequired(input)}
+                                label={input.label}
+                                isRequired={input.isRequired}
                                 helperTextInvalid={error}
                                 validated={validated}
-                                helperText={inputHelperText(input)}
+                                helperText={input.helperText}
                                 labelIcon={
                                     <LabelHelp
                                         id={input.id}
@@ -761,12 +814,7 @@ export function AcmDataFormInputs(props: {
                                     />
                                 }
                             >
-                                <AcmDataFormInput
-                                    input={input}
-                                    validated={validated}
-                                    isReadOnly={isReadOnly}
-                                    showSecrets={showSecrets}
-                                />
+                                <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
                             </FormGroup>
                         )}
                     </Fragment>
@@ -776,237 +824,286 @@ export function AcmDataFormInputs(props: {
     )
 }
 
-export function AcmDataFormInput(props: {
-    input: Input
-    validated?: 'error'
-    isReadOnly: boolean
-    showSecrets: boolean
-}) {
+export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
     const { input, validated, isReadOnly } = props
-    const [showSecrets, setShowSecrets] = useState(props.showSecrets)
+    const [showSecrets, setShowSecrets] = useState(input.type === 'TextArea' && input.value === '')
     switch (input.type) {
         case 'Text': {
-            const value = inputValue(input)
-            const showSecretToggle = input.isSecret === true
+            const value = input.value
             return (
                 <InputGroup>
                     <TextInput
-                        id={input.id}
-                        placeholder={inputPlaceholder(input)}
-                        value={value}
-                        onChange={input.onChange}
+                        {...input}
                         validated={validated}
-                        isRequired={inputRequired(input)}
-                        isDisabled={inputDisabled(input)}
                         isReadOnly={isReadOnly}
                         type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
-                    {showSecretToggle && (
-                        <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
-                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                        </Button>
+                    {value === '' ? (
+                        <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
+                    ) : (
+                        <Fragment>
+                            {input.isSecret && (
+                                <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
+                            )}
+                            {!isReadOnly && !input.isDisabled && (
+                                <ClearInputButton onClick={() => input.onChange('')} />
+                            )}
+                        </Fragment>
                     )}
                 </InputGroup>
             )
         }
+        case 'TextNumber': {
+            const { onChange, ...inputProps } = input
+            return (
+                <InputGroup>
+                    <TextInput
+                        {...inputProps}
+                        validated={validated}
+                        isReadOnly={isReadOnly}
+                        type={'number'}
+                        onChange={(value) => {
+                            input.onChange(Number(value))
+                        }}
+                    />
+                </InputGroup>
+            )
+        }
         case 'TextArea': {
-            const value = inputValue(input)
-            const hideSecretInput = value !== '' && input.isSecret === true && !showSecrets
-            const showSecretToggle = value !== '' && input.isSecret === true
+            const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
             return (
                 <InputGroup>
                     {hideSecretInput ? (
                         <TextInput
-                            id={input.id}
-                            placeholder={inputPlaceholder(input)}
+                            {...input}
                             value={'**************'}
                             validated={validated}
-                            isRequired={inputRequired(input)}
                             isReadOnly={true}
                             type={'password'}
                         />
                     ) : (
                         <TextArea
-                            id={input.id}
-                            placeholder={inputPlaceholder(input)}
-                            value={inputValue(input)}
-                            onChange={input.onChange}
+                            {...input}
                             validated={validated}
-                            isRequired={inputRequired(input)}
-                            isDisabled={inputDisabled(input)}
                             isReadOnly={isReadOnly}
                             resizeOrientation="vertical"
                             autoResize={true}
                         />
                     )}
-                    {showSecretToggle && (
-                        <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
-                            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                        </Button>
+
+                    {input.value === '' ? (
+                        <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
+                    ) : (
+                        <Fragment>
+                            {input.isSecret && (
+                                <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
+                            )}
+                            {!isReadOnly && !input.isDisabled && (
+                                <ClearInputButton onClick={() => input.onChange('')} />
+                            )}
+                        </Fragment>
                     )}
                 </InputGroup>
             )
         }
-        case 'Select': {
-            const options = selectOptions(input)
-            let selections: string | SelectOptionObject = inputValue(input)
-            if (input.mode === 'icon') {
-                selections = {
-                    toString: () => {
-                        const option = options.find((option) => option.value === inputValue(input))
-                        return (
-                            <Fragment>
-                                {option?.icon && <span style={{ paddingRight: '8px' }}>{option?.icon}</span>}
-                                {option?.text}
-                            </Fragment>
-                        ) as unknown as string
-                    },
+
+        case 'Select':
+        case 'GroupedSelect':
+        case 'Multiselect':
+        case 'GroupedMultiselect': {
+            const { onChange, placeholder, ...inputProps } = input
+            const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
+                switch (input.type) {
+                    case 'Select':
+                    case 'GroupedSelect':
+                        input.onChange(selection as string)
+                        break
+                    case 'Multiselect':
+                    case 'GroupedMultiselect':
+                        if (!input.value.includes(selection as string)) {
+                            input.onChange([...input.value, ...[selection as string]])
+                        } else {
+                            input.onChange([...input.value.filter((v) => v !== (selection as string))])
+                        }
+                        break
+                }
+            }
+            let onClear: (() => void) | undefined = undefined
+            if (!isReadOnly && !input.isDisabled) {
+                onClear = () => {
+                    switch (input.type) {
+                        case 'Select':
+                        case 'GroupedSelect':
+                            input.onChange('')
+                            break
+                        case 'Multiselect':
+                        case 'GroupedMultiselect':
+                            input.onChange([])
+                            break
+                    }
+                }
+            }
+            let selections: string | SelectOptionObject | (string | SelectOptionObject)[] = input.value
+            switch (input.type) {
+                case 'Select':
+                case 'GroupedSelect': {
+                    let selectedOption: SelectOptionInput | undefined
+                    switch (input.type) {
+                        case 'Select':
+                            selectedOption = input.options.find((option) => option.value === input.value)
+                            break
+                        case 'GroupedSelect':
+                            for (const group of input.groups) {
+                                selectedOption = group.options.find((option) => option.value === input.value)
+                                if (selectedOption !== undefined) break
+                            }
+                            break
+                    }
+                    if (selectedOption?.icon) {
+                        selections = {
+                            toString: () => {
+                                return (
+                                    <Fragment>
+                                        <span style={{ paddingRight: '8px' }}>{selectedOption?.icon}</span>
+                                        {selectedOption?.text}
+                                    </Fragment>
+                                ) as unknown as string
+                            },
+                            compareTo: (option: any) => {
+                                return option?.value === selectedOption?.value
+                            },
+                        }
+                    }
+                    break
+                }
+            }
+            let hasIcons = false
+            switch (input.type) {
+                case 'Select':
+                case 'Multiselect':
+                    for (const option of input.options) {
+                        if (option.icon) {
+                            hasIcons = true
+                            break
+                        }
+                    }
+                    break
+                case 'GroupedSelect':
+                case 'GroupedMultiselect':
+                    for (const group of input.groups) {
+                        for (const option of group.options) {
+                            if (option.icon) {
+                                hasIcons = true
+                                break
+                            }
+                        }
+                        if (hasIcons) {
+                            break
+                        }
+                    }
+                    break
+            }
+            let variant = input.variant
+            if (!variant) {
+                switch (input.type) {
+                    case 'Select':
+                    case 'GroupedSelect':
+                        variant = hasIcons ? 'single' : 'typeahead'
+                        break
+                    case 'Multiselect':
+                    case 'GroupedMultiselect':
+                        variant = 'typeaheadmulti'
+                        break
                 }
             }
             return (
-                <Fragment>
-                    {input.mode !== 'tiles' ? (
-                        <SelectWithToggle
-                            id={input.id}
-                            selections={selections}
-                            variant={input.mode === 'icon' ? SelectVariant.single : SelectVariant.typeahead}
-                            typeAheadAriaLabel="Select a state"
-                            placeholderText={inputPlaceholder(input)}
-                            onSelect={(_event, value) => input.onChange(value as string)}
-                            onClear={inputRequired(input) ? undefined : () => input.onChange('')}
-                            isCreatable={false}
-                            isDisabled={isReadOnly || inputDisabled(input)}
-                            validated={validated}
-                        >
-                            {input.groups
-                                ? input.groups.map((group, index) => {
-                                      return (
-                                          <SelectGroup key={index} label={group.group}>
-                                              {group.options.map((option, index) => {
-                                                  return (
-                                                      <SelectOption
-                                                          key={index}
-                                                          value={option.value}
-                                                          description={option.description}
-                                                      >
-                                                          {input.mode === 'icon' && option.icon && (
-                                                              <span style={{ paddingRight: '8px' }}>{option.icon}</span>
-                                                          )}
-                                                          {option.text ?? option.value}
-                                                      </SelectOption>
-                                                  )
-                                              })}
-                                          </SelectGroup>
-                                      )
-                                  })
-                                : selectOptions(input).map((option, index) => {
+                <SelectWithToggle
+                    {...inputProps}
+                    selections={selections}
+                    onSelect={onSelect}
+                    onClear={onClear}
+                    isCreatable={false}
+                    isDisabled={isReadOnly || input.isDisabled}
+                    validated={validated}
+                    autoClose={input.type === 'Select' || input.type === 'GroupedSelect'}
+                    isGrouped={input.type === 'GroupedSelect' || input.type === 'GroupedMultiselect'}
+                    variant={variant}
+                    placeholderText={input.placeholder}
+                >
+                    {input.type === 'Select' || input.type === 'Multiselect'
+                        ? input.options.map((option) => {
+                              return (
+                                  <SelectOption
+                                      key={option.value}
+                                      value={option.value}
+                                      description={option.description}
+                                  >
+                                      {option.icon !== undefined && (
+                                          <span style={{ paddingRight: '8px' }}>{option.icon}</span>
+                                      )}
+                                      {option.text ?? option.value}
+                                  </SelectOption>
+                              )
+                          })
+                        : input.groups.map((group, index) => (
+                              <SelectGroup key={index} label={group.group}>
+                                  {group.options.map((option) => {
                                       return (
                                           <SelectOption
                                               key={option.value}
                                               value={option.value}
                                               description={option.description}
                                           >
-                                              {input.mode === 'icon' && option.icon && (
+                                              {option.icon !== undefined && (
                                                   <span style={{ paddingRight: '8px' }}>{option.icon}</span>
                                               )}
                                               {option.text ?? option.value}
                                           </SelectOption>
                                       )
                                   })}
-                        </SelectWithToggle>
-                    ) : input.groups ? (
-                        input.groups.map((group, index) => {
-                            return (
-                                <FormSection key={index}>
-                                    <Title headingLevel="h4">{group.group}</Title>
-                                    <Gallery hasGutter>
-                                        {group.options.map((option, index) => (
-                                            <Tile
-                                                key={index}
-                                                id={option.id}
-                                                icon={option.icon}
-                                                title={option.text ?? option.value}
-                                                isStacked
-                                                isDisplayLarge
-                                                isSelected={inputValue(input) === option.value}
-                                                onClick={() => input.onChange(option.value)}
-                                                isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
-                                            >
-                                                {option.description}
-                                            </Tile>
-                                        ))}
-                                    </Gallery>
-                                </FormSection>
-                            )
-                        })
-                    ) : (
-                        <Gallery hasGutter>
-                            {selectOptions(input).map((option, index) => (
-                                <Tile
-                                    key={index}
-                                    id={option.id}
-                                    icon={option.icon}
-                                    title={option.text ?? option.value}
-                                    isStacked
-                                    isDisplayLarge
-                                    isSelected={inputValue(input) === option.value}
-                                    onClick={() => input.onChange(option.value)}
-                                    isDisabled={option.value !== inputValue(input) && inputDisabled(input)}
-                                >
-                                    {option.description}
-                                </Tile>
-                            ))}
-                        </Gallery>
-                    )}
-                </Fragment>
+                              </SelectGroup>
+                          ))}
+                </SelectWithToggle>
             )
         }
-        default:
-            return <Fragment />
-    }
-}
 
-function inputValue(input: Input) {
-    if (typeof input.value === undefined) return ''
-    if (typeof input.value === 'string') return input.value
-    if (typeof input.value === 'function') return input.value()
-    return ''
-}
+        case 'Tiles':
+            return <SelectOptionsGallery input={input} options={input.options} />
 
-function inputDisabled(input: Input) {
-    if (typeof input.isDisabled === 'boolean') return input.isDisabled
-    if (typeof input.isDisabled === 'function') return input.isDisabled()
-    return undefined
-}
+        case 'GroupedTiles':
+            return (
+                <Stack hasGutter>
+                    {input.groups.map((group) => (
+                        <Stack hasGutter>
+                            <Title headingLevel="h4">{group.group}</Title>
+                            <SelectOptionsGallery input={input} options={group.options} />
+                        </Stack>
+                    ))}
+                </Stack>
+            )
 
-function inputHelperText(input: Input) {
-    if (typeof input.helperText === 'string') return input.helperText
-    if (typeof input.helperText === 'function') return input.helperText()
-    return undefined
-}
-
-function inputPlaceholder(input: Input) {
-    if (typeof input.placeholder === 'string') return input.placeholder
-    if (typeof input.placeholder === 'function') return input.placeholder()
-    return undefined
-}
-
-function inputRequired(input: Input) {
-    if (typeof input.isRequired === 'boolean') return input.isRequired
-    if (typeof input.isRequired === 'function') return input.isRequired()
-    return undefined
-}
-
-function selectOptions(select: SelectInput): SelectInputOptions[] {
-    if (select.groups) {
-        return select.groups.map((group) => group.options).flat()
-    } else {
-        if (Array.isArray(select.options)) {
-            return select.options
+        case 'Number': {
+            const { onChange, ...inputProps } = input
+            return (
+                <NumberInput
+                    {...inputProps}
+                    onChange={(event) => onChange(Number((event.target as any).value))}
+                    onPlus={() => {
+                        const step = input.step ?? 1
+                        input.onChange(input.value + step)
+                    }}
+                    onMinus={() => {
+                        const step = input.step ?? 1
+                        input.onChange(input.value - step)
+                    }}
+                />
+            )
         }
-        if (typeof select.options === 'function') return select.options()
+
+        case 'OrderedStrings': {
+            return <OrderedStringsInput {...input} validated={validated} isReadOnly={isReadOnly} />
+        }
     }
-    return []
 }
 
 function sectionHasValue(section: Section) {
@@ -1028,7 +1125,7 @@ function sectionHasValue(section: Section) {
 function anyInputHasValue(inputs?: Input[]) {
     if (!inputs) return false
     for (const input of inputs) {
-        if (inputValue(input)) {
+        if (input.value) {
             return true
         }
     }
@@ -1053,7 +1150,7 @@ function sectionHasErrors(section?: Section) {
     return false
 }
 
-function groupHasErrors(group: Group) {
+function groupHasErrors(group: SectionGroupInput) {
     return inputsHaveErrors(group.inputs)
 }
 
@@ -1075,7 +1172,7 @@ function sectionHasRequiredErrors(section?: Section) {
     return false
 }
 
-function groupHasRequiredErrors(group: Group) {
+function groupHasRequiredErrors(group: SectionGroupInput) {
     return inputsHaveRequiredErrors(group.inputs)
 }
 
@@ -1084,7 +1181,6 @@ const requiredMessage = 'This is a required field.'
 function inputsHaveRequiredErrors(inputs?: Input[]) {
     if (!inputs) return false
     for (const input of inputs) {
-        console.log(inputError(input))
         if (inputError(input) === requiredMessage) return true
     }
     return false
@@ -1098,39 +1194,30 @@ function inputsHaveErrors(inputs?: Input[]) {
     return false
 }
 
-function inputError(input: Input) {
-    if (inputHidden(input)) return undefined
+function inputError(input: Input): string | undefined {
+    if (input.isHidden) return undefined
+    if (input.isRequired && !inputHasValue(input)) return requiredMessage
+    return input.validation ? input.validation(input.value as never) : undefined
+}
+
+function inputHasValue(input: Input): boolean {
     switch (input.type) {
-        case 'Text': {
-            const value = inputValue(input)
-            if (inputRequired(input) && !value) return requiredMessage
-            return input.validation ? input.validation(value) : undefined
-        }
-        case 'TextArea': {
-            const value = inputValue(input)
-            if (inputRequired(input) && !value) return requiredMessage
-            return input.validation ? input.validation(value) : undefined
-        }
-        case 'Select': {
-            const value = inputValue(input)
-            if (inputRequired(input) && !value) return requiredMessage
-            return input.validation ? input.validation(value) : undefined
-        }
+        case 'Multiselect':
+        case 'GroupedMultiselect':
+        case 'OrderedStrings':
+            return input.value.length !== 0
+        default:
+            return input.value !== '' && input.value !== 0
     }
 }
 
 function sectionHidden(section?: Section): boolean {
     if (!section) return true
     if (section.inputs && inputsHidden(section.inputs)) return true
-    if (section.groups) {
-        for (const group of section.groups) {
-            if (groupHidden(group)) return true
-        }
-    }
     return false
 }
 
-function groupHidden(group?: Group): boolean {
+function groupHidden(group?: SectionGroupInput): boolean {
     if (!group) return true
     if (inputsHidden(group.inputs)) return true
     return false
@@ -1139,29 +1226,24 @@ function groupHidden(group?: Group): boolean {
 function inputsHidden(inputs: Input[]): boolean {
     if (!inputs) return true
     for (const input of inputs) {
-        if (!inputHidden(input)) return false
+        if (!input.isHidden) return false
     }
     return true
 }
 
-function inputHidden(input: Input): boolean {
-    if (typeof input.isHidden === 'boolean') return input.isHidden
-    if (typeof input.isHidden === 'function') return input.isHidden()
-    return false
-}
-
-function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
+type selectWithToggleProps = Omit<SelectProps, 'onToggle'> & { autoClose: boolean }
+function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
     // TODO support isReadOnly
-    const { validated } = props
+    const { validated, autoClose: closeOnSelect } = props
     const [open, setOpen] = useState(false)
     return (
         <Select
+            {...props}
             isOpen={open}
             onToggle={() => setOpen(!open)}
-            {...props}
             onSelect={(e, v) => {
                 props.onSelect?.(e, v)
-                setOpen(false)
+                if (closeOnSelect) setOpen(false)
             }}
             aria-invalid={validated === ValidatedOptions.error}
         >
@@ -1170,29 +1252,161 @@ function SelectWithToggle(props: Omit<SelectProps, 'onToggle'>) {
     )
 }
 
-function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: string }) {
+function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: string }): JSX.Element {
     return props.labelHelp ? (
         <Popover
             id={`${props.id}-label-help-popover`}
             headerContent={props.labelHelpTitle}
             bodyContent={props.labelHelp}
         >
-            <button
+            <Button
+                variant="plain"
                 id={`${props.id}-label-help-button`}
                 aria-label="More info"
                 onClick={(e) => e.preventDefault()}
                 className="pf-c-form__group-label-help"
             >
                 <HelpIcon noVerticalAlign />
-            </button>
+            </Button>
         </Popover>
     ) : (
         <Fragment />
     )
 }
 
-function optionText(option?: SelectInputOptions) {
-    if (!option) return ''
-    if (option.text) return option.text
-    return option.value
+function SelectOptionsGallery(props: { input: InputBase<string>; options: SelectOptionInput[] }) {
+    const { input, options } = props
+    return (
+        <Gallery hasGutter>
+            {options.map((option, index) => (
+                <Tile
+                    {...option}
+                    key={index}
+                    title={option.text ?? option.value}
+                    isStacked
+                    isSelected={input.value === option.value}
+                    onClick={() => input.onChange(option.value)}
+                    isDisabled={option.value !== input.value && input.isDisabled}
+                    isDisplayLarge
+                >
+                    {option.description}
+                </Tile>
+            ))}
+        </Gallery>
+    )
+}
+
+function PasteInputButton(props: { setValue: (value: string) => void; setShowSecrets?: (value: boolean) => void }) {
+    const { setValue, setShowSecrets } = props
+    return (
+        <Button
+            variant="control"
+            onClick={() => {
+                navigator.clipboard.readText().then((value) => {
+                    setValue(value)
+                    if (value && setShowSecrets) setShowSecrets(false)
+                })
+            }}
+        >
+            <PasteIcon />
+        </Button>
+    )
+}
+
+function ClearInputButton(props: { onClick: () => void }) {
+    const { onClick } = props
+    return (
+        <Button variant="control" onClick={onClick}>
+            <TimesCircleIcon />
+        </Button>
+    )
+}
+
+function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value: boolean) => void }) {
+    const { showSecrets, setShowSecrets } = props
+    return (
+        <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
+            {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+        </Button>
+    )
+}
+
+function OrderedStringsInput(props: {
+    value: string[]
+    onChange: (value: string[]) => void
+    validated: 'error' | undefined
+    isReadOnly: boolean
+}) {
+    const { value, onChange, validated, isReadOnly } = props
+    const [text, setText] = useState('')
+    return (
+        <Fragment>
+            <InputGroup>
+                <TextInput validated={validated} value={text} onChange={setText} isReadOnly={isReadOnly} />
+                {text ? (
+                    <Fragment>
+                        <ClearInputButton onClick={() => setText('')} />
+                        <Button
+                            variant="control"
+                            aria-label="Action"
+                            onClick={() => {
+                                if (!value.includes(text)) onChange([...value, ...[text]])
+                                setText('')
+                            }}
+                        >
+                            <PlusIcon />
+                        </Button>
+                    </Fragment>
+                ) : (
+                    <PasteInputButton setValue={setText} />
+                )}
+            </InputGroup>
+            <DataList
+                aria-label="draggable data list example"
+                isCompact
+                onDragFinish={(itemOrder) => onChange(itemOrder)}
+                itemOrder={value}
+                style={{ borderTop: '0' }}
+            >
+                {value.map((v) => (
+                    <DataListItem aria-labelledby="simple-item1" id={v} key="1">
+                        <DataListItemRow>
+                            <DataListControl>
+                                <DataListDragButton
+                                    aria-label="Reorder"
+                                    aria-labelledby="simple-item1"
+                                    aria-describedby="Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation."
+                                    aria-pressed="false"
+                                    isDisabled={isReadOnly}
+                                />
+                            </DataListControl>
+                            <DataListItemCells
+                                dataListCells={[
+                                    <DataListCell key={v}>
+                                        <span id="simple-item1">{v}</span>
+                                    </DataListCell>,
+                                ]}
+                            />
+                            <DataListAction
+                                aria-labelledby="ex-item1 ex-action1"
+                                id="ex-action1"
+                                aria-label="Actions"
+                                isPlainButtonAction
+                            >
+                                <Button
+                                    variant="plain"
+                                    aria-label="Action"
+                                    onClick={() => {
+                                        onChange(value.filter((value) => value !== v))
+                                    }}
+                                >
+                                    <TrashIcon />
+                                </Button>
+                            </DataListAction>
+                        </DataListItemRow>
+                    </DataListItem>
+                ))}
+            </DataList>
+        </Fragment>
+    )
 }

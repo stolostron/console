@@ -48,7 +48,7 @@
     "clusters.banner.dismiss": "Dismiss",
 
     "discoveryConfig.testFilter": "Test filter",
-    "discoveryConfig.add": "Add",
+    "discoveryConfig.add": "Create",
     "discoveryConfig.edit": "Save",
     "discoveryConfig.cancel": "Cancel",
     "discoveryConfig.delete": "Delete",
@@ -68,9 +68,14 @@
     "dcTbl.status": "Status",
     "dcTbl.namespace": "Namespace",
     "dcTbl.type": "Type",
-    "dcTbl.distributionVersion": "Distribution version",
+    "dcTbl.openShiftVersion": "OpenShift version",
     "dcTbl.infrastructureProvider": "Infrastructure provider",
     "dcTbl.lastActive": "Last active",
     "dcTbl.created": "Created",
-    "dcTbl.discovered": "Discovered"
+    "dcTbl.discovered": "Discovered",
+
+    "type.rosa": "Red Hat OpenShift Service on AWS",
+    "type.ocp": "OpenShift Container Platform",
+    "type.osd": "OpenShift Dedicated",
+    "type.aro": "Azure Red Hat OpenShift"
 }

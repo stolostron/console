@@ -167,6 +167,7 @@ export function AnsibleAutomationsForm(props: {
         backLabel: t('common:back'),
         sections: [
             {
+                type: 'Section',
                 title: t('template.information.title'),
                 wizardTitle: t('template.create.config.wizard.title'),
                 description: t('template.information.description'),
@@ -189,17 +190,16 @@ export function AnsibleAutomationsForm(props: {
                         value: ansibleSelection,
                         onChange: setAnsibleSelection,
                         isRequired: true,
-                        options: () =>
-                            ansibleCredentials.map((credential) => ({
-                                id: credential.metadata.name as string,
-                                value: credential.metadata.name as string,
-                            })),
+                        options: ansibleCredentials.map((credential) => ({
+                            id: credential.metadata.name as string,
+                            value: credential.metadata.name as string,
+                        })),
                         isDisabled: isEditing,
                     },
                 ],
-                columns: 1,
             },
             {
+                type: 'Section',
                 title: t('template.create.install'),
                 wizardTitle: t('template.create.install.wizard.title'),
                 inputs: [
@@ -220,9 +220,9 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setInstallPostJob,
                     },
                 ],
-                columns: 1,
             },
             {
+                type: 'Section',
                 title: t('template.create.upgrade'),
                 wizardTitle: t('template.create.upgrade.wizard.title'),
                 inputs: [
@@ -243,9 +243,9 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setUpgradePostJob,
                     },
                 ],
-                columns: 1,
             },
             {
+                type: 'Section',
                 title: t('template.create.scale'),
                 wizardTitle: t('template.create.scale.wizard.title'),
                 inputs: [
@@ -266,9 +266,9 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setScalePostJob,
                     },
                 ],
-                columns: 1,
             },
             {
+                type: 'Section',
                 title: t('template.create.destroy'),
                 wizardTitle: t('template.create.destroy.wizard.title'),
                 inputs: [
@@ -289,7 +289,6 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setDestroyPostJob,
                     },
                 ],
-                columns: 1,
             },
         ],
         submit: () => {

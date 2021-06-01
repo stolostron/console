@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmToastProvider, AcmToastGroup, Provider } from '@open-cluster-management/ui-components'
+import { AcmToastProvider, AcmToastGroup } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -8,78 +8,25 @@ import { discoveryConfigState, secretsState } from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC, nockGet, nockReplace, nockDelete } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../../resources/discovery-config'
-import { Secret, SecretKind, SecretApiVersion } from '../../../resources/secret'
 import DiscoveredClustersPage from '../DiscoveredClusters/DiscoveredClusters'
 import DiscoveryConfigPage from './DiscoveryConfig'
-
-const credential: Secret = {
-    apiVersion: SecretApiVersion,
-    kind: SecretKind,
-    metadata: {
-        name: 'connection',
-        namespace: 'discovery',
-        labels: {
-            'cluster.open-cluster-management.io/type': Provider.redhatcloud,
-            'cluster.open-cluster-management.io/credentials': '',
-        },
-    },
-    type: 'Opaque',
-}
-
-const discoveryConfig: DiscoveryConfig = {
-    apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind,
-    metadata: {
-        name: 'discovery',
-        namespace: credential.metadata.namespace!,
-    },
-    spec: {
-        filters: {
-            lastActive: 14,
-            openShiftVersions: ['4.7'],
-        },
-        credential: credential.metadata.name!,
-    },
-}
-
-const minDiscoveryConfig: DiscoveryConfig = {
-    apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind,
-    metadata: {
-        name: 'discovery',
-        namespace: credential.metadata.namespace!,
-    },
-    spec: {
-        filters: {
-            lastActive: 7,
-        },
-        credential: credential.metadata.name!,
-    },
-}
-
-const discoveryConfigUpdated: DiscoveryConfig = {
-    apiVersion: DiscoveryConfigApiVersion,
-    kind: DiscoveryConfigKind,
-    metadata: {
-        name: 'discovery',
-        namespace: 'discovery',
-    },
-    spec: {
-        filters: {
-            lastActive: 30,
-            openShiftVersions: ['4.7', '4.8'],
-        },
-        credential: credential.metadata.name!,
-    },
-}
+import {
+    discoveryConfig,
+    discoveryConfigUpdated,
+    minDiscoveryConfig,
+    mockRHOCMSecrets,
+    discoveryConfigCreateSelfSubjectAccessRequest,
+    discoveryConfigCreateSelfSubjectAccessResponse,
+    discoveryConfigUpdateSelfSubjectAccessRequest,
+    discoveryConfigUpdateSelfSubjectAccessResponse,
+} from '../DiscoveryComponents/test-utils'
 
 function TestAddDiscoveryConfigPage() {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(discoveryConfigState, [])
-                snapshot.set(secretsState, [credential])
+                snapshot.set(secretsState, [mockRHOCMSecrets[0]])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.createDiscovery]}>
@@ -118,14 +65,19 @@ beforeEach(() => {
 
 describe('discovery config page', () => {
     it('Create Minimal DiscoveryConfig', async () => {
+        const discoveryConfigCreateNock = nockCreate(
+            discoveryConfigCreateSelfSubjectAccessRequest,
+            discoveryConfigCreateSelfSubjectAccessResponse
+        )
         const { container } = render(<TestAddDiscoveryConfigPage />)
+        waitForNocks([discoveryConfigCreateNock])
 
         // Select Credential
         await waitFor(() =>
             expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
-        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
+        await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
 
         // Submit form
         const createDiscoveryConfigNock = nockCreate(minDiscoveryConfig, minDiscoveryConfig)
@@ -138,6 +90,10 @@ describe('discovery config page', () => {
     })
 
     it('Create DiscoveryConfig', async () => {
+        const discoveryConfigCreateNock = nockCreate(
+            discoveryConfigCreateSelfSubjectAccessRequest,
+            discoveryConfigCreateSelfSubjectAccessResponse
+        )
         const { container } = render(<TestAddDiscoveryConfigPage />)
 
         // Select Credential
@@ -145,7 +101,8 @@ describe('discovery config page', () => {
             expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1)
         )
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
-        await clickByText(credential.metadata.namespace! + '/' + credential.metadata.name!)
+        await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
+        waitForNocks([discoveryConfigCreateNock])
 
         // Select LastActive
         await waitFor(() =>
@@ -171,6 +128,10 @@ describe('discovery config page', () => {
     })
 
     it('Edit DiscoveryConfig', async () => {
+        const discoveryConfigUpdateNock = nockCreate(
+            discoveryConfigUpdateSelfSubjectAccessRequest,
+            discoveryConfigUpdateSelfSubjectAccessResponse
+        )
         const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
         const { container } = render(<TestEditConnectionPage />)
@@ -181,10 +142,12 @@ describe('discovery config page', () => {
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
         await clickByText(discoveryConfig.metadata.namespace!)
 
+        await waitForNocks([discoveryConfigUpdateNock])
+
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
         await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
-        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+        await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name!)
 
         // Change form
         container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
@@ -216,7 +179,7 @@ describe('discovery config page', () => {
         // Ensure Form is prepopulated
         await waitForText(discoveryConfig.spec.filters?.lastActive! + ' days')
         await waitForText(discoveryConfig.spec.filters?.openShiftVersions![0]!)
-        await waitForText(credential.metadata.namespace + '/' + credential.metadata.name!)
+        await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name!)
 
         const deleteNock = nockDelete(discoveryConfigUpdated)
         await clickByText('discoveryConfig.delete')

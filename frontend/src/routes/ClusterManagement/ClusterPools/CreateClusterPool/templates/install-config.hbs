@@ -237,7 +237,7 @@ platform:
 
 {{#case 'GCP'}}
   gcp:
-    projectID: {{{../../gcProjectID}}} ##gcProjectID
+    projectID: {{{../../projectID}}} ##projectID
     region: {{{../../region}}}
 {{/case}}
 
@@ -249,12 +249,12 @@ platform:
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{../../vcenter}}}
+    vCenter: {{{../../vCenter}}}
     username: {{{../../username}}}
     password: {{{../../password}}}
     datacenter: {{{../../datacenter}}}
-    defaultDatastore: {{{../../datastore}}}
-    cluster: {{{../../vmClusterName}}}
+    defaultDatastore: {{{../../defaultDatastore}}}
+    cluster: {{{../../cluster}}}
     apiVIP: {{{../../apiVIP}}}    ##apiVIP
     ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
     network: {{{../../networkType}}}
@@ -263,7 +263,7 @@ platform:
 {{! == NOTE: lbFloatingIP is deprecated in 4.7 for apiFloatingIP, but since we still support 4.5 and 4.6, we need the old key }}
 {{#case 'OpenStack'}}
   openstack:
-    cloud: {{{../../openstackCloud}}}
+    cloud: {{{../../cloud}}}
     externalNetwork: {{{../../externalNetworkName}}}
     lbFloatingIP: {{{../../apiFloatingIP}}}
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
@@ -272,9 +272,9 @@ platform:
 {{/switch}}
 
 pullSecret: "" # skip, hive will inject based on it's secrets
-{{#if sshPublickey}}
+{{#if ssh-publickey}}
 sshKey: |-
-{{#each sshPublickey}}
+{{#each ssh-publickey}}
     {{{.}}}
 {{/each}}
 {{/if}}

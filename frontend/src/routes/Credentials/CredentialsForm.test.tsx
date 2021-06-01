@@ -55,8 +55,8 @@ function createProviderConnection(
                   ...{
                       baseDomain: 'baseDomain',
                       pullSecret: '{"pull":"secret"}',
-                      sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                      sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
+                      'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                      'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com',
                   },
               }
             : stringData,
@@ -71,7 +71,7 @@ describe('add credentials page', () => {
 
         const providerConnection = createProviderConnection(
             'aws',
-            { awsAccessKeyID: 'awsAccessKeyID', awsSecretAccessKeyID: 'awsSecretAccessKeyID' },
+            { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
             true
         )
 
@@ -83,14 +83,14 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // AWS credentials
-        await typeByTestId('awsAccessKeyID', providerConnection.stringData?.awsAccessKeyID!)
-        await typeByTestId('awsSecretAccessKeyID', providerConnection.stringData?.awsSecretAccessKeyID!)
+        await typeByTestId('aws_access_key_id', providerConnection.stringData?.aws_access_key_id!)
+        await typeByTestId('aws_secret_access_key', providerConnection.stringData?.aws_secret_access_key!)
         await clickByText('common:next')
 
         // Pull secret and SSH
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials
@@ -106,10 +106,12 @@ describe('add credentials page', () => {
             'azr',
             {
                 baseDomainResourceGroupName: 'baseDomainResourceGroupName',
-                clientId: 'clientId',
-                clientSecret: 'clientSecret',
-                tenantId: 'tenantId',
-                subscriptionId: 'subscriptionId',
+                'osServicePrincipal.json': JSON.stringify({
+                    clientId: 'clientId',
+                    clientSecret: 'clientSecret',
+                    tenantId: 'tenantId',
+                    subscriptionId: 'subscriptionId',
+                }),
             },
             true
         )
@@ -123,16 +125,16 @@ describe('add credentials page', () => {
 
         // AZR credentials
         await typeByTestId('baseDomainResourceGroupName', providerConnection.stringData?.baseDomainResourceGroupName!)
-        await typeByTestId('clientId', providerConnection.stringData?.clientId!)
-        await typeByTestId('clientSecret', providerConnection.stringData?.clientSecret!)
-        await typeByTestId('tenantId', providerConnection.stringData?.tenantId!)
-        await typeByTestId('subscriptionId', providerConnection.stringData?.subscriptionId!)
+        await typeByTestId('clientId', 'clientId')
+        await typeByTestId('clientSecret', 'clientSecret')
+        await typeByTestId('tenantId', 'tenantId')
+        await typeByTestId('subscriptionId', 'subscriptionId')
         await clickByText('common:next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials
@@ -147,8 +149,8 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'gcp',
             {
-                gcProjectID: 'gcp123',
-                gcServiceAccountKey: '{ "json": "key"}',
+                projectID: 'gcp123',
+                'osServiceAccount.json': '{ "json": "key"}',
             },
             true
         )
@@ -161,14 +163,14 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // GCP credentials
-        await typeByTestId('gcProjectID', providerConnection.stringData?.gcProjectID!)
-        await typeByTestId('gcServiceAccountKey', providerConnection.stringData?.gcServiceAccountKey!)
+        await typeByTestId('projectID', providerConnection.stringData?.projectID!)
+        await typeByTestId('osServiceAccount.json', providerConnection.stringData?.['osServiceAccount.json']!)
         await clickByText('common:next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials
@@ -183,13 +185,13 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'vmw',
             {
-                vcenter: 'vcenter',
+                vCenter: 'vCenter',
                 username: 'username',
                 password: 'password',
                 cacertificate: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-                vmClusterName: 'vmClusterName',
+                cluster: 'cluster',
                 datacenter: 'datacenter',
-                datastore: 'datastore',
+                defaultDatastore: 'defaultDatastore',
             },
             true
         )
@@ -202,19 +204,19 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // credentials
-        await typeByTestId('vcenter', providerConnection.stringData?.vcenter!)
+        await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
         await typeByTestId('username', providerConnection.stringData?.username!)
         await typeByTestId('password', providerConnection.stringData?.password!)
         await typeByTestId('cacertificate', providerConnection.stringData?.cacertificate!)
-        await typeByTestId('vmClusterName', providerConnection.stringData?.vmClusterName!)
+        await typeByTestId('cluster', providerConnection.stringData?.cluster!)
         await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
-        await typeByTestId('datastore', providerConnection.stringData?.datastore!)
+        await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
         await clickByText('common:next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials
@@ -229,9 +231,9 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'ost',
             {
-                openstackCloudsYaml:
+                'clouds.yaml':
                     'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
-                openstackCloud: 'openstack',
+                cloud: 'openstack',
             },
             true
         )
@@ -244,14 +246,14 @@ describe('add credentials page', () => {
         await clickByText('common:next')
 
         // ost credentials
-        await typeByTestId('openstackCloud', providerConnection.stringData?.openstackCloud!)
-        await typeByTestId('openstackCloudsYaml', providerConnection.stringData?.openstackCloudsYaml!)
+        await typeByTestId('cloud', providerConnection.stringData?.cloud!)
+        await typeByTestId('clouds.yaml', providerConnection.stringData?.['clouds.yaml']!)
         await clickByText('common:next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials
@@ -299,8 +301,8 @@ describe('add credentials page', () => {
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
-        await typeByTestId('sshPrivatekey', providerConnection.stringData?.sshPrivatekey!)
-        await typeByTestId('sshPublickey', providerConnection.stringData?.sshPublickey!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
         await clickByText('common:next')
 
         // Add Credentials

@@ -42,12 +42,12 @@ export function validatePublicSshKey(value: string, t: TFunction) {
             }
         }
     }
-    return t('validate.publicSshKey.required')
+    return t('validate.publicSshKey')
 }
 
 export function validatePrivateSshKey(value: string, t: TFunction) {
     if (!/-----BEGIN [a-zA-Z]+ PRIVATE KEY-----\n([\s\S]*?)\n-----END [a-zA-Z]+ PRIVATE KEY-----/gm.test(value)) {
-        return t('validate.privateSshKey.required')
+        return t('validate.privateSshKey')
     }
 
     return undefined
@@ -55,15 +55,15 @@ export function validatePrivateSshKey(value: string, t: TFunction) {
 
 export function validateCertificate(value: string, t: TFunction) {
     if (!/-----BEGIN CERTIFICATE-----\n([\s\S]*?)\n-----END CERTIFICATE-----/gm.test(value)) {
-        return t('validate.certificate.required')
+        return t('validate.certificate')
     }
     return undefined
 }
 
 export function validateGCProjectID(value: string, t: TFunction) {
-    const gcProjectIDPattern = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/
-    if (!gcProjectIDPattern.test(value)) {
-        return t('validate.gcProjectID.format')
+    const projectIDPattern = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/
+    if (!projectIDPattern.test(value)) {
+        return t('validate.projectID.format')
     }
 
     return undefined // the value is valid
@@ -73,10 +73,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('validate.json.required')
+            return t('validate.json')
         }
     } catch (e) {
-        return t('validate.json.required')
+        return t('validate.json')
     }
     return undefined
 }

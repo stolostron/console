@@ -166,8 +166,10 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                         ]}
                         title={cluster.displayName!}
                         description={
-                            cluster.name !== cluster.displayName && (
-                                <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.name}</span>
+                            cluster.hive.clusterClaimName && (
+                                <span style={{ color: 'var(--pf-global--Color--200)' }}>
+                                    {cluster.hive.clusterClaimName}
+                                </span>
                             )
                         }
                         navigation={
