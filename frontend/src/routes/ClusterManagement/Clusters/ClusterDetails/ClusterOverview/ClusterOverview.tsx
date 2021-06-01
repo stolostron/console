@@ -29,12 +29,14 @@ import { EditLabels } from '../../components/EditLabels'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
+import { ProgressStepBar } from '../../components/ProgressStepBar'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
     const { t } = useTranslation(['cluster', 'common'])
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+
     let leftItems = [
         {
             key: t('table.clusterName'),
@@ -167,6 +169,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
+                <ProgressStepBar />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={leftItems}
