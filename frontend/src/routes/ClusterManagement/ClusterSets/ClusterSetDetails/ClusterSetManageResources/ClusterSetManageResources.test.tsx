@@ -32,7 +32,6 @@ import {
     waitForText,
     waitForTestId,
     clickByLabel,
-    clickByTestId,
     clickByText,
     waitForNocks,
     waitForNotText,
