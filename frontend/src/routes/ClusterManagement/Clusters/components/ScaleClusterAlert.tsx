@@ -21,10 +21,13 @@ export function ScaleClusterAlert() {
     )?.length
     let totalDesiredReplicas = 0
     machinePools.forEach((mp) => {
-        if (mp.spec?.replicas) {
-            totalDesiredReplicas += mp.spec.replicas
+        if (mp.status?.replicas) {
+            totalDesiredReplicas += mp.status?.replicas ?? 0
         }
     })
+
+    console.log('workerNodecount', workerNodeCount)
+    console.log('totalDesiredReplicas', totalDesiredReplicas)
 
     if (
         cluster?.isHive &&
