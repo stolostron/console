@@ -500,7 +500,6 @@
     "template.modal.noCredentials": "You don't have any Ansible credentials. Visit the <bold>Credentials</bold> tab and select <bold>Add credentials</bold> to create an Ansible credential.",
     "template.information.title": "Template information",
     "template.information.description": "The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.",
-    "template.create.title": "Create a job template",
 
     "template.create.name": "Template name",
     "template.create.placeholder": "Enter the name for the template",
