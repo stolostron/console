@@ -953,7 +953,7 @@ export function CredentialsForm(props: {
                 return patchResource(secret, patch).promise.then(() => {
                     toastContext.addAlert({
                         title: t('credentialsForm.updated.title'),
-                        message: t('credentialsForm.updated.message',  { name }),
+                        message: t('credentialsForm.updated.message', { name }),
                         type: 'success',
                         autoClose: true,
                     })
