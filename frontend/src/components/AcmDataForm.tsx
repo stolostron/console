@@ -12,6 +12,14 @@ import {
     CodeBlock,
     CodeBlockAction,
     CodeBlockCode,
+    DataList,
+    DataListAction,
+    DataListCell,
+    DataListControl,
+    DataListDragButton,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -60,6 +68,8 @@ import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
 import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
+import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
+import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
@@ -713,7 +723,9 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
             return (
                 <DescriptionListGroup key={input.label}>
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
-                    <DescriptionListDescription>{selectedOption.text}</DescriptionListDescription>
+                    <DescriptionListDescription>
+                        {selectedOption.text ?? selectedOption.value}
+                    </DescriptionListDescription>
                 </DescriptionListGroup>
             )
         }
@@ -729,7 +741,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 <DescriptionListGroup key={input.label}>
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
                     <DescriptionListDescription>
-                        {selectedOptions.map((option) => option.text).join(', ')}
+                        {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
                     </DescriptionListDescription>
                 </DescriptionListGroup>
             )
@@ -748,7 +760,22 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 <DescriptionListGroup key={input.label}>
                     <DescriptionListTerm>{input.label}</DescriptionListTerm>
                     <DescriptionListDescription>
-                        {selectedOptions.map((option) => option.text).join(', ')}
+                        {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
+                    </DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
+        case 'OrderedStrings': {
+            if (input.value.length === 0) return <Fragment />
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                        <Stack>
+                            {input.value.map((value) => (
+                                <div>{value}</div>
+                            ))}
+                        </Stack>
                     </DescriptionListDescription>
                 </DescriptionListGroup>
             )
@@ -812,7 +839,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
                     {value === '' ? (
-                        <PasteInputButton input={input} setShowSecrets={setShowSecrets} />
+                        <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
                     ) : (
                         <Fragment>
                             {input.isSecret && (
@@ -865,7 +892,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                     )}
 
                     {input.value === '' ? (
-                        <PasteInputButton input={input} setShowSecrets={setShowSecrets} />
+                        <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
                     ) : (
                         <Fragment>
                             {input.isSecret && (
@@ -1073,8 +1100,9 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             )
         }
 
-        default:
-            return <Fragment />
+        case 'OrderedStrings': {
+            return <OrderedStringsInput {...input} validated={validated} isReadOnly={isReadOnly} />
+        }
     }
 }
 
@@ -1176,9 +1204,10 @@ function inputHasValue(input: Input): boolean {
     switch (input.type) {
         case 'Multiselect':
         case 'GroupedMultiselect':
-            return input.value.length === 0
+        case 'OrderedStrings':
+            return input.value.length !== 0
         default:
-            return input.value !== ''
+            return input.value !== '' && input.value !== 0
     }
 }
 
@@ -1267,15 +1296,15 @@ function SelectOptionsGallery(props: { input: InputBase<string>; options: Select
     )
 }
 
-function PasteInputButton(props: { input: InputBase<string>; setShowSecrets: (value: boolean) => void }) {
-    const { input, setShowSecrets } = props
+function PasteInputButton(props: { setValue: (value: string) => void; setShowSecrets?: (value: boolean) => void }) {
+    const { setValue, setShowSecrets } = props
     return (
         <Button
             variant="control"
             onClick={() => {
                 navigator.clipboard.readText().then((value) => {
-                    input.onChange(value)
-                    if (value) setShowSecrets(false)
+                    setValue(value)
+                    if (value && setShowSecrets) setShowSecrets(false)
                 })
             }}
         >
@@ -1299,5 +1328,85 @@ function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value
         <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
             {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
         </Button>
+    )
+}
+
+function OrderedStringsInput(props: {
+    value: string[]
+    onChange: (value: string[]) => void
+    validated: 'error' | undefined
+    isReadOnly: boolean
+}) {
+    const { value, onChange, validated, isReadOnly } = props
+    const [text, setText] = useState('')
+    return (
+        <Fragment>
+            <InputGroup>
+                <TextInput validated={validated} value={text} onChange={setText} isReadOnly={isReadOnly} />
+                {text ? (
+                    <Fragment>
+                        <ClearInputButton onClick={() => setText('')} />
+                        <Button
+                            variant="control"
+                            aria-label="Action"
+                            onClick={() => {
+                                if (!value.includes(text)) onChange([...value, ...[text]])
+                                setText('')
+                            }}
+                        >
+                            <PlusIcon />
+                        </Button>
+                    </Fragment>
+                ) : (
+                    <PasteInputButton setValue={setText} />
+                )}
+            </InputGroup>
+            <DataList
+                aria-label="draggable data list example"
+                isCompact
+                onDragFinish={(itemOrder) => onChange(itemOrder)}
+                itemOrder={value}
+                style={{ borderTop: '0' }}
+            >
+                {value.map((v) => (
+                    <DataListItem aria-labelledby="simple-item1" id={v} key="1">
+                        <DataListItemRow>
+                            <DataListControl>
+                                <DataListDragButton
+                                    aria-label="Reorder"
+                                    aria-labelledby="simple-item1"
+                                    aria-describedby="Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation."
+                                    aria-pressed="false"
+                                    isDisabled={isReadOnly}
+                                />
+                            </DataListControl>
+                            <DataListItemCells
+                                dataListCells={[
+                                    <DataListCell key={v}>
+                                        <span id="simple-item1">{v}</span>
+                                    </DataListCell>,
+                                ]}
+                            />
+                            <DataListAction
+                                aria-labelledby="ex-item1 ex-action1"
+                                id="ex-action1"
+                                aria-label="Actions"
+                                isPlainButtonAction
+                            >
+                                <Button
+                                    variant="plain"
+                                    aria-label="Action"
+                                    onClick={() => {
+                                        onChange(value.filter((value) => value !== v))
+                                    }}
+                                >
+                                    <TrashIcon />
+                                </Button>
+                            </DataListAction>
+                        </DataListItemRow>
+                    </DataListItem>
+                ))}
+            </DataList>
+        </Fragment>
     )
 }
