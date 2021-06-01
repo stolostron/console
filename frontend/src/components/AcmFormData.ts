@@ -63,6 +63,9 @@ export interface TextInput extends InputBase<string> {
 
 export interface TextNumberInput extends InputBase<number> {
     type: 'TextNumber'
+    min?: number
+    max?: number
+    step?: number
 }
 
 export interface TextArea extends InputBase<string> {
@@ -127,6 +130,10 @@ export interface NumberInput extends InputBase<number> {
     unit?: ReactNode
 }
 
+export interface OrderedStringInput extends InputBase<string[]> {
+    type: 'OrderedStrings'
+}
+
 export type Input =
     | TextInput
     | TextNumberInput
@@ -138,3 +145,4 @@ export type Input =
     | TilesInput
     | GroupedTilesInput
     | NumberInput
+    | OrderedStringInput

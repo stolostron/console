@@ -170,44 +170,60 @@ export function CredentialsForm(props: {
     const [pullSecret, setPullSecret] = useState(providerConnection?.stringData?.pullSecret ?? '')
 
     // SSH Key
-    const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.sshPublickey ?? '')
-    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.sshPrivatekey ?? '')
+    const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.['ssh-publickey'] ?? '')
+    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.['ssh-privatekey'] ?? '')
 
     // Amazon Web Services State
-    const [awsAccessKeyID, setAwsAccessKeyID] = useState(providerConnection?.stringData?.awsAccessKeyID ?? '')
-    const [awsSecretAccessKeyID, setAwsSecretAccessKeyID] = useState(
-        providerConnection?.stringData?.awsSecretAccessKeyID ?? ''
+    const [aws_access_key_id, setAwsAccessKeyID] = useState(providerConnection?.stringData?.aws_access_key_id ?? '')
+    const [aws_secret_access_key, setAwsSecretAccessKeyID] = useState(
+        providerConnection?.stringData?.aws_secret_access_key ?? ''
     )
 
     // Azure Cloud State
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
         providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
-    const [clientId, setClientId] = useState(providerConnection?.stringData?.clientId ?? '')
-    const [clientSecret, setClientSecret] = useState(providerConnection?.stringData?.clientSecret ?? '')
-    const [tenantId, setTenantId] = useState(providerConnection?.stringData?.tenantId ?? '')
-    const [subscriptionId, setSubscriptionId] = useState(providerConnection?.stringData?.subscriptionId ?? '')
+
+    let osServicePrincipalJson:
+        | {
+              clientId: string
+              clientSecret: string
+              tenantId: string
+              subscriptionId: string
+          }
+        | undefined = undefined
+
+    if (providerConnection?.stringData?.['osServicePrincipal.json']) {
+        try {
+            osServicePrincipalJson = JSON.parse(providerConnection?.stringData?.['osServicePrincipal.json'])
+        } catch {
+            // Do Nothing
+        }
+    }
+
+    const [clientId, setClientId] = useState(osServicePrincipalJson?.clientId ?? '')
+    const [clientSecret, setClientSecret] = useState(osServicePrincipalJson?.clientSecret ?? '')
+    const [tenantId, setTenantId] = useState(osServicePrincipalJson?.tenantId ?? '')
+    const [subscriptionId, setSubscriptionId] = useState(osServicePrincipalJson?.subscriptionId ?? '')
 
     // Google
-    const [gcProjectID, setGcProjectID] = useState(providerConnection?.stringData?.gcProjectID ?? '')
-    const [gcServiceAccountKey, setGcServiceAccountKey] = useState(
-        providerConnection?.stringData?.gcServiceAccountKey ?? ''
+    const [projectID, setGcProjectID] = useState(providerConnection?.stringData?.projectID ?? '')
+    const [osServiceAccountJson, setGcServiceAccountKey] = useState(
+        providerConnection?.stringData?.['osServiceAccount.json'] ?? ''
     )
 
     // VMWare
-    const [vcenter, setVcenter] = useState(providerConnection?.stringData?.vcenter ?? '')
+    const [vCenter, setVcenter] = useState(providerConnection?.stringData?.vCenter ?? '')
     const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
     const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
     const [cacertificate, setCacertificate] = useState(providerConnection?.stringData?.cacertificate ?? '')
-    const [vmClusterName, setVmClusterName] = useState(providerConnection?.stringData?.vmClusterName ?? '')
+    const [cluster, setVmClusterName] = useState(providerConnection?.stringData?.cluster ?? '')
     const [datacenter, setDatacenter] = useState(providerConnection?.stringData?.datacenter ?? '')
-    const [datastore, setDatastore] = useState(providerConnection?.stringData?.datastore ?? '')
+    const [defaultDatastore, setDatastore] = useState(providerConnection?.stringData?.defaultDatastore ?? '')
 
     // OpenStack
-    const [openstackCloudsYaml, setOpenstackCloudsYaml] = useState(
-        providerConnection?.stringData?.openstackCloudsYaml ?? ''
-    )
-    const [openstackCloud, setOpenstackCloud] = useState(providerConnection?.stringData?.openstackCloud ?? '')
+    const [cloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.stringData?.['clouds.yaml'] ?? '')
+    const [cloud, setOpenstackCloud] = useState(providerConnection?.stringData?.cloud ?? '')
 
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
@@ -254,52 +270,54 @@ export function CredentialsForm(props: {
         }
         switch (credentialsType) {
             case Provider.aws:
-                secret.stringData!.awsAccessKeyID = awsAccessKeyID
-                secret.stringData!.awsSecretAccessKeyID = awsSecretAccessKeyID
+                secret.stringData!.aws_access_key_id = aws_access_key_id
+                secret.stringData!.aws_secret_access_key = aws_secret_access_key
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.azure:
                 secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
-                secret.stringData!.clientId = clientId
-                secret.stringData!.clientSecret = clientSecret
-                secret.stringData!.tenantId = tenantId
-                secret.stringData!.subscriptionId = subscriptionId
+                secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
+                    clientId,
+                    clientSecret,
+                    tenantId,
+                    subscriptionId,
+                })
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.gcp:
-                secret.stringData!.gcProjectID = gcProjectID
-                secret.stringData!.gcServiceAccountKey = gcServiceAccountKey
+                secret.stringData!.projectID = projectID
+                secret.stringData!['osServiceAccount.json'] = osServiceAccountJson
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.vmware:
-                secret.stringData!.vcenter = vcenter
+                secret.stringData!.vCenter = vCenter
                 secret.stringData!.username = username
                 secret.stringData!.password = password
                 secret.stringData!.cacertificate = cacertificate
-                secret.stringData!.vmClusterName = vmClusterName
+                secret.stringData!.cluster = cluster
                 secret.stringData!.datacenter = datacenter
-                secret.stringData!.datastore = datastore
+                secret.stringData!.defaultDatastore = defaultDatastore
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.openstack:
-                secret.stringData!.openstackCloudsYaml = openstackCloudsYaml
-                secret.stringData!.openstackCloud = openstackCloud
+                secret.stringData!['clouds.yaml'] = cloudsYaml
+                secret.stringData!.cloud = cloud
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.baremetal:
                 secret.stringData!.libvirtURI = libvirtURI
@@ -310,8 +328,8 @@ export function CredentialsForm(props: {
                 secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
-                secret.stringData!.sshPrivatekey = sshPrivatekey
-                secret.stringData!.sshPublickey = sshPublickey
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
                 secret.stringData!.host = ansibleHost
@@ -470,24 +488,24 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'awsAccessKeyID',
+                        id: 'aws_access_key_id',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('credentialsForm.awsAccessKeyID.label'),
-                        placeholder: t('credentialsForm.awsAccessKeyID.placeholder'),
-                        labelHelp: t('credentialsForm.awsAccessKeyID.labelHelp'),
-                        value: awsAccessKeyID,
+                        label: t('credentialsForm.aws_access_key_id.label'),
+                        placeholder: t('credentialsForm.aws_access_key_id.placeholder'),
+                        labelHelp: t('credentialsForm.aws_access_key_id.labelHelp'),
+                        value: aws_access_key_id,
                         onChange: setAwsAccessKeyID,
                         isRequired: true,
                     },
                     {
-                        id: 'awsSecretAccessKeyID',
+                        id: 'aws_secret_access_key',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('credentialsForm.awsSecretAccessKeyID.label'),
-                        placeholder: t('credentialsForm.awsSecretAccessKeyID.placeholder'),
-                        labelHelp: t('credentialsForm.awsSecretAccessKeyID.labelHelp'),
-                        value: awsSecretAccessKeyID,
+                        label: t('credentialsForm.aws_secret_access_key.label'),
+                        placeholder: t('credentialsForm.aws_secret_access_key.placeholder'),
+                        labelHelp: t('credentialsForm.aws_secret_access_key.labelHelp'),
+                        value: aws_secret_access_key,
                         onChange: setAwsSecretAccessKeyID,
                         isRequired: true,
                         isSecret: true,
@@ -505,25 +523,25 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'gcProjectID',
+                        id: 'projectID',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'Text',
-                        label: t('credentialsForm.gcProjectID.label'),
-                        placeholder: t('credentialsForm.gcProjectID.placeholder'),
-                        labelHelp: t('credentialsForm.gcProjectID.labelHelp'),
-                        value: gcProjectID,
+                        label: t('credentialsForm.projectID.label'),
+                        placeholder: t('credentialsForm.projectID.placeholder'),
+                        labelHelp: t('credentialsForm.projectID.labelHelp'),
+                        value: projectID,
                         onChange: setGcProjectID,
                         validation: (value) => validateGCProjectID(value, t),
                         isRequired: true,
                     },
                     {
-                        id: 'gcServiceAccountKey',
+                        id: 'osServiceAccount.json',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'TextArea',
-                        label: t('credentialsForm.gcServiceAccountKey.label'),
-                        placeholder: t('credentialsForm.gcServiceAccountKey.placeholder'),
-                        labelHelp: t('credentialsForm.gcServiceAccountKey.labelHelp'),
-                        value: gcServiceAccountKey,
+                        label: t('credentialsForm.osServiceAccount.json.label'),
+                        placeholder: t('credentialsForm.osServiceAccount.json.placeholder'),
+                        labelHelp: t('credentialsForm.osServiceAccount.json.labelHelp'),
+                        value: osServiceAccountJson,
                         onChange: setGcServiceAccountKey,
                         validation: (value) => validateJSON(value, t),
                         isRequired: true,
@@ -573,6 +591,7 @@ export function CredentialsForm(props: {
                         isRequired: true,
                         value: clientSecret,
                         onChange: setClientSecret,
+                        isSecret: true,
                     },
                     {
                         id: 'subscriptionId',
@@ -609,13 +628,13 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'vcenter',
+                        id: 'vCenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.vcenter.label'),
-                        placeholder: t('credentialsForm.vcenter.placeholder'),
-                        labelHelp: t('credentialsForm.vcenter.labelHelp'),
-                        value: vcenter,
+                        label: t('credentialsForm.vCenter.label'),
+                        placeholder: t('credentialsForm.vCenter.placeholder'),
+                        labelHelp: t('credentialsForm.vCenter.labelHelp'),
+                        value: vCenter,
                         onChange: setVcenter,
                         isRequired: true,
                     },
@@ -655,13 +674,13 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                     {
-                        id: 'vmClusterName',
+                        id: 'cluster',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.vmClusterName.label'),
-                        placeholder: t('credentialsForm.vmClusterName.placeholder'),
-                        labelHelp: t('credentialsForm.vmClusterName.labelHelp'),
-                        value: vmClusterName,
+                        label: t('credentialsForm.cluster.label'),
+                        placeholder: t('credentialsForm.cluster.placeholder'),
+                        labelHelp: t('credentialsForm.cluster.labelHelp'),
+                        value: cluster,
                         onChange: setVmClusterName,
                         isRequired: true,
                     },
@@ -677,13 +696,13 @@ export function CredentialsForm(props: {
                         isRequired: true,
                     },
                     {
-                        id: 'datastore',
+                        id: 'defaultDatastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.datastore.label'),
-                        placeholder: t('credentialsForm.datastore.placeholder'),
-                        labelHelp: t('credentialsForm.datastore.labelHelp'),
-                        value: datastore,
+                        label: t('credentialsForm.defaultDatastore.label'),
+                        placeholder: t('credentialsForm.defaultDatastore.placeholder'),
+                        labelHelp: t('credentialsForm.defaultDatastore.labelHelp'),
+                        value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
                     },
@@ -700,26 +719,26 @@ export function CredentialsForm(props: {
                 ),
                 inputs: [
                     {
-                        id: 'openstackCloudsYaml',
+                        id: 'clouds.yaml',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'TextArea',
-                        label: t('credentialsForm.openstackCloudsYaml.label'),
-                        placeholder: t('credentialsForm.openstackCloudsYaml.placeholder'),
-                        labelHelp: t('credentialsForm.openstackCloudsYaml.labelHelp'),
-                        value: openstackCloudsYaml,
+                        label: t('credentialsForm.clouds.yaml.label'),
+                        placeholder: t('credentialsForm.clouds.yaml.placeholder'),
+                        labelHelp: t('credentialsForm.clouds.yaml.labelHelp'),
+                        value: cloudsYaml,
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
                         isSecret: true,
-                        validation: (value) => validateCloudsYaml(value, openstackCloud, t),
+                        validation: (value) => validateCloudsYaml(value, cloud, t),
                     },
                     {
-                        id: 'openstackCloud',
+                        id: 'cloud',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'Text',
-                        label: t('credentialsForm.openstackCloud.label'),
-                        placeholder: t('credentialsForm.openstackCloud.placeholder'),
-                        labelHelp: t('credentialsForm.openstackCloud.labelHelp'),
-                        value: openstackCloud,
+                        label: t('credentialsForm.cloud.label'),
+                        placeholder: t('credentialsForm.cloud.placeholder'),
+                        labelHelp: t('credentialsForm.cloud.labelHelp'),
+                        value: cloud,
                         onChange: setOpenstackCloud,
                         isRequired: true,
                     },
@@ -904,7 +923,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                     {
-                        id: 'sshPrivatekey',
+                        id: 'ssh-privatekey',
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
@@ -924,7 +943,7 @@ export function CredentialsForm(props: {
                         isSecret: true,
                     },
                     {
-                        id: 'sshPublickey',
+                        id: 'ssh-publickey',
                         isHidden: ![
                             Provider.aws,
                             Provider.azure,
