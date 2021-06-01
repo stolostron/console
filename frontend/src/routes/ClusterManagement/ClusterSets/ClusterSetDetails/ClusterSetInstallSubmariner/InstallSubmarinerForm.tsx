@@ -468,7 +468,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     copy[clusterName] = value
                                     setGateways(copy)
                                 },
-                                min: 0,
+                                min: 1,
                                 step: 1,
                             },
                             {
