@@ -27,6 +27,7 @@
     "installing": "Installing",
     "uninstall": "Uninstall",
     "uninstalling": "Uninstalling",
+    "review": "Review",
     "clipboardCopy": "Copy to clipboard",
     "copied": "Successfully copied to clipboard",
     "retry": "Retry",

@@ -88,7 +88,7 @@ const AWSmasterInstanceTypes = [
     { value: 'm5.16xlarge', description: gp64Cpu256Gib },
 ]
 
-const AWSworkerInstanceTypes = [
+export const AWSworkerInstanceTypes = [
     {
         label: 'General Purpose',
         children: [
