@@ -58,12 +58,12 @@ const providerConnection: ProviderConnection = {
         },
     },
     stringData: {
-        awsAccessKeyID: 'awsAccessKeyID',
-        awsSecretAccessKeyID: 'awsSecretAccessKeyID',
+        aws_access_key_id: 'aws_access_key_id',
+        aws_secret_access_key: 'aws_secret_access_key',
         baseDomain: 'base.domain',
         pullSecret: '{"pullSecret":"secret"}',
-        sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-        sshPublickey: 'ssh-rsa AAAAB1 fakeemail@redhat.com',
+        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+        'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com',
     },
     type: 'Opaque',
 }
@@ -131,8 +131,8 @@ const mockCredentialSecret: Secret = {
         namespace: mockNamespace.metadata.name!,
     },
     stringData: {
-        aws_access_key_id: 'awsAccessKeyID',
-        aws_secret_access_key: 'awsSecretAccessKeyID',
+        aws_access_key_id: 'aws_access_key_id',
+        aws_secret_access_key: 'aws_secret_access_key',
     },
 }
 

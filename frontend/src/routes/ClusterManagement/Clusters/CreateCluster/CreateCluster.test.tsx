@@ -75,8 +75,8 @@ const providerConnection: ProviderConnection = {
         additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
         baseDomain: 'base.domain',
         pullSecret: '{"pullSecret":"secret"}',
-        sshPrivatekey: '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-        sshPublickey: 'ssh-rsa AAAAB1 fake@email.com',
+        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
     },
     type: 'Opaque',
 }

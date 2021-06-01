@@ -61,9 +61,9 @@ export function validateCertificate(value: string, t: TFunction) {
 }
 
 export function validateGCProjectID(value: string, t: TFunction) {
-    const gcProjectIDPattern = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/
-    if (!gcProjectIDPattern.test(value)) {
-        return t('validate.gcProjectID.format')
+    const projectIDPattern = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/
+    if (!projectIDPattern.test(value)) {
+        return t('validate.projectID.format')
     }
 
     return undefined // the value is valid
