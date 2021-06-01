@@ -4,12 +4,13 @@ import {
     AcmIcon,
     AcmPage,
     AcmPageHeader,
+    AcmToastContext,
     Provider,
     ProviderIconMap,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilState } from 'recoil'
@@ -152,6 +153,7 @@ export function CredentialsForm(props: {
 }) {
     const { t } = useTranslation(['credentials', 'common'])
     const { namespaces, providerConnection, isEditing, isViewing } = props
+    const toastContext = useContext(AcmToastContext)
 
     const history = useHistory()
 
@@ -973,10 +975,22 @@ export function CredentialsForm(props: {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
                 return patchResource(secret, patch).promise.then(() => {
+                    toastContext.addAlert({
+                        title: t('credentialsForm.updated.title'),
+                        message: t('credentialsForm.updated.message', { name }),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.credentials)
                 })
             } else {
                 return createResource(stateToData() as IResource).promise.then(() => {
+                    toastContext.addAlert({
+                        title: t('credentialsForm.created.title'),
+                        message: t('credentialsForm.created.message', { name }),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.credentials)
                 })
             }
