@@ -953,6 +953,7 @@ export function CredentialsForm(props: {
                 return patchResource(secret, patch).promise.then(() => {
                     toastContext.addAlert({
                         title: t('credentialsForm.updated.title'),
+                        message: t('credentialsForm.updated.message'.replace('{0}', name)),
                         type: 'success',
                         autoClose: true,
                     })
@@ -962,6 +963,7 @@ export function CredentialsForm(props: {
                 return createResource(stateToData() as IResource).promise.then(() => {
                     toastContext.addAlert({
                         title: t('credentialsForm.created.title'),
+                        message: t('credentialsForm.created.message'.replace('{0}', name)),
                         type: 'success',
                         autoClose: true,
                     })
