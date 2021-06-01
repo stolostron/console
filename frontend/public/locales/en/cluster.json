@@ -299,6 +299,7 @@
     "status.subtitle.progress":"In progress",
     "status.subtitle.pending":"Pending",
     "status.subtitle.empty":"Pending",
+    "status.subtitle.danger": "Failed",
     "status.subtitle.prehookfailed": "Failed",
     "status.subtitle.provisionfailed": "Failed",
     "status.subtitle.importfailed": "Failed",

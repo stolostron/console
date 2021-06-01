@@ -9,7 +9,7 @@ import { useContext } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ProgressStepBar() {
-    const { t } = useTranslation()
+    const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
