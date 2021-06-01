@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmInlineProvider } from '@open-cluster-management/ui-components'
+import { TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
@@ -34,7 +35,16 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                cell: (cluster) => (
+                    <>
+                        <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                        {cluster.hive.clusterClaimName && (
+                            <TextContent>
+                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                            </TextContent>
+                        )}
+                    </>
+                ),
                 sort: 'displayName',
             },
             {
@@ -108,7 +118,16 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         {
                             header: t('upgrade.table.name'),
                             sort: 'displayName',
-                            cell: 'displayName',
+                            cell: (cluster) => (
+                                <>
+                                    <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                                    {cluster.hive.clusterClaimName && (
+                                        <TextContent>
+                                            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                                        </TextContent>
+                                    )}
+                                </>
+                            ),
                         },
                         {
                             header: t('table.provider'),

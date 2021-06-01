@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { createResource, getResource, replaceResource } from '../lib/resource-request'
+import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
@@ -20,7 +20,7 @@ export interface ClusterCurator {
     kind: ClusterCuratorKindType
     metadata: V1ObjectMeta
     spec?: {
-        desiredCuration?: string
+        desiredCuration?: string | undefined
         install?: {
             towerAuthSecret?: string
             prehook?: AnsibleJob[]
@@ -70,8 +70,17 @@ export function getClusterCurator(metadata: { name: string; namespace: string })
     return getResource<ClusterCurator>({ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind, metadata })
 }
 
+export function listClusterCurators() {
+    return listResources<ClusterCurator>({
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+    })
+}
+
 export function filterForTemplatedCurators(clusterCurators: ClusterCurator[]) {
-    return clusterCurators.filter((curator) => curator.spec?.desiredCuration === undefined)
+    return clusterCurators.filter(
+        (curator) => curator.spec?.desiredCuration === undefined && curator.status === undefined
+    )
 }
 
 export function getTemplateJobsNum(clusterCurator: ClusterCurator) {

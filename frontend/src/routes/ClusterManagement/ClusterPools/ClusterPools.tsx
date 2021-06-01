@@ -444,8 +444,16 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                     {
                         header: t('table.name'),
                         sort: 'displayName',
-                        search: 'displayName',
-                        cell: (cluster: Cluster) => <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>,
+                        cell: (cluster) => (
+                            <>
+                                <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                                {cluster.hive.clusterClaimName && (
+                                    <TextContent>
+                                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                                    </TextContent>
+                                )}
+                            </>
+                        ),
                     },
                     {
                         header: t('table.status'),

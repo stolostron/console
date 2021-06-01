@@ -81,14 +81,14 @@ spec:
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{../../vmClusterName}}}
+      cluster: {{{../../cluster}}}
       certificatesSecretRef:
         name: {{{../../name}}}-vsphere-certs
       credentialsSecretRef:
         name: {{{../../name}}}-vsphere-creds
-      vCenter: {{{../../vcenter}}}
+      vCenter: {{{../../vCenter}}}
       datacenter: {{{../../datacenter}}}
-      defaultDatastore: {{{../../datastore}}}
+      defaultDatastore: {{{../../defaultDatastore}}}
       network: {{{../../networkType}}}
   {{/case}}
 
@@ -96,7 +96,7 @@ spec:
     openstack:
       credentialsSecretRef:
         name: {{{../../name}}}-openstack-creds
-      cloud: {{{../../openstackCloud}}}
+      cloud: {{{../../cloud}}}
   {{/case}}
 
 {{/switch}}
@@ -344,7 +344,7 @@ type: Opaque
 data:
   # Base64 encoding of install-config yaml
   install-config.yaml: {{{install-config}}}
-{{#if sshPrivatekey}}
+{{#if ssh-privatekey}}
 ---
 apiVersion: v1
 kind: Secret
@@ -354,7 +354,7 @@ metadata:
 stringData:
 {{#if showSecrets}}
   ssh-privatekey: |-
-{{#each sshPrivatekey}}
+{{#each ssh-privatekey}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -377,9 +377,9 @@ metadata:
   name: {{{../../name}}}-aws-creds
   namespace: '{{{../../name}}}'
 stringData:
-  aws_access_key_id: {{{../../awsAccessKeyID}}}
+  aws_access_key_id: {{{../../aws_access_key_id}}}
 {{#if ../../showSecrets}}
-  aws_secret_access_key: {{{../../awsSecretAccessKeyID}}}
+  aws_secret_access_key: {{{../../aws_secret_access_key}}}
 {{else}}
   aws_secret_access_key: # injected on create
 {{/if}}
@@ -392,7 +392,7 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
-{{#each ../../gcServiceAccountKey}}
+{{#each ../../osServiceAccount.json}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -407,7 +407,9 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
-    {"clientId": "{{{../../clientId}}}", "clientSecret": "{{{../../clientSecret}}}", "tenantId": "{{{../../tenantId}}}", "subscriptionId": "{{{../../subscriptionId}}}"}
+{{#each ../../osServicePrincipal.json}}
+    {{{.}}}
+{{/each}}
 {{else}}
   osServicePrincipal.json: # injected on create
 {{/if}}
@@ -444,10 +446,10 @@ metadata:
   name: {{{../../name}}}-openstack-creds
   namespace: '{{{../../name}}}'
 stringData:
-  cloud: '{{{../../openstackCloud}}}'
+  cloud: '{{{../../cloud}}}'
 {{#if ../../showSecrets}}
   clouds.yaml: |-
-    {{{../../openstackCloudsYaml}}}
+    {{{../../clouds.yaml}}}
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}
