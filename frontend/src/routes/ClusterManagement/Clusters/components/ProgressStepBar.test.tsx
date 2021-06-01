@@ -69,7 +69,6 @@ describe('ProgressStepBar', () => {
                 </RecoilRoot>
             </ClusterContext.Provider>
         )
-        console.log('checking container: ', container.innerHTML)
         await waitForText('status.stepbar.title')
         await waitForText('status.stepbar.subtitle')
         await waitForText('status.subtitle.progress')
