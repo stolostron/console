@@ -11,6 +11,7 @@ import { ClusterStatuses } from './ClusterStatuses'
 import { rbacCreate, rbacPatch, rbacDelete } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { EditLabels } from '../../Clusters/components/EditLabels'
+import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
     const { t } = useTranslation(['cluster'])
@@ -20,6 +21,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
     })
 
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+    const [showManagedClusterSetBindingModal, setShowManagedClusterSetBindingModal] = useState<boolean>(false)
 
     const modalColumns = useMemo(
         () => [
@@ -48,6 +50,12 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             click: () => setShowEditLabels(true),
             isDisabled: true,
             rbac: [rbacPatch(props.managedClusterSet)],
+        },
+        {
+            id: 'edit-bindings',
+            text: t('set.edit-bindings'),
+            click: () => setShowManagedClusterSetBindingModal(true),
+            // isDisabled: true,
         },
         {
             id: 'manage-clusterSet-resources',
@@ -100,6 +108,10 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                         : undefined
                 }
                 close={() => setShowEditLabels(false)}
+            />
+            <ManagedClusterSetBindingModal
+                clusterSet={showManagedClusterSetBindingModal ? props.managedClusterSet : undefined}
+                onClose={() => setShowManagedClusterSetBindingModal(false)}
             />
             <BulkActionModel<ManagedClusterSet> {...modalProps} />
             <RbacDropdown<ManagedClusterSet>

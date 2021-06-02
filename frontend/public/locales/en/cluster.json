@@ -115,6 +115,7 @@
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
     "managed.createClusterPool": "Create cluster pool",
+    "set.edit-bindings": "Edit namespace bindings",
     "set.manage-resources": "Manage resource assignments",
     "set.delete": "Delete cluster set",
     "clusterPool.claim": "Claim cluster",
@@ -611,5 +612,10 @@
     "access.usersInGroup": "Users in group",
     "access.usersInGroup.view": "View users in group",
     "access.clusterSet.role.admin": "Cluster set admin",
-    "access.clusterSet.role.view": "Cluster set view"
+    "access.clusterSet.role.view": "Cluster set view",
+
+    "clusterSetBinding.edit.title": "Edit namespace bindings",
+    "clusterSetBinding.edit.message": "A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Application and policies that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource.",
+    "clusterSetBinding.edit.select.label": "Namespaces",
+    "clusterSetBinding.edit.select.placeholder": "Select namespaces"
 }
