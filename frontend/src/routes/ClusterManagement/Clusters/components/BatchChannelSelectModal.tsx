@@ -53,7 +53,7 @@ export function BatchChannelSelectModal(props: {
         const newChannelSelectableClusters = props.clusters && props.clusters.filter(isChannelSelectable)
         setSelectChannels(setCurrentChannel(newChannelSelectableClusters))
         setChannelSelectableClusters(newChannelSelectableClusters || [])
-    }, [props.clusters, props.open])
+    }, [props.open])
 
     return (
         <BulkActionModel<Cluster>

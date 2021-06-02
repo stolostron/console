@@ -65,7 +65,7 @@ export function BatchUpgradeModal(props: {
         const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
         setSelectVersions(setLatestVersions(newUpgradeableClusters))
         setUpgradeableClusters(newUpgradeableClusters || [])
-    }, [props.clusters, props.open])
+    }, [props.open])
 
     return (
         <BulkActionModel<Cluster>
