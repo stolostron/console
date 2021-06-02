@@ -302,7 +302,6 @@ export function AnsibleAutomationsForm(props: {
             },
         ],
         submit: () => {
-            console.log('checking resource version: ', stateToData())
             if (isEditing) {
                 return replaceResource(stateToData() as IResource).promise.then(async () => {
                     if (process.env.NODE_ENV === 'development')
