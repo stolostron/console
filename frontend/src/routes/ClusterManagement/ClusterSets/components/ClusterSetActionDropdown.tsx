@@ -8,9 +8,8 @@ import { RbacDropdown } from '../../../../components/Rbac'
 import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
 import { deleteResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { ClusterStatuses } from './ClusterStatuses'
-import { rbacCreate, rbacPatch, rbacDelete } from '../../../../lib/rbac-util'
+import { rbacCreate, rbacDelete } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { EditLabels } from '../../Clusters/components/EditLabels'
 import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
@@ -20,7 +19,6 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         open: false,
     })
 
-    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showManagedClusterSetBindingModal, setShowManagedClusterSetBindingModal] = useState<boolean>(false)
 
     const modalColumns = useMemo(
@@ -44,13 +42,6 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
     )
 
     const actions = [
-        {
-            id: 'edit-labels',
-            text: t('managed.editLabels'),
-            click: () => setShowEditLabels(true),
-            isDisabled: true,
-            rbac: [rbacPatch(props.managedClusterSet)],
-        },
         {
             id: 'edit-bindings',
             text: t('set.edit-bindings'),
@@ -95,20 +86,6 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
 
     return (
         <>
-            <EditLabels
-                resource={
-                    showEditLabels
-                        ? {
-                              ...ManagedClusterSetDefinition,
-                              metadata: {
-                                  name: props.managedClusterSet.metadata.name,
-                                  labels: props.managedClusterSet.metadata.labels,
-                              },
-                          }
-                        : undefined
-                }
-                close={() => setShowEditLabels(false)}
-            />
             <ManagedClusterSetBindingModal
                 clusterSet={showManagedClusterSetBindingModal ? props.managedClusterSet : undefined}
                 onClose={() => setShowManagedClusterSetBindingModal(false)}
