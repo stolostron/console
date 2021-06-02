@@ -8,7 +8,7 @@ export interface FormData {
     titleTooltip?: ReactNode
     description?: string
     breadcrumb: { text: string; to?: string }[]
-    sections: Section[]
+    sections: (Section | SectionGroup)[]
     submit: () => void
     cancel: () => void
     submitText: string
@@ -21,19 +21,20 @@ export interface FormData {
     stateToData: () => unknown
 }
 
-export interface Section {
-    type: 'Section'
+export interface SectionBase {
     title: string
     description?: ReactNode
-    wizardTitle?: string
-    inputs?: Input[]
-    groups?: SectionGroupInput[]
 }
 
-export interface SectionGroupInput {
-    title: string
-    description?: string
-    inputs: Input[]
+export interface Section extends SectionBase {
+    type: 'Section'
+    wizardTitle?: string
+    inputs?: Input[]
+}
+
+export interface SectionGroup extends SectionBase {
+    type: 'SectionGroup'
+    sections?: Section[]
 }
 
 export interface InputBase<T> {

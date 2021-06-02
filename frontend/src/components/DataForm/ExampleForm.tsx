@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { AcmDataFormPage } from '../AcmDataForm'
 import { FormData, SelectGroup } from '../AcmFormData'
 
-export function ExampleForm() {
+export default function ExampleForm() {
     const [textValue, setTextValue] = useState('')
     const [textAreaValue, setTextAreaValue] = useState('')
     const [secretTextValue, setSecretTextValue] = useState('')
@@ -53,58 +53,76 @@ export function ExampleForm() {
         breadcrumb: [{ text: 'Title' }],
         sections: [
             {
-                type: 'Section',
-                title: 'Text',
-                wizardTitle: 'Text input',
-                description: 'Examples of different types of text input.',
-                inputs: [
+                type: 'SectionGroup',
+                title: 'Text Examples',
+                sections: [
                     {
-                        id: 'Text',
-                        type: 'Text',
-                        label: 'Text input',
-                        placeholder: 'Enter your text',
-                        value: textValue,
-                        onChange: setTextValue,
-                        isRequired: true,
+                        type: 'Section',
+                        title: 'Text Input',
+                        wizardTitle: 'Text input',
+                        inputs: [
+                            {
+                                id: 'Text',
+                                type: 'Text',
+                                label: 'Text input',
+                                placeholder: 'Enter your text',
+                                value: textValue,
+                                onChange: setTextValue,
+                                isRequired: true,
+                            },
+                            {
+                                id: 'SecretText',
+                                type: 'Text',
+                                label: 'Secret text input',
+                                placeholder: 'Enter your secret text',
+                                value: secretTextValue,
+                                onChange: setSecretTextValue,
+                                isRequired: true,
+                                isSecret: true,
+                            },
+                        ],
                     },
                     {
-                        id: 'SecretText',
-                        type: 'Text',
-                        label: 'Secret text input',
-                        placeholder: 'Enter your secret text',
-                        value: secretTextValue,
-                        onChange: setSecretTextValue,
-                        isRequired: true,
-                        isSecret: true,
-                    },
-
-                    {
-                        id: 'TextArea',
-                        type: 'TextArea',
-                        label: 'Text area input',
-                        placeholder: 'Enter your text',
-                        value: textAreaValue,
-                        onChange: setTextAreaValue,
-                        isRequired: true,
-                    },
-                    {
-                        id: 'SecretTextArea',
-                        type: 'TextArea',
-                        label: 'Secret text area input',
-                        placeholder: 'Enter your secret text',
-                        value: secretTextAreaValue,
-                        onChange: setSecretTextAreaValue,
-                        isRequired: true,
-                        isSecret: true,
+                        type: 'Section',
+                        title: 'Text Area Input',
+                        wizardTitle: 'Text input',
+                        inputs: [
+                            {
+                                id: 'TextArea',
+                                type: 'TextArea',
+                                label: 'Text area input',
+                                placeholder: 'Enter your text',
+                                value: textAreaValue,
+                                onChange: setTextAreaValue,
+                                isRequired: true,
+                            },
+                            {
+                                id: 'SecretTextArea',
+                                type: 'TextArea',
+                                label: 'Secret text area input',
+                                placeholder: 'Enter your secret text',
+                                value: secretTextAreaValue,
+                                onChange: setSecretTextAreaValue,
+                                isRequired: true,
+                                isSecret: true,
+                            },
+                        ],
                     },
                     {
-                        id: 'OrderedStrings',
-                        type: 'OrderedStrings',
-                        label: 'OrderedStrings',
-                        placeholder: 'Enter your OrderedStrings',
-                        value: orderedStrings,
-                        onChange: setOrderedStrings,
-                        isRequired: true,
+                        type: 'Section',
+                        title: 'Ordered String Array Input',
+                        wizardTitle: 'Text input',
+                        inputs: [
+                            {
+                                id: 'OrderedStrings',
+                                type: 'OrderedStrings',
+                                label: 'OrderedStrings',
+                                placeholder: 'Add a string',
+                                value: orderedStrings,
+                                onChange: setOrderedStrings,
+                                isRequired: true,
+                            },
+                        ],
                     },
                 ],
             },

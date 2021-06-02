@@ -90,28 +90,32 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
 
-    const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name as string)
-    const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret as string)
+    const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
+    const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
 
-    const [installPreJob, setInstallPreJob] = useState(
-        (clusterCurator?.spec?.install?.prehook?.[0].name as string) ?? ''
+    const [installPreJobs, setInstallPreJobs] = useState(
+        clusterCurator?.spec?.install?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
-    const [installPostJob, setInstallPostJob] = useState(
-        (clusterCurator?.spec?.install?.posthook?.[0].name as string) ?? ''
+    const [installPostJobs, setInstallPostJobs] = useState(
+        clusterCurator?.spec?.install?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
-    const [upgradePreJob, setUpgradePreJob] = useState(
-        (clusterCurator?.spec?.upgrade?.prehook?.[0].name as string) ?? ''
+    const [upgradePreJobs, setUpgradePreJobs] = useState(
+        clusterCurator?.spec?.upgrade?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
-    const [upgradePostJob, setUpgradePostJob] = useState(
-        (clusterCurator?.spec?.upgrade?.posthook?.[0].name as string) ?? ''
+    const [upgradePostJobs, setUpgradePostJobs] = useState(
+        clusterCurator?.spec?.upgrade?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
-    const [scalePreJob, setScalePreJob] = useState((clusterCurator?.spec?.scale?.prehook?.[0].name as string) ?? '')
-    const [scalePostJob, setScalePostJob] = useState((clusterCurator?.spec?.scale?.posthook?.[0].name as string) ?? '')
-    const [destroyPreJob, setDestroyPreJob] = useState(
-        (clusterCurator?.spec?.destroy?.prehook?.[0].name as string) ?? ''
+    const [scalePreJobs, setScalePreJobs] = useState(
+        clusterCurator?.spec?.scale?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
-    const [destroyPostJob, setDestroyPostJob] = useState(
-        (clusterCurator?.spec?.destroy?.posthook?.[0].name as string) ?? ''
+    const [scalePostJobs, setScalePostJobs] = useState(
+        clusterCurator?.spec?.scale?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
+    )
+    const [destroyPreJobs, setDestroyPreJobs] = useState(
+        clusterCurator?.spec?.destroy?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
+    )
+    const [destroyPostJobs, setDestroyPostJobs] = useState(
+        clusterCurator?.spec?.destroy?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
 
     function stateToData() {
@@ -129,27 +133,26 @@ export function AnsibleAutomationsForm(props: {
             spec: {
                 install: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: [{ name: installPreJob }],
-                    posthook: [{ name: installPostJob }],
+                    prehook: installPreJobs.map((name) => ({ name })),
+                    posthook: installPostJobs.map((name) => ({ name })),
                 },
                 upgrade: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: [{ name: upgradePreJob }],
-                    posthook: [{ name: upgradePostJob }],
+                    prehook: upgradePreJobs.map((name) => ({ name })),
+                    posthook: upgradePostJobs.map((name) => ({ name })),
                 },
                 scale: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: [{ name: scalePreJob }],
-                    posthook: [{ name: scalePostJob }],
+                    prehook: scalePreJobs.map((name) => ({ name })),
+                    posthook: scalePostJobs.map((name) => ({ name })),
                 },
                 destroy: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: [{ name: destroyPreJob }],
-                    posthook: [{ name: destroyPostJob }],
+                    prehook: destroyPreJobs.map((name) => ({ name })),
+                    posthook: destroyPostJobs.map((name) => ({ name })),
                 },
             },
         }
-
         return curator
     }
 
@@ -199,94 +202,100 @@ export function AnsibleAutomationsForm(props: {
                 ],
             },
             {
-                type: 'Section',
-                title: t('template.create.install'),
-                wizardTitle: t('template.create.install.wizard.title'),
-                inputs: [
+                type: 'SectionGroup',
+                title: t('template.templates.title'),
+                sections: [
                     {
-                        id: 'installPreJob',
-                        type: 'Text',
-                        label: t('template.preInstall.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: installPreJob,
-                        onChange: setInstallPreJob,
+                        type: 'Section',
+                        title: t('template.create.install'),
+                        wizardTitle: t('template.create.install.wizard.title'),
+                        inputs: [
+                            {
+                                id: 'installPreJob',
+                                type: 'OrderedStrings',
+                                label: t('template.preInstall.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: installPreJobs,
+                                onChange: setInstallPreJobs,
+                            },
+                            {
+                                id: 'installPostJob',
+                                type: 'OrderedStrings',
+                                label: t('template.postInstall.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: installPostJobs,
+                                onChange: setInstallPostJobs,
+                            },
+                        ],
                     },
                     {
-                        id: 'installPostJob',
-                        type: 'Text',
-                        label: t('template.postInstall.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: installPostJob,
-                        onChange: setInstallPostJob,
-                    },
-                ],
-            },
-            {
-                type: 'Section',
-                title: t('template.create.upgrade'),
-                wizardTitle: t('template.create.upgrade.wizard.title'),
-                inputs: [
-                    {
-                        id: 'upgradePreJob',
-                        type: 'Text',
-                        label: t('template.preUpgrade.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: upgradePreJob,
-                        onChange: setUpgradePreJob,
-                    },
-                    {
-                        id: 'upgradePostJob',
-                        type: 'Text',
-                        label: t('template.postUpgrade.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: upgradePostJob,
-                        onChange: setUpgradePostJob,
-                    },
-                ],
-            },
-            {
-                type: 'Section',
-                title: t('template.create.scale'),
-                wizardTitle: t('template.create.scale.wizard.title'),
-                inputs: [
-                    {
-                        id: 'scalePreJob',
-                        type: 'Text',
-                        label: t('template.preScale.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: scalePreJob,
-                        onChange: setScalePreJob,
+                        type: 'Section',
+                        title: t('template.create.upgrade'),
+                        wizardTitle: t('template.create.upgrade.wizard.title'),
+                        inputs: [
+                            {
+                                id: 'upgradePreJob',
+                                type: 'OrderedStrings',
+                                label: t('template.preUpgrade.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: upgradePreJobs,
+                                onChange: setUpgradePreJobs,
+                            },
+                            {
+                                id: 'upgradePostJob',
+                                type: 'OrderedStrings',
+                                label: t('template.postUpgrade.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: upgradePostJobs,
+                                onChange: setUpgradePostJobs,
+                            },
+                        ],
                     },
                     {
-                        id: 'scalePostJob',
-                        type: 'Text',
-                        label: t('template.postScale.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: scalePostJob,
-                        onChange: setScalePostJob,
+                        type: 'Section',
+                        title: t('template.create.scale'),
+                        wizardTitle: t('template.create.scale.wizard.title'),
+                        inputs: [
+                            {
+                                id: 'scalePreJob',
+                                type: 'OrderedStrings',
+                                label: t('template.preScale.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: scalePreJobs,
+                                onChange: setScalePreJobs,
+                            },
+                            {
+                                id: 'scalePostJob',
+                                type: 'OrderedStrings',
+                                label: t('template.postScale.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: scalePostJobs,
+                                onChange: setScalePostJobs,
+                            },
+                        ],
                     },
-                ],
-            },
-            {
-                type: 'Section',
-                title: t('template.create.destroy'),
-                wizardTitle: t('template.create.destroy.wizard.title'),
-                inputs: [
                     {
-                        id: 'destroyPreJob',
-                        type: 'Text',
-                        label: t('template.preDestroy.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: destroyPreJob,
-                        onChange: setDestroyPreJob,
-                    },
-                    {
-                        id: 'destroyPostJob',
-                        type: 'Text',
-                        label: t('template.postDestroy.label'),
-                        placeholder: t('template.job.placeholder'),
-                        value: destroyPostJob,
-                        onChange: setDestroyPostJob,
+                        type: 'Section',
+                        title: t('template.create.destroy'),
+                        wizardTitle: t('template.create.destroy.wizard.title'),
+                        inputs: [
+                            {
+                                id: 'destroyPreJob',
+                                type: 'OrderedStrings',
+                                label: t('template.preDestroy.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: destroyPreJobs,
+                                onChange: setDestroyPreJobs,
+                            },
+                            {
+                                id: 'destroyPostJob',
+                                type: 'OrderedStrings',
+                                label: t('template.postDestroy.label'),
+                                placeholder: t('template.job.placeholder'),
+                                value: destroyPostJobs,
+                                onChange: setDestroyPostJobs,
+                            },
+                        ],
                     },
                 ],
             },
