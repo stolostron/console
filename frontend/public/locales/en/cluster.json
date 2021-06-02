@@ -486,6 +486,7 @@
     "bulk.title.removeAuthorization": "Remove users or groups?",
     "bulk.message.removeAuthorization": "Removing a user or group revokes access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.",
     "bulk.title.uninstallSubmariner": "Uninstall Submariner add-ons?",
+    "bulk.title.uninstallSubmariner.action": "Uninstall Submariner add-ons",
     "bulk.message.uninstallSubmariner": "Uninstalling the Submariner add-on from a managed cluster will remove it from the multi-cluster network. This may result in disruption to your applications or services. Are you sure you want to continue?",
 
     "uninstall.add-on": "Uninstall add-on",
