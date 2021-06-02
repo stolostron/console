@@ -5,7 +5,6 @@ import {
     AcmButton,
     AcmEmptyState,
     AcmExpandableCard,
-    AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageContent,
@@ -274,31 +273,6 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                     collapse={namespaces.filter((ns, i) => i > 1)}
                                     style={{ maxWidth: '600px' }}
                                 />
-                            ) : (
-                                '-'
-                            )
-                        },
-                    },
-                    {
-                        header: t('table.nodes'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const clusters =
-                                props.clusters?.filter(
-                                    (cluster) => cluster?.clusterSet === managedClusterSet.metadata.name
-                                ) ?? []
-
-                            let healthy = 0
-                            let danger = 0
-                            let unknown = 0
-
-                            clusters.forEach((cluster) => {
-                                healthy += cluster.nodes!.ready
-                                danger += cluster.nodes!.unhealthy
-                                unknown += cluster.nodes!.unknown
-                            })
-
-                            return healthy + danger + unknown > 0 ? (
-                                <AcmInlineStatusGroup healthy={healthy} danger={danger} unknown={unknown} />
                             ) : (
                                 '-'
                             )

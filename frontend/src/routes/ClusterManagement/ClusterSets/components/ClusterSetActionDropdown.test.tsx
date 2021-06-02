@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-// import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../lib/nock-util'
-// import { rbacDelete } from '../../../../lib/rbac-util'
 import {
     clickByText,
     waitForNock,
