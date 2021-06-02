@@ -85,7 +85,7 @@ export function AnsibleAutomationsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['cluster', 'common', 'credentials'])
+    const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const history = useHistory()
@@ -158,11 +158,11 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: t('template.create.title'),
+        title: t('create:template.create.title'),
         titleTooltip: 'tooltip test',
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: t('template.create.title') },
+            { text: t('create:template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
