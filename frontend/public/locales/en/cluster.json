@@ -66,6 +66,7 @@
     "submariner.clusters.back": "Back to Submariner add-ons",
     "submariner.install.step.clusters.message": "",
     "submariner.install.step.clusters.title": "Select clusters",
+    "submariner.install.step.configure.title": "Configure clusters",
     "submariner.install.step.clusters.wizardTitle": "Select clusters for add-on installation",
     "submariner.install.form.clusters": "Available clusters",
     "submariner.install.form.config.title": "Enter the configuration for {{clusterName}} on {{provider}}",

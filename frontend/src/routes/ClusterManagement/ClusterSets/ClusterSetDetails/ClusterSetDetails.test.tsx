@@ -156,7 +156,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
     apiVersion: SubmarinerConfigApiVersion,
     kind: SubmarinerConfigKind,
     metadata: {
-        name: 'subconfig',
+        name: 'submariner',
         namespace: mockManagedClusterNoCredentials.metadata.name,
     },
     spec: {
@@ -191,7 +191,7 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
     apiVersion: SubmarinerConfigApiVersion,
     kind: SubmarinerConfigKind,
     metadata: {
-        name: 'subconfig',
+        name: 'submariner',
         namespace: mockManagedClusterExtra.metadata.name,
     },
     spec: {
@@ -226,7 +226,7 @@ const mockSubmarinerConfig: SubmarinerConfig = {
     apiVersion: SubmarinerConfigApiVersion,
     kind: SubmarinerConfigKind,
     metadata: {
-        name: 'subconfig',
+        name: 'submariner',
         namespace: mockSubmarinerAddon.metadata.namespace!,
     },
     spec: {
