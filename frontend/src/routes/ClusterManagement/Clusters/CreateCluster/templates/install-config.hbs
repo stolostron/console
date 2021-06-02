@@ -14,7 +14,11 @@ baseDomain: {{{baseDomain}}}
 {{#if_eq infrastructure 'BMC'}}
 controlPlane:
   name: master
+  {{#if ../singleNode}}
+  replicas: 1
+  {{else}}
   replicas: {{{../masterNodeCount}}}
+  {{/if}}
   platform:
     baremetal: {}
 {{/if_eq}}
@@ -23,7 +27,11 @@ controlPlane:
 controlPlane:
   hyperthreading: Enabled
   name: master
+{{#if ../singleNode}}
+  replicas: 1
+{{else}}
   replicas: 3
+{{/if}}
 
 {{#switch ../infrastructure}}
 
@@ -95,7 +103,11 @@ compute:
 compute:
 - hyperthreading: Enabled
   name: '{{{workerName}}}'
+{{#if ../singleNode}}
+  replicas: 0
+{{else}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
+{{/if}}
 {{#switch ../infrastructure}}
 
   {{#case 'AWS'}}

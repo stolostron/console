@@ -580,6 +580,16 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
+const isHidden_lt_OCP48 = (control, controlData) => {
+    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    //NOTE: We will need to adjust this in the future for new OCP versions!
+    if (imageSet && imageSet.active && (imageSet.active.includes('release:4.8') || imageSet.active.includes('release:4.9') || imageSet.active.includes('release:4.10'))) {
+        return false
+    }
+    return true
+}
+
+
 const controlDataAWS = [
     {
         id: 'imageStep',
@@ -588,6 +598,15 @@ const controlDataAWS = [
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48
+    },
+
     {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
