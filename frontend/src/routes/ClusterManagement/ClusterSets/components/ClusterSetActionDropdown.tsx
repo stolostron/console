@@ -46,7 +46,8 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             id: 'edit-bindings',
             text: t('set.edit-bindings'),
             click: () => setShowManagedClusterSetBindingModal(true),
-            // isDisabled: true,
+            isDisabled: true,
+            rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'bind')],
         },
         {
             id: 'manage-clusterSet-resources',

@@ -107,7 +107,7 @@ export function checkAdminAccess() {
 }
 
 type Verb = 'get' | 'patch' | 'create' | 'delete' | 'update'
-type SubResource = 'join'
+type SubResource = 'join' | 'bind'
 
 export function rbacResource(
     verb: Verb,
