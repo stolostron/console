@@ -74,7 +74,7 @@ import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { FormData, Input, InputBase, Section, SectionGroupInput, SelectOptionInput } from './AcmFormData'
+import { FormData, SectionGroup, Input, InputBase, Section, SelectOptionInput } from './AcmFormData'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -293,16 +293,23 @@ export function AcmDataFormDefault(props: {
         <Form isHorizontal={isHorizontal}>
             {formData.sections.map((section) => {
                 if (sectionHidden(section)) return <Fragment />
+                if (section.type === 'Section') {
+                    return (
+                        <FormSection key={section.title}>
+                            <Title headingLevel="h2">{section.title}</Title>
+                            <AcmDataFormInputs
+                                inputs={section.inputs}
+                                showFormErrors={showFormErrors}
+                                isReadOnly={isSubmitting}
+                            />
+                        </FormSection>
+                    )
+                }
                 return (
                     <FormSection key={section.title}>
                         <Title headingLevel="h2">{section.title}</Title>
-                        <AcmDataFormInputs
-                            inputs={section.inputs}
-                            showFormErrors={showFormErrors}
-                            isReadOnly={isSubmitting}
-                        />
-                        {section.groups?.map((group) => {
-                            if (groupHidden(group)) return <Fragment />
+                        {section.sections?.map((group) => {
+                            if (sectionHidden(group)) return <Fragment />
                             return (
                                 <FormFieldGroupExpandable
                                     key={group.title}
@@ -377,85 +384,61 @@ export function AcmDataFormWizard(props: {
 }): JSX.Element {
     const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
-    const [sectionName, setSectionName] = useState('')
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
     const isSubmitting = submitText !== formData.submitText
 
-    const steps: WizardStep[] = formData.sections
-        .map((section) => {
-            if (sectionHidden(section)) return undefined
-            const hasError = showFormErrors && sectionHasErrors(section)
-            return {
-                id: section.title,
-                name: (
-                    <Split>
-                        <SplitItem isFilled>{section.title}</SplitItem>
-                        {hasError && (
-                            <span style={{ paddingLeft: '8px' }}>
-                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                            </span>
-                        )}
-                    </Split>
-                ),
-                component: (
-                    <Form isHorizontal={isHorizontal}>
-                        {(showFormErrors || showSectionErrors[sectionName]) &&
-                            sectionHasErrors(formData.sections.find((section) => section.title === sectionName)) && (
-                                <AlertGroup>
-                                    {sectionHasRequiredErrors(
-                                        formData.sections.find((section) => section.title === sectionName)
-                                    ) ? (
-                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
-                                    ) : (
-                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
-                                    )}
-                                </AlertGroup>
+    function createStep(section: Section | SectionGroup): WizardStep | undefined {
+        if (sectionHidden(section)) return undefined
+        const hasError = showFormErrors && sectionHasErrors(section)
+
+        return {
+            id: section.title,
+            name: (
+                <Split>
+                    <SplitItem isFilled>{section.title}</SplitItem>
+                    {hasError && section.type === 'Section' && (
+                        <span style={{ paddingLeft: '8px' }}>
+                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                        </span>
+                    )}
+                </Split>
+            ),
+            component: section.type === 'Section' && (
+                <Form isHorizontal={isHorizontal}>
+                    {(showFormErrors || showSectionErrors[section.title]) && hasError && (
+                        <AlertGroup>
+                            {sectionHasRequiredErrors(section) ? (
+                                <Alert isInline variant="danger" title={requiredValidationMessage()} />
+                            ) : (
+                                <Alert isInline variant="danger" title={generalValidationMessage()} />
                             )}
-                        {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
-                        <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
-                        {section.description && (
-                            <TextContent>
-                                <Text component="small">{section.description}</Text>
-                            </TextContent>
-                        )}
-                        <AcmDataFormInputs
-                            inputs={section.inputs}
-                            showFormErrors={showFormErrors || showSectionErrors[section.title]}
-                            isReadOnly={isSubmitting}
-                            mode="wizard"
-                        />
-                    </Form>
-                ),
-                steps: section.groups?.map((group) => ({
-                    name: group.title,
-                    component: (
-                        <Form isHorizontal={isHorizontal}>
-                            {(showFormErrors || showSectionErrors[sectionName]) && groupHasErrors(group) && (
-                                <AlertGroup>
-                                    {groupHasRequiredErrors(group) ? (
-                                        <Alert isInline variant="danger" title={requiredValidationMessage()} />
-                                    ) : (
-                                        <Alert isInline variant="danger" title={generalValidationMessage()} />
-                                    )}
-                                </AlertGroup>
-                            )}
-                            <Title headingLevel="h2">{group.title}</Title>
-                            {group.description && <Text component="small">{group.description}</Text>}
-                            <AcmDataFormInputs
-                                inputs={group.inputs}
-                                showFormErrors={showFormErrors || showSectionErrors[section.title]}
-                                isReadOnly={isSubmitting}
-                                mode="wizard"
-                            />
-                        </Form>
-                    ),
-                    canJumpTo: !isSubmitting,
-                })),
-                canJumpTo: !isSubmitting,
-            }
-        })
-        .filter((value) => value !== undefined) as WizardStep[]
+                        </AlertGroup>
+                    )}
+                    {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
+                    <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
+                    {section.description && (
+                        <TextContent>
+                            <Text component="small">{section.description}</Text>
+                        </TextContent>
+                    )}
+                    <AcmDataFormInputs
+                        inputs={section.inputs}
+                        showFormErrors={showFormErrors || showSectionErrors[section.title]}
+                        isReadOnly={isSubmitting}
+                        mode="wizard"
+                    />
+                </Form>
+            ),
+            steps:
+                section.type === 'SectionGroup'
+                    ? (section.sections?.map(createStep).filter((step) => step !== undefined) as WizardStep[])
+                    : undefined,
+        }
+    }
+
+    const steps: WizardStep[] = formData.sections.map(createStep).filter((step) => step !== undefined) as WizardStep[]
+
     steps.push({
         id: 'review',
         name: 'Review',
@@ -480,23 +463,41 @@ export function AcmDataFormWizard(props: {
         <WizardFooter>
             <WizardContextConsumer>
                 {({ activeStep, onNext, onBack, onClose }) => {
-                    setSectionName(activeStep.id as string)
-                    const section = formData.sections.find((section) => section.title === activeStep.id)
+                    let section: Section | undefined
+                    let firstSection: Section | undefined
+                    for (const formSection of formData.sections) {
+                        switch (formSection.type) {
+                            case 'Section':
+                                if (formSection.title === activeStep.id) section = formSection
+                                if (!firstSection) firstSection = formSection
+                                break
+                            case 'SectionGroup':
+                                for (const group of formSection.sections ?? []) {
+                                    if (group.title === activeStep.id) {
+                                        section = group
+                                    }
+                                    if (!firstSection) firstSection = group
+                                }
+                                break
+                        }
+                        if (section) break
+                    }
+
                     if (section) {
                         return (
                             <Fragment>
                                 <Button
                                     variant="primary"
                                     onClick={() => {
-                                        if (section) {
-                                            setShowSectionErrors((showSectionErrors) => {
+                                        setShowSectionErrors((showSectionErrors) => {
+                                            if (section) {
                                                 if (!showSectionErrors[section.title]) {
                                                     return { ...showSectionErrors, ...{ [section.title]: true } }
                                                 }
-                                                return showSectionErrors
-                                            })
-                                            if (sectionHasErrors(section)) return
-                                        }
+                                            }
+                                            return showSectionErrors
+                                        })
+                                        if (sectionHasErrors(section)) return
                                         onNext()
                                     }}
                                     isDisabled={
@@ -510,7 +511,7 @@ export function AcmDataFormWizard(props: {
                                 <Button
                                     variant="secondary"
                                     onClick={onBack}
-                                    isDisabled={activeStep.id === formData.sections[0].title || isSubmitting}
+                                    isDisabled={activeStep.id === firstSection?.title || isSubmitting}
                                 >
                                     {formData.backLabel}
                                 </Button>
@@ -591,12 +592,12 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                 </Fragment>
             )}
             {/* <Divider /> */}
-            {formData.sections.map((section) => {
-                if (!sectionHasValue(section)) return <Fragment />
-                if (sectionHidden(section)) return <Fragment />
+            {formData.sections.map((formSection) => {
+                if (!sectionHasValue(formSection)) return <Fragment />
+                if (sectionHidden(formSection)) return <Fragment />
                 i++
                 return (
-                    <FormSection key={section.title}>
+                    <FormSection key={formSection.title}>
                         {/* {index !== 0 && <Divider />} */}
 
                         <Flex alignItems={{ default: 'alignItemsCenter' }}>
@@ -616,41 +617,49 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
                                     {i.toString()}
                                 </span>
                             )}
-                            <Title headingLevel="h3">{section.title}</Title>
+                            <Title headingLevel="h3">{formSection.title}</Title>
                         </Flex>
 
-                        {anyInputHasValue(section.inputs) && (
-                            <DescriptionList
-                                columnModifier={{ default: '1Col' }}
-                                isHorizontal={true}
-                                style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
-                            >
-                                {section.inputs && section.inputs.map((input) => <AcmInputDescription input={input} />)}
-                            </DescriptionList>
-                        )}
-                        {section.groups && (
-                            <Fragment>
-                                {section.groups.map((group) => {
-                                    if (groupHidden(group)) return <Fragment />
-                                    return (
-                                        <Fragment key={group.title}>
-                                            <Title headingLevel="h3">{group.title}</Title>
-                                            {anyInputHasValue(group.inputs) && (
-                                                <DescriptionList
-                                                    columnModifier={{ default: '1Col' }}
-                                                    isHorizontal={true}
-                                                >
-                                                    {group.inputs &&
-                                                        group.inputs.map((input) => (
-                                                            <AcmInputDescription input={input} />
-                                                        ))}
-                                                </DescriptionList>
-                                            )}
-                                        </Fragment>
-                                    )
-                                })}
-                            </Fragment>
-                        )}
+                        {formSection.type === 'Section'
+                            ? anyInputHasValue(formSection.inputs) && (
+                                  <DescriptionList
+                                      columnModifier={{ default: '1Col' }}
+                                      isHorizontal={true}
+                                      style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
+                                  >
+                                      {formSection.inputs &&
+                                          formSection.inputs.map((input) => <AcmInputDescription input={input} />)}
+                                  </DescriptionList>
+                              )
+                            : formSection.sections && (
+                                  <Fragment>
+                                      {formSection.sections.map((section) => {
+                                          if (sectionHidden(section)) return <Fragment />
+                                          if (!anyInputHasValue(section.inputs)) return <Fragment />
+                                          return (
+                                              <div
+                                                  key={section.title}
+                                                  style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}
+                                              >
+                                                  <Title headingLevel="h4">{section.title}</Title>
+                                                  <DescriptionList
+                                                      columnModifier={{ default: '1Col' }}
+                                                      isHorizontal={true}
+                                                      style={{
+                                                          paddingLeft: wizardSummary ? '32px' : '0px',
+                                                          paddingTop: '16px',
+                                                      }}
+                                                  >
+                                                      {section.inputs &&
+                                                          section.inputs.map((input) => (
+                                                              <AcmInputDescription input={input} />
+                                                          ))}
+                                                  </DescriptionList>
+                                              </div>
+                                          )
+                                      })}
+                                  </Fragment>
+                              )}
                     </FormSection>
                 )
             })}
@@ -1097,6 +1106,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         const step = input.step ?? 1
                         input.onChange(input.value - step)
                     }}
+                    // validated={validated} TODO
+                    isDisabled={isReadOnly}
                 />
             )
         }
@@ -1107,18 +1118,19 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     }
 }
 
-function sectionHasValue(section: Section) {
-    if (section.inputs) {
-        if (anyInputHasValue(section.inputs)) {
-            return true
-        }
-    }
-    if (section.groups) {
-        for (const group of section.groups) {
-            if (anyInputHasValue(group.inputs)) {
-                return true
+function sectionHasValue(section: Section | SectionGroup) {
+    if (!section) return false
+    switch (section.type) {
+        case 'Section':
+            if (anyInputHasValue(section.inputs)) return true
+            break
+        case 'SectionGroup':
+            if (section.sections) {
+                for (const group of section.sections) {
+                    if (sectionHasValue(group)) return true
+                }
             }
-        }
+            break
     }
     return false
 }
@@ -1126,7 +1138,7 @@ function sectionHasValue(section: Section) {
 function anyInputHasValue(inputs?: Input[]) {
     if (!inputs) return false
     for (const input of inputs) {
-        if (input.value) {
+        if (inputHasValue(input)) {
             return true
         }
     }
@@ -1140,19 +1152,21 @@ function formHasErrors(formData: FormData) {
     return false
 }
 
-function sectionHasErrors(section?: Section) {
+function sectionHasErrors(section?: SectionGroup | Section) {
     if (!section) return false
-    if (inputsHaveErrors(section.inputs)) return true
-    if (section.groups) {
-        for (const group of section.groups) {
-            if (groupHasErrors(group)) return true
-        }
+    switch (section.type) {
+        case 'Section':
+            if (inputsHaveErrors(section.inputs)) return true
+            break
+        case 'SectionGroup':
+            if (section.sections) {
+                for (const group of section.sections) {
+                    if (sectionHasErrors(group)) return true
+                }
+            }
+            break
     }
     return false
-}
-
-function groupHasErrors(group: SectionGroupInput) {
-    return inputsHaveErrors(group.inputs)
 }
 
 function formHasRequiredErrors(formData: FormData) {
@@ -1162,19 +1176,21 @@ function formHasRequiredErrors(formData: FormData) {
     return false
 }
 
-function sectionHasRequiredErrors(section?: Section) {
-    if (!section) return false
-    if (inputsHaveRequiredErrors(section.inputs)) return true
-    if (section.groups) {
-        for (const group of section.groups) {
-            if (groupHasRequiredErrors(group)) return true
-        }
+function sectionHasRequiredErrors(formSection?: Section | SectionGroup) {
+    if (!formSection) return false
+    switch (formSection.type) {
+        case 'Section':
+            if (inputsHaveRequiredErrors(formSection.inputs)) return true
+            break
+        case 'SectionGroup':
+            if (formSection.sections) {
+                for (const group of formSection.sections) {
+                    if (sectionHasRequiredErrors(group)) return true
+                }
+            }
+            break
     }
     return false
-}
-
-function groupHasRequiredErrors(group: SectionGroupInput) {
-    return inputsHaveRequiredErrors(group.inputs)
 }
 
 const requiredMessage = 'This is a required field.'
@@ -1212,19 +1228,25 @@ function inputHasValue(input: Input): boolean {
     }
 }
 
-function sectionHidden(section?: Section): boolean {
-    if (!section) return true
-    if (section.inputs && inputsHidden(section.inputs)) return true
-    return false
+function sectionHidden(section?: Section | SectionGroup): boolean {
+    if (!section) return false
+    switch (section.type) {
+        case 'Section':
+            return inputsHidden(section.inputs)
+        case 'SectionGroup':
+            if (section.sections) {
+                let hidden = true
+                for (const group of section.sections) {
+                    if (!sectionHidden(group)) hidden = false
+                }
+                return hidden
+            }
+            break
+    }
+    return true
 }
 
-function groupHidden(group?: SectionGroupInput): boolean {
-    if (!group) return true
-    if (inputsHidden(group.inputs)) return true
-    return false
-}
-
-function inputsHidden(inputs: Input[]): boolean {
+function inputsHidden(inputs?: Input[]): boolean {
     if (!inputs) return true
     for (const input of inputs) {
         if (!input.isHidden) return false
@@ -1333,21 +1355,30 @@ function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value
 }
 
 function OrderedStringsInput(props: {
+    id: string
     value: string[]
     onChange: (value: string[]) => void
     validated: 'error' | undefined
     isReadOnly: boolean
+    placeholder?: string
 }) {
-    const { value, onChange, validated, isReadOnly } = props
+    const { id, value, onChange, validated, isReadOnly, placeholder } = props
     const [text, setText] = useState('')
     return (
         <Fragment>
             <InputGroup>
-                <TextInput validated={validated} value={text} onChange={setText} isReadOnly={isReadOnly} />
+                <TextInput
+                    validated={validated}
+                    value={text}
+                    onChange={setText}
+                    isReadOnly={isReadOnly}
+                    placeholder={placeholder}
+                />
                 {text ? (
                     <Fragment>
                         <ClearInputButton onClick={() => setText('')} />
                         <Button
+                            id={`${id}-add-button`}
                             variant="control"
                             aria-label="Action"
                             onClick={() => {
@@ -1370,7 +1401,7 @@ function OrderedStringsInput(props: {
                 style={{ borderTop: '0' }}
             >
                 {value.map((v) => (
-                    <DataListItem aria-labelledby="simple-item1" id={v} key="1">
+                    <DataListItem aria-labelledby="simple-item1" id={v} key={v}>
                         <DataListItemRow>
                             <DataListControl>
                                 <DataListDragButton

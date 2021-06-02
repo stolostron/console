@@ -6,7 +6,13 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState } from '../../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByPlaceholderText, clickByText, typeByPlaceholderText, waitForNock } from '../../../lib/test-util'
+import {
+    clickByPlaceholderText,
+    clickByTestId,
+    clickByText,
+    typeByPlaceholderText,
+    waitForNock,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../resources/cluster-curator'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
@@ -88,29 +94,37 @@ describe('add ansible job template page', () => {
         render(<AddAnsibleTemplateTest />)
 
         // template information
-        await typeByPlaceholderText('template.create.placeholder', mockClusterCurator.metadata.name)
+        await typeByPlaceholderText('template.create.placeholder', mockClusterCurator.metadata.name!)
         await clickByPlaceholderText('credentials:credentialsForm.ansibleCredentials.placeholder')
-        await clickByText(mockSecret.metadata.name)
+        await clickByText(mockSecret.metadata.name!)
         await clickByText('common:next')
 
         // install templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.install.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.install!.prehook![0].name, 0)
+        await clickByTestId('installPreJob-add-button')
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.install!.prehook![0].name, 1)
+        await clickByTestId('installPostJob-add-button')
         await clickByText('common:next')
 
         // upgrade templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.upgrade.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.upgrade.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.upgrade!.prehook![0].name, 0)
+        await clickByTestId('upgradePreJob-add-button')
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.upgrade!.prehook![0].name, 1)
+        await clickByTestId('upgradePostJob-add-button')
         await clickByText('common:next')
 
         // scale templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.scale.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.scale.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.scale!.prehook![0].name, 0)
+        await clickByTestId('scalePreJob-add-button')
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.scale!.prehook![0].name, 1)
+        await clickByTestId('scalePostJob-add-button')
         await clickByText('common:next')
 
         // destroy templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.destroy.prehook[0].name, 0)
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec.destroy.prehook[0].name, 1)
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.destroy!.prehook![0].name, 0)
+        await clickByTestId('destroyPreJob-add-button')
+        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.destroy!.prehook![0].name, 1)
+        await clickByTestId('destroyPostJob-add-button')
         await clickByText('common:next')
 
         // add template
