@@ -35,6 +35,7 @@ const AnsibleAutomationFormPage = lazy(
 )
 const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomations'))
+const ExampleForm = lazy(() => import('./components/DataForm/ExampleForm'))
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
@@ -92,6 +93,9 @@ export default function App() {
                                     />
                                     <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
                                     <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <Route exact path="/multicloud/example" component={ExampleForm} />
+                                    )}
                                     <Route path={NavigationPath.console} component={ClusterManagementPage} />
                                     <Route exact path="*">
                                         <Redirect to={NavigationPath.console} />

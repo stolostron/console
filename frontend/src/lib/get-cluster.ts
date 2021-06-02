@@ -563,9 +563,9 @@ export function getClusterStatus(
 
         // ClusterCurator has not completed so loop through statuses
         if (
-            (!checkCuratorConditionDone(CuratorCondition.curatorjob, ccConditions) &&
-                clusterCurator?.spec?.desiredCuration === 'install') ||
-            checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions)
+            clusterCurator?.spec?.desiredCuration === 'install' &&
+            (!checkCuratorConditionDone(CuratorCondition.curatorjob, ccConditions) ||
+                checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions))
         ) {
             if (
                 !checkCuratorConditionDone(CuratorCondition.prehook, ccConditions) &&

@@ -36,6 +36,38 @@ const bareMetalAsset: BareMetalAsset = {
         bmc: { address: 'example.com:80', credentialsName: 'secret-test-bare-metal-asset' },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
+                message: 'A secret with the name fog13.cluster.internal-bmc-secret in namespace slot-04 was found',
+                reason: 'SecretFound',
+                status: 'True',
+                type: 'CredentialsFound',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
+                message: 'A ClusterDeployment with the name slot-04 in namespace slot-04 was found',
+                reason: 'ClusterDeploymentFound',
+                status: 'True',
+                type: 'ClusterDeploymentFound',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T16:16:04Z'),
+                message: 'Successfully applied SyncSet',
+                reason: 'SyncSetAppliedSuccessful',
+                status: 'True',
+                type: 'AssetSyncCompleted',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T16:16:04Z'),
+                message: 'SyncSet updated successfully',
+                reason: 'SyncSetUpdated',
+                status: 'True',
+                type: 'AssetSyncStarted',
+            },
+        ],
+    },
 }
 
 const mockBmaProject: ProjectRequest = {
@@ -199,5 +231,19 @@ describe('bare metal asset page', () => {
         await waitForNock(projectCreateNock)
         await waitForNock(secretCreateNock)
         await waitForNock(bmaCreateNock)
+    })
+
+    test('renders bare metal assets page with correct asset status', async () => {
+        const clusterNock = nockRBAC(clusterCreationResourceAttributes())
+        render(
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(bareMetalAssetsState, mockBareMetalAssets)}>
+                <MemoryRouter>
+                    <BareMetalAssetsPage />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+        await waitForNock(clusterNock)
+        await waitForText(mockBareMetalAssets[0].metadata.name!)
+        await waitForText('bareMetalAsset.statusMessage.assetSyncStarted')
     })
 })
