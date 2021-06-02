@@ -23,17 +23,26 @@ const isChannelSelectable = (c: Cluster) => {
     return (!!c.name && isReady && isReadySelectChannels) || false
 }
 
-const setCurrentChannel = (clusters: Array<Cluster> | undefined): Record<string, string> => {
+const setCurrentChannel = (
+    clusters: Array<Cluster> | undefined,
+    currentMappings: Record<string, string>
+): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
+            const clusterName = cluster.name
             const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
             const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
             let defaultChannel = availableChannels.length > 0 ? availableChannels[0] : ''
             if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
                 defaultChannel = currentChannel
             }
-            res[cluster.name] = res[cluster.name] ? res[cluster.name] : defaultChannel
+
+            const found = availableChannels.find(
+                (channel) => currentMappings[clusterName] && channel === currentMappings[clusterName]
+            )
+
+            res[clusterName] = found ? found : defaultChannel
         }
     })
     return res
@@ -51,7 +60,7 @@ export function BatchChannelSelectModal(props: {
     useEffect(() => {
         // set up latest if not selected
         const newChannelSelectableClusters = props.clusters && props.clusters.filter(isChannelSelectable)
-        setSelectChannels(setCurrentChannel(newChannelSelectableClusters))
+        setSelectChannels((s) => setCurrentChannel(newChannelSelectableClusters, s))
         setChannelSelectableClusters(newChannelSelectableClusters || [])
     }, [props.clusters, props.open])
 
@@ -63,6 +72,7 @@ export function BatchChannelSelectModal(props: {
             processing={t('upgrade.selectChannel.submit.processing')}
             resources={channelSelectableClusters}
             close={() => {
+                setSelectChannels({})
                 props.close()
             }}
             description={t('bulk.message.selectChannel')}
