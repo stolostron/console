@@ -313,7 +313,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         (c) => c.displayName === cluster
                                     )!
                                     if (matchedCluster.provider === Provider.vmware) {
-                                        return true
+                                        return false
                                     }
                                     return !submarinerConfigProviders.includes(matchedCluster!.provider!)
                                 })
@@ -360,7 +360,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     placeholder: '',
                                     labelHelp: t('submariner.install.form.credential.secret.labelHelp'),
                                     value: providerSecretMap[clusterName],
-                                    isHidden: providerSecretMap[clusterName] === null,
+                                    isHidden:
+                                        providerSecretMap[clusterName] === null || cluster.provider === Provider.vmware,
                                     isRequired:
                                         [Provider.aws, Provider.gcp].includes(cluster.provider!) &&
                                         providerSecretMap[clusterName] !== null,
@@ -553,7 +554,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                             apiVersion: SubmarinerConfigApiVersion,
                             kind: SubmarinerConfigKind,
                             metadata: {
-                                name: 'subconfig',
+                                name: 'submariner',
                                 namespace: cluster?.namespace!,
                             },
                             spec: {
