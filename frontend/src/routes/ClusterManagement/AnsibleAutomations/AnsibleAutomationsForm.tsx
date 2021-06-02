@@ -92,7 +92,6 @@ export function AnsibleAutomationsForm(props: {
 
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
-
     const [installPreJobs, setInstallPreJobs] = useState(
         clusterCurator?.spec?.install?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
@@ -117,6 +116,7 @@ export function AnsibleAutomationsForm(props: {
     const [destroyPostJobs, setDestroyPostJobs] = useState(
         clusterCurator?.spec?.destroy?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
     )
+    const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
     function stateToData() {
         let ansibleSecretNamespace = ''
@@ -129,6 +129,7 @@ export function AnsibleAutomationsForm(props: {
             metadata: {
                 name: templateName,
                 namespace: ansibleSecretNamespace,
+                resourceVersion: resourceVersion,
             },
             spec: {
                 install: {
@@ -301,6 +302,7 @@ export function AnsibleAutomationsForm(props: {
             },
         ],
         submit: () => {
+            console.log('checking resource version: ', stateToData())
             if (isEditing) {
                 return replaceResource(stateToData() as IResource).promise.then(async () => {
                     if (process.env.NODE_ENV === 'development')
