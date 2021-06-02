@@ -14,7 +14,7 @@ import { fitContent } from '@patternfly/react-table'
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, clusterCuratorsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
@@ -89,9 +89,17 @@ function AnsibleJobTemplateTable() {
                         header: t('table.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
-                        cell: (clusterCurator) => {
-                            return clusterCurator.metadata.name
-                        },
+                        cell: (curator) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.editAnsibleAutomation
+                                        .replace(':namespace', curator.metadata.namespace!)
+                                        .replace(':name', curator.metadata.name!)}
+                                >
+                                    {curator.metadata.name!}
+                                </Link>
+                            </span>
+                        ),
                     },
                     {
                         header: t('table.linkedCred'),
