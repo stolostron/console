@@ -139,7 +139,7 @@ export function ClusterSetManageResourcesContent() {
                 {availableResources.length > 0 && (
                     <ActionGroup>
                         <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>
-                            {t('common:save')}
+                            {t('common:review')}
                         </AcmButton>
                         <AcmButton
                             variant="link"

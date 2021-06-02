@@ -415,6 +415,7 @@ export function AcmDataFormWizard(props: {
                             )}
                         </AlertGroup>
                     )}
+                    {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
                     <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
                     {section.description && (
                         <TextContent>
@@ -682,7 +683,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                             <SplitItem isFilled>
                                 {input.isSecret && !showSecrets
                                     ? '****************'
-                                    : input.value.split('\n').map((line) => <div>{line}</div>)}
+                                    : input.value?.split('\n').map((line) => <div>{line}</div>)}
                             </SplitItem>
                             {input.isSecret && (
                                 <Stack>

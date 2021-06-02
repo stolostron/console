@@ -30,6 +30,7 @@ export interface Section extends SectionBase {
     type: 'Section'
     wizardTitle?: string
     inputs?: Input[]
+    alerts?: ReactNode
 }
 
 export interface SectionGroup extends SectionBase {

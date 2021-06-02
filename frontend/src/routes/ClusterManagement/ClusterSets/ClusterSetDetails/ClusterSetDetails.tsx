@@ -31,6 +31,7 @@ import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetCl
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
+import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/InstallSubmarinerForm'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -137,6 +138,9 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     </Route>
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
                         <ClusterSetManageResourcesPage />
+                    </Route>
+                    <Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
+                        <InstallSubmarinerFormPage />
                     </Route>
                     <AcmPage
                         hasDrawer

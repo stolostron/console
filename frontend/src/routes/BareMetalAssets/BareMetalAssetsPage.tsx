@@ -269,12 +269,14 @@ export function BareMetalAssetsTable(props: {
                                 let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
                                 let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
                                 for (const conditions of bareMetalAsset.status!.conditions) {
-                                    if (conditions.lastTransitionTime > mostCurrentStatusTime!) {
+                                    if (conditions.lastTransitionTime.getTime() > mostCurrentStatusTime!.getTime()) {
                                         mostCurrentStatusTime = conditions.lastTransitionTime
                                         mostCurrentStatus = conditions.type
                                     }
                                     // if status time is equivalent, take the status at that was added last
-                                    else if (conditions.lastTransitionTime === mostCurrentStatusTime) {
+                                    else if (
+                                        conditions.lastTransitionTime.getTime() === mostCurrentStatusTime.getTime()
+                                    ) {
                                         mostCurrentStatusTime = conditions.lastTransitionTime
                                         mostCurrentStatus = conditions.type
                                     }
