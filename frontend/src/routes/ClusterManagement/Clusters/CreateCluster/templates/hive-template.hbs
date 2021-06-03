@@ -449,7 +449,8 @@ stringData:
   cloud: '{{{../../cloud}}}'
 {{#if ../../showSecrets}}
   clouds.yaml: |-
-    {{{../../[clouds.yaml]}}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct clouds.yaml }}
+    {{{../../cloudsYaml}}}
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}
