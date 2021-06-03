@@ -21,6 +21,7 @@ import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
 import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
 import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
+import { ManagedClusterSetBinding, ManagedClusterSetBindingKind } from './resources/managed-cluster-set-binding'
 import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
 import { Namespace, NamespaceKind } from './resources/namespace'
 import { PolicyReport, PolicyReportKind } from './resources/policy-report'
@@ -52,6 +53,10 @@ export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedCluste
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
 export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
+export const managedClusterSetBindingsState = atom<ManagedClusterSetBinding[]>({
+    key: 'managedClusterSetBindings',
+    default: [],
+})
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
@@ -103,6 +108,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
     const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
+    const [, setManagedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
@@ -129,6 +135,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
         [ManagedClusterSetKind]: setManagedClusterSets,
+        [ManagedClusterSetBindingKind]: setManagedClusterSetBindings,
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [PolicyReportKind]: setPolicyReports,

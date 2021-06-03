@@ -23,6 +23,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { ClusterPool } from '../../../../resources/cluster-pool'
 import { ManagedClusterSet, managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
 import { ManagedClusterAddOn } from '../../../../resources/managed-cluster-add-on'
+import { ManagedClusterSetBinding } from '../../../../resources/managed-cluster-set-binding'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusters } from '../components/useClusters'
 import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
@@ -32,17 +33,20 @@ import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/Clust
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
 import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/InstallSubmarinerForm'
+import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
     readonly clusters: Cluster[] | undefined
     readonly clusterPools: ClusterPool[] | undefined
     readonly submarinerAddons: ManagedClusterAddOn[] | undefined
+    readonly clusterSetBindings: ManagedClusterSetBinding[] | undefined
 }>({
     clusterSet: undefined,
     clusters: undefined,
     clusterPools: undefined,
     submarinerAddons: undefined,
+    clusterSetBindings: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -68,6 +72,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const submarinerAddons = managedClusterAddons.filter(
         (mca) => mca.metadata.name === 'submariner' && clusters?.find((c) => c.namespace === mca.metadata.namespace)
     )
+
+    const clusterSetBindings = useClusterSetBindings(clusterSet)
 
     if (prevClusterSet?.metadata?.deletionTimestamp) {
         return (
@@ -129,6 +135,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 clusters,
                 clusterPools: clusterSetClusterPools,
                 submarinerAddons,
+                clusterSetBindings,
             }}
         >
             <Suspense fallback={<Fragment />}>

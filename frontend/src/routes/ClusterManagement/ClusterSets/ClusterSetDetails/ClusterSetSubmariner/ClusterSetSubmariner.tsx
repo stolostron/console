@@ -299,7 +299,7 @@ export function ClusterSetSubmarinerPageContent() {
                             bulkActions={[
                                 {
                                     id: 'uninstall-submariner',
-                                    title: t('bulk.title.uninstallSubmariner'),
+                                    title: t('bulk.title.uninstallSubmariner.action'),
                                     click: (mcas: ManagedClusterAddOn[]) => {
                                         setModalProps({
                                             open: true,
