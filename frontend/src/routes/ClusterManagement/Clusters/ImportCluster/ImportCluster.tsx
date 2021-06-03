@@ -30,7 +30,7 @@ import { managedClusterSetLabel } from '../../../../resources/managed-cluster-se
 import { createProject } from '../../../../resources/project'
 import { IResource } from '../../../../resources/resource'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../resources/secret'
-import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
+import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
@@ -80,6 +80,7 @@ export function ImportClusterPageContent() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
+    const mustJoinClusterSet = useMustJoinClusterSet()
     const [clusterName, setClusterName] = useState<string>(sessionStorage.getItem('DiscoveredClusterDisplayName') ?? '')
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
@@ -128,6 +129,7 @@ export function ImportClusterPageContent() {
                             <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
                         </Text>
                     }
+                    isRequired={mustJoinClusterSet}
                 >
                     {canJoinClusterSets?.map((mcs) => (
                         <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
