@@ -44,10 +44,10 @@ const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 class ResizeObserver {
     observe() {
-      // do nothing
+        // do nothing
     }
     unobserve() {
-      // do nothing
+        // do nothing
     }
 }
 
