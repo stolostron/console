@@ -168,6 +168,14 @@ export function ClusterSetManageResourcesContent() {
                         (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
                     ),
                 ]}
+                columns={[
+                    {
+                        header: t('table.name'),
+                        sort: 'metadata.name',
+                        cell: (resource) => <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>,
+                    },
+                ]}
+                keyFn={(item) => item.metadata!.uid!}
                 actionFn={(resource: IResource) => {
                     const isSelected = selectedResources.find(
                         (selectedResource) => selectedResource.metadata!.uid === resource.metadata!.uid

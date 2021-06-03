@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClusterSetsState } from '../../../../atoms'
-import { ManagedClusterSet } from '../../../../resources/managed-cluster-set'
+import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../resources/managed-cluster-set'
 import { canUser, checkAdminAccess } from '../../../../lib/rbac-util'
 
 // returns a list of cluster sets that the user is authorized to attach managed clusters to
@@ -48,4 +48,17 @@ export function useCanJoinClusterSets() {
     }, [canJoinClusterSets, managedClusterSets])
 
     return { canJoinClusterSets, isLoading }
+}
+
+// checks if a user must configure a cluster set for cluster/clusterpool creation
+export function useMustJoinClusterSet() {
+    const [required, setRequired] = useState<boolean | undefined>(undefined)
+    useEffect(() => {
+        canUser('create', ManagedClusterSetDefinition, undefined, '', 'join')
+            .promise.then((result) => {
+                return setRequired(!result.status?.allowed)
+            })
+            .catch(() => setRequired(true))
+    })
+    return required
 }

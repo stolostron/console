@@ -203,6 +203,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                                   if (props.isValidError) {
                                                       validError = props.isValidError(promiseResult.reason)
                                                   }
+                                                  console.log('promiseResult', promiseResult)
                                                   if (validError) {
                                                       errors.push({
                                                           item: props.resources[index],
@@ -212,7 +213,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                               }
                                           })
                                       }
-                                      await new Promise((resolve) => setTimeout(resolve, 500))
+                                      console.log('errors', errors)
                                       setErrors(errors)
                                       if (errors.length === 0) {
                                           props.close()
