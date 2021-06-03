@@ -42,6 +42,14 @@ import CreateClusterPage from './CreateCluster'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
+class ResizeObserver {
+    observe() {
+      // do nothing
+    }
+    unobserve() {
+      // do nothing
+    }
+}
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
@@ -652,6 +660,7 @@ describe('CreateCluster', () => {
 
     test('can create bare metal cluster without template', async () => {
         window.scrollBy = () => {}
+        window.ResizeObserver = ResizeObserver
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
