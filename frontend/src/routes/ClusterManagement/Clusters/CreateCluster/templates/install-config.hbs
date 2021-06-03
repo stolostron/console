@@ -205,14 +205,14 @@ platform:
     apiVIP: {{{../../apiVIP}}} ##apiVIP
     ingressVIP: {{{../../ingressVIP}}} ##ingressVIP
 {{! ==================Disconnected BMC================================ }}
-{{#if ../../bootstrapOSImage}}
+{{#if_ne (lookup ../../bootstrapOSImage 0) ''}}
     bootstrapOSImage: >-
-      {{{../../bootstrapOSImage}}}
-{{/if}}
-{{#if ../../clusterOSImage}}
+      {{{../../../bootstrapOSImage}}}
+{{/if_ne}}
+{{#if_ne (lookup ../../clusterOSImage 0) ''}}
     clusterOSImage: >-
-      {{{../../clusterOSImage}}}
-{{/if}}
+      {{{../../../clusterOSImage}}}
+{{/if_ne}}
     hosts:
 {{#each ../../hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
