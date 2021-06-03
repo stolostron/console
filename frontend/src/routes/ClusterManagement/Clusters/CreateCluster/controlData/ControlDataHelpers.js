@@ -131,6 +131,10 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['sshKnownHosts']) {
             replacements['sshKnownHosts'] = replacements['sshKnownHosts'].split('\n')
         }
+        // handlebars don't like periods in ids, so use a substitute tag
+        if (replacements['clouds.yaml']) {
+            replacements['cloudsYaml'] = replacements['clouds.yaml']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
