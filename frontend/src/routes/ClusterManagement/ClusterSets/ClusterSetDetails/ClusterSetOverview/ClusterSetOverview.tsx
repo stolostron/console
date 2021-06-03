@@ -1,21 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { PageSection, ButtonVariant } from '@patternfly/react-core'
-import { PencilAltIcon } from '@patternfly/react-icons'
+import { useTranslation, Trans } from 'react-i18next'
+import { PageSection, Popover } from '@patternfly/react-core'
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import {
     AcmPageContent,
     AcmDescriptionList,
     AcmCountCardSection,
     AcmLabels,
+    AcmButton,
 } from '@open-cluster-management/ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
-import { RbacButton } from '../../../../../components/Rbac'
-import { ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
-import { EditLabels } from '../../../Clusters/components/EditLabels'
-import { rbacPatch } from '../../../../../lib/rbac-util'
 import { clusterDangerStatuses } from '../../../../../lib/get-cluster'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
@@ -24,8 +21,7 @@ import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkS
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation(['cluster'])
     const { push } = useHistory()
-    const { clusterSet, clusters, clusterPools, submarinerAddons } = useContext(ClusterSetContext)
-    const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+    const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
 
     const unhealthySubmariners = submarinerAddons!.filter(
         (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
@@ -34,17 +30,6 @@ export function ClusterSetOverviewPageContent() {
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                <EditLabels
-                    resource={
-                        showEditLabels
-                            ? {
-                                  ...ManagedClusterSetDefinition,
-                                  metadata: { name: clusterSet!.metadata.name, labels: clusterSet!.metadata.labels },
-                              }
-                            : undefined
-                    }
-                    close={() => setShowEditLabels(false)}
-                />
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={[
@@ -59,19 +44,25 @@ export function ClusterSetOverviewPageContent() {
                     ]}
                     rightItems={[
                         {
-                            key: t('table.labels'),
-                            value: clusterSet?.metadata.labels && <AcmLabels labels={clusterSet?.metadata.labels} />,
+                            key: t('table.clusterSetBinding'),
                             keyAction: (
-                                <RbacButton
-                                    onClick={() => setShowEditLabels(true)}
-                                    variant={ButtonVariant.plain}
-                                    aria-label={t('common:labels.edit.title')}
-                                    rbac={[
-                                        rbacPatch(ManagedClusterSetDefinition, undefined, clusterSet?.metadata.name),
-                                    ]}
+                                <Popover
+                                    bodyContent={
+                                        <Trans
+                                            i18nKey="cluster:clusterSetBinding.edit.message"
+                                            components={{ bold: <strong /> }}
+                                        />
+                                    }
                                 >
-                                    <PencilAltIcon />
-                                </RbacButton>
+                                    <AcmButton variant="link" style={{ padding: 0, paddingLeft: '6px' }}>
+                                        <OutlinedQuestionCircleIcon />
+                                    </AcmButton>
+                                </Popover>
+                            ),
+                            value: clusterSetBindings?.length ? (
+                                <AcmLabels labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)} />
+                            ) : (
+                                '-'
                             ),
                         },
                     ]}

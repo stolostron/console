@@ -10,16 +10,19 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
+import { fitContent } from '@patternfly/react-table'
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, clusterCuratorsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { deleteResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { RbacDropdown } from '../../../components/Rbac'
+
 import {
     ClusterCurator,
     filterForTemplatedCurators,
@@ -27,6 +30,7 @@ import {
     LinkAnsibleCredential,
 } from '../../../resources/cluster-curator'
 import { unpackProviderConnection } from '../../../resources/provider-connection'
+import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 
 export default function AnsibleAutomationsPage() {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -85,9 +89,17 @@ function AnsibleJobTemplateTable() {
                         header: t('table.name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
-                        cell: (clusterCurator) => {
-                            return clusterCurator.metadata.name
-                        },
+                        cell: (curator) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                <Link
+                                    to={NavigationPath.editAnsibleAutomation
+                                        .replace(':namespace', curator.metadata.namespace!)
+                                        .replace(':name', curator.metadata.name!)}
+                                >
+                                    {curator.metadata.name!}
+                                </Link>
+                            </span>
+                        ),
                     },
                     {
                         header: t('table.linkedCred'),
@@ -138,6 +150,83 @@ function AnsibleJobTemplateTable() {
                             return getTemplateJobsNum(clusterCurator)
                         },
                     },
+                    {
+                        header: '',
+                        cellTransforms: [fitContent],
+                        cell: (curator: ClusterCurator) => {
+                            const actions = [
+                                {
+                                    id: 'edit-template',
+                                    text: t('template.edit'),
+                                    isDisabled: true,
+                                    rbac: [rbacPatch(curator)],
+                                    click: (curator: ClusterCurator) => {
+                                        history.push(
+                                            NavigationPath.editAnsibleAutomation
+                                                .replace(':namespace', curator.metadata.namespace!)
+                                                .replace(':name', curator.metadata.name!)
+                                        )
+                                    },
+                                },
+                                {
+                                    id: 'delete',
+                                    text: t('template.delete'),
+                                    isDisabled: true,
+                                    rbac: [rbacDelete(curator)],
+                                    click: (curator: ClusterCurator) => {
+                                        setBulkModalProps({
+                                            open: true,
+                                            title: t('template.modal.delete.title'),
+                                            action: t('common:delete'),
+                                            processing: t('common:deleting'),
+                                            resources: [curator],
+                                            description: curator.spec?.install?.towerAuthSecret ? (
+                                                <div>
+                                                    <Trans
+                                                        i18nKey="cluster:template.modal.delete.message.linked"
+                                                        values={{
+                                                            curatorTemplate: curator.metadata.name as string,
+                                                            ansibleCredential: curator.spec.install
+                                                                .towerAuthSecret as string,
+                                                        }}
+                                                        components={{ bold: <strong /> }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                t('template.modal.delete.message.noLink')
+                                            ),
+                                            columns: [
+                                                {
+                                                    header: t('table.name'),
+                                                    cell: 'metadata.name',
+                                                    sort: 'metadata.name',
+                                                },
+                                                {
+                                                    header: t('table.namespace'),
+                                                    cell: 'metadata.namespace',
+                                                    sort: 'metadata.namespace',
+                                                },
+                                            ],
+                                            keyFn: (curator: ClusterCurator) => curator.metadata.uid as string,
+                                            actionFn: deleteResource,
+                                            close: () => setBulkModalProps({ open: false }),
+                                            isDanger: true,
+                                        })
+                                    },
+                                },
+                            ]
+
+                            return (
+                                <RbacDropdown<ClusterCurator>
+                                    id={`${curator.metadata.name}-actions`}
+                                    item={curator}
+                                    isKebab={true}
+                                    text={`${curator.metadata.name}-actions`}
+                                    actions={actions}
+                                />
+                            )
+                        },
+                    },
                 ]}
                 keyFn={(clusterCurator: ClusterCurator) => {
                     return clusterCurator.metadata.uid as string
@@ -148,62 +237,6 @@ function AnsibleJobTemplateTable() {
                         title: t('template.create'),
                         click: () => {
                             history.push(NavigationPath.addAnsibleAutomation)
-                        },
-                    },
-                ]}
-                rowActions={[
-                    {
-                        id: 'edit-template',
-                        title: t('template.edit'),
-                        click: (curator) => {
-                            history.push(
-                                NavigationPath.editAnsibleAutomation
-                                    .replace(':namespace', curator.metadata.namespace!)
-                                    .replace(':name', curator.metadata.name!)
-                            )
-                        },
-                    },
-                    {
-                        id: 'delete',
-                        title: t('template.delete'),
-                        click: (curator) => {
-                            setBulkModalProps({
-                                open: true,
-                                title: t('template.modal.delete.title'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
-                                resources: [curator],
-                                description: curator.spec?.install?.towerAuthSecret ? (
-                                    <div>
-                                        <Trans
-                                            i18nKey="cluster:template.modal.delete.message.linked"
-                                            values={{
-                                                curatorTemplate: curator.metadata.name as string,
-                                                ansibleCredential: curator.spec.install.towerAuthSecret as string,
-                                            }}
-                                            components={{ bold: <strong /> }}
-                                        />
-                                    </div>
-                                ) : (
-                                    t('template.modal.delete.message.noLink')
-                                ),
-                                columns: [
-                                    {
-                                        header: t('table.name'),
-                                        cell: 'metadata.name',
-                                        sort: 'metadata.name',
-                                    },
-                                    {
-                                        header: t('table.namespace'),
-                                        cell: 'metadata.namespace',
-                                        sort: 'metadata.namespace',
-                                    },
-                                ],
-                                keyFn: (curator: ClusterCurator) => curator.metadata.uid as string,
-                                actionFn: deleteResource,
-                                close: () => setBulkModalProps({ open: false }),
-                                isDanger: true,
-                            })
                         },
                     },
                 ]}

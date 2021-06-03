@@ -88,7 +88,7 @@ export function AnsibleAutomationsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['cluster', 'common', 'credentials'])
+    const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const history = useHistory()
@@ -106,6 +106,8 @@ export function AnsibleAutomationsForm(props: {
     const [scalePostJobs, setScalePostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.scale?.posthook ?? [])
     const [destroyPreJobs, setDestroyPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.prehook ?? [])
     const [destroyPostJobs, setDestroyPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.posthook ?? [])
+
+    const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
     function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobs) {
@@ -129,6 +131,7 @@ export function AnsibleAutomationsForm(props: {
             metadata: {
                 name: templateName,
                 namespace: ansibleSecretNamespace,
+                resourceVersion: resourceVersion,
             },
             spec: {
                 install: {
@@ -174,11 +177,11 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: t('template.create.title'),
+        title: t('create:template.create.title'),
         titleTooltip: 'tooltip test',
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: t('template.create.title') },
+            { text: t('create:template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),

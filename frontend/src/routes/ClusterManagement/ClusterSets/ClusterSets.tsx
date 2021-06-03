@@ -5,7 +5,6 @@ import {
     AcmButton,
     AcmEmptyState,
     AcmExpandableCard,
-    AcmInlineStatusGroup,
     AcmLabels,
     AcmLaunchLink,
     AcmPageContent,
@@ -27,6 +26,7 @@ import {
     managedClusterInfosState,
     managedClusterSetsState,
     managedClustersState,
+    managedClusterSetBindingsState,
 } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -34,7 +34,6 @@ import { mapAddons } from '../../../lib/get-addons'
 import { Cluster, mapClusters } from '../../../lib/get-cluster'
 import { canUser } from '../../../lib/rbac-util'
 import { deleteResource, ResourceErrorCode } from '../../../lib/resource-request'
-// import { ResourceErrorCode } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ManagedClusterSet,
@@ -158,7 +157,9 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
         return () => canCreateManagedClusterSet.abort()
     }, [])
 
-    const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState]))
+    const [clusterPools, managedClusterSetBindings] = useRecoilValue(
+        waitForAll([clusterPoolsState, managedClusterSetBindingsState])
+    )
 
     const modalColumns = useMemo(
         () => [
@@ -252,45 +253,26 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             if (pools.length === 0) {
                                 return '-'
                             } else {
-                                return pools.length
+                                return pools.length === 1
+                                    ? t('clusterPools.one')
+                                    : t('clusterPools.multiple', { number: pools.length })
                             }
                         },
                     },
                     {
-                        header: t('table.labels'),
-                        search: (managedClusterSet) =>
-                            managedClusterSet.metadata.labels
-                                ? Object.keys(managedClusterSet.metadata.labels).map(
-                                      (key) => `${key}=${managedClusterSet.metadata.labels![key]}`
-                                  )
-                                : '',
-                        cell: (managedClusterSet) =>
-                            managedClusterSet.metadata.labels ? (
-                                <AcmLabels labels={managedClusterSet.metadata.labels} style={{ maxWidth: '600px' }} />
-                            ) : (
-                                '-'
-                            ),
-                    },
-                    {
-                        header: t('table.nodes'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            const clusters =
-                                props.clusters?.filter(
-                                    (cluster) => cluster?.clusterSet === managedClusterSet.metadata.name
-                                ) ?? []
-
-                            let healthy = 0
-                            let danger = 0
-                            let unknown = 0
-
-                            clusters.forEach((cluster) => {
-                                healthy += cluster.nodes!.ready
-                                danger += cluster.nodes!.unhealthy
-                                unknown += cluster.nodes!.unknown
-                            })
-
-                            return healthy + danger + unknown > 0 ? (
-                                <AcmInlineStatusGroup healthy={healthy} danger={danger} unknown={unknown} />
+                        header: t('table.clusterSetBinding'),
+                        tooltip: t('clusterSetBinding.edit.message.noBold'),
+                        cell: (managedClusterSet) => {
+                            const bindings = managedClusterSetBindings.filter(
+                                (mcsb) => mcsb.spec.clusterSet === managedClusterSet.metadata.name!
+                            )
+                            const namespaces = bindings.map((mcsb) => mcsb.metadata.namespace!)
+                            return namespaces.length ? (
+                                <AcmLabels
+                                    labels={namespaces}
+                                    collapse={namespaces.filter((ns, i) => i > 1)}
+                                    style={{ maxWidth: '600px' }}
+                                />
                             ) : (
                                 '-'
                             )

@@ -266,18 +266,24 @@ export function BareMetalAssetsTable(props: {
                         header: t('bareMetalAsset.tableHeader.status'),
                         cell: (bareMetalAsset) => {
                             if (bareMetalAsset.status) {
-                                let mostCurrentStatusTime = bareMetalAsset.status!.conditions[0].lastTransitionTime
+                                let mostCurrentStatusTime = new Date(
+                                    bareMetalAsset.status!.conditions[0].lastTransitionTime
+                                )
                                 let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
                                 for (const conditions of bareMetalAsset.status!.conditions) {
-                                    if (conditions.lastTransitionTime.getTime() > mostCurrentStatusTime!.getTime()) {
-                                        mostCurrentStatusTime = conditions.lastTransitionTime
+                                    if (
+                                        new Date(conditions.lastTransitionTime).getTime() >
+                                        mostCurrentStatusTime!.getTime()
+                                    ) {
+                                        mostCurrentStatusTime = new Date(conditions.lastTransitionTime)
                                         mostCurrentStatus = conditions.type
                                     }
                                     // if status time is equivalent, take the status at that was added last
                                     else if (
-                                        conditions.lastTransitionTime.getTime() === mostCurrentStatusTime.getTime()
+                                        new Date(conditions.lastTransitionTime).getTime() ===
+                                        mostCurrentStatusTime.getTime()
                                     ) {
-                                        mostCurrentStatusTime = conditions.lastTransitionTime
+                                        mostCurrentStatusTime = new Date(conditions.lastTransitionTime)
                                         mostCurrentStatus = conditions.type
                                     }
                                 }

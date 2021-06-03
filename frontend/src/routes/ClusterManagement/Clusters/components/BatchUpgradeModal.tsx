@@ -37,15 +37,24 @@ const isUpgradeable = (c: Cluster) => {
     return (!!c.name && isReady && hasAvailableUpgrades) || false
 }
 
-const setLatestVersions = (clusters: Array<Cluster> | undefined): Record<string, string> => {
+// setLatestVersions will set a cluster with latest version
+// if no version is set in the currentMappings or if the version in currentMappings is invalid
+const setLatestVersions = (
+    clusters: Array<Cluster> | undefined,
+    currentMappings: Record<string, string>
+): Record<string, string> => {
     const res = {} as Record<string, string>
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
+            const clusterName = cluster.name
             const availableUpdates =
                 cluster.distribution?.upgradeInfo?.availableUpdates &&
                 [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
             const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
-            res[cluster.name] = res[cluster.name] ? res[cluster.name] : latestVersion
+            const currentValue = availableUpdates?.find(
+                (curr) => currentMappings[clusterName] && curr === currentMappings[clusterName]
+            )
+            res[clusterName] = currentValue ? currentValue : latestVersion
         }
     })
     return res
@@ -63,7 +72,7 @@ export function BatchUpgradeModal(props: {
     useEffect(() => {
         // set up latest if not selected
         const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
-        setSelectVersions(setLatestVersions(newUpgradeableClusters))
+        setSelectVersions((s) => setLatestVersions(newUpgradeableClusters, s))
         setUpgradeableClusters(newUpgradeableClusters || [])
     }, [props.clusters, props.open])
 
@@ -75,6 +84,7 @@ export function BatchUpgradeModal(props: {
             processing={t('upgrade.submit.processing')}
             resources={upgradeableClusters}
             close={() => {
+                setSelectVersions({})
                 props.close()
             }}
             description={t('bulk.message.upgrade')}
