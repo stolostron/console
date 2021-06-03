@@ -175,9 +175,9 @@ export function watchResource(
             msg: 'watching error',
             kind,
             error: err.message,
-            code: ((err as unknown) as { code: string })?.code,
+            code: (err as unknown as { code: string })?.code,
         })
-        switch (((err as unknown) as { code: string }).code) {
+        switch ((err as unknown as { code: string }).code) {
             case 'ENOTFOUND':
                 setDead()
                 break
