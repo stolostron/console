@@ -131,8 +131,12 @@ export interface NumberInput extends InputBase<number> {
     unit?: ReactNode
 }
 
-export interface OrderedStringInput extends InputBase<string[]> {
-    type: 'OrderedStrings'
+export interface FormDataOrderedInput<T = any> extends InputBase<T[]> {
+    type: 'OrderedItems'
+    keyFn: (item: T) => string
+    cellsFn: (item: T) => ReactNode[]
+    onEdit?: (item: T) => void
+    onCreate?: () => void
 }
 
 export type Input =
@@ -146,4 +150,4 @@ export type Input =
     | TilesInput
     | GroupedTilesInput
     | NumberInput
-    | OrderedStringInput
+    | FormDataOrderedInput
