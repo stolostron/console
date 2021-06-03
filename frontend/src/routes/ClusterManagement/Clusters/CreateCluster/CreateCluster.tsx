@@ -232,8 +232,6 @@ export default function CreateClusterPage() {
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
-    console.log('controlData', controlData)
-    console.log('mustJoinClusterSet', mustJoinClusterSet)
     for (let i = 0; i < controlData.length; i++) {
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
