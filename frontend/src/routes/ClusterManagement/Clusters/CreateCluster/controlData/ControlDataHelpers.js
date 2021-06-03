@@ -131,9 +131,17 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['sshKnownHosts']) {
             replacements['sshKnownHosts'] = replacements['sshKnownHosts'].split('\n')
         }
-        // handlebars don't like periods in ids, so use a substitute tag
+        // handlebars don't like periods in ids, so use a substitute tag - OpenStack
         if (replacements['clouds.yaml']) {
             replacements['cloudsYaml'] = replacements['clouds.yaml']
+        }
+        // handlebars don't like periods in ids, so use a substitute tag - Azure
+        if (replacements['osServicePrincipal.json']) {
+            replacements['osServicePrincipalJson'] = replacements['osServicePrincipal.json']
+        }
+        // handlebars don't like periods in ids, so use a substitute tag - GCP
+        if (replacements['osServiceAccount.json']) {
+            replacements['osServiceAccountJson'] = replacements['osServiceAccount.json']
         }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
