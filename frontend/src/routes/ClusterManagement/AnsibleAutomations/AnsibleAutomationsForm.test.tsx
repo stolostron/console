@@ -8,9 +8,9 @@ import { clusterCuratorsState, namespacesState, secretsState } from '../../../at
 import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickByPlaceholderText,
-    clickByTestId,
     clickByText,
     typeByPlaceholderText,
+    typeByTestId,
     waitForNock,
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -66,23 +66,23 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-install' }],
-            posthook: [{ name: 'test-job-install' }],
+            prehook: [{ name: 'test-job-pre-install', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-install', extra_vars: {} }],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-upgrade' }],
-            posthook: [{ name: 'test-job-upgrade' }],
+            prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-upgrade', extra_vars: {} }],
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-scale' }],
-            posthook: [{ name: 'test-job-scale' }],
+            prehook: [{ name: 'test-job-pre-scale', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-scale', extra_vars: {} }],
         },
         destroy: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-destroy' }],
-            posthook: [{ name: 'test-job-destroy' }],
+            prehook: [{ name: 'test-job-pre-destroy', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-destroy', extra_vars: {} }],
         },
     },
 }
@@ -100,31 +100,39 @@ describe('add ansible job template page', () => {
         await clickByText('common:next')
 
         // install templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.install!.prehook![0].name, 0)
-        await clickByTestId('installPreJob-add-button')
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.install!.prehook![0].name, 1)
-        await clickByTestId('installPostJob-add-button')
+        await clickByText('template.job.placeholder', 0)
+        await typeByTestId('job-name', mockClusterCurator.spec!.install!.prehook![0].name)
+        await clickByText('common:save')
+        await clickByText('template.job.placeholder', 1)
+        await typeByTestId('job-name', mockClusterCurator.spec!.install!.posthook![0].name)
+        await clickByText('common:save')
         await clickByText('common:next')
 
         // upgrade templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.upgrade!.prehook![0].name, 0)
-        await clickByTestId('upgradePreJob-add-button')
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.upgrade!.prehook![0].name, 1)
-        await clickByTestId('upgradePostJob-add-button')
+        await clickByText('template.job.placeholder', 0)
+        await typeByTestId('job-name', mockClusterCurator.spec!.upgrade!.prehook![0].name)
+        await clickByText('common:save')
+        await clickByText('template.job.placeholder', 1)
+        await typeByTestId('job-name', mockClusterCurator.spec!.upgrade!.posthook![0].name)
+        await clickByText('common:save')
         await clickByText('common:next')
 
         // scale templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.scale!.prehook![0].name, 0)
-        await clickByTestId('scalePreJob-add-button')
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.scale!.prehook![0].name, 1)
-        await clickByTestId('scalePostJob-add-button')
+        await clickByText('template.job.placeholder', 0)
+        await typeByTestId('job-name', mockClusterCurator.spec!.scale!.prehook![0].name)
+        await clickByText('common:save')
+        await clickByText('template.job.placeholder', 1)
+        await typeByTestId('job-name', mockClusterCurator.spec!.scale!.posthook![0].name)
+        await clickByText('common:save')
         await clickByText('common:next')
 
         // destroy templates
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.destroy!.prehook![0].name, 0)
-        await clickByTestId('destroyPreJob-add-button')
-        await typeByPlaceholderText('template.job.placeholder', mockClusterCurator.spec!.destroy!.prehook![0].name, 1)
-        await clickByTestId('destroyPostJob-add-button')
+        await clickByText('template.job.placeholder', 0)
+        await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.prehook![0].name)
+        await clickByText('common:save')
+        await clickByText('template.job.placeholder', 1)
+        await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.posthook![0].name)
+        await clickByText('common:save')
         await clickByText('common:next')
 
         // add template

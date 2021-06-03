@@ -13,7 +13,7 @@ export default function ExampleForm() {
     const [selection, setSelection] = useState('')
     const [selections, setSelections] = useState<string[]>([])
     const [tile, setTile] = useState('')
-    const [orderedStrings, setOrderedStrings] = useState(['One', 'Two', 'Three'])
+    const [orderedItems, setOrderedItems] = useState(['One', 'Two', 'Three'])
 
     const options = ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'].map((name) => {
         return {
@@ -43,7 +43,7 @@ export default function ExampleForm() {
             selection,
             selections,
             tile,
-            orderedStrings,
+            orderedItems,
         }
         return data
     }
@@ -114,13 +114,15 @@ export default function ExampleForm() {
                         wizardTitle: 'Text input',
                         inputs: [
                             {
-                                id: 'OrderedStrings',
-                                type: 'OrderedStrings',
-                                label: 'OrderedStrings',
+                                id: 'OrderedItems',
+                                type: 'OrderedItems',
+                                label: 'OrderedItems',
                                 placeholder: 'Add a string',
-                                value: orderedStrings,
-                                onChange: setOrderedStrings,
+                                value: orderedItems,
+                                onChange: setOrderedItems,
                                 isRequired: true,
+                                keyFn: (item) => item,
+                                cellsFn: (item) => [item],
                             },
                         ],
                     },

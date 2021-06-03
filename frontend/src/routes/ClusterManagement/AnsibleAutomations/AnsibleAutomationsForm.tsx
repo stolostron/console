@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useState } from 'react'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
+import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -11,6 +13,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { createResource, replaceResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    AnsibleJob,
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
@@ -89,34 +92,33 @@ export function AnsibleAutomationsForm(props: {
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const history = useHistory()
-
+    const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
+    const [editAnsibleJobs, setEditAnsibleJobs] =
+        useState<{ jobs: AnsibleJob[]; setJobs: (jobs: AnsibleJob[]) => void }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
-    const [installPreJobs, setInstallPreJobs] = useState(
-        clusterCurator?.spec?.install?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [installPostJobs, setInstallPostJobs] = useState(
-        clusterCurator?.spec?.install?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [upgradePreJobs, setUpgradePreJobs] = useState(
-        clusterCurator?.spec?.upgrade?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [upgradePostJobs, setUpgradePostJobs] = useState(
-        clusterCurator?.spec?.upgrade?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [scalePreJobs, setScalePreJobs] = useState(
-        clusterCurator?.spec?.scale?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [scalePostJobs, setScalePostJobs] = useState(
-        clusterCurator?.spec?.scale?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [destroyPreJobs, setDestroyPreJobs] = useState(
-        clusterCurator?.spec?.destroy?.prehook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
-    const [destroyPostJobs, setDestroyPostJobs] = useState(
-        clusterCurator?.spec?.destroy?.posthook?.map((ansibleJob) => ansibleJob.name) ?? []
-    )
+
+    const [installPreJobs, setInstallPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.prehook ?? [])
+    const [installPostJobs, setInstallPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.posthook ?? [])
+    const [upgradePreJobs, setUpgradePreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.upgrade?.prehook ?? [])
+    const [upgradePostJobs, setUpgradePostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.upgrade?.posthook ?? [])
+    const [scalePreJobs, setScalePreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.scale?.prehook ?? [])
+    const [scalePostJobs, setScalePostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.scale?.posthook ?? [])
+    const [destroyPreJobs, setDestroyPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.prehook ?? [])
+    const [destroyPostJobs, setDestroyPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.posthook ?? [])
+
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
+
+    function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
+        if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobs) {
+            if (installPreJobs.includes(replaceJob)) {
+                editAnsibleJobs.setJobs(editAnsibleJobs.jobs.map((job) => (job === replaceJob ? ansibleJob : job)))
+            } else {
+                editAnsibleJobs.setJobs([...editAnsibleJobs.jobs, ...[ansibleJob]])
+            }
+        }
+        setEditAnsibleJob(undefined)
+    }
 
     function stateToData() {
         let ansibleSecretNamespace = ''
@@ -134,27 +136,44 @@ export function AnsibleAutomationsForm(props: {
             spec: {
                 install: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: installPreJobs.map((name) => ({ name })),
-                    posthook: installPostJobs.map((name) => ({ name })),
+                    prehook: installPreJobs,
+                    posthook: installPostJobs,
                 },
                 upgrade: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: upgradePreJobs.map((name) => ({ name })),
-                    posthook: upgradePostJobs.map((name) => ({ name })),
+                    prehook: upgradePreJobs,
+                    posthook: upgradePostJobs,
                 },
                 scale: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: scalePreJobs.map((name) => ({ name })),
-                    posthook: scalePostJobs.map((name) => ({ name })),
+                    prehook: scalePreJobs,
+                    posthook: scalePostJobs,
                 },
                 destroy: {
                     towerAuthSecret: ansibleSelection,
-                    prehook: destroyPreJobs.map((name) => ({ name })),
-                    posthook: destroyPostJobs.map((name) => ({ name })),
+                    prehook: destroyPreJobs,
+                    posthook: destroyPostJobs,
                 },
             },
         }
         return curator
+    }
+
+    function cellsFn(ansibleJob: AnsibleJob) {
+        return [
+            <Flex style={{ gap: '8px' }}>
+                <FlexItem>{ansibleJob.name}</FlexItem>
+                {ansibleJob.extra_vars && (
+                    <ChipGroup>
+                        {Object.keys(ansibleJob.extra_vars).map((key) => (
+                            <Chip isReadOnly>
+                                {key}={ansibleJob.extra_vars![key]}
+                            </Chip>
+                        ))}
+                    </ChipGroup>
+                )}
+            </Flex>,
+        ]
     }
 
     const formData: FormData = {
@@ -213,19 +232,39 @@ export function AnsibleAutomationsForm(props: {
                         inputs: [
                             {
                                 id: 'installPreJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.preInstall.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: installPreJobs,
                                 onChange: setInstallPreJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: installPreJobs, setJobs: setInstallPreJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: installPreJobs, setJobs: setInstallPreJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                             {
                                 id: 'installPostJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.postInstall.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: installPostJobs,
                                 onChange: setInstallPostJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: installPostJobs, setJobs: setInstallPostJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: installPostJobs, setJobs: setInstallPostJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                         ],
                     },
@@ -236,19 +275,39 @@ export function AnsibleAutomationsForm(props: {
                         inputs: [
                             {
                                 id: 'upgradePreJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.preUpgrade.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePreJobs,
                                 onChange: setUpgradePreJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                             {
                                 id: 'upgradePostJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.postUpgrade.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePostJobs,
                                 onChange: setUpgradePostJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                         ],
                     },
@@ -259,19 +318,39 @@ export function AnsibleAutomationsForm(props: {
                         inputs: [
                             {
                                 id: 'scalePreJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.preScale.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: scalePreJobs,
                                 onChange: setScalePreJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                             {
                                 id: 'scalePostJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.postScale.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: scalePostJobs,
                                 onChange: setScalePostJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                         ],
                     },
@@ -282,19 +361,39 @@ export function AnsibleAutomationsForm(props: {
                         inputs: [
                             {
                                 id: 'destroyPreJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.preDestroy.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: destroyPreJobs,
                                 onChange: setDestroyPreJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                             {
                                 id: 'destroyPostJob',
-                                type: 'OrderedStrings',
+                                type: 'OrderedItems',
                                 label: t('template.postDestroy.label'),
                                 placeholder: t('template.job.placeholder'),
                                 value: destroyPostJobs,
                                 onChange: setDestroyPostJobs,
+                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                cellsFn,
+                                onEdit: (ansibleJob) => {
+                                    setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                    setEditAnsibleJob(ansibleJob)
+                                },
+                                onCreate: () => {
+                                    setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                    setEditAnsibleJob({ name: '', extra_vars: {} })
+                                },
                             },
                         ],
                     },
@@ -322,5 +421,76 @@ export function AnsibleAutomationsForm(props: {
         stateToData,
     }
 
-    return <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+    return (
+        <Fragment>
+            <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+            <EditAnsibleJobModal ansibleJob={editAnsibleJob} setAnsibleJob={updateAnsibleJob} />
+        </Fragment>
+    )
+}
+
+function EditAnsibleJobModal(props: {
+    ansibleJob?: AnsibleJob
+    setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
+}) {
+    const { t } = useTranslation(['common', 'cluster'])
+    const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
+    useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
+    return (
+        <AcmModal
+            variant={ModalVariant.medium}
+            title={
+                props.ansibleJob?.name !== ''
+                    ? t('cluster:template.modal.title.edit')
+                    : t('cluster:template.modal.title.add')
+            }
+            isOpen={props.ansibleJob !== undefined}
+            onClose={() => props.setAnsibleJob()}
+        >
+            <AcmForm>
+                <AcmTextInput
+                    id="job-name"
+                    label={t('cluster:template.modal.name.label')}
+                    value={ansibleJob?.name}
+                    onChange={(name) => {
+                        if (ansibleJob) {
+                            const copy = { ...ansibleJob }
+                            copy.name = name
+                            setAnsibleJob(copy)
+                        }
+                    }}
+                    isRequired
+                />
+                <AcmLabelsInput
+                    id="job-settings"
+                    label={t('cluster:template.modal.settings.label')}
+                    value={ansibleJob?.extra_vars}
+                    onChange={(labels) => {
+                        if (ansibleJob) {
+                            const copy = { ...ansibleJob }
+                            copy.extra_vars = labels
+                            setAnsibleJob(copy)
+                        }
+                    }}
+                    buttonLabel=""
+                    placeholder={t('cluster:template.modal.settings.placeholder')}
+                />
+                <ActionGroup>
+                    <AcmSubmit
+                        variant="primary"
+                        onClick={() => {
+                            if (ansibleJob) props.setAnsibleJob({ ...ansibleJob }, props.ansibleJob)
+                            props.setAnsibleJob()
+                        }}
+                    >
+                        {t('common:save')}
+                    </AcmSubmit>
+
+                    <Button variant="link" onClick={() => props.setAnsibleJob()} key="cancel">
+                        {t('common:cancel')}
+                    </Button>
+                </ActionGroup>
+            </AcmForm>
+        </AcmModal>
+    )
 }
