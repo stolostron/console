@@ -209,7 +209,7 @@ export function ClustersTable(props: {
                 columns={[
                     {
                         header: t('table.name'),
-                        tooltip: t('table.name.helperText'),
+                        tooltip: t('table.name.helperText.noBold'),
                         sort: 'displayName',
                         search: (cluster) => [cluster.displayName, cluster.hive.clusterClaimName],
                         cell: (cluster) => (

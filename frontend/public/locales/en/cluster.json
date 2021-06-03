@@ -116,6 +116,7 @@
     "managed.removeSet": "Remove from cluster set",
     "managed.addSet": "Add to cluster set",
     "managed.createClusterPool": "Create cluster pool",
+    "set.edit-bindings": "Edit namespace bindings",
     "set.manage-resources": "Manage resource assignments",
     "set.delete": "Delete cluster set",
     "clusterPool.claim": "Claim cluster",
@@ -155,6 +156,7 @@
     "table.name": "Name",
     "table.cluster": "Cluster",
     "table.name.helperText": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>. The cluster claim name will be displayed under the cluster name if it was claimed from a cluster pool.",
+    "table.name.helperText.noBold": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the Namespace, ManagedCluster, or ClusterDeployment. The cluster claim name will be displayed under the cluster name if it was claimed from a cluster pool.",
     "table.clusterName": "Cluster resource name",
     "table.clusterName.helperText": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>.",
     "table.clusterChannel.helperText": "Channels help to control the pace of upgrades and recommend the approporiate release versions. Update channels are tied to a minor version of Openshift Container Platform, for example 4.6.",
@@ -207,6 +209,7 @@
     "table.submariner.nodes": "Gateway nodes labeled",
     "table.submariner.agent": "Agent status",
     "table.submariner.connection": "Connection status",
+    "table.clusterSetBinding": "Namespace bindings",
 
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
@@ -427,6 +430,9 @@
     "summary.clusters.launch": "Go to Managed clusters",
     "summary.clusterPools.launch": "Go to Cluster pools",
 
+    "clusterPools.one": "1 pool",
+    "clusterPools.multiple": "{{number}} pools",
+
     "policy.report.flyout.title": "{{count}} identified issues",
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "policy.report.flyout.back": "Back",
@@ -480,6 +486,7 @@
     "bulk.title.removeAuthorization": "Remove users or groups?",
     "bulk.message.removeAuthorization": "Removing a user or group revokes access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.",
     "bulk.title.uninstallSubmariner": "Uninstall Submariner add-ons?",
+    "bulk.title.uninstallSubmariner.action": "Uninstall Submariner add-ons",
     "bulk.message.uninstallSubmariner": "Uninstalling the Submariner add-on from a managed cluster will remove it from the multi-cluster network. This may result in disruption to your applications or services. Are you sure you want to continue?",
 
     "uninstall.add-on": "Uninstall add-on",
@@ -612,5 +619,11 @@
     "access.usersInGroup": "Users in group",
     "access.usersInGroup.view": "View users in group",
     "access.clusterSet.role.admin": "Cluster set admin",
-    "access.clusterSet.role.view": "Cluster set view"
+    "access.clusterSet.role.view": "Cluster set view",
+
+    "clusterSetBinding.edit.title": "Edit namespace bindings",
+    "clusterSetBinding.edit.message": "A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Application and policies that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource.",
+    "clusterSetBinding.edit.message.noBold": "A ManagedClusterSetBinding resource binds a ManagedClusterSet resource to a namespace. Application and policies that are created in the same namespace can only access managed clusters that are included in the bound ManagedClusterSet resource.",
+    "clusterSetBinding.edit.select.label": "Namespaces",
+    "clusterSetBinding.edit.select.placeholder": "Select namespaces"
 }

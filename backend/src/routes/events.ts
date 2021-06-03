@@ -52,6 +52,7 @@ export function startWatching(): void {
     watchResource(token, 'v1', 'namespaces')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')
     watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSetBindings')
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
     watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
@@ -175,9 +176,9 @@ export function watchResource(
             msg: 'watching error',
             kind,
             error: err.message,
-            code: ((err as unknown) as { code: string })?.code,
+            code: (err as unknown as { code: string })?.code,
         })
-        switch (((err as unknown) as { code: string }).code) {
+        switch ((err as unknown as { code: string }).code) {
             case 'ENOTFOUND':
                 setDead()
                 break
