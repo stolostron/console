@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -668,11 +668,12 @@ describe('CreateCluster', () => {
         ]
 
         // create the form
-        const { container } = render(<Component />)
+        const { container, debug } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the name
+        screen.debug(debug(), 2000000)
         await typeByTestId('eman', clusterName!)
         await clickByText('Next')
 
