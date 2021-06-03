@@ -763,7 +763,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the name
-        await typeByTestId('eman', clusterName!)
+        await typeByTestId('text-eman', clusterName!)
         await clickByText('Next')
 
         // step 2 -- the infrastructure
