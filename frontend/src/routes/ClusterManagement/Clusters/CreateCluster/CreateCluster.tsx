@@ -110,9 +110,7 @@ export default function CreateClusterPage() {
             setSelectedTemplate(control.active)
         }
         if (control.id === 'connection') {
-            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-            console.log('checking connection selection: ', selectedConnection)
-        }
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))        }
     }
 
     // create button
@@ -151,8 +149,6 @@ export default function CreateClusterPage() {
                         }
                         resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
                             selectedConnection?.metadata.name!
-
-                        console.log('secrets: ', resource)
                     }
                 })
 
