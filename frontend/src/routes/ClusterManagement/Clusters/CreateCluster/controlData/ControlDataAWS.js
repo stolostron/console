@@ -8,6 +8,7 @@ import {
     getSimplifiedImageName,
     isHidden_lt_OCP48,
     isHidden_SNO,
+    onChangeSNO,
 } from './ControlDataHelpers'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
@@ -628,6 +629,7 @@ const controlDataAWS = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
+        onSelect: onChangeSNO,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

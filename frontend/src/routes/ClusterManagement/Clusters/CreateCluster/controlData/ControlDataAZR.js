@@ -8,6 +8,7 @@ import {
     getSimplifiedImageName,
     isHidden_lt_OCP48,
     isHidden_SNO,
+    onChangeSNO,
 } from './ControlDataHelpers'
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
@@ -468,6 +469,7 @@ const controlDataAZR = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
+        onSelect: onChangeSNO,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////

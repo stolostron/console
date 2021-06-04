@@ -98,7 +98,6 @@ compute:
   replicas: {{{../computeNodeCount}}}
 {{/if_eq}}
 
-{{#unless singleNode}}
 {{#each workerPools}}
 {{#if @first}}
 compute:
@@ -163,7 +162,6 @@ compute:
 {{/switch}}
 {{/if}}
 {{/each}}
-{{/unless}}
 
 
 

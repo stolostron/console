@@ -233,3 +233,17 @@ export const isHidden_SNO = (control, controlData) => {
     const singleNode = controlData.find(({ id }) => id === 'singleNode')
     return singleNode && singleNode.active
 }
+
+export const onChangeSNO = (control, controlData) => {
+    if (!control.active) {
+        const computeNodeCount = controlData.find(({ id }) => id === 'computeNodeCount')
+        if (computeNodeCount) {
+            computeNodeCount.active = 3
+        }
+    } else {
+        const computeNodeCount = controlData.find(({ id }) => id === 'computeNodeCount')
+        if (computeNodeCount) {
+            computeNodeCount.active = 0
+        }
+    }
+}

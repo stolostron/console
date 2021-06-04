@@ -242,7 +242,6 @@ data:
 {{! ========================================================== }}
 
 {{! bare metal has no workerPools data so this part isn't added }}
-{{#unless singleNode}}
 {{#each workerPools}}
 ---
 apiVersion: hive.openshift.io/v1
@@ -312,7 +311,6 @@ spec:
 {{/switch}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
 {{/each}}
-{{/unless}}
 
 {{! ========================================================== }}
 {{! ========================================================== }}

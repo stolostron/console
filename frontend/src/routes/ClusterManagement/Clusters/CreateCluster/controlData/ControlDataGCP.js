@@ -8,6 +8,7 @@ import {
     getSimplifiedImageName,
     isHidden_lt_OCP48,
     isHidden_SNO,
+    onChangeSNO,
 } from './ControlDataHelpers'
 
 const GCPregions = [
@@ -283,6 +284,7 @@ const controlDataGCP = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
+        onSelect: onChangeSNO,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
