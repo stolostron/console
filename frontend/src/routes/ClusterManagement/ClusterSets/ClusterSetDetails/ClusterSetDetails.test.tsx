@@ -71,6 +71,29 @@ const mockManagedClusterExtra: ManagedCluster = {
     },
 }
 
+const mockManagedClusterInfoExtra: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: {
+        name: mockManagedClusterExtra.metadata.name!,
+        namespace: mockManagedClusterExtra.metadata.name!,
+    },
+    status: {
+        conditions: [],
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: ['1.2.4', '1.2.5'],
+                desiredVersion: '1.2.4',
+                upgradeFailed: false,
+                versionAvailableUpdates: [],
+            },
+        },
+    },
+}
+
 const mockManagedClusterExtraSecret: Secret = {
     apiVersion: SecretApiVersion,
     kind: SecretKind,
@@ -253,7 +276,11 @@ const Component = () => (
         initializeState={(snapshot) => {
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
             snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-            snapshot.set(managedClusterInfosState, [...mockManagedClusterInfos, mockManagedClusterInfoNoCredentials])
+            snapshot.set(managedClusterInfosState, [
+                ...mockManagedClusterInfos,
+                mockManagedClusterInfoExtra,
+                mockManagedClusterInfoNoCredentials,
+            ])
             snapshot.set(managedClustersState, [
                 ...mockManagedClusters,
                 mockManagedClusterExtra,

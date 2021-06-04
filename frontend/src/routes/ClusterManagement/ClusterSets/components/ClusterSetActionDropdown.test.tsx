@@ -91,8 +91,7 @@ describe('ClusterSetActionDropdown', () => {
 
         // verify existing binding is selected
         await waitForText(firstNamespaceBinding.metadata.namespace!)
-        await clickByPlaceholderText('[object Object]')
-        // await clickByPlaceholderText('clusterSetBinding.edit.select.placeholder')
+        await clickByPlaceholderText('clusterSetBinding.edit.select.placeholder')
 
         // unselect existing binding
         await clickByText(firstNamespaceBinding.metadata.namespace!, 1)

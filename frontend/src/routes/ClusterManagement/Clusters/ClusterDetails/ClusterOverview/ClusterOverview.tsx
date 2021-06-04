@@ -14,9 +14,11 @@ import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../components/Rbac'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
 import { ImportCommandContainer } from '../../../Clusters/components/ImportCommand'
@@ -123,8 +125,8 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     variant={ButtonVariant.plain}
                     aria-label={t('cluster:bulk.title.selectChannel')}
                     rbac={[
-                        rbacPatch(ClusterCuratorDefinition, undefined, cluster?.name),
-                        rbacCreate(ClusterCuratorDefinition, undefined, cluster?.name),
+                        rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
+                        rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
                     ]}
                 >
                     <PencilAltIcon />
@@ -221,7 +223,11 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         },
                         {
                             key: t('table.clusterSet'),
-                            value: cluster?.clusterSet,
+                            value: cluster?.clusterSet! && (
+                                <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>
+                                    {cluster?.clusterSet}
+                                </Link>
+                            ),
                         },
                         {
                             key: t('table.clusterPool'),

@@ -60,7 +60,10 @@ export function ClusterSetOverviewPageContent() {
                                 </Popover>
                             ),
                             value: clusterSetBindings?.length ? (
-                                <AcmLabels labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)} />
+                                <AcmLabels
+                                    labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)}
+                                    variant="outline"
+                                />
                             ) : (
                                 '-'
                             ),

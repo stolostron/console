@@ -20,7 +20,7 @@ import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
+import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { controlData } from './controlData/ControlData'
 import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
@@ -231,9 +231,11 @@ export default function CreateClusterPage() {
         : null
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
+    const mustJoinClusterSet = useMustJoinClusterSet()
     for (let i = 0; i < controlData.length; i++) {
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+            controlData[i].validation.required = mustJoinClusterSet ?? false
         }
         if (controlData[i].id === 'infrastructure') {
             controlData[i]?.available?.forEach((provider) => {
@@ -251,7 +253,7 @@ export default function CreateClusterPage() {
     }
 
     // cluster set dropdown won't update without this
-    if (canJoinClusterSets === undefined) {
+    if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
         return null
     }
 

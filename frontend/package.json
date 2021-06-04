@@ -6,7 +6,7 @@
     "proxy": "https://localhost:4000",
     "dependencies": {
         "@kubernetes/client-node": "^0.14.3",
-        "@open-cluster-management/ui-components": "^0.138.0",
+        "@open-cluster-management/ui-components": "^0.139.0",
         "@patternfly/react-core": "^4.121.3",
         "@patternfly/react-table": "^4.27.9",
         "@redhat-cloud-services/rule-components": "^3.1.1",
