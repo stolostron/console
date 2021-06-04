@@ -583,7 +583,7 @@ export const AWSworkerInstanceTypes = [
 const isHidden_lt_OCP48 = (control, controlData) => {
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
     //NOTE: We will need to adjust this in the future for new OCP versions!
-    if (imageSet && imageSet.active && (imageSet.active.includes('release:4.5') || imageSet.active.includes('release:4.9') || imageSet.active.includes('release:4.10'))) {
+    if (imageSet && imageSet.active && (imageSet.active.includes('release:4.8') || imageSet.active.includes('release:4.9') || imageSet.active.includes('release:4.10'))) {
         return false
     }
     return true
