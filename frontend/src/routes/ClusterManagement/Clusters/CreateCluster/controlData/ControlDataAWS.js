@@ -6,6 +6,8 @@ import {
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,
+    isHidden_lt_OCP48,
+    isHidden_SNO,
 } from './ControlDataHelpers'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
@@ -580,21 +582,6 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-const isHidden_lt_OCP48 = (control, controlData) => {
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    //NOTE: We will need to adjust this in the future for new OCP versions!
-    if (imageSet && imageSet.active && (imageSet.active.includes('release:4.8') || imageSet.active.includes('release:4.9') || imageSet.active.includes('release:4.10'))) {
-        return false
-    }
-    return true
-}
-
-const isHidden_SNO = (control, controlData) => {
-    const singleNode = controlData.find(({ id }) => id === 'singleNode')
-    return singleNode && singleNode.active
-}
-
-
 const controlDataAWS = [
     {
         id: 'imageStep',
@@ -640,7 +627,7 @@ const controlDataAWS = [
         id: 'singleNode',
         type: 'checkbox',
         active: false,
-        hidden: isHidden_lt_OCP48
+        hidden: isHidden_lt_OCP48,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -727,7 +714,7 @@ const controlDataAWS = [
         id: 'wpoolsStep',
         type: 'step',
         title: 'Worker pools',
-        hidden: isHidden_SNO
+        hidden: isHidden_SNO,
     },
     {
         id: 'nodes',

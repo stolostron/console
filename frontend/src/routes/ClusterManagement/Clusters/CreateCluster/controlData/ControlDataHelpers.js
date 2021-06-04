@@ -213,3 +213,23 @@ export const networkingControlData = [
         ],
     },
 ]
+
+export const isHidden_lt_OCP48 = (control, controlData) => {
+    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    //NOTE: We will need to adjust this in the future for new OCP versions!
+    if (
+        imageSet &&
+        imageSet.active &&
+        (imageSet.active.includes('release:4.8') ||
+            imageSet.active.includes('release:4.9') ||
+            imageSet.active.includes('release:4.10'))
+    ) {
+        return false
+    }
+    return true
+}
+
+export const isHidden_SNO = (control, controlData) => {
+    const singleNode = controlData.find(({ id }) => id === 'singleNode')
+    return singleNode && singleNode.active
+}

@@ -6,6 +6,8 @@ import {
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,
+    isHidden_lt_OCP48,
+    isHidden_SNO,
 } from './ControlDataHelpers'
 
 const GCPregions = [
@@ -274,6 +276,14 @@ const controlDataGCP = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48,
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
@@ -334,6 +344,7 @@ const controlDataGCP = [
         id: 'wpoolsStep',
         type: 'step',
         title: 'Worker pools',
+        hidden: isHidden_SNO,
     },
     {
         id: 'nodes',
