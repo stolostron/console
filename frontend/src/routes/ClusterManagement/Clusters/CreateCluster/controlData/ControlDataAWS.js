@@ -589,6 +589,11 @@ const isHidden_lt_OCP48 = (control, controlData) => {
     return true
 }
 
+const isHidden_SNO = (control, controlData) => {
+    const singleNode = controlData.find(({ id }) => id === 'singleNode')
+    return singleNode && singleNode.active
+}
+
 
 const controlDataAWS = [
     {
@@ -598,14 +603,6 @@ const controlDataAWS = [
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
-    {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-        id: 'singleNode',
-        type: 'checkbox',
-        active: false,
-        hidden: isHidden_lt_OCP48
-    },
 
     {
         name: 'cluster.create.ocp.image',
@@ -636,6 +633,14 @@ const controlDataAWS = [
         available: [],
         providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
+    },
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -722,6 +727,7 @@ const controlDataAWS = [
         id: 'wpoolsStep',
         type: 'step',
         title: 'Worker pools',
+        hidden: isHidden_SNO
     },
     {
         id: 'nodes',

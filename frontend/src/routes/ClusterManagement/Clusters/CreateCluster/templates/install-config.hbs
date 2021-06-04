@@ -98,16 +98,13 @@ compute:
   replicas: {{{../computeNodeCount}}}
 {{/if_eq}}
 
+{{#unless singleNode}}
 {{#each workerPools}}
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
   name: '{{{workerName}}}'
-{{#if ../singleNode}}
-  replicas: 0
-{{else}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
-{{/if}}
 {{#switch ../infrastructure}}
 
   {{#case 'AWS'}}
@@ -166,6 +163,7 @@ compute:
 {{/switch}}
 {{/if}}
 {{/each}}
+{{/unless}}
 
 
 
