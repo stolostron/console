@@ -492,7 +492,7 @@
     "uninstall.add-on": "Uninstall add-on",
 
     "createClusterSet.title": "Create cluster set",
-    "createClusterSet.success.title": "Cluster set created",
+    "createClusterSet.success.title": "Cluster set successfully created",
     "createClusterSet.description": "Creating a <bold>ManagedClusterSet</bold> will allow you to group resources and manage access control to all of the resources in the group together. You will be able to manage the resource assignments for access control after creating the cluster set.",
     "createClusterSet.success.description": "<bold>{{clusterSetName}}</bold> was successfully created. Click the <bold>Manage resource assignments</bold> button to assign resources to this cluster set.",
     "createClusterSet.form.name.label": "Cluster set name",
