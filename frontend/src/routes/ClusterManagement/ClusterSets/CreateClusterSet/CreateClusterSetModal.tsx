@@ -49,6 +49,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
         <AcmModal
             variant={ModalVariant.medium}
             title={!created ? t('createClusterSet.title') : t('createClusterSet.success.title')}
+            titleIconVariant={!created ? undefined : 'success'}
             isOpen={props.isOpen}
             onClose={reset}
         >

@@ -90,6 +90,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
         <AcmModal
             variant={ModalVariant.medium}
             title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
+            titleIconVariant={!claimed ? undefined : 'success'}
             isOpen={!!props.clusterPool}
             onClose={reset}
         >
