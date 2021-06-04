@@ -52,7 +52,7 @@ export function validatePrivateSshKey(value: string, t: TFunction) {
     if (!/[\r\n]$/.test(value)) {
         return t('validate.mustEndWithNewline')
     }
-    if (!value) return undefined
+    return undefined
 }
 
 export function validateCertificate(value: string, t: TFunction) {
