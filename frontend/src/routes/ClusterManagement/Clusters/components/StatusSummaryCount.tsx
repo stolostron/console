@@ -39,10 +39,10 @@ export function StatusSummaryCount() {
     const moderateCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '2').length
     const lowCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '1').length
 
-    // Show cluster issues sidebar by default if showSidebar url param is present
+    // Show cluster issues sidebar by default if showClusterIssues url param is present
     // This will be true if we are redirected to this page via search results table.
     useEffect(() => {
-        const autoShowIssueSidebar = decodeURIComponent(window.location.search).includes('showSidebar=true')
+        const autoShowIssueSidebar = decodeURIComponent(window.location.search).includes('showClusterIssues=true')
         if (autoShowIssueSidebar && policyReportViolationsCount > 0) {
             setDrawerContext({
                 isExpanded: true,
