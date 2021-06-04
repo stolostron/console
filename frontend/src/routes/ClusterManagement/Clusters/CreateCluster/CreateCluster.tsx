@@ -110,7 +110,8 @@ export default function CreateClusterPage() {
             setSelectedTemplate(control.active)
         }
         if (control.id === 'connection') {
-            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))        }
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+        }
     }
 
     // create button

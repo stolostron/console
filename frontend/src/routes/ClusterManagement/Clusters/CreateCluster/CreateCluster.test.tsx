@@ -259,6 +259,10 @@ const mockPullSecret = {
     metadata: {
         name: 'test-pull-secret',
         namespace: 'test',
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
+        },
     },
     stringData: {
         '.dockerconfigjson': '{"pullSecret":"secret"}',
@@ -272,6 +276,10 @@ const mockInstallConfigSecret = {
     metadata: {
         name: 'test-install-config',
         namespace: 'test',
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
+        },
     },
     type: 'Opaque',
     data: {
@@ -286,6 +294,10 @@ const mockPrivateSecret = {
     metadata: {
         name: 'test-ssh-private-key',
         namespace: 'test',
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
+        },
     },
     stringData: {
         'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
