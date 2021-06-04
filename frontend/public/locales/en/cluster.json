@@ -308,6 +308,7 @@
     "status.subtitle.provisionfailed": "Failed",
     "status.subtitle.importfailed": "Failed",
     "status.subtitle.posthookfailed": "Failed",
+    "status.subtitle.nojobs": "No jobs selected",
 
     "status.submariner.progressing": "Progressing",
     "status.submariner.progressing.message": "The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.",

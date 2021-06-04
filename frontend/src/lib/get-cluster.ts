@@ -38,6 +38,7 @@ export enum ClusterStatus {
     'posthookjob' = 'posthookjob',
     'posthookfailed' = 'posthookfailed',
     'importfailed' = 'importfailed',
+    'nojobs' = 'nojobs'
 }
 
 export const clusterDangerStatuses = [
