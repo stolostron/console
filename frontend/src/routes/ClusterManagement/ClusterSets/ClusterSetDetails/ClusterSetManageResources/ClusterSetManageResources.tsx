@@ -164,9 +164,10 @@ export function ClusterSetManageResourcesContent() {
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}
                 resources={[
                     ...removedResources,
-                    ...selectedResources.filter(
-                        (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
-                    ),
+                    ...selectedResources,
+                    // ...selectedResources.filter(
+                    //     (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
+                    // ),
                 ]}
                 description={
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
@@ -214,6 +215,14 @@ export function ClusterSetManageResourcesContent() {
                 ]}
                 keyFn={(item) => item.metadata!.uid!}
                 actionFn={(resource: IResource) => {
+                    // return dummy promise if the resource is not changed
+                    if (
+                        selectedResources.find((sr) => sr.metadata!.uid === resource.metadata!.uid) &&
+                        resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!
+                    ) {
+                        return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
+                    }
+
                     const isSelected = selectedResources.find(
                         (selectedResource) => selectedResource.metadata!.uid === resource.metadata!.uid
                     )
