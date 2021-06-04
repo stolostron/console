@@ -30,7 +30,7 @@ import { secretsState, managedClustersState, clusterCuratorsState } from '../../
 import { makeStyles } from '@material-ui/styles'
 import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '../../../../resources/cluster-curator'
 import { createCluster } from '../../../../lib/create-cluster'
-import { unpackProviderConnection } from '../../../../resources/provider-connection'
+import { ProviderConnection, unpackProviderConnection } from '../../../../resources/provider-connection'
 import { Secret } from '../../../../resources/secret'
 import { createResource as createResourceTool } from '../../../../lib/resource-request'
 
@@ -89,6 +89,7 @@ export default function CreateClusterPage() {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const curatorTemplates = filterForTemplatedCurators(clusterCurators)
     const [selectedTemplate, setSelectedTemplate] = useState('')
+    const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const classes = useStyles()
     // create portals for buttons in header
     const switches = (
@@ -107,6 +108,10 @@ export default function CreateClusterPage() {
     function templiflyOnChange(control: any) {
         if (control.id === 'templateName') {
             setSelectedTemplate(control.active)
+        }
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+            console.log('checking connection selection: ', selectedConnection)
         }
     }
 
@@ -136,6 +141,20 @@ export default function CreateClusterPage() {
                         }
                     })
                 }
+
+                // add source labels to secrets
+                createResources.forEach((resource) => {
+                    if (resource.kind === 'Secret') {
+                        resource!.metadata!.labels = {
+                            'cluster.open-cluster-management.io/copiedFromNamespace':
+                                selectedConnection?.metadata.namespace!,
+                        }
+                        resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
+                            selectedConnection?.metadata.name!
+
+                        console.log('secrets: ', resource)
+                    }
+                })
 
                 setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
 
