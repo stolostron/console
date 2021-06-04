@@ -56,7 +56,7 @@ export const controlData = [
         name: 'clusterPool.creation.ocp.namespace',
         tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
         id: 'namespace',
-        type: 'combobox',
+        type: 'singleselect',
         placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
         validation: {
             required: true,
