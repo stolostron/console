@@ -212,7 +212,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                               }
                                           })
                                       }
-                                      await new Promise((resolve) => setTimeout(resolve, 500))
                                       setErrors(errors)
                                       if (errors.length === 0) {
                                           props.close()

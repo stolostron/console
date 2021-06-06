@@ -272,6 +272,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                     labels={namespaces}
                                     collapse={namespaces.filter((ns, i) => i > 1)}
                                     style={{ maxWidth: '600px' }}
+                                    variant="outline"
                                 />
                             ) : (
                                 '-'

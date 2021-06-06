@@ -70,11 +70,20 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
 import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
 import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
+import EditIcon from '@patternfly/react-icons/dist/js/icons/edit-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { FormData, SectionGroup, Input, InputBase, Section, SelectOptionInput } from './AcmFormData'
+import {
+    FormData,
+    SectionGroup,
+    Input,
+    InputBase,
+    Section,
+    SelectOptionInput,
+    FormDataOrderedInput,
+} from './AcmFormData'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -775,7 +784,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 </DescriptionListGroup>
             )
         }
-        case 'OrderedStrings': {
+        case 'OrderedItems': {
             if (input.value.length === 0) return <Fragment />
             return (
                 <DescriptionListGroup key={input.label}>
@@ -783,7 +792,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                     <DescriptionListDescription>
                         <Stack>
                             {input.value.map((value) => (
-                                <div>{value}</div>
+                                <div>{input.keyFn(value)}</div>
                             ))}
                         </Stack>
                     </DescriptionListDescription>
@@ -1112,8 +1121,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             )
         }
 
-        case 'OrderedStrings': {
-            return <OrderedStringsInput {...input} validated={validated} isReadOnly={isReadOnly} />
+        case 'OrderedItems': {
+            return <OrderedItemsInput input={input} validated={validated} isReadOnly={isReadOnly} />
         }
     }
 }
@@ -1221,7 +1230,7 @@ function inputHasValue(input: Input): boolean {
     switch (input.type) {
         case 'Multiselect':
         case 'GroupedMultiselect':
-        case 'OrderedStrings':
+        case 'OrderedItems':
             return input.value.length !== 0
         default:
             return input.value !== '' && input.value !== 0
@@ -1354,91 +1363,87 @@ function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value
     )
 }
 
-function OrderedStringsInput(props: {
-    id: string
-    value: string[]
-    onChange: (value: string[]) => void
+function OrderedItemsInput(props: {
+    input: FormDataOrderedInput
     validated: 'error' | undefined
     isReadOnly: boolean
-    placeholder?: string
 }) {
-    const { id, value, onChange, validated, isReadOnly, placeholder } = props
-    const [text, setText] = useState('')
+    const { input, isReadOnly } = props
     return (
         <Fragment>
-            <InputGroup>
-                <TextInput
-                    validated={validated}
-                    value={text}
-                    onChange={setText}
-                    isReadOnly={isReadOnly}
-                    placeholder={placeholder}
-                />
-                {text ? (
-                    <Fragment>
-                        <ClearInputButton onClick={() => setText('')} />
-                        <Button
-                            id={`${id}-add-button`}
-                            variant="control"
-                            aria-label="Action"
-                            onClick={() => {
-                                if (!value.includes(text)) onChange([...value, ...[text]])
-                                setText('')
-                            }}
-                        >
-                            <PlusIcon />
-                        </Button>
-                    </Fragment>
-                ) : (
-                    <PasteInputButton setValue={setText} />
-                )}
-            </InputGroup>
             <DataList
                 aria-label="draggable data list example"
                 isCompact
-                onDragFinish={(itemOrder) => onChange(itemOrder)}
-                itemOrder={value}
+                onDragFinish={(itemOrder) => {
+                    const newItems = itemOrder.map((key) => input.value.find((item) => key === input.keyFn(item)))
+                    input.onChange(newItems)
+                }}
+                itemOrder={input.value.map((item) => input.keyFn(item))}
                 style={{ borderTop: '0' }}
             >
-                {value.map((v) => (
-                    <DataListItem aria-labelledby="simple-item1" id={v} key={v}>
-                        <DataListItemRow>
-                            <DataListControl>
-                                <DataListDragButton
-                                    aria-label="Reorder"
-                                    aria-labelledby="simple-item1"
-                                    aria-describedby="Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation."
-                                    aria-pressed="false"
-                                    isDisabled={isReadOnly}
+                {input.value.map((item) => {
+                    const key = input.keyFn(item)
+                    return (
+                        <DataListItem aria-labelledby="simple-item1" id={key} key={key}>
+                            <DataListItemRow>
+                                <DataListControl>
+                                    <DataListDragButton
+                                        aria-label="Reorder"
+                                        aria-labelledby="simple-item1"
+                                        aria-describedby="Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation."
+                                        aria-pressed="false"
+                                        isDisabled={isReadOnly}
+                                    />
+                                </DataListControl>
+                                <DataListItemCells
+                                    dataListCells={input.cellsFn(item).map((cell, index) => (
+                                        <DataListCell key={`${key}-${index}`}>
+                                            {cell}
+                                            {/* <span id="simple-item1">{cell}</span> */}
+                                        </DataListCell>
+                                    ))}
                                 />
-                            </DataListControl>
-                            <DataListItemCells
-                                dataListCells={[
-                                    <DataListCell key={v}>
-                                        <span id="simple-item1">{v}</span>
-                                    </DataListCell>,
-                                ]}
-                            />
-                            <DataListAction
-                                aria-labelledby="ex-item1 ex-action1"
-                                id="ex-action1"
-                                aria-label="Actions"
-                                isPlainButtonAction
-                            >
-                                <Button
-                                    variant="plain"
-                                    aria-label="Action"
-                                    onClick={() => {
-                                        onChange(value.filter((value) => value !== v))
-                                    }}
+                                <DataListAction
+                                    aria-labelledby="ex-item1 ex-action1"
+                                    id="ex-action1"
+                                    aria-label="Actions"
+                                    isPlainButtonAction
                                 >
-                                    <TrashIcon />
-                                </Button>
-                            </DataListAction>
-                        </DataListItemRow>
-                    </DataListItem>
-                ))}
+                                    <Split>
+                                        {input.onEdit && (
+                                            <Button
+                                                variant="link"
+                                                aria-label="Action"
+                                                onClick={() => input.onEdit?.(item)}
+                                            >
+                                                <EditIcon />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="plain"
+                                            aria-label="Action"
+                                            onClick={() =>
+                                                input.onChange(input.value.filter((item) => input.keyFn(item) !== key))
+                                            }
+                                        >
+                                            <TrashIcon />
+                                        </Button>
+                                    </Split>
+                                </DataListAction>
+                            </DataListItemRow>
+                        </DataListItem>
+                    )
+                })}
             </DataList>
+            <Button
+                style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
+                variant="link"
+                isSmall
+                aria-label="Action"
+                onClick={() => input.onCreate?.()}
+            >
+                <PlusIcon /> &nbsp; {input.placeholder}
+            </Button>
         </Fragment>
     )
 }

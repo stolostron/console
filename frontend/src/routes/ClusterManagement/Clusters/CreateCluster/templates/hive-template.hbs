@@ -124,10 +124,10 @@ spec:
 {{/if}}
 
 {{#if_eq infrastructure 'BMC'}}
-{{#if ../configMap}}
+{{#if_gt ../networks.length 1}}
     manifestsConfigMapRef:
-      name: {{{../../name}}}-install-manifests
-{{/if}}
+      name: ipv6dualstack-featuregate-manifests
+{{/if_gt}}
     sshKnownHosts:
 {{#each ../sshKnownHosts}}
     -  "{{{.}}}"
@@ -206,32 +206,22 @@ spec:
 {{! ========================================================== }}
 {{! ========================================================== }}
 {{#if_eq infrastructure 'BMC'}}
-{{#if ../configMap}}
+{{#if_gt ../networks.length 1}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{{../../name}}}-install-manifests
-  namespace: hive
+  name: 'ipv6dualstack-featuregate-manifests'
+  namespace: '{{{../../name}}}'
 data:
-  99_metal3-config.yaml: |
-    kind: ConfigMap
-    apiVersion: v1
+  ipv6-dual-stack-no-upgrade.yaml: |
+    apiVersion: config.openshift.io/v1
+    kind: FeatureGate
     metadata:
-      name: metal3-config
-      namespace: openshift-machine-api
-    data:
-      http_port: "6180"
-      provisioning_interface: "enp1s0"
-      provisioning_ip: "172.22.0.3/24"
-      dhcp_range: "172.22.0.10,172.22.0.100"
-      deploy_kernel_url: "http://172.22.0.3:6180/images/ironic-python-agent.kernel"
-      deploy_ramdisk_url: "http://172.22.0.3:6180/images/ironic-python-agent.initramfs"
-      ironic_endpoint: "http://172.22.0.3:6385/v1/"
-      ironic_inspector_endpoint: "http://172.22.0.3:5050/v1/"
-      cache_url: "http://192.168.111.1/images"
-      rhcos_image_url: "https://releases-art-rhcos.svc.ci.openshift.org/art/storage/releases/rhcos-4.3/43.81.201911192044.0/x86_64/rhcos-43.81.201911192044.0-openstack.x86_64.qcow2.gz"
-{{/if}}
+      name: cluster
+    spec:
+      featureSet: IPv6DualStackNoUpgrade
+{{/if_gt}}
 {{/if_eq}}
 
 
@@ -392,7 +382,8 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
-{{#each ../../osServiceAccount.json}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServiceAccount.json - See ControlDataHelpers.js replacements[] }}
+{{#each ../../osServiceAccountJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -407,7 +398,8 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
-{{#each ../../osServicePrincipal.json}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServicePrincipal.json - See ControlDataHelpers.js replacements[] }}
+{{#each ../../osServicePrincipalJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -449,7 +441,8 @@ stringData:
   cloud: '{{{../../cloud}}}'
 {{#if ../../showSecrets}}
   clouds.yaml: |-
-    {{{../../[clouds.yaml]}}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct clouds.yaml - See ControlDataHelpers.js replacements[] }}
+     {{{../../cloudsYaml}}}
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}

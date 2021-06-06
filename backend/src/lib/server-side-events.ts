@@ -29,6 +29,7 @@ export interface ServerSideEvent<DataT = unknown> {
 }
 
 export interface ServerSideEventClient {
+    token: string
     events?: Record<string, boolean>
     namespaces?: Record<string, boolean>
     writableStream: NodeJS.WritableStream
@@ -96,7 +97,7 @@ export class ServerSideEvents {
         if (client.namespaces && !client.namespaces[event.namespace]) return
         if (this.eventFilter) {
             client.eventQueue.push(
-                this.eventFilter(clientID, event)
+                this.eventFilter(client.token, event)
                     .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
                     .catch((err) => undefined)
             )
@@ -189,7 +190,7 @@ export class ServerSideEvents {
     }
 
     public static handleRequest(
-        clientID: string,
+        token: string,
         req: Http2ServerRequest,
         res: Http2ServerResponse
     ): ServerSideEventClient {
@@ -226,12 +227,14 @@ export class ServerSideEvents {
             }
         }
         const eventClient: ServerSideEventClient = {
+            token,
             events,
             namespaces,
             writableStream,
             compressionStream,
             eventQueue: [],
         }
+        const clientID = randomString(8)
         this.clients[clientID] = eventClient
 
         res.setTimeout(2147483647)

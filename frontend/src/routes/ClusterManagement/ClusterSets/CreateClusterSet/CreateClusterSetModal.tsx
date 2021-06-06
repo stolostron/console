@@ -10,7 +10,6 @@ import {
     AcmForm,
     AcmSubmit,
     AcmTextInput,
-    AcmLabelsInput,
     AcmModal,
 } from '@open-cluster-management/ui-components'
 import { ModalVariant, ActionGroup } from '@patternfly/react-core'
@@ -50,6 +49,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
         <AcmModal
             variant={ModalVariant.medium}
             title={!created ? t('createClusterSet.title') : t('createClusterSet.success.title')}
+            titleIconVariant={!created ? undefined : 'success'}
             isOpen={props.isOpen}
             onClose={reset}
         >
@@ -76,20 +76,8 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                         setManagedClusterSet(copy)
                                     }}
                                 />
-                                <AcmLabelsInput
-                                    id="labels"
-                                    label={t('common:labels')}
-                                    placeholder={t('labels.edit.placeholder')}
-                                    buttonLabel={t('common:label.add')}
-                                    value={managedClusterSet.metadata.labels}
-                                    onChange={(label) => {
-                                        const copy = { ...managedClusterSet }
-                                        copy.metadata.labels = label
-                                        setManagedClusterSet(copy)
-                                    }}
-                                />
 
-                                <AcmAlertGroup isInline canClose padTop />
+                                <AcmAlertGroup isInline canClose />
                                 <ActionGroup>
                                     <AcmSubmit
                                         id="submit"

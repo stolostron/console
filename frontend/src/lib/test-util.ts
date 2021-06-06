@@ -72,8 +72,12 @@ export async function typeByPlaceholderText(text: string, type: string, index?: 
     }
 }
 
-export async function clickByPlaceholderText(text: string) {
-    userEvent.click(screen.getByPlaceholderText(text))
+export async function clickByPlaceholderText(text: string, index?: number) {
+    if (index !== undefined) {
+        userEvent.click(screen.getAllByPlaceholderText(text)[index])
+    } else {
+        userEvent.click(screen.getByPlaceholderText(text))
+    }
 }
 
 // By Role

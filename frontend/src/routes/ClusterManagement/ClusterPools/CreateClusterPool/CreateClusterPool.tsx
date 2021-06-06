@@ -19,7 +19,7 @@ import path from 'path'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { namespacesState } from '../../../../atoms'
-import { useCanJoinClusterSets } from '../../ClusterSets/components/useCanJoinClusterSets'
+import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../Clusters/CreateCluster/style.css'
 
 // template/data
@@ -185,12 +185,14 @@ export function CreateClusterPool() {
         : null
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
+    const mustJoinClusterSet = useMustJoinClusterSet()
     for (let i = 0; i < controlData.length; i++) {
         if (controlData[i].id === 'namespace') {
             controlData[i].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
         }
         if (controlData[i].id === 'clusterSet' && controlData[i].available) {
             controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+            controlData[i].validation.required = mustJoinClusterSet ?? false
         }
         if (controlData[i].id === 'infrastructure') {
             controlData[i]?.available?.forEach((provider) => {
