@@ -1320,6 +1320,9 @@ function SelectOptionsGallery(props: { input: InputBase<string>; options: Select
                     onClick={() => input.onChange(option.value)}
                     isDisabled={option.value !== input.value && input.isDisabled}
                     isDisplayLarge
+                    onKeyPress={(event) => {
+                        if (event.key === 'Enter') input.onChange(option.value)
+                    }}
                 >
                     {option.description}
                 </Tile>
