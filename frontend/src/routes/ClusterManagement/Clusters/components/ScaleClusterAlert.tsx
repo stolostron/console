@@ -5,7 +5,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { AcmAlert } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { machinePoolsState } from '../../../../atoms'
+import { machinePoolsState, submarinerConfigsState } from '../../../../atoms'
 import { NodeInfo } from '../../../../resources/managed-cluster-info'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
@@ -13,7 +13,9 @@ export function ScaleClusterAlert() {
     const { t } = useTranslation(['cluster', 'common'])
     const { cluster } = useContext(ClusterContext)
     const [machinePoolState] = useRecoilState(machinePoolsState)
+    const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
+    const subConfig = submarinerConfigs.find((sc) => sc.metadata.namespace === cluster!.namespace)
 
     // check for a scaling in progress
     const workerNodeCount: number | undefined = cluster?.nodes?.nodeList.filter(
@@ -25,6 +27,9 @@ export function ScaleClusterAlert() {
             totalDesiredReplicas += mp.status?.replicas ?? 0
         }
     })
+    if (subConfig) {
+        totalDesiredReplicas += subConfig?.spec?.gatewayConfig?.gateways ?? 1 // gateway is 1 by default
+    }
 
     if (
         cluster?.isHive &&
