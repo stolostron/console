@@ -95,6 +95,7 @@ export const setAvailableOCPImages = (provider, control, result) => {
                     }
                 }
             })
+            control.available.reverse()
         }
     } else {
         control.isLoading = loading
