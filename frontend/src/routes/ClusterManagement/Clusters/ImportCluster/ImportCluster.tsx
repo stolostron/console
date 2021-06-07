@@ -85,7 +85,7 @@ export function ImportClusterPageContent() {
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [submitted, setSubmitted] = useState<boolean>(false)
-    const [importCommand, setImportCommand] = useState<string | undefined>()
+    const [importSecret, setImportSecret] = useState<Secret | undefined>()
     const [token, setToken] = useState<string | undefined>()
     const [server, setServer] = useState<string | undefined>(sessionStorage.getItem('DiscoveredClusterApiURL') ?? '')
     const [kubeConfig, setKubeConfig] = useState<string | undefined>()
@@ -96,7 +96,7 @@ export function ImportClusterPageContent() {
         setManagedClusterSet(undefined)
         setAdditionaLabels({})
         setSubmitted(false)
-        setImportCommand(undefined)
+        setImportSecret(undefined)
     }
 
     return (
@@ -206,7 +206,7 @@ export function ImportClusterPageContent() {
                     hidden={importMode !== ImportMode.kubeconfig}
                     isRequired
                 />
-                <AcmAlertGroup isInline canClose padTop />
+                <AcmAlertGroup isInline canClose />
                 <ActionGroup>
                     <AcmSubmit
                         id="submit"
@@ -290,7 +290,7 @@ export function ImportClusterPageContent() {
                                               )
                                             : onReset()
                                     } else {
-                                        setImportCommand(await pollImportYamlSecret(clusterName))
+                                        setImportSecret(await pollImportYamlSecret(clusterName))
                                     }
                                 } catch (err) {
                                     if (err instanceof Error) {
@@ -327,9 +327,9 @@ export function ImportClusterPageContent() {
                         </Link>
                     )}
                 </ActionGroup>
-                {importCommand && (
+                {importSecret && (
                     <Fragment>
-                        <ImportCommand importCommand={importCommand}>
+                        <ImportCommand importSecret={importSecret}>
                             <ActionGroup>
                                 <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
                                     <Button variant="primary">{t('import.footer.viewcluster')}</Button>
