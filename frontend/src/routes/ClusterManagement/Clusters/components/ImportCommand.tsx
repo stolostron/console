@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton, AcmInlineCopy } from '@open-cluster-management/ui-components'
 import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
 import {
     AlertVariant,
@@ -13,6 +13,7 @@ import {
     Tabs,
     TabTitleText,
     Tooltip,
+    Alert,
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
 import i18next from 'i18next'
@@ -21,16 +22,17 @@ import { useRecoilState } from 'recoil'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { ResourceError } from '../../../../lib/resource-request'
-import { getSecret } from '../../../../resources/secret'
+import { getSecret, Secret } from '../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { secretsState } from '../../../../atoms'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation(['cluster', 'common'])
     const [secrets] = useRecoilState(secretsState)
-    const { cluster, importCommand, setImportCommand } = useContext(ClusterContext)
+    const { cluster } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState<boolean>(false)
+    const [importSecret, setImportSecret] = useState<Secret | undefined>(undefined)
 
     // do not show command if it's configured to auto-import
     const autoImportSecret = secrets.find(
@@ -43,24 +45,20 @@ export function ImportCommandContainer() {
             !cluster?.isHive &&
             !error &&
             !loading &&
-            !importCommand &&
+            !importSecret &&
             !autoImportSecret &&
             cluster?.status === ClusterStatus.pendingimport
         ) {
             setLoading(true)
             pollImportYamlSecret(cluster?.name)
-                .then((command: string) => {
-                    setImportCommand?.(command)
-                })
+                .then((secret: Secret) => setImportSecret(secret))
                 .catch((err) => {
                     const resourceError = err as ResourceError
                     setError(resourceError.message)
                 })
-                .finally(() => {
-                    setLoading(false)
-                })
+                .finally(() => setLoading(false))
         }
-    }, [cluster, error, loading, importCommand, setImportCommand, autoImportSecret])
+    }, [cluster, error, loading, importSecret, autoImportSecret])
 
     if (loading) {
         return (
@@ -82,7 +80,7 @@ export function ImportCommandContainer() {
                 <div style={{ marginBottom: '12px' }}>
                     <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
                 </div>
-                <ImportCommand importCommand={importCommand} />
+                <ImportCommand importSecret={importSecret} />
             </>
         )
     }
@@ -94,7 +92,7 @@ type ImportCommandProps = {
     loading?: boolean
     error?: string
     children?: React.ReactNode
-    importCommand?: string
+    importSecret?: Secret
 }
 
 export function ImportCommand(props: ImportCommandProps) {
@@ -108,9 +106,12 @@ export function ImportCommand(props: ImportCommandProps) {
         }
     }, [copied])
 
-    if (props.loading || props.error || !props.importCommand) {
+    if (props.loading || props.error || !props.importSecret) {
         return null
     }
+
+    const v1ImportCommand = getImportCommand(props.importSecret, 'v1')
+    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1')
 
     return (
         <Fragment>
@@ -128,13 +129,26 @@ export function ImportCommand(props: ImportCommandProps) {
                                         icon={<CopyIcon />}
                                         iconPosition="right"
                                         onClick={(e: any) => {
-                                            onCopy(e, props.importCommand ?? '')
+                                            onCopy(e, v1ImportCommand)
                                             setCopied(true)
                                         }}
                                     >
                                         {t('import.command.copy')}
                                     </AcmButton>
                                 </Tooltip>
+                                <Alert
+                                    isInline
+                                    title={t('import.command.311.title')}
+                                    variant={AlertVariant.info}
+                                    style={{ marginTop: '16px' }}
+                                >
+                                    <div>{t('import.command.311.description')}</div>
+                                    <AcmInlineCopy
+                                        text={v1beta1ImportCommand}
+                                        displayText={t('import.command.311.copyText')}
+                                        id="3.11-copy"
+                                    />
+                                </Alert>
                             </CardBody>
                             <CardTitle>{t('import.command.configurecluster')}</CardTitle>
                             <CardBody>{t('import.command.configureclusterdescription')}</CardBody>
@@ -164,19 +178,11 @@ export function ImportCommand(props: ImportCommandProps) {
     )
 }
 
-export async function pollImportYamlSecret(clusterName: string): Promise<string> {
+export async function pollImportYamlSecret(clusterName: string): Promise<Secret> {
     let retries = 20
     const poll = async (resolve: any, reject: any) => {
         getSecret({ namespace: clusterName, name: `${clusterName}-import` })
-            .promise.then((secret) => {
-                const klusterletCRD = secret.data?.['crds.yaml']
-                const importYaml = secret.data?.['import.yaml']
-                const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
-                const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
-                resolve(
-                    `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
-                )
-            })
+            .promise.then((secret) => resolve(secret))
             .catch((err) => {
                 if (retries-- > 0) {
                     setTimeout(poll, 500, resolve, reject)
@@ -186,4 +192,15 @@ export async function pollImportYamlSecret(clusterName: string): Promise<string>
             })
     }
     return new Promise(poll)
+}
+
+export function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1') {
+    let klusterletCRD = importSecret.data?.['crdsv1.yaml']
+    if (version === 'v1beta1') {
+        klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
+    }
+    const importYaml = importSecret.data?.['import.yaml']
+    const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
+    const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
+    return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
 }
