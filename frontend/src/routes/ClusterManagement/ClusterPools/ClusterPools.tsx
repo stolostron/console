@@ -307,20 +307,9 @@ export function ClusterPoolsTable(props: {
                     },
                     {
                         header: '',
+                        cellTransforms: [fitContent],
                         cell: (clusterPool: ClusterPool) => {
-                            let actions = [
-                                {
-                                    id: 'claimCluster',
-                                    text: t('clusterPool.claim'),
-                                    isDisabled: true,
-                                    rbac: [rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)],
-                                    click: (clusterPool: ClusterPool) => {
-                                        setClusterClaimModalProps({
-                                            clusterPool,
-                                            onClose: () => setClusterClaimModalProps(undefined),
-                                        })
-                                    },
-                                },
+                            const actions = [
                                 {
                                     id: 'scaleClusterPool',
                                     text: t('clusterPool.scale'),
@@ -369,10 +358,6 @@ export function ClusterPoolsTable(props: {
                                 },
                             ]
 
-                            if (clusterPool.status?.ready === 0) {
-                                actions = actions.filter((action) => action.id !== 'claimCluster')
-                            }
-
                             return (
                                 <RbacDropdown<ClusterPool>
                                     id={`${clusterPool.metadata.name}-actions`}
@@ -383,7 +368,6 @@ export function ClusterPoolsTable(props: {
                                 />
                             )
                         },
-                        cellTransforms: [fitContent],
                     },
                 ]}
                 keyFn={mckeyFn}
