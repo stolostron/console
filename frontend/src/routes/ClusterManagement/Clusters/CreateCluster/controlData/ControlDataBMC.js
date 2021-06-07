@@ -292,7 +292,7 @@ const controlDataBMC = [
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
         hidden: (control, controlData) => {
             const hosts = controlData.find(({ id }) => id === 'hosts')
-            return hosts.available.length === 0
+            return !hosts || !hosts.available ||  hosts.available.length === 0
         },
         active: 'true',
         available: ['false', 'true'],
