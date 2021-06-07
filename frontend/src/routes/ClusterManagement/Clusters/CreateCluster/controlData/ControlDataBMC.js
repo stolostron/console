@@ -5,6 +5,7 @@ import {
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,
+    //isHidden_lt_OCP48,
 } from './ControlDataHelpers'
 import {
     ControlMode,
@@ -189,6 +190,14 @@ const controlDataBMC = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
+    //    {
+    //        name: 'cluster.create.ocp.singleNode',
+    //        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+    //        id: 'singleNode',
+    //        type: 'checkbox',
+    //        active: false,
+    //        hidden: isHidden_lt_OCP48,
+    //    },
 
     ///////////////////////  hosts  /////////////////////////////////////
     {
@@ -292,7 +301,7 @@ const controlDataBMC = [
         tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
         hidden: (control, controlData) => {
             const hosts = controlData.find(({ id }) => id === 'hosts')
-            return !hosts || !hosts.available || hosts.available.length===0
+            return !hosts || !hosts.available || hosts.available.length === 0
         },
         active: 'true',
         available: ['false', 'true'],

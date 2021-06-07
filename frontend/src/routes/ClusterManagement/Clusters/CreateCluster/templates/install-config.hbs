@@ -14,11 +14,7 @@ baseDomain: {{{baseDomain}}}
 {{#if_eq infrastructure 'BMC'}}
 controlPlane:
   name: master
-  {{#if ../singleNode}}
-  replicas: 1
-  {{else}}
   replicas: {{{../masterNodeCount}}}
-  {{/if}}
   platform:
     baremetal: {}
 {{/if_eq}}
@@ -95,11 +91,7 @@ controlPlane:
 {{#if_eq infrastructure 'BMC'}}
 compute:
 - name: worker
-  {{#if ../singleNode}}
-  replicas: 0
-  {{else}}
   replicas: {{{../computeNodeCount}}}
-  {{/if}}
 {{/if_eq}}
 
 {{#each workerPools}}
