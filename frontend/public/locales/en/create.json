@@ -382,5 +382,5 @@
     "template.clusterCreate.name":"Ansible Automation Template",
     "template.clusterCreate.title":"Integration",
     "template.clusterCreate.info":"Choose a automation job template to automatically run at different times of creation. (Optional)",
-    "template.clusterCreate.select.placeholder":"Select a ansible job template"
+    "template.clusterCreate.select.placeholder":"Select an Ansible job template"
 }

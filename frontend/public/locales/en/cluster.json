@@ -535,7 +535,7 @@
 
     "template.title": "Automation",
     "template.emptyStateHeader": "You don't have any Ansible job templates",
-    "template.emptyStateMsg": "Select <bold>Create an Ansible template</bold> to create a Ansible job template.",
+    "template.emptyStateMsg": "Select <bold>Create an Ansible template</bold> to create an Ansible job template.",
     "template.edit": "Edit template",
     "template.link": "Link a credential",
     "template.delete": "Delete",
