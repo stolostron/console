@@ -103,7 +103,7 @@ export function ProgressStepBar() {
             {
                 statusType: prehookStatus,
                 statusText: t('status.prehook.text'),
-                statusSubtitle: t(`status.subtitle.${prehookStatus}`),
+                statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
             },
             {
                 statusType: creatingStatus,
@@ -118,7 +118,7 @@ export function ProgressStepBar() {
             {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
-                statusSubtitle: t(`status.subtitle.${posthookStatus}`),
+                statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
             },
         ]
 

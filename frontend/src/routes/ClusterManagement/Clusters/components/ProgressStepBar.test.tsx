@@ -14,7 +14,7 @@ const mockCluster: Cluster = {
     name: 'test-cluster',
     displayName: 'test-cluster',
     namespace: 'test-cluster',
-    status: ClusterStatus.posthookjob,
+    status: ClusterStatus.prehookjob,
     distribution: {
         k8sVersion: '1.19',
         ocp: undefined,
@@ -42,8 +42,8 @@ const clusterCurator1: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
     metadata: {
-        name: 'test-curator1',
-        namespace: 'default',
+        name: 'test-cluster',
+        namespace: 'test-cluster',
     },
     spec: {
         desiredCuration: 'install',
@@ -71,6 +71,7 @@ describe('ProgressStepBar', () => {
         )
         await waitForText('status.stepbar.title')
         await waitForText('status.stepbar.subtitle')
+        await waitForText('status.subtitle.nojobs')
         await waitForText('status.subtitle.progress')
         await waitForText('status.posthook.text')
         await waitForText('status.install.text')
