@@ -90,6 +90,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
         <AcmModal
             variant={ModalVariant.medium}
             title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
+            titleIconVariant={!claimed ? undefined : 'success'}
             isOpen={!!props.clusterPool}
             onClose={reset}
         >
@@ -111,6 +112,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     label={t('clusterClaim.name.label')}
                                     placeholder={t('clusterClaim.name.placeholder')}
                                     value={clusterClaim?.metadata?.name}
+                                    isRequired
                                     onChange={(name) => {
                                         updateClusterClaim((clusterClaim) => {
                                             clusterClaim.metadata.name = name

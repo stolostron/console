@@ -48,13 +48,13 @@ export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' |
                 if (result[0].status === 'rejected') {
                     const error = result[0].reason
                     if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
-                        return reject(error)
+                        return reject(result[0])
                     }
                 }
                 if (result[1].status === 'rejected') {
                     const error = result[1].reason
                     if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
-                        return reject(error)
+                        return reject(result[1])
                     }
                 }
 

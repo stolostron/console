@@ -52,7 +52,7 @@ export interface ClusterCurator {
 
 export interface AnsibleJob {
     name: string
-    extra_vars?: {}
+    extra_vars?: Record<string, string>
 }
 
 export function createClusterCurator(clusterCurator: ClusterCurator) {

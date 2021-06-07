@@ -164,11 +164,65 @@ export function ClusterSetManageResourcesContent() {
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}
                 resources={[
                     ...removedResources,
-                    ...selectedResources.filter(
-                        (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
-                    ),
+                    ...selectedResources,
+                    // ...selectedResources.filter(
+                    //     (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
+                    // ),
                 ]}
+                description={
+                    <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
+                }
+                columns={[
+                    {
+                        header: t('table.name'),
+                        sort: 'metadata.name',
+                        cell: (resource) => <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>,
+                    },
+                    {
+                        header: t('table.kind'),
+                        sort: 'kind',
+                        cell: (resource: IResource) => resource.kind,
+                    },
+                    {
+                        header: t('table.change'),
+                        cell: (resource) => {
+                            if (
+                                removedResources.find(
+                                    (removedResource) => removedResource.metadata!.uid === resource.metadata!.uid
+                                )
+                            ) {
+                                return t('managedClusterSet.form.removed')
+                            } else if (
+                                resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
+                            ) {
+                                return t('managedClusterSet.form.unchanged')
+                            } else {
+                                return resource.metadata!.labels?.[managedClusterSetLabel] === undefined
+                                    ? t('managedClusterSet.form.added')
+                                    : t('managedClusterSet.form.transferred')
+                            }
+                        },
+                    },
+                    {
+                        header: t('table.assignedToSet'),
+                        sort: (a: IResource, b: IResource) =>
+                            compareStrings(
+                                a?.metadata!.labels?.[managedClusterSetLabel],
+                                b?.metadata!.labels?.[managedClusterSetLabel]
+                            ),
+                        cell: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
+                    },
+                ]}
+                keyFn={(item) => item.metadata!.uid!}
                 actionFn={(resource: IResource) => {
+                    // return dummy promise if the resource is not changed
+                    if (
+                        selectedResources.find((sr) => sr.metadata!.uid === resource.metadata!.uid) &&
+                        resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name!
+                    ) {
+                        return { promise: new Promise((resolve) => resolve(undefined)), abort: () => {} }
+                    }
+
                     const isSelected = selectedResources.find(
                         (selectedResource) => selectedResource.metadata!.uid === resource.metadata!.uid
                     )
@@ -193,66 +247,6 @@ export function ClusterSetManageResourcesContent() {
                         ])
                     }
                 }}
-                description={
-                    <>
-                        <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
-                        <AcmTable<IResource>
-                            plural="clusters"
-                            items={[...selectedResources, ...removedResources]}
-                            keyFn={(resource: IResource) => resource.metadata!.uid!}
-                            key="clusterSetManageClustersTable"
-                            autoHidePagination
-                            columns={[
-                                {
-                                    header: t('table.name'),
-                                    sort: 'metadata.name',
-                                    search: 'metadata.name',
-                                    cell: (resource) => (
-                                        <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>
-                                    ),
-                                },
-                                {
-                                    header: t('table.kind'),
-                                    sort: 'kind',
-                                    search: 'kind',
-                                    cell: (resource: IResource) => resource.kind,
-                                },
-                                {
-                                    header: t('table.change'),
-                                    cell: (resource) => {
-                                        if (
-                                            removedResources.find(
-                                                (removedResource) =>
-                                                    removedResource.metadata!.uid === resource.metadata!.uid
-                                            )
-                                        ) {
-                                            return t('managedClusterSet.form.removed')
-                                        } else if (
-                                            resource.metadata!.labels?.[managedClusterSetLabel] ===
-                                            clusterSet?.metadata.name
-                                        ) {
-                                            return t('managedClusterSet.form.unchanged')
-                                        } else {
-                                            return resource.metadata!.labels?.[managedClusterSetLabel] === undefined
-                                                ? t('managedClusterSet.form.added')
-                                                : t('managedClusterSet.form.transferred')
-                                        }
-                                    },
-                                },
-                                {
-                                    header: t('table.assignedToSet'),
-                                    sort: (a: IResource, b: IResource) =>
-                                        compareStrings(
-                                            a?.metadata!.labels?.[managedClusterSetLabel],
-                                            b?.metadata!.labels?.[managedClusterSetLabel]
-                                        ),
-                                    search: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
-                                    cell: (resource) => resource?.metadata!.labels?.[managedClusterSetLabel] ?? '-',
-                                },
-                            ]}
-                        />
-                    </>
-                }
             />
         </>
     )

@@ -48,7 +48,7 @@ export function InstallSubmarinerFormPage() {
     const [availableClusters] = useState<Cluster[]>(
         clusters!.filter(
             (cluster) =>
-                !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace) ||
+                !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace) &&
                 cluster.distribution?.ocp?.version // OpenShift clusters only
         )
     )
@@ -594,11 +594,20 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 })
 
                 const requests = resultsSettled(calls)
-                return requests.promise.then(() =>
+                const results = await requests.promise
+                const errors: string[] = []
+                results.forEach((res) => {
+                    if (res.status === 'rejected') {
+                        errors.push(res.reason)
+                    }
+                })
+                if (errors.length > 0) {
+                    reject(errors[0])
+                } else {
                     resolve(
                         history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
                     )
-                )
+                }
             })
         },
     }
