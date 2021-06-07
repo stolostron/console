@@ -299,7 +299,11 @@ spec:
   {{/case}}
 
 {{/switch}}
+  {{#if ../singleNode}}
+  replicas: 0
+  {{else}}
   replicas: {{{computeNodeCount}}} ##workerPools.{{@index}}.computeNodeCount
+  {{/if}}
 {{/each}}
 
 {{! ========================================================== }}

@@ -48,10 +48,6 @@ export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
     readonly clusterCurator?: ClusterCurator
     readonly addons: Addon[] | undefined
-    readonly importCommand?: string
-    readonly importCommandError?: string
-    setImportCommand?: (command: string) => void
-    setImportCommandError?: (error: string) => void
 }>({
     cluster: undefined,
     addons: undefined,
@@ -61,8 +57,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])
-    const [importCommand, setImportCommand] = useState<string | undefined>()
-    const [importCommandError, setImportCommandError] = useState<string | undefined>()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -153,10 +147,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 cluster,
                 clusterCurator,
                 addons,
-                importCommand,
-                setImportCommand,
-                importCommandError,
-                setImportCommandError,
             }}
         >
             <AcmPage
