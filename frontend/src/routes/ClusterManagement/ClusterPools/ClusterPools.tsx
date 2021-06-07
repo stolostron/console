@@ -390,6 +390,16 @@ export function ClusterPoolsTable(props: {
                 key="clusterPoolsTable"
                 bulkActions={[
                     {
+                        id: 'updateReleaseImages',
+                        title: t('bulk.updateReleaseImages.clusterPools'),
+                        click: (clusterPools: ClusterPool[]) => {
+                            setUpdateReleaseImageModalProps({
+                                clusterPools,
+                                close: () => setUpdateReleaseImageModalProps(undefined),
+                            })
+                        },
+                    },
+                    {
                         id: 'destroyClusterPools',
                         title: t('bulk.destroy.clusterPools'),
                         click: (clusterPools: ClusterPool[]) => {
