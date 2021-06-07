@@ -62,12 +62,6 @@ describe('validation', () => {
             ).not.toBeUndefined()
         })
 
-        test('validatePrivateSshKey should not allow end line next to the begin line', () => {
-            expect(
-                validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\nabc\n-----END A PRIVATE KEY-----', t)
-            ).not.toBeUndefined()
-        })
-
         test('validatePrivateSshKey should require new line', () => {
             expect(
                 validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----', t)
