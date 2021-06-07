@@ -236,11 +236,11 @@ export const isHidden_SNO = (control, controlData) => {
 
 export const onChangeSNO = (control, controlData) => {
     var groupDataArray = controlData.find(({ id }) => id === 'workerPools').active
-    groupDataArray.forEach(group=>{
+    groupDataArray.forEach((group) => {
         var computeNodeCount = group.find(({ id }) => id === 'computeNodeCount')
         if (!control.active) {
             if (computeNodeCount) {
-                computeNodeCount.active = "3"
+                computeNodeCount.active = '3'
             }
         }
     })
