@@ -44,18 +44,18 @@ export function listAnsibleJobs() {
     })
 }
 
-export function sortJobs(lhs:AnsibleJob, rhs:AnsibleJob){
-    if(lhs.status?.ansibleJobResult?.started === undefined && rhs.status?.ansibleJobResult?.started === undefined)
+export function sortJobs(lhs: AnsibleJob, rhs: AnsibleJob) {
+    if (lhs.status?.ansibleJobResult?.started === undefined && rhs.status?.ansibleJobResult?.started === undefined)
         return 0
 
-    if(lhs.status?.ansibleJobResult?.started === undefined)
-        return -1
+    if (lhs.status?.ansibleJobResult?.started === undefined) return -1
 
-    if(rhs.status?.ansibleJobResult?.started === undefined)
-        return 1
+    if (rhs.status?.ansibleJobResult?.started === undefined) return 1
 
-    return new Date (lhs.status.ansibleJobResult.started).getTime() - new Date(rhs.status.ansibleJobResult.started).getTime()
-
+    return (
+        new Date(lhs.status.ansibleJobResult.started).getTime() -
+        new Date(rhs.status.ansibleJobResult.started).getTime()
+    )
 }
 
 export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string) {
@@ -63,7 +63,6 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
     const jobs = ansibleJobs.filter((job) => job.metadata.namespace === namespace)
     const prehookJobs = jobs.filter((job) => job.metadata.annotations?.jobtype === 'prehook').sort(sortJobs)
     const posthookJobs = jobs.filter((job) => job.metadata.annotations?.jobtype === 'posthook').sort(sortJobs)
-
 
     return {
         prehook: prehookJobs.length >= 0 ? prehookJobs[0] : undefined,

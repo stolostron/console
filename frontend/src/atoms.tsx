@@ -4,7 +4,7 @@ import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
-import { AnsibleJob, AnsibleJobKind  } from './resources/ansible-job'
+import { AnsibleJob, AnsibleJobKind } from './resources/ansible-job'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
 import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
 import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
@@ -64,7 +64,7 @@ export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', de
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
-export const ansibleJobState = atom<AnsibleJob[]>({key: 'ansiblejobs', default: [] })
+export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
