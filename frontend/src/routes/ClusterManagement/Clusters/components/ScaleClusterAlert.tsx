@@ -2,7 +2,7 @@
 
 import { useContext } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmAlert } from '@open-cluster-management/ui-components'
+import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { machinePoolsState, submarinerConfigsState } from '../../../../atoms'
@@ -27,7 +27,9 @@ export function ScaleClusterAlert() {
             totalDesiredReplicas += mp.status?.replicas ?? 0
         }
     })
-    if (subConfig) {
+
+    // SubmarinerConfig will only provision new nodes for AWS
+    if (subConfig && cluster.provider === Provider.aws) {
         totalDesiredReplicas += subConfig?.spec?.gatewayConfig?.gateways ?? 1 // gateway is 1 by default
     }
 
