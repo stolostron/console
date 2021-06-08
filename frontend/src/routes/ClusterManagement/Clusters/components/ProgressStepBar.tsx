@@ -109,13 +109,14 @@ export function ProgressStepBar() {
                 statusText: t('status.prehook.text'),
                 statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
                 // will render link when prehook job url is defined or when there are no job hooks setup
-                ...((latestJobs.prehook?.status?.ansibleJobResult?.url || (!prehooks && !posthooks)) && {
+                ...((prehooks || (!prehooks && !posthooks)) && {
                     link: {
                         linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
                         linkUrl: // TODO: add ansible documentation url
                             !prehooks && !posthooks
                                 ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
-                                : latestJobs.prehook!.status!.ansibleJobResult.url!,
+                                : latestJobs.prehook?.status?.ansibleJobResult.url ? latestJobs.prehook?.status?.ansibleJobResult.url : '',
+                        isDisabled:!latestJobs.prehook?.status?.ansibleJobResult?.url
                     },
                 }),
             },
@@ -133,11 +134,11 @@ export function ProgressStepBar() {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
-                ...(latestJobs.posthook?.status &&
-                    latestJobs.posthook?.status.ansibleJobResult && {
+                ...(posthooks && {
                         link: {
                             linkName: t('status.link.logs'),
-                            linkUrl: latestJobs.posthook.status?.ansibleJobResult?.url,
+                            linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
+                            isDisabled:!latestJobs.prehook?.status?.ansibleJobResult?.url
                         },
                     }),
             },
