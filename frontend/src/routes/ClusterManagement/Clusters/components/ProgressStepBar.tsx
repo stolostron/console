@@ -2,21 +2,36 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, clusterCuratorsState } from '../../../../atoms'
+import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getLatestAnsibleJob } from '../../../../resources/ansible-job'
+import { getHivePod } from '../../../../resources/pod'
 
 export function ProgressStepBar() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-
+    const [configMaps] = useRecoilState(configMapsState)
     const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
+    const [hiveLogUrl, setHiveLogUrl] = useState('')
+
+    if(cluster?.status === ClusterStatus.creating){
+        const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+        const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+        if (cluster && openShiftConsoleUrl) {
+            const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+            response.then((job) => {
+                const podName = job?.metadata.name
+                if (podName)
+                    setHiveLogUrl(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
+            })
+        }
+    }
 
     const installStatus = [
         ClusterStatus.prehookjob,
@@ -37,6 +52,8 @@ export function ProgressStepBar() {
         let prehookStatus = StatusType.pending
         let posthookStatus: StatusType | undefined = undefined
         let importStatus = StatusType.pending
+        console.log('curator: ', curator)
+        console.log('cluster: ', cluster)
 
         switch (cluster?.status) {
             case ClusterStatus.posthookjob:
@@ -103,6 +120,14 @@ export function ProgressStepBar() {
                 }
         }
 
+        const provisionStatus: string[] = [
+            ClusterStatus.creating,
+            ClusterStatus.provisionfailed,
+            ClusterStatus.importing,
+            ClusterStatus.importfailed,
+            ClusterStatus.posthookjob,
+            ClusterStatus.posthookfailed,
+        ]
         const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
 
         const steps: ProgressTrackerStep[] = [
@@ -129,6 +154,13 @@ export function ProgressStepBar() {
                 statusType: creatingStatus,
                 statusText: t('status.install.text'),
                 statusSubtitle: t(`status.subtitle.${creatingStatus}`),
+                ...(provisionStatus.includes(cluster?.status ?? '') && {
+                    link: {
+                        linkName: t('status.link.logs'),
+                        linkUrl: hiveLogUrl,
+                        isDisabled: hiveLogUrl === '',
+                    },
+                }),
             },
             {
                 statusType: importStatus,
