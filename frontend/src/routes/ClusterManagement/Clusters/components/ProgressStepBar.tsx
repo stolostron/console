@@ -103,6 +103,8 @@ export function ProgressStepBar() {
                 }
         }
 
+        const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
+
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
@@ -137,13 +139,14 @@ export function ProgressStepBar() {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
-                ...(posthooks && {
-                    link: {
-                        linkName: t('status.link.logs'),
-                        linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
-                        isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
-                    },
-                }),
+                ...(posthooks &&
+                    posthookJobStatus.includes(cluster?.status ?? '') && {
+                        link: {
+                            linkName: t('status.link.logs'),
+                            linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
+                            isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
+                        },
+                    }),
             },
         ]
 
