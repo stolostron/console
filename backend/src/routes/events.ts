@@ -90,6 +90,7 @@ export function startWatching(): void {
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
+    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs')
 }
 
 export function watchResource(
