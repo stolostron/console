@@ -227,8 +227,6 @@ export const networkingControlData = [
 ]
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
-    debugger // eslint-disable-line
-    console.log('isHidden_lt_OCP48')
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
     //NOTE: We will need to adjust this in the future for new OCP versions!
     if (
@@ -245,7 +243,7 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 
 export const isHidden_SNO = (control, controlData) => {
     const singleNode = controlData.find(({ id }) => id === 'singleNode')
-    return singleNode && singleNode.active
+    return singleNode && singleNode.active && !isHidden_lt_OCP48(control, controlData)
 }
 
 export const onChangeSNO = (control, controlData) => {
