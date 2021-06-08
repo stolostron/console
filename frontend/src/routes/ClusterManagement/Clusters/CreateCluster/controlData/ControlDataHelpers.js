@@ -243,7 +243,7 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 
 export const isHidden_SNO = (control, controlData) => {
     const singleNode = controlData.find(({ id }) => id === 'singleNode')
-    return singleNode && singleNode.active
+    return singleNode && singleNode.active && !isHidden_lt_OCP48(control, controlData)
 }
 
 export const onChangeSNO = (control, controlData) => {
