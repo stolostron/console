@@ -59,7 +59,6 @@ export function sortJobs(lhs: AnsibleJob, rhs: AnsibleJob) {
 }
 
 export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string) {
-    console.log(ansibleJobs)
     const jobs = ansibleJobs.filter((job) => job.metadata.namespace === namespace)
     const prehookJobs = jobs.filter((job) => job.metadata.annotations?.jobtype === 'prehook').sort(sortJobs)
     const posthookJobs = jobs.filter((job) => job.metadata.annotations?.jobtype === 'posthook').sort(sortJobs)

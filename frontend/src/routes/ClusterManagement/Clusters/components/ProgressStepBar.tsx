@@ -18,8 +18,6 @@ export function ProgressStepBar() {
     const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
 
-    console.log('checking for active job: ', latestJobs)
-
     const installStatus = [
         ClusterStatus.prehookjob,
         ClusterStatus.prehookfailed,
