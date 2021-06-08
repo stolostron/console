@@ -2,17 +2,23 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState } from '../../../../atoms'
+import { ansibleJobState, clusterCuratorsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { getLatestAnsibleJob } from '../../../../resources/ansible-job'
 
 export function ProgressStepBar() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
+    const [ansibleJobs] = useRecoilState(ansibleJobState)
+
+    const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
+
+    console.log('checking for active job: ', latestJobs)
 
     const installStatus = [
         ClusterStatus.prehookjob,
@@ -98,12 +104,22 @@ export function ProgressStepBar() {
                     prehookStatus = StatusType.pending
                 }
         }
-
+        // TODO: add correct documentation url
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
                 statusText: t('status.prehook.text'),
-                statusSubtitle: t(`status.subtitle.${prehookStatus}`),
+                statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
+                // will render link when prehook job url is defined or when there are no job hooks setup
+                ...((latestJobs.prehook?.status?.ansibleJobResult?.url || (!prehooks && !posthooks)) && {
+                    link: {
+                        linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+                        linkUrl:
+                            !prehooks && !posthooks
+                                ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
+                                : latestJobs.prehook.status!.ansibleJobResult.url,
+                    },
+                }),
             },
             {
                 statusType: creatingStatus,
@@ -118,7 +134,14 @@ export function ProgressStepBar() {
             {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
-                statusSubtitle: t(`status.subtitle.${posthookStatus}`),
+                statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
+                ...(latestJobs.posthook?.status &&
+                    latestJobs.posthook?.status.ansibleJobResult && {
+                        link: {
+                            linkName: t('status.link.logs'),
+                            linkUrl: latestJobs.posthook.status?.ansibleJobResult?.url,
+                        },
+                    }),
             },
         ]
 
