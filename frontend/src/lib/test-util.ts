@@ -262,7 +262,7 @@ export function nocksAreDone(nocks: Scope[]) {
 }
 
 export async function waitForNocks(nocks: Scope[]) {
-    const timeout = options.timeout * nocks.length
+    const timeout = options.timeout * nocks.length * 3
     const timeoutMsg = (error: Error) => {
         error.message = `!!!!!!!!!!! Test timed out in waitForNocks()--waited ${timeout / 1000} seconds !!!!!!!!!!!!!`
         error.stack = ''

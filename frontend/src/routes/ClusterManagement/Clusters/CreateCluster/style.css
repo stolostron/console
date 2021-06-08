@@ -15,7 +15,7 @@
 .pf-c-content .temptifly.showWizard .creation-view-controls-container {
     margin: unset;
     padding: unset;
-    margin-right: -10px;
+    margin-right: -5px;
     height: calc(100vh - 187px);
 }
 
