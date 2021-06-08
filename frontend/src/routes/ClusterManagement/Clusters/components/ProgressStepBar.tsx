@@ -101,7 +101,7 @@ export function ProgressStepBar() {
                 if (prehooks) {
                     prehookStatus = StatusType.healthy
                 } else {
-                    prehookStatus = StatusType.pending
+                    prehookStatus = StatusType.healthy
                 }
         }
         // TODO: add correct documentation url
