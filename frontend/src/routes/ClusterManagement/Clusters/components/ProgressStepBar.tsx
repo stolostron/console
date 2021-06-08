@@ -102,7 +102,7 @@ export function ProgressStepBar() {
                     prehookStatus = StatusType.healthy
                 }
         }
-        // TODO: add correct documentation url
+
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
@@ -112,7 +112,7 @@ export function ProgressStepBar() {
                 ...((latestJobs.prehook?.status?.ansibleJobResult?.url || (!prehooks && !posthooks)) && {
                     link: {
                         linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
-                        linkUrl:
+                        linkUrl: // TODO: add ansible documentation url
                             !prehooks && !posthooks
                                 ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
                                 : latestJobs.prehook!.status!.ansibleJobResult.url!,
