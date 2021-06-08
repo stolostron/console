@@ -116,8 +116,8 @@ export function ProgressStepBar() {
                         linkUrl:
                             !prehooks && !posthooks
                                 ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
-                                : latestJobs.prehook?.status?.ansibleJobResult.url
-                                ? latestJobs.prehook?.status?.ansibleJobResult.url
+                                : latestJobs.prehook?.status?.ansibleJobResult?.url
+                                ? latestJobs.prehook?.status?.ansibleJobResult?.url
                                 : '',
                         isDisabled: !latestJobs.prehook?.status?.ansibleJobResult?.url,
                     },
@@ -141,7 +141,7 @@ export function ProgressStepBar() {
                     link: {
                         linkName: t('status.link.logs'),
                         linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
-                        isDisabled: !latestJobs.prehook?.status?.ansibleJobResult?.url,
+                        isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
                     },
                 }),
             },
