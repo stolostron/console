@@ -113,7 +113,7 @@ export function ProgressStepBar() {
             ClusterStatus.posthookfailed,
         ]
         const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
-console.log('checking prehook: ', prehooks)
+        console.log('checking prehook: ', prehooks)
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
@@ -128,7 +128,10 @@ console.log('checking prehook: ', prehooks)
                             !prehooks && !posthooks
                                 ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
                                 : latestJobs.prehook?.status?.ansibleJobResult?.url,
-                        isDisabled: !(prehooks === undefined && posthooks === undefined) && (latestJobs.prehook?.status?.ansibleJobResult?.url === undefined && prehooks !== undefined)
+                        isDisabled:
+                            !(prehooks === undefined && posthooks === undefined) &&
+                            latestJobs.prehook?.status?.ansibleJobResult?.url === undefined &&
+                            prehooks !== undefined,
                     },
                 }),
             },
