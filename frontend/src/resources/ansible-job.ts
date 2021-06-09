@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResourceDefinition } from './resource'
-import { getResource, listResources } from '../lib/resource-request'
 import { getLatest } from '../lib/utils'
 
 export const AnsibleJobApiVersion = 'tower.ansible.com/v1alpha1'
