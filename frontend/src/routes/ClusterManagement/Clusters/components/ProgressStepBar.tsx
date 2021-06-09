@@ -113,7 +113,6 @@ export function ProgressStepBar() {
             ClusterStatus.posthookfailed,
         ]
         const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
-        console.log('checking prehook: ', prehooks)
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
