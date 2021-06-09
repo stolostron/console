@@ -147,7 +147,7 @@ describe('ClusterPools page', () => {
         await clickByLabel('Actions', 0)
         await clickByText('clusterPool.updateReleaseImage')
         await waitForText('bulk.title.updateReleaseImage')
-        await clickByText('common:select')
+        await clickByText('clusterPool.selectReleaseImage')
         await clickByText(mockClusterImageSet.spec!.releaseImage)
         const patchNocks: Scope[] = [
             nockPatch(mockClusterPool, [
@@ -164,8 +164,7 @@ describe('ClusterPools page', () => {
 
     test('should be able to claim a cluster', async () => {
         await waitForText(mockClusterPool.metadata.name!)
-        await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.claim', 0)
+        await clickByText('clusterPool.claim')
         await waitForText('clusterClaim.create.title')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]

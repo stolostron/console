@@ -59,7 +59,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                             maxHeight={'6em'}
                             isRequired
                             label=""
-                            placeholder={t('common:select')}
+                            placeholder={t('clusterPool.selectReleaseImage')}
                             value={imageSets[clusterPool.metadata.uid!]}
                             onChange={(cis) => {
                                 imageSets[clusterPool.metadata.uid!] = cis!
