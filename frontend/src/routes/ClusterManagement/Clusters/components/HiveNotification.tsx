@@ -43,7 +43,6 @@ export function HiveNotification() {
         provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster!.statusMessage
 
     const provisionStatuses: string[] = [
-        ClusterStatus.creating,
         ClusterStatus.destroying,
         ClusterStatus.provisionfailed,
         ClusterStatus.deprovisionfailed,

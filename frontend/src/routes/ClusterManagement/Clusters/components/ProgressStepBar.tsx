@@ -2,19 +2,20 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, clusterCuratorsState } from '../../../../atoms'
+import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getLatestAnsibleJob } from '../../../../resources/ansible-job'
+import { launchLogs } from './HiveNotification'
 
 export function ProgressStepBar() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-
+    const [configMaps] = useRecoilState(configMapsState)
     const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
 
@@ -103,6 +104,14 @@ export function ProgressStepBar() {
                 }
         }
 
+        const provisionStatus: string[] = [
+            ClusterStatus.creating,
+            ClusterStatus.provisionfailed,
+            ClusterStatus.importing,
+            ClusterStatus.importfailed,
+            ClusterStatus.posthookjob,
+            ClusterStatus.posthookfailed,
+        ]
         const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
 
         const steps: ProgressTrackerStep[] = [
@@ -129,6 +138,12 @@ export function ProgressStepBar() {
                 statusType: creatingStatus,
                 statusText: t('status.install.text'),
                 statusSubtitle: t(`status.subtitle.${creatingStatus}`),
+                ...(provisionStatus.includes(cluster?.status ?? '') && {
+                    link: {
+                        linkName: t('status.link.logs'),
+                        linkCallback: () => launchLogs(cluster!, configMaps),
+                    },
+                }),
             },
             {
                 statusType: importStatus,
