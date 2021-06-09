@@ -120,6 +120,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
+        [AnsibleJobKind]: setAnsibleJobs,
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterClaimKind]: setClusterClaims,
@@ -144,7 +145,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [PolicyReportKind]: setPolicyReports,
         [SecretKind]: setSecrets,
         [SubmarinerConfigKind]: setSubmarinerConfigs,
-        [AnsibleJobKind]: setAnsibleJobs,
     }
 
     useEffect(() => {

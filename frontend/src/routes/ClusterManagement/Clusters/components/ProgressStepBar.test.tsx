@@ -121,7 +121,7 @@ describe('ProgressStepBar', () => {
         await waitForText('status.subtitle.progress')
         await waitForText('status.posthook.text')
         await waitForText('status.install.text')
-        clickByText('status.link.logs')
+        await clickByText('status.link.logs')
         await waitForCalled(window.open as jest.Mock)
     })
 })

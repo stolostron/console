@@ -113,7 +113,7 @@ export function ProgressStepBar() {
             ClusterStatus.posthookfailed,
         ]
         const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
-
+console.log('checking prehook: ', prehooks)
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
@@ -127,10 +127,8 @@ export function ProgressStepBar() {
                         linkUrl:
                             !prehooks && !posthooks
                                 ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
-                                : latestJobs.prehook?.status?.ansibleJobResult?.url
-                                ? latestJobs.prehook?.status?.ansibleJobResult?.url
-                                : '',
-                        isDisabled: !latestJobs.prehook?.status?.ansibleJobResult?.url,
+                                : latestJobs.prehook?.status?.ansibleJobResult?.url,
+                        isDisabled: !(prehooks === undefined && posthooks === undefined) && (latestJobs.prehook?.status?.ansibleJobResult?.url === undefined && prehooks !== undefined)
                     },
                 }),
             },
@@ -138,7 +136,7 @@ export function ProgressStepBar() {
                 statusType: creatingStatus,
                 statusText: t('status.install.text'),
                 statusSubtitle: t(`status.subtitle.${creatingStatus}`),
-                ...(provisionStatus.includes(cluster?.status ?? '') && {
+                ...(provisionStatus.includes(cluster?.status!) && {
                     link: {
                         linkName: t('status.link.logs'),
                         linkCallback: () => launchLogs(cluster!, configMaps),
@@ -155,7 +153,7 @@ export function ProgressStepBar() {
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
                 ...(posthooks &&
-                    posthookJobStatus.includes(cluster?.status ?? '') && {
+                    posthookJobStatus.includes(cluster?.status!) && {
                         link: {
                             linkName: t('status.link.logs'),
                             linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
