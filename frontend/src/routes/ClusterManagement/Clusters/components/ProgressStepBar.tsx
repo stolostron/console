@@ -112,27 +112,21 @@ export function ProgressStepBar() {
             ClusterStatus.posthookjob,
             ClusterStatus.posthookfailed,
         ]
-        const posthookJobStatus: string[] = [ClusterStatus.posthookjob, ClusterStatus.posthookfailed]
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
                 statusText: t('status.prehook.text'),
                 statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
                 // will render link when prehook job url is defined or when there are no job hooks setup
-                ...((prehooks || (!prehooks && !posthooks)) && {
-                    link: {
-                        linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
-                        // TODO: add ansible documentation url
-                        linkUrl:
-                            !prehooks && !posthooks
-                                ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
-                                : latestJobs.prehook?.status?.ansibleJobResult?.url,
-                        isDisabled:
-                            !(prehooks === undefined && posthooks === undefined) &&
-                            latestJobs.prehook?.status?.ansibleJobResult?.url === undefined &&
-                            prehooks !== undefined,
-                    },
-                }),
+                link: {
+                    linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+                    // TODO: add ansible documentation url
+                    linkUrl:
+                        !prehooks && !posthooks
+                            ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
+                            : latestJobs.prehook?.status?.ansibleJobResult?.url,
+                    isDisabled: !prehooks && !posthooks ? false : (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined)
+                },
             },
             {
                 statusType: creatingStatus,
@@ -154,11 +148,10 @@ export function ProgressStepBar() {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
-                ...(posthooks &&
-                    posthookJobStatus.includes(cluster?.status!) && {
+                ...(posthooks && latestJobs.posthook?.status?.ansibleJobResult?.url && {
                         link: {
                             linkName: t('status.link.logs'),
-                            linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url || '',
+                            linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
                             isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
                         },
                     }),
