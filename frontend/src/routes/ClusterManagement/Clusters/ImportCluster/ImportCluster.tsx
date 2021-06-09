@@ -90,6 +90,7 @@ export function ImportClusterPageContent() {
     const [server, setServer] = useState<string | undefined>(sessionStorage.getItem('DiscoveredClusterApiURL') ?? '')
     const [kubeConfig, setKubeConfig] = useState<string | undefined>()
     const [importMode, setImportMode] = useState<ImportMode>(ImportMode.manual)
+    const [discovered] = useState<boolean>(sessionStorage.getItem('DiscoveredClusterDisplayName') ? true : false)
 
     const onReset = () => {
         setClusterName('')
@@ -230,6 +231,12 @@ export function ImportClusterPageContent() {
                             if (managedClusterSet) {
                                 clusterLabels[managedClusterSetLabel] = managedClusterSet
                             }
+                            let clusterAnnotations: Record<string, string> = {}
+                            if (discovered) {
+                                clusterAnnotations = {
+                                    'open-cluster-management/import-method': 'discovery',
+                                }
+                            }
                             const createdResources: IResource[] = []
                             return new Promise(async (resolve, reject) => {
                                 try {
@@ -242,7 +249,8 @@ export function ImportClusterPageContent() {
                                         }
                                     }
                                     createdResources.push(
-                                        await createManagedCluster({ clusterName, clusterLabels }).promise
+                                        await createManagedCluster({ clusterName, clusterLabels, clusterAnnotations })
+                                            .promise
                                     )
                                     createdResources.push(
                                         await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise

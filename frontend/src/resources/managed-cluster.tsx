@@ -44,11 +44,12 @@ export interface ManagedCluster extends IResource {
 export const createManagedCluster = (data: {
     clusterName: string | undefined
     clusterLabels: Record<string, string>
+    clusterAnnotations?: Record<string, string>
 }) => {
     return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
-        metadata: { name: data.clusterName, labels: data.clusterLabels },
+        metadata: { name: data.clusterName, labels: data.clusterLabels, annotations: data.clusterAnnotations },
         spec: { hubAcceptsClient: true },
     })
 }
