@@ -4,8 +4,11 @@ import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
+    clusterDetailsControlData,
     networkingControlData,
+    automationControlData,
     getSimplifiedImageName,
+    getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
@@ -241,27 +244,6 @@ const GCPworkerInstanceTypes = [
 
 const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
-    {
-        id: 'imageStep',
-        type: 'step',
-        title: 'Image and connection',
-    },
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('gcp'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-    },
-
-    ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -277,6 +259,23 @@ const controlDataGCP = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
+    ...clusterDetailsControlData,
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  imageset  /////////////////////////////////////
+    {
+        name: 'cluster.create.ocp.image',
+        tooltip: 'tooltip.cluster.create.ocp.image',
+        id: 'imageSet',
+        type: 'combobox',
+        simplified: getSimplifiedImageName,
+        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        fetchAvailable: LOAD_OCP_IMAGES('gcp'),
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            required: true,
+        },
+    },
+
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -285,6 +284,13 @@ const controlDataGCP = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -296,8 +302,7 @@ const controlDataGCP = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.master.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     ///////////////////////  region  /////////////////////////////////////
@@ -321,6 +326,7 @@ const controlDataGCP = [
             {
                 id: 'masterPool',
                 type: 'section',
+                collapsable: true,
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
             },
@@ -350,8 +356,7 @@ const controlDataGCP = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.worker.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     {
@@ -367,7 +372,8 @@ const controlDataGCP = [
             {
                 id: 'workerPool',
                 type: 'section',
-                subtitle: 'creation.ocp.node.worker.pool.title',
+                collapsable: true,
+                subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
             ///////////////////////  pool name  /////////////////////////////////////
@@ -417,6 +423,7 @@ const controlDataGCP = [
         title: 'Networking',
     },
     ...networkingControlData,
+    ...automationControlData,
 ]
 
 export default controlDataGCP
