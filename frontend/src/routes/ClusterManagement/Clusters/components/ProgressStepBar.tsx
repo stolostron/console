@@ -125,7 +125,10 @@ export function ProgressStepBar() {
                         !prehooks && !posthooks
                             ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
                             : latestJobs.prehook?.status?.ansibleJobResult?.url,
-                    isDisabled: !prehooks && !posthooks ? false : (!!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined)
+                    isDisabled:
+                        !prehooks && !posthooks
+                            ? false
+                            : !!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined,
                 },
             },
             {
@@ -148,7 +151,8 @@ export function ProgressStepBar() {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
-                ...(posthooks && latestJobs.posthook?.status?.ansibleJobResult?.url && {
+                ...(posthooks &&
+                    latestJobs.posthook?.status?.ansibleJobResult?.url && {
                         link: {
                             linkName: t('status.link.logs'),
                             linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
