@@ -675,31 +675,31 @@ describe('CreateCluster', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
-        // step 1 -- the name
-        await typeByTestId('eman', clusterName!)
-        await clickByText('Next')
-
-        // step 2 -- the infrastructure
+        // step 1 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // step 3 -- the imageset and connection
-        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        // connection
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')
 
-        // step 4 -- the hosts
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- the hosts
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
         }
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 4 -- the network
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
@@ -764,31 +764,32 @@ describe('CreateCluster', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
-        // step 1 -- the name
-        await typeByTestId('eman', clusterName!)
-        await clickByText('Next')
-
-        // step 2 -- the infrastructure
+        // step 1 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
-        // step 3 -- the imageset and connection
-        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        // connection
         await clickByPlaceholderText('creation.ocp.cloud.select.connection')
         await clickByText(providerConnection.metadata.name!)
+        await new Promise((resolve) => setTimeout(resolve, 500))
         await clickByText('Next')
 
-        // step 4 -- the hosts
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+        
+        // step 3 -- the hosts
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
         }
         await clickByText('Next')
 
-        // step 5 -- the network
+        // step 4 -- the network
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
