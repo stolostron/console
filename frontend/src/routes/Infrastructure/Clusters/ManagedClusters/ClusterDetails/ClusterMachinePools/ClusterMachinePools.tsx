@@ -76,7 +76,7 @@ export function MachinePoolsTable() {
             sort: 'status.replicas',
             search: 'status.replicas',
             cell: (machinePool: MachinePool) => {
-                if (machinePool.spec?.replicas) {
+                if (machinePool.spec?.replicas !== undefined) {
                     return (
                         <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
                             {t('common:outOf', {
@@ -95,7 +95,7 @@ export function MachinePoolsTable() {
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getAutoscaling(a), getAutoscaling(b)),
             search: (machinePool: MachinePool) => getAutoscaling(machinePool),
             cell: (machinePool: MachinePool) => {
-                if (machinePool.spec?.replicas) {
+                if (machinePool.spec?.replicas !== undefined) {
                     return getAutoscaling(machinePool)
                 } else {
                     return `${getAutoscaling(machinePool)}, ${t('machinePool.replica.count', {
