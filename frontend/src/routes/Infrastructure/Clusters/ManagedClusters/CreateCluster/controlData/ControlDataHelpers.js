@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED, VALID_DNS_LABEL } from 'temptifly'
-import { listClusterImageSets } from '../../../../../resources/cluster-image-set'
-import { unpackProviderConnection } from '../../../../../resources/provider-connection'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { listClusterImageSets } from '../../../../../../resources/cluster-image-set'
+import { unpackProviderConnection } from '../../../../../../resources/provider-connection'
+import { NavigationPath } from '../../../../../../NavigationPath'
 import _ from 'lodash'
 
 const OpenNewTab = () => (
