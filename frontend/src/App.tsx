@@ -16,25 +16,31 @@ import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
 import './App.css'
 
-const ClusterManagementPage = lazy(() => import('./routes/ClusterManagement/ClusterManagement'))
-const ClusterDetailsPage = lazy(() => import('./routes/ClusterManagement/Clusters/ClusterDetails/ClusterDetails'))
+const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
+const ClusterDetailsPage = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails')
+)
 const ClusterSetDetailsPage = lazy(
-    () => import('./routes/ClusterManagement/ClusterSets/ClusterSetDetails/ClusterSetDetails')
+    () => import('./routes/Infrastructure/Clusters/ClusterSets/ClusterSetDetails/ClusterSetDetails')
 )
 const CreateClusterPoolPage = lazy(
-    () => import('./routes/ClusterManagement/ClusterPools/CreateClusterPool/CreateClusterPool')
+    () => import('./routes/Infrastructure/Clusters/ClusterPools/CreateClusterPool/CreateClusterPool')
 )
-const CreateClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/CreateCluster/CreateCluster'))
-const ImportClusterPage = lazy(() => import('./routes/ClusterManagement/Clusters/ImportCluster/ImportCluster'))
-const CreateBareMetalAssetPage = lazy(() => import('./routes/BareMetalAssets/CreateBareMetalAsset'))
-const DiscoveryConfig = lazy(() => import('./routes/Discovery/DiscoveryConfig/DiscoveryConfig'))
+const CreateClusterPage = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/CreateCluster')
+)
+const ImportClusterPage = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ImportCluster/ImportCluster')
+)
+const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
+const DiscoveryConfig = lazy(
+    () => import('./routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryConfig/DiscoveryConfig')
+)
 const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
-const AnsibleAutomationFormPage = lazy(
-    () => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomationsForm')
-)
-const BareMetalAssetsPage = lazy(() => import('./routes/BareMetalAssets/BareMetalAssetsPage'))
-const AnsibleAutomationsPage = lazy(() => import('./routes/ClusterManagement/AnsibleAutomations/AnsibleAutomations'))
+const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
+const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
+const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
 const ExampleForm = lazy(() => import('./components/DataForm/ExampleForm'))
 
 export default function App() {
