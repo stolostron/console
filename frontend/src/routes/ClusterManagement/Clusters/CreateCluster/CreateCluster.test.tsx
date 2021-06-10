@@ -781,7 +781,7 @@ describe('CreateCluster', () => {
         await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
-        
+
         // step 3 -- the hosts
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
