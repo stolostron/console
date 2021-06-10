@@ -6,7 +6,7 @@ import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../resources/cluster-curator'
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind } from '../../../../../resources/ansible-job'

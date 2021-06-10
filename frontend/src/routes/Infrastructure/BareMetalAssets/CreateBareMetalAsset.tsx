@@ -372,7 +372,7 @@ export function CreateBareMetalAssetPageContent(props: {
                     }
                 }}
             />
-            <AcmAlertGroup isInline canClose padTop />
+            <AcmAlertGroup isInline canClose />
             <ActionGroup>
                 <AcmSubmit
                     id="submit"

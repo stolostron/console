@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get } from 'lodash'
 import YAML from 'yaml'
 
 import { TFunction } from 'i18next'
@@ -153,10 +152,21 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
     if (yamlValue) {
         try {
             //ensure we have valid YAML
-            const yamlData = YAML.parse(yamlValue)
+            const yamlData = YAML.parse(yamlValue) as {
+                clouds: Record<
+                    string,
+                    {
+                        auth?: {
+                            auth_url?: string
+                            password?: string
+                            username?: string
+                        }
+                    }
+                >
+            }
 
             //check for the clouds key
-            const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
+            const clouds = yamlData.clouds
             if (clouds !== undefined) {
                 let found = false
                 for (const key in clouds) {

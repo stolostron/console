@@ -119,7 +119,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                         })
                                     }}
                                 />
-                                <AcmAlertGroup isInline canClose padTop />
+                                <AcmAlertGroup isInline canClose />
                                 <ActionGroup>
                                     <AcmSubmit
                                         id="claim"
