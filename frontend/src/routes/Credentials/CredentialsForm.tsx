@@ -19,7 +19,7 @@ import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
-import { DOC_LINKS, OCM_LINKS } from '../../lib/doc-util'
+import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import { createResource, patchResource } from '../../lib/resource-request'
 import {
@@ -876,7 +876,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.openshiftCredentials.title'),
                 wizardTitle: t('credentialsForm.openshiftCredentials.wizardTitle'),
                 description: (
-                    <a href={OCM_LINKS.RETRIEVE_TOKEN} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.openshiftCredentials.wizardDescription')}
                     </a>
                 ),
