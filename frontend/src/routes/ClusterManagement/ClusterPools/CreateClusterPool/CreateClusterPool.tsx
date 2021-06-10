@@ -186,22 +186,27 @@ export function CreateClusterPool() {
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
-    for (let i = 0; i < controlData.length; i++) {
-        if (controlData[i].id === 'namespace') {
-            controlData[i].available = namespaces.map((namespace) => namespace.metadata.name) as string[]
-        }
-        if (controlData[i].id === 'clusterSet' && controlData[i].available) {
-            controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
-            controlData[i].validation.required = mustJoinClusterSet ?? false
-        }
-        if (controlData[i].id === 'infrastructure') {
-            controlData[i]?.available?.forEach((provider) => {
-                provider.change?.insertControlData?.forEach((control) => {
-                    if (control.id === 'connection') {
-                        setAvailableConnections(control, secrets)
-                    }
+    function onControlInitialize(control: any) {
+        switch (control.id) {
+            case 'clusterSet':
+                if (control.available) {
+                    control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+                    control.validation.required = mustJoinClusterSet ?? false
+                }
+                break
+            case 'infrastructure':
+                control?.available?.forEach((provider: any) => {
+                    const providerData: any = control?.availableMap[provider]
+                    providerData?.change?.insertControlData?.forEach((ctrl: any) => {
+                        if (ctrl.id === 'connection') {
+                            setAvailableConnections(ctrl, secrets)
+                        }
+                    })
                 })
-            })
+                break
+            case 'namespace':
+                control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
+                break
         }
     }
 
@@ -227,6 +232,7 @@ export function CreateClusterPool() {
                 creationMsg: creationStatus?.messages,
             }}
             logging={process.env.NODE_ENV !== 'production'}
+            onControlInitialize={onControlInitialize}
             i18n={i18n}
         />
     )

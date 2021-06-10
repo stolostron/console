@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALID_DNS_LABEL } from 'temptifly'
 import fs from 'fs'
 import path from 'path'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
+import { keyBy } from 'lodash'
 
 import controlDataAWS from '../../../Clusters/CreateCluster/controlData/ControlDataAWS'
 import controlDataGCP from '../../../Clusters/CreateCluster/controlData/ControlDataGCP'
@@ -34,73 +34,61 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
     return ''
 }
 
+const fixupControlsForClusterPool = (controlData) => {
+    const map = keyBy(controlData, 'id')
+    map['detailStep'].title = 'Cluster pool details'
+    map['name'].name = 'clusterPool.creation.ocp.name'
+    map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
+
+    const inx = controlData.findIndex(({ id }) => id === 'name')
+    controlData.splice(
+        inx + 1,
+        0,
+        {
+            name: 'clusterPool.creation.ocp.namespace',
+            tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
+            id: 'namespace',
+            type: 'combobox',
+            placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
+            validation: {
+                required: true,
+            },
+            available: [],
+        },
+        {
+            name: 'clusterPool.creation.ocp.size',
+            tooltip: 'clusterPool.tooltip.creation.ocp.size',
+            id: 'size',
+            type: 'number',
+            initial: '1',
+            validation: {
+                required: true,
+            },
+            // cacheUserValueKey: 'create.cluster.compute.node.count',
+        }
+    )
+
+    return controlData
+}
+const fixedUpAWS = fixupControlsForClusterPool(controlDataAWS)
+const fixedUpGCP = fixupControlsForClusterPool(controlDataGCP)
+const fixedUpAZR = fixupControlsForClusterPool(controlDataAZR)
+
 export const controlData = [
+    ///////////////////////  container platform  /////////////////////////////////////
     {
-        id: 'detailStep',
+        id: 'distStep',
         type: 'step',
-        title: 'Basic information',
-    },
-    {
-        name: 'clusterPool.creation.ocp.name',
-        tooltip: 'clusterPool.tooltip.creation.ocp.name',
-        id: 'name',
-        type: 'text',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
-        },
-        reverse: 'ClusterDeployment[0].metadata.name',
-    },
-    {
-        name: 'clusterPool.creation.ocp.namespace',
-        tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
-        id: 'namespace',
-        type: 'combobox',
-        placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
-        validation: {
-            required: true,
-        },
-        available: [],
-    },
-    {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
-        id: 'clusterSet',
-        type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
-        validation: {
-            required: false,
-        },
-        available: [],
-    },
-    {
-        name: 'clusterPool.creation.ocp.size',
-        tooltip: 'clusterPool.tooltip.creation.ocp.size',
-        id: 'size',
-        type: 'number',
-        initial: '1',
-        validation: {
-            required: true,
-        },
-        // cacheUserValueKey: 'create.cluster.compute.node.count',
+        title: 'Infrastructure provider',
     },
     {
         id: 'showSecrets',
         type: 'hidden',
         active: false,
     },
-
-    ///////////////////////  container platform  /////////////////////////////////////
-    {
-        id: 'distStep',
-        type: 'step',
-        title: 'Distribution',
-    },
     {
         id: 'chooseDist',
-        type: 'section',
-        title: 'creation.ocp.distribution',
+        type: 'title',
         info: 'creation.ocp.choose.distribution',
         tooltip: 'tooltip.creation.ocp.choose.distribution',
     },
@@ -142,7 +130,7 @@ export const controlData = [
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
                 change: {
-                    insertControlData: controlDataAWS,
+                    insertControlData: fixedUpAWS,
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -153,7 +141,7 @@ export const controlData = [
                 logo: <GoogleLogo />,
                 title: 'cluster.create.google.subtitle',
                 change: {
-                    insertControlData: controlDataGCP,
+                    insertControlData: fixedUpGCP,
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -164,7 +152,7 @@ export const controlData = [
                 logo: <AzureLogo />,
                 title: 'cluster.create.azure.subtitle',
                 change: {
-                    insertControlData: controlDataAZR,
+                    insertControlData: fixedUpAZR,
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },

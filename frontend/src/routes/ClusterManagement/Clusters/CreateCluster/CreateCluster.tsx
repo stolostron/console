@@ -105,15 +105,6 @@ export default function CreateClusterPage() {
         </div>
     )
 
-    function templiflyOnChange(control: any) {
-        if (control.id === 'templateName') {
-            setSelectedTemplate(control.active)
-        }
-        if (control.id === 'connection') {
-            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-        }
-    }
-
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }, control: any) => {
@@ -248,29 +239,43 @@ export default function CreateClusterPage() {
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
-    for (let i = 0; i < controlData.length; i++) {
-        if (controlData[i].id === 'clusterSet' && controlData[i].available) {
-            controlData[i].available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
-            controlData[i].validation.required = mustJoinClusterSet ?? false
-        }
-        if (controlData[i].id === 'infrastructure') {
-            controlData[i]?.available?.forEach((provider) => {
-                provider.change?.insertControlData?.forEach((control) => {
-                    if (control.id === 'connection') {
-                        setAvailableConnections(control, secrets)
-                    }
+    function onControlInitialize(control: any) {
+        switch (control.id) {
+            case 'clusterSet':
+                if (control.available) {
+                    control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+                    control.validation.required = mustJoinClusterSet ?? false
+                }
+                break
+            case 'infrastructure':
+                control?.available?.forEach((provider: any) => {
+                    const providerData: any = control?.availableMap[provider]
+                    providerData?.change?.insertControlData?.forEach((ctrl: any) => {
+                        if (ctrl.id === 'connection') {
+                            setAvailableConnections(ctrl, secrets)
+                        }
+                    })
                 })
-            })
-        }
-        if (controlData[i].id === 'templateName') {
-            controlData[i].available = curatorTemplates.map((template) => template.metadata.name)
-            setAvailableTemplates(controlData[i], curatorTemplates)
+                break
+            case 'templateName':
+                control.available = curatorTemplates.map((template) => template.metadata.name)
+                setAvailableTemplates(control, curatorTemplates)
+                break
         }
     }
 
     // cluster set dropdown won't update without this
     if (canJoinClusterSets === undefined || mustJoinClusterSet === undefined) {
         return null
+    }
+
+    function onControlChange(control: any) {
+        if (control.id === 'templateName') {
+            setSelectedTemplate(control.active)
+        }
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+        }
     }
 
     return (
@@ -321,7 +326,8 @@ export default function CreateClusterPage() {
                             }}
                             logging={process.env.NODE_ENV !== 'production'}
                             i18n={i18n}
-                            onChange={templiflyOnChange}
+                            onControlInitialize={onControlInitialize}
+                            onControlChange={onControlChange}
                         />
                     </PageSection>
                 </AcmPageContent>
