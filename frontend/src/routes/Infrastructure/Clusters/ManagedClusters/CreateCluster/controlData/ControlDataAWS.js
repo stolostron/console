@@ -4,8 +4,11 @@ import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
+    clusterDetailsControlData,
     networkingControlData,
+    automationControlData,
     getSimplifiedImageName,
+    getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
@@ -584,28 +587,6 @@ export const AWSworkerInstanceTypes = [
 ]
 
 const controlDataAWS = [
-    {
-        id: 'imageStep',
-        type: 'step',
-        title: 'Image and connection',
-    },
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
-
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('aws'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-    },
-
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -622,6 +603,22 @@ const controlDataAWS = [
         providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
     },
+    ...clusterDetailsControlData,
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  imageset  /////////////////////////////////////
+    {
+        name: 'cluster.create.ocp.image',
+        tooltip: 'tooltip.cluster.create.ocp.image',
+        id: 'imageSet',
+        type: 'combobox',
+        simplified: getSimplifiedImageName,
+        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        fetchAvailable: LOAD_OCP_IMAGES('aws'),
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            required: true,
+        },
+    },
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -630,6 +627,13 @@ const controlDataAWS = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -641,8 +645,7 @@ const controlDataAWS = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.master.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     ///////////////////////  region  /////////////////////////////////////
@@ -667,6 +670,7 @@ const controlDataAWS = [
             {
                 id: 'masterPool',
                 type: 'section',
+                collapsable: true,
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
             },
@@ -720,8 +724,7 @@ const controlDataAWS = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.worker.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     {
@@ -737,7 +740,8 @@ const controlDataAWS = [
             {
                 id: 'workerPool',
                 type: 'section',
-                subtitle: 'creation.ocp.node.worker.pool.title',
+                collapsable: true,
+                subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
             ///////////////////////  pool name  /////////////////////////////////////
@@ -806,6 +810,7 @@ const controlDataAWS = [
         title: 'Networking',
     },
     ...networkingControlData,
+    ...automationControlData,
 ]
 
 export default controlDataAWS

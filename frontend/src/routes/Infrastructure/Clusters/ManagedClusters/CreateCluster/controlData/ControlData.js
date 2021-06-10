@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALID_DNS_LABEL } from 'temptifly'
 import fs from 'fs'
 import path from 'path'
 import Handlebars from 'handlebars'
@@ -38,57 +37,20 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
 }
 
 export const controlData = [
+    ///////////////////////  container platform  /////////////////////////////////////
     {
-        id: 'detailStep',
+        id: 'distStep',
         type: 'step',
-        title: 'Basic information',
-    },
-    {
-        name: 'creation.ocp.name',
-        tooltip: 'tooltip.creation.ocp.name',
-        id: 'name',
-        type: 'text',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
-        },
-        reverse: 'ClusterDeployment[0].metadata.name',
-    },
-    {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
-        id: 'clusterSet',
-        type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
-        validation: {
-            required: false,
-        },
-        available: [],
-    },
-    {
-        name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
-        id: 'additional',
-        type: 'labels',
-        active: [],
+        title: 'Infrastructure provider',
     },
     {
         id: 'showSecrets',
         type: 'hidden',
         active: false,
     },
-
-    ///////////////////////  container platform  /////////////////////////////////////
-    {
-        id: 'distStep',
-        type: 'step',
-        title: 'Distribution',
-    },
     {
         id: 'chooseDist',
-        type: 'section',
-        title: 'creation.ocp.distribution',
+        type: 'title',
         info: 'creation.ocp.choose.distribution',
         tooltip: 'tooltip.creation.ocp.choose.distribution',
     },
@@ -196,27 +158,6 @@ export const controlData = [
         validation: {
             notification: 'creation.ocp.cluster.must.select.infrastructure',
             required: true,
-        },
-    },
-    {
-        id: 'integrationStep',
-        type: 'step',
-        title: 'template.clusterCreate.title',
-    },
-    {
-        id: 'chooseTemplate',
-        type: 'section',
-        title: 'template.clusterCreate.title',
-        info: 'template.clusterCreate.info',
-    },
-    {
-        name: 'template.clusterCreate.name',
-        id: 'templateName',
-        type: 'singleselect',
-        placeholder: 'template.clusterCreate.select.placeholder',
-        available: [],
-        validation: {
-            required: false,
         },
     },
 ]

@@ -1,37 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
+    clusterDetailsControlData,
+    automationControlData,
+    getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
 
 const controlDataVMW = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
-    {
-        id: 'imageStep',
-        type: 'step',
-        title: 'Image and connection',
-    },
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image.vmw',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('vmw'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-    },
-
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -49,6 +31,23 @@ const controlDataVMW = [
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },
+    ...clusterDetailsControlData,
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  imageset  /////////////////////////////////////
+    {
+        name: 'cluster.create.ocp.image',
+        tooltip: 'tooltip.cluster.create.ocp.image.vmw',
+        id: 'imageSet',
+        type: 'combobox',
+        simplified: getSimplifiedImageName,
+        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        fetchAvailable: LOAD_OCP_IMAGES('vmw'),
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            required: true,
+        },
+    },
+
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -57,6 +56,13 @@ const controlDataVMW = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +74,7 @@ const controlDataVMW = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.master.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     ///////////////////////  master pool  /////////////////////////////////////
@@ -81,6 +86,7 @@ const controlDataVMW = [
             {
                 id: 'masterPool',
                 type: 'section',
+                collapsable: true,
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
             },
@@ -131,8 +137,7 @@ const controlDataVMW = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.worker.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     {
@@ -148,7 +153,8 @@ const controlDataVMW = [
             {
                 id: 'workerPool',
                 type: 'section',
-                subtitle: 'creation.ocp.node.worker.pool.title',
+                collapsable: true,
+                subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
             ///////////////////////  pool name  /////////////////////////////////////
@@ -220,18 +226,6 @@ const controlDataVMW = [
         title: 'Networks',
     },
     {
-        id: 'networking',
-        type: 'section',
-        title: 'creation.ocp.networking',
-    },
-    {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        id: 'baseDomain',
-        type: 'text',
-        validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
-    },
-    {
         id: 'networkType',
         name: 'creation.ocp.cluster.vmw.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
@@ -254,6 +248,7 @@ const controlDataVMW = [
         active: '',
         validation: VALIDATE_IP,
     },
+    ...automationControlData,
 ]
 
 export default controlDataVMW
