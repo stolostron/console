@@ -681,6 +681,7 @@ describe('CreateCluster', () => {
 
         // step 2 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
+        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -770,6 +771,7 @@ describe('CreateCluster', () => {
 
         // step 2 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
+        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)

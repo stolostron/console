@@ -241,6 +241,7 @@ describe('CreateClusterPool', () => {
         await clickByText('Next')
 
         await clickByTestId('cluster.create.aws.subtitle')
+        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
