@@ -319,11 +319,16 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
             <AcmTable<PolicyReportResults>
                 plural="Recommendations"
                 items={props.data.results}
+                initialSort={{
+                    index: 2, // default to sorting by highest risk
+                    direction: 'desc',
+                }}
                 columns={[
                     {
                         header: t('policy.report.table.description'),
-                        search: (report) => report.message,
-                        sort: (a: PolicyReportResults, b: PolicyReportResults) => compareStrings(a.message, b.message),
+                        search: (report) => report.policy + ': ' + report.message,
+                        sort: (a: PolicyReportResults, b: PolicyReportResults) =>
+                            compareStrings(a.policy + ': ' + a.message, b.policy + ': ' + b.message),
                         cell: (item: PolicyReportResults) => (
                             <Button
                                 variant="link"
@@ -334,7 +339,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                                 isInline
                                 component="span"
                             >
-                                {item.message}
+                                {item.policy + ': ' + item.message}
                             </Button>
                         ),
                     },

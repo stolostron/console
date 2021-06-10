@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_BASE_DNS_NAME_REQUIRED } from 'temptifly'
-import { CREATE_CLOUD_CONNECTION, LOAD_OCP_IMAGES, getSimplifiedImageName } from './ControlDataHelpers'
+import {
+    CREATE_CLOUD_CONNECTION,
+    LOAD_OCP_IMAGES,
+    getSimplifiedImageName,
+    isHidden_lt_OCP48,
+    isHidden_SNO,
+    onChangeSNO,
+} from './ControlDataHelpers'
 
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +49,16 @@ const controlDataVMW = [
         prompts: CREATE_CLOUD_CONNECTION,
         encode: ['cacertificate'],
     },
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48,
+        onSelect: onChangeSNO,
+    },
+
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
@@ -110,6 +127,7 @@ const controlDataVMW = [
         id: 'wpoolsStep',
         type: 'step',
         title: 'Worker pools',
+        hidden: isHidden_SNO,
     },
     {
         id: 'nodes',

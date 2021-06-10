@@ -32,6 +32,7 @@ export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; 
             case ClusterStatus.resuming:
             case ClusterStatus.prehookjob:
             case ClusterStatus.posthookjob:
+            case ClusterStatus.importing:
                 progress++
                 break
             case ClusterStatus.failed:

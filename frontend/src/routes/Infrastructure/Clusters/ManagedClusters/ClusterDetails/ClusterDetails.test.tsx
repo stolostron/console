@@ -750,7 +750,7 @@ describe('ClusterDetails', () => {
     test('overview page opens logs', async () => {
         const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
-        await clickByText('view.logs')
+        await clickByText('status.link.logs')
         await waitForNocks(nocks)
         await waitForCalled(window.open as jest.Mock)
     })

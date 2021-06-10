@@ -145,31 +145,7 @@ describe('HiveNotification', () => {
             )
         )
     })
-    test('renders the info notification variant for creating status', async () => {
-        mockCluster.status = ClusterStatus.creating
-        const podScope = nockNamespacedList(
-            {
-                apiVersion: PodApiVersion,
-                kind: PodKind,
-                metadata: { namespace: 'test-cluster' },
-            },
-            mockPodList,
-            ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
-        )
-        render(<Component />)
-        await waitForTestId('hive-notification-creating')
-        await waitForText('provision.notification.creating')
-        await waitForTestId('hive-notification-creating')
-        await clickByTestId('view-logs')
-        await waitForNock(podScope)
-        await waitFor(() =>
-            expect(window.open).toHaveBeenCalledWith(
-                `${
-                    mockOpenShiftConsoleConfigMap.data!.consoleURL
-                }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
-            )
-        )
-    })
+
     test('renders the info notification variant for destroying status', async () => {
         mockCluster.status = ClusterStatus.destroying
         const podScope = nockNamespacedList(

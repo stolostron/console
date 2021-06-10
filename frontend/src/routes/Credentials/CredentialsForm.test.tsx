@@ -55,7 +55,7 @@ function createProviderConnection(
                   ...{
                       baseDomain: 'baseDomain',
                       pullSecret: '{"pull":"secret"}',
-                      'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
+                      'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
                       'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com',
                   },
               }

@@ -6,6 +6,9 @@ import {
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,
+    isHidden_lt_OCP48,
+    isHidden_SNO,
+    onChangeSNO,
 } from './ControlDataHelpers'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
@@ -588,6 +591,7 @@ const controlDataAWS = [
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
+
     {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
@@ -617,6 +621,15 @@ const controlDataAWS = [
         available: [],
         providerId: 'aws',
         prompts: CREATE_CLOUD_CONNECTION,
+    },
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48,
+        onSelect: onChangeSNO,
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -703,6 +716,7 @@ const controlDataAWS = [
         id: 'wpoolsStep',
         type: 'step',
         title: 'Worker pools',
+        hidden: isHidden_SNO,
     },
     {
         id: 'nodes',

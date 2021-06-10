@@ -42,6 +42,7 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.resuming:
         case ClusterStatus.prehookjob:
         case ClusterStatus.posthookjob:
+        case ClusterStatus.importing:
             type = StatusType.progress
             break
         case ClusterStatus.detached:
