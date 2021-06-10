@@ -234,7 +234,7 @@ export function ImportClusterPageContent() {
                             let clusterAnnotations: Record<string, string> = {}
                             if (discovered) {
                                 clusterAnnotations = {
-                                    created_via: 'imported-via-discovery',
+                                    'open-cluster-management/created-via': 'discovery',
                                 }
                             }
                             const createdResources: IResource[] = []
