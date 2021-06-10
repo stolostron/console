@@ -24,11 +24,11 @@ export default function ExampleForm() {
     const groupedOptions: SelectGroup[] = [
         {
             group: 'even',
-            options: options.filter((value, index) => index % 2 === 0),
+            options: options.filter((_value, index) => index % 2 === 0),
         },
         {
             group: 'odd',
-            options: options.filter((value, index) => index % 2 === 1),
+            options: options.filter((_value, index) => index % 2 === 1),
         },
     ]
 
