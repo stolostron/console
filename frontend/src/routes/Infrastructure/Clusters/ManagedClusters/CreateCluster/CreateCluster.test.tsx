@@ -169,7 +169,7 @@ const bareMetalAsset: BareMetalAsset = {
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
 }
-const mockBareMetalAssets = Array.from({ length: 5 }, (val, inx) => {
+const mockBareMetalAssets = Array.from({ length: 5 }, (_val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma.metadata.uid = `uid-${inx}`
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
@@ -187,14 +187,14 @@ const bmaSecret: Secret = {
     data: { password: btoa('test'), username: btoa('test') },
 }
 
-const mockBareMetalSecrets = Array.from({ length: 5 }, (val, inx) => {
+const mockBareMetalSecrets = Array.from({ length: 5 }, (_val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
     mockedSecret.metadata.name = `secret-test-bare-metal-asset-${inx}`
     return mockedSecret
 })
 
 //////////////////////////////// CREATE MOCKS //////////////////////////////////////////
-const mockBareMetalAssets2 = Array.from({ length: 4 }, (val, inx) => {
+const mockBareMetalAssets2 = Array.from({ length: 4 }, (_val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma.metadata.name = `test-bare-metal-asset-${inx}`
     mockedBma!.spec!.bmc.credentialsName = `secret-test-bare-metal-asset-${inx}`
@@ -215,7 +215,7 @@ const mockBmaProjectResponse: Project = {
     },
 }
 
-const mockBareMetalAssets3 = Array.from({ length: 1 }, (val, inx) => {
+const mockBareMetalAssets3 = Array.from({ length: 1 }, (_val, inx) => {
     const mockedBma = cloneDeep(bareMetalAsset)
     mockedBma!.spec!.role = 'worker'
     mockedBma.metadata.name = `test-bare-metal-asset-${inx + 4}`
@@ -580,7 +580,7 @@ const patchBareMetalAssetReq: BareMetalAsset = {
     },
 }
 
-const mockPatchBareMetalReq = Array.from({ length: 5 }, (val, inx) => {
+const mockPatchBareMetalReq = Array.from({ length: 5 }, (_val, inx) => {
     const mockedPatchBareMetalAsset = cloneDeep(patchBareMetalAssetReq)
     mockedPatchBareMetalAsset.metadata.name = `test-bare-metal-asset-${inx}`
     return mockedPatchBareMetalAsset

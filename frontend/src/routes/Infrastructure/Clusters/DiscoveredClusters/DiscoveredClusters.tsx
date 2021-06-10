@@ -105,7 +105,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     )
 }
 
-function EmptyStateAwaitingDiscoveredClusters(props: {}) {
+function EmptyStateAwaitingDiscoveredClusters() {
     const { t } = useTranslation(['common', 'discovery'])
     return (
         <AcmEmptyState

@@ -211,7 +211,7 @@ export function ClustersTable(props: {
                         header: t('table.name'),
                         tooltip: t('table.name.helperText.noBold'),
                         sort: 'displayName',
-                        search: (cluster) => [cluster.displayName, cluster.hive.clusterClaimName],
+                        search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
                         cell: (cluster) => (
                             <>
                                 <span style={{ whiteSpace: 'nowrap' }}>
