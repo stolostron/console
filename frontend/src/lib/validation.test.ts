@@ -41,25 +41,31 @@ describe('validation', () => {
         })
     })
     describe('validatePrivateSshKey', () => {
-        test.each([
-            [
-                `should allow valid openssh key`,
-                '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                true,
-            ],
-            [`should allow any key`, '-----BEGIN A PRIVATE KEY-----\nabc\n-----END A PRIVATE KEY-----', true],
-            [`should not allow empty key type`, '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----', false],
-            [
-                `should not allow end line next to the begin line`,
-                '-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----',
-                false,
-            ],
-        ])('%s', (name, value, isValid) => {
-            if (!isValid) {
-                expect(validatePrivateSshKey(value, t)).toBeTruthy()
-            } else {
-                expect(validatePrivateSshKey(value, t)).toBeUndefined()
-            }
+        test('validatePrivateSshKey should allow valid openssh key', () => {
+            expect(
+                validatePrivateSshKey(
+                    '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
+                    t
+                )
+            ).toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should allow any key', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\nabc\n-----END A PRIVATE KEY-----\n', t)
+            ).toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should not allow empty key type', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----\n', t)
+            ).not.toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should require new line', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----', t)
+            ).not.toBeUndefined()
         })
     })
     describe('validateCertificate', () => {

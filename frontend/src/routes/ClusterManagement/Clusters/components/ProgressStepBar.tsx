@@ -2,16 +2,21 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState } from '../../../../atoms'
+import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../atoms'
 import { ClusterStatus } from '../../../../lib/get-cluster'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { getLatestAnsibleJob } from '../../../../resources/ansible-job'
+import { launchLogs } from './HiveNotification'
 
 export function ProgressStepBar() {
     const { t } = useTranslation(['cluster'])
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
+    const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const [configMaps] = useRecoilState(configMapsState)
+    const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
     const curator = curators.find((curator) => curator.metadata.name === cluster?.name)
 
     const installStatus = [
@@ -95,20 +100,47 @@ export function ProgressStepBar() {
                 if (prehooks) {
                     prehookStatus = StatusType.healthy
                 } else {
-                    prehookStatus = StatusType.pending
+                    prehookStatus = StatusType.healthy
                 }
         }
 
+        const provisionStatus: string[] = [
+            ClusterStatus.creating,
+            ClusterStatus.provisionfailed,
+            ClusterStatus.importing,
+            ClusterStatus.importfailed,
+            ClusterStatus.posthookjob,
+            ClusterStatus.posthookfailed,
+        ]
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
                 statusText: t('status.prehook.text'),
                 statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
+                // will render link when prehook job url is defined or when there are no job hooks setup
+                link: {
+                    linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+                    // TODO: add ansible documentation url
+                    linkUrl:
+                        !prehooks && !posthooks
+                            ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
+                            : latestJobs.prehook?.status?.ansibleJobResult?.url,
+                    isDisabled:
+                        !prehooks && !posthooks
+                            ? false
+                            : !!prehooks && latestJobs.prehook?.status?.ansibleJobResult?.url === undefined,
+                },
             },
             {
                 statusType: creatingStatus,
                 statusText: t('status.install.text'),
                 statusSubtitle: t(`status.subtitle.${creatingStatus}`),
+                ...(provisionStatus.includes(cluster?.status!) && {
+                    link: {
+                        linkName: t('status.link.logs'),
+                        linkCallback: () => launchLogs(cluster!, configMaps),
+                    },
+                }),
             },
             {
                 statusType: importStatus,
@@ -119,6 +151,14 @@ export function ProgressStepBar() {
                 statusType: posthookStatus,
                 statusText: t('status.posthook.text'),
                 statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
+                ...(posthooks &&
+                    latestJobs.posthook?.status?.ansibleJobResult?.url && {
+                        link: {
+                            linkName: t('status.link.logs'),
+                            linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
+                            isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
+                        },
+                    }),
             },
         ]
 

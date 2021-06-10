@@ -49,7 +49,9 @@ export function validatePrivateSshKey(value: string, t: TFunction) {
     if (!/-----BEGIN [a-zA-Z]+ PRIVATE KEY-----\n([\s\S]*?)\n-----END [a-zA-Z]+ PRIVATE KEY-----/gm.test(value)) {
         return t('validate.privateSshKey')
     }
-
+    if (!/[\r\n]$/.test(value)) {
+        return t('validate.mustEndWithNewline')
+    }
     return undefined
 }
 

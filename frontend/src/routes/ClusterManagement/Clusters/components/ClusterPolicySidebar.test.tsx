@@ -107,8 +107,8 @@ describe('ClusterPolicySidebar', () => {
             await waitForText('policy.report.flyout.description')
 
             // wait for policy reports to be displayed and click the first report in table
-            await waitForText('policyreport testing risk 1')
-            await clickByText('policyreport testing risk 1')
+            await waitForText('policyreport testing risk 1 policy: policyreport testing risk 1')
+            await clickByText('policyreport testing risk 1 policy: policyreport testing risk 1')
 
             // wait for drilldown risk subdetail component
             await waitForText('policy.report.low')
