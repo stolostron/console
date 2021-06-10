@@ -19,7 +19,9 @@ export function ScaleClusterAlert() {
 
     // check for a scaling in progress
     const workerNodeCount: number | undefined = cluster?.nodes?.nodeList.filter(
-        (node: NodeInfo) => node.labels?.['node-role.kubernetes.io/worker'] !== undefined
+        (node: NodeInfo) =>
+            node.labels?.['node-role.kubernetes.io/worker'] !== undefined &&
+            node.labels?.['node-role.kubernetes.io/master'] === undefined
     )?.length
     let totalDesiredReplicas = 0
     machinePools.forEach((mp) => {
