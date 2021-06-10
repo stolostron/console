@@ -173,7 +173,7 @@ const mockManagedDiscoveredCluster: ManagedCluster = {
         name: 'foobar',
         labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
         annotations: {
-            'open-cluster-management/import-method': 'discovery',
+            created_via: 'imported-via-discovery',
         },
     },
     spec: { hubAcceptsClient: true },
@@ -223,7 +223,7 @@ const mockManagedDiscoveredClusterResponse: ManagedCluster = {
         name: 'foobar',
         uid: 'e60ef618-324b-49d4-8a28-48839c546565',
         annotations: {
-            'open-cluster-management/import-method': 'discovery',
+            created_via: 'imported-via-discovery',
         },
     },
     spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
