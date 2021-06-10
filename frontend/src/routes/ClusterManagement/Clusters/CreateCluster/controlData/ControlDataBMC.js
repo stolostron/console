@@ -5,7 +5,8 @@ import {
     LOAD_OCP_IMAGES,
     networkingControlData,
     getSimplifiedImageName,
-    //isHidden_lt_OCP48,
+    isHidden_lt_OCP48,
+    isHidden_SNO,
 } from './ControlDataHelpers'
 import {
     ControlMode,
@@ -129,15 +130,25 @@ const sortTable = (items, selectedKey, sortDirection, active) => {
     return _.orderBy(items, [selectedKey], [sortDirection])
 }
 
-const validateTable = (active = []) => {
+const validateTable = (active = [], control, controlData) => {
     let master = 0
+    let snoEnabled = isHidden_SNO(control, controlData)
+
+    //count number of masters
     active.forEach(({ role }) => {
         if (role === 'master') {
             master++
         }
     })
-    if (master < 3) {
-        return 'creation.ocp.validation.errors.hosts'
+    //SNO only needs one master
+    if (snoEnabled) {
+        if (master !== 1) {
+            return 'creation.ocp.validation.errors.hosts.sno'
+        }
+    } else {
+        if (master < 3) {
+            return 'creation.ocp.validation.errors.hosts'
+        }
     }
     return null
 }
@@ -150,6 +161,14 @@ const getActiveRole = (active = []) => {
         }
     })
     return master < 3 ? 'master' : 'worker'
+}
+
+const getHostsTitle = (control, controlData, i18n) => {
+    if (isHidden_SNO(control, controlData)) {
+        return i18n('creation.ocp.choose.hosts.sno')
+    } else {
+        return i18n('creation.ocp.choose.hosts')
+    }
 }
 
 const controlDataBMC = [
@@ -190,14 +209,14 @@ const controlDataBMC = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
-    //    {
-    //        name: 'cluster.create.ocp.singleNode',
-    //        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-    //        id: 'singleNode',
-    //        type: 'checkbox',
-    //        active: false,
-    //        hidden: isHidden_lt_OCP48,
-    //    },
+    {
+        name: 'cluster.create.ocp.singleNode',
+        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        id: 'singleNode',
+        type: 'checkbox',
+        active: false,
+        hidden: isHidden_lt_OCP48,
+    },
 
     ///////////////////////  hosts  /////////////////////////////////////
     {
@@ -214,7 +233,7 @@ const controlDataBMC = [
     {
         id: 'chooseHosts',
         type: 'title',
-        info: 'creation.ocp.choose.hosts',
+        info: getHostsTitle,
     },
     {
         id: 'hosts',
