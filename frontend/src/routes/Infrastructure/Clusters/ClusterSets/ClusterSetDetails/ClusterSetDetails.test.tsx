@@ -63,7 +63,7 @@ const mockManagedClusterExtra: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-extra-clusterset',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
     status: {
@@ -116,7 +116,7 @@ const mockManagedClusterNoCredentials: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-no-credentials',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
     status: {

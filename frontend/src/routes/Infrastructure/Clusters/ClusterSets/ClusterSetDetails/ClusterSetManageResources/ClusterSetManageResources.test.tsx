@@ -74,7 +74,7 @@ const mockManagedClusterRemove: ManagedCluster = {
     metadata: {
         name: 'managed-cluster-remove',
         uid: 'managed-cluster-remove',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
     status: {
@@ -92,7 +92,7 @@ const mockClusterDeploymentRemove: ClusterDeployment = {
         name: mockManagedClusterRemove.metadata.name!,
         namespace: mockManagedClusterRemove.metadata.name!,
         uid: mockManagedClusterRemove.metadata.name!,
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
 }
 const mockManagedClusterUnchanged: ManagedCluster = {
@@ -101,7 +101,7 @@ const mockManagedClusterUnchanged: ManagedCluster = {
     metadata: {
         name: 'managed-cluster-unchanged',
         uid: 'managed-cluster-unchanged',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
     status: {
@@ -129,7 +129,7 @@ const mockManagedClusterTransfer: ManagedCluster = {
     metadata: {
         name: 'managed-cluster-transfer',
         uid: 'managed-cluster-transfer',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSetTransfer.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSetTransfer.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
 }
