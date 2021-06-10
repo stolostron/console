@@ -166,6 +166,20 @@ const mockManagedCluster: ManagedCluster = {
     metadata: {
         name: 'foobar',
         labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
+        annotations: {},
+    },
+    spec: { hubAcceptsClient: true },
+}
+
+const mockManagedDiscoveredCluster: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'foobar',
+        labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
+        annotations: {
+            'open-cluster-management/created-via': 'discovery',
+        },
     },
     spec: { hubAcceptsClient: true },
 }
@@ -206,6 +220,20 @@ const mockProjectResponse: Project = {
     },
 }
 
+const mockManagedDiscoveredClusterResponse: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        labels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
+        name: 'foobar',
+        uid: 'e60ef618-324b-49d4-8a28-48839c546565',
+        annotations: {
+            'open-cluster-management/created-via': 'discovery',
+        },
+    },
+    spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
+}
+
 const mockManagedClusterResponse: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -213,6 +241,7 @@ const mockManagedClusterResponse: ManagedCluster = {
         labels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
         name: 'foobar',
         uid: 'e60ef618-324b-49d4-8a28-48839c546565',
+        annotations: {},
     },
     spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
 }
@@ -421,7 +450,7 @@ describe('Import Discovered Cluster', () => {
         await waitForText('import.form.submit')
 
         const projectNock = nockCreate(mockProject, mockProjectResponse)
-        const managedClusterNock = nockCreate(mockManagedCluster, mockManagedClusterResponse)
+        const managedClusterNock = nockCreate(mockManagedDiscoveredCluster, mockManagedDiscoveredClusterResponse)
         const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
         const importCommandNock = nockGet(mockSecretResponse)
 
