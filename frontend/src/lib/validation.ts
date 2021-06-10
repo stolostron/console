@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get } from 'lodash'
 import YAML from 'yaml'
 
 import { TFunction } from 'i18next'
@@ -153,31 +152,43 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
     if (yamlValue) {
         try {
             //ensure we have valid YAML
-            const yamlData = YAML.parse(yamlValue)
+            const yamlData = YAML.parse(yamlValue) as {
+                clouds: {
+                    [cloud: string]: {
+                        auth?: {
+                            auth_url?: string
+                            password?: string
+                            username?: string
+                        }
+                    }
+                }
+            }
 
             //check for the clouds key
-            const clouds = get(yamlData, 'clouds', []) as Record<string, undefined>
-            if (clouds !== undefined) {
-                let found = false
-                for (const key in clouds) {
-                    //look for matching cloud name
-                    if (cloudValue !== undefined && key === cloudValue) {
-                        found = true
-                    }
-                    //check a few of the required fields, especially password, since the user
-                    //would have had to add this manually
-                    if (
-                        clouds[key]?.auth?.auth_url === undefined ||
-                        clouds[key]?.auth?.password === undefined ||
-                        clouds[key]?.auth?.username === undefined
-                    ) {
-                        return t('validate.yaml.not.valid')
-                    }
+            const clouds = yamlData.clouds
+            if (clouds === undefined) {
+                return t('validate.yaml.not.valid')
+            }
+
+            let found = false
+            for (const key in clouds) {
+                //look for matching cloud name
+                if (cloudValue !== undefined && key === cloudValue) {
+                    found = true
                 }
-                //Uh-oh, cloud name not found in clouds.yaml
-                if (cloudValue !== undefined && !found) {
-                    return t('validate.yaml.cloud.not.found')
+                //check a few of the required fields, especially password, since the user
+                //would have had to add this manually
+                if (
+                    clouds[key]?.auth?.auth_url === undefined ||
+                    clouds[key]?.auth?.password === undefined ||
+                    clouds[key]?.auth?.username === undefined
+                ) {
+                    return t('validate.yaml.not.valid')
                 }
+            }
+            //Uh-oh, cloud name not found in clouds.yaml
+            if (cloudValue !== undefined && !found) {
+                return t('validate.yaml.cloud.not.found')
             }
         } catch (e) {
             return t('validate.yaml.not.valid')
