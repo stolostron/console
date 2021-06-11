@@ -21,6 +21,7 @@ import {
 } from '../../../resources/cluster-curator'
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { IResource } from '../../../resources/resource'
+import { validateKubernetesDnsName } from '../../../lib/validation'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -204,6 +205,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setTemplateName,
                         isRequired: true,
                         isDisabled: isEditing,
+                        validation: (value) => validateKubernetesDnsName(value, t),
                     },
                     {
                         id: 'ansibleSecrets',

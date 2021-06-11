@@ -34,9 +34,9 @@ describe('validation', () => {
             [`should not allow end with '-'`, 'abc-', false],
         ])('%s', (_name, value, isValid) => {
             if (!isValid) {
-                expect(validateKubernetesDnsName(value, 'test', t)).toBeTruthy()
+                expect(validateKubernetesDnsName(value, t)).toBeTruthy()
             } else {
-                expect(validateKubernetesDnsName(value, 'test', t)).toBeUndefined()
+                expect(validateKubernetesDnsName(value, t)).toBeUndefined()
             }
         })
     })

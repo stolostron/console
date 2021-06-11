@@ -5,17 +5,17 @@ import YAML from 'yaml'
 import { TFunction } from 'i18next'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
-export function validateKubernetesDnsName(value: string, name: string, t: TFunction) {
+export function validateKubernetesDnsName(value: string, t: TFunction) {
     if (value) {
-        if (value.length > 63) return `${name} ${t('validate.kubernetesDnsName.length')}`
+        if (value.length > 63) return `${t('credentials:validate.kubernetesDnsName.length')}`
         for (const char of value) {
             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-                return `${name} ${t('validate.kubernetesDnsName.char')}`
+                return `${t('credentials:validate.kubernetesDnsName.char')}`
         }
         if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-            return `${name} ${t('validate.kubernetesDnsName.startchar')}`
+            return `${t('credentials:validate.kubernetesDnsName.startchar')}`
         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-            return `${name} ${t('validate.kubernetesDnsName.endchar')}`
+            return `${t('credentials:validate.kubernetesDnsName.endchar')}`
     }
     return undefined
 }
