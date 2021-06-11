@@ -438,7 +438,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.credentialsName.labelHelp'),
                         value: name,
                         onChange: setName,
-                        validation: (value) => validateKubernetesDnsName(value, 'Connection name', t),
+                        validation: (value) => validateKubernetesDnsName(value, t),
                         isRequired: true,
                         isDisabled: isEditing,
                         isHidden: !credentialsType,

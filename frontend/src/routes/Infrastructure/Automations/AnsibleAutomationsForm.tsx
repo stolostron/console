@@ -206,7 +206,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setTemplateName,
                         isRequired: true,
                         isDisabled: isEditing,
-                        validation: (value) => validateKubernetesDnsName(value, 'Ansible template name', tCredential),
+                        validation: (value) => validateKubernetesDnsName(value, tCredential),
                     },
                     {
                         id: 'ansibleSecrets',
