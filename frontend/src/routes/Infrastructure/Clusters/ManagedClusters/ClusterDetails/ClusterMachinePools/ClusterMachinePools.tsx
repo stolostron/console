@@ -7,7 +7,7 @@ import {
     compareStrings,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
-import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -217,31 +217,27 @@ export function MachinePoolsTable() {
             <ScaleClusterAlert />
             <BulkActionModel<MachinePool> {...modalProps} />
             <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
-            <Card isLarge>
-                <CardBody>
-                    <AcmTable<MachinePool>
-                        plural="machinepools"
-                        items={machinePools}
-                        columns={columns}
-                        keyFn={keyFn}
-                        tableActions={[]}
-                        bulkActions={[]}
-                        rowActions={[]}
-                        emptyState={
-                            <AcmEmptyState
-                                key="mcEmptyState"
-                                title={t('managed.cluster.machinePools.emptyStateHeader')}
-                                message={
-                                    <Trans
-                                        i18nKey={'cluster:managed.cluster.machinePools.emptyStateButton'}
-                                        components={{ bold: <strong /> }}
-                                    />
-                                }
+            <AcmTable<MachinePool>
+                plural="machinepools"
+                items={machinePools}
+                columns={columns}
+                keyFn={keyFn}
+                tableActions={[]}
+                bulkActions={[]}
+                rowActions={[]}
+                emptyState={
+                    <AcmEmptyState
+                        key="mcEmptyState"
+                        title={t('managed.cluster.machinePools.emptyStateHeader')}
+                        message={
+                            <Trans
+                                i18nKey={'cluster:managed.cluster.machinePools.emptyStateButton'}
+                                components={{ bold: <strong /> }}
                             />
                         }
                     />
-                </CardBody>
-            </Card>
+                }
+            />
         </>
     )
 }
