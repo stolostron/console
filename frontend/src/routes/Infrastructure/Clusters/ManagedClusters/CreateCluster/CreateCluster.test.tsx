@@ -662,7 +662,7 @@ describe('CreateCluster', () => {
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
-    test('can create bare metal cluster without template', async () => {
+    test('can create bare metal cluster without ansible template', async () => {
         window.scrollBy = () => {}
 
         const initialNocks = [
