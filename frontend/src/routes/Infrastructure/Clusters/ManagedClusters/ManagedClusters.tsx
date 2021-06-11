@@ -20,7 +20,7 @@ import { useRecoilState } from 'recoil'
 import { clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { mapAddons } from '../../../../lib/get-addons'
+import { addonPathKey, addonTextKey } from '../../../../lib/get-addons'
 import { Cluster } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
@@ -118,17 +118,17 @@ export default function ClustersPage() {
 
 const PageActions = () => {
     const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
-    const addons = mapAddons(clusterManagementAddons)
+    const addons = clusterManagementAddons.filter(
+        (cma) => cma.metadata.annotations?.[addonTextKey] && cma.metadata.annotations?.[addonPathKey]
+    )
 
     return (
         <AcmLaunchLink
-            links={addons
-                ?.filter((addon) => addon.launchLink)
-                ?.map((addon) => ({
-                    id: addon.launchLink?.displayText ?? '',
-                    text: addon.launchLink?.displayText ?? '',
-                    href: addon.launchLink?.href ?? '',
-                }))}
+            links={addons?.map((cma) => ({
+                id: cma.metadata.annotations?.[addonTextKey]!,
+                text: cma.metadata.annotations?.[addonTextKey]!,
+                href: cma.metadata.annotations?.[addonPathKey]!,
+            }))}
         />
     )
 }
