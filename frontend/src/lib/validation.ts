@@ -12,7 +12,8 @@ export function validateKubernetesDnsName(value: string, t: TFunction) {
             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
                 return `${t('credentials:validate.kubernetesDnsName.char')}`
         }
-        if (!lowercaseAlphaNumericCharacters.includes(value[0])) return `${t('credentials:validate.kubernetesDnsName.startchar')}`
+        if (!lowercaseAlphaNumericCharacters.includes(value[0]))
+            return `${t('credentials:validate.kubernetesDnsName.startchar')}`
         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
             return `${t('credentials:validate.kubernetesDnsName.endchar')}`
     }
