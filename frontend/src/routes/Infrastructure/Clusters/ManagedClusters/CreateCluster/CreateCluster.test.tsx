@@ -662,7 +662,7 @@ describe('CreateCluster', () => {
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
 
-    test('can create bare metal cluster without template', async () => {
+    test('can create bare metal cluster without ansible template', async () => {
         window.scrollBy = () => {}
 
         const initialNocks = [
@@ -677,7 +677,6 @@ describe('CreateCluster', () => {
 
         // step 1 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -767,7 +766,6 @@ describe('CreateCluster', () => {
 
         // step 1 -- the infrastructure
         await clickByTestId('cluster.create.baremetal.subtitle')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)

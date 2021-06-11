@@ -236,7 +236,6 @@ describe('CreateClusterPool', () => {
 
         // step 1 -- the infrastructure
         await clickByTestId('cluster.create.aws.subtitle')
-        await clickByText('Next')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
