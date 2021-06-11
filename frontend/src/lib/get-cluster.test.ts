@@ -173,6 +173,28 @@ const mockManagedClusterInfoFailedUpdating: ManagedClusterInfo = {
     },
 }
 
+const mockManagedClusterInfo311: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: clusterName, namespace: clusterName },
+    status: {
+        distributionInfo: {
+            ocp: {
+                version: '3',
+                availableUpdates: [], //deprecated
+                versionAvailableUpdates: [],
+                desiredVersion: '', //deprecated
+                upgradeFailed: false,
+                desired: {
+                    version: '',
+                    image: '',
+                },
+            },
+            type: 'OCP',
+        },
+    },
+}
+
 const mockManagedCluster: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
@@ -361,5 +383,14 @@ describe('getDistributionInfo', () => {
         expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
         expect(d1?.upgradeInfo.currentChannel).toEqual('stable-1.2')
         expect(d1?.upgradeInfo.desiredChannel).toEqual('stable-1.3')
+    })
+    it('should not return upgrading for 3.11 clusters', () => {
+        const d1 = getDistributionInfo(
+            mockManagedClusterInfo311,
+            mockManagedCluster,
+            mockClusterDeployment,
+            mockClusterCuratorSelectingChannel
+        )
+        expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
     })
 })
