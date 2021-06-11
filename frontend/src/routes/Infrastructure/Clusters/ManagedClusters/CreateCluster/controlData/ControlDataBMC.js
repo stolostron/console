@@ -206,24 +206,6 @@ const controlDataBMC = [
             required: true,
         },
     },
-
-<<<<<<< HEAD
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  connection  /////////////////////////////////////
-    {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
-        id: 'connection',
-        type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'bmc',
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
-            required: true,
-        },
-        available: [],
-        prompts: CREATE_CLOUD_CONNECTION,
-    },
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -231,22 +213,13 @@ const controlDataBMC = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
-=======
-    //    {
-    //        name: 'cluster.create.ocp.singleNode',
-    //        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-    //        id: 'singleNode',
-    //        type: 'checkbox',
-    //        active: false,
-    //        hidden: isHidden_lt_OCP48,
-    //    },
+    },
     {
         name: 'creation.ocp.addition.labels',
         tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
->>>>>>> 38a3bcdc9654c22c2b3fe1b48741418fe25f294b
     },
 
     ///////////////////////  hosts  /////////////////////////////////////
