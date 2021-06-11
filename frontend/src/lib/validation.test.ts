@@ -32,7 +32,7 @@ describe('validation', () => {
             [`should not allow '_'`, 'abc_d', false],
             [`should not allow start with '-'`, '-abc', false],
             [`should not allow end with '-'`, 'abc-', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateKubernetesDnsName(value, 'test', t)).toBeTruthy()
             } else {
@@ -41,25 +41,31 @@ describe('validation', () => {
         })
     })
     describe('validatePrivateSshKey', () => {
-        test.each([
-            [
-                `should allow valid openssh key`,
-                '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-                true,
-            ],
-            [`should allow any key`, '-----BEGIN A PRIVATE KEY-----\nabc\n-----END A PRIVATE KEY-----', true],
-            [`should not allow empty key type`, '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----', false],
-            [
-                `should not allow end line next to the begin line`,
-                '-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----',
-                false,
-            ],
-        ])('%s', (name, value, isValid) => {
-            if (!isValid) {
-                expect(validatePrivateSshKey(value, t)).toBeTruthy()
-            } else {
-                expect(validatePrivateSshKey(value, t)).toBeUndefined()
-            }
+        test('validatePrivateSshKey should allow valid openssh key', () => {
+            expect(
+                validatePrivateSshKey(
+                    '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
+                    t
+                )
+            ).toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should allow any key', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\nabc\n-----END A PRIVATE KEY-----\n', t)
+            ).toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should not allow empty key type', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----\n', t)
+            ).not.toBeUndefined()
+        })
+
+        test('validatePrivateSshKey should require new line', () => {
+            expect(
+                validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----', t)
+            ).not.toBeUndefined()
         })
     })
     describe('validateCertificate', () => {
@@ -75,7 +81,7 @@ describe('validation', () => {
                 '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
                 false,
             ],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateCertificate(value, t)).toBeTruthy()
             } else {
@@ -93,7 +99,7 @@ describe('validation', () => {
             [`should not allow empty input`, '', false],
             [`should not allow invalid character in key`, 'ssh-rsa A@B-C', false],
             [`should not allow non public key`, 'abcdefg', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validatePublicSshKey(value, t)).toBeTruthy()
             } else {
@@ -111,7 +117,7 @@ describe('validation', () => {
             [`should not allow '.'`, 'a.abcdef', false],
             [`should not allow start with '-'`, '-abcdef', false],
             [`should not allow end with '-'`, 'abcdef-', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateGCProjectID(value, t)).toBeTruthy()
             } else {
@@ -128,7 +134,7 @@ describe('validation', () => {
             [`should not allow plain string`, 'abc', false],
             [`should not allow non json string`, '{abc:"def"}', false],
             [`should not allow empty string`, '', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateJSON(value, t)).toBeTruthy()
             } else {
@@ -143,7 +149,7 @@ describe('validation', () => {
             [`should not allow only qemu`, 'qemu://any', false],
             [`should not allow empty path`, '"qemu+ssh://"', false],
             [`should not allow non uri`, '"qemu+ssh/b/c"', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateLibvirtURI(value, t)).toBeTruthy()
             } else {
@@ -159,7 +165,7 @@ describe('validation', () => {
             [`should not allow start with '.'`, '.abc', false],
             [`should not allow end with '.'`, 'abc.', false],
             [`should not allow start with '-'`, '-abc', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateBaseDnsName(value, t)).toBeTruthy()
             } else {
@@ -176,7 +182,7 @@ describe('validation', () => {
             [`should not allow if port is not number`, 'abc:d/efg', false],
             [`should not allow host with invalid dns name`, '.abc:123/def', false],
             [`should not allow start with '-'`, '-abc', false],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateImageMirror(value, t)).toBeTruthy()
             } else {
@@ -211,7 +217,7 @@ describe('validation', () => {
                 'openstack',
                 false,
             ],
-        ])('%s', (name, value, value2, isValid) => {
+        ])('%s', (_name, value, value2, isValid) => {
             if (!isValid) {
                 expect(validateCloudsYaml(value, value2, t)).toBeTruthy()
             } else {
@@ -252,7 +258,7 @@ describe('validation', () => {
                 'http://registry.ocp4-edge-bm-h15-0.qe.lab.redhat.com:8080/images/rhcos-46.82.202011260640-0-qemu.x86_64.qcow2.gz?sha256=99928ff40c2d8e3aa358d9bd453102e3d1b5e9694fb5d54febc56e275f35da51abcde',
                 false,
             ],
-        ])('%s', (name, value, isValid) => {
+        ])('%s', (_name, value, isValid) => {
             if (!isValid) {
                 expect(validateBareMetalOSImageURL(value, t)).toBeTruthy()
             } else {
