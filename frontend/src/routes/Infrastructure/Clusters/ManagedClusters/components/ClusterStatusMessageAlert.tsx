@@ -14,8 +14,8 @@ export function ClusterStatusMessageAlert(props: {
         return (
             <AcmAlert
                 style={{
-                    marginTop: props.padTop && '16px',
-                    marginBottom: props.padBottom && '16px',
+                    marginTop: props.padTop ? '16px' : undefined,
+                    marginBottom: props.padBottom ? '16px' : undefined,
                 }}
                 isInline
                 noClose

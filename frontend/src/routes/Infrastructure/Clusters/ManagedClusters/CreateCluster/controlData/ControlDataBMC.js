@@ -3,7 +3,9 @@
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
+    clusterDetailsControlData,
     networkingControlData,
+    automationControlData,
     getSimplifiedImageName,
     isHidden_lt_OCP48,
     isHidden_SNO,
@@ -173,12 +175,24 @@ const getHostsTitle = (control, controlData, i18n) => {
 
 const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
+    ///////////////////////  connection  /////////////////////////////////////
     {
-        id: 'imageStep',
-        type: 'step',
-        title: 'Image and connection',
+        name: 'creation.ocp.cloud.connection',
+        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        id: 'connection',
+        type: 'singleselect',
+        placeholder: 'creation.ocp.cloud.select.connection',
+        providerId: 'bmc',
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.connection',
+            required: true,
+        },
+        available: [],
+        prompts: CREATE_CLOUD_CONNECTION,
     },
+    ...clusterDetailsControlData,
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  imageset  /////////////////////////////////////
     {
         name: 'cluster.create.ocp.image',
         tooltip: 'tooltip.cluster.create.ocp.image',
@@ -193,6 +207,7 @@ const controlDataBMC = [
         },
     },
 
+<<<<<<< HEAD
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -216,6 +231,22 @@ const controlDataBMC = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
+=======
+    //    {
+    //        name: 'cluster.create.ocp.singleNode',
+    //        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+    //        id: 'singleNode',
+    //        type: 'checkbox',
+    //        active: false,
+    //        hidden: isHidden_lt_OCP48,
+    //    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
+>>>>>>> 38a3bcdc9654c22c2b3fe1b48741418fe25f294b
     },
 
     ///////////////////////  hosts  /////////////////////////////////////
@@ -226,8 +257,7 @@ const controlDataBMC = [
     },
     {
         id: 'hostsSections',
-        type: 'section',
-        title: 'creation.ocp.cluster.hosts',
+        type: 'title',
         tooltip: 'tooltip.creation.ocp.cluster.hosts',
     },
     {
@@ -403,6 +433,7 @@ const controlDataBMC = [
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },
     ...networkingControlData,
+    ...automationControlData,
 ]
 
 export default controlDataBMC

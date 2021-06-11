@@ -55,7 +55,7 @@ const mockManagedCluster0: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         name: 'managed-cluster-0-clusterset',
-        labels: { [managedClusterSetLabel!]: mockManagedClusterSet.metadata.name },
+        labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
     status: {

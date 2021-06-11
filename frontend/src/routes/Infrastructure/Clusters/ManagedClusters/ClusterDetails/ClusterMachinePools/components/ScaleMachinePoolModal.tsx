@@ -117,7 +117,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                 </>
                             )}
 
-                            <AcmAlertGroup isInline canClose padTop />
+                            <AcmAlertGroup isInline canClose />
                             <ActionGroup>
                                 <AcmSubmit
                                     id="submit"

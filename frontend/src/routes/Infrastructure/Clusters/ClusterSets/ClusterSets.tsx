@@ -270,7 +270,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             return namespaces.length ? (
                                 <AcmLabels
                                     labels={namespaces}
-                                    collapse={namespaces.filter((ns, i) => i > 1)}
+                                    collapse={namespaces.filter((_ns, i) => i > 1)}
                                     style={{ maxWidth: '600px' }}
                                     variant="outline"
                                 />

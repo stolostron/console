@@ -4,35 +4,17 @@ import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
+    clusterDetailsControlData,
     networkingControlData,
+    automationControlData,
     getSimplifiedImageName,
+    getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
 
 const controlDataOST = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  imageset  /////////////////////////////////////
-    {
-        id: 'imageStep',
-        type: 'step',
-        title: 'Image and connection',
-    },
-    {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
-        id: 'imageSet',
-        type: 'combobox',
-        simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('ost'),
-        validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
-            required: true,
-        },
-    },
-
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -49,6 +31,23 @@ const controlDataOST = [
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
     },
+    ...clusterDetailsControlData,
+    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////  imageset  /////////////////////////////////////
+    {
+        name: 'cluster.create.ocp.image',
+        tooltip: 'tooltip.cluster.create.ocp.image',
+        id: 'imageSet',
+        type: 'combobox',
+        simplified: getSimplifiedImageName,
+        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        fetchAvailable: LOAD_OCP_IMAGES('ost'),
+        validation: {
+            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            required: true,
+        },
+    },
+
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -57,6 +56,13 @@ const controlDataOST = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+    },
+    {
+        name: 'creation.ocp.addition.labels',
+        tooltip: 'tooltip.creation.ocp.addition.labels',
+        id: 'additional',
+        type: 'labels',
+        active: [],
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +74,7 @@ const controlDataOST = [
     },
     {
         id: 'nodes',
-        type: 'section',
-        title: 'creation.ocp.master.node.pools',
+        type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
     ///////////////////////  master pool  /////////////////////////////////////
@@ -81,6 +86,7 @@ const controlDataOST = [
             {
                 id: 'masterPool',
                 type: 'section',
+                collapsable: true,
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
             },
@@ -119,7 +125,8 @@ const controlDataOST = [
             {
                 id: 'workerPool',
                 type: 'section',
-                subtitle: 'creation.ocp.node.worker.pool.title',
+                collapsable: true,
+                subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
             ///////////////////////  pool name  /////////////////////////////////////
@@ -206,6 +213,7 @@ const controlDataOST = [
         validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
+    ...automationControlData,
 ]
 
 export default controlDataOST

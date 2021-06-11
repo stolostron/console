@@ -47,7 +47,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                             onChange={(labels) => setLabels(labels!)}
                             placeholder={t('labels.edit.placeholder')}
                         />
-                        <AcmAlertGroup isInline canClose padTop />
+                        <AcmAlertGroup isInline canClose />
                         <ActionGroup>
                             <AcmSubmit
                                 id="add-labels"

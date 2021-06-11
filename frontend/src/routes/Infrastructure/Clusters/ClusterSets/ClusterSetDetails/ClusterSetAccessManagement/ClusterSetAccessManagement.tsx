@@ -14,6 +14,7 @@ import {
     AcmSubmit,
     AcmTable,
     compareStrings,
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
@@ -72,7 +73,7 @@ export function ClusterSetAccessManagement() {
         return item.metadata.uid!
     }
 
-    const columns = useMemo(
+    const columns = useMemo<IAcmTableColumn<ClusterRoleBinding>[]>(
         () => [
             {
                 header: t('table.name'),
@@ -359,7 +360,7 @@ function AddUsersModal(props: {
                                     </SelectOption>
                                 ))}
                             </AcmSelect>
-                            <AcmAlertGroup isInline canClose padTop />
+                            <AcmAlertGroup isInline canClose />
                             <ActionGroup>
                                 <AcmSubmit
                                     id="add-access"

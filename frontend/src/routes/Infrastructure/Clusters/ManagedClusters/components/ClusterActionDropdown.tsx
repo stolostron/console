@@ -35,7 +35,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         () => [
             {
                 header: t('table.name'),
-                cell: (cluster) => (
+                cell: (cluster: Cluster) => (
                     <>
                         <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
                         {cluster.hive.clusterClaimName && (

@@ -22,18 +22,18 @@ async function setupBeforeAll(): Promise<void> {
     nock.enableNetConnect('localhost')
 }
 
-let missingNocks: string[]
+let missingNocks: { method: any; path: any; requestBodyBuffers: any[] }[]
 let consoleWarnings: any[]
 let consoleErrors: any[]
 
 expect.extend({
-    hasMissingMocks(missing) {
+    hasMissingMocks(missing: { method: any; path: any; requestBodyBuffers: any[] }[]) {
         const msgs: string[] = []
         const pass: boolean = missing.length === 0
         if (!pass) {
             msgs.push('\n\n\n!!!!!!!!!!!!!!!! MISSING MOCKS !!!!!!!!!!!!!!!!!!!!!!!!')
             msgs.push('(Make sure the mocks in test match these mocks)\n')
-            missing.forEach((req: { method: any; path: any; requestBodyBuffers: any[] }) => {
+            missing.forEach((req) => {
                 const missingNock = []
                 missingNock.push(req.method)
                 missingNock.push(req.path)
@@ -85,7 +85,7 @@ console.warn = (message?: any, ..._optionalParams: any[]) => {
     consoleWarnings.push(message)
 }
 // const originalConsoleError = console.error
-console.error = (message?: any, ...optionalParams: any[]) => {
+console.error = (message?: any, ..._optionalParams: any[]) => {
     consoleErrors.push(message)
     // originalConsoleError(message, optionalParams)
 }
