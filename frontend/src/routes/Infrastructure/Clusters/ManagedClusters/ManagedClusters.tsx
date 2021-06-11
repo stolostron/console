@@ -138,8 +138,10 @@ export function ClustersTable(props: {
     tableActions?: IAcmTableAction[]
     emptyState?: React.ReactNode
 }) {
-    sessionStorage.removeItem('DiscoveredClusterName')
+    sessionStorage.removeItem('DiscoveredClusterDisplayName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
+    sessionStorage.removeItem('DiscoveredClusterApiURL')
+
     const { t } = useTranslation(['cluster'])
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
