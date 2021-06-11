@@ -431,13 +431,16 @@ export function getDistributionInfo(
         upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
         const desiredVersion =
             managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
-            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion // backward compatibility
+            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
+            ''
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
-            curatorIsUpgrading || desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
+            curatorIsUpgrading ||
+            (!!desiredVersion && desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version)
 
         upgradeInfo.upgradeFailed =
-            (desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            (!!desiredVersion &&
+                desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
 
