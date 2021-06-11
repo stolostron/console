@@ -97,11 +97,7 @@ export function ProgressStepBar() {
                 prehookStatus = StatusType.danger
                 break
             default:
-                if (prehooks) {
-                    prehookStatus = StatusType.healthy
-                } else {
-                    prehookStatus = StatusType.healthy
-                }
+                prehookStatus = StatusType.healthy
         }
 
         const provisionStatus: string[] = [
