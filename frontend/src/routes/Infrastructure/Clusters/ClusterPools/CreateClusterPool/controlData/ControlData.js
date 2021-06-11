@@ -3,7 +3,7 @@
 import fs from 'fs'
 import path from 'path'
 import Handlebars from 'handlebars'
-import installConfigHbs from '../templates/install-config.hbs'
+import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
 import { keyBy } from 'lodash'
 
 import controlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
@@ -14,7 +14,12 @@ import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo } from '../../../ManagedClus
 const installConfig =
     typeof installConfigHbs !== 'string'
         ? installConfigHbs
-        : Handlebars.compile(fs.readFileSync(path.resolve(__dirname, '../templates/install-config.hbs'), 'utf8'))
+        : Handlebars.compile(
+              fs.readFileSync(
+                  path.resolve(__dirname, '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'),
+                  'utf8'
+              )
+          )
 
 export const getActiveCardID = (control, fetchData = {}) => {
     const { requestedUIDs } = fetchData
