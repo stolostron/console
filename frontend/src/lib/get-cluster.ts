@@ -322,6 +322,12 @@ export function getProvider(
         case 'IKS':
             provider = Provider.ibm
             break
+        case 'IBMPOWERPLATFORM':
+            provider = Provider.ibmpower
+            break
+        case 'IBMZPLATFORM':
+            provider = Provider.ibmz
+            break
         case 'BAREMETAL':
             provider = Provider.baremetal
             break
