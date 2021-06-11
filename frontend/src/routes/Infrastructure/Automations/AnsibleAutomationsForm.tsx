@@ -117,7 +117,7 @@ export function AnsibleAutomationsForm(props: {
                 editAnsibleJobs.setJobs(editAnsibleJobs.jobs.map((job) => (job === replaceJob ? ansibleJob : job)))
             } else {
                 editAnsibleJobs.setJobs([...editAnsibleJobs.jobs, ...[ansibleJob]])
-            }Ç
+            }
         }
         setEditAnsibleJob(undefined)
     }
