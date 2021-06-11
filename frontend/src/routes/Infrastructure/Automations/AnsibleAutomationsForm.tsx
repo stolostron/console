@@ -90,7 +90,6 @@ export function AnsibleAutomationsForm(props: {
     isViewing: boolean
 }) {
     const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
-    const { t: tCredential } = useTranslation(['credentials'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const history = useHistory()
@@ -206,7 +205,7 @@ export function AnsibleAutomationsForm(props: {
                         onChange: setTemplateName,
                         isRequired: true,
                         isDisabled: isEditing,
-                        validation: (value) => validateKubernetesDnsName(value, tCredential),
+                        validation: (value) => validateKubernetesDnsName(value, t),
                     },
                     {
                         id: 'ansibleSecrets',
