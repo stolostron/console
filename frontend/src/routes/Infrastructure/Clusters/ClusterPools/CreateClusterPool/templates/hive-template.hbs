@@ -184,7 +184,8 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
-{{#each ../../osServiceAccount.json}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServiceAccount.json - See ControlDataHelpers.js replacements[] }}
+{{#each ../../osServiceAccountJson}}
     {{{.}}}
 {{/each}}
 {{else}}
@@ -199,7 +200,8 @@ metadata:
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
-{{#each ../../osServicePrincipal.json}}
+{{! handlebars does not like periods in ids, so we will use a replacement to map to the correct osServicePrincipal.json - See ControlDataHelpers.js replacements[] }}
+{{#each ../../osServicePrincipalJson}}
     {{{.}}}
 {{/each}}
 {{else}}
