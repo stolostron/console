@@ -23,6 +23,9 @@ export type LaunchLink = {
     href: string
 }
 
+export const addonPathKey = 'console.open-cluster-management.io/launch-link'
+export const addonTextKey = 'console.open-cluster-management.io/launch-link-text'
+
 export function mapAddons(
     clusterManagementAddons: ClusterManagementAddOn[],
     managedClusterAddons: ManagedClusterAddOn[] = []
@@ -133,28 +136,33 @@ function getDisplayMessage(cma: ClusterManagementAddOn, mcas: ManagedClusterAddO
     return AddonStatus.Unknown
 }
 
-function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[]): LaunchLink | undefined {
-    const pathKey = 'console.open-cluster-management.io/launch-link'
-    const textKey = 'console.open-cluster-management.io/launch-link-text'
+export function getLaunchLink(cma: ClusterManagementAddOn, mcas: ManagedClusterAddOn[]): LaunchLink | undefined {
     const mca = mcas.find((mca) => mca.metadata.name === cma.metadata.name)
     const cmaAnnotations = Object.keys(cma.metadata.annotations ?? {})
-    const cmaHasLaunchLink = cmaAnnotations.includes(pathKey) && cmaAnnotations.includes(textKey)
+    const cmaHasLaunchLink = cmaAnnotations.includes(addonPathKey) && cmaAnnotations.includes(addonTextKey)
     if (mca) {
         const mcaAnnotations = Object.keys(mca.metadata.annotations ?? [])
-        const mcaHasLaunchLink = mcaAnnotations.includes(pathKey) && mcaAnnotations.includes(textKey)
+        const mcaHasLaunchLink = mcaAnnotations.includes(addonPathKey) && mcaAnnotations.includes(addonTextKey)
         if (mcaHasLaunchLink) {
             return {
-                displayText: mca?.metadata?.annotations?.[textKey] ?? '',
-                href: mca?.metadata?.annotations?.[pathKey] ?? '',
+                displayText: mca?.metadata?.annotations?.[addonTextKey] ?? '',
+                href: mca?.metadata?.annotations?.[addonPathKey] ?? '',
             }
         } else {
-            return undefined
+            if (cmaHasLaunchLink) {
+                return {
+                    displayText: cma?.metadata?.annotations?.[addonTextKey] ?? '',
+                    href: cma?.metadata?.annotations?.[addonPathKey] ?? '',
+                }
+            } else {
+                return undefined
+            }
         }
     } else {
         if (cmaHasLaunchLink) {
             return {
-                displayText: cma?.metadata?.annotations?.[textKey] ?? '',
-                href: cma?.metadata?.annotations?.[pathKey] ?? '',
+                displayText: cma?.metadata?.annotations?.[addonTextKey] ?? '',
+                href: cma?.metadata?.annotations?.[addonPathKey] ?? '',
             }
         } else {
             return undefined
