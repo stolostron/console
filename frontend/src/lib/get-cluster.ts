@@ -53,47 +53,47 @@ export const clusterDangerStatuses = [
 ]
 
 export type Cluster = {
-    name: string | undefined
-    displayName: string | undefined
-    namespace: string | undefined
+    name?: string
+    displayName?: string
+    namespace?: string
     status: ClusterStatus
-    statusMessage: string | undefined
-    provider: Provider | undefined
-    distribution: DistributionInfo | undefined
-    labels: Record<string, string> | undefined
-    nodes: Nodes | undefined
-    kubeApiServer: string | undefined
-    consoleURL: string | undefined
+    statusMessage?: string
+    provider?: Provider
+    distribution?: DistributionInfo
+    labels?: Record<string, string>
+    nodes?: Nodes
+    kubeApiServer?: string
+    consoleURL?: string
     hive: {
-        clusterPool: string | undefined
-        clusterPoolNamespace: string | undefined
+        clusterPool?: string
+        clusterPoolNamespace?: string
         isHibernatable: boolean
-        secrets: HiveSecrets | undefined
-        clusterClaimName: string | undefined
-        lifetime: string | undefined
+        secrets?: HiveSecrets
+        clusterClaimName?: string
+        lifetime?: string
     }
     isHive: boolean
     isManaged: boolean
     isCurator: boolean
-    clusterSet: string | undefined
+    clusterSet?: string
     owner: {
-        createdBy: string | undefined
-        claimedBy: string | undefined
+        createdBy?: string
+        claimedBy?: string
     }
 }
 
 export type DistributionInfo = {
-    k8sVersion: string | undefined
-    ocp: OpenShiftDistributionInfo | undefined
-    displayVersion: string | undefined
+    k8sVersion?: string
+    ocp?: OpenShiftDistributionInfo
+    displayVersion?: string
     isManagedOpenShift: boolean
-    upgradeInfo: UpgradeInfo
+    upgradeInfo?: UpgradeInfo
 }
 
 export type HiveSecrets = {
-    kubeconfig: string | undefined
-    kubeadmin: string | undefined
-    installConfig: string | undefined
+    kubeconfig?: string
+    kubeadmin?: string
+    installConfig?: string
 }
 
 export type Nodes = {
@@ -108,13 +108,13 @@ export type UpgradeInfo = {
     isReadyUpdates: boolean
     upgradePercentage: string
     upgradeFailed: boolean
-    currentVersion: string | undefined
-    desiredVersion: string | undefined
+    currentVersion?: string
+    desiredVersion?: string
     availableUpdates: string[]
     isReadySelectChannels: boolean
     isSelectingChannel: boolean
-    currentChannel: string | undefined
-    desiredChannel: string | undefined
+    currentChannel?: string
+    desiredChannel?: string
     availableChannels: string[]
     prehooks: {
         hasHooks: boolean
@@ -244,7 +244,7 @@ export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: C
     const cdUserIdentity = clusterDeployment?.metadata.annotations?.[userIdentity]
     const ccUserIdentity = clusterClaim?.metadata.annotations?.[userIdentity]
 
-    const decode = (value: string | undefined) => {
+    const decode = (value?: string) => {
         if (!value) return undefined
         const buff = new Buffer(value, 'base64')
         return buff.toString('ascii')
@@ -339,10 +339,10 @@ export function getProvider(
 }
 
 export function getDistributionInfo(
-    managedClusterInfo: ManagedClusterInfo | undefined,
-    managedCluster: ManagedCluster | undefined,
-    clusterDeployment: ClusterDeployment | undefined,
-    clusterCurator: ClusterCurator | undefined
+    managedClusterInfo?: ManagedClusterInfo,
+    managedCluster?: ManagedCluster,
+    clusterDeployment?: ClusterDeployment,
+    clusterCurator?: ClusterCurator
 ) {
     let k8sVersion: string | undefined
     let ocp: OpenShiftDistributionInfo | undefined
@@ -431,13 +431,16 @@ export function getDistributionInfo(
         upgradeInfo.upgradePercentage = percentageMatch.length > 0 ? percentageMatch[0] : ''
         const desiredVersion =
             managedClusterInfo?.status?.distributionInfo?.ocp?.desired?.version ||
-            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion // backward compatibility
+            managedClusterInfo?.status?.distributionInfo?.ocp.desiredVersion || // backward compatibility
+            ''
         upgradeInfo.isSelectingChannel = !!isSelectingChannel
         upgradeInfo.isUpgrading =
-            curatorIsUpgrading || desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version
+            curatorIsUpgrading ||
+            (!!desiredVersion && desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version)
 
         upgradeInfo.upgradeFailed =
-            (desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            (!!desiredVersion &&
+                desiredVersion !== managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
                 managedClusterInfo?.status?.distributionInfo?.ocp?.upgradeFailed) ??
             false
 
@@ -495,17 +498,14 @@ export function getDistributionInfo(
     return undefined
 }
 
-export function getKubeApiServer(
-    clusterDeployment: ClusterDeployment | undefined,
-    managedClusterInfo: ManagedClusterInfo | undefined
-) {
+export function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
     return clusterDeployment?.status?.apiURL ?? managedClusterInfo?.spec?.masterEndpoint
 }
 
 export function getConsoleUrl(
-    clusterDeployment: ClusterDeployment | undefined,
-    managedClusterInfo: ManagedClusterInfo | undefined,
-    managedCluster: ManagedCluster | undefined
+    clusterDeployment?: ClusterDeployment,
+    managedClusterInfo?: ManagedClusterInfo,
+    managedCluster?: ManagedCluster
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -514,7 +514,7 @@ export function getConsoleUrl(
     return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
 }
 
-export function getNodes(managedClusterInfo: ManagedClusterInfo | undefined) {
+export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
     const nodeList: NodeInfo[] = managedClusterInfo?.status?.nodeList ?? []
     let ready = 0
     let unhealthy = 0
