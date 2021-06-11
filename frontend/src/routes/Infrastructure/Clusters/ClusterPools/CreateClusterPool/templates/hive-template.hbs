@@ -180,7 +180,7 @@ stringData:
 {{#case 'GCP'}}
 metadata:
   name: {{{../../name}}}-gcp-creds
-  namespace: '{{{../../name}}}'
+  namespace: '{{{../../namespace}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServiceAccount.json: |-
@@ -196,7 +196,7 @@ stringData:
 {{#case 'Azure'}}
 metadata:
   name: {{{../../name}}}-azure-creds
-  namespace: '{{{../../name}}}'
+  namespace: '{{{../../namespace}}}'
 stringData:
 {{#if ../../showSecrets}}
   osServicePrincipal.json: |-
