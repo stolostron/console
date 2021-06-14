@@ -115,7 +115,7 @@ export function ClusterSetAccessManagement() {
                         clusterRoleBinding.roleRef.name ===
                         `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
                     ) {
-                        return t('access.clusterSet.role.admin')
+                        return t('access.clusterSet.role.view')
                     }
                     return '-'
                 },
