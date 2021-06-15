@@ -939,7 +939,6 @@ export function CredentialsForm(props: {
                         placeholder: t('credentialsForm.sshPrivateKey.placeholder'),
                         labelHelp: t('credentialsForm.sshPrivateKey.labelHelp'),
                         value: sshPrivatekey,
-                        // onChange: setSshPrivatekey,
                         onChange: (value) => {
                             if (!value.endsWith('\n') && value !== '') {
                                 value += '\n'
