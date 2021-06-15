@@ -59,7 +59,7 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
             const hasProgressingSubmariners = submarinerAddons!.filter(
                 (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.progressing
             )
-            if (hasProgressingSubmariners) {
+            if (hasProgressingSubmariners.length > 0) {
                 type = StatusType.progress
                 status = t('status.submariner.network.progressing')
                 message = t('status.submariner.network.progressing.message')
