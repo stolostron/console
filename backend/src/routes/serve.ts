@@ -91,6 +91,7 @@ const contentTypes: Record<string, string> = {
     '.css': 'text/css; charset=UTF-8',
     '.js': 'application/javascript; charset=UTF-8',
     '.map': 'application/json; charset=utf-8',
+    '.jpg': 'image/jpeg',
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
