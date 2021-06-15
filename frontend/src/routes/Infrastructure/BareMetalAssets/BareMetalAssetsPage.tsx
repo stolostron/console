@@ -9,7 +9,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, Bullseye, PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, PageSection, ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -112,6 +112,7 @@ export function BareMetalAssetsTable(props: {
             actionFn: (bareMetalAsset: ImportedBareMetalAsset) => importBareMetalAsset(bareMetalAsset),
             resources: [],
             columns: [{ header: '', cell: '' }],
+            close: () => setImportedProps({ open: false }),
             emptyState: (
                 <AcmEmptyState
                     title={t('bareMetalAsset.importAction.title')}
@@ -180,9 +181,6 @@ export function BareMetalAssetsTable(props: {
                     }
                 />
             ),
-            close: () => {
-                setImportedProps({ open: false })
-            },
         })
     }
 
@@ -382,16 +380,13 @@ export function BareMetalAssetsTable(props: {
                     {
                         id: 'createAsset',
                         title: t('bareMetalAsset.bulkAction.createAsset'),
-                        click: () => {
-                            history.push(NavigationPath.createBareMetalAsset)
-                        },
+                        click: () => history.push(NavigationPath.createBareMetalAsset),
                     },
                     {
                         id: 'importAsset',
                         title: t('bareMetalAsset.bulkAction.importAssets'),
-                        click: () => {
-                            setImportModalProps()
-                        },
+                        variant: ButtonVariant.secondary,
+                        click: () => setImportModalProps(),
                     },
                 ]}
                 bulkActions={[
