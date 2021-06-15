@@ -276,7 +276,7 @@ export const networkingControlData = [
 export const automationControlData = [
     ///////////////////////  automation  /////////////////////////////////////
     {
-        id: 'integrationStep',
+        id: 'automationStep',
         type: 'step',
         title: 'template.clusterCreate.title',
     },
