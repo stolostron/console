@@ -2,7 +2,7 @@
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../atoms'
@@ -454,6 +454,9 @@ function EditAnsibleJobModal(props: {
                     id="job-name"
                     label={t('cluster:template.modal.name.label')}
                     value={ansibleJob?.name}
+                    labelHelp={
+                        <Trans i18nKey={'cluster:template.modal.name.label.help'} components={{ bold: <strong /> }} />
+                    }
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }
