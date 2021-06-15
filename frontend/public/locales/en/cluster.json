@@ -593,7 +593,7 @@
     "template.modal.title.add": "Add Ansible job",
     "template.modal.title.edit": "Edit Ansible job",
     "template.modal.name.label": "Ansible job template name",
-    "template.modal.settings.label": "Ansible job settings",
+    "template.modal.settings.label": "Extra variables",
     "template.modal.settings.placeholder": "Enter key=value pairs",
 
     "machinePool.alert.scaling.increase.title": "Scaling up in progress",
