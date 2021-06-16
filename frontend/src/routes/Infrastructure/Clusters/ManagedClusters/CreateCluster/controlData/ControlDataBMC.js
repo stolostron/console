@@ -206,14 +206,14 @@ const controlDataBMC = [
             required: true,
         },
     },
-//    {
-//        name: 'cluster.create.ocp.singleNode',
-//        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-//        id: 'singleNode',
-//        type: 'checkbox',
-//        active: false,
-//        hidden: isHidden_lt_OCP48,
-//    },
+    //    {
+    //        name: 'cluster.create.ocp.singleNode',
+    //        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+    //        id: 'singleNode',
+    //        type: 'checkbox',
+    //        active: false,
+    //        hidden: isHidden_lt_OCP48,
+    //    },
     {
         name: 'creation.ocp.addition.labels',
         tooltip: 'tooltip.creation.ocp.addition.labels',
