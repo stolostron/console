@@ -12,6 +12,7 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { createResource, replaceResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
+import { FeatureGates } from '../../../FeatureGates'
 import {
     AnsibleJob,
     ClusterCurator,
@@ -93,7 +94,7 @@ export function AnsibleAutomationsForm(props: {
     const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
-    const [featureGates] = useRecoilState(featureGatesState)
+    const [featureGateCache] = useRecoilState(featureGatesState)
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
@@ -318,7 +319,9 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    ...(featureGates.find((featureGate) => featureGate.metadata.name === 'ansible-automation-template')
+                    ...(featureGateCache.find(
+                        (featureGate) => featureGate.metadata.name === FeatureGates.ansibleAutomationTemplate
+                    )
                         ? ([
                               {
                                   type: 'Section',
