@@ -97,7 +97,7 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
-    const [editAnsibleJobs, setEditAnsibleJobs] =
+    const [editAnsibleJobList, setEditAnsibleJobList] =
         useState<{ jobs: AnsibleJob[]; setJobs: (jobs: AnsibleJob[]) => void }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
@@ -114,11 +114,11 @@ export function AnsibleAutomationsForm(props: {
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
     function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
-        if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobs) {
+        if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
             if (installPreJobs.includes(replaceJob)) {
-                editAnsibleJobs.setJobs(editAnsibleJobs.jobs.map((job) => (job === replaceJob ? ansibleJob : job)))
+                editAnsibleJobList.setJobs(editAnsibleJobList.jobs.map((job) => (job === replaceJob ? ansibleJob : job)))
             } else {
-                editAnsibleJobs.setJobs([...editAnsibleJobs.jobs, ...[ansibleJob]])
+                editAnsibleJobList.setJobs([...editAnsibleJobList.jobs, ...[ansibleJob]])
             }
         }
         setEditAnsibleJob(undefined)
@@ -245,11 +245,11 @@ export function AnsibleAutomationsForm(props: {
                                 keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: installPreJobs, setJobs: setInstallPreJobs })
+                                    setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
                                     setEditAnsibleJob(ansibleJob)
                                 },
                                 onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: installPreJobs, setJobs: setInstallPreJobs })
+                                    setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
                                     setEditAnsibleJob({ name: '', extra_vars: {} })
                                 },
                             },
@@ -263,11 +263,11 @@ export function AnsibleAutomationsForm(props: {
                                 keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: installPostJobs, setJobs: setInstallPostJobs })
+                                    setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
                                     setEditAnsibleJob(ansibleJob)
                                 },
                                 onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: installPostJobs, setJobs: setInstallPostJobs })
+                                    setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
                                     setEditAnsibleJob({ name: '', extra_vars: {} })
                                 },
                             },
@@ -288,11 +288,11 @@ export function AnsibleAutomationsForm(props: {
                                 keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
+                                    setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
                                     setEditAnsibleJob(ansibleJob)
                                 },
                                 onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
+                                    setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
                                     setEditAnsibleJob({ name: '', extra_vars: {} })
                                 },
                             },
@@ -306,11 +306,11 @@ export function AnsibleAutomationsForm(props: {
                                 keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
+                                    setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
                                     setEditAnsibleJob(ansibleJob)
                                 },
                                 onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
+                                    setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
                                     setEditAnsibleJob({ name: '', extra_vars: {} })
                                 },
                             },
@@ -333,11 +333,11 @@ export function AnsibleAutomationsForm(props: {
                                           keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
-                                              setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                              setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
                                               setEditAnsibleJob(ansibleJob)
                                           },
                                           onCreate: () => {
-                                              setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                              setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
                                               setEditAnsibleJob({ name: '', extra_vars: {} })
                                           },
                                       },
@@ -351,11 +351,11 @@ export function AnsibleAutomationsForm(props: {
                                           keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
-                                              setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                              setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
                                               setEditAnsibleJob(ansibleJob)
                                           },
                                           onCreate: () => {
-                                              setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                              setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
                                               setEditAnsibleJob({ name: '', extra_vars: {} })
                                           },
                                       },
@@ -376,11 +376,11 @@ export function AnsibleAutomationsForm(props: {
                                           keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
-                                              setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                              setEditAnsibleJobList({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
                                               setEditAnsibleJob(ansibleJob)
                                           },
                                           onCreate: () => {
-                                              setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                              setEditAnsibleJobList({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
                                               setEditAnsibleJob({ name: '', extra_vars: {} })
                                           },
                                       },
@@ -394,11 +394,11 @@ export function AnsibleAutomationsForm(props: {
                                           keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
-                                              setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                              setEditAnsibleJobList({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
                                               setEditAnsibleJob(ansibleJob)
                                           },
                                           onCreate: () => {
-                                              setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                              setEditAnsibleJobList({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
                                               setEditAnsibleJob({ name: '', extra_vars: {} })
                                           },
                                       },
