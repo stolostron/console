@@ -45,7 +45,6 @@ export default function AnsibleAutomationsFormPage({
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
 
-
     useEffect(() => {
         if (isEditing || isViewing) {
             const result = getClusterCurator({ name, namespace })
