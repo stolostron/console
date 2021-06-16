@@ -76,13 +76,13 @@ const mockClusterCurator: ClusterCurator = {
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-scale', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-scale', extra_vars: {} }],
+            prehook: [],
+            posthook: [],
         },
         destroy: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-destroy', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-destroy', extra_vars: {} }],
+            prehook: [],
+            posthook: [],
         },
     },
 }
