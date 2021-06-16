@@ -118,22 +118,22 @@ describe('add ansible job template page', () => {
         await clickByText('common:next')
 
         // scale templates
-        await clickByText('template.job.placeholder', 0)
-        await typeByTestId('job-name', mockClusterCurator.spec!.scale!.prehook![0].name)
-        await clickByText('common:save')
-        await clickByText('template.job.placeholder', 1)
-        await typeByTestId('job-name', mockClusterCurator.spec!.scale!.posthook![0].name)
-        await clickByText('common:save')
-        await clickByText('common:next')
+        // await clickByText('template.job.placeholder', 0)
+        // await typeByTestId('job-name', mockClusterCurator.spec!.scale!.prehook![0].name)
+        // await clickByText('common:save')
+        // await clickByText('template.job.placeholder', 1)
+        // await typeByTestId('job-name', mockClusterCurator.spec!.scale!.posthook![0].name)
+        // await clickByText('common:save')
+        // await clickByText('common:next')
 
         // destroy templates
-        await clickByText('template.job.placeholder', 0)
-        await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.prehook![0].name)
-        await clickByText('common:save')
-        await clickByText('template.job.placeholder', 1)
-        await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.posthook![0].name)
-        await clickByText('common:save')
-        await clickByText('common:next')
+        // await clickByText('template.job.placeholder', 0)
+        // await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.prehook![0].name)
+        // await clickByText('common:save')
+        // await clickByText('template.job.placeholder', 1)
+        // await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.posthook![0].name)
+        // await clickByText('common:save')
+        // await clickByText('common:next')
 
         // add template
         const createNock = nockCreate(mockClusterCurator)
