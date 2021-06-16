@@ -94,8 +94,6 @@ export function AnsibleAutomationsForm(props: {
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const [featureGates] = useRecoilState(featureGatesState)
-    const automationFeatureGateFlag =
-        featureGates.filter((featureGate) => featureGate.spec?.featureSet === 'AutomationStepsAllEnable').length > 0
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
@@ -318,7 +316,7 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    ...(automationFeatureGateFlag
+                    ...(featureGates.find((featureGate) => featureGate.metadata.name === 'ansible-automation-template')
                         ? ([
                               {
                                   type: 'Section',
