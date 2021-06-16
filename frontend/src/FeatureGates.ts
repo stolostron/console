@@ -2,6 +2,6 @@
 /* istanbul ignore file */
 
 export enum FeatureGates {
-  clusterSet = "open-cluster-management-cluster-sets",
-  ansibleAutomationTemplate = "ansible-automation-template",
+    clusterSet = 'open-cluster-management-cluster-sets',
+    ansibleAutomationTemplate = 'ansible-automation-template',
 }
