@@ -130,7 +130,7 @@
     "machinePool.enableAutoscale": "Enable autoscale",
     "machinePool.disableAutoscale": "Disable autoscale",
     "machinePool.delete": "Delete machine pool",
-    "template.create": "Create an Ansible template",
+    "template.create": "Create Ansible template",
 
     "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
 
@@ -544,7 +544,7 @@
 
     "template.title": "Automation",
     "template.emptyStateHeader": "You don't have any Ansible job templates",
-    "template.emptyStateMsg": "Select <bold>Create an Ansible template</bold> to create an Ansible job template.",
+    "template.emptyStateMsg": "Select <bold>Create Ansible template</bold> to create an Ansible job template.",
     "template.edit": "Edit template",
     "template.link": "Link a credential",
     "template.delete": "Delete",
