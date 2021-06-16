@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -23,7 +23,7 @@ import {
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
 } from '../../../../../resources/cluster-image-set'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
+import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import {
     Project,
     ProjectApiVersion,
@@ -39,16 +39,11 @@ import {
 } from '../../../../../resources/provider-connection'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import {
-    MachinePool,
-    MachinePoolApiVersion,
-    MachinePoolApiVersionType,
-    MachinePoolKind,
-} from '../../../../../resources/machine-pool'
+import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources/machine-pool'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
-const awsProjectNamespace = 'test-aws-namespace'
+//const awsProjectNamespace = 'test-aws-namespace'
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
@@ -1086,7 +1081,7 @@ describe('CreateCluster', () => {
         const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
-        const { container, debug } = render(<Component />)
+        const { container } = render(<Component />)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
