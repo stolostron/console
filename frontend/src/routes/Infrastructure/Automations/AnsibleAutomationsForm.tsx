@@ -94,7 +94,8 @@ export function AnsibleAutomationsForm(props: {
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const [featureGates] = useRecoilState(featureGatesState)
-    const automationFeatureGateFlag = featureGates.filter((featureGate)=>featureGate.spec?.featureSet === 'AutomationStepsAllEnable').length > 0
+    const automationFeatureGateFlag =
+        featureGates.filter((featureGate) => featureGate.spec?.featureSet === 'AutomationStepsAllEnable').length > 0
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
@@ -317,92 +318,96 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    ...automationFeatureGateFlag ? [{
-                        type: 'Section',
-                        title: t('template.create.scale'),
-                        wizardTitle: t('template.create.scale.wizard.title'),
-                        inputs: [
-                            {
-                                id: 'scalePreJob',
-                                type: 'OrderedItems',
-                                label: t('template.preScale.label'),
-                                placeholder: t('template.job.placeholder'),
-                                value: scalePreJobs,
-                                onChange: setScalePreJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
-                                cellsFn,
-                                onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
-                                    setEditAnsibleJob(ansibleJob)
-                                },
-                                onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
-                                    setEditAnsibleJob({ name: '', extra_vars: {} })
-                                },
-                            },
-                            {
-                                id: 'scalePostJob',
-                                type: 'OrderedItems',
-                                label: t('template.postScale.label'),
-                                placeholder: t('template.job.placeholder'),
-                                value: scalePostJobs,
-                                onChange: setScalePostJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
-                                cellsFn,
-                                onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
-                                    setEditAnsibleJob(ansibleJob)
-                                },
-                                onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
-                                    setEditAnsibleJob({ name: '', extra_vars: {} })
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        type: 'Section',
-                        title: t('template.create.destroy'),
-                        wizardTitle: t('template.create.destroy.wizard.title'),
-                        inputs: [
-                            {
-                                id: 'destroyPreJob',
-                                type: 'OrderedItems',
-                                label: t('template.preDestroy.label'),
-                                placeholder: t('template.job.placeholder'),
-                                value: destroyPreJobs,
-                                onChange: setDestroyPreJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
-                                cellsFn,
-                                onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
-                                    setEditAnsibleJob(ansibleJob)
-                                },
-                                onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
-                                    setEditAnsibleJob({ name: '', extra_vars: {} })
-                                },
-                            },
-                            {
-                                id: 'destroyPostJob',
-                                type: 'OrderedItems',
-                                label: t('template.postDestroy.label'),
-                                placeholder: t('template.job.placeholder'),
-                                value: destroyPostJobs,
-                                onChange: setDestroyPostJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
-                                cellsFn,
-                                onEdit: (ansibleJob) => {
-                                    setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
-                                    setEditAnsibleJob(ansibleJob)
-                                },
-                                onCreate: () => {
-                                    setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
-                                    setEditAnsibleJob({ name: '', extra_vars: {} })
-                                },
-                            },
-                        ],
-                    }] as Section[] : []
+                    ...(automationFeatureGateFlag
+                        ? ([
+                              {
+                                  type: 'Section',
+                                  title: t('template.create.scale'),
+                                  wizardTitle: t('template.create.scale.wizard.title'),
+                                  inputs: [
+                                      {
+                                          id: 'scalePreJob',
+                                          type: 'OrderedItems',
+                                          label: t('template.preScale.label'),
+                                          placeholder: t('template.job.placeholder'),
+                                          value: scalePreJobs,
+                                          onChange: setScalePreJobs,
+                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          cellsFn,
+                                          onEdit: (ansibleJob) => {
+                                              setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                              setEditAnsibleJob(ansibleJob)
+                                          },
+                                          onCreate: () => {
+                                              setEditAnsibleJobs({ jobs: scalePreJobs, setJobs: setScalePreJobs })
+                                              setEditAnsibleJob({ name: '', extra_vars: {} })
+                                          },
+                                      },
+                                      {
+                                          id: 'scalePostJob',
+                                          type: 'OrderedItems',
+                                          label: t('template.postScale.label'),
+                                          placeholder: t('template.job.placeholder'),
+                                          value: scalePostJobs,
+                                          onChange: setScalePostJobs,
+                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          cellsFn,
+                                          onEdit: (ansibleJob) => {
+                                              setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                              setEditAnsibleJob(ansibleJob)
+                                          },
+                                          onCreate: () => {
+                                              setEditAnsibleJobs({ jobs: scalePostJobs, setJobs: setScalePostJobs })
+                                              setEditAnsibleJob({ name: '', extra_vars: {} })
+                                          },
+                                      },
+                                  ],
+                              },
+                              {
+                                  type: 'Section',
+                                  title: t('template.create.destroy'),
+                                  wizardTitle: t('template.create.destroy.wizard.title'),
+                                  inputs: [
+                                      {
+                                          id: 'destroyPreJob',
+                                          type: 'OrderedItems',
+                                          label: t('template.preDestroy.label'),
+                                          placeholder: t('template.job.placeholder'),
+                                          value: destroyPreJobs,
+                                          onChange: setDestroyPreJobs,
+                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          cellsFn,
+                                          onEdit: (ansibleJob) => {
+                                              setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                              setEditAnsibleJob(ansibleJob)
+                                          },
+                                          onCreate: () => {
+                                              setEditAnsibleJobs({ jobs: destroyPreJobs, setJobs: setDestroyPreJobs })
+                                              setEditAnsibleJob({ name: '', extra_vars: {} })
+                                          },
+                                      },
+                                      {
+                                          id: 'destroyPostJob',
+                                          type: 'OrderedItems',
+                                          label: t('template.postDestroy.label'),
+                                          placeholder: t('template.job.placeholder'),
+                                          value: destroyPostJobs,
+                                          onChange: setDestroyPostJobs,
+                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          cellsFn,
+                                          onEdit: (ansibleJob) => {
+                                              setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                              setEditAnsibleJob(ansibleJob)
+                                          },
+                                          onCreate: () => {
+                                              setEditAnsibleJobs({ jobs: destroyPostJobs, setJobs: setDestroyPostJobs })
+                                              setEditAnsibleJob({ name: '', extra_vars: {} })
+                                          },
+                                      },
+                                  ],
+                              },
+                          ] as Section[])
+                        : []),
                 ],
             },
         ],
