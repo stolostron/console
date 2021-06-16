@@ -1,0 +1,8 @@
+# Copyright Contributors to the Open Cluster Management project
+
+apiVersion: config.openshift.io/v1
+kind: FeatureGate
+metadata:
+    name: open-cluster-management-automation-template
+spec:
+    featureSet: AutomationStepsAllEnable

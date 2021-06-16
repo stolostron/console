@@ -5,9 +5,9 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { secretsState } from '../../../atoms'
+import { featureGatesState, secretsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData } from '../../../components/AcmFormData'
+import { FormData, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { createResource, replaceResource } from '../../../lib/resource-request'
@@ -44,6 +44,8 @@ export default function AnsibleAutomationsFormPage({
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
+
+
     useEffect(() => {
         if (isEditing || isViewing) {
             const result = getClusterCurator({ name, namespace })
@@ -91,6 +93,9 @@ export function AnsibleAutomationsForm(props: {
 }) {
     const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
+
+    const [featureGates] = useRecoilState(featureGatesState)
+    const automationFeatureGateFlag = featureGates.filter((featureGate)=>featureGate.spec?.featureSet === 'AutomationStepsAllEnable').length > 0
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
@@ -313,7 +318,7 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    {
+                    ...automationFeatureGateFlag ? [{
                         type: 'Section',
                         title: t('template.create.scale'),
                         wizardTitle: t('template.create.scale.wizard.title'),
@@ -398,7 +403,7 @@ export function AnsibleAutomationsForm(props: {
                                 },
                             },
                         ],
-                    },
+                    }] as Section[] : []
                 ],
             },
         ],
