@@ -211,6 +211,7 @@ function AnsibleJobTemplateTable() {
                                             actionFn: deleteResource,
                                             close: () => setBulkModalProps({ open: false }),
                                             isDanger: true,
+                                            icon: 'warning',
                                         })
                                     },
                                 },
@@ -268,6 +269,7 @@ function AnsibleJobTemplateTable() {
                                 actionFn: deleteResource,
                                 close: () => setBulkModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                             })
                         },
                     },

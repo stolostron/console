@@ -479,7 +479,7 @@
     "bulk.title.addSet": "Add cluster to set?",
     "bulk.message.addSet": "Adding a cluster to a cluster set will grant access control permissions to resources in this set for all assigned cluster set users. The cluster can be removed from the cluster set at any time.",
     "bulk.message.addSet.empty": "You don't have any cluster sets that you are authorized to add a cluster to. See your cluster administrator for role-based access control information.",
-    "bulk.title.upgrade": "Upgrade clusters?",
+    "bulk.title.upgrade": "Upgrade clusters",
     "bulk.title.selectChannel": "Select channels",
     "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed.",
     "bulk.title.deleteSet": "Delete cluster sets?",

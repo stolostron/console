@@ -165,6 +165,7 @@ export function MachinePoolsTable() {
                                 confirmText: machinePool.metadata.name!,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 columns: [
                                     {
                                         header: t('table.name'),

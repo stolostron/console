@@ -352,6 +352,7 @@ export function ClusterPoolsTable(props: {
                                             confirmText: clusterPool.metadata.name!,
                                             close: () => setModalProps({ open: false }),
                                             isDanger: true,
+                                            icon: 'warning',
                                         })
                                     },
                                     rbac: [rbacDelete(clusterPool)],
@@ -399,6 +400,7 @@ export function ClusterPoolsTable(props: {
                                 actionFn: deleteResource,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })

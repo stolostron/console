@@ -340,6 +340,7 @@ export function ClustersTable(props: {
                                 resources: clusters,
                                 description: t('bulk.message.hibernate'),
                                 columns: modalColumns,
+                                icon: 'warning',
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => {
                                     return patchResource(
@@ -373,6 +374,7 @@ export function ClustersTable(props: {
                                 resources: clusters,
                                 description: t('bulk.message.resume'),
                                 columns: modalColumns,
+                                icon: 'warning',
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => {
                                     return patchResource(
@@ -410,6 +412,7 @@ export function ClustersTable(props: {
                                 actionFn: (cluster) => detachCluster(cluster.name!),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
@@ -431,6 +434,7 @@ export function ClustersTable(props: {
                                 actionFn: (cluster) => deleteCluster(cluster, true),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })

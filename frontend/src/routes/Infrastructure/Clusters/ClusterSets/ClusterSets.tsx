@@ -306,6 +306,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 actionFn: deleteResource,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })

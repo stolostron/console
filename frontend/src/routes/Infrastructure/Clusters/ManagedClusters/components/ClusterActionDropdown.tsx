@@ -154,6 +154,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     resources: [cluster],
                     description: t('bulk.message.hibernate'),
                     columns: modalColumns,
+                    icon: 'warning',
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
                         return patchResource(
@@ -188,6 +189,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     resources: [cluster],
                     description: t('bulk.message.resume'),
                     columns: modalColumns,
+                    icon: 'warning',
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
                         return patchResource(
@@ -228,6 +230,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
+                    icon: 'warning',
                     confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
@@ -253,6 +256,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
+                    icon: 'warning',
                     confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
