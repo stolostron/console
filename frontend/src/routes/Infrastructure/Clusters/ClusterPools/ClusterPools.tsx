@@ -69,7 +69,7 @@ export default function ClusterPoolsPage() {
                         <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
                             <FlexItem>
                                 <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                    onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
                                     variant="link"
                                     role="link"
                                     icon={<ExternalLinkAltIcon />}

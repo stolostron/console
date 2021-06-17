@@ -58,6 +58,19 @@ export function InstallSubmarinerFormPage() {
                 header={
                     <AcmPageHeader
                         title={t('managed.clusterSets.submariner.addons.install')}
+                        titleTooltip={
+                            <>
+                                {t('page.header.install-submariner.tooltip')}
+                                <a
+                                    href={DOC_LINKS.SUBMARINER}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'block', marginTop: '4px' }}
+                                >
+                                    {t('learn.more')}
+                                </a>
+                            </>
+                        }
                         breadcrumb={[
                             {
                                 text: t('clusterSets'),
