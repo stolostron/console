@@ -13,6 +13,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
+import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
 // falling back to a pre-generated list if we can't connect.
@@ -619,6 +620,13 @@ const controlDataAWS = [
             required: true,
         },
     },
+    //Always Hidden
+    {
+        id: 'singleNodeFeatureFlag',
+        type: 'checkbox',
+        active: false,
+        hidden: true,
+    },
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -627,6 +635,7 @@ const controlDataAWS = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+        icon: <DevPreviewLabel />,
     },
     {
         name: 'creation.ocp.addition.labels',

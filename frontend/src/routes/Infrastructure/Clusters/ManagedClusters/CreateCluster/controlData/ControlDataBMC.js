@@ -7,7 +7,6 @@ import {
     networkingControlData,
     automationControlData,
     getSimplifiedImageName,
-    isHidden_lt_OCP48,
     isHidden_SNO,
 } from './ControlDataHelpers'
 import {
@@ -205,14 +204,6 @@ const controlDataBMC = [
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
         },
-    },
-    {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
-        id: 'singleNode',
-        type: 'checkbox',
-        active: false,
-        hidden: isHidden_lt_OCP48,
     },
     {
         name: 'creation.ocp.addition.labels',

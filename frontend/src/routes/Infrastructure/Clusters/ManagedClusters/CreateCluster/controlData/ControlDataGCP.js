@@ -13,6 +13,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
+import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 const GCPregions = [
     'asia-east1',
@@ -275,7 +276,13 @@ const controlDataGCP = [
             required: true,
         },
     },
-
+    //Always Hidden
+    {
+        id: 'singleNodeFeatureFlag',
+        type: 'checkbox',
+        active: false,
+        hidden: true,
+    },
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
@@ -284,6 +291,7 @@ const controlDataGCP = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+        icon: <DevPreviewLabel />,
     },
     {
         name: 'creation.ocp.addition.labels',
