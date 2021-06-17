@@ -26,7 +26,7 @@ import { controlData } from './controlData/ControlData'
 import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
-import { secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
+import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
     ClusterCurator,
@@ -88,6 +88,8 @@ export default function CreateClusterPage() {
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
+
+    const [featureGateCache] = useRecoilState(featureGatesState)
 
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
@@ -264,6 +266,13 @@ export default function CreateClusterPage() {
             case 'templateName':
                 control.available = curatorTemplates.map((template) => template.metadata.name)
                 setAvailableTemplates(control, curatorTemplates)
+                break
+            case 'singleNodeFeatureFlag':
+                if (
+                    featureGateCache.find((fg) => fg.metadata.name === 'open-cluster-management-single-node-openshift')
+                ) {
+                    control.active = true
+                }
                 break
         }
     }

@@ -3,4 +3,5 @@
 
 export enum FeatureGates {
     ansibleAutomationTemplate = 'ansible-automation-template',
+    singleNodeOpenShift = 'open-cluster-management-single-node-openshift',
 }

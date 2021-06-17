@@ -458,7 +458,13 @@ const controlDataAZR = [
             required: true,
         },
     },
-
+    //Always Hidden
+    {
+        id: 'singleNodeFeatureFlag',
+        type: 'checkbox',
+        active: false,
+        hidden: true,
+    },
     {
         name: 'cluster.create.ocp.singleNode',
         tooltip: 'tooltip.cluster.create.ocp.singleNode',
