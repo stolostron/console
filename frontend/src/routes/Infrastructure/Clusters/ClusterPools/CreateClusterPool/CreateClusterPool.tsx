@@ -94,7 +94,7 @@ export default function CreateClusterPoolPage() {
                         <>
                             {t('page.header.create-clusterPool.tooltip')}
                             <a
-                                href={DOC_LINKS.CREATE_CLUSTER}
+                                href={DOC_LINKS.CLUSTER_POOLS}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
