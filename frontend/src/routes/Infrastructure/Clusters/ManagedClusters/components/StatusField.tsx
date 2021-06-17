@@ -7,13 +7,16 @@ import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'
-import { configMapsState } from '../../../../../atoms'
+import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
+import { getLatestAnsibleJob } from '../../../../../resources/ansible-job'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
     const [configMaps] = useRecoilState(configMapsState)
+    const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
 
     let type: StatusType
 
@@ -63,6 +66,42 @@ export function StatusField(props: { cluster: Cluster }) {
     let hasAction = false
     let Action = () => <></>
     switch (props.cluster?.status) {
+        case ClusterStatus.prehookjob:
+        case ClusterStatus.prehookfailed:
+            hasAction = true
+            Action = () => (
+                <AcmButton
+                    style={{ padding: 0, fontSize: 'inherit' }}
+                    key={props.cluster.name}
+                    onClick={() => window.open(latestJob.prehook?.status?.ansibleJobResult.url)}
+                    variant="link"
+                    role="link"
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                    isDisabled={!latestJob.prehook?.status?.ansibleJobResult?.url}
+                >
+                    {t('view.logs')}
+                </AcmButton>
+            )
+            break
+        case ClusterStatus.posthookjob:
+        case ClusterStatus.posthookfailed:
+            hasAction = true
+            Action = () => (
+                <AcmButton
+                    style={{ padding: 0, fontSize: 'inherit' }}
+                    key={props.cluster.name}
+                    onClick={() => window.open(latestJob.posthook?.status?.ansibleJobResult.url)}
+                    variant="link"
+                    role="link"
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                    isDisabled={!latestJob.posthook?.status?.ansibleJobResult?.url}
+                >
+                    {t('view.logs')}
+                </AcmButton>
+            )
+            break
         case ClusterStatus.creating:
         case ClusterStatus.destroying:
         case ClusterStatus.provisionfailed:
