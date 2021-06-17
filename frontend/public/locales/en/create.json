@@ -276,7 +276,7 @@
     "tooltip.creation.ocp.service.network": "A block of IP addresses for services. OpenShiftSDN allows only one serviceNetwork block. The address block must not overlap any other network block. The default value is 172.30.0.0/16.",
     "tooltip.cluster.create.ocp.image": "URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.",
     "tooltip.cluster.create.ocp.image.vmw": "URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list. Only versions 4.5, and later, are supported for VMware vSphere.",
-    "tooltip.cluster.create.ocp.singleNode": "To enable a single node OpenShift cluster with one master node and zero worker nodes. Only available in OpenShift 4.8 and higher",
+    "tooltip.cluster.create.ocp.singleNode": "To enable a single node OpenShift cluster with one master node and zero worker nodes. Only available in OpenShift 4.8 and higher.",
     "tooltip.creation.ocp.master.zones": "The availability zones where your master nodes are located. You can select more than one zone to meet availability or user proximity needs. If you do not select any zones, all available zones are used.",
     "tooltip.creation.ocp.worker.zones": "The availability zones where your worker pools are located. You can select more than one zone to meet availability or user proximity needs. If you do not select any zones, all available zones are used.",
     "tooltip.creation.ocp.aws.region": "The AWS region where the installation program creates your cluster resources. You can select zones within the region for your master and worker pools.",
