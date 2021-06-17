@@ -84,7 +84,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
         <AcmModal
             variant={ModalVariant.medium}
             title={props.title}
-            titleIconVariant={props.icon ?? 'warning'}
+            titleIconVariant={props.icon}
             isOpen={true}
             onClose={props.close}
         >

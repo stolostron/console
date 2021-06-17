@@ -184,6 +184,7 @@ export function ClusterSetAccessManagement() {
                                         setModalProps({ open: false })
                                     },
                                     isDanger: true,
+                                    icon: 'warning',
                                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                 })
                             },
@@ -209,6 +210,7 @@ export function ClusterSetAccessManagement() {
                                         setModalProps({ open: false })
                                     },
                                     isDanger: true,
+                                    icon: 'warning',
                                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                 })
                             },

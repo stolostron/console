@@ -410,6 +410,7 @@ export function ClustersTable(props: {
                                 actionFn: (cluster) => detachCluster(cluster.name!),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
@@ -431,6 +432,7 @@ export function ClustersTable(props: {
                                 actionFn: (cluster) => deleteCluster(cluster, true),
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
+                                icon: 'warning',
                                 confirmText: t('confirm').toLowerCase(),
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
