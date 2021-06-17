@@ -105,5 +105,15 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 3. Cluster OAuth redirects back to the backend `/login/callback` endpoint.
 4. Backend redirects to the frontend and sets the `acm-access-token-cookie`.
 
+## Optional Features
+
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled using a FeatureGate CR.  The following features are available:
+
+### Single node OpenShift
+
+Enabling this feature will allow the user to create a cluster that only contains a single master node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
+
+To enable this feature, `oc apply -f features/single-node-openshift.yaml`.  
+
 ## References
 `console` is part of the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
