@@ -37,6 +37,7 @@ import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '../../../../../resources/provider-connection'
 import { Secret } from '../../../../../resources/secret'
 import { createResource as createResourceTool } from '../../../../../lib/resource-request'
+import { FeatureGates } from '../../../../../FeatureGates'
 
 declare const window: any
 if (window.monaco) {
@@ -268,9 +269,7 @@ export default function CreateClusterPage() {
                 setAvailableTemplates(control, curatorTemplates)
                 break
             case 'singleNodeFeatureFlag':
-                if (
-                    featureGateCache.find((fg) => fg.metadata.name === 'open-cluster-management-single-node-openshift')
-                ) {
+                if (featureGateCache.find((fg) => fg.metadata.name === FeatureGates.singleNodeOpenShift)) {
                     control.active = true
                 }
                 break
