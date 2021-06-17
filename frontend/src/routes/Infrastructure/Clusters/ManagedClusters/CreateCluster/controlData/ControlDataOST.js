@@ -15,7 +15,6 @@ import {
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-
 const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -64,7 +63,7 @@ const controlDataOST = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
-        icon: <DevPreviewLabel />
+        icon: <DevPreviewLabel />,
     },
     {
         name: 'creation.ocp.addition.labels',

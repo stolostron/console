@@ -14,7 +14,6 @@ import {
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -64,7 +63,7 @@ const controlDataVMW = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
-        icon: <DevPreviewLabel />
+        icon: <DevPreviewLabel />,
     },
     {
         name: 'creation.ocp.addition.labels',
