@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
-import { keyBy } from 'lodash'
+import { keyBy, cloneDeep } from 'lodash'
 
 import controlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import controlDataGCP from '../../../ManagedClusters/CreateCluster/controlData/ControlDataGCP'
@@ -80,9 +80,9 @@ const fixupControlsForClusterPool = (controlData) => {
 
     return controlData
 }
-const fixedUpAWS = fixupControlsForClusterPool(controlDataAWS)
-const fixedUpGCP = fixupControlsForClusterPool(controlDataGCP)
-const fixedUpAZR = fixupControlsForClusterPool(controlDataAZR)
+const fixedUpAWS = fixupControlsForClusterPool(cloneDeep(controlDataAWS))
+const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(controlDataGCP))
+const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(controlDataAZR))
 
 export const controlData = [
     ///////////////////////  container platform  /////////////////////////////////////
