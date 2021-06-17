@@ -13,6 +13,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
+import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 const gp2Cpu8Gib = '2 vCPU, 8 GiB - General Purpose'
 const gp4Cpu8Gib = '4 vCPU, 16 GiB - General Purpose'
@@ -473,6 +474,7 @@ const controlDataAZR = [
         active: false,
         hidden: isHidden_lt_OCP48,
         onSelect: onChangeSNO,
+        icon: <DevPreviewLabel />
     },
     {
         name: 'creation.ocp.addition.labels',

@@ -13,6 +13,8 @@ import {
     isHidden_SNO,
     onChangeSNO,
 } from './ControlDataHelpers'
+import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+
 
 const GCPregions = [
     'asia-east1',
@@ -289,7 +291,8 @@ const controlDataGCP = [
         type: 'checkbox',
         active: false,
         hidden: isHidden_lt_OCP48,
-        onSelect: onChangeSNO,
+        onSelect: onChangeSNO, 
+        icon: <DevPreviewLabel />
     },
     {
         name: 'creation.ocp.addition.labels',
