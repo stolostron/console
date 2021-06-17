@@ -383,7 +383,7 @@
     "validation.bad.value": "The '{{0}}' key must point to one of these values: {{1}}",
     "validation.number.value": "Number is not valid",
 
-    "template.create.title": "Create an Ansible template",
+    "template.create.title": "Create Ansible template",
     "template.clusterCreate.name":"Ansible Automation Template",
     "template.clusterCreate.title":"Automation",
     "template.clusterCreate.info":"Choose a automation job template to automatically run at different times of creation. (Optional)",

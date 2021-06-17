@@ -228,6 +228,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
+                    icon: 'warning',
                     confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
@@ -253,6 +254,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         setModalProps({ open: false })
                     },
                     isDanger: true,
+                    icon: 'warning',
                     confirmText: cluster.displayName,
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })

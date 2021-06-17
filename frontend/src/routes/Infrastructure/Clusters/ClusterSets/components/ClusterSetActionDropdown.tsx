@@ -65,6 +65,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                 setModalProps({
                     open: true,
                     isDanger: true,
+                    icon: 'warning',
                     title: t('bulk.title.deleteSet'),
                     action: t('delete'),
                     processing: t('deleting'),

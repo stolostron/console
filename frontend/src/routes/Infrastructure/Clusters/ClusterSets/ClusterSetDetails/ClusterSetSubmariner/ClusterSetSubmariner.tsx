@@ -247,6 +247,7 @@ export function ClusterSetSubmarinerPageContent() {
                                                         resources: [mca],
                                                         description: t('bulk.message.uninstallSubmariner'),
                                                         columns,
+                                                        icon: 'warning',
                                                         keyFn: (mca) => mca.metadata.namespace as string,
                                                         actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
                                                             const submarinerConfig = submarinerConfigs.find(
@@ -309,6 +310,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             resources: mcas,
                                             description: t('bulk.message.uninstallSubmariner'),
                                             columns,
+                                            icon: 'warning',
                                             keyFn: (mca) => mca.metadata.namespace as string,
                                             actionFn: (managedClusterAddOn: ManagedClusterAddOn) => {
                                                 const submarinerConfig = submarinerConfigs.find(

@@ -478,6 +478,7 @@ function EditAnsibleJobModal(props: {
                     id="job-name"
                     label={t('cluster:template.modal.name.label')}
                     value={ansibleJob?.name}
+                    helperText={t('cluster:template.modal.name.helper.text')}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }

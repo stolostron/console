@@ -357,6 +357,7 @@ export function BareMetalAssetsTable(props: {
                                                 setModalProps({ open: false })
                                             },
                                             isDanger: true,
+                                            icon: 'warning',
                                         })
                                     },
                                     rbac: [rbacDelete(bareMetalAsset)],
@@ -419,6 +420,7 @@ export function BareMetalAssetsTable(props: {
                                     setModalProps({ open: false })
                                 },
                                 isDanger: true,
+                                icon: 'warning',
                             })
                         },
                     },
