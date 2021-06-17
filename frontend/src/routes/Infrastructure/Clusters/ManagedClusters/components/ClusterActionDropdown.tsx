@@ -154,7 +154,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     resources: [cluster],
                     description: t('bulk.message.hibernate'),
                     columns: modalColumns,
-                    icon: 'warning',
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
                         return patchResource(
@@ -189,7 +188,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     resources: [cluster],
                     description: t('bulk.message.resume'),
                     columns: modalColumns,
-                    icon: 'warning',
                     keyFn: (cluster) => cluster.name as string,
                     actionFn: (cluster) => {
                         return patchResource(

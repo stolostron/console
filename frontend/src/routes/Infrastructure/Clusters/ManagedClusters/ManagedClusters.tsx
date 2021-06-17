@@ -340,7 +340,6 @@ export function ClustersTable(props: {
                                 resources: clusters,
                                 description: t('bulk.message.hibernate'),
                                 columns: modalColumns,
-                                icon: 'warning',
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => {
                                     return patchResource(
@@ -374,7 +373,6 @@ export function ClustersTable(props: {
                                 resources: clusters,
                                 description: t('bulk.message.resume'),
                                 columns: modalColumns,
-                                icon: 'warning',
                                 keyFn: (cluster) => cluster.name as string,
                                 actionFn: (cluster) => {
                                     return patchResource(
