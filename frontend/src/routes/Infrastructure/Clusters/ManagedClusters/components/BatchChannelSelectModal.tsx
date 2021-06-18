@@ -68,6 +68,7 @@ export function BatchChannelSelectModal(props: {
         <BulkActionModel<Cluster>
             open={props.open}
             title={t('bulk.title.selectChannel')}
+            plural={t('bulk.plural.selectChannel')}
             action={t('upgrade.selectChannel.submit')}
             processing={t('upgrade.selectChannel.submit.processing')}
             resources={channelSelectableClusters}
