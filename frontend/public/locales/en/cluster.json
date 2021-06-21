@@ -483,6 +483,8 @@
     "bulk.title.upgrade": "Upgrade clusters",
     "bulk.title.selectChannel": "Select channels",
     "bulk.message.upgrade": "Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed. This action is irreversible.",
+    "bulk.plural.upgrade": "clusters",
+    "bulk.plural.selectChannel": "channels",
     "bulk.title.deleteSet": "Delete cluster sets?",
     "bulk.message.deleteSet": "Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.",
     "bulk.message.selectChannel": "Select channels for the clusters. Only the selected clusters that have available channels are listed.",
