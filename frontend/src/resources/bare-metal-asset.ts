@@ -104,10 +104,7 @@ export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestRes
                 await createBareMetalAssetResource(asset).promise
                 resolve({})
             } catch (err) {
-                const {
-                    name,
-                    namespace
-                } = asset
+                const { name, namespace } = asset
                 deleteResource({
                     apiVersion: 'v1',
                     kind: 'Secret',
@@ -115,7 +112,7 @@ export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestRes
                         name: `${name}-bmc-secret`,
                         namespace,
                     },
-                        })
+                })
                 reject(err)
             }
         }),
@@ -174,15 +171,15 @@ export function createBareMetalAssetSecret(asset: {
     return !username
         ? resolved
         : createResource<BMASecret>({
-            apiVersion: 'v1',
-            kind: 'Secret',
-            metadata: {
-                name: credentialsName,
-                namespace,
-            },
-            stringData: {
-                password,
-                username,
-            },
-        })
+              apiVersion: 'v1',
+              kind: 'Secret',
+              metadata: {
+                  name: credentialsName,
+                  namespace,
+              },
+              stringData: {
+                  password,
+                  username,
+              },
+          })
 }
