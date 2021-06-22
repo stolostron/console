@@ -450,7 +450,11 @@ export function AnsibleAutomationsForm(props: {
     return (
         <Fragment>
             <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
-            <EditAnsibleJobModal ansibleJob={editAnsibleJob} setAnsibleJob={updateAnsibleJob} />
+            <EditAnsibleJobModal
+                ansibleJob={editAnsibleJob}
+                setAnsibleJob={updateAnsibleJob}
+                ansibleJobList={editAnsibleJobList?.jobs}
+            />
         </Fragment>
     )
 }
@@ -458,9 +462,12 @@ export function AnsibleAutomationsForm(props: {
 function EditAnsibleJobModal(props: {
     ansibleJob?: AnsibleJob
     setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
+    ansibleJobList?: AnsibleJob[]
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
+    let ansibleJobList: string[]
+    if (props.ansibleJobList) ansibleJobList = props.ansibleJobList.map((ansibleJob) => ansibleJob.name)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
@@ -484,6 +491,12 @@ function EditAnsibleJobModal(props: {
                             const copy = { ...ansibleJob }
                             copy.name = name
                             setAnsibleJob(copy)
+                        }
+                    }}
+                    validation={(name: string) => {
+                        if (ansibleJobList.includes(name)) {
+                            // no duplicate job names can be added
+                            return t('cluster:template.job.duplicate.error')
                         }
                     }}
                     isRequired
