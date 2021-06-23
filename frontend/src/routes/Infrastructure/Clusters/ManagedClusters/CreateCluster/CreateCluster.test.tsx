@@ -23,7 +23,7 @@ import {
     ClusterImageSetApiVersion,
     ClusterImageSetKind,
 } from '../../../../../resources/cluster-image-set'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import {
     Project,
     ProjectApiVersion,
@@ -299,7 +299,7 @@ const mockClusterProjectResponse: Project = {
     },
 }
 
-const mockManagedCluster: ManagedClulster = {
+const mockManagedCluster: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
@@ -721,7 +721,7 @@ const patchBareMetalAssetWorkerRes = {
 }
 
 ///// AWS /////
-const mockManagedClusterAws: ManagedClulster = {
+const mockManagedClusterAws: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
@@ -926,6 +926,16 @@ describe('CreateCluster', () => {
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
+
+            // host table pulls secrets for each selected host
+            const hostSecrets = [
+                nockGet(mockBareMetalSecrets[0]),
+                nockGet(mockBareMetalSecrets[1]),
+                nockGet(mockBareMetalSecrets[2]),
+                nockGet(mockBareMetalSecrets[3]),
+                nockGet(mockBareMetalSecrets[4]),
+            ]
+            await waitForNocks(hostSecrets)
         }
         await clickByText('Next')
 
@@ -1016,6 +1026,16 @@ describe('CreateCluster', () => {
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
+
+            // host table pulls secrets for each selected host
+            const hostSecrets = [
+                nockGet(mockBareMetalSecrets[0]),
+                nockGet(mockBareMetalSecrets[1]),
+                nockGet(mockBareMetalSecrets[2]),
+                nockGet(mockBareMetalSecrets[3]),
+                nockGet(mockBareMetalSecrets[4]),
+            ]
+            await waitForNocks(hostSecrets)
         }
         await clickByText('Next')
 
