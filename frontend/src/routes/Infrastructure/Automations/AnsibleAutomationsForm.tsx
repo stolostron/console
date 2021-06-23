@@ -116,7 +116,7 @@ export function AnsibleAutomationsForm(props: {
 
     function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
-            if (installPreJobs.includes(replaceJob)) {
+            if (editAnsibleJobList.jobs.includes(replaceJob)) {
                 editAnsibleJobList.setJobs(
                     editAnsibleJobList.jobs.map((job) => (job === replaceJob ? ansibleJob : job))
                 )
@@ -467,7 +467,7 @@ function EditAnsibleJobModal(props: {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
     let ansibleJobList: string[]
-    if (props.ansibleJobList) ansibleJobList = props.ansibleJobList.map((ansibleJob) => ansibleJob.name)
+    if (props.ansibleJobList) ansibleJobList = props.ansibleJobList.filter((job)=>ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
