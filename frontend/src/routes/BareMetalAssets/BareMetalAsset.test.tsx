@@ -22,6 +22,38 @@ const bareMetalAsset: BareMetalAsset = {
         },
         bootMACAddress: '00:90:7F:12:DE:7F',
     },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
+                message: 'A secret with the name fog13.cluster.internal-bmc-secret in namespace slot-04 was found',
+                reason: 'SecretFound',
+                status: 'True',
+                type: 'CredentialsFound',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
+                message: 'A ClusterDeployment with the name slot-04 in namespace slot-04 was found',
+                reason: 'ClusterDeploymentFound',
+                status: 'True',
+                type: 'ClusterDeploymentFound',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T16:16:04Z'),
+                message: 'Successfully applied SyncSet',
+                reason: 'SyncSetAppliedSuccessful',
+                status: 'True',
+                type: 'AssetSyncCompleted',
+            },
+            {
+                lastTransitionTime: new Date('2021-05-14T16:16:04Z'),
+                message: 'SyncSet updated successfully',
+                reason: 'SyncSetUpdated',
+                status: 'True',
+                type: 'AssetSyncStarted',
+            },
+        ],
+    },
 }
 
 function nockcreateSelfSubjectAccesssRequest(resourceAttributes: ResourceAttributes, allowed: boolean = true) {
@@ -178,5 +210,22 @@ describe('bare metal asset page', () => {
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy()) // expect delete call to finish
         await waitFor(() => expect(listNockii.isDone()).toBeTruthy())
         expect(queryByText('test-bare-metal-asset-1')).toBeNull() // expect asset to no longer exist in doc
+    })
+
+    test('renders bare metal assets page with correct asset status', async () => {
+        const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
+        const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
+
+        const { getByText, getAllByText, getByLabelText, queryByText } = render(
+            <MemoryRouter>
+                <BareMetalAssetsPage />
+            </MemoryRouter>
+        )
+
+        await waitFor(() => expect(clusterNock.isDone()).toBeTruthy())
+        await waitFor(() => expect(listNock.isDone()).toBeTruthy()) // expect the list api call to finish
+        await waitFor(() => expect(getAllByText(mockBareMetalAssets[0].metadata.name!).length > 0)) // check for asset in doc
+
+        expect(getByText('bareMetalAsset.statusMessage.SyncSetUpdated')).toBeInTheDocument() // expect asset to no longer exist in doc
     })
 })
