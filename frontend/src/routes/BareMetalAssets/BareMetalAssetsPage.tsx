@@ -217,17 +217,22 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
                             cell: (bareMetalAsset) => {
-                                if (Array.isArray(bareMetalAsset.status?.conditions)) {
-                                    let mostCurrentStatusTime = new Date(0)
-                                    let mostCurrentStatus: string | undefined = undefined
-                                    for (let condition of bareMetalAsset.status!.conditions) {
-                                        if (condition.lastTransitionTime >= mostCurrentStatusTime) {
-                                            mostCurrentStatusTime = condition.lastTransitionTime
-                                            mostCurrentStatus = condition.type
-                                        }
-                                    }
-                                    switch (mostCurrentStatus) {
-                                        // returns translation strings
+                                const conditions = bareMetalAsset.status?.conditions
+                                if (Array.isArray(conditions) && conditions.length > 0) {
+                                    // Determine the current status time
+                                    const lastTransitionTime = bareMetalAsset.status?.conditions
+                                        .sort((lhs, rhs) => {
+                                            if (lhs.lastTransitionTime < rhs.lastTransitionTime) return -1
+                                            if (lhs.lastTransitionTime > rhs.lastTransitionTime) return 1
+                                            return 0
+                                        })
+                                        .reverse()[0].lastTransitionTime
+                                    // Get the status from the last condition matching the lastTransitionTime
+                                    // this is in case there are two conditions with the same lastTransitionTime
+                                    const status = conditions
+                                        .filter((condition) => condition.lastTransitionTime === lastTransitionTime)
+                                        .reverse()[0].status
+                                    switch (status) {
                                         case 'CredentialsFound':
                                             return t('bareMetalAsset.statusMessage.credentialsFound')
                                         case 'AssetSyncStarted':
@@ -239,10 +244,10 @@ export function BareMetalAssetsTable(props: {
                                         case 'Ready':
                                             return t('bareMetalAsset.statusMessage.ready')
                                         default:
-                                            return ''
+                                            return '-'
                                     }
                                 }
-                                return ''
+                                return '-'
                             },
                         },
                         {
