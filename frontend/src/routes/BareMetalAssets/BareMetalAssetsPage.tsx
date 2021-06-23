@@ -219,8 +219,7 @@ export function BareMetalAssetsTable(props: {
                             cell: (bareMetalAsset) => {
                                 const conditions = bareMetalAsset.status?.conditions
                                 if (Array.isArray(conditions) && conditions.length > 0) {
-                                    // Determine the current status time
-                                    const lastTransitionTime = bareMetalAsset.status?.conditions
+                                    const lastTransitionTime = [...conditions]
                                         .sort((lhs, rhs) => {
                                             if (lhs.lastTransitionTime < rhs.lastTransitionTime) return -1
                                             if (lhs.lastTransitionTime > rhs.lastTransitionTime) return 1
@@ -229,10 +228,10 @@ export function BareMetalAssetsTable(props: {
                                         .reverse()[0].lastTransitionTime
                                     // Get the status from the last condition matching the lastTransitionTime
                                     // this is in case there are two conditions with the same lastTransitionTime
-                                    const status = conditions
+                                    const type = conditions
                                         .filter((condition) => condition.lastTransitionTime === lastTransitionTime)
-                                        .reverse()[0].status
-                                    switch (status) {
+                                        .reverse()[0].type
+                                    switch (type) {
                                         case 'CredentialsFound':
                                             return t('bareMetalAsset.statusMessage.credentialsFound')
                                         case 'AssetSyncStarted':
