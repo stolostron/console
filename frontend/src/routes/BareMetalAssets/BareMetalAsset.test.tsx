@@ -216,7 +216,7 @@ describe('bare metal asset page', () => {
         const listNock = nockList(bareMetalAsset, mockBareMetalAssets)
         const clusterNock = nockcreateSelfSubjectAccesssRequest(clusterCreationResourceAttributes())
 
-        const { getByText, getAllByText, getByLabelText, queryByText } = render(
+        const { getByText, getAllByText } = render(
             <MemoryRouter>
                 <BareMetalAssetsPage />
             </MemoryRouter>
