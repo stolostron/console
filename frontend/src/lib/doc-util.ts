@@ -16,7 +16,7 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_OPENSTACK: `${DOC_BASE_PATH}/credentials/creating-a-credential-for-openstack`,
     CREATE_CONNECTION_BAREMETAL: `${DOC_BASE_PATH}/credentials/creating-a-credential-for-bare-metal`,
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/credentials/creating-a-credential-for-ansible`,
-    CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/creating-a-credential-for-redhat-cluster-manager`,
+    CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/creating-a-token-for-ocm`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/creating-a-cluster`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managedclustersets`,
