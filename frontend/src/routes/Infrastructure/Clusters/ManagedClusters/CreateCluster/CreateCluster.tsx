@@ -7,7 +7,7 @@ import fs from 'fs'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import path from 'path'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -35,7 +35,7 @@ import {
 } from '../../../../../resources/cluster-curator'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '../../../../../resources/provider-connection'
-import { getSecret, Secret, unpackSecret } from '../../../../../resources/secret'
+import { Secret } from '../../../../../resources/secret'
 import { createResource as createResourceTool } from '../../../../../lib/resource-request'
 import { FeatureGates } from '../../../../../FeatureGates'
 
@@ -217,36 +217,6 @@ export default function CreateClusterPage() {
     // pause creation to create something else
     const pauseCreate = () => {}
 
-    // load user/password for selected bma
-    const [missingCreds, setMissingCreds] = useState<any[]>([])
-    const [hostsControl, setHostsControl] = useState<any>()
-    useEffect(() => {
-        if (missingCreds.length) {
-            const requests = Promise.allSettled(
-                missingCreds.map(
-                    ({ credName, credNamespace }) => getSecret({ name: credName, namespace: credNamespace }).promise
-                )
-            )
-            requests.then((results) => {
-                results.forEach((result) => {
-                    if (result.status !== 'rejected') {
-                        const { metadata, stringData } = unpackSecret(result.value)
-                        const foundCred = missingCreds.find(({ credName, credNamespace }) => {
-                            return metadata?.name === credName && metadata?.namespace === credNamespace
-                        })
-                        if (foundCred) {
-                            foundCred.username = stringData?.username
-                            foundCred.password = stringData?.password
-                        }
-                    }
-                })
-                if (hostsControl) {
-                    hostsControl?.refresh()
-                }
-            })
-        }
-    }, [hostsControl, missingCreds])
-
     // setup translation
     const { t } = useTranslation(['create'])
     const i18n = (key: any, arg: any) => {
@@ -312,28 +282,11 @@ export default function CreateClusterPage() {
     }
 
     function onControlChange(control: any) {
-        let missing
-        switch (control.id) {
-            case 'templateName':
-                setSelectedTemplate(control.active)
-                break
-            case 'connection':
-                setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
-                break
-            case 'hosts':
-                setHostsControl(control)
-                missing = control.active.filter((host: { username: String; password: String }) => {
-                    if (!host?.username || host?.username?.trim().startsWith('#')) {
-                        host.password = host.username = '# Loading...'
-                        return true
-                    }
-                    return false
-                })
-                setMissingCreds(missing)
-                if (missing.length) {
-                    control?.refresh()
-                }
-                break
+        if (control.id === 'templateName') {
+            setSelectedTemplate(control.active)
+        }
+        if (control.id === 'connection') {
+            setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
         }
     }
 

@@ -3,7 +3,7 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import { keyBy } from 'lodash'
-import { createResource, deleteResource, getResource, IRequestResult, listResources } from '../lib/resource-request'
+import { createResource, getResource, IRequestResult, listResources } from '../lib/resource-request'
 import { createProject } from '../resources/project'
 import { IResourceDefinition } from './resource'
 import { SecretApiVersionType, SecretKindType } from './secret'
@@ -96,23 +96,9 @@ export function importBareMetalAsset(asset: ImportedBareMetalAsset): IRequestRes
         promise: new Promise(async (resolve, reject) => {
             try {
                 await createBareMetalAssetSecret(asset).promise
-            } catch (err) {
-                reject(err)
-                return
-            }
-            try {
                 await createBareMetalAssetResource(asset).promise
                 resolve({})
             } catch (err) {
-                const { name, namespace } = asset
-                deleteResource({
-                    apiVersion: 'v1',
-                    kind: 'Secret',
-                    metadata: {
-                        name: `${name}-bmc-secret`,
-                        namespace,
-                    },
-                })
                 reject(err)
             }
         }),
