@@ -12,6 +12,7 @@ import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../reso
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
+import { AnsibleJob, getLatestAnsibleJob } from '../resources/ansible-job'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -38,6 +39,7 @@ export enum ClusterStatus {
     'posthookjob' = 'posthookjob',
     'posthookfailed' = 'posthookfailed',
     'importfailed' = 'importfailed',
+    'upgradefailed' = 'upgradefailed',
 }
 
 export const clusterDangerStatuses = [
@@ -51,6 +53,7 @@ export const clusterDangerStatuses = [
     ClusterStatus.posthookfailed,
     ClusterStatus.importfailed,
 ]
+export const clusterWarningStatuses = [ClusterStatus.upgradefailed]
 
 export type Cluster = {
     name?: string
@@ -137,7 +140,8 @@ export function mapClusters(
     managedClusters: ManagedCluster[] = [],
     managedClusterAddOns: ManagedClusterAddOn[] = [],
     clusterClaims: ClusterClaim[] = [],
-    clusterCurators: ClusterCurator[] = []
+    clusterCurators: ClusterCurator[] = [],
+    ansibleJobs: AnsibleJob[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -161,7 +165,8 @@ export function mapClusters(
             managedCluster,
             addons,
             clusterClaim,
-            clusterCurator
+            clusterCurator,
+            ansibleJobs
         )
     })
 }
@@ -173,7 +178,8 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterClaim: ClusterClaim | undefined,
-    clusterCurator: ClusterCurator | undefined
+    clusterCurator: ClusterCurator | undefined,
+    ansibleJobs?: AnsibleJob[] | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -181,7 +187,8 @@ export function getCluster(
         certificateSigningRequests,
         managedCluster,
         managedClusterAddOns,
-        clusterCurator
+        clusterCurator,
+        ansibleJobs
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -215,21 +222,33 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
-const checkCuratorConditionInProgress = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const checkCuratorLatestOperation = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    const cond = conditions?.find((c) => c.message?.includes(condition))
+    console.log('checking found job: ', cond)
+    return cond?.status === 'False' && cond.reason === 'Job_has_finished'
+}
+
+export const checkCuratorConditionInProgress = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
 }
-const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.message
 }
 
-const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'True' && cond?.reason === 'Job_failed'
 }
 
-const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
 }
@@ -558,15 +577,22 @@ export function getClusterStatus(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
-    clusterCurator: ClusterCurator | undefined
+    clusterCurator: ClusterCurator | undefined,
+    ansibleJobs?: AnsibleJob[] | undefined
 ) {
     let statusMessage: string | undefined
+
+    let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
+    if (clusterCurator?.metadata.namespace && ansibleJobs)
+        latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, clusterCurator.metadata.namespace)
+    else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
     // ClusterCurator status
     let ccStatus: ClusterStatus = ClusterStatus.pending
     if (clusterCurator) {
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
-
+        if (checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) console.log('test pass')
+        console.log('checking conditions: ', ccConditions)
         // ClusterCurator has not completed so loop through statuses
         if (
             clusterCurator?.spec?.desiredCuration === 'install' &&
@@ -604,7 +630,9 @@ export function getClusterStatus(
             ) {
                 // check if post-hook is in progress or failed
                 if (checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions)) {
-                    ccStatus = ClusterStatus.posthookfailed
+                    if (!clusterDeployment?.spec?.installed) ccStatus = ClusterStatus.prehookfailed
+                    if (clusterDeployment?.spec?.installed) ccStatus = ClusterStatus.posthookfailed
+
                     statusMessage = getConditionStatusMessage(CuratorCondition.posthook, ccConditions)
                 } else {
                     ccStatus = ClusterStatus.posthookjob
@@ -614,12 +642,23 @@ export function getClusterStatus(
             return { status: ccStatus, statusMessage }
         } else if (clusterDeployment) {
             // when curator is no longer installing, catch the prehook/posthook failure here
-            if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions)) {
-                ccStatus = ClusterStatus.failed
-                statusMessage = clusterCurator.status?.conditions[0].message
+            if (!clusterDeployment.spec?.installed){
+                if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) && checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) {
+                    ccStatus = ClusterStatus.prehookfailed
+                    statusMessage = clusterCurator.status?.conditions[0].message
 
-                return { status: ccStatus, statusMessage }
+                    return { status: ccStatus, statusMessage }
+                }
             }
+            if (clusterDeployment.spec?.installed){
+                if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) && checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) {
+                    ccStatus = ClusterStatus.posthookfailed
+                    statusMessage = clusterCurator.status?.conditions[0].message
+
+                    return { status: ccStatus, statusMessage }
+                }
+            }
+
         }
     }
 

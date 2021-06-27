@@ -11,6 +11,7 @@ import {
     managedClusterAddonsState,
     clusterClaimsState,
     clusterCuratorsState,
+    ansibleJobState,
 } from '../../../../../atoms'
 
 export function useAllClusters() {
@@ -22,6 +23,7 @@ export function useAllClusters() {
         managedClusterAddons,
         clusterClaims,
         clusterCurators,
+        ansibleJobs,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -31,6 +33,7 @@ export function useAllClusters() {
             managedClusterAddonsState,
             clusterClaimsState,
             clusterCuratorsState,
+            ansibleJobState,
         ])
     )
     const clusters = useMemo(
@@ -42,7 +45,8 @@ export function useAllClusters() {
                 managedClusters,
                 managedClusterAddons,
                 clusterClaims,
-                clusterCurators
+                clusterCurators,
+                ansibleJobs
             ),
         [
             clusterDeployments,
