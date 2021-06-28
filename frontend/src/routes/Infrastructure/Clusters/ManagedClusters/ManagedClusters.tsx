@@ -17,7 +17,7 @@ import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { clusterManagementAddonsState } from '../../../../atoms'
+import { ansibleJobState, clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { addonPathKey, addonTextKey } from '../../../../lib/get-addons'
@@ -142,6 +142,9 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     sessionStorage.removeItem('DiscoveredClusterApiURL')
 
+    const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const [clusterCurators] = useRecoilState(clusterCuratorsState)
+
     const { t } = useTranslation(['cluster'])
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
@@ -250,7 +253,7 @@ export function ClustersTable(props: {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
-                        cell: (cluster) => <DistributionField cluster={cluster} />,
+                        cell: (cluster) => <DistributionField cluster={cluster} clusterCuratorList={clusterCurators} ansibleJobs={ansibleJobs} />,
                     },
                     {
                         header: t('table.labels'),
