@@ -581,7 +581,7 @@ export function getClusterStatus(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
-    clusterCurator: ClusterCurator | undefined,
+    clusterCurator: ClusterCurator | undefined
 ) {
     let statusMessage: string | undefined
 
