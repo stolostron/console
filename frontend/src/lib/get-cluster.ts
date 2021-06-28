@@ -220,10 +220,7 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
-export const checkCuratorLatestOperation = (
-    condition: string,
-    conditions: V1CustomResourceDefinitionCondition[]
-) => {
+export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.message?.includes(condition))
     console.log('checking found job: ', cond)
     return cond?.status === 'False' && cond.reason === 'Job_has_finished'
@@ -638,23 +635,28 @@ export function getClusterStatus(
             return { status: ccStatus, statusMessage }
         } else if (clusterDeployment) {
             // when curator is no longer installing, catch the prehook/posthook failure here
-            if (!clusterDeployment.spec?.installed){
-                if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) && checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) {
+            if (!clusterDeployment.spec?.installed) {
+                if (
+                    checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
+                    checkCuratorLatestOperation('DesiredCuration: install', ccConditions)
+                ) {
                     ccStatus = ClusterStatus.prehookfailed
                     statusMessage = clusterCurator.status?.conditions[0].message
 
                     return { status: ccStatus, statusMessage }
                 }
             }
-            if (clusterDeployment.spec?.installed){
-                if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) && checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) {
+            if (clusterDeployment.spec?.installed) {
+                if (
+                    checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
+                    checkCuratorLatestOperation('DesiredCuration: install', ccConditions)
+                ) {
                     ccStatus = ClusterStatus.posthookfailed
                     statusMessage = clusterCurator.status?.conditions[0].message
 
                     return { status: ccStatus, statusMessage }
                 }
             }
-
         }
     }
 

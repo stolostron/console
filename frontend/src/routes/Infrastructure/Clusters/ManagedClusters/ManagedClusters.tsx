@@ -253,7 +253,13 @@ export function ClustersTable(props: {
                         header: t('table.distribution'),
                         sort: 'distribution.displayVersion',
                         search: 'distribution.displayVersion',
-                        cell: (cluster) => <DistributionField cluster={cluster} clusterCuratorList={clusterCurators} ansibleJobs={ansibleJobs} />,
+                        cell: (cluster) => (
+                            <DistributionField
+                                cluster={cluster}
+                                clusterCuratorList={clusterCurators}
+                                ansibleJobs={ansibleJobs}
+                            />
+                        ),
                     },
                     {
                         header: t('table.labels'),

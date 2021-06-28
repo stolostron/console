@@ -57,71 +57,70 @@ export function DistributionField(props: {
     // use display version directly for non-online clusters
 
     if (
-        checkCuratorLatestOperation('DesiredCuration: upgrade', ccConditions) && !props.cluster?.distribution?.upgradeInfo?.isUpgrading
+        checkCuratorLatestOperation('DesiredCuration: upgrade', ccConditions) &&
+        !props.cluster?.distribution?.upgradeInfo?.isUpgrading
     ) {
-            // hook state
-            const prehooks = clusterCurator?.spec?.install?.prehook?.length
-            const posthooks = clusterCurator?.spec?.install?.posthook?.length
-            let prehookStatus = StatusType.pending
-            let posthookStatus: StatusType | undefined = undefined
-            let upgradeStatus = StatusType.pending
-            let statusText = ''
-            let statusType = StatusType.pending
+        // hook state
+        const prehooks = clusterCurator?.spec?.install?.prehook?.length
+        const posthooks = clusterCurator?.spec?.install?.posthook?.length
+        let prehookStatus = StatusType.pending
+        let posthookStatus: StatusType | undefined = undefined
+        let upgradeStatus = StatusType.pending
+        let statusText = ''
+        let statusType = StatusType.pending
 
-
-            switch (cluster?.status) {
-                case ClusterStatus.prehookjob:
-                    statusType = StatusType.progress
-                    statusText = 'upgrade.ansible.prehook'
-                    break
-                case ClusterStatus.prehookfailed:
-                    statusType = StatusType.progress
-                    statusText = 'upgrade.ansible.prehook'
-                    break
-                case ClusterStatus.posthookjob:
-                    //importStatus = StatusType.progress
-                    break
-                case ClusterStatus.posthookfailed:
-                    //importStatus = StatusType.danger
-                    break
-                default: {
-                    // if (posthookStatus === StatusType.progress || posthookStatus === StatusType.danger) {
-                    //     importStatus = StatusType.healthy
-                    // } else {
-                    //     importStatus = StatusType.empty
-                    // }
-                }
+        switch (cluster?.status) {
+            case ClusterStatus.prehookjob:
+                statusType = StatusType.progress
+                statusText = 'upgrade.ansible.prehook'
+                break
+            case ClusterStatus.prehookfailed:
+                statusType = StatusType.progress
+                statusText = 'upgrade.ansible.prehook'
+                break
+            case ClusterStatus.posthookjob:
+                //importStatus = StatusType.progress
+                break
+            case ClusterStatus.posthookfailed:
+                //importStatus = StatusType.danger
+                break
+            default: {
+                // if (posthookStatus === StatusType.progress || posthookStatus === StatusType.danger) {
+                //     importStatus = StatusType.healthy
+                // } else {
+                //     importStatus = StatusType.empty
+                // }
             }
+        }
 
-            return (
-                <>
-                    <div>{props.cluster?.distribution.displayVersion}</div>
-                    <AcmInlineStatus
-                        type={statusType}
-                        status={t(statusText)}
-                        popover={
-                            latestAnsibleJob.prehook?.status?.ansibleJobResult?.url
-                                ? {
-                                      headerContent: t('upgrade.ansible.prehook'),
-                                      bodyContent: t('upgrade.ansible.prehook.message', {
-                                          clusterName: props.cluster?.name,
-                                      }),
-                                      footerContent: (
-                                          <a
-                                              href={latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
-                                              target="_blank"
-                                              rel="noreferrer"
-                                          >
-                                              {t('upgrade.ansible.link')} <ExternalLinkAltIcon />
-                                          </a>
-                                      ),
-                                  }
-                                : undefined
-                        }
-                    />
-                </>
-            )
-
+        return (
+            <>
+                <div>{props.cluster?.distribution.displayVersion}</div>
+                <AcmInlineStatus
+                    type={statusType}
+                    status={t(statusText)}
+                    popover={
+                        latestAnsibleJob.prehook?.status?.ansibleJobResult?.url
+                            ? {
+                                  headerContent: t('upgrade.ansible.prehook'),
+                                  bodyContent: t('upgrade.ansible.prehook.message', {
+                                      clusterName: props.cluster?.name,
+                                  }),
+                                  footerContent: (
+                                      <a
+                                          href={latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                      >
+                                          {t('upgrade.ansible.link')} <ExternalLinkAltIcon />
+                                      </a>
+                                  ),
+                              }
+                            : undefined
+                    }
+                />
+            </>
+        )
     }
 
     if (
