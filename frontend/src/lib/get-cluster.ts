@@ -642,22 +642,12 @@ export function getClusterStatus(
                     checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
                 ) {
                     ccStatus = ClusterStatus.prehookfailed
-                    statusMessage = clusterCurator.status?.conditions[0].message
-
-                    return { status: ccStatus, statusMessage }
                 }
+            } else {
+                ccStatus = ClusterStatus.prehookfailed
             }
-            if (clusterDeployment.spec?.installed) {
-                if (
-                    checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
-                    checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
-                ) {
-                    ccStatus = ClusterStatus.posthookfailed
-                    statusMessage = clusterCurator.status?.conditions[0].message
-
-                    return { status: ccStatus, statusMessage }
-                }
-            }
+            statusMessage = clusterCurator.status?.conditions[0].message
+            return { status: ccStatus, statusMessage }
         }
     }
 
