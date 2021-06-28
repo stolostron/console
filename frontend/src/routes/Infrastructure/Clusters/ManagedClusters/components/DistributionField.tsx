@@ -8,7 +8,6 @@ import { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import {
-    checkCuratorConditionFailed,
     checkCuratorConditionInProgress,
     checkCuratorLatestFailedOperation,
     checkCuratorLatestOperation,
@@ -52,69 +51,69 @@ export function DistributionField(props: {
     // use display version directly for non-online clusters
 
     // Pre/Post hook
-    if (checkCuratorLatestOperation(CuratorCondition.update, ccConditions)) {
-        if (
-            checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions) ||
-            checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions) ||
-            checkCuratorLatestFailedOperation(CuratorCondition.update, ccConditions)
-        ) {
-            // hook state
+    if (
+        (checkCuratorLatestOperation(CuratorCondition.upgrade, ccConditions) &&
+            checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) ||
+        checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions) ||
+        checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)
+    ) {
+        // hook state
+        console.log('in upgrade state')
+        let statusType = StatusType.pending
+        let statusTitle = 'upgrade.ansible.prehookjob.title'
+        let statusMessage = 'upgrade.ansible.pending.title'
+        let footerContent: ReactNode | string = (
+            <AcmButton
+                onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
+                variant="link"
+                role="link"
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
+                isDisabled={!latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
+            >
+                {t('view.logs')}
+            </AcmButton>
+        )
 
-            let statusType = StatusType.pending
-            let statusTitle = 'upgrade.ansible.prehookjob.title'
-            let statusMessage = 'upgrade.ansible.pending.title'
-            let footerContent: ReactNode | string = (
-                <AcmButton
-                    onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
-                    variant="link"
-                    role="link"
-                    icon={<ExternalLinkAltIcon />}
-                    iconPosition="right"
-                    isDisabled={!!latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
-                >
-                    {t('upgrade.upgrading.link')}
-                </AcmButton>
-            )
-
-            // check if pre-hook is in progress
-            if (checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) {
-                statusTitle = 'upgrade.ansible.prehookjob.title'
-                statusType = StatusType.progress
-                statusMessage = 'upgrade.ansible.prehook'
-            }
-            // check if pre-hook is in progress
-            if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
-                console.log('checking cc: ', ccConditions)
-                statusTitle = 'upgrade.ansible.posthookjob.title'
-                statusType = StatusType.progress
-                statusMessage = 'upgrade.ansible.posthook'
-            }
-            // if pre/post failed
-            if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions)) {
-                statusType = StatusType.warning
-                statusTitle = checkCuratorLatestOperation('prehookjob', ccConditions)
-                    ? 'upgrade.ansible.prehookjob.title'
-                    : 'upgrade.ansible.posthookjob.title'
-                statusMessage = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
-                    ? 'upgrade.ansible.prehook.failure'
-                    : 'upgrade.ansible.posthook.failure'
-                footerContent = getConditionStatusMessage(CuratorCondition.curatorjob, ccConditions) || ''
-            }
-            return (
-                <>
-                    <div>{props.cluster?.distribution.displayVersion}</div>
-                    <AcmInlineStatus
-                        type={statusType}
-                        status={t(statusTitle)}
-                        popover={{
-                            headerContent: t(statusTitle),
-                            bodyContent: t(statusMessage || ''),
-                            footerContent: footerContent,
-                        }}
-                    />
-                </>
-            )
+        // check if pre-hook is in progress
+        if (checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) {
+            statusTitle = 'upgrade.ansible.prehookjob.title'
+            statusType = StatusType.progress
+            statusMessage = 'upgrade.ansible.prehook'
         }
+        // check if pre-hook is in progress
+        if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
+            console.log('checking cc: ', ccConditions)
+            statusTitle = 'upgrade.ansible.posthookjob.title'
+            statusType = StatusType.progress
+            statusMessage = 'upgrade.ansible.posthook'
+        }
+        // if pre/post failed
+        if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
+            console.log('in failed state')
+            statusType = StatusType.warning
+            statusTitle = checkCuratorLatestOperation('prehookjob', ccConditions)
+                ? 'upgrade.ansible.prehookjob.title'
+                : 'upgrade.ansible.posthookjob.title'
+            statusMessage = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
+                ? 'upgrade.ansible.prehook.failure'
+                : 'upgrade.ansible.posthook.failure'
+            footerContent = getConditionStatusMessage(CuratorCondition.curatorjob, ccConditions) || ''
+        }
+        return (
+            <>
+                <div>{props.cluster?.distribution.displayVersion}</div>
+                <AcmInlineStatus
+                    type={statusType}
+                    status={t(statusTitle)}
+                    popover={{
+                        headerContent: t(statusTitle),
+                        bodyContent: t(statusMessage || ''),
+                        footerContent: footerContent,
+                    }}
+                />
+            </>
+        )
     }
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>

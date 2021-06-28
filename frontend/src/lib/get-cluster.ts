@@ -2,7 +2,7 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@open-cluster-management/ui-components'
-import { AnsibleJob, getLatestAnsibleJob } from '../resources/ansible-job'
+import { AnsibleJob } from '../resources/ansible-job'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { ClusterClaim } from '../resources/cluster-claim'
 import { ClusterCurator } from '../resources/cluster-curator'
@@ -572,7 +572,7 @@ export enum CuratorCondition {
     import = 'monitor-import',
     posthook = 'posthook-ansiblejob',
     install = 'DesiredCuration: install',
-    update = 'DesiredCuration: upgrade',
+    upgrade = 'DesiredCuration: upgrade',
 }
 
 export function getClusterStatus(
@@ -585,11 +585,6 @@ export function getClusterStatus(
     ansibleJobs?: AnsibleJob[] | undefined
 ) {
     let statusMessage: string | undefined
-
-    let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
-    if (clusterCurator?.metadata.namespace && ansibleJobs)
-        latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, clusterCurator.metadata.namespace)
-    else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
     // ClusterCurator status
     let ccStatus: ClusterStatus = ClusterStatus.pending
