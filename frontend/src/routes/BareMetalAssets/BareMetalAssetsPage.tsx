@@ -23,7 +23,12 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { deleteResource, IRequestResult } from '../../lib/resource-request'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { BareMetalAsset, listBareMetalAssets } from '../../resources/bare-metal-asset'
+import {
+    BareMetalAsset,
+    listBareMetalAssets,
+    BareMetalAssetConditionReasons,
+    BareMetalAssetConditionTypes,
+} from '../../resources/bare-metal-asset'
 import {
     BMATableRbacAccess,
     createSubjectAccessReview,
@@ -217,30 +222,39 @@ export function BareMetalAssetsTable(props: {
                         {
                             header: t('bareMetalAsset.tableHeader.status'),
                             cell: (bareMetalAsset) => {
-                                if (Array.isArray(bareMetalAsset.status?.conditions)) {
-                                    let mostCurrentStatusTime = new Date(0)
-                                    let mostCurrentStatus: string | undefined = undefined
-                                    for (let condition of bareMetalAsset.status!.conditions) {
-                                        if (condition.lastTransitionTime >= mostCurrentStatusTime) {
-                                            mostCurrentStatusTime = condition.lastTransitionTime
-                                            mostCurrentStatus = condition.type
+                                if (bareMetalAsset.status) {
+                                    let mostCurrentStatusTime = new Date(
+                                        bareMetalAsset.status!.conditions[0].lastTransitionTime
+                                    )
+                                    let mostCurrentStatus = bareMetalAsset.status!.conditions[0].type
+                                    let mostCurrentReason = bareMetalAsset.status.conditions[0].reason
+                                    for (const conditions of bareMetalAsset.status!.conditions) {
+                                        if (
+                                            new Date(conditions.lastTransitionTime).getTime() >
+                                            mostCurrentStatusTime!.getTime()
+                                        ) {
+                                            mostCurrentStatusTime = new Date(conditions.lastTransitionTime)
+                                            mostCurrentStatus = conditions.type
+                                            mostCurrentReason = conditions.reason
+                                        }
+                                        // if status time is equivalent, take the status at that was added last
+                                        else if (
+                                            new Date(conditions.lastTransitionTime).getTime() ===
+                                            mostCurrentStatusTime.getTime()
+                                        ) {
+                                            mostCurrentStatusTime = new Date(conditions.lastTransitionTime)
+                                            mostCurrentStatus = conditions.type
+                                            mostCurrentReason = conditions.reason
                                         }
                                     }
-                                    switch (mostCurrentStatus) {
-                                        // returns translation strings
-                                        case 'CredentialsFound':
-                                            return t('bareMetalAsset.statusMessage.credentialsFound')
-                                        case 'AssetSyncStarted':
-                                            return t('bareMetalAsset.statusMessage.assetSyncStarted')
-                                        case 'ClusterDeploymentFound':
-                                            return t('bareMetalAsset.statusMessage.clusterDeploymentFound')
-                                        case 'AssetSyncCompleted':
-                                            return t('bareMetalAsset.statusMessage.assetSyncCompleted')
-                                        case 'Ready':
-                                            return t('bareMetalAsset.statusMessage.ready')
-                                        default:
-                                            return ''
-                                    }
+
+                                    if (
+                                        mostCurrentReason === BareMetalAssetConditionReasons.NoneSpecified &&
+                                        mostCurrentStatus ===
+                                            BareMetalAssetConditionTypes.ConditionClusterDeploymentFound
+                                    )
+                                        return t('bareMetalAsset.statusMessage.clusterDeploymentNameNotFound')
+                                    else return t(`bareMetalAsset.statusMessage.${mostCurrentReason}`)
                                 }
                                 return ''
                             },
