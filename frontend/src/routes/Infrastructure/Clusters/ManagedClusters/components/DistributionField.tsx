@@ -45,8 +45,8 @@ export function DistributionField(props: {
     // Pre/Post hook
     if (
         (checkCuratorLatestOperation(CuratorCondition.upgrade, ccConditions) &&
-            checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) ||
-        checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions) ||
+            (checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions) ||
+                checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions))) ||
         checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)
     ) {
         // hook state
