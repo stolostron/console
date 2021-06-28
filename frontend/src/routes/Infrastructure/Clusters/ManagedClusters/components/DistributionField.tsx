@@ -31,13 +31,7 @@ export function DistributionField(props: {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-
-    // const [ansibleJobs] = useRecoilState(ansibleJobState)
-    // const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const clusterCurator = props.clusterCurator
-
-    console.log('checking curator: ', clusterCurator)
-
     const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator?.status?.conditions ?? []
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
@@ -45,8 +39,6 @@ export function DistributionField(props: {
         latestAnsibleJob = getLatestAnsibleJob(props.ansibleJobs, props.cluster?.namespace)
     else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
-    // console.log('ansible logs: ', props.ansibleJobs)
-    console.log('checking cc: ', ccConditions)
     if (!props.cluster?.distribution) return <>-</>
     // use display version directly for non-online clusters
 
@@ -58,7 +50,6 @@ export function DistributionField(props: {
         checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)
     ) {
         // hook state
-        console.log('in upgrade state')
         let statusType = StatusType.pending
         let statusTitle = 'upgrade.ansible.prehookjob.title'
         let statusMessage = 'upgrade.ansible.pending.title'
@@ -83,14 +74,12 @@ export function DistributionField(props: {
         }
         // check if pre-hook is in progress
         if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
-            console.log('checking cc: ', ccConditions)
             statusTitle = 'upgrade.ansible.posthookjob.title'
             statusType = StatusType.progress
             statusMessage = 'upgrade.ansible.posthook'
         }
         // if pre/post failed
         if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
-            console.log('in failed state')
             statusType = StatusType.warning
             statusTitle = checkCuratorLatestOperation('prehookjob', ccConditions)
                 ? 'upgrade.ansible.prehookjob.title'

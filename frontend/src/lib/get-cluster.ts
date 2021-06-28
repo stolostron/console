@@ -582,7 +582,6 @@ export function getClusterStatus(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterCurator: ClusterCurator | undefined,
-    ansibleJobs?: AnsibleJob[] | undefined
 ) {
     let statusMessage: string | undefined
 
