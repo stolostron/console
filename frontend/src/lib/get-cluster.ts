@@ -636,18 +636,19 @@ export function getClusterStatus(
             return { status: ccStatus, statusMessage }
         } else if (clusterDeployment) {
             // when curator is no longer installing, catch the prehook/posthook failure here
-            if (!clusterDeployment.spec?.installed) {
-                if (
-                    checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
-                    checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
-                ) {
+
+            if (
+                checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
+                checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
+            ) {
+                if (!clusterDeployment.spec?.installed) {
                     ccStatus = ClusterStatus.prehookfailed
+                } else {
+                    ccStatus = ClusterStatus.posthookfailed
                 }
-            } else {
-                ccStatus = ClusterStatus.prehookfailed
+                statusMessage = clusterCurator.status?.conditions[0].message
+                return { status: ccStatus, statusMessage }
             }
-            statusMessage = clusterCurator.status?.conditions[0].message
-            return { status: ccStatus, statusMessage }
         }
     }
 
