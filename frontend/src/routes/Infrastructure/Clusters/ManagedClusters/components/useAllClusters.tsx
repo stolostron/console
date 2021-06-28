@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
+import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 import {
     ansibleJobState,
     certificateSigningRequestsState,
@@ -12,7 +13,6 @@ import {
     managedClusterInfosState,
     managedClustersState,
 } from '../../../../../atoms'
-import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 
 export function useAllClusters() {
     const [
