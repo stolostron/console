@@ -85,7 +85,7 @@ export function DistributionField(props: {
                 statusType = StatusType.pending
                 statusText = 'upgrade.upgrading.trigger'
                 break
-            }
+        }
 
         return (
             <>
