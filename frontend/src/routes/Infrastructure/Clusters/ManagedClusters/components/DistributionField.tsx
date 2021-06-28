@@ -70,7 +70,7 @@ export function DistributionField(props: {
             statusType = StatusType.progress
             statusMessage = 'upgrade.ansible.prehook'
         }
-        // check if pre-hook is in progress
+        // check if post-hook is in progress
         if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
             statusTitle = 'upgrade.ansible.posthookjob.title'
             statusType = StatusType.progress
