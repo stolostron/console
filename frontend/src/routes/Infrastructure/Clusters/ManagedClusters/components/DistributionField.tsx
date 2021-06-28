@@ -81,7 +81,7 @@ export function DistributionField(props: {
         // if pre/post failed
         if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
             statusType = StatusType.warning
-            statusTitle = checkCuratorLatestOperation('prehookjob', ccConditions)
+            statusTitle = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
                 ? 'upgrade.ansible.prehookjob.title'
                 : 'upgrade.ansible.posthookjob.title'
             statusMessage = checkCuratorLatestFailedOperation('prehookjob', ccConditions)

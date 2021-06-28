@@ -6,7 +6,9 @@ import { Cluster, DistributionInfo, ClusterStatus } from '../../../../../lib/get
 import { DistributionField } from './DistributionField'
 import { ResourceAttributes } from '../../../../../resources/self-subject-access-review'
 import * as nock from 'nock'
-import { clickByText, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
+import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind } from '../../../../../resources/ansible-job'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -117,6 +119,106 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
     isManagedOpenShift: true,
 }
 
+const clusterCuratorUpgrade: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'test-curator1',
+        namespace: 'default',
+    },
+    spec: {
+        desiredCuration: 'upgrade',
+        upgrade: {
+            towerAuthSecret: 'ansible-credential-i',
+            prehook: [
+                {
+                    name: 'test-job-i',
+                },
+            ],
+        },
+    },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '2021-01-04T18:23:30Z',
+                message:
+                    'curator-job-5snl7 DesiredCuration: upgrade - AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr',
+                reason: 'Job_has_finished',
+                status: 'False',
+                type: 'prehook-ansiblejob',
+            },
+            {
+                lastTransitionTime: '2021-01-04T18:23:37Z',
+                message: 'Invalid GCP project ID',
+                reason: 'GCPInvalidProjectID',
+                status: 'True',
+                type: 'ClusterProvisionFailed',
+            },
+        ],
+    },
+}
+
+const clusterCuratorUpgradeFailed: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+        name: 'test-curator1',
+        namespace: 'default',
+    },
+    spec: {
+        desiredCuration: 'upgrade',
+        upgrade: {
+            towerAuthSecret: 'ansible-credential-i',
+            prehook: [
+                {
+                    name: 'test-job-i',
+                },
+            ],
+        },
+    },
+    status: {
+        conditions: [
+            {
+                lastTransitionTime: '2021-06-28T19:23:23Z',
+                message:
+                    'curator-job-5snl7 DesiredCuration: upgrade Failed - AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr',
+                reason: 'Job_failed',
+                status: 'True',
+                type: 'clustercurator-job',
+            },
+            {
+                lastTransitionTime: '2021-06-28T19:23:23Z',
+                message: 'AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr exited with an error',
+                reason: 'Job_has_finished',
+                status: 'False',
+                type: 'prehook-ansiblejob',
+            },
+        ],
+    },
+}
+
+const ansibleJob: AnsibleJob = {
+    apiVersion: AnsibleJobApiVersion,
+    kind: AnsibleJobKind,
+    metadata: {
+        name: 'ansible-job',
+        namespace: 'clusterName',
+        annotations: {
+            jobtype: 'prehook',
+        },
+    },
+    status: {
+        ansibleJobResult: {
+            changed: true,
+            failed: false,
+            status: 'pending',
+            url: '/ansible/url',
+            finished: '2021-06-08T16:43:09.023018Z',
+            started: '2021-06-08T16:43:01.853019Z',
+        },
+    },
+}
+
 function getClusterCuratoResourceAttributes(name: string, verb: string) {
     return {
         resource: 'clustercurators',
@@ -127,7 +229,13 @@ function getClusterCuratoResourceAttributes(name: string, verb: string) {
 }
 
 describe('DistributionField', () => {
-    const renderDistributionInfoField = async (data: DistributionInfo, allowUpgrade: boolean, hasUpgrade = false) => {
+    const renderDistributionInfoField = async (
+        data: DistributionInfo,
+        allowUpgrade: boolean,
+        hasUpgrade = false,
+        clusterCurator?: ClusterCurator,
+        ansibleJobs?: AnsibleJob[]
+    ) => {
         let nockAction: nock.Scope | undefined = undefined
         let nockAction2: nock.Scope | undefined = undefined
         if (hasUpgrade) {
@@ -159,7 +267,9 @@ describe('DistributionField', () => {
             isManaged: true,
         }
 
-        const retResource = render(<DistributionField cluster={mockCluster} />)
+        const retResource = render(
+            <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} ansibleJobs={ansibleJobs} />
+        )
         if (nockAction) {
             await waitForNock(nockAction)
         }
@@ -211,5 +321,32 @@ describe('DistributionField', () => {
     it('should not show upgrade button for managed OpenShift', async () => {
         const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
         expect(queryAllByText('upgrade.available').length).toBe(0)
+    })
+
+    it('should display ansible hook status', async () => {
+        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgrade, [
+            ansibleJob,
+        ])
+        await waitForText('upgrade.ansible.prehookjob.title')
+    })
+
+    it('should display ansible failed hook status', async () => {
+        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgradeFailed, [
+            ansibleJob,
+        ])
+        await waitForText('upgrade.ansible.prehookjob.title')
+        await clickByText('upgrade.ansible.prehookjob.title')
+        await waitForText('upgrade.ansible.prehook.failure')
+    })
+
+    it('should open to ansible logs', async () => {
+        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgrade, [
+            ansibleJob,
+        ])
+        window.open = jest.fn()
+        await waitForText('upgrade.ansible.prehookjob.title')
+        await clickByText('upgrade.ansible.prehookjob.title')
+        await clickByText('view.logs')
+        await waitForCalled(window.open as jest.Mock)
     })
 })
