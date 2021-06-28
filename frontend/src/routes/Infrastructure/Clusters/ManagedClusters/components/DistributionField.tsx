@@ -1,44 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { useContext } from 'react'
-
 import {
-    checkCuratorConditionDone,
     checkCuratorConditionFailed,
+    checkCuratorConditionInProgress,
+    checkCuratorLatestFailedOperation,
     checkCuratorLatestOperation,
     Cluster,
     ClusterStatus,
     CuratorCondition,
+    getConditionStatusMessage,
 } from '../../../../../lib/get-cluster'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources/ansible-job'
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: {
     cluster?: Cluster
-    clusterCuratorList?: ClusterCurator[] | undefined
+    clusterCurator?: ClusterCurator | undefined
     ansibleJobs?: AnsibleJob[] | undefined
 }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const { cluster } = useContext(ClusterContext)
 
     // const [ansibleJobs] = useRecoilState(ansibleJobState)
     // const [clusterCurators] = useRecoilState(clusterCuratorsState)
-    const clusterCurator = props.clusterCuratorList?.find((curator) => curator.metadata.name === props.cluster?.name)
+    const clusterCurator = props.clusterCurator
+
+    console.log('checking curator: ', clusterCurator)
 
     const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator?.status?.conditions ?? []
 
@@ -47,80 +46,81 @@ export function DistributionField(props: {
         latestAnsibleJob = getLatestAnsibleJob(props.ansibleJobs, props.cluster?.namespace)
     else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
-    let activeJob: AnsibleJob | undefined
-    if (props.ansibleJobs)
-        activeJob = props.ansibleJobs.find(
-            (job) => job.status?.ansibleJobResult?.started && !job.status.ansibleJobResult?.finished
-        )
-
+    // console.log('ansible logs: ', props.ansibleJobs)
+    console.log('checking cc: ', ccConditions)
     if (!props.cluster?.distribution) return <>-</>
     // use display version directly for non-online clusters
 
-    if (
-        checkCuratorLatestOperation('DesiredCuration: upgrade', ccConditions) &&
-        !props.cluster?.distribution?.upgradeInfo?.isUpgrading
-    ) {
-        // hook state
-        let statusText = ''
-        let statusType = StatusType.pending
+    // Pre/Post hook
+    if (checkCuratorLatestOperation(CuratorCondition.update, ccConditions)) {
+        if (
+            checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions) ||
+            checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions) ||
+            checkCuratorLatestFailedOperation(CuratorCondition.update, ccConditions)
+        ) {
+            // hook state
 
-        switch (cluster?.status) {
-            case ClusterStatus.prehookjob:
+            let statusType = StatusType.pending
+            let statusTitle = 'upgrade.ansible.prehookjob.title'
+            let statusMessage = 'upgrade.ansible.pending.title'
+            let footerContent: ReactNode | string = (
+                <AcmButton
+                    onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
+                    variant="link"
+                    role="link"
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                    isDisabled={!!latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
+                >
+                    {t('upgrade.upgrading.link')}
+                </AcmButton>
+            )
+
+            // check if pre-hook is in progress
+            if (checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) {
+                statusTitle = 'upgrade.ansible.prehookjob.title'
                 statusType = StatusType.progress
-                statusText = 'upgrade.ansible.prehook'
-                break
-            case ClusterStatus.prehookfailed:
-                statusType = StatusType.warning
-                statusText = 'upgrade.ansible.prehook.failure'
-                break
-            case ClusterStatus.posthookjob:
+                statusMessage = 'upgrade.ansible.prehook'
+            }
+            // check if pre-hook is in progress
+            if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
+                console.log('checking cc: ', ccConditions)
+                statusTitle = 'upgrade.ansible.posthookjob.title'
                 statusType = StatusType.progress
-                statusText = 'upgrade.ansible.posthook'
-                break
-            case ClusterStatus.posthookfailed:
+                statusMessage = 'upgrade.ansible.posthook'
+            }
+            // if pre/post failed
+            if (checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions)) {
                 statusType = StatusType.warning
-                statusText = 'upgrade.ansible.posthook.failure'
-                break
-            default:
-                statusType = StatusType.pending
-                statusText = 'upgrade.upgrading.trigger'
-                break
+                statusTitle = checkCuratorLatestOperation('prehookjob', ccConditions)
+                    ? 'upgrade.ansible.prehookjob.title'
+                    : 'upgrade.ansible.posthookjob.title'
+                statusMessage = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
+                    ? 'upgrade.ansible.prehook.failure'
+                    : 'upgrade.ansible.posthook.failure'
+                footerContent = getConditionStatusMessage(CuratorCondition.curatorjob, ccConditions) || ''
+            }
+            return (
+                <>
+                    <div>{props.cluster?.distribution.displayVersion}</div>
+                    <AcmInlineStatus
+                        type={statusType}
+                        status={t(statusTitle)}
+                        popover={{
+                            headerContent: t(statusTitle),
+                            bodyContent: t(statusMessage || ''),
+                            footerContent: footerContent,
+                        }}
+                    />
+                </>
+            )
         }
-
-        return (
-            <>
-                <div>{props.cluster?.distribution.displayVersion}</div>
-                <AcmInlineStatus
-                    type={statusType}
-                    status={t(statusText)}
-                    popover={
-                        latestAnsibleJob.prehook?.status?.ansibleJobResult?.url
-                            ? {
-                                  headerContent: t(`upgrade.ansible.${cluster?.status}.title`),
-                                  bodyContent: t(statusText, {
-                                      clusterName: props.cluster?.name,
-                                  }),
-                                  footerContent: (
-                                      <a
-                                          href={latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                      >
-                                          {t('upgrade.ansible.link')} <ExternalLinkAltIcon />
-                                      </a>
-                                  ),
-                              }
-                            : undefined
-                    }
-                />
-            </>
-        )
     }
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
     if (props.cluster?.distribution.upgradeInfo.upgradeFailed) {
-        // UPGRADE FAILED
+        // OCP UPGRADE FAILED
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>
@@ -157,7 +157,7 @@ export function DistributionField(props: {
             </>
         )
     } else if (props.cluster?.distribution.upgradeInfo.isUpgrading) {
-        // UPGRADE IN PROGRESS
+        // OCP UPGRADE IN PROGRESS
         return (
             <>
                 <div>{props.cluster?.distribution.displayVersion}</div>

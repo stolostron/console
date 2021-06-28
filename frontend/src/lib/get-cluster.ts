@@ -2,17 +2,17 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@open-cluster-management/ui-components'
+import { AnsibleJob, getLatestAnsibleJob } from '../resources/ansible-job'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
+import { ClusterClaim } from '../resources/cluster-claim'
+import { ClusterCurator } from '../resources/cluster-curator'
 import { ClusterDeployment } from '../resources/cluster-deployment'
 import { ManagedCluster } from '../resources/managed-cluster'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
-import { ClusterClaim } from '../resources/cluster-claim'
-import { ClusterCurator } from '../resources/cluster-curator'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
-import { AnsibleJob, getLatestAnsibleJob } from '../resources/ansible-job'
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -222,8 +222,15 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
 
 export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.message?.includes(condition))
-    console.log('checking found job: ', cond)
     return cond?.status === 'False' && cond.reason === 'Job_has_finished'
+}
+
+export const checkCuratorLatestFailedOperation = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    const cond = conditions?.find((c) => c.message?.includes(condition))
+    return cond?.status === 'True' && cond.reason === 'Job_failed'
 }
 
 export const checkCuratorConditionInProgress = (
@@ -248,7 +255,7 @@ export const checkCuratorConditionDone = (condition: string, conditions: V1Custo
     return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
 }
 
-const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.message
 }
@@ -564,6 +571,8 @@ export enum CuratorCondition {
     provision = 'hive-provisioning-job',
     import = 'monitor-import',
     posthook = 'posthook-ansiblejob',
+    install = 'DesiredCuration: install',
+    update = 'DesiredCuration: upgrade',
 }
 
 export function getClusterStatus(
@@ -586,8 +595,6 @@ export function getClusterStatus(
     let ccStatus: ClusterStatus = ClusterStatus.pending
     if (clusterCurator) {
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
-        if (checkCuratorLatestOperation('DesiredCuration: install', ccConditions)) console.log('test pass')
-        console.log('checking conditions: ', ccConditions)
         // ClusterCurator has not completed so loop through statuses
         if (
             clusterCurator?.spec?.desiredCuration === 'install' &&
@@ -638,7 +645,7 @@ export function getClusterStatus(
             if (!clusterDeployment.spec?.installed) {
                 if (
                     checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
-                    checkCuratorLatestOperation('DesiredCuration: install', ccConditions)
+                    checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
                 ) {
                     ccStatus = ClusterStatus.prehookfailed
                     statusMessage = clusterCurator.status?.conditions[0].message
@@ -649,7 +656,7 @@ export function getClusterStatus(
             if (clusterDeployment.spec?.installed) {
                 if (
                     checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
-                    checkCuratorLatestOperation('DesiredCuration: install', ccConditions)
+                    checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
                 ) {
                     ccStatus = ClusterStatus.posthookfailed
                     statusMessage = clusterCurator.status?.conditions[0].message

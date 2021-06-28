@@ -2,17 +2,17 @@
 
 import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 import {
+    ansibleJobState,
     certificateSigningRequestsState,
-    clusterDeploymentsState,
-    managedClusterInfosState,
-    managedClustersState,
-    managedClusterAddonsState,
     clusterClaimsState,
     clusterCuratorsState,
-    ansibleJobState,
+    clusterDeploymentsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
 } from '../../../../../atoms'
+import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 
 export function useAllClusters() {
     const [
@@ -56,6 +56,7 @@ export function useAllClusters() {
             managedClusterAddons,
             clusterClaims,
             clusterCurators,
+            ansibleJobs,
         ]
     )
     return clusters as Cluster[]

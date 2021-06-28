@@ -256,7 +256,9 @@ export function ClustersTable(props: {
                         cell: (cluster) => (
                             <DistributionField
                                 cluster={cluster}
-                                clusterCuratorList={clusterCurators}
+                                clusterCurator={clusterCurators.find(
+                                    (curator) => curator.metadata.name === cluster.name
+                                )}
                                 ansibleJobs={ansibleJobs}
                             />
                         ),
