@@ -467,7 +467,8 @@ function EditAnsibleJobModal(props: {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
     let ansibleJobList: string[]
-    if (props.ansibleJobList) ansibleJobList = props.ansibleJobList.filter((job)=>ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
+    if (props.ansibleJobList)
+        ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
