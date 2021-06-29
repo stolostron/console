@@ -109,6 +109,11 @@ export type UpgradeInfo = {
     isReadyUpdates: boolean
     upgradePercentage: string
     upgradeFailed: boolean
+    hookFailed: boolean
+    latestJob: {
+        conditionMessage: string
+        step: CuratorCondition | undefined
+    }
     currentVersion?: string
     desiredVersion?: string
     availableUpdates: string[]
@@ -416,6 +421,11 @@ export function getDistributionInfo(
         isReadyUpdates: false,
         upgradePercentage: '',
         upgradeFailed: false,
+        hookFailed: false,
+        latestJob: {
+            conditionMessage: '',
+            step: undefined,
+        },
         currentVersion: undefined,
         desiredVersion: undefined,
         isReadySelectChannels: false,
@@ -456,6 +466,13 @@ export function getDistributionInfo(
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
             checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
         upgradeInfo.isUpgradeCuration = isUpgradeCuration
+        upgradeInfo.hookFailed = checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
+        upgradeInfo.latestJob.conditionMessage =
+            getConditionStatusMessage(CuratorCondition.curatorjob, curatorConditions) || ''
+        upgradeInfo.latestJob.step =
+            isUpgradeCuration && checkCuratorLatestOperation(CuratorCondition.posthook, curatorConditions)
+                ? CuratorCondition.posthook
+                : CuratorCondition.prehook
         const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
         const curatorIsUpgrading =
             isUpgradeCuration &&

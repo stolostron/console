@@ -1,20 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
-import {
-    checkCuratorLatestFailedOperation,
-    checkCuratorLatestOperation,
-    Cluster,
-    ClusterStatus,
-    CuratorCondition,
-    getConditionStatusMessage,
-} from '../../../../../lib/get-cluster'
+import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources/ansible-job'
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
@@ -28,9 +20,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
-    const clusterCurator = props.clusterCurator
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-    const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator?.status?.conditions ?? []
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
@@ -44,12 +34,14 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     if (props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration) {
         // hook state
         let statusType = StatusType.progress
-        let statusTitle = checkCuratorLatestOperation(CuratorCondition.posthook, ccConditions)
-            ? 'upgrade.ansible.posthookjob.title'
-            : 'upgrade.ansible.prehookjob.title'
-        let statusMessage = checkCuratorLatestOperation(CuratorCondition.posthook, ccConditions)
-            ? 'upgrade.ansible.posthook'
-            : 'upgrade.ansible.prehook'
+        let statusTitle =
+            props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
+                ? 'upgrade.ansible.posthookjob.title'
+                : 'upgrade.ansible.prehookjob.title'
+        let statusMessage =
+            props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
+                ? 'upgrade.ansible.posthook'
+                : 'upgrade.ansible.prehook'
         let footerContent: ReactNode | string = (
             <AcmButton
                 onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
@@ -64,7 +56,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         )
 
         // if pre/post failed
-        if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
+        if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
             statusType = StatusType.warning
             if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
@@ -74,7 +66,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 statusMessage = 'upgrade.ansible.posthook.failure'
             }
 
-            footerContent = getConditionStatusMessage(CuratorCondition.curatorjob, ccConditions) || ''
+            footerContent = props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage
         }
         return (
             <>

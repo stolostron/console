@@ -2,7 +2,7 @@
 
 import { render, waitFor } from '@testing-library/react'
 import { nockRBAC } from '../../../../../lib/nock-util'
-import { Cluster, DistributionInfo, ClusterStatus } from '../../../../../lib/get-cluster'
+import { Cluster, DistributionInfo, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
 import { DistributionField } from './DistributionField'
 import { ResourceAttributes } from '../../../../../resources/self-subject-access-review'
 import * as nock from 'nock'
@@ -134,6 +134,42 @@ const mockManagedAnsibleDistributionInfo: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
+        hookFailed: false,
+        latestJob: {
+            conditionMessage: '',
+            step: CuratorCondition.upgrade,
+        },
+        prehooks: {
+            failed: false,
+            hasHooks: true,
+            inProgress: false,
+            success: false,
+        },
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: true,
+}
+
+const mockManagedAnsibleFailedDistributionInfo: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        desiredVersion: '1.2.3',
+        upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+        isUpgradeCuration: true,
+        hookFailed: true,
+        latestJob: {
+            conditionMessage: '',
+            step: CuratorCondition.upgrade,
+        },
         prehooks: {
             failed: true,
             hasHooks: true,
@@ -361,7 +397,7 @@ describe('DistributionField', () => {
 
     it('should display ansible failed hook status', async () => {
         await renderDistributionInfoField(
-            mockManagedAnsibleDistributionInfo,
+            mockManagedAnsibleFailedDistributionInfo,
             false,
             false,
             clusterCuratorUpgradeFailed,
