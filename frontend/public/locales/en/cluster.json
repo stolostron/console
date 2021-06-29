@@ -568,6 +568,7 @@
     "template.templates.title": "Ansible job templates",
     "template.information.title": "Basic information",
     "template.information.description": "The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.",
+    "template.job.duplicate.error":"The job name already exists in this hook. The job list cannot contain duplicates.",
 
     "template.create.name": "Template name",
     "template.create.placeholder": "Enter the name for the template",
