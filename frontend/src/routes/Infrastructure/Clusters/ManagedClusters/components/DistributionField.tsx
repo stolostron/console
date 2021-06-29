@@ -24,10 +24,7 @@ import { ansibleJobState } from '../../../../../atoms'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
-export function DistributionField(props: {
-    cluster?: Cluster
-    clusterCurator?: ClusterCurator | undefined
-}) {
+export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
