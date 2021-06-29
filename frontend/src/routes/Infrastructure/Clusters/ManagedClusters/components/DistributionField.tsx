@@ -50,6 +50,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
             <AcmButton
                 onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
                 variant="link"
+                isSmall
                 role="link"
                 icon={<ExternalLinkAltIcon />}
                 iconPosition="right"
