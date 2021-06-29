@@ -114,6 +114,7 @@ export type UpgradeInfo = {
     availableUpdates: string[]
     isReadySelectChannels: boolean
     isSelectingChannel: boolean
+    isUpgradeCuration: boolean
     currentChannel?: string
     desiredChannel?: string
     availableChannels: string[]
@@ -365,6 +366,17 @@ export function getProvider(
     return provider
 }
 
+export enum CuratorCondition {
+    curatorjob = 'clustercurator-job',
+    prehook = 'prehook-ansiblejob',
+    monitor = 'activate-and-monitor',
+    provision = 'hive-provisioning-job',
+    import = 'monitor-import',
+    posthook = 'posthook-ansiblejob',
+    install = 'DesiredCuration: install',
+    upgrade = 'DesiredCuration: upgrade',
+}
+
 export function getDistributionInfo(
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
@@ -408,6 +420,7 @@ export function getDistributionInfo(
         desiredVersion: undefined,
         isReadySelectChannels: false,
         isSelectingChannel: false,
+        isUpgradeCuration: false,
         currentChannel: undefined,
         desiredChannel: undefined,
         availableUpdates: [],
@@ -438,7 +451,10 @@ export function getDistributionInfo(
 
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
-        const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
+        const isUpgradeCuration =
+            checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
+        upgradeInfo.isUpgradeCuration = isUpgradeCuration
         const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
         const curatorIsUpgrading =
             isUpgradeCuration &&
@@ -562,17 +578,6 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
         }
     })
     return { nodeList, ready, unhealthy, unknown }
-}
-
-export enum CuratorCondition {
-    curatorjob = 'clustercurator-job',
-    prehook = 'prehook-ansiblejob',
-    monitor = 'activate-and-monitor',
-    provision = 'hive-provisioning-job',
-    import = 'monitor-import',
-    posthook = 'posthook-ansiblejob',
-    install = 'DesiredCuration: install',
-    upgrade = 'DesiredCuration: upgrade',
 }
 
 export function getClusterStatus(

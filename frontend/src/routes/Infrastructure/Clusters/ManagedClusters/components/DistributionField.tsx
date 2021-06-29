@@ -8,7 +8,6 @@ import { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import {
-    checkCuratorConditionInProgress,
     checkCuratorLatestFailedOperation,
     checkCuratorLatestOperation,
     Cluster,
@@ -32,6 +31,7 @@ export function DistributionField(props: {
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const clusterCurator = props.clusterCurator
+    const upgradeInfo = props.cluster?.distribution?.upgradeInfo
     const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator?.status?.conditions ?? []
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
@@ -43,14 +43,15 @@ export function DistributionField(props: {
     // use display version directly for non-online clusters
 
     // Pre/Post hook
-    if (
-        checkCuratorLatestOperation(CuratorCondition.upgrade, ccConditions) ||
-        checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)
-    ) {
+    if (upgradeInfo?.isUpgradeCuration) {
         // hook state
-        let statusType = StatusType.pending
-        let statusTitle = 'upgrade.ansible.prehookjob.title'
-        let statusMessage = 'upgrade.ansible.pending.title'
+        let statusType = StatusType.progress
+        let statusTitle = checkCuratorLatestOperation('prehook', ccConditions)
+            ? 'upgrade.ansible.prehookjob.title'
+            : 'upgrade.ansible.posthookjob.title'
+        let statusMessage = checkCuratorLatestOperation('prehook', ccConditions)
+            ? 'upgrade.ansible.prehook'
+            : 'upgrade.ansible.posthook'
         let footerContent: ReactNode | string = (
             <AcmButton
                 onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
@@ -64,27 +65,18 @@ export function DistributionField(props: {
             </AcmButton>
         )
 
-        // check if pre-hook is in progress
-        if (checkCuratorConditionInProgress(CuratorCondition.prehook, ccConditions)) {
-            statusTitle = 'upgrade.ansible.prehookjob.title'
-            statusType = StatusType.progress
-            statusMessage = 'upgrade.ansible.prehook'
-        }
-        // check if post-hook is in progress
-        if (checkCuratorConditionInProgress(CuratorCondition.posthook, ccConditions)) {
-            statusTitle = 'upgrade.ansible.posthookjob.title'
-            statusType = StatusType.progress
-            statusMessage = 'upgrade.ansible.posthook'
-        }
         // if pre/post failed
         if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
             statusType = StatusType.warning
-            statusTitle = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
-                ? 'upgrade.ansible.prehookjob.title'
-                : 'upgrade.ansible.posthookjob.title'
-            statusMessage = checkCuratorLatestFailedOperation('prehookjob', ccConditions)
-                ? 'upgrade.ansible.prehook.failure'
-                : 'upgrade.ansible.posthook.failure'
+            console.log('check: ', upgradeInfo?.prehooks.inProgress)
+            if (upgradeInfo?.prehooks.failed) {
+                statusTitle = 'upgrade.ansible.prehookjob.title'
+                statusMessage = 'upgrade.ansible.prehook.failure'
+            } else {
+                statusTitle = 'upgrade.ansible.posthookjob.title'
+                statusMessage = 'upgrade.ansible.posthook.failure'
+            }
+
             footerContent = getConditionStatusMessage(CuratorCondition.curatorjob, ccConditions) || ''
         }
         return (
