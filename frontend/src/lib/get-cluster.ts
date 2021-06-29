@@ -451,7 +451,7 @@ export function getDistributionInfo(
 
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
-        const isUpgradeCuration =
+        const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade' ||
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
             checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
         upgradeInfo.isUpgradeCuration = isUpgradeCuration

@@ -118,6 +118,31 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
     displayVersion: 'openshift',
     isManagedOpenShift: true,
 }
+const mockManagedAnsibleDistributionInfo: DistributionInfo = {
+    ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+        desiredVersion: '1.2.3',
+        upgradeFailed: false,
+    },
+    upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+        currentVersion: '1.2.3',
+        isUpgradeCuration: true,
+        prehooks:{
+            failed:true,
+            hasHooks:true,
+            inProgress:false,
+            success:false
+        }
+    },
+    k8sVersion: '1.11',
+    displayVersion: 'openshift',
+    isManagedOpenShift: true,
+}
 
 const clusterCuratorUpgrade: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -324,14 +349,14 @@ describe('DistributionField', () => {
     })
 
     it('should display ansible hook status', async () => {
-        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgrade, [
+        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade, [
             ansibleJob,
         ])
         await waitForText('upgrade.ansible.prehookjob.title')
     })
 
     it('should display ansible failed hook status', async () => {
-        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgradeFailed, [
+        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgradeFailed, [
             ansibleJob,
         ])
         await waitForText('upgrade.ansible.prehookjob.title')
@@ -340,7 +365,7 @@ describe('DistributionField', () => {
     })
 
     it('should open to ansible logs', async () => {
-        await renderDistributionInfoField(mockDistributionInfoUpgrading, false, false, clusterCuratorUpgrade, [
+        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade, [
             ansibleJob,
         ])
         window.open = jest.fn()
