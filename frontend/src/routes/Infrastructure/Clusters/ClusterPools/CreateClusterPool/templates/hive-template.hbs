@@ -30,7 +30,7 @@ spec:
 {{/if}}
 {{#if clusterReleaseImage}}
   imageSetRef:
-f    name: {{{clusterImageSetName}}}
+    name: {{{clusterImageSetName}}}
 {{/if}}
   pullSecretRef:
     name: {{{name}}}-pull-secret
