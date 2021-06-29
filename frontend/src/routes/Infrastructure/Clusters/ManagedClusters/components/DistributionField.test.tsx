@@ -9,6 +9,8 @@ import * as nock from 'nock'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
 import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind } from '../../../../../resources/ansible-job'
+import { RecoilRoot } from 'recoil'
+import { ansibleJobState } from '../../../../../atoms'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {
@@ -293,7 +295,9 @@ describe('DistributionField', () => {
         }
 
         const retResource = render(
-            <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} ansibleJobs={ansibleJobs} />
+            <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
+                <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
+            </RecoilRoot>
         )
         if (nockAction) {
             await waitForNock(nockAction)
