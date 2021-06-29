@@ -31,7 +31,11 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     // use display version directly for non-online clusters
 
     // Pre/Post hook
-    if (props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration) {
+    if (
+        props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration &&
+        (props.cluster?.distribution?.upgradeInfo?.hooksInProgress ||
+            props.cluster?.distribution?.upgradeInfo?.hookFailed)
+    ) {
         // hook state
         let statusType = StatusType.progress
         let statusTitle =

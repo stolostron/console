@@ -2,7 +2,6 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@open-cluster-management/ui-components'
-import { AnsibleJob } from '../resources/ansible-job'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { ClusterClaim } from '../resources/cluster-claim'
 import { ClusterCurator } from '../resources/cluster-curator'
@@ -109,6 +108,7 @@ export type UpgradeInfo = {
     isReadyUpdates: boolean
     upgradePercentage: string
     upgradeFailed: boolean
+    hooksInProgress: boolean
     hookFailed: boolean
     latestJob: {
         conditionMessage: string
@@ -144,8 +144,7 @@ export function mapClusters(
     managedClusters: ManagedCluster[] = [],
     managedClusterAddOns: ManagedClusterAddOn[] = [],
     clusterClaims: ClusterClaim[] = [],
-    clusterCurators: ClusterCurator[] = [],
-    ansibleJobs: AnsibleJob[] = []
+    clusterCurators: ClusterCurator[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -169,8 +168,7 @@ export function mapClusters(
             managedCluster,
             addons,
             clusterClaim,
-            clusterCurator,
-            ansibleJobs
+            clusterCurator
         )
     })
 }
@@ -182,8 +180,7 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterClaim: ClusterClaim | undefined,
-    clusterCurator: ClusterCurator | undefined,
-    ansibleJobs?: AnsibleJob[] | undefined
+    clusterCurator: ClusterCurator | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -191,8 +188,7 @@ export function getCluster(
         certificateSigningRequests,
         managedCluster,
         managedClusterAddOns,
-        clusterCurator,
-        ansibleJobs
+        clusterCurator
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -421,6 +417,7 @@ export function getDistributionInfo(
         isReadyUpdates: false,
         upgradePercentage: '',
         upgradeFailed: false,
+        hooksInProgress: false,
         hookFailed: false,
         latestJob: {
             conditionMessage: '',
@@ -474,6 +471,9 @@ export function getDistributionInfo(
                 ? CuratorCondition.posthook
                 : CuratorCondition.prehook
         const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
+        upgradeInfo.hooksInProgress =
+            checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
+            checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
         const curatorIsUpgrading =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&

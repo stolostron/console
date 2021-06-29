@@ -134,6 +134,7 @@ const mockManagedAnsibleDistributionInfo: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
+        hooksInProgress: true,
         hookFailed: false,
         latestJob: {
             conditionMessage: '',
@@ -165,6 +166,7 @@ const mockManagedAnsibleFailedDistributionInfo: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
+        hooksInProgress: false,
         hookFailed: true,
         latestJob: {
             conditionMessage: '',
@@ -296,8 +298,7 @@ describe('DistributionField', () => {
         data: DistributionInfo,
         allowUpgrade: boolean,
         hasUpgrade = false,
-        clusterCurator?: ClusterCurator,
-        ansibleJobs?: AnsibleJob[]
+        clusterCurator?: ClusterCurator
     ) => {
         let nockAction: nock.Scope | undefined = undefined
         let nockAction2: nock.Scope | undefined = undefined
