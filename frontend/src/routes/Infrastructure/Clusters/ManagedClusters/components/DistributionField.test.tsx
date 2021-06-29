@@ -132,12 +132,12 @@ const mockManagedAnsibleDistributionInfo: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
-        prehooks:{
-            failed:true,
-            hasHooks:true,
-            inProgress:false,
-            success:false
-        }
+        prehooks: {
+            failed: true,
+            hasHooks: true,
+            inProgress: false,
+            success: false,
+        },
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -356,9 +356,13 @@ describe('DistributionField', () => {
     })
 
     it('should display ansible failed hook status', async () => {
-        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgradeFailed, [
-            ansibleJob,
-        ])
+        await renderDistributionInfoField(
+            mockManagedAnsibleDistributionInfo,
+            false,
+            false,
+            clusterCuratorUpgradeFailed,
+            [ansibleJob]
+        )
         await waitForText('upgrade.ansible.prehookjob.title')
         await clickByText('upgrade.ansible.prehookjob.title')
         await waitForText('upgrade.ansible.prehook.failure')
