@@ -51,6 +51,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
                 variant="link"
                 isSmall
+                isInline
                 role="link"
                 icon={<ExternalLinkAltIcon />}
                 iconPosition="right"
