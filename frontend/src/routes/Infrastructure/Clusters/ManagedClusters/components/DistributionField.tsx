@@ -46,12 +46,12 @@ export function DistributionField(props: {
     if (upgradeInfo?.isUpgradeCuration) {
         // hook state
         let statusType = StatusType.progress
-        let statusTitle = checkCuratorLatestOperation('prehook', ccConditions)
-            ? 'upgrade.ansible.prehookjob.title'
-            : 'upgrade.ansible.posthookjob.title'
-        let statusMessage = checkCuratorLatestOperation('prehook', ccConditions)
-            ? 'upgrade.ansible.prehook'
-            : 'upgrade.ansible.posthook'
+        let statusTitle = checkCuratorLatestOperation(CuratorCondition.posthook, ccConditions)
+            ? 'upgrade.ansible.posthookjob.title'
+            : 'upgrade.ansible.prehookjob.title'
+        let statusMessage = checkCuratorLatestOperation(CuratorCondition.posthook, ccConditions)
+            ? 'upgrade.ansible.posthook'
+            : 'upgrade.ansible.prehook'
         let footerContent: ReactNode | string = (
             <AcmButton
                 onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
@@ -68,6 +68,7 @@ export function DistributionField(props: {
         // if pre/post failed
         if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
             statusType = StatusType.warning
+            console.log('in failure cond')
             console.log('check: ', upgradeInfo?.prehooks.inProgress)
             if (upgradeInfo?.prehooks.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
