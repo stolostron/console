@@ -19,31 +19,32 @@ import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources/ansible-job'
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { useRecoilState } from 'recoil'
+import { ansibleJobState } from '../../../../../atoms'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 export function DistributionField(props: {
     cluster?: Cluster
     clusterCurator?: ClusterCurator | undefined
-    ansibleJobs?: AnsibleJob[] | undefined
 }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const clusterCurator = props.clusterCurator
-    const upgradeInfo = props.cluster?.distribution?.upgradeInfo
+    const [ansibleJobs] = useRecoilState(ansibleJobState)
     const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator?.status?.conditions ?? []
 
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
-    if (props.cluster?.namespace && props.ansibleJobs)
-        latestAnsibleJob = getLatestAnsibleJob(props.ansibleJobs, props.cluster?.namespace)
+    if (props.cluster?.namespace && ansibleJobs)
+        latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
     else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
     if (!props.cluster?.distribution) return <>-</>
     // use display version directly for non-online clusters
 
     // Pre/Post hook
-    if (upgradeInfo?.isUpgradeCuration) {
+    if (props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration) {
         // hook state
         let statusType = StatusType.progress
         let statusTitle = checkCuratorLatestOperation(CuratorCondition.posthook, ccConditions)
@@ -68,9 +69,7 @@ export function DistributionField(props: {
         // if pre/post failed
         if (checkCuratorLatestFailedOperation(CuratorCondition.upgrade, ccConditions)) {
             statusType = StatusType.warning
-            console.log('in failure cond')
-            console.log('check: ', upgradeInfo?.prehooks.inProgress)
-            if (upgradeInfo?.prehooks.failed) {
+            if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
                 statusMessage = 'upgrade.ansible.prehook.failure'
             } else {

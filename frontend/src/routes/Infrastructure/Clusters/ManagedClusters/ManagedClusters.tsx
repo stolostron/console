@@ -17,7 +17,7 @@ import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
+import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { addonPathKey, addonTextKey } from '../../../../lib/get-addons'
@@ -142,7 +142,6 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     sessionStorage.removeItem('DiscoveredClusterApiURL')
 
-    const [ansibleJobs] = useRecoilState(ansibleJobState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
     const { t } = useTranslation(['cluster'])
@@ -259,7 +258,6 @@ export function ClustersTable(props: {
                                 clusterCurator={clusterCurators.find(
                                     (curator) => curator.metadata.name === cluster.name
                                 )}
-                                ansibleJobs={ansibleJobs}
                             />
                         ),
                     },

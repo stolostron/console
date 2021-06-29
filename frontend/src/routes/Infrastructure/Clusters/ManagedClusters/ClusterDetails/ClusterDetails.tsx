@@ -26,7 +26,6 @@ import {
     managedClusterInfosState,
     managedClustersState,
     clusterCuratorsState,
-    ansibleJobState,
 } from '../../../../../atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
@@ -35,7 +34,6 @@ import { Cluster, ClusterStatus, getCluster } from '../../../../../lib/get-clust
 import { canUser } from '../../../../../lib/rbac-util'
 import { ResourceError } from '../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { AnsibleJob } from '../../../../../resources/ansible-job'
 import { ClusterCurator } from '../../../../../resources/cluster-curator'
 import { SecretDefinition } from '../../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
@@ -50,11 +48,9 @@ export const ClusterContext = createContext<{
     readonly cluster: Cluster | undefined
     readonly clusterCurator?: ClusterCurator
     readonly addons: Addon[] | undefined
-    readonly clusterAnsibleJobs: AnsibleJob[] | undefined
 }>({
     cluster: undefined,
     addons: undefined,
-    clusterAnsibleJobs: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -73,7 +69,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         clusterManagementAddons,
         clusterClaims,
         clusterCurators,
-        ansibleJobs,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -84,7 +79,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
             clusterManagementAddonsState,
             clusterClaimsState,
             clusterCuratorsState,
-            ansibleJobState,
         ])
     )
 
@@ -147,15 +141,12 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         )
     }
 
-    const clusterAnsibleJobs = ansibleJobs.filter((jobs) => jobs.metadata.namespace === cluster.name)
-
     return (
         <ClusterContext.Provider
             value={{
                 cluster,
                 clusterCurator,
                 addons,
-                clusterAnsibleJobs,
             }}
         >
             <AcmPage
