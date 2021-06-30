@@ -463,8 +463,10 @@ export function getDistributionInfo(
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
             checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
         upgradeInfo.isUpgradeCuration = isUpgradeCuration
-        upgradeInfo.hookFailed = checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions) && (checkCuratorConditionFailed(CuratorCondition.prehook, curatorConditions) ||
-        checkCuratorConditionFailed(CuratorCondition.posthook, curatorConditions))
+        upgradeInfo.hookFailed =
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions) &&
+            (checkCuratorConditionFailed(CuratorCondition.prehook, curatorConditions) ||
+                checkCuratorConditionFailed(CuratorCondition.posthook, curatorConditions))
         upgradeInfo.latestJob.conditionMessage =
             getConditionStatusMessage(CuratorCondition.curatorjob, curatorConditions) || ''
         upgradeInfo.latestJob.step =
