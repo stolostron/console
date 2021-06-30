@@ -39,12 +39,12 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         let statusType = StatusType.progress
         let statusTitle =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-                ? 'upgrade.ansible.posthookjob.title'
-                : 'upgrade.ansible.prehookjob.title'
+                ? t('upgrade.ansible.posthookjob.title')
+                : t('upgrade.ansible.prehookjob.title')
         let statusMessage: ReactNode | string =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-                ? 'upgrade.ansible.posthook'
-                : 'upgrade.ansible.prehook'
+                ? t('upgrade.ansible.posthook')
+                : t('upgrade.ansible.prehook')
 
         const jobUrl =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
