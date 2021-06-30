@@ -3,7 +3,7 @@
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { ReactNode, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
@@ -21,7 +21,6 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
-
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
         latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
@@ -42,20 +41,26 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
                 ? 'upgrade.ansible.posthookjob.title'
                 : 'upgrade.ansible.prehookjob.title'
-        let statusMessage =
+        let statusMessage: ReactNode | string =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
                 ? 'upgrade.ansible.posthook'
                 : 'upgrade.ansible.prehook'
-        let footerContent: ReactNode | string = (
+
+        const jobUrl =
+            props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
+                ? latestAnsibleJob.posthook?.status?.ansibleJobResult?.url
+                : latestAnsibleJob.prehook?.status?.ansibleJobResult?.url
+
+        const footerContent: ReactNode = (
             <AcmButton
-                onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
+                onClick={() => window.open(jobUrl)}
                 variant="link"
                 isSmall
                 isInline
                 role="link"
                 icon={<ExternalLinkAltIcon />}
                 iconPosition="right"
-                isDisabled={!latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}
+                isDisabled={!jobUrl}
             >
                 {t('view.logs')}
             </AcmButton>
@@ -66,13 +71,21 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
             statusType = StatusType.warning
             if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
-                statusMessage = 'upgrade.ansible.prehook.failure'
+                statusMessage = (
+                    <React.Fragment>
+                        {t('upgrade.ansible.prehook.failure')}
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                    </React.Fragment>
+                )
             } else {
                 statusTitle = 'upgrade.ansible.posthookjob.title'
-                statusMessage = 'upgrade.ansible.posthook.failure'
+                statusMessage = (
+                    <React.Fragment>
+                        {t('upgrade.ansible.posthook.failure')}{' '}
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                    </React.Fragment>
+                )
             }
-
-            footerContent = props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage
         }
         return (
             <>
@@ -82,7 +95,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                     status={t(statusTitle)}
                     popover={{
                         headerContent: t(statusTitle),
-                        bodyContent: t(statusMessage || ''),
+                        bodyContent: statusMessage || '',
                         footerContent: footerContent,
                     }}
                 />
