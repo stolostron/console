@@ -3,7 +3,7 @@
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import React, { ReactNode, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RbacButton } from '../../../../../components/Rbac'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
@@ -72,18 +72,18 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
             if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
                 statusMessage = (
-                    <React.Fragment>
+                    <Fragment>
                         {t('upgrade.ansible.prehook.failure')}
                         <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
-                    </React.Fragment>
+                    </Fragment>
                 )
             } else {
                 statusTitle = 'upgrade.ansible.posthookjob.title'
                 statusMessage = (
-                    <React.Fragment>
+                    <Fragment>
                         {t('upgrade.ansible.posthook.failure')}
                         <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
-                    </React.Fragment>
+                    </Fragment>
                 )
             }
         }
