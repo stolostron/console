@@ -463,7 +463,10 @@ export function getDistributionInfo(
             checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
             checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
         upgradeInfo.isUpgradeCuration = isUpgradeCuration
-        upgradeInfo.hookFailed = checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
+        upgradeInfo.hookFailed =
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions) &&
+            (checkCuratorConditionFailed(CuratorCondition.prehook, curatorConditions) ||
+                checkCuratorConditionFailed(CuratorCondition.posthook, curatorConditions))
         upgradeInfo.latestJob.conditionMessage =
             getConditionStatusMessage(CuratorCondition.curatorjob, curatorConditions) || ''
         upgradeInfo.latestJob.step =
@@ -662,7 +665,9 @@ export function getClusterStatus(
 
             if (
                 checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
-                checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
+                checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions) &&
+                (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions) ||
+                    checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions))
             ) {
                 if (!clusterDeployment.spec?.installed) {
                     ccStatus = ClusterStatus.prehookfailed
