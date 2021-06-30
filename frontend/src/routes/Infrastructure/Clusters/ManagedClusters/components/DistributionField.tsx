@@ -81,7 +81,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 statusTitle = 'upgrade.ansible.posthookjob.title'
                 statusMessage = (
                     <React.Fragment>
-                        {t('upgrade.ansible.posthook.failure')}{' '}
+                        {t('upgrade.ansible.posthook.failure')}
                         <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
                     </React.Fragment>
                 )
