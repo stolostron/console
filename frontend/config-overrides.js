@@ -8,13 +8,8 @@ module.exports = {
             if (_rule.oneOf) {
                 _rule.oneOf.unshift({
                     test: [/\.hbs$/],
-                    loader: 'handlebars-loader',
-                    query: {
-                        precompileOptions: {
-                            knownHelpersOnly: false,
-                        },
-                    },
-                })
+                    loader: 'raw-loader',
+               })
                 break
             }
         }
@@ -28,11 +23,10 @@ module.exports = {
         // Turn off mergeLonghand css minification optimizations
         // This fixes patternfly select input not having borders in production
         for (let plugin of config.optimization.minimizer) {
-            if (plugin.pluginDescriptor?.name === 'OptimizeCssAssetsWebpackPlugin') {
+            if (plugin.pluginDescriptor && plugin.pluginDescriptor.name === 'OptimizeCssAssetsWebpackPlugin') {
                 plugin.options.cssProcessorPluginOptions.preset[1].mergeLonghand = false
             }
         }
-
         return config
     },
 }
