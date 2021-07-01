@@ -226,6 +226,7 @@ export function AnsibleAutomationsForm(props: {
                             value: credential.metadata.name as string,
                         })),
                         isDisabled: isEditing,
+                        prompt:{ text: t('create:creation.ocp.cloud.add.connection'), callback:()=>history.push(NavigationPath.addCredentials)}
                     },
                 ],
             },

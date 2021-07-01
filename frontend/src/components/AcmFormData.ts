@@ -55,6 +55,8 @@ export interface InputBase<T> {
     helperText?: string
     labelHelp?: string
     labelHelpTitle?: string
+
+    prompt?: { text: string; callback: () => void }
 }
 
 export interface TextInput extends InputBase<string> {

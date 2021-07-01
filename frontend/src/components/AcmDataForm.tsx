@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -30,6 +30,7 @@ import {
     DrawerContentBody,
     DrawerPanelContent,
     Flex,
+    FlexItem,
     Form,
     FormFieldGroupExpandable,
     FormFieldGroupHeader,
@@ -817,24 +818,41 @@ export function AcmDataFormInputs(props: {
                 return (
                     <Fragment key={input.id}>
                         {!input.isHidden && (
-                            <FormGroup
-                                id={`${input.id}-form-group`}
-                                fieldId={input.id}
-                                label={input.label}
-                                isRequired={input.isRequired}
-                                helperTextInvalid={error}
-                                validated={validated}
-                                helperText={input.helperText}
-                                labelIcon={
-                                    <LabelHelp
-                                        id={input.id}
-                                        labelHelp={input.labelHelp}
-                                        labelHelpTitle={input.labelHelpTitle}
-                                    />
-                                }
-                            >
-                                <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
-                            </FormGroup>
+                            <Fragment>
+                                <FormGroup
+                                    id={`${input.id}-form-group`}
+                                    fieldId={input.id}
+                                    label={input.label}
+                                    isRequired={input.isRequired}
+                                    helperTextInvalid={error}
+                                    validated={validated}
+                                    helperText={input.helperText}
+                                    labelIcon={
+                                        <LabelHelp
+                                            id={input.id}
+                                            labelHelp={input.labelHelp}
+                                            labelHelpTitle={input.labelHelpTitle}
+                                        />
+                                    }
+                                >
+                                    <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
+                                </FormGroup>
+                                {input.prompt && (
+                                    <Fragment>
+                                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
+                                            <FlexItem>
+                                                <AcmButton
+                                                    variant="link"
+                                                    onClick={input.prompt.callback}
+                                                >
+                                                    {input.prompt.text}{' '}
+                                                    <AcmIcon icon={AcmIconVariant.openNewTab}></AcmIcon>
+                                                </AcmButton>
+                                            </FlexItem>
+                                        </Flex>
+                                    </Fragment>
+                                )}
+                            </Fragment>
                         )}
                     </Fragment>
                 )
