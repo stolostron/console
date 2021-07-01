@@ -170,15 +170,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
 
     const [gcServiceAccountKeys, setGcServiceAccountKeys] = useState<Record<string, any>>({})
 
-    const [ikePorts, setIkePorts] = useState<Record<string, number>>({})
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
-
-    console.log('gcServiceAccountKeys', gcServiceAccountKeys)
 
     useEffect(() => {
         if (fetchSecrets) {
@@ -452,19 +449,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     },
                                 },
                                 {
-                                    id: 'ike-port',
-                                    type: 'TextNumber',
-                                    label: t('submariner.install.form.ikeport'),
-                                    placeholder: t('submariner.install.form.port.placeholder'),
-                                    labelHelp: t('submariner.install.form.ikeport.labelHelp'),
-                                    value: ikePorts[clusterName] ?? submarinerConfigDefault.ikePort.toString(),
-                                    onChange: (value: number) => {
-                                        const copy = { ...ikePorts }
-                                        copy[clusterName] = value
-                                        setIkePorts(copy)
-                                    },
-                                },
-                                {
                                     id: 'natt-port',
                                     type: 'TextNumber',
                                     label: t('submariner.install.form.nattport'),
@@ -576,7 +560,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 gatewayConfig: {
                                     gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                                 },
-                                IPSecIKEPort: ikePorts[cluster.displayName!] ?? submarinerConfigDefault.ikePort,
                                 IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
                                 cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
                             },
