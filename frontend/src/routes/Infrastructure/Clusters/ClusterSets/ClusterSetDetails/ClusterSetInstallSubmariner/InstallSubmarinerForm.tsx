@@ -384,9 +384,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.awsAccessKeyID.label'),
-                                    placeholder: t('credentials:credentialsForm.awsAccessKeyID.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.awsAccessKeyID.labelHelp'),
+                                    label: t('credentials:credentialsForm.aws_access_key_id.label'),
+                                    placeholder: t('credentials:credentialsForm.aws_access_key_id.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.aws_access_key_id.labelHelp'),
                                     value: awsAccessKeyIDs[clusterName],
                                     onChange: (value: string) => {
                                         const copy = { ...awsAccessKeyIDs }
@@ -401,9 +401,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsSecretAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.awsSecretAccessKeyID.label'),
-                                    placeholder: t('credentials:credentialsForm.awsSecretAccessKeyID.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.awsSecretAccessKeyID.labelHelp'),
+                                    label: t('credentials:credentialsForm.aws_secret_access_key.label'),
+                                    placeholder: t('credentials:credentialsForm.aws_secret_access_key.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.aws_secret_access_key.labelHelp'),
                                     value: awsSecretAccessKeyIDs[clusterName],
                                     onChange: (value: string) => {
                                         const copy = { ...awsSecretAccessKeyIDs }
@@ -419,9 +419,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'gcServiceAccountKey',
                                     type: 'TextArea',
-                                    label: t('credentials:credentialsForm.gcServiceAccountKey.label'),
-                                    placeholder: t('credentials:credentialsForm.gcServiceAccountKey.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.gcServiceAccountKey.labelHelp'),
+                                    label: t('credentials:credentialsForm.osServiceAccount.json.label'),
+                                    placeholder: t('credentials:credentialsForm.osServiceAccount.json.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.osServiceAccount.json.labelHelp'),
                                     value: gcServiceAccountKeys[clusterName],
                                     onChange: (value) => {
                                         const copy = { ...gcServiceAccountKeys }
