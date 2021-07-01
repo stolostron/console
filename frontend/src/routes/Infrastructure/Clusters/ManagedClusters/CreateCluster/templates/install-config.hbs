@@ -231,8 +231,8 @@ platform:
 {{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
-          username: {{{username}}}
-          password: {{{password}}}
+          username: {{{username}}}  ##hosts.{{@index}}.username
+          password: {{{password}}}  ##hosts.{{@index}}.password
         bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
         hardwareProfile: default
 {{/each}}
