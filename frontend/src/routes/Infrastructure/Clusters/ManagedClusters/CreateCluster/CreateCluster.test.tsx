@@ -963,7 +963,7 @@ describe('CreateCluster', () => {
             nockList(bareMetalAsset, mockBareMetalAssets2),
 
             // create bma namespace
-            nockCreate(mockBmaProject, mockBmaProjectResponse),
+            // nockCreate(mockBmaProject, mockBmaProjectResponse),
 
             // create bmas/secrets
             nockCreate(mockBmaSecret4),
