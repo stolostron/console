@@ -47,9 +47,8 @@ export function InstallSubmarinerFormPage() {
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [availableClusters] = useState<Cluster[]>(
         clusters!.filter(
-            (cluster) =>
-                !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace) &&
-                cluster.distribution?.ocp?.version // OpenShift clusters only
+            (cluster) => !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace)
+            // && cluster.distribution?.ocp?.version // OpenShift clusters only
         )
     )
     if (availableClusters.length === 0) {
@@ -178,6 +177,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
 
     const { availableClusters } = props
+
+    console.log('gcServiceAccountKeys', gcServiceAccountKeys)
 
     useEffect(() => {
         if (fetchSecrets) {
@@ -347,6 +348,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     .map((c) => {
                         const cluster = availableClusters.find((ac) => ac.displayName === c)!
                         const clusterName = cluster.displayName!
+                        console.log('clusterName', clusterName)
                         return {
                             title: clusterName,
                             wizardTitle: t('submariner.install.form.config.title', {
@@ -387,7 +389,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('credentials:credentialsForm.aws_access_key_id.label'),
                                     placeholder: t('credentials:credentialsForm.aws_access_key_id.placeholder'),
                                     labelHelp: t('credentials:credentialsForm.aws_access_key_id.labelHelp'),
-                                    value: awsAccessKeyIDs[clusterName],
+                                    value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
                                     onChange: (value: string) => {
                                         const copy = { ...awsAccessKeyIDs }
                                         copy[clusterName] = value
@@ -404,7 +406,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('credentials:credentialsForm.aws_secret_access_key.label'),
                                     placeholder: t('credentials:credentialsForm.aws_secret_access_key.placeholder'),
                                     labelHelp: t('credentials:credentialsForm.aws_secret_access_key.labelHelp'),
-                                    value: awsSecretAccessKeyIDs[clusterName],
+                                    value: awsSecretAccessKeyIDs[clusterName] ?? '',
                                     onChange: (value: string) => {
                                         const copy = { ...awsSecretAccessKeyIDs }
                                         copy[clusterName] = value
@@ -422,7 +424,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     label: t('credentials:credentialsForm.osServiceAccount.json.label'),
                                     placeholder: t('credentials:credentialsForm.osServiceAccount.json.placeholder'),
                                     labelHelp: t('credentials:credentialsForm.osServiceAccount.json.labelHelp'),
-                                    value: gcServiceAccountKeys[clusterName],
+                                    value: gcServiceAccountKeys[clusterName] ?? '',
                                     onChange: (value) => {
                                         const copy = { ...gcServiceAccountKeys }
                                         copy[clusterName] = value

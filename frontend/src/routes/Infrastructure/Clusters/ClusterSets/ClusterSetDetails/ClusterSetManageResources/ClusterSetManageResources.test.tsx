@@ -45,8 +45,8 @@ const mockManagedClusterAdd: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
-        name: 'managed-cluster-add',
-        uid: 'managed-cluster-add',
+        name: 'a-managed-cluster-add',
+        uid: 'a-managed-cluster-add',
         labels: {},
     },
     spec: { hubAcceptsClient: true },
@@ -72,8 +72,8 @@ const mockManagedClusterRemove: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
-        name: 'managed-cluster-remove',
-        uid: 'managed-cluster-remove',
+        name: 'b-managed-cluster-remove',
+        uid: 'b-managed-cluster-remove',
         labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
@@ -99,8 +99,8 @@ const mockManagedClusterUnchanged: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
-        name: 'managed-cluster-unchanged',
-        uid: 'managed-cluster-unchanged',
+        name: 'c-managed-cluster-unchanged',
+        uid: 'c-managed-cluster-unchanged',
         labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
     },
     spec: { hubAcceptsClient: true },
@@ -127,8 +127,8 @@ const mockManagedClusterTransfer: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
     kind: ManagedClusterKind,
     metadata: {
-        name: 'managed-cluster-transfer',
-        uid: 'managed-cluster-transfer',
+        name: 'd-managed-cluster-transfer',
+        uid: 'd-managed-cluster-transfer',
         labels: { [managedClusterSetLabel]: mockManagedClusterSetTransfer.metadata.name! },
     },
     spec: { hubAcceptsClient: true },

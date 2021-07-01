@@ -74,10 +74,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('validate.json')
+            return t('credentials:validate.json')
         }
     } catch (e) {
-        return t('validate.json')
+        return t('credentials:validate.json')
     }
     return undefined
 }
