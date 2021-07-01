@@ -841,10 +841,7 @@ export function AcmDataFormInputs(props: {
                                     <Fragment>
                                         <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
                                             <FlexItem>
-                                                <AcmButton
-                                                    variant="link"
-                                                    onClick={input.prompt.callback}
-                                                >
+                                                <AcmButton variant="link" onClick={input.prompt.callback}>
                                                     {input.prompt.text}{' '}
                                                     <AcmIcon icon={AcmIconVariant.openNewTab}></AcmIcon>
                                                 </AcmButton>
