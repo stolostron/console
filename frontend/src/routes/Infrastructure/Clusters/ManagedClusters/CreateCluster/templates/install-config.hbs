@@ -231,13 +231,8 @@ platform:
 {{#if ../../../disableCertificateVerification}}
           disableCertificateVerification: true
 {{/if}}
-{{#if ../../../showSecrets}}
-          username: {{{username}}}  ##hosts.{{@index}}.username
-          password: {{{password}}}  ##hosts.{{@index}}.password
-{{else}}
-          username: # injected on create
-          password: # injected on create
-{{/if}}
+          username: {{{username}}}
+          password: {{{password}}}
         bootMACAddress: {{{macAddress}}}  ##hosts.{{@index}}.macAddress
         hardwareProfile: default
 {{/each}}
