@@ -47,8 +47,9 @@ export function InstallSubmarinerFormPage() {
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [availableClusters] = useState<Cluster[]>(
         clusters!.filter(
-            (cluster) => !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace)
-            // && cluster.distribution?.ocp?.version // OpenShift clusters only
+            (cluster) =>
+                !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace) &&
+                cluster.distribution?.ocp?.version // OpenShift clusters only
         )
     )
     if (availableClusters.length === 0) {
