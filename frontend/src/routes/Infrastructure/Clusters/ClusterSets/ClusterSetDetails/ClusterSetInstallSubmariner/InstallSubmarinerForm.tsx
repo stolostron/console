@@ -345,7 +345,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     .map((c) => {
                         const cluster = availableClusters.find((ac) => ac.displayName === c)!
                         const clusterName = cluster.displayName!
-                        console.log('clusterName', clusterName)
                         return {
                             title: clusterName,
                             wizardTitle: t('submariner.install.form.config.title', {
