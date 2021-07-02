@@ -28,7 +28,6 @@ export type EditSubmarinerConfigModalProps = {
 export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps) {
     const { t } = useTranslation(['cluster', 'common'])
 
-    const [ikePort, setIkePort] = useState<string | undefined>()
     const [nattPort, setNattPort] = useState<string | undefined>()
     const [cableDriver, setCableDriver] = useState<CableDriver | undefined>()
     const [gateways, setGateways] = useState<string | undefined>()
@@ -37,18 +36,16 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
     const reset = useCallback(
         function reset() {
             props.onClose?.()
-            setIkePort(undefined)
             setNattPort(undefined)
             setCableDriver(undefined)
             setGateways(undefined)
             setAwsInstanceType(undefined)
         },
-        [props, setIkePort, setNattPort, setCableDriver, setGateways, setAwsInstanceType]
+        [props, setNattPort, setCableDriver, setGateways, setAwsInstanceType]
     )
 
     useEffect(() => {
         if (props.submarinerConfig) {
-            setIkePort(props.submarinerConfig?.spec.IPSecIKEPort?.toString())
             setNattPort(props.submarinerConfig?.spec.IPSecNATTPort?.toString())
             setCableDriver(props.submarinerConfig?.spec.cableDriver)
             setGateways(props.submarinerConfig?.spec.gatewayConfig?.gateways?.toString())
@@ -71,15 +68,6 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                         <div>
                             <Trans i18nKey="cluster:submariner.update.form.message" components={{ bold: <strong /> }} />
                         </div>
-                        <AcmTextInput
-                            id="ike-port"
-                            type="number"
-                            label={t('submariner.install.form.ikeport')}
-                            placeholder={t('submariner.install.form.port.placeholder')}
-                            labelHelp={t('submariner.install.form.ikeport.labelHelp')}
-                            value={ikePort}
-                            onChange={(port) => setIkePort(port)}
-                        />
                         <AcmTextInput
                             id="natt-port"
                             type="number"
@@ -134,11 +122,6 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                     alertContext.clearAlerts()
 
                                     const patch: { op: string; path: string; value?: unknown }[] = [
-                                        {
-                                            op: 'replace',
-                                            path: '/spec/IPSecIKEPort',
-                                            value: ikePort ? parseInt(ikePort) : submarinerConfigDefault.ikePort,
-                                        },
                                         {
                                             op: 'replace',
                                             path: '/spec/IPSecNATTPort',
