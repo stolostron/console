@@ -222,6 +222,11 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
+const checkForRequirementsMetConditionFailureReason = (reason: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.type === 'RequirementsMet')
+    return cond?.status === 'False' && cond?.reason === reason
+}
+
 export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.message?.includes(condition))
     return cond?.status === 'False' && cond.reason === 'Job_has_finished'
@@ -481,7 +486,7 @@ export function getDistributionInfo(
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
             clusterCurator?.spec?.upgrade?.desiredUpdate !==
-                managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
+            managedClusterInfo?.status?.distributionInfo?.ocp?.version &&
             !curatorIsIdle
 
         const isSelectingChannel =
@@ -636,8 +641,8 @@ export function getClusterStatus(
                 ccStatus = checkCuratorConditionFailed(CuratorCondition.monitor, ccConditions)
                     ? ClusterStatus.provisionfailed
                     : checkCuratorConditionFailed(CuratorCondition.provision, ccConditions)
-                    ? ClusterStatus.provisionfailed
-                    : ClusterStatus.creating
+                        ? ClusterStatus.provisionfailed
+                        : ClusterStatus.creating
             } else if (!checkCuratorConditionDone(CuratorCondition.import, ccConditions)) {
                 // check if import is in progress or failed
                 if (checkCuratorConditionFailed(CuratorCondition.import, ccConditions)) {
@@ -684,7 +689,8 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
-        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        const hasInvalidImageSet = checkForRequirementsMetConditionFailureReason('ClusterImageSetNotFound', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -726,7 +732,7 @@ export function getClusterStatus(
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             if (hasInvalidImageSet) {
-                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'RequirementsMet' && c.reason === 'ClusterImageSetNotFound')
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = invalidImageSetCondition?.message
             } else if (provisionFailed) {
