@@ -4,19 +4,21 @@ import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
+    AcmLaunchLink,
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, Hint, ButtonVariant } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, clusterCuratorsState, secretsState } from '../../../atoms'
+import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { deleteResource } from '../../../lib/resource-request'
@@ -31,9 +33,11 @@ import {
 } from '../../../resources/cluster-curator'
 import { unpackProviderConnection } from '../../../resources/provider-connection'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { makeStyles } from '@material-ui/styles'
 
 export default function AnsibleAutomationsPage() {
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [configMaps] = useRecoilState(configMapsState)
     useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
 
     const alertContext = useContext(AcmAlertContext)
@@ -41,10 +45,53 @@ export default function AnsibleAutomationsPage() {
     useEffect(() => alertContext.clearAlerts, [])
     const { t } = useTranslation(['cluster', 'common'])
 
+    const useStyles = makeStyles({
+        hint: {
+            marginBottom: '16px',
+        },
+    })
+    const classes = useStyles()
+
+    // function launchToOperatorInstall() {
+
+    //     if (openShiftConsoleUrl) {
+    //         const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
+    //         response.then((job) => {
+    //             const podName = job?.metadata.name
+    //             podName &&
+    //                 window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
+    //         })
+    //     }
+    // }
+
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+
     return (
         <AcmPage hasDrawer header={<AcmPageHeader title={t('cluster:template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
+                    <Hint className={classes.hint}>
+                        <div>
+                            {t('cluster:template.hint')}{' '}
+                            <AcmButton
+                                onClick={() =>
+                                    window.open(
+                                        openShiftConsoleUrl +
+                                            '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                                    )
+                                }
+                                variant={ButtonVariant.link}
+                                role="link"
+                                id="view-logs"
+                                isInline
+                                isSmall
+                            >
+                                {t('cluster:template.operator.link')}
+                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                            </AcmButton>
+                        </div>
+                    </Hint>
                     <AnsibleJobTemplateTable />
                 </PageSection>
             </AcmPageContent>
