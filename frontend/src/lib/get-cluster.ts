@@ -222,6 +222,14 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
+const checkForRequirementsMetConditionFailureReason = (
+    reason: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    const cond = conditions?.find((c) => c.type === 'RequirementsMet')
+    return cond?.status === 'False' && cond?.reason === reason
+}
+
 export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.message?.includes(condition))
     return cond?.status === 'False' && cond.reason === 'Job_has_finished'
@@ -684,7 +692,11 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
-        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        const hasInvalidImageSet = checkForRequirementsMetConditionFailureReason(
+            'ClusterImageSetNotFound',
+            cdConditions
+        )
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -726,7 +738,9 @@ export function getClusterStatus(
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             if (hasInvalidImageSet) {
-                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                const invalidImageSetCondition = cdConditions.find(
+                    (c) => c.type === 'RequirementsMet' && c.reason === 'ClusterImageSetNotFound'
+                )
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = invalidImageSetCondition?.message
             } else if (provisionFailed) {
