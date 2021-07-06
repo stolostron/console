@@ -13,10 +13,10 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState, managedClustersState } from '../../../../../../atoms'
+import { clusterPoolsState, managedClustersState, managedClusterSetsState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { patchResource, ResourceErrorCode } from '../../../../../../lib/resource-request'
@@ -60,7 +60,9 @@ export function ClusterSetManageResourcesContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
-    const [managedClusters, clusterPools] = useRecoilValue(waitForAll([managedClustersState, clusterPoolsState]))
+    const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
+        waitForAll([managedClustersState, clusterPoolsState, managedClusterSetsState])
+    )
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
     const [selectedResources, setSelectedResources] = useState<IResource[]>(
@@ -72,7 +74,17 @@ export function ClusterSetManageResourcesContent() {
 
     const availableResources = [...managedClusters, ...clusterPools].filter((resource) => {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
-        return clusterSet === undefined || canJoinClusterSetList?.includes(clusterSet)
+        return (
+            clusterSet === undefined ||
+            canJoinClusterSetList?.includes(clusterSet) ||
+            // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
+            // since we query the rbac list against the actual available ManagedClusterSets
+            // the cluster set specified in the label is not among the list
+            (!canJoinClusterSetList?.includes(clusterSet) &&
+                !managedClusterSets.find(
+                    (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
+                ))
+        )
     })
     const notSelectedResources = availableResources.filter(
         (ar) => selectedResources.find((sr) => sr.metadata!.uid === ar.metadata!.uid) === undefined
@@ -87,7 +99,14 @@ export function ClusterSetManageResourcesContent() {
                 <Title headingLevel="h4" size="xl">
                     {t('manageClusterSet.form.section.table')}
                 </Title>
+
                 <div>{t('manageClusterSet.form.section.table.description')}</div>
+                <div>
+                    <Trans
+                        i18nKey={'cluster:manageClusterSet.form.section.table.description.second'}
+                        components={{ bold: <strong />, p: <p /> }}
+                    />
+                </div>
                 <AcmTable<IResource>
                     plural="resources"
                     items={isLoading ? undefined : availableResources}
@@ -98,8 +117,8 @@ export function ClusterSetManageResourcesContent() {
                     columns={[
                         {
                             header: t('table.name'),
-                            sort: 'name',
-                            search: 'name',
+                            sort: 'metadata.name',
+                            search: 'metadata.name',
                             cell: (resource: IResource) => (
                                 <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>
                             ),
@@ -162,13 +181,7 @@ export function ClusterSetManageResourcesContent() {
                 onCancel={() => setShowConfirmModal(false)}
                 close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}
-                resources={[
-                    ...removedResources,
-                    ...selectedResources,
-                    // ...selectedResources.filter(
-                    //     (sr) => sr.metadata!.labels?.[managedClusterSetLabel] !== clusterSet?.metadata.name
-                    // ),
-                ]}
+                resources={[...removedResources, ...selectedResources]}
                 description={
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                 }

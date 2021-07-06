@@ -185,7 +185,7 @@ export function AnsibleAutomationsForm(props: {
 
     const formData: FormData = {
         title: t('create:template.create.title'),
-        titleTooltip: 'tooltip test',
+        titleTooltip: t('create:template.create.tooltip'),
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
             { text: t('create:template.create.title') },

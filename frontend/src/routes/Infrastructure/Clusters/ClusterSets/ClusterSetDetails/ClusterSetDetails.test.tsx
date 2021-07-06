@@ -193,7 +193,6 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
                 instanceType: submarinerConfigDefault.awsInstanceType,
             },
         },
-        IPSecIKEPort: submarinerConfigDefault.ikePort,
         IPSecNATTPort: submarinerConfigDefault.nattPort,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -228,7 +227,6 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
                 instanceType: submarinerConfigDefault.awsInstanceType,
             },
         },
-        IPSecIKEPort: submarinerConfigDefault.ikePort,
         IPSecNATTPort: submarinerConfigDefault.nattPort,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
@@ -440,14 +438,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('submariner.config.edit')
         await waitForText('submariner.update.form.title')
 
-        await typeByTestId('ike-port', '501')
-
         const patch = nockPatch(mockSubmarinerConfig, [
-            {
-                op: 'replace',
-                path: '/spec/IPSecIKEPort',
-                value: 501,
-            },
             {
                 op: 'replace',
                 path: '/spec/IPSecNATTPort',

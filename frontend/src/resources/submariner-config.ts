@@ -26,7 +26,6 @@ export interface SubmarinerConfig extends IResource {
     kind: SubmarinerConfigKindType
     metadata: V1ObjectMeta
     spec: {
-        IPSecIKEPort?: number
         IPSecNATTPort?: number
         cableDriver?: CableDriver
         credentialsSecret?: {
@@ -42,7 +41,6 @@ export interface SubmarinerConfig extends IResource {
 }
 
 type SubmarinerConfigDefaults = {
-    ikePort: number
     nattPort: number
     cableDriver: CableDriver
     gateways: number
@@ -50,7 +48,6 @@ type SubmarinerConfigDefaults = {
 }
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
-    ikePort: 500,
     nattPort: 4500,
     cableDriver: CableDriver.libreswan,
     gateways: 1,

@@ -5,10 +5,10 @@
     "homepage": "/multicloud/",
     "proxy": "https://localhost:4000",
     "dependencies": {
-        "@kubernetes/client-node": "^0.14.3",
+        "@kubernetes/client-node": "^0.15.0",
         "@open-cluster-management/ui-components": "^0.179.0",
-        "@patternfly/react-core": "^4.135.0",
-        "@patternfly/react-table": "^4.28.6",
+        "@patternfly/react-core": "^4.135.2",
+        "@patternfly/react-table": "^4.29.2",
         "@redhat-cloud-services/rule-components": "^3.2.1",
         "@types/lodash": "^4.14.170",
         "@types/moment": "^2.13.0",
@@ -44,12 +44,12 @@
         "@testing-library/user-event": "^12.8.3",
         "@types/get-value": "^3.0.1",
         "@types/jest": "^26.0.23",
-        "@types/node": "^14.17.3",
+        "@types/node": "^14.17.4",
         "babel-jest": "^26.6.3",
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "jest-sonar-reporter": "^2.0.0",
         "nock": "^13.1.0",
-        "prettier": "^2.3.1",
+        "prettier": "^2.3.2",
         "ts-jest": "^26.5.6"
     },
     "scripts": {

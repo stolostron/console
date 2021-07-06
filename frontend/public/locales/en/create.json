@@ -386,6 +386,7 @@
     "template.create.title": "Create Ansible template",
     "template.clusterCreate.name":"Ansible Automation Template",
     "template.clusterCreate.title":"Automation",
-    "template.clusterCreate.info":"Choose a automation job template to automatically run at different times of creation. (Optional)",
-    "template.clusterCreate.select.placeholder":"Select an Ansible job template"
+    "template.clusterCreate.info":"(Optional) Choose an automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed.",
+    "template.clusterCreate.select.placeholder":"Select an Ansible job template",
+    "template.create.tooltip":"Create a job template to automatically run Ansible jobs at different stages of a cluster's life cycle"
 }

@@ -44,14 +44,13 @@ export function validatePublicSshKey(value: string, t: TFunction) {
     return t('validate.publicSshKey')
 }
 
-export function validatePrivateSshKey(value: string, t: TFunction) {
+export function validatePrivateSshKey(value: string, t: TFunction, requireNewline = true) {
     if (!/-----BEGIN [a-zA-Z]+ PRIVATE KEY-----\n([\s\S]*?)\n-----END [a-zA-Z]+ PRIVATE KEY-----/gm.test(value)) {
         return t('validate.privateSshKey')
     }
-    if (!/[\r\n]$/.test(value)) {
+    if (requireNewline && !/[\r\n]$/.test(value)) {
         return t('validate.mustEndWithNewline')
     }
-    return undefined
 }
 
 export function validateCertificate(value: string, t: TFunction) {
@@ -74,10 +73,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('validate.json')
+            return t('credentials:validate.json')
         }
     } catch (e) {
-        return t('validate.json')
+        return t('credentials:validate.json')
     }
     return undefined
 }
