@@ -142,9 +142,6 @@
             "html",
             "lcov"
         ],
-        "transform": {
-            "\\.hbs$": "jest-raw-loader"
-        },
         "moduleNameMapper": {
             "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"
         },
