@@ -546,8 +546,8 @@ const mockClusterDeploymentAnsible = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: null,
-                            password: null,
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -660,8 +660,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: null,
-                            password: null,
+                            username: 'test',
+                            password: 'test',
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -1039,6 +1039,7 @@ describe('CreateCluster', () => {
 
             // host table pulls secrets for each selected host
             const hostSecrets = [
+                nockCreate(mockBmaSecret4),
                 nockGet(mockBareMetalSecrets[0]),
                 nockGet(mockBareMetalSecrets[1]),
                 nockGet(mockBareMetalSecrets[2]),
