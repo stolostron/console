@@ -188,6 +188,15 @@ const bmaSecret: Secret = {
     },
     data: { password: btoa('test'), username: btoa('test') },
 }
+const mockBmaSecret4: Secret = {
+    kind: SecretKind,
+    apiVersion: SecretApiVersion,
+    metadata: {
+        name: 'test-bare-metal-asset-4-bmc-secret',
+        namespace: 'test-bare-metal-asset-namespace',
+    },
+    stringData: { password: 'test', username: 'test' },
+}
 
 const mockBareMetalSecrets = Array.from({ length: 5 }, (_val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
@@ -956,6 +965,7 @@ describe('CreateCluster', () => {
             nockCreate(mockBmaProject, mockBmaProjectResponse),
 
             // create bmas/secrets
+            nockCreate(mockBmaSecret4),
             nockCreate(mockBareMetalAssets3[0]),
             nockGet(mockBareMetalSecrets[0]),
             nockGet(mockBareMetalSecrets[1]),
