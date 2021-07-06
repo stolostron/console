@@ -1039,7 +1039,6 @@ describe('CreateCluster', () => {
 
             // host table pulls secrets for each selected host
             const hostSecrets = [
-                nockCreate(mockBmaSecret4),
                 nockGet(mockBareMetalSecrets[0]),
                 nockGet(mockBareMetalSecrets[1]),
                 nockGet(mockBareMetalSecrets[2]),
@@ -1069,6 +1068,7 @@ describe('CreateCluster', () => {
             nockCreate(mockBmaProject, mockBmaProjectResponse),
 
             // create bmas/secrets
+            nockCreate(mockBmaSecret4),
             nockCreate(mockBareMetalAssets3[0]),
             nockGet(mockBareMetalSecrets[0]),
             nockGet(mockBareMetalSecrets[1]),
