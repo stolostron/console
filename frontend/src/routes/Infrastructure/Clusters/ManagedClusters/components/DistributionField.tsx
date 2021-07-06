@@ -53,7 +53,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
 
         const footerContent: ReactNode = (
             <AcmButton
-                onClick={() => window.open(`https://${latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}`)}
+                onClick={() => window.open(`${latestAnsibleJob.prehook?.status?.ansibleJobResult?.url}`)}
                 variant="link"
                 isSmall
                 isInline
