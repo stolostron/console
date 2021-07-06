@@ -558,6 +558,8 @@
     "template.title": "Automation",
     "template.emptyStateHeader": "You don't have any Ansible job templates",
     "template.emptyStateMsg": "Select <bold>Create Ansible template</bold> to create an Ansible job template.",
+    "template.hint": "Create an Ansible automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the operator through the following link:",
+    "template.operator.link":"OperatorHub",
     "template.edit": "Edit template",
     "template.link": "Link a credential",
     "template.delete": "Delete",
