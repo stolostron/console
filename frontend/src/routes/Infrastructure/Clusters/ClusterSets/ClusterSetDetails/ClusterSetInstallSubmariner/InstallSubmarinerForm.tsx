@@ -171,7 +171,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
 
     const [gcServiceAccountKeys, setGcServiceAccountKeys] = useState<Record<string, any>>({})
 
-    const [ikePorts, setIkePorts] = useState<Record<string, number>>({})
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
@@ -384,10 +383,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.awsAccessKeyID.label'),
-                                    placeholder: t('credentials:credentialsForm.awsAccessKeyID.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.awsAccessKeyID.labelHelp'),
-                                    value: awsAccessKeyIDs[clusterName],
+                                    label: t('credentials:credentialsForm.aws_access_key_id.label'),
+                                    placeholder: t('credentials:credentialsForm.aws_access_key_id.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.aws_access_key_id.labelHelp'),
+                                    value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
                                     onChange: (value: string) => {
                                         const copy = { ...awsAccessKeyIDs }
                                         copy[clusterName] = value
@@ -401,10 +400,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsSecretAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.awsSecretAccessKeyID.label'),
-                                    placeholder: t('credentials:credentialsForm.awsSecretAccessKeyID.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.awsSecretAccessKeyID.labelHelp'),
-                                    value: awsSecretAccessKeyIDs[clusterName],
+                                    label: t('credentials:credentialsForm.aws_secret_access_key.label'),
+                                    placeholder: t('credentials:credentialsForm.aws_secret_access_key.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.aws_secret_access_key.labelHelp'),
+                                    value: awsSecretAccessKeyIDs[clusterName] ?? '',
                                     onChange: (value: string) => {
                                         const copy = { ...awsSecretAccessKeyIDs }
                                         copy[clusterName] = value
@@ -419,10 +418,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'gcServiceAccountKey',
                                     type: 'TextArea',
-                                    label: t('credentials:credentialsForm.gcServiceAccountKey.label'),
-                                    placeholder: t('credentials:credentialsForm.gcServiceAccountKey.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.gcServiceAccountKey.labelHelp'),
-                                    value: gcServiceAccountKeys[clusterName],
+                                    label: t('credentials:credentialsForm.osServiceAccount.json.label'),
+                                    placeholder: t('credentials:credentialsForm.osServiceAccount.json.placeholder'),
+                                    labelHelp: t('credentials:credentialsForm.osServiceAccount.json.labelHelp'),
+                                    value: gcServiceAccountKeys[clusterName] ?? '',
                                     onChange: (value) => {
                                         const copy = { ...gcServiceAccountKeys }
                                         copy[clusterName] = value
@@ -447,19 +446,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                         const copy = { ...awsInstanceTypes }
                                         copy[clusterName] = value
                                         setAwsInstanceTypes(copy)
-                                    },
-                                },
-                                {
-                                    id: 'ike-port',
-                                    type: 'TextNumber',
-                                    label: t('submariner.install.form.ikeport'),
-                                    placeholder: t('submariner.install.form.port.placeholder'),
-                                    labelHelp: t('submariner.install.form.ikeport.labelHelp'),
-                                    value: ikePorts[clusterName] ?? submarinerConfigDefault.ikePort.toString(),
-                                    onChange: (value: number) => {
-                                        const copy = { ...ikePorts }
-                                        copy[clusterName] = value
-                                        setIkePorts(copy)
                                     },
                                 },
                                 {
@@ -574,7 +560,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 gatewayConfig: {
                                     gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                                 },
-                                IPSecIKEPort: ikePorts[cluster.displayName!] ?? submarinerConfigDefault.ikePort,
                                 IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
                                 cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
                             },

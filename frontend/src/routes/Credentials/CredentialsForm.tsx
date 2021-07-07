@@ -342,6 +342,15 @@ export function CredentialsForm(props: {
                 secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
         }
+        if (secret.stringData?.pullSecret && !secret.stringData.pullSecret.endsWith('\n')) {
+            secret.stringData.pullSecret += '\n'
+        }
+        if (secret.stringData?.['ssh-privatekey'] && !secret.stringData['ssh-privatekey'].endsWith('\n')) {
+            secret.stringData['ssh-privatekey'] += '\n'
+        }
+        if (secret.stringData?.['ssh-publickey'] && !secret.stringData['ssh-publickey'].endsWith('\n')) {
+            secret.stringData['ssh-publickey'] += '\n'
+        }
         return secret
         // return packProviderConnection(secret)
     }
@@ -940,7 +949,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.sshPrivateKey.labelHelp'),
                         value: sshPrivatekey,
                         onChange: setSshPrivatekey,
-                        validation: (value) => validatePrivateSshKey(value, t),
+                        validation: (value) => validatePrivateSshKey(value, t, false),
                         isRequired: true,
                         isSecret: true,
                     },

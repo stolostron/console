@@ -3,11 +3,11 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@open-cluster-management/ui-components'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
+import { ClusterClaim } from '../resources/cluster-claim'
+import { ClusterCurator } from '../resources/cluster-curator'
 import { ClusterDeployment } from '../resources/cluster-deployment'
 import { ManagedCluster } from '../resources/managed-cluster'
 import { ManagedClusterAddOn } from '../resources/managed-cluster-add-on'
-import { ClusterClaim } from '../resources/cluster-claim'
-import { ClusterCurator } from '../resources/cluster-curator'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../resources/managed-cluster-info'
 import { managedClusterSetLabel } from '../resources/managed-cluster-set'
 import { AddonStatus } from './get-addons'
@@ -108,11 +108,18 @@ export type UpgradeInfo = {
     isReadyUpdates: boolean
     upgradePercentage: string
     upgradeFailed: boolean
+    hooksInProgress: boolean
+    hookFailed: boolean
+    latestJob: {
+        conditionMessage: string
+        step: CuratorCondition | undefined
+    }
     currentVersion?: string
     desiredVersion?: string
     availableUpdates: string[]
     isReadySelectChannels: boolean
     isSelectingChannel: boolean
+    isUpgradeCuration: boolean
     currentChannel?: string
     desiredChannel?: string
     availableChannels: string[]
@@ -215,26 +222,50 @@ export function getCluster(
 const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
     conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
 
-const checkCuratorConditionInProgress = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+const checkForRequirementsMetConditionFailureReason = (
+    reason: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    const cond = conditions?.find((c) => c.type === 'RequirementsMet')
+    return cond?.status === 'False' && cond?.reason === reason
+}
+
+export const checkCuratorLatestOperation = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+    const cond = conditions?.find((c) => c.message?.includes(condition))
+    return cond?.status === 'False' && cond.reason === 'Job_has_finished'
+}
+
+export const checkCuratorLatestFailedOperation = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    const cond = conditions?.find((c) => c.message?.includes(condition))
+    return cond?.status === 'True' && cond.reason === 'Job_failed'
+}
+
+export const checkCuratorConditionInProgress = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'False' && cond?.reason === 'Job_has_finished'
 }
-const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const getCuratorConditionMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.message
 }
 
-const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const checkCuratorConditionFailed = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'True' && cond?.reason === 'Job_failed'
 }
 
-const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const checkCuratorConditionDone = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.status === 'True' && cond?.reason === 'Job_has_finished'
 }
 
-const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
+export const getConditionStatusMessage = (condition: string, conditions: V1CustomResourceDefinitionCondition[]) => {
     const cond = conditions?.find((c) => c.type === condition)
     return cond?.message
 }
@@ -344,6 +375,17 @@ export function getProvider(
     return provider
 }
 
+export enum CuratorCondition {
+    curatorjob = 'clustercurator-job',
+    prehook = 'prehook-ansiblejob',
+    monitor = 'activate-and-monitor',
+    provision = 'hive-provisioning-job',
+    import = 'monitor-import',
+    posthook = 'posthook-ansiblejob',
+    install = 'DesiredCuration: install',
+    upgrade = 'DesiredCuration: upgrade',
+}
+
 export function getDistributionInfo(
     managedClusterInfo?: ManagedClusterInfo,
     managedCluster?: ManagedCluster,
@@ -383,10 +425,17 @@ export function getDistributionInfo(
         isReadyUpdates: false,
         upgradePercentage: '',
         upgradeFailed: false,
+        hooksInProgress: false,
+        hookFailed: false,
+        latestJob: {
+            conditionMessage: '',
+            step: undefined,
+        },
         currentVersion: undefined,
         desiredVersion: undefined,
         isReadySelectChannels: false,
         isSelectingChannel: false,
+        isUpgradeCuration: false,
         currentChannel: undefined,
         desiredChannel: undefined,
         availableUpdates: [],
@@ -417,8 +466,25 @@ export function getDistributionInfo(
 
     if (clusterCurator || managedClusterInfo) {
         const curatorConditions = clusterCurator?.status?.conditions ?? []
-        const isUpgradeCuration = clusterCurator?.spec?.desiredCuration === 'upgrade'
+        const isUpgradeCuration =
+            clusterCurator?.spec?.desiredCuration === 'upgrade' ||
+            checkCuratorLatestOperation(CuratorCondition.upgrade, curatorConditions) ||
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions)
+        upgradeInfo.isUpgradeCuration = isUpgradeCuration
+        upgradeInfo.hookFailed =
+            checkCuratorLatestFailedOperation(CuratorCondition.upgrade, curatorConditions) &&
+            (checkCuratorConditionFailed(CuratorCondition.prehook, curatorConditions) ||
+                checkCuratorConditionFailed(CuratorCondition.posthook, curatorConditions))
+        upgradeInfo.latestJob.conditionMessage =
+            getConditionStatusMessage(CuratorCondition.curatorjob, curatorConditions) || ''
+        upgradeInfo.latestJob.step =
+            isUpgradeCuration && checkCuratorLatestOperation(CuratorCondition.posthook, curatorConditions)
+                ? CuratorCondition.posthook
+                : CuratorCondition.prehook
         const curatorIsIdle = !checkCuratorConditionInProgress('clustercurator-job', curatorConditions)
+        upgradeInfo.hooksInProgress =
+            checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
+            checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
         const curatorIsUpgrading =
             isUpgradeCuration &&
             clusterCurator?.spec?.upgrade?.desiredUpdate &&
@@ -543,15 +609,6 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
     return { nodeList, ready, unhealthy, unknown }
 }
 
-export enum CuratorCondition {
-    curatorjob = 'clustercurator-job',
-    prehook = 'prehook-ansiblejob',
-    monitor = 'activate-and-monitor',
-    provision = 'hive-provisioning-job',
-    import = 'monitor-import',
-    posthook = 'posthook-ansiblejob',
-}
-
 export function getClusterStatus(
     clusterDeployment: ClusterDeployment | undefined,
     managedClusterInfo: ManagedClusterInfo | undefined,
@@ -566,7 +623,6 @@ export function getClusterStatus(
     let ccStatus: ClusterStatus = ClusterStatus.pending
     if (clusterCurator) {
         const ccConditions: V1CustomResourceDefinitionCondition[] = clusterCurator.status?.conditions ?? []
-
         // ClusterCurator has not completed so loop through statuses
         if (
             clusterCurator?.spec?.desiredCuration === 'install' &&
@@ -612,6 +668,23 @@ export function getClusterStatus(
             }
 
             return { status: ccStatus, statusMessage }
+        } else if (clusterDeployment) {
+            // when curator is no longer installing, catch the prehook/posthook failure here
+
+            if (
+                checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
+                checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions) &&
+                (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions) ||
+                    checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions))
+            ) {
+                if (!clusterDeployment.spec?.installed) {
+                    ccStatus = ClusterStatus.prehookfailed
+                } else {
+                    ccStatus = ClusterStatus.posthookfailed
+                }
+                statusMessage = clusterCurator.status?.conditions[0].message
+                return { status: ccStatus, statusMessage }
+            }
         }
     }
 
@@ -619,7 +692,11 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
-        const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
+        const hasInvalidImageSet = checkForRequirementsMetConditionFailureReason(
+            'ClusterImageSetNotFound',
+            cdConditions
+        )
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -661,7 +738,9 @@ export function getClusterStatus(
             // provisioning - default
         } else if (!clusterDeployment.spec?.installed) {
             if (hasInvalidImageSet) {
-                const invalidImageSetCondition = cdConditions.find((c) => c.type === 'ClusterImageSetNotFound')
+                const invalidImageSetCondition = cdConditions.find(
+                    (c) => c.type === 'RequirementsMet' && c.reason === 'ClusterImageSetNotFound'
+                )
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = invalidImageSetCondition?.message
             } else if (provisionFailed) {
