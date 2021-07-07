@@ -120,6 +120,7 @@
     "creation.ocp.cloud.loading.connections": "Loading provider connections...",
     "creation.ocp.cloud.no.connections": "No defined connections. Select 'Add a connection' to create a connection.",
     "creation.ocp.cloud.add.connection": "Add credential",
+    "creation.ocp.cloud.add.template": "Add automation template",
     "creation.ocp.cluster.add.label": "Add another label",
     "creation.ocp.cluster.add.host": "Search hosts with this label",
     "creation.ocp.cluster.node.pool.info": "The instance type and quantity of master and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.",

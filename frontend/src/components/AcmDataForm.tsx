@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -75,6 +75,7 @@ import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     FormData,
     SectionGroup,
@@ -83,6 +84,7 @@ import {
     Section,
     SelectOptionInput,
     FormDataOrderedInput,
+    LinkType,
 } from './AcmFormData'
 
 export interface AcmDataFormProps {
@@ -822,9 +824,55 @@ export function AcmDataFormInputs(props: {
                                 fieldId={input.id}
                                 label={input.label}
                                 isRequired={input.isRequired}
-                                helperTextInvalid={error}
+                                helperTextInvalid={
+                                    <Split>
+                                        <SplitItem isFilled>{error}</SplitItem>
+                                        {input.prompt && (
+                                            <SplitItem>
+                                                <AcmButton
+                                                    variant="link"
+                                                    style={{ paddingRight: '0px' }}
+                                                    onClick={input.prompt.callback}
+                                                >
+                                                    {input.prompt.text}
+                                                    {input.prompt.linkType === LinkType.external ? (
+                                                        <ExternalLinkAltIcon />
+                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <AcmIcon
+                                                            style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                                            icon={AcmIconVariant.openNewTab}
+                                                        ></AcmIcon>
+                                                    ) : null}
+                                                </AcmButton>
+                                            </SplitItem>
+                                        )}
+                                    </Split>
+                                }
                                 validated={validated}
-                                helperText={input.helperText}
+                                helperText={
+                                    <Split>
+                                        <SplitItem isFilled>{input.helperText}</SplitItem>
+                                        {input.prompt && (
+                                            <SplitItem>
+                                                <AcmButton
+                                                    variant="link"
+                                                    style={{ paddingRight: '0px' }}
+                                                    onClick={input.prompt.callback}
+                                                >
+                                                    {input.prompt.text}
+                                                    {input.prompt.linkType === LinkType.external ? (
+                                                        <ExternalLinkAltIcon />
+                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <AcmIcon
+                                                            style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                                            icon={AcmIconVariant.openNewTab}
+                                                        ></AcmIcon>
+                                                    ) : null}
+                                                </AcmButton>
+                                            </SplitItem>
+                                        )}
+                                    </Split>
+                                }
                                 labelIcon={
                                     <LabelHelp
                                         id={input.id}
