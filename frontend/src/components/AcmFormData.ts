@@ -38,6 +38,12 @@ export interface SectionGroup extends SectionBase {
     sections?: Section[]
 }
 
+export enum LinkType {
+    external = 'external',
+    internalNewTab = 'internalNewTab',
+    internalNoNewTab = 'internalNoNewTab',
+}
+
 export interface InputBase<T> {
     id: string
 
@@ -56,7 +62,7 @@ export interface InputBase<T> {
     labelHelp?: string
     labelHelpTitle?: string
 
-    prompt?: { text: string; callback: () => void }
+    prompt?: { text: string; linkType: LinkType; callback: () => void }
 }
 
 export interface TextInput extends InputBase<string> {

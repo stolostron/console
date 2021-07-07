@@ -30,7 +30,6 @@ import {
     DrawerContentBody,
     DrawerPanelContent,
     Flex,
-    FlexItem,
     Form,
     FormFieldGroupExpandable,
     FormFieldGroupHeader,
@@ -76,6 +75,7 @@ import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     FormData,
     SectionGroup,
@@ -84,6 +84,7 @@ import {
     Section,
     SelectOptionInput,
     FormDataOrderedInput,
+    LinkType,
 } from './AcmFormData'
 
 export interface AcmDataFormProps {
@@ -818,38 +819,70 @@ export function AcmDataFormInputs(props: {
                 return (
                     <Fragment key={input.id}>
                         {!input.isHidden && (
-                            <Fragment>
-                                <FormGroup
-                                    id={`${input.id}-form-group`}
-                                    fieldId={input.id}
-                                    label={input.label}
-                                    isRequired={input.isRequired}
-                                    helperTextInvalid={error}
-                                    validated={validated}
-                                    helperText={input.helperText}
-                                    labelIcon={
-                                        <LabelHelp
-                                            id={input.id}
-                                            labelHelp={input.labelHelp}
-                                            labelHelpTitle={input.labelHelpTitle}
-                                        />
-                                    }
-                                >
-                                    <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
-                                </FormGroup>
-                                {input.prompt && (
-                                    <Fragment>
-                                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                                            <FlexItem>
-                                                <AcmButton variant="link" onClick={input.prompt.callback}>
-                                                    {input.prompt.text}{' '}
-                                                    <AcmIcon icon={AcmIconVariant.openNewTab}></AcmIcon>
+                            <FormGroup
+                                id={`${input.id}-form-group`}
+                                fieldId={input.id}
+                                label={input.label}
+                                isRequired={input.isRequired}
+                                helperTextInvalid={
+                                    <Split>
+                                        <SplitItem isFilled>{error}</SplitItem>
+                                        {input.prompt && (
+                                            <SplitItem>
+                                                <AcmButton
+                                                    variant="link"
+                                                    style={{ paddingRight: '0px' }}
+                                                    onClick={input.prompt.callback}
+                                                >
+                                                    {input.prompt.text}
+                                                    {input.prompt.linkType === LinkType.external ? (
+                                                        <ExternalLinkAltIcon />
+                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <AcmIcon
+                                                            style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                                            icon={AcmIconVariant.openNewTab}
+                                                        ></AcmIcon>
+                                                    ) : null}
                                                 </AcmButton>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Fragment>
-                                )}
-                            </Fragment>
+                                            </SplitItem>
+                                        )}
+                                    </Split>
+                                }
+                                validated={validated}
+                                helperText={
+                                    <Split>
+                                        <SplitItem isFilled>{input.helperText}</SplitItem>
+                                        {input.prompt && (
+                                            <SplitItem>
+                                                <AcmButton
+                                                    variant="link"
+                                                    style={{ paddingRight: '0px' }}
+                                                    onClick={input.prompt.callback}
+                                                >
+                                                    {input.prompt.text}
+                                                    {input.prompt.linkType === LinkType.external ? (
+                                                        <ExternalLinkAltIcon />
+                                                    ) : input.prompt.linkType === LinkType.internalNewTab ? (
+                                                        <AcmIcon
+                                                            style={{ verticalAlign: '-0.125em', marginLeft: '8px' }}
+                                                            icon={AcmIconVariant.openNewTab}
+                                                        ></AcmIcon>
+                                                    ) : null}
+                                                </AcmButton>
+                                            </SplitItem>
+                                        )}
+                                    </Split>
+                                }
+                                labelIcon={
+                                    <LabelHelp
+                                        id={input.id}
+                                        labelHelp={input.labelHelp}
+                                        labelHelpTitle={input.labelHelpTitle}
+                                    />
+                                }
+                            >
+                                <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
+                            </FormGroup>
                         )}
                     </Fragment>
                 )
