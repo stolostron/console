@@ -23,6 +23,15 @@ export const CREATE_CLOUD_CONNECTION = {
     icon: <OpenNewTab />,
 }
 
+export const CREATE_AUTOMATION_TEMPLATE = {
+    prompt: 'creation.ocp.cloud.add.template',
+    type: 'link',
+    url: NavigationPath.addAnsibleAutomation,
+    positionBottomRight: true,
+    id: 'add-automation-template',
+    icon: <OpenNewTab />,
+}
+
 export const LOAD_OCP_IMAGES = (provider) => {
     return {
         query: () => {
@@ -294,6 +303,7 @@ export const automationControlData = [
         validation: {
             required: false,
         },
+        prompts: CREATE_AUTOMATION_TEMPLATE,
     },
 ]
 

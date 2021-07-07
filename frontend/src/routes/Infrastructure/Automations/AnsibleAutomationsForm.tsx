@@ -7,7 +7,7 @@ import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { featureGatesState, secretsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData, Section } from '../../../components/AcmFormData'
+import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { createResource, replaceResource } from '../../../lib/resource-request'
@@ -226,6 +226,11 @@ export function AnsibleAutomationsForm(props: {
                             value: credential.metadata.name as string,
                         })),
                         isDisabled: isEditing,
+                        prompt: {
+                            text: t('create:creation.ocp.cloud.add.connection'),
+                            linkType: LinkType.internalNewTab,
+                            callback: () => history.push(NavigationPath.addCredentials),
+                        },
                     },
                 ],
             },
