@@ -29,4 +29,16 @@ module.exports = {
         }
         return config
     },
+    // to add a transform you have to add it to the map at the top
+    // because cra has a catchall fileTransform at the bottom to 
+    // catch any file BEFORE it would get to yours--and because transform is
+    // a map and cra iterates thru the map like an array, you need to unshift
+    // using Object assign
+    jest: function (config, env) {
+        config.transform = Object.assign({
+        "^.+\\.hbs$": "jest-raw-loader"
+        }, config.transform)
+        return config
+    }
+
 }
