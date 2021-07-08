@@ -40,11 +40,11 @@ export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound 
     return {
         promise: new Promise((resolve, reject) => {
             deleteResourcesResult.promise.then((promisesSettledResult) => {
-                if (promisesSettledResult[0].status === 'rejected') {
+                if (promisesSettledResult[0]?.status === 'rejected') {
                     reject(promisesSettledResult[0].reason)
                     return
                 }
-                if (promisesSettledResult[1].status === 'rejected') {
+                if (promisesSettledResult[1]?.status === 'rejected') {
                     const error = promisesSettledResult[1].reason
                     if (error instanceof ResourceError) {
                         if (ignoreClusterDeploymentNotFound && error.code === ResourceErrorCode.NotFound) {
