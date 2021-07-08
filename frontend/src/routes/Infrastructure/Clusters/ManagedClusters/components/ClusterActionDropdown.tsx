@@ -261,9 +261,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             isDisabled: true,
             rbac: [
-                rbacDelete(ManagedClusterDefinition, undefined, cluster.name),
+                cluster.isManaged && rbacDelete(ManagedClusterDefinition, undefined, cluster.name),
                 rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name),
-            ],
+            ].filter(Boolean),
         },
     ]
 

@@ -11,16 +11,18 @@ import { IResource } from '../resources/resource'
 export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
     const resources: IResource[] = [
         {
-            apiVersion: ManagedClusterApiVersion,
-            kind: ManagedClusterKind,
-            metadata: { name: cluster.name! },
-        },
-        {
             apiVersion: ClusterDeploymentApiVersion,
             kind: ClusterDeploymentKind,
             metadata: { name: cluster.name!, namespace: cluster.namespace! },
         },
     ]
+    if (cluster.isManaged) {
+        resources.push({
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: { name: cluster.name! },
+        })
+    }
 
     if (cluster.hive?.clusterClaimName) {
         resources.push({
