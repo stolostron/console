@@ -850,7 +850,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.ansibleCredentials.title'),
                 wizardTitle: t('credentialsForm.ansibleCredentials.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS._ANSIBLE} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION_ANSIBLE} target="_blank" rel="noreferrer">
                         {t('credentialsForm.ansibleCredentials.wizardDescription')}
                     </a>
                 ),
