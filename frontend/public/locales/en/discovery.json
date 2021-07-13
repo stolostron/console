@@ -12,7 +12,7 @@
     "alert.deleted.header": "{{credentialName}} discovery setting was removed successfully",
     "alert.msg": "You can configure settings in Clusters > Discovered clusters",
 
-    "techpreview.msg": "<bold>Tech preview</bold>: For more information, <a>view documentation</a> on Discovered clusters",
+    "techpreview.msg": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Discovered clusters",
 
     "disable.title": "Delete discovery settings",
     "discoveryConfig.delete.btn": "Delete",
