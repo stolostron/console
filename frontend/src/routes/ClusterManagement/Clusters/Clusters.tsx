@@ -424,9 +424,8 @@ export function ClustersTable(props: {
                                         ? !tableActionRbacValues['cluster.destroy']
                                         : !tableActionRbacValues['cluster.destroy.detached'],
                                     tooltip:
-                                        cluster.isManaged && !tableActionRbacValues['cluster.destroy']
-                                            ? t('common:rbac.unauthorized')
-                                            : !tableActionRbacValues['cluster.destroy.detached']
+                                        (cluster.isManaged && !tableActionRbacValues['cluster.destroy']) ||
+                                        !tableActionRbacValues['cluster.destroy.detached']
                                             ? t('common:rbac.unauthorized')
                                             : '',
                                 },
