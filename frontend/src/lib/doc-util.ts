@@ -24,4 +24,5 @@ export const DOC_LINKS = {
     SUBMARINER: `${DOC_BASE_PATH}/services/submariner`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/#discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/index#resizing-a-cluster`,
+    ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/ansible-cluster`,
 }
