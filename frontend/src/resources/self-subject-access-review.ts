@@ -283,7 +283,7 @@ export const defaultTableRbacValues: ClustersTableActionsRbac = {
     'cluster.edit.labels': false,
     'cluster.detach': false,
     'cluster.destroy': false,
-    'cluster.destroy.detached':false,
+    'cluster.destroy.detached': false,
     'cluster.upgrade': false,
 }
 
