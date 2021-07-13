@@ -1,7 +1,7 @@
 import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
 import { deleteResources } from './delete-resources'
-import { IRequestResult, deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
+import { deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
 import { Cluster } from '../lib/get-cluster'
 import { IResource } from '../resources/resource'
 
