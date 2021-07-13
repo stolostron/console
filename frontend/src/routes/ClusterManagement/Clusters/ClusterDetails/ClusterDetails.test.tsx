@@ -697,6 +697,8 @@ function defaultNocks() {
         nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
         nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
+        nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
     ]
     return nocks
 }
@@ -788,6 +790,8 @@ describe('ClusterDetails', () => {
             nockcreateSelfSubjectAccesssRequest(getDeleteClusterResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getClusterActionsResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
+            nockcreateSelfSubjectAccesssRequest(getDeleteMachinePoolsResourceAttributes('test-cluster')),
             nockcreateSelfSubjectAccesssRequest(getDeleteDeploymentResourceAttributes('test-cluster')),
         ]
         render(<Component />)
