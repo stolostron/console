@@ -396,7 +396,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                                     description: t('cluster.destroy.description'),
                                                     columns: modalColumns,
                                                     keyFn: (cluster) => cluster.name as string,
-                                                    actionFn: (cluster) => deleteCluster(cluster.name!),
+                                                    actionFn: (cluster) => deleteCluster(cluster),
                                                     close: () => {
                                                         setModalProps({ open: false })
                                                         refresh()

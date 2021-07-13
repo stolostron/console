@@ -2,38 +2,45 @@ import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources
 import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
 import { deleteResources } from './delete-resources'
 import { IRequestResult, deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
+import { Cluster } from '../lib/get-cluster'
+import { IResource } from '../resources/resource'
 
-export function deleteCluster(clusterName: string, ignoreClusterDeploymentNotFound = false) {
-    const deleteResourcesResult = deleteResources([
-        {
-            apiVersion: ManagedClusterApiVersion,
-            kind: ManagedClusterKind,
-            metadata: { name: clusterName },
-        },
+export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
+    const resources: IResource[] = [
         {
             apiVersion: ClusterDeploymentApiVersion,
             kind: ClusterDeploymentKind,
-            metadata: { name: clusterName, namespace: clusterName },
+            metadata: { name: cluster.name!, namespace: cluster.namespace! },
         },
-    ])
+    ]
+
+    if (cluster.isManaged) {
+        resources.push({
+            apiVersion: ManagedClusterApiVersion,
+            kind: ManagedClusterKind,
+            metadata: { name: cluster.name! },
+        })
+    }
+
+    const deleteResourcesResult = deleteResources(resources)
 
     return {
         promise: new Promise((resolve, reject) => {
             deleteResourcesResult.promise.then((promisesSettledResult) => {
-                if (promisesSettledResult[0].status === 'rejected') {
-                    reject(promisesSettledResult[0].reason)
-                    return
-                }
-                if (promisesSettledResult[1].status === 'rejected') {
-                    const error = promisesSettledResult[1].reason
+                if (promisesSettledResult[0]?.status === 'rejected') {
+                    const error = promisesSettledResult[0].reason
                     if (error instanceof ResourceError) {
                         if (ignoreClusterDeploymentNotFound && error.code === ResourceErrorCode.NotFound) {
                             // DO NOTHING
                         } else {
-                            reject(promisesSettledResult[1].reason)
+                            reject(promisesSettledResult[0].reason)
                             return
                         }
                     }
+                }
+                if (promisesSettledResult[1]?.status === 'rejected') {
+                    reject(promisesSettledResult[1].reason)
+                    return
                 }
                 resolve(promisesSettledResult)
             })
@@ -48,15 +55,4 @@ export function detachCluster(clusterName: string) {
         kind: ManagedClusterKind,
         metadata: { name: clusterName },
     })
-}
-
-export function deleteClusters(
-    clusterNames: string[],
-    destroy?: boolean
-): IRequestResult<PromiseSettledResult<PromiseSettledResult<unknown>[]>[]> {
-    const results = clusterNames.map((clusterName) => deleteCluster(clusterName, destroy))
-    return {
-        promise: Promise.allSettled(results.map((result) => result.promise)),
-        abort: () => results.forEach((result) => result.abort()),
-    }
 }
