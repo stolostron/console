@@ -188,15 +188,6 @@ const bmaSecret: Secret = {
     },
     data: { password: btoa('test'), username: btoa('test') },
 }
-const mockBmaSecret4: Secret = {
-    kind: SecretKind,
-    apiVersion: SecretApiVersion,
-    metadata: {
-        name: 'test-bare-metal-asset-4-bmc-secret',
-        namespace: 'test-bare-metal-asset-namespace',
-    },
-    stringData: { password: 'test', username: 'test' },
-}
 
 const mockBareMetalSecrets = Array.from({ length: 5 }, (_val, inx) => {
     const mockedSecret = cloneDeep(bmaSecret)
@@ -355,7 +346,7 @@ const mockInstallConfigSecret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYmFyZW1ldGFsOiB7fQpjb21wdXRlOgotIG5hbWU6IHdvcmtlcgogIHJlcGxpY2FzOiAyCm5ldHdvcmtpbmc6CiAgbmV0d29ya1R5cGU6IE9wZW5TaGlmdFNETgogIGNsdXN0ZXJOZXR3b3JrOgogIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lTmV0d29yazoKICAtIGNpZHI6IDEwLjAuMC4wLzE2CiAgc2VydmljZU5ldHdvcms6CiAgLSAxNzIuMzAuMC4wLzE2CnBsYXRmb3JtOgogIGJhcmVtZXRhbDoKICAgIGxpYnZpcnRVUkk6IHFlbXUrc3NoOi8vbGlidmlydFVSSQogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBhcGlWSVA6CiAgICBpbmdyZXNzVklQOgogICAgYm9vdHN0cmFwT1NJbWFnZTogPi0KICAgICAgYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6ID4tCiAgICAgIGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiAndGVzdC1iYXJlLW1ldGFsLWFzc2V0LTAnCiAgICAgICAgbmFtZXNwYWNlOiAndGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZScKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6ICd0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMScKICAgICAgICBuYW1lc3BhY2U6ICd0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlJwogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogJ3Rlc3QtYmFyZS1tZXRhbC1hc3NldC0yJwogICAgICAgIG5hbWVzcGFjZTogJ3Rlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UnCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogJ2V4YW1wbGUuY29tOjgwJwogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiAndGVzdC1iYXJlLW1ldGFsLWFzc2V0LTMnCiAgICAgICAgbmFtZXNwYWNlOiAndGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZScKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6ICd0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtNCcKICAgICAgICBuYW1lc3BhY2U6ICd0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlJwogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6ICdleGFtcGxlLmNvbTo4MCcKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogICAgLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCiAgICBjZXJ0ZGF0YQogICAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgotIG1pcnJvcnM6CiAgLSBpbWFnZS5taXJyb3I6MTIzL2FiYwogIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXJlbGVhc2UtbmlnaHRseQotIG1pcnJvcnM6CiAgLSBpbWFnZS5taXJyb3I6MTIzL2FiYwogIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXJlbGVhc2UKLSBtaXJyb3JzOgogIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKICAtIG5hbWU6IHdvcmtlcgogICAgcmVwbGljYXM6IDIKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lTmV0d29yazoKICAgIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAgIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBiYXJlbWV0YWw6CiAgICBsaWJ2aXJ0VVJJOiAncWVtdStzc2g6Ly9saWJ2aXJ0VVJJJwogICAgcHJvdmlzaW9uaW5nTmV0d29ya0NJRFI6IDEwLjQuNS4zCiAgICBwcm92aXNpb25pbmdOZXR3b3JrSW50ZXJmYWNlOiBlbnAxczAKICAgIHByb3Zpc2lvbmluZ0JyaWRnZTogcHJvdmlzaW9uaW5nCiAgICBleHRlcm5hbEJyaWRnZTogYmFyZW1ldGFsCiAgICBhcGlWSVA6IG51bGwKICAgIGluZ3Jlc3NWSVA6IG51bGwKICAgIGJvb3RzdHJhcE9TSW1hZ2U6IGJvb3RzdHJhcE9TSW1hZ2UKICAgIGNsdXN0ZXJPU0ltYWdlOiBjbHVzdGVyT1NJbWFnZQogICAgaG9zdHM6CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTAKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTIKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTMKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiAnZXhhbXBsZS5jb206ODAnCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiBudWxsCiAgICAgICAgICBwYXNzd29yZDogbnVsbAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAnMDA6OTA6N0Y6MTI6REU6N0YnCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICcnCnNzaEtleTogc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogIGNlcnRkYXRhCiAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgogIC0gbWlycm9yczoKICAgICAgLSAnaW1hZ2UubWlycm9yOjEyMy9hYmMnCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKICAtIG1pcnJvcnM6CiAgICAgIC0gJ2ltYWdlLm1pcnJvcjoxMjMvYWJjJwogICAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtcmVsZWFzZQogIC0gbWlycm9yczoKICAgICAgLSAnaW1hZ2UubWlycm9yOjEyMy9hYmMnCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
     },
 }
 
@@ -546,8 +537,8 @@ const mockClusterDeploymentAnsible = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'test',
-                            password: 'test',
+                            username: null,
+                            password: null,
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -660,8 +651,8 @@ const mockClusterDeployment = {
                         bmc: {
                             address: 'example.com:80',
                             disableCertificateVerification: true,
-                            username: 'test',
-                            password: 'test',
+                            username: null,
+                            password: null,
                         },
                         bootMACAddress: '00:90:7F:12:DE:7F',
                         hardwareProfile: 'default',
@@ -935,16 +926,6 @@ describe('CreateCluster', () => {
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
-
-            // host table pulls secrets for each selected host
-            const hostSecrets = [
-                nockGet(mockBareMetalSecrets[0]),
-                nockGet(mockBareMetalSecrets[1]),
-                nockGet(mockBareMetalSecrets[2]),
-                nockGet(mockBareMetalSecrets[3]),
-                nockGet(mockBareMetalSecrets[4]),
-            ]
-            await waitForNocks(hostSecrets)
         }
         await clickByText('Next')
 
@@ -965,7 +946,6 @@ describe('CreateCluster', () => {
             nockCreate(mockBmaProject, mockBmaProjectResponse),
 
             // create bmas/secrets
-            nockCreate(mockBmaSecret4),
             nockCreate(mockBareMetalAssets3[0]),
             nockGet(mockBareMetalSecrets[0]),
             nockGet(mockBareMetalSecrets[1]),
@@ -1036,16 +1016,6 @@ describe('CreateCluster', () => {
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
-
-            // host table pulls secrets for each selected host
-            const hostSecrets = [
-                nockGet(mockBareMetalSecrets[0]),
-                nockGet(mockBareMetalSecrets[1]),
-                nockGet(mockBareMetalSecrets[2]),
-                nockGet(mockBareMetalSecrets[3]),
-                nockGet(mockBareMetalSecrets[4]),
-            ]
-            await waitForNocks(hostSecrets)
         }
         await clickByText('Next')
 
@@ -1068,7 +1038,6 @@ describe('CreateCluster', () => {
             nockCreate(mockBmaProject, mockBmaProjectResponse),
 
             // create bmas/secrets
-            nockCreate(mockBmaSecret4),
             nockCreate(mockBareMetalAssets3[0]),
             nockGet(mockBareMetalSecrets[0]),
             nockGet(mockBareMetalSecrets[1]),
