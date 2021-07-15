@@ -10,6 +10,7 @@ import {
     AcmLabels,
     AcmPageContent,
     StatusType,
+    Provider,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
@@ -30,6 +31,8 @@ import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
+import AIClusterProgress from '../../components/cim/AIClusterProgress'
+import AIClusterDetails from '../../components/cim/AIClusterDetails'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator } = useContext(ClusterContext)
@@ -153,6 +156,8 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     if (!cluster?.distribution?.ocp?.version) {
         leftItems = leftItems.filter((item) => item.filterKey !== 'channel')
     }
+
+    const isHybrid = cluster?.provider === Provider.hybrid
     return (
         <AcmPageContent id="overview">
             <PageSection>
@@ -171,7 +176,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                <ProgressStepBar />
+                {isHybrid ? <AIClusterProgress /> : <ProgressStepBar />}
                 <AcmDescriptionList
                     title={t('table.details')}
                     leftItems={leftItems}
@@ -235,6 +240,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         },
                     ]}
                 />
+                {isHybrid && <AIClusterDetails />}
                 {cluster!.isManaged &&
                     [
                         ClusterStatus.ready,
