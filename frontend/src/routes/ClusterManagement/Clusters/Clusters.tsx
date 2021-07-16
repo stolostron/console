@@ -410,7 +410,7 @@ export function ClustersTable(props: {
                                             description: t('cluster.destroy.description'),
                                             columns: modalColumns,
                                             keyFn: (cluster) => cluster.name as string,
-                                            actionFn: (cluster) => deleteCluster(cluster.name!),
+                                            actionFn: (cluster) => deleteCluster(cluster),
                                             close: () => {
                                                 setModalProps({ open: false })
                                                 props.refresh()
@@ -420,10 +420,14 @@ export function ClustersTable(props: {
                                             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
-                                    isDisabled: !tableActionRbacValues['cluster.destroy'],
-                                    tooltip: !tableActionRbacValues['cluster.destroy']
-                                        ? t('common:rbac.unauthorized')
-                                        : '',
+                                    isDisabled: cluster.isManaged
+                                        ? !tableActionRbacValues['cluster.destroy']
+                                        : !tableActionRbacValues['cluster.destroy.detached'],
+                                    tooltip:
+                                        (cluster.isManaged && !tableActionRbacValues['cluster.destroy']) ||
+                                        !tableActionRbacValues['cluster.destroy.detached']
+                                            ? t('common:rbac.unauthorized')
+                                            : '',
                                 },
                             ]
 
@@ -498,7 +502,7 @@ export function ClustersTable(props: {
                                 description: t('cluster.destroy.description'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => deleteCluster(cluster.name!, true),
+                                actionFn: (cluster) => deleteCluster(cluster, true),
                                 close: () => {
                                     setModalProps({ open: false })
                                     props.refresh()

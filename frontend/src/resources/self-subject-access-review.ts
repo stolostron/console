@@ -39,6 +39,7 @@ export type ClustersTableActionsRbac = {
     'cluster.edit.labels'?: boolean
     'cluster.detach'?: boolean
     'cluster.destroy'?: boolean
+    'cluster.destroy.detached'?: boolean
     'cluster.upgrade'?: boolean
 }
 
@@ -174,6 +175,22 @@ export function rbacMapping(action: string, name?: string, namespace?: string) {
                     namespace,
                 },
             ]
+        case 'cluster.destroy.detached':
+            return [
+                {
+                    resource: 'clusterdeployments',
+                    verb: 'delete',
+                    group: 'hive.openshift.io',
+                    name,
+                    namespace,
+                },
+                {
+                    resource: 'machinepools',
+                    verb: 'delete',
+                    group: 'hive.openshift.io',
+                    namespace,
+                },
+            ]
         case 'cluster.edit.labels':
             return [
                 {
@@ -266,6 +283,7 @@ export const defaultTableRbacValues: ClustersTableActionsRbac = {
     'cluster.edit.labels': false,
     'cluster.detach': false,
     'cluster.destroy': false,
+    'cluster.destroy.detached': false,
     'cluster.upgrade': false,
 }
 

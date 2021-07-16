@@ -387,6 +387,12 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
+            ),
         ]
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1), nockDelete(mockClusterDeployment)]
         const refreshNocks: Scope[] = [
@@ -434,6 +440,12 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(
                 getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
             ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster1.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockManagedCluster1.metadata.name!)
+            ),
         ]
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
         const refreshNocks: Scope[] = [
@@ -474,6 +486,12 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster3.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster3.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster3.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockManagedCluster3.metadata.name!)
+            ),
         ]
         await waitForText(mockManagedCluster3.metadata.name!)
         await clickByLabel('Actions', 2) // Click the action button on the 3th table row
@@ -487,6 +505,12 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster5.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster5.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster5.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockManagedCluster5.metadata.name!)
+            ),
         ]
         await waitForText(mockManagedCluster5.metadata.name!)
         await clickByLabel('Actions', 4) // Click the action button on the 5th table row
@@ -500,6 +524,12 @@ describe('Cluster page', () => {
             nockCreateSelfSubjectAccessReview(getPatchClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getDeleteClusterResourceAttributes(mockManagedCluster4.metadata.name!)),
             nockCreateSelfSubjectAccessReview(getClusterActionsResourceAttributes(mockManagedCluster4.metadata.name!)),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteDeploymentResourceAttributes(mockManagedCluster4.metadata.name!)
+            ),
+            nockCreateSelfSubjectAccessReview(
+                getDeleteMachinePoolsResourceAttributes(mockManagedCluster4.metadata.name!)
+            ),
         ]
         await waitForText(mockManagedCluster4.metadata.name!)
         await clickByLabel('Actions', 3) // Click the action button on the 4th table row
