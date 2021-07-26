@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
+        "watch": "npm run start",
         "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
         "build": "npm run clean && tsc --sourceMap false --declaration false",
         "clean": "rm -rf coverage build",

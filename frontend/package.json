@@ -53,6 +53,7 @@
         "ts-jest": "^26.5.6"
     },
     "scripts": {
+        "watch": "npm run start",
         "start": "react-app-rewired start",
         "build": "react-app-rewired build && cd build && gzip * -k -r --best",
         "test": "react-app-rewired test --all --watchAll=false --ci --runInBand --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --collectCoverageFrom=!**/*.d.ts --env=jest-environment-jsdom-sixteen --testResultsProcessor jest-sonar-reporter",
