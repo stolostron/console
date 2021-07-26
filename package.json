@@ -13,6 +13,8 @@
         "clean": "workspaces-run --parallel -- rm -rf node_modules package-lock.json dist lib coverage *.tsbuildinfo test-report.xml",
         "build": "workspaces-run --parallel --order-by-deps -- npm run build",
         "test": "workspaces-run --parallel -- npm test",
+        "lint": "workspaces-run --parallel -- npm run lint",
+        "check": "workspaces-run --parallel -- npm run check",
         "update": "npm run update:doctor && npm run clean && npm install && npm dedup && npm audit fix",
         "update:doctor": "workspaces-run --parallel -- npx npm-check-updates --legacy-peer-deps --upgrade --target minor --doctor",
         "setup": "./setup.sh",
