@@ -5,6 +5,7 @@ import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../../atoms'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { getLatestAnsibleJob } from '../../../../../resources/ansible-job'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -119,7 +120,7 @@ export function ProgressStepBar() {
                     // TODO: add ansible documentation url
                     linkUrl:
                         !prehooks && !posthooks
-                            ? 'https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.2/'
+                            ? DOC_LINKS.ANSIBLE_JOBS
                             : latestJobs.prehook?.status?.ansibleJobResult?.url,
                     isDisabled:
                         !prehooks && !posthooks

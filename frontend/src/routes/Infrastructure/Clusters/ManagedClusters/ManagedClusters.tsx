@@ -21,7 +21,7 @@ import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { addonPathKey, addonTextKey } from '../../../../lib/get-addons'
-import { Cluster } from '../../../../lib/get-cluster'
+import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -346,7 +346,7 @@ export function ClustersTable(props: {
                                 title: t('bulk.title.hibernate'),
                                 action: t('hibernate'),
                                 processing: t('hibernating'),
-                                resources: clusters,
+                                resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
                                 description: t('bulk.message.hibernate'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
@@ -367,6 +367,7 @@ export function ClustersTable(props: {
                                     setModalProps({ open: false })
                                 },
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                                plural: t('hibernatable.clusters'),
                             })
                         },
                     },
@@ -379,7 +380,7 @@ export function ClustersTable(props: {
                                 title: t('bulk.title.resume'),
                                 action: t('resume'),
                                 processing: t('resuming'),
-                                resources: clusters,
+                                resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
                                 description: t('bulk.message.resume'),
                                 columns: modalColumns,
                                 keyFn: (cluster) => cluster.name as string,
@@ -400,6 +401,7 @@ export function ClustersTable(props: {
                                     setModalProps({ open: false })
                                 },
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                                plural: t('hibernatable.clusters'),
                             })
                         },
                     },
