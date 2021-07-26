@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext } from 'react'
+import { Fragment, useContext } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'
@@ -31,8 +31,13 @@ export function ScaleClusterAlert() {
     })
 
     // SubmarinerConfig will only provision new nodes for AWS
-    if (subConfig && cluster.provider === Provider.aws) {
+    if (subConfig && cluster?.provider === Provider.aws) {
         totalDesiredReplicas += subConfig?.spec?.gatewayConfig?.gateways ?? 1 // gateway is 1 by default
+    }
+
+    switch (cluster?.provider) {
+        case Provider.baremetal:
+            return <Fragment />
     }
 
     if (
@@ -76,5 +81,5 @@ export function ScaleClusterAlert() {
         )
     }
 
-    return null
+    return <Fragment />
 }
