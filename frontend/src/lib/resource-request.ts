@@ -200,15 +200,22 @@ export function listAnsibleTowerJobs<ResultT>(ansibleHostUrl: string, token: str
     const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
     return {
-        promise: fetchGetAnsibleJobs<ResultT>(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((result) => result.data),
+        promise: fetchGetAnsibleJobs<ResultT>(backendURLPath, ansibleJobsUrl, token, abortController.signal).then(
+            (result) => result.data
+        ),
         abort: () => abortController.abort(),
     }
 }
 
-export function fetchGetAnsibleJobs<T = unknown>(backendUrlPath: string, ansibleJobsUrl:string, token:string,  signal: AbortSignal) {
+export function fetchGetAnsibleJobs<T = unknown>(
+    backendUrlPath: string,
+    ansibleJobsUrl: string,
+    token: string,
+    signal: AbortSignal
+) {
     return fetchRetry<T>({
         method: 'GET',
-        url:backendUrlPath,
+        url: backendUrlPath,
         signal,
         headers: {
             path: ansibleJobsUrl,

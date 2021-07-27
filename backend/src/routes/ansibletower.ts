@@ -17,7 +17,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         method: req.method,
         headers: {
             Authorization: `Bearer ${req.headers.tk}`,
-          },
+        },
         rejectUnauthorized: false,
     }
 
@@ -26,7 +26,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         request(options, (response) => {
             if (!response) return notFound(req, res)
             res.writeHead(response.statusCode ?? 500, response.headers)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
+            pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
         }),
         (err) => {
             if (err) logger.error(err)
