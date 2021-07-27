@@ -19,6 +19,7 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { startWatching, stopWatching, events } from './routes/events'
 import { loadSettings, stopSettingsWatch } from './lib/config'
+import { ansibleTower } from './routes/ansibletower'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, readiness)
@@ -38,6 +39,7 @@ router.get(`/events`, events)
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.get(`/*`, serve)
+router.get(`/ansibletower`, ansibleTower)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
