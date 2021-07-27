@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "start": "workspaces-run --parallel -- npm run watch",
-        "clean": "workspaces-run --parallel -- rm -rf node_modules package-lock.json dist lib coverage *.tsbuildinfo test-report.xml",
+        "clean": "workspaces-run --parallel -- rm -rf node_modules package-lock.json build dist lib coverage *.tsbuildinfo test-report.xml",
         "build": "workspaces-run --parallel --order-by-deps -- npm run build",
         "test": "workspaces-run --parallel -- npm test",
         "lint": "workspaces-run --parallel -- npm run lint",

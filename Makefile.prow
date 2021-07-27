@@ -2,14 +2,14 @@
 
 -include /opt/build-harness/Makefile.prow
 
+.PHONY: install
+install:
+    npm install --global npm@7
+	npm ci --no-optional --legacy-peer-deps
 
 .PHONY: build
 build:
 	npm run build
-
-.PHONY: install
-install:
-	npm ci
 
 .PHONY: check
 check:
