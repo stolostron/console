@@ -4,7 +4,7 @@
 
 .PHONY: install
 install:
-    npm install --global npm@7
+	npm install --global npm@7
 	npm ci --no-optional --legacy-peer-deps
 
 .PHONY: build
