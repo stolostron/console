@@ -32,9 +32,6 @@ const useStyles = makeStyles({
         position: 'relative',
         top: '-35px',
         padding: '0 8px',
-        '& h2, h4, p, span, thead': {
-            fontFamily: 'RedHatText-Regular',
-        },
         '& section': {
             paddingTop: 'var(--pf-global--spacer--lg)',
         },
@@ -52,9 +49,6 @@ const useStyles = makeStyles({
     },
     tableTitle: {
         paddingBottom: 'var(--pf-global--spacer--md)',
-        '& h4': {
-            fontFamily: 'RedHatText-Medium',
-        },
     },
     backAction: {
         paddingBottom: 'var(--pf-global--spacer--lg)',
@@ -62,7 +56,6 @@ const useStyles = makeStyles({
     subDetailComponents: {
         paddingBottom: 'var(--pf-global--spacer--xl)',
         '& small': {
-            fontFamily: 'RedHatText-Medium',
             color: 'inherit',
             paddingBottom: 'var(--pf-global--spacer--sm)',
         },
