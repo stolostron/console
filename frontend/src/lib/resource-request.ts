@@ -193,6 +193,37 @@ export function listNamespacedResources<Resource extends IResource>(
         abort: result.abort,
     }
 }
+// TODO: validation for URL input
+// Code assumes protocol is present & ansiblehosturl ends without a /
+export function listAnsibleTowerJobs<ResultT>(ansibleHostUrl: string, token: string): IRequestResult<ResultT> {
+    const backendURLPath = backendUrl + '/ansibletower'
+    const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
+    const abortController = new AbortController()
+    return {
+        promise: fetchGetAnsibleJobs<ResultT>(backendURLPath, ansibleJobsUrl, token, abortController.signal).then(
+            (result) => result.data
+        ),
+        abort: () => abortController.abort(),
+    }
+}
+
+export function fetchGetAnsibleJobs<T = unknown>(
+    backendUrlPath: string,
+    ansibleJobsUrl: string,
+    token: string,
+    signal: AbortSignal
+) {
+    return fetchRetry<T>({
+        method: 'GET',
+        url: backendUrlPath,
+        signal,
+        headers: {
+            path: ansibleJobsUrl,
+            tk: token,
+        },
+        retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    })
+}
 
 export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
     const abortController = new AbortController()
