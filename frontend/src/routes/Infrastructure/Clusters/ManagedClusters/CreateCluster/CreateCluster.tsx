@@ -5,9 +5,9 @@ import { PageSection } from '@patternfly/react-core'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import fs from 'fs'
 import Handlebars from 'handlebars'
-import { get, keyBy } from 'lodash'
+import { get, keyBy, map, values } from 'lodash'
 import path from 'path'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -28,6 +28,7 @@ import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
+import { listAnsibleTowerJobs } from '../../../../../lib/resource-request'
 import {
     ClusterCurator,
     filterForTemplatedCurators,
@@ -96,8 +97,27 @@ export default function CreateClusterPage() {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const curatorTemplates = filterForTemplatedCurators(clusterCurators)
     const [selectedTemplate, setSelectedTemplate] = useState('')
+    const [ansibleTowerJobs, setAnsibleTowerJobs] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const classes = useStyles()
+
+    const host = ''
+    const token = ''
+
+    useEffect(() => {
+        listAnsibleTowerJobs(
+            host,
+            token
+        ).promise.then((response) => {
+            const result = get(response, 'results', [])
+            if (result){
+                const availableTemplateNames = values(map(result, 'name'))
+                setAnsibleTowerJobs(availableTemplateNames)
+            }       
+        })
+    })
+
+
     // create portals for buttons in header
     const switches = (
         <div className="switch-controls">
