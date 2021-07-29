@@ -8,6 +8,7 @@ import {
     ResourceList,
 } from '../resources/resource'
 import { Status, StatusKind } from '../resources/status'
+import { AnsibleTowerJobTemplateList } from '../resources/ansible-job'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -195,25 +196,31 @@ export function listNamespacedResources<Resource extends IResource>(
 }
 // TODO: validation for URL input
 // Code assumes protocol is present & ansiblehosturl ends without a /
-export function listAnsibleTowerJobs<ResultT>(ansibleHostUrl: string, token: string): IRequestResult<ResultT> {
+export function listAnsibleTowerJobs(
+    ansibleHostUrl: string,
+    token: string
+): IRequestResult<AnsibleTowerJobTemplateList> {
     const backendURLPath = backendUrl + '/ansibletower'
     const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
     return {
-        promise: fetchGetAnsibleJobs<ResultT>(backendURLPath, ansibleJobsUrl, token, abortController.signal).then(
-            (result) => result.data
+        promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then(
+            (item) =>
+                item.data.results?.map((job) => {
+                    return { type: job.type, name: job.name }
+                }) as AnsibleTowerJobTemplateList
         ),
         abort: () => abortController.abort(),
     }
 }
 
-export function fetchGetAnsibleJobs<T = unknown>(
+export function fetchGetAnsibleJobs(
     backendUrlPath: string,
     ansibleJobsUrl: string,
     token: string,
     signal: AbortSignal
 ) {
-    return fetchRetry<T>({
+    return fetchRetry<AnsibleTowerJobTemplateList>({
         method: 'GET',
         url: backendUrlPath,
         signal,
