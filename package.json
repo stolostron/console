@@ -26,11 +26,19 @@
         "prepare": "husky install"
     },
     "dependencies": {
+        "@types/jest": "^26.0.24",
         "@types/node": "^16.4.3",
         "concurrently": "^6.2.0",
         "husky": "^7.0.1",
+        "jest": "^26.6.3",
         "ts-node": "^10.1.0",
         "typescript": "^4.3.5",
         "workspaces-run": "^1.0.1"
+    },
+    "jest": {
+        "projects": [
+            "<rootDir>/backend",
+            "<rootDir>/frontend"
+        ]
     }
 }
