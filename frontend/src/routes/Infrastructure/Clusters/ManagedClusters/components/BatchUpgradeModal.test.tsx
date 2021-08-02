@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 import { nockCreate, nockPatch } from '../../../../../lib/nock-util'
-import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
     displayName: 'cluster-0-no-available',

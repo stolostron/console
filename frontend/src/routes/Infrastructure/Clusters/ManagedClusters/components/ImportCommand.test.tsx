@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '@open-cluster-management/resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
+import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
-import { RecoilRoot } from 'recoil'
 
 const mockSecretResponse: Secret = {
     apiVersion: SecretApiVersion,

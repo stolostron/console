@@ -25,15 +25,11 @@ import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
 import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
-import {
-    ClusterCurator,
-    filterForTemplatedCurators,
-    createClusterCurator,
-} from '../../../../../resources/cluster-curator'
+import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '@open-cluster-management/resources'
 import { createCluster } from '../../../../../lib/create-cluster'
-import { ProviderConnection, unpackProviderConnection } from '../../../../../resources/provider-connection'
-import { Secret } from '../../../../../resources/secret'
-import { createResource as createResourceTool } from '../../../../../lib/resource-request'
+import { ProviderConnection, unpackProviderConnection } from '@open-cluster-management/resources'
+import { Secret } from '@open-cluster-management/resources'
+import { createResource as createResourceTool } from '@open-cluster-management/resources'
 import { FeatureGates } from '../../../../../FeatureGates'
 interface CreationStatus {
     status: string

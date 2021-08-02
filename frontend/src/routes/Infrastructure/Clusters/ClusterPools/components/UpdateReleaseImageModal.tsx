@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterImageSet, ClusterPool, patchResource } from '@open-cluster-management/resources'
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
-import { patchResource } from '../../../../../lib/resource-request'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
-import { ClusterImageSet } from '../../../../../resources/cluster-image-set'
 import { clusterImageSetsState } from '../../../../../atoms'
+import { BulkActionModel } from '../../../../../components/BulkActionModel'
 
 export type UpdateReleaseImageModalProps = {
     close?: () => void

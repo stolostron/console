@@ -1,7 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmToastContext,
+    createDiscoveryConfig,
+    deleteResource,
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigDefinition,
+    DiscoveryConfigKind,
+    replaceDiscoveryConfig,
+    ResourceError,
+    Secret,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmButton,
     AcmForm,
@@ -14,6 +24,7 @@ import {
     AcmPageHeader,
     AcmSelect,
     AcmSubmit,
+    AcmToastContext,
     Provider,
 } from '@open-cluster-management/ui-components'
 import {
@@ -27,7 +38,7 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { useContext, useEffect, useState, Fragment } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -35,19 +46,8 @@ import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import discoveryVersions from '../../../../../components/discoveryVersions.json'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import { deleteResource } from '../../../../../lib/resource-request'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { Secret } from '../../../../../resources/secret'
 import { canUser } from '../../../../../lib/rbac-util'
-import {
-    createDiscoveryConfig,
-    DiscoveryConfig,
-    DiscoveryConfigApiVersion,
-    DiscoveryConfigKind,
-    replaceDiscoveryConfig,
-    DiscoveryConfigDefinition,
-} from '../../../../../resources/discovery-config'
-import { ResourceError } from '../../../../../lib/resource-request'
+import { NavigationPath } from '../../../../../NavigationPath'
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])

@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "workspaces": [
-        "libraries/*",
+        "@open-cluster-management/*",
         "routes/*",
         "frontend",
         "backend"

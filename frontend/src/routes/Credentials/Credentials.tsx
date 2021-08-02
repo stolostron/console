@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    deleteResource,
+    DiscoveryConfig,
+    ProviderConnection,
+    Secret,
+    unpackProviderConnection,
+} from '@open-cluster-management/resources'
+import {
     AcmButton,
     AcmEmptyState,
     AcmInlineProvider,
@@ -24,11 +31,7 @@ import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
-import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
-import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
-import { Secret } from '../../resources/secret'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['credentials'])

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { createResource, getResource, listResources, replaceResource } from '../lib/resource-request'
+import { createResource, getResource, listResources, replaceResource } from './utils/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterCuratorApiVersion = 'cluster.open-cluster-management.io/v1beta1'
@@ -23,26 +23,26 @@ export interface ClusterCurator {
         desiredCuration?: string | undefined
         install?: {
             towerAuthSecret?: string
-            prehook?: AnsibleJob[]
-            posthook?: AnsibleJob[]
+            prehook?: ClusterCuratorAnsibleJob[]
+            posthook?: ClusterCuratorAnsibleJob[]
         }
         upgrade?: {
             desiredUpdate?: string
             channel?: string
             upstream?: string
             towerAuthSecret?: string
-            prehook?: AnsibleJob[]
-            posthook?: AnsibleJob[]
+            prehook?: ClusterCuratorAnsibleJob[]
+            posthook?: ClusterCuratorAnsibleJob[]
         }
         scale?: {
             towerAuthSecret?: string
-            prehook?: AnsibleJob[]
-            posthook?: AnsibleJob[]
+            prehook?: ClusterCuratorAnsibleJob[]
+            posthook?: ClusterCuratorAnsibleJob[]
         }
         destroy?: {
             towerAuthSecret?: string
-            prehook?: AnsibleJob[]
-            posthook?: AnsibleJob[]
+            prehook?: ClusterCuratorAnsibleJob[]
+            posthook?: ClusterCuratorAnsibleJob[]
         }
     }
     status?: {
@@ -50,7 +50,7 @@ export interface ClusterCurator {
     }
 }
 
-export interface AnsibleJob {
+export interface ClusterCuratorAnsibleJob {
     name: string
     extra_vars?: Record<string, string>
 }

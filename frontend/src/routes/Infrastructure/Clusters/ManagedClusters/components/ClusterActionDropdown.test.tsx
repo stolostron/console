@@ -1,21 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { Scope } from 'nock/types'
-import { RecoilRoot } from 'recoil'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { nockCreate, nockPatch, nockRBAC, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
-import { clickByLabel, clickByText, waitForText, waitForNock, waitForNocks } from '../../../../../lib/test-util'
-import { ClusterDeploymentDefinition } from '../../../../../resources/cluster-deployment'
-import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
-import { ClusterActionDropdown } from './ClusterActionDropdown'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 import {
+    Cluster,
+    ClusterDeploymentDefinition,
+    ClusterStatus,
     KlusterletAddonConfig,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
-} from '../../../../../resources/klusterlet-add-on-config'
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterDefinition,
+    ManagedClusterKind,
+} from '@open-cluster-management/resources'
+import { render } from '@testing-library/react'
+import { Scope } from 'nock/types'
+import { RecoilRoot } from 'recoil'
+import { nockCreate, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
+import { rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
+import { clickByLabel, clickByText, waitForNock, waitForNocks, waitForText } from '../../../../../lib/test-util'
+import { ClusterActionDropdown } from './ClusterActionDropdown'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',

@@ -1,12 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmIcon,
-    AcmIconVariant,
+    DiscoveredCluster,
+    DiscoveryConfig,
+    ProviderConnection,
+    unpackProviderConnection,
+} from '@open-cluster-management/resources'
+import {
     AcmButton,
     AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
+    AcmIcon,
+    AcmIconVariant,
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
@@ -14,20 +20,17 @@ import {
     IAcmTableColumn,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
+import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { NavigationPath } from '../../../../NavigationPath'
-import { DiscoveredCluster } from '../../../../resources/discovered-cluster'
-import { DiscoveryConfig } from '../../../../resources/discovery-config'
-import { ProviderConnection, unpackProviderConnection } from '../../../../resources/provider-connection'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
+import { NavigationPath } from '../../../../NavigationPath'
 
 export default function DiscoveredClustersPage() {
     return (

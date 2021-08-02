@@ -1,13 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
-import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../resources/managed-cluster-info'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../resources/cluster-curator'
+import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../cluster-deployment'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
+import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
 import { getDistributionInfo } from './get-cluster'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {

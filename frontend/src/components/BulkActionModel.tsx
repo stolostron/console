@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '@open-cluster-management/resources'
 import {
     AcmAlert,
     AcmForm,
@@ -22,7 +23,6 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
-import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true

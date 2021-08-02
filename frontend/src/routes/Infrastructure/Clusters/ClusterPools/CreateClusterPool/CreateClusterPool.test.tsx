@@ -1,5 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+    ClusterPool,
+    ClusterPoolApiVersion,
+    ClusterPoolKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -14,20 +34,6 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import {
-    ClusterImageSet,
-    ClusterImageSetApiVersion,
-    ClusterImageSetKind,
-} from '../../../../../resources/cluster-image-set'
-import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../../resources/cluster-pool'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../../resources/namespace'
-import { ProjectRequest, ProjectRequestApiVersion, ProjectRequestKind } from '../../../../../resources/project'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../../../resources/provider-connection'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import CreateClusterPoolPage from './CreateClusterPool'
 
 const clusterName = 'test'

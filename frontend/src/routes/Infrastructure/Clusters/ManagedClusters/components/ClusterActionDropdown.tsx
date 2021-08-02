@@ -1,23 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    Cluster,
+    ClusterCuratorDefinition,
+    ClusterDeployment,
+    ClusterDeploymentDefinition,
+    ClusterStatus,
+    ManagedClusterDefinition,
+    patchResource,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
 import { AcmInlineProvider } from '@open-cluster-management/ui-components'
-import { TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
+import { createImportResources } from '../../../../../lib/import-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
-import { patchResource, ResourceErrorCode } from '../../../../../lib/resource-request'
-import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../../resources/cluster-deployment'
-import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
-import { createImportResources } from '../../../../../lib/import-cluster'
-import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { t } = useTranslation(['cluster'])

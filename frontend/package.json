@@ -5,6 +5,7 @@
     "homepage": "/multicloud/",
     "proxy": "https://localhost:4000",
     "dependencies": {
+        "@open-cluster-management/resources": "^1.0.0",
         "@kubernetes/client-node": "^0.15.0",
         "@open-cluster-management/ui-components": "^0.180.0",
         "@patternfly/react-core": "^4.135.5",

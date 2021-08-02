@@ -2,16 +2,19 @@
 
 /* istanbul ignore file */
 
-import { isEqual } from 'lodash'
-import nock from 'nock'
-import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import {
+    getResourceApiPath,
+    getResourceNameApiPath,
+    IResource,
     ResourceAttributes,
     SelfSubjectAccessReview,
     SelfSubjectAccessReviewApiVersion,
     SelfSubjectAccessReviewKind,
-} from '../resources/self-subject-access-review'
-import { StatusApiVersion, StatusKind } from '../resources/status'
+    StatusApiVersion,
+    StatusKind,
+} from '@open-cluster-management/resources'
+import { isEqual } from 'lodash'
+import nock from 'nock'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export function nockGet<Resource extends IResource>(

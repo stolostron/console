@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { makeStyles } from '@material-ui/styles'
+import {
+    ClusterCurator,
+    deleteResource,
+    filterForTemplatedCurators,
+    getTemplateJobsNum,
+    LinkAnsibleCredential,
+    unpackProviderConnection,
+} from '@open-cluster-management/resources'
 import {
     AcmAlertContext,
     AcmButton,
@@ -10,9 +19,9 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
+import { ButtonVariant, Hint, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
-import { PageSection, Hint, ButtonVariant } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -20,19 +29,9 @@ import { useRecoilState } from 'recoil'
 import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
-import { deleteResource } from '../../../lib/resource-request'
-import { NavigationPath } from '../../../NavigationPath'
 import { RbacDropdown } from '../../../components/Rbac'
-
-import {
-    ClusterCurator,
-    filterForTemplatedCurators,
-    getTemplateJobsNum,
-    LinkAnsibleCredential,
-} from '../../../resources/cluster-curator'
-import { unpackProviderConnection } from '../../../resources/provider-connection'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { makeStyles } from '@material-ui/styles'
+import { NavigationPath } from '../../../NavigationPath'
 
 export default function AnsibleAutomationsPage() {
     const [, setRoute] = useRecoilState(acmRouteState)

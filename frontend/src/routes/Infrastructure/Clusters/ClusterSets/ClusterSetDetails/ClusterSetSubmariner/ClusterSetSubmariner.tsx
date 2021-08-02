@@ -1,36 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
-import { PageSection, Stack, StackItem, Flex, FlexItem, TextContent, Text, TextVariants } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
+import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '@open-cluster-management/resources'
 import {
-    AcmPageContent,
-    AcmEmptyState,
-    AcmTable,
-    AcmInlineStatus,
-    StatusType,
-    AcmExpandableCard,
     AcmButton,
+    AcmEmptyState,
+    AcmExpandableCard,
     AcmInlineProvider,
+    AcmInlineStatus,
+    AcmPageContent,
+    AcmTable,
+    StatusType,
 } from '@open-cluster-management/ui-components'
-import { useRecoilState } from 'recoil'
+import { Flex, FlexItem, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { RbacButton } from '../../../../../../components/Rbac'
-import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
-import { ManagedClusterAddOn } from '../../../../../../resources/managed-cluster-add-on'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { fitContent } from '@patternfly/react-table'
+import { useContext, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import { submarinerConfigsState } from '../../../../../../atoms'
-import { ManagedClusterSetDefinition } from '../../../../../../resources/managed-cluster-set'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
-import { ResourceErrorCode } from '../../../../../../lib/resource-request'
-import { rbacDelete } from '../../../../../../lib/rbac-util'
-import { RbacDropdown } from '../../../../../../components/Rbac'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../../NavigationPath'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
+import { ClusterSetContext } from '../ClusterSetDetails'
 
 type SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'
 const SubmarinerGatewayNodesLabeled: SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'

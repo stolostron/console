@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus, PolicyReport } from '@open-cluster-management/resources'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
-import { PolicyReport } from '../../../../../resources/policy-report'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 

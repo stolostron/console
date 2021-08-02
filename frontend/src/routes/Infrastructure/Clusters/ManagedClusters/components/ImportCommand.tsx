@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterStatus, getSecret, ResourceError, Secret } from '@open-cluster-management/resources'
 import { AcmAlert, AcmButton, AcmInlineCopy } from '@open-cluster-management/ui-components'
 import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
 import {
+    Alert,
     AlertVariant,
     Card,
     CardBody,
@@ -13,18 +15,14 @@ import {
     Tabs,
     TabTitleText,
     Tooltip,
-    Alert,
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
 import i18next from 'i18next'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useRecoilState } from 'recoil'
 import { useTranslation } from 'react-i18next'
-import { ClusterStatus } from '../../../../../lib/get-cluster'
-import { ResourceError } from '../../../../../lib/resource-request'
-import { getSecret, Secret } from '../../../../../resources/secret'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../../../atoms'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation(['cluster', 'common'])

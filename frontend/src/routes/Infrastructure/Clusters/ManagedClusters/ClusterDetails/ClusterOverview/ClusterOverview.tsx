@@ -1,37 +1,35 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '@open-cluster-management/resources'
 import {
+    AcmButton,
     AcmDescriptionList,
     AcmInlineCopy,
     AcmInlineProvider,
+    AcmInlineStatus,
     AcmLabels,
     AcmPageContent,
-    AcmButton,
-    AcmInlineStatus,
     StatusType,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { useContext, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
-import { ClusterStatus } from '../../../../../../lib/get-cluster'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { ClusterCuratorDefinition } from '../../../../../../resources/cluster-curator'
-import { ManagedClusterDefinition } from '../../../../../../resources/managed-cluster'
-import { ImportCommandContainer } from '../../components/ImportCommand'
+import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
+import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { DistributionField } from '../../components/DistributionField'
+import { EditLabels } from '../../components/EditLabels'
 import { HiveNotification } from '../../components/HiveNotification'
+import { ImportCommandContainer } from '../../components/ImportCommand'
 import { LoginCredentials } from '../../components/LoginCredentials'
+import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
-import { EditLabels } from '../../components/EditLabels'
-import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { ClusterContext } from '../ClusterDetails'
-import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
-import { ProgressStepBar } from '../../components/ProgressStepBar'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator } = useContext(ClusterContext)

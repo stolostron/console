@@ -1,5 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetKind,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+    MachinePool,
+    MachinePoolApiVersion,
+    MachinePoolKind,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
@@ -16,30 +45,7 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../../../resources/bare-metal-asset'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
-import {
-    ClusterImageSet,
-    ClusterImageSetApiVersion,
-    ClusterImageSetKind,
-} from '../../../../../resources/cluster-image-set'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import {
-    Project,
-    ProjectApiVersion,
-    ProjectKind,
-    ProjectRequest,
-    ProjectRequestApiVersion,
-    ProjectRequestKind,
-} from '../../../../../resources/project'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../../../resources/provider-connection'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import CreateClusterPage from './CreateCluster'
-import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources/machine-pool'
 
 const clusterName = 'test'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'

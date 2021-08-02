@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    IResource,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    patchResource,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertGroup,
     AcmButton,
     AcmEmptyState,
@@ -13,17 +20,13 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState, managedClustersState, managedClusterSetsState } from '../../../../../../atoms'
+import { clusterPoolsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
-import { patchResource, ResourceErrorCode } from '../../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { ManagedClusterKind } from '../../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../../resources/managed-cluster-set'
-import { IResource } from '../../../../../../resources/resource'
 import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { ClusterSetContext } from '../ClusterSetDetails'
 

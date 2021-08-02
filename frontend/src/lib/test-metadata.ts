@@ -1,12 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ConfigMap, ConfigMapApiVersion, ConfigMapKind } from '../resources/configmap'
-import { FeatureGate, FeatureGateApiVersion, FeatureGateKind } from '../resources/feature-gate'
-import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind } from '../resources/managed-cluster-set'
-import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from '../resources/multi-cluster-hub'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
-
-import { Secret, SecretApiVersion, SecretKind } from '../resources/secret'
+import {
+    ConfigMap,
+    ConfigMapApiVersion,
+    ConfigMapKind,
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    FeatureGate,
+    FeatureGateApiVersion,
+    FeatureGateKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetKind,
+    MultiClusterHub,
+    MultiClusterHubApiVersion,
+    MultiClusterHubKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { Provider } from '@open-cluster-management/ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
