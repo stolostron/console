@@ -261,7 +261,7 @@ export function DiscoveredClustersTable(props: {
         {
             header: t('dcTbl.type'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-                compareStrings(getFullTypeByAcronym(a?.spec?.type), getFullTypeByAcronym(b?.spec?.type)),
+                compareStrings(getFullTypeByAcronym(a?.spec?.type||''), getFullTypeByAcronym(b?.spec?.type||'')),
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.type) {
                     return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']
@@ -384,7 +384,7 @@ export function DiscoveredClustersTable(props: {
                         click: (item) => {
                             sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
                             sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                            sessionStorage.setItem('DiscoveredClusterApiURL', item.spec.apiUrl)
+                            sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl || '')
                             history.push(NavigationPath.importCluster)
                         },
                     },

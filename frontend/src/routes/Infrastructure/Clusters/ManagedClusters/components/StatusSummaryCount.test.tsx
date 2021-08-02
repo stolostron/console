@@ -23,86 +23,9 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
-    nodes: {
-        nodeList: [
-            {
-                capacity: { cpu: '4', memory: '16416940Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
-                    'node-role.kubernetes.io/master': '',
-                    'node.kubernetes.io/instance-type': 'm4.xlarge',
-                },
-                name: 'ip-10-0-137-106.ec2.internal',
-            },
-            {
-                capacity: { cpu: '8', memory: '32932196Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.2xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
-                    'node-role.kubernetes.io/worker': '',
-                    'node.kubernetes.io/instance-type': 'm4.2xlarge',
-                },
-                name: 'ip-10-0-138-153.ec2.internal',
-            },
-            {
-                capacity: { cpu: '8', memory: '32931992Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.2xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
-                    'node-role.kubernetes.io/worker': '',
-                    'node.kubernetes.io/instance-type': 'm4.2xlarge',
-                },
-                name: 'ip-10-0-153-194.ec2.internal',
-            },
-            {
-                capacity: { cpu: '4', memory: '16416932Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
-                    'node-role.kubernetes.io/master': '',
-                    'node.kubernetes.io/instance-type': 'm4.xlarge',
-                },
-                name: 'ip-10-0-158-2.ec2.internal',
-            },
-            {
-                capacity: { cpu: '8', memory: '32931984Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.2xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
-                    'node-role.kubernetes.io/worker': '',
-                    'node.kubernetes.io/instance-type': 'm4.2xlarge',
-                },
-                name: 'ip-10-0-160-159.ec2.internal',
-            },
-            {
-                capacity: { cpu: '4', memory: '16416932Ki' },
-                conditions: [{ status: 'True', type: 'Ready' }],
-                labels: {
-                    'beta.kubernetes.io/instance-type': 'm4.xlarge',
-                    'failure-domain.beta.kubernetes.io/region': 'us-east-1',
-                    'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
-                    'node-role.kubernetes.io/master': '',
-                    'node.kubernetes.io/instance-type': 'm4.xlarge',
-                },
-                name: 'ip-10-0-170-150.ec2.internal',
-            },
-        ],
-        active: 6,
-        inactive: 0,
-    },
     kubeApiServer: '',
     consoleURL: '',
     hive: {
@@ -116,6 +39,8 @@ const mockCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    owner: {}
 }
 
 const mockSearchQuery = {

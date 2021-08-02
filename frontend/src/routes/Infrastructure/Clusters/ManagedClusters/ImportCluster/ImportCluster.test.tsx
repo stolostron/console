@@ -70,16 +70,6 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             name: 'foobar',
             type: 'OCP',
             openshiftVersion: '4.5.5',
-            providerConnections: [
-                {
-                    apiVersion: 'v1',
-                    kind: 'Secret',
-                    name: 'ocm-api-token',
-                    namespace: 'open-cluster-management',
-                    resourceVersion: '2673462626',
-                    uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
-                },
-            ],
             status: 'Active',
         },
     },
@@ -89,6 +79,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-02', namespace: 'foobar' },
         spec: {
             activityTimestamp: '2020-07-30T19:09:43Z',
+            displayName: 'cluster',
             cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creationTimestamp: '2020-07-30T19:09:43Z',

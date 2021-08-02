@@ -29,6 +29,7 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -45,6 +46,8 @@ const mockCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    owner: {}
 }
 
 describe('ImportCommandContainer', () => {

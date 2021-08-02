@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 import {
@@ -46,7 +46,6 @@ export function useAllClusters() {
                 managedClusterAddons,
                 clusterClaims,
                 clusterCurators,
-                ansibleJobs
             ),
         [
             clusterDeployments,

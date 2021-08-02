@@ -22,15 +22,15 @@ export interface DiscoveredCluster extends IResource {
     spec: {
         name: string
         console: string
-        apiUrl: string
+        apiUrl?: string
         displayName: string
         creationTimestamp?: string
         activityTimestamp: string
         openshiftVersion: string
         cloudProvider: string
         status: string
-        type: string
-        isManagedCluster: boolean
+        type?: string
+        isManagedCluster?: boolean
         credential?: {
             apiVersion: string
             kind: string

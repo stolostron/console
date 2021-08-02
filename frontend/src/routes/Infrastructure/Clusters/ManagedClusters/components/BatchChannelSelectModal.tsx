@@ -31,8 +31,8 @@ const setCurrentChannel = (
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
             const clusterName = cluster.name
-            const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
-            const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
+            const currentChannel = cluster.distribution?.upgradeInfo?.currentChannel || ''
+            const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
             let defaultChannel = availableChannels.length > 0 ? availableChannels[0] : ''
             if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
                 defaultChannel = currentChannel
@@ -95,7 +95,7 @@ export function BatchChannelSelectModal(props: {
                 {
                     header: t('upgrade.table.currentchannel'),
                     cell: (item: Cluster) => {
-                        const currentChannel = item?.distribution?.upgradeInfo.currentChannel || ''
+                        const currentChannel = item?.distribution?.upgradeInfo?.currentChannel || ''
                         return <span>{currentChannel}</span>
                     },
                 },
@@ -139,7 +139,7 @@ export function BatchChannelSelectModal(props: {
                 if (
                     !cluster.name ||
                     !selectChannels[cluster.name] ||
-                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo.currentChannel
+                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo?.currentChannel
                 ) {
                     const emptyRes: IRequestResult<string> = {
                         promise: new Promise((resolve) => resolve('')),

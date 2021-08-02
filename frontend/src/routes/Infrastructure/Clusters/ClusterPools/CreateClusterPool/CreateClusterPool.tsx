@@ -26,7 +26,7 @@ import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/con
 import hiveTemplate from './templates/hive-template.hbs'
 import { featureGatesState, secretsState } from '../../../../../atoms'
 
-import TemplateEditor from 'temptifly'
+import { TemplateEditor } from 'temptifly'
 import 'temptifly/dist/styles.css'
 import { FeatureGates } from '../../../../../FeatureGates'
 
