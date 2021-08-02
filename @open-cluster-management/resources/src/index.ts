@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export * from './utils'
 export * from './ansible-job'
 export * from './bare-metal-asset'
