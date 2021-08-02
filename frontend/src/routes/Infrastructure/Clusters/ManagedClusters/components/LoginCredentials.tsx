@@ -10,7 +10,7 @@ import {
     StatusType,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
-import { Fragment, useContext, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getSecret, unpackSecret } from '../../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'

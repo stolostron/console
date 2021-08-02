@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { Provider } from '@open-cluster-management/ui-components/lib/AcmProvider'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'

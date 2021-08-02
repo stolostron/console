@@ -27,7 +27,7 @@ import {
     Text,
     TextVariants,
 } from '@patternfly/react-core'
-import { useContext, useEffect, useState, Fragment } from 'react'
+import React, { useContext, useEffect, useState, Fragment } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

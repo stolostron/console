@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 import {

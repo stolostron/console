@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { PageSection, Popover } from '@patternfly/react-core'

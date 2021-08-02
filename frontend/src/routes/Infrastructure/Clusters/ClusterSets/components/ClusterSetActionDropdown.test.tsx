@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'

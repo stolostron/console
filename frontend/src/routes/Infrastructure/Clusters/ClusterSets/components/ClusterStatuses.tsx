@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { AcmInlineStatusGroup } from '@open-cluster-management/ui-components'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'

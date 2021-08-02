@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmDropdown } from '@open-cluster-management/ui-components'
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createDownloadFile } from '../../../../../lib/utils'
 import { getSecret, unpackSecret } from '../../../../../resources/secret'

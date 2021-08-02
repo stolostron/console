@@ -15,7 +15,7 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

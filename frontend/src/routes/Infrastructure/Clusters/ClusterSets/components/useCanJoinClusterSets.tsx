@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClusterSetsState } from '../../../../../atoms'
 import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'

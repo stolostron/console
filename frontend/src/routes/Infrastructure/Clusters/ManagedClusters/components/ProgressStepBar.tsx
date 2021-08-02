@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../../atoms'

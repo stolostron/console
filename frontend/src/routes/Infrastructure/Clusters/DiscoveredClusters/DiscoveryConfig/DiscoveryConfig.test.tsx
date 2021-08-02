@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { AcmToastProvider, AcmToastGroup } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'

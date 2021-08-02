@@ -2,7 +2,7 @@
 
 import { AcmInlineProvider } from '@open-cluster-management/ui-components'
 import { TextContent, Text, TextVariants } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'

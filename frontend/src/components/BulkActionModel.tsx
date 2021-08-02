@@ -19,7 +19,7 @@ import {
     ProgressMeasureLocation,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
 import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'

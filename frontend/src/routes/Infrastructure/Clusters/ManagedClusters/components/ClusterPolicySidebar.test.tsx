@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { render, act } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'

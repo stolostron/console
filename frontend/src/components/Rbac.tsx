@@ -3,7 +3,7 @@
 import { makeStyles } from '@material-ui/styles'
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources/self-subject-access-review'
 

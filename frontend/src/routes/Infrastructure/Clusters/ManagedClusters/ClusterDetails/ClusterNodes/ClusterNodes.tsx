@@ -10,7 +10,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NodeInfo } from '../../../../../../resources/managed-cluster-info'

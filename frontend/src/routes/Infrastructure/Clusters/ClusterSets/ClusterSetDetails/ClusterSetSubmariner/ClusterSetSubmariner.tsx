@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
 import { PageSection, Stack, StackItem, Flex, FlexItem, TextContent, Text, TextVariants } from '@patternfly/react-core'

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'

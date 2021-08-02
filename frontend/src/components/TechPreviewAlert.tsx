@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import React from 'react'
 import { Alert, Label } from '@patternfly/react-core'
 import { BellIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from 'react-i18next'

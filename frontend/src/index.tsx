@@ -4,7 +4,7 @@
 import '@patternfly/react-core/dist/styles/base.css'
 import { AcmHeader, AcmRoute } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { StrictMode, Suspense } from 'react'
+import React, { StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
 import { RecoilRoot } from 'recoil'

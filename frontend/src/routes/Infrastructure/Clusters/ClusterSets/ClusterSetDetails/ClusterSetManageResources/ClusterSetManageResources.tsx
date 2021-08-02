@@ -12,7 +12,7 @@ import {
     compareStrings,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'

@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, PencilAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'

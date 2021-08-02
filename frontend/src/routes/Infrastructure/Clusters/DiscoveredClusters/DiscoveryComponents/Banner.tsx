@@ -13,7 +13,7 @@ import {
 import { AcmButton } from '@open-cluster-management/ui-components'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { discoveryConfigState } from '../../../../../atoms'
 import { Link } from 'react-router-dom'
 import DiscoveryPng from '../../../../../components/ACM-Discovery-illus.png'

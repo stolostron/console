@@ -3,7 +3,7 @@
 import PropTypes from 'prop-types'
 import { Button } from '@patternfly/react-core'
 import { Tooltip } from 'temptifly'
-import { Component } from 'react'
+import React, { Component } from 'react'
 
 class WrappedImportBareMetalAssetsButton extends Component {
     static propTypes = {
