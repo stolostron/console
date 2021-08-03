@@ -107,7 +107,7 @@ export function BatchUpgradeModal(props: {
                 {
                     header: t('upgrade.table.currentversion'),
                     cell: (item: Cluster) => {
-                        const currentVersion = item?.distribution?.upgradeInfo.currentVersion || ''
+                        const currentVersion = item?.distribution?.upgradeInfo?.currentVersion || ''
                         return <span>{currentVersion}</span>
                     },
                 },

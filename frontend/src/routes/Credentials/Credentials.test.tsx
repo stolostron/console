@@ -26,6 +26,7 @@ import {
 } from '../../resources/provider-connection'
 import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import CredentialsPage from './Credentials'
+import { Secret } from '../../resources/secret'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -112,7 +113,7 @@ function TestProviderConnectionsPage(props: {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(secretsState, props.providerConnections)
+                snapshot.set(secretsState, props.providerConnections as Secret[])
                 snapshot.set(discoveryConfigState, props.discoveryConfigs || [])
             }}
         >

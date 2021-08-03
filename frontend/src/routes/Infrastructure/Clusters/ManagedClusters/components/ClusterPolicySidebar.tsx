@@ -24,7 +24,8 @@ import { configMapsState } from '../../../../../atoms'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
-import { useTranslation, TFunction } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
 
 const useStyles = makeStyles({
@@ -69,7 +70,7 @@ const useStyles = makeStyles({
     },
 })
 
-function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
+function renderDonutChart(data: PolicyReport, t: TFunction) {
     const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {

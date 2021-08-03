@@ -262,7 +262,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'True',
@@ -291,7 +291,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Degraded',
                 reason: 'Degraded',
                 status: 'True',
@@ -320,7 +320,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Available',
                 reason: 'Available',
                 status: 'True',
@@ -350,7 +350,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'False',
@@ -380,7 +380,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Unknown',
                 reason: 'Unknown',
                 status: 'True',
@@ -550,7 +550,6 @@ const mockClusterProvisions: ClusterProvision = {
     status: {
         conditions: [
             {
-                lastProbeTime: '2021-01-04T18:23:30Z',
                 lastTransitionTime: '2021-01-04T18:23:30Z',
                 message: 'Install job has been created',
                 reason: 'JobCreated',
@@ -558,7 +557,6 @@ const mockClusterProvisions: ClusterProvision = {
                 type: 'ClusterProvisionJobCreated',
             },
             {
-                lastProbeTime: '2021-01-04T18:23:37Z',
                 lastTransitionTime: '2021-01-04T18:23:37Z',
                 message: 'Invalid GCP project ID',
                 reason: 'GCPInvalidProjectID',

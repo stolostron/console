@@ -23,6 +23,7 @@ import {
 } from '../../../resources/provider-connection'
 // import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import AnsibleAutomationsPage from './AnsibleAutomations'
+import { Secret } from '../../../resources/secret'
 
 const mockAnsibleConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -108,7 +109,7 @@ function TestIntegrationPage(props: { providerConnections: ProviderConnection[];
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(secretsState, props.providerConnections)
+                snapshot.set(secretsState, props.providerConnections as Secret[])
                 snapshot.set(clusterCuratorsState, props.clusterCurators || [])
             }}
         >

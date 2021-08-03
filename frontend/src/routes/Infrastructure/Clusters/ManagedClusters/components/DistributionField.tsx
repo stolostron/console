@@ -69,12 +69,12 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         // if pre/post failed
         if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
             statusType = StatusType.warning
-            if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
+            if (props.cluster?.distribution?.upgradeInfo?.prehooks?.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.prehook.failure')}
-                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
             } else {
@@ -82,7 +82,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.posthook.failure')}
-                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
             }
@@ -105,7 +105,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-    if (props.cluster?.distribution.upgradeInfo.upgradeFailed) {
+    if (props.cluster?.distribution.upgradeInfo?.upgradeFailed) {
         // OCP UPGRADE FAILED
         return (
             <>
@@ -142,7 +142,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo.isUpgrading) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isUpgrading) {
         // OCP UPGRADE IN PROGRESS
         return (
             <>
@@ -188,7 +188,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo.isReadyUpdates) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates) {
         // UPGRADE AVAILABLE
         return (
             <>
