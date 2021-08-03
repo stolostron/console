@@ -9,7 +9,7 @@ import {
     AcmSubmit,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IRequestResult } from '../lib/resource-request'
 

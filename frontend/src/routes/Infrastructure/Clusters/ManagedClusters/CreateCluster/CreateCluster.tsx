@@ -4,7 +4,7 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor

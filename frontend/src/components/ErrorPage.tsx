@@ -10,7 +10,7 @@ import {
     PageSection,
     Title,
 } from '@patternfly/react-core'
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
 export function getErrorInfo(error: unknown): AcmAlertInfo {

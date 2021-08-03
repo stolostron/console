@@ -7,7 +7,7 @@ import {
     AcmToastProvider,
     AcmToastGroup,
 } from '@open-cluster-management/ui-components'
-import React, { Suspense, lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, LoadData } from './atoms'

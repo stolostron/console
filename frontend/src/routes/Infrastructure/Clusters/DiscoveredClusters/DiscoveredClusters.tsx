@@ -16,7 +16,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
 import * as moment from 'moment'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Fragment, useContext } from 'react'
+import { Fragment, useContext } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
 import { useRecoilState } from 'recoil'

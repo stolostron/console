@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import React from 'react'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'

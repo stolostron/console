@@ -10,7 +10,7 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
-import React, { createContext, Fragment, Suspense, useEffect } from 'react'
+import { createContext, Fragment, Suspense, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'

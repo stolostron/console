@@ -9,7 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'

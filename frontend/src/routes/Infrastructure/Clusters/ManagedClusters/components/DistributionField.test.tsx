@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { nockRBAC } from '../../../../../lib/nock-util'
 import { Cluster, DistributionInfo, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'

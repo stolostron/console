@@ -9,7 +9,7 @@ import {
     AcmModal,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
-import React, { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { patchResource } from '../../../../../lib/resource-request'

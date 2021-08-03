@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'

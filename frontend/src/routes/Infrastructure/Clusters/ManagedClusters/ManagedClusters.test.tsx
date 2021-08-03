@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import {
     AcmForm,

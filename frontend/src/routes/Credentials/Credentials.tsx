@@ -16,7 +16,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

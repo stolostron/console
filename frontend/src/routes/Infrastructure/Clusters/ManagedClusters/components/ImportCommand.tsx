@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
 import i18next from 'i18next'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { useTranslation } from 'react-i18next'
 import { ClusterStatus } from '../../../../../lib/get-cluster'

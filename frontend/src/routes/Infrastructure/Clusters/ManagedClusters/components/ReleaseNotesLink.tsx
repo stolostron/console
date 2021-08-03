@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { OCP_DOC_BASE_PATH } from '../../../../../lib/doc-util'

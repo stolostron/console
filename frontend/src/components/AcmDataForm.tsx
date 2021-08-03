@@ -73,7 +73,7 @@ import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
 import EditIcon from '@patternfly/react-icons/dist/js/icons/edit-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import useResizeObserver from '@react-hook/resize-observer'
-import React, { Fragment, ReactNode, useRef, useState } from 'react'
+import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {

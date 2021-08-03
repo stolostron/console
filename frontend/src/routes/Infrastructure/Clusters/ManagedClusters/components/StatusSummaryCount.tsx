@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
-import React, { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

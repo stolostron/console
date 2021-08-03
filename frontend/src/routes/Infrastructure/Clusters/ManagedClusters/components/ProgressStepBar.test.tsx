@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { render } from '@testing-library/react'
 import { ProgressStepBar } from './ProgressStepBar'
 import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'

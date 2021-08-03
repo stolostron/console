@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { render, waitFor } from '@testing-library/react'

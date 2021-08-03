@@ -11,7 +11,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, Bullseye, PageSection, ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

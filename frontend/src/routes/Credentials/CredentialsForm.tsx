@@ -10,7 +10,7 @@ import {
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilState } from 'recoil'
