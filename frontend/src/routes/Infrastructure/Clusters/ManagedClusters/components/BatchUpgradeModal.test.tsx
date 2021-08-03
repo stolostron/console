@@ -25,7 +25,7 @@ const mockClusterNoAvailable: Cluster = {
             availableUpdates: [],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
-            latestJob: {}
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -43,7 +43,7 @@ const mockClusterNoAvailable: Cluster = {
     },
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
@@ -63,8 +63,7 @@ const mockClusterReady1: Cluster = {
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2.9', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
-            latestJob: {}
-
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -82,7 +81,7 @@ const mockClusterReady1: Cluster = {
     },
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
@@ -102,8 +101,7 @@ const mockClusterReady2: Cluster = {
             availableUpdates: ['2.2.4', '2.2.5', '2.2.6', '2.2'],
             currentVersion: '2.2.3',
             desiredVersion: '2.2.3',
-            latestJob: {}
-
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -121,7 +119,7 @@ const mockClusterReady2: Cluster = {
     },
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
@@ -141,8 +139,7 @@ const mockClusterOffline: Cluster = {
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
-            latestJob: {}
-
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -160,7 +157,7 @@ const mockClusterOffline: Cluster = {
     },
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 const mockClusterFailedUpgrade: Cluster = {
     name: 'cluster-4-failedupgrade',
@@ -180,8 +177,7 @@ const mockClusterFailedUpgrade: Cluster = {
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.4',
-            latestJob: {}
-
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -199,7 +195,7 @@ const mockClusterFailedUpgrade: Cluster = {
     },
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 const allClusters: Array<Cluster> = [
     mockClusterNoAvailable,

@@ -19,7 +19,7 @@ const mockDestroyCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
-        isManagedOpenShift: false
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -47,7 +47,7 @@ const mockDetachCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
-        isManagedOpenShift: false
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,

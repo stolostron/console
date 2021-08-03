@@ -44,7 +44,7 @@ export function useAllClusters() {
                 managedClusters,
                 managedClusterAddons,
                 clusterClaims,
-                clusterCurators,
+                clusterCurators
             ),
         [
             clusterDeployments,

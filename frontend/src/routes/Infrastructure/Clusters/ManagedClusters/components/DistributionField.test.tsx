@@ -26,7 +26,7 @@ const mockDistributionInfo: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -46,7 +46,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.5'],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -66,7 +66,7 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: [],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -86,7 +86,7 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -106,7 +106,7 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -126,7 +126,7 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
-        latestJob: {}
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -219,7 +219,7 @@ const clusterCuratorUpgrade: ClusterCurator = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-01-04T18:23:30Z'),
+                lastTransitionTime: new Date('2021-01-04T18:23:30Z'),
                 message:
                     'curator-job-5snl7 DesiredCuration: upgrade - AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr',
                 reason: 'Job_has_finished',
@@ -227,7 +227,7 @@ const clusterCuratorUpgrade: ClusterCurator = {
                 type: 'prehook-ansiblejob',
             },
             {
-                lastTransitionTime:  new Date('2021-01-04T18:23:37Z'),
+                lastTransitionTime: new Date('2021-01-04T18:23:37Z'),
                 message: 'Invalid GCP project ID',
                 reason: 'GCPInvalidProjectID',
                 status: 'True',
@@ -344,7 +344,7 @@ describe('DistributionField', () => {
             isHive: false,
             isManaged: true,
             isCurator: true,
-            owner: {}
+            owner: {},
         }
 
         const retResource = render(
@@ -415,7 +415,7 @@ describe('DistributionField', () => {
             mockManagedAnsibleFailedDistributionInfo,
             false,
             false,
-            clusterCuratorUpgradeFailed,
+            clusterCuratorUpgradeFailed
         )
         await waitForText('upgrade.ansible.prehookjob.title')
         await clickByText('upgrade.ansible.prehookjob.title')

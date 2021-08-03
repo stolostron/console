@@ -20,7 +20,7 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
-        isManagedOpenShift: false
+        isManagedOpenShift: false,
     },
     labels: undefined,
     kubeApiServer: '',
@@ -37,7 +37,7 @@ const mockCluster: Cluster = {
     isHive: true,
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 
 describe('ClusterMachinePools', () => {

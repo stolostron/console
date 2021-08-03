@@ -50,7 +50,7 @@ const mockCluster: Cluster = {
     isHive: true,
     isManaged: true,
     isCurator: true,
-    owner: {}
+    owner: {},
 }
 
 function rbacPatchManagedCluster() {

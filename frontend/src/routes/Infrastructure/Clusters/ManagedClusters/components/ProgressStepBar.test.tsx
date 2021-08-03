@@ -38,7 +38,7 @@ const mockCluster: Cluster = {
     isHive: false,
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 
 const clusterCurator1: ClusterCurator = {

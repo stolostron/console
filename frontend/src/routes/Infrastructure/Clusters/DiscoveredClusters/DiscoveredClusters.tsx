@@ -261,7 +261,7 @@ export function DiscoveredClustersTable(props: {
         {
             header: t('dcTbl.type'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-                compareStrings(getFullTypeByAcronym(a?.spec?.type||''), getFullTypeByAcronym(b?.spec?.type||'')),
+                compareStrings(getFullTypeByAcronym(a?.spec?.type || ''), getFullTypeByAcronym(b?.spec?.type || '')),
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.type) {
                     return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']

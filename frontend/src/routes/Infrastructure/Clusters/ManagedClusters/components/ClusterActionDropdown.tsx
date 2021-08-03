@@ -66,9 +66,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         [t]
     )
 
-    const destroyRbac = [
-        rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name),
-    ]
+    const destroyRbac = [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)]
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
     }

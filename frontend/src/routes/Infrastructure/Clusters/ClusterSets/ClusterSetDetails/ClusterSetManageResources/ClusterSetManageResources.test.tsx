@@ -196,7 +196,7 @@ const Component = () => (
                 clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
                 clusterPools: [],
                 submarinerAddons: undefined,
-                clusterSetBindings: undefined
+                clusterSetBindings: undefined,
             }}
         >
             <MemoryRouter

@@ -44,7 +44,7 @@ const mockCluster: Cluster = {
     isHive: true,
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 
 const mockInstallConfig = {

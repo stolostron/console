@@ -262,7 +262,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-05-14T15:11:35Z'),
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'True',
@@ -291,7 +291,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-05-14T15:11:35Z'),
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Degraded',
                 reason: 'Degraded',
                 status: 'True',
@@ -320,7 +320,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-05-14T15:11:35Z'),
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Available',
                 reason: 'Available',
                 status: 'True',
@@ -350,7 +350,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-05-14T15:11:35Z'),
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'False',
@@ -380,7 +380,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime:  new Date('2021-05-14T15:11:35Z'),
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Unknown',
                 reason: 'Unknown',
                 status: 'True',

@@ -46,16 +46,14 @@ const mockCluster: Cluster = {
     isHive: false,
     isManaged: true,
     isCurator: false,
-    owner: {}
+    owner: {},
 }
 
 describe('ImportCommandContainer', () => {
     const Component = () => {
         return (
             <RecoilRoot>
-                <ClusterContext.Provider
-                    value={{ cluster: mockCluster, addons: undefined }}
-                >
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                     <ImportCommandContainer />
                 </ClusterContext.Provider>
             </RecoilRoot>
