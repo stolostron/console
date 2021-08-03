@@ -83,7 +83,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             placeholder={t('submariner.install.form.cabledriver.placeholder')}
                             labelHelp={t('submariner.install.form.cabledriver.labelHelp')}
                             value={cableDriver}
-                            onChange={(driver: CableDriver) => setCableDriver(driver)}
+                            onChange={(driver) => setCableDriver(CableDriver[driver as keyof typeof CableDriver])}
                         >
                             {Object.values(CableDriver).map((cb) => (
                                 <SelectOption key={cb} value={cb}>

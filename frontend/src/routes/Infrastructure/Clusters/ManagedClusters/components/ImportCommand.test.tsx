@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import React, { useState } from 'react'
+import React from 'react'
 import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
@@ -52,11 +52,10 @@ const mockCluster: Cluster = {
 
 describe('ImportCommandContainer', () => {
     const Component = () => {
-        const [importCommand, setImportCommand] = useState<string | undefined>()
         return (
             <RecoilRoot>
                 <ClusterContext.Provider
-                    value={{ cluster: mockCluster, addons: undefined, importCommand, setImportCommand }}
+                    value={{ cluster: mockCluster, addons: undefined }}
                 >
                     <ImportCommandContainer />
                 </ClusterContext.Provider>

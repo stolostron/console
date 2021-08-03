@@ -494,18 +494,6 @@ describe('ClusterSetDetails page', () => {
             metadata: {
                 generateName: `${mockManagedClusterSet?.metadata.name}-`,
             },
-            subjects: [
-                {
-                    kind: 'User',
-                    apiGroup: 'rbac.authorization.k8s.io',
-                    name: mockUser!.metadata.name!,
-                },
-            ],
-            roleRef: {
-                apiGroup: 'rbac.authorization.k8s.io',
-                kind: 'ClusterRole',
-                name: `open-cluster-management:managedclusterset:admin:${mockManagedClusterSet!.metadata.name!}`,
-            },
         })
         await clickByText('common:add')
         await waitForNocks([createNock])
@@ -529,18 +517,6 @@ describe('ClusterSetDetails page', () => {
             kind: ClusterRoleBindingKind,
             metadata: {
                 generateName: `${mockManagedClusterSet?.metadata.name}-`,
-            },
-            subjects: [
-                {
-                    kind: 'Group',
-                    apiGroup: 'rbac.authorization.k8s.io',
-                    name: mockGroup!.metadata.name!,
-                },
-            ],
-            roleRef: {
-                apiGroup: 'rbac.authorization.k8s.io',
-                kind: 'ClusterRole',
-                name: `open-cluster-management:managedclusterset:view:${mockManagedClusterSet!.metadata.name!}`,
             },
         })
         await clickByText('common:add')

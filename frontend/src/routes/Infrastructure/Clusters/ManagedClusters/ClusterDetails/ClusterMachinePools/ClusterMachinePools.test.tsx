@@ -50,7 +50,7 @@ describe('ClusterMachinePools', () => {
                     snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
                 }}
             >
-                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined, importCommand: undefined }}>
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                     <MachinePoolsPageContent />
                 </ClusterContext.Provider>
             </RecoilRoot>

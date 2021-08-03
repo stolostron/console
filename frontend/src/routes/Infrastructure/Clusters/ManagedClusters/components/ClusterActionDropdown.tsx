@@ -66,6 +66,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         [t]
     )
 
+    const destroyRbac = [
+        rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name),
+    ]
+    if (cluster.isManaged) {
+        destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
+    }
+
     let actions = [
         {
             id: 'edit-labels',
@@ -260,10 +267,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 })
             },
             isDisabled: true,
-            rbac: [
-                cluster.isManaged && rbacDelete(ManagedClusterDefinition, undefined, cluster.name),
-                rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name),
-            ].filter(Boolean),
+            rbac: destroyRbac,
         },
     ]
 
