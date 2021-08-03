@@ -23,7 +23,6 @@ export function useAllClusters() {
         managedClusterAddons,
         clusterClaims,
         clusterCurators,
-        ansibleJobs,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -55,7 +54,6 @@ export function useAllClusters() {
             managedClusterAddons,
             clusterClaims,
             clusterCurators,
-            ansibleJobs,
         ]
     )
     return clusters as Cluster[]
