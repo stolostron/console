@@ -4,6 +4,7 @@
 
 import { isEqual } from 'lodash'
 import nock from 'nock'
+import { ClusterRoleBinding } from '../resources/rbac'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import {
     ResourceAttributes,
@@ -151,7 +152,7 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource, response?: IResource, statusCode = 201) {
+export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), (body) => {
             // if (!isEqual(body, resource)) {

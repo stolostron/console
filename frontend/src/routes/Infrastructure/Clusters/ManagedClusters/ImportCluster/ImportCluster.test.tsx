@@ -78,7 +78,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-02', namespace: 'foobar' },
         spec: {
             activityTimestamp: '2020-07-30T19:09:43Z',
-            displayName: 'cluster',
+            displayName: 'test-cluster-02',
             cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creationTimestamp: '2020-07-30T19:09:43Z',
