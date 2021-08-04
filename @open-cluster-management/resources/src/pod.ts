@@ -1,39 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from "@kubernetes/client-node/dist/gen/model/v1ObjectMeta";
-import { V1Pod } from "@kubernetes/client-node/dist/gen/model/v1Pod";
-import { ClusterStatus } from "./utils/get-cluster";
-import { listNamespacedResources } from "./utils/resource-request";
-import { getLatest } from "./utils/utils";
-import { IResource, IResourceDefinition } from "./resource";
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { V1Pod } from '@kubernetes/client-node/dist/gen/model/v1Pod'
+import { ClusterStatus } from './utils/get-cluster'
+import { listNamespacedResources } from './utils/resource-request'
+import { getLatest } from './utils/utils'
+import { IResource, IResourceDefinition } from './resource'
 
-export const PodApiVersion = "v1";
-export type PodApiVersionType = "v1";
+export const PodApiVersion = 'v1'
+export type PodApiVersionType = 'v1'
 
-export const PodKind = "Pod";
-export type PodKindType = "Pod";
+export const PodKind = 'Pod'
+export type PodKindType = 'Pod'
 
 export const PodDefinition: IResourceDefinition = {
     apiVersion: PodApiVersion,
     kind: PodKind,
-};
-
-export interface Pod extends V1Pod, IResource {
-    apiVersion: PodApiVersionType;
-    kind: PodKindType;
-    metadata: V1ObjectMeta;
 }
 
-export const PodListApiVersion = "v1";
-export type PodListApiVersionType = "v1";
+export interface Pod extends V1Pod, IResource {
+    apiVersion: PodApiVersionType
+    kind: PodKindType
+    metadata: V1ObjectMeta
+}
 
-export const PodListKind = "PodList";
-export type PodListKindType = "PodList";
+export const PodListApiVersion = 'v1'
+export type PodListApiVersionType = 'v1'
+
+export const PodListKind = 'PodList'
+export type PodListKindType = 'PodList'
 
 export interface PodList extends IResource {
-    apiVersion: PodListApiVersionType;
-    kind: PodListKindType;
-    items: V1Pod[];
+    apiVersion: PodListApiVersionType
+    kind: PodListKindType
+    items: V1Pod[]
 }
 
 export function listHivePods(namespace: string, labels?: string[]) {
@@ -44,69 +44,48 @@ export function listHivePods(namespace: string, labels?: string[]) {
             metadata: { namespace },
         },
         labels
-    );
+    )
 }
 
 const getClusterDeploymentNameSelector = (name: string) => {
-    return `hive.openshift.io/cluster-deployment-name=${name}`;
-};
+    return `hive.openshift.io/cluster-deployment-name=${name}`
+}
 
 export async function getProvisionPod(namespace: string, name: string) {
-    const provisionJobSelector = "hive.openshift.io/job-type=provision";
-    const response = listHivePods(namespace, [
-        getClusterDeploymentNameSelector(name),
-        provisionJobSelector,
-    ]);
+    const provisionJobSelector = 'hive.openshift.io/job-type=provision'
+    const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), provisionJobSelector])
     return await response.promise.then((result) => {
-        const latestProvisionJob = getLatest<Pod>(
-            result,
-            "metadata.creationTimestamp"
-        );
-        return latestProvisionJob;
-    });
+        const latestProvisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
+        return latestProvisionJob
+    })
 }
 
 export async function getDeprovisionPod(namespace: string, name: string) {
-    const deprovisionJobSelector = `job-name=${name}-uninstall`;
-    const response = listHivePods(namespace, [
-        getClusterDeploymentNameSelector(name),
-        deprovisionJobSelector,
-    ]);
+    const deprovisionJobSelector = `job-name=${name}-uninstall`
+    const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name), deprovisionJobSelector])
     return await response.promise.then((result) => {
-        const latestDeprovisionJob = getLatest<Pod>(
-            result,
-            "metadata.creationTimestamp"
-        );
-        return latestDeprovisionJob;
-    });
+        const latestDeprovisionJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
+        return latestDeprovisionJob
+    })
 }
 
 export async function getLatestHivePod(namespace: string, name: string) {
-    const response = listHivePods(namespace, [
-        getClusterDeploymentNameSelector(name),
-    ]);
+    const response = listHivePods(namespace, [getClusterDeploymentNameSelector(name)])
     return await response.promise.then((result) => {
-        const latestJob = getLatest<Pod>(result, "metadata.creationTimestamp");
-        return latestJob;
-    });
+        const latestJob = getLatest<Pod>(result, 'metadata.creationTimestamp')
+        return latestJob
+    })
 }
 
-export async function getHivePod(
-    namespace: string,
-    name: string,
-    status: string
-) {
-    let hiveJob: Pod | undefined;
+export async function getHivePod(namespace: string, name: string, status: string) {
+    let hiveJob: Pod | undefined
     /* istanbul ignore else */
     if (status === ClusterStatus.creating) {
-        hiveJob = await getProvisionPod(namespace, name);
-    } else if (
-        status === ClusterStatus.provisionfailed ||
-        status === ClusterStatus.deprovisionfailed
-    ) {
-        hiveJob = await getLatestHivePod(namespace, name);
+        hiveJob = await getProvisionPod(namespace, name)
+    } else if (status === ClusterStatus.provisionfailed || status === ClusterStatus.deprovisionfailed) {
+        hiveJob = await getLatestHivePod(namespace, name)
     } else if (status === ClusterStatus.destroying) {
-        hiveJob = await getDeprovisionPod(namespace, name);
+        hiveJob = await getDeprovisionPod(namespace, name)
     }
-    return hiveJob;
+    return hiveJob
 }
