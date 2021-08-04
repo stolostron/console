@@ -221,12 +221,12 @@ export function fetchGetAnsibleJobs(
     signal: AbortSignal
 ) {
     return fetchRetry<AnsibleTowerJobTemplateList>({
-        method: 'GET',
+        method: 'POST',
         url: backendUrlPath,
         signal,
-        headers: {
-            path: ansibleJobsUrl,
-            tk: token,
+        data: {
+            towerHost: ansibleJobsUrl,
+            token: token,
         },
         retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     })
