@@ -4,32 +4,44 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound, unauthorized } from '../lib/respond'
+import { notFound } from '../lib/respond'
+
+interface AnsibleCredential {
+    towerHost: string
+    token: string
+}
 
 export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    if (!req.headers.tk) return unauthorized(req, res)
+    const chucks: string[] = []
+    let ansibleCredential: AnsibleCredential
 
-    const towerUrl = new URL(req.headers.path.toString())
-    const options: RequestOptions = {
-        protocol: towerUrl.protocol,
-        hostname: towerUrl.hostname,
-        path: towerUrl.pathname,
-        method: req.method,
-        headers: {
-            Authorization: `Bearer ${req.headers.tk}`,
-        },
-        rejectUnauthorized: false,
-    }
-
-    pipeline(
-        req,
-        request(options, (response) => {
-            if (!response) return notFound(req, res)
-            res.writeHead(response.statusCode ?? 500, response.headers)
-            pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
-        }),
-        (err) => {
-            if (err) logger.error(err)
+    req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+    })
+    req.on('end', () => {
+        var body = chucks.join()
+        ansibleCredential = JSON.parse(body)
+        const towerUrl = new URL(ansibleCredential.towerHost.toString())
+        const options: RequestOptions = {
+            protocol: towerUrl.protocol,
+            hostname: towerUrl.hostname,
+            path: towerUrl.pathname,
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${ansibleCredential.token}`,
+            },
+            rejectUnauthorized: false,
         }
-    )
+        pipeline(
+            req,
+            request(options, (response) => {
+                if (!response) return notFound(req, res)
+                res.writeHead(response.statusCode ?? 500, response.headers)
+                pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
+            }),
+            (err) => {
+                if (err) logger.error(err)
+            }
+        )
+    })
 }

@@ -39,7 +39,7 @@ router.get(`/events`, events)
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.get(`/*`, serve)
-router.get(`/ansibletower`, ansibleTower)
+router.post(`/ansibletower`, ansibleTower)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
