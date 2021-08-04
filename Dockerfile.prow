@@ -16,7 +16,8 @@ RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/backend/build ./
-COPY --from=builder /app/frontend/build ./public
+COPY --from=builder /app/backend/node_modules ./backend/node_modules
+COPY --from=builder /app/backend/build ./backend
+COPY --from=builder /app/frontend/build ./backend/public
 USER 1001
-CMD ["node", "lib/main.js"]
+CMD ["node", "backend/lib/main.js"]
