@@ -11,7 +11,8 @@
         "build": "tsc",
         "watch": "tsc --watch --preserveWatchOutput",
         "test": "tsc --noEmit",
-        "lint": "echo no lint"
+        "lint": "echo no lint",
+        "check": "echo no check"
     },
     "devDependencies": {
         "@kubernetes/client-node": "^0.15.0",

@@ -3,14 +3,16 @@
 /* istanbul ignore file */
 
 import {
-    ClusterRoleBinding, getResourceApiPath,
+    ClusterRoleBinding,
+    getResourceApiPath,
     getResourceNameApiPath,
-    IResource, ResourceAttributes,
+    IResource,
+    ResourceAttributes,
     SelfSubjectAccessReview,
     SelfSubjectAccessReviewApiVersion,
     SelfSubjectAccessReviewKind,
     StatusApiVersion,
-    StatusKind
+    StatusKind,
 } from '@open-cluster-management/resources'
 import { isEqual } from 'lodash'
 import nock from 'nock'
